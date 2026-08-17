@@ -6,17 +6,31 @@
     "backend"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=frontend",
+    "dev": "concurrently -k -n 'FRONTEND,BACKEND' -c 'cyan.bold,green.bold' 'npm run dev:frontend' 'npm run dev:backend'",
+    "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend && rm -rf dist && cp -r frontend/dist ./dist",
     "build:frontend": "npm run build --workspace=frontend && rm -rf dist && cp -r frontend/dist ./dist",
     "build:backend": "npm run build --workspace=backend",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
     "test": "npm run test --workspace=frontend && npm run test --workspace=backend",
     "test:frontend": "npm run test --workspace=frontend",
     "test:backend": "npm run test --workspace=backend",
+    "test:backend:unit": "npm run test:unit --workspace=backend",
+    "test:backend:integration": "npm run test:integration --workspace=backend",
+    "test:backend:rls": "npm run test:rls --workspace=backend",
+    "test:backend:security": "npm run test:security --workspace=backend",
+    "test:backend:watch": "npm run test:watch --workspace=backend",
+    "benchmark:backend": "npm run benchmark --workspace=backend",
     "check:boundary": "node backend/scripts/maintenance/check-boundary.js",
+    "check:frontend": "npm run check --workspace=frontend",
+    "check:backend": "npm run lint --workspace=backend && npm run test --workspace=backend && npm run build --workspace=backend && npm run benchmark --workspace=backend && npm run check:boundary",
     "check": "npm run check --workspace=frontend && npm run test --workspace=backend && npm run build --workspace=backend && npm run check:boundary",
     "preview": "npm run preview --workspace=frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }

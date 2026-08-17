@@ -31,37 +31,84 @@ backend/
 
 ---
 
-## Getting Started
+## Getting Started & Makefile Automation
 
-### 1. Install Dependencies
-From the repository root or within `backend/`:
+All backend operations can be executed directly from the monorepo root via `make` or inside `backend/`:
+
+### 1. Environment & Setup
 ```bash
+# Initialize backend/.env from .env.example
+make backend-env
+
+# Install all monorepo dependencies
 make install
+```
+
+### 2. Development Server
+```bash
+# Start BOTH Frontend (:3000) and Backend (:4000) concurrently
+make dev
+
+# Start Backend API server only on port 4000 (with hot-reload and port-freeing)
+make backend-dev
 # or
-cd backend && npm install
-```
-
-### 2. Environment Variables
-Copy `.env.example` to `.env` and fill in secrets:
-```bash
-cp .env.example .env
-```
-
-### 3. Run Backend in Development Mode
-```bash
 make dev-backend
-# or
-cd backend && npm run dev
 ```
 
-### 4. Run Test Suites
+### 3. Testing & Benchmarking
 ```bash
+# Run all backend Vitest tests
 make backend-test
-# or
-cd backend && npm test
+
+# Run specific backend test suites
+make backend-test-unit         # Escrow, monetization, KYC, lifecycle
+make backend-test-integration  # REST API HTTP routes & controllers
+make backend-test-rls          # Supabase Row Level Security policies
+make backend-test-security     # Boundary checks and secret isolation
+make backend-test-watch        # Interactive Vitest watch mode
+
+# Run computation & latency SLA benchmarks (<100µs SLA)
+make backend-benchmark
 ```
 
-### 5. Validate Boundary Integrity
+### 4. Code Quality & Compilation
 ```bash
-make check-boundary
+# Run TypeScript type checks (tsc --noEmit)
+make backend-lint
+
+# Build backend for production (tsc && tsc-alias)
+make backend-build
+
+# Clean backend build artifacts (dist/)
+make backend-clean
+
+# Full backend CI pipeline (lint + test + build + benchmark + boundary)
+make backend-check
+```
+
+### 5. Database & Supabase Operations
+```bash
+# Validate and execute SQL migrations
+make backend-db-migrate
+
+# Seed database with canonical dataset
+make backend-db-seed
+
+# Generate TypeScript types from DB schema
+make backend-db-types
+```
+
+### 6. Docker Containerization
+```bash
+# Build production Docker image (shongre-backend:latest)
+make backend-docker-build
+
+# Run backend container locally
+make backend-docker-run
+```
+
+### 7. Information & Status
+```bash
+# Display backend status, endpoints and configuration
+make backend-info
 ```

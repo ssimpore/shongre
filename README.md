@@ -34,38 +34,25 @@ Every frontend-specific source and configuration file lives under the `/frontend
 ```text
 shongre/
 ├── frontend/                     # Self-contained frontend application
+│   ├── .env.example              # Frontend environment template (PORT=3000, VITE_*)
 │   ├── bin/                      # CLI automation and CI checks (shongre.js)
 │   ├── public/                   # Static assets
-│   ├── src/
-│   │   ├── app/                  # Application composition, router (AppRouter), layouts, providers
-│   │   ├── components/           # Cross-domain shared components (ListingCard, PriceDisplay...)
-│   │   ├── configuration/        # Plans, visibility boost options, and market configurations
-│   │   ├── design-system/        # Source of visual truth: tokens and UI primitives
-│   │   ├── domains/              # Pure business rules, canonical state machines and resolvers
-│   │   │   ├── fulfillment/      # Delivery methods, carrier quotes & handover resolvers
-│   │   │   ├── listing/          # Listing display attributes & condition resolvers
-│   │   │   ├── market/           # Multi-market engine (France canonical, BE/CH/LU/DE/ES overrides)
-│   │   │   ├── publication/      # Dynamic category attributes schema & form engine
-│   │   │   ├── taxonomy/         # Canonical taxonomy tree, attributes & condition schemes
-│   │   │   ├── transaction/      # Escrow calculation, verification PIN & dispute engine
-│   │   │   └── user/             # SIRET verification, seller capabilities & role helpers
-│   │   ├── features/             # User-facing capability modules (search, publish, auth, admin...)
-│   │   ├── mocks/                # Deterministic demo fixtures (users, listings, messages...)
-│   │   ├── repositories/         # Data-access contracts (IListingRepository, IUserRepository...)
-│   │   ├── security/             # 13-role RBAC matrix, audit logger & route guards
-│   │   ├── services/             # Storage service & Gemini AI listing assistant
-│   │   ├── types/                # Canonical TypeScript declarations & domain models
-│   │   ├── utilities/            # Formatters, currency & date helpers
-│   │   ├── index.css             # Tailwind v4 theme & CSS design tokens
-│   │   └── main.tsx              # Application bootstrap
+│   ├── src/                      # Frontend source code (pages, components, design system)
 │   ├── index.html                # HTML entry point
 │   ├── package.json              # Dependencies and scripts
 │   ├── tsconfig.json             # TypeScript configuration
 │   └── vite.config.ts            # Vite bundler configuration
-├── Makefile                      # Root convenience command automation
+├── backend/                      # Self-contained backend application
+│   ├── .env.example              # Backend environment template (PORT=4000, Supabase, Stripe)
+│   ├── src/                      # Backend API, domain modules, and infrastructure
+│   ├── supabase/                 # Supabase migrations, edge functions, seed
+│   ├── scripts/                  # Migrations, type generators, port freeing, boundary scan
+│   ├── tests/                    # Vitest test suites (unit, integration, rls, security)
+│   └── package.json              # Backend dependencies and scripts
+├── Makefile                      # Monorepo unified command automation
 ├── README.md                     # Human-facing documentation and architecture guide
-├── AGENTS.md                     # AI agent operational contract and rules
-└── .gitignore                    # Root ignore rules
+├── AGENTS.md                     # 150-rule AI agent operational engineering contract
+└── .gitignore                    # Monorepo git ignore rules
 ```
 
 ---
@@ -79,48 +66,55 @@ shongre/
 
 ### Installation & Development
 
-#### Option A: Using the Root `Makefile` (Recommended)
-
+#### Quick Start: Run Everything
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/shongre.git
 cd shongre
 
-# Install dependencies
+# Install dependencies across monorepo
 make install
 
-# Start local development server (defaults to port 3000)
+# Start BOTH Frontend (:3000) and Backend (:4000) concurrently
 make dev
 ```
 
-#### Option B: Directly inside `/frontend`
-
+#### Targeted Development
 ```bash
-cd shongre/frontend
-npm install
-npm run dev
+# Start Frontend dev server only (:3000)
+make frontend-dev
+
+# Start Backend API server only (:4000)
+make backend-dev
 ```
 
-The application will be accessible at `http://localhost:3000`.
+The frontend application will be accessible at `http://localhost:3000` and the backend API at `http://localhost:4000`.
 
 ---
 
-## 5. Available Commands
+## 5. Unified Command Matrix
 
-| Command (Root Makefile) | Command (`frontend/`) | Description |
-| :--- | :--- | :--- |
-| `make dev` | `npm run dev` | Starts Vite development server on port 3000 (auto-frees busy ports). |
-| `make test` | `npm test` | Executes Vitest unit test suite (Escrow, RBAC, AI, Market, Taxonomy). |
-| `make test-watch` | `npx vitest` | Runs Vitest in interactive watch mode. |
-| `make lint` | `npm run lint` | Runs TypeScript compiler type-check (`tsc --noEmit`). |
-| `make build` | `npm run build` | Compiles optimized production bundle with chunk splitting. |
-| `make preview` | `npm run preview` | Locally previews the production build. |
-| `make check` | `npm run check` | Executes full CI quality pipeline (**lint** $\to$ **test** $\to$ **build**). |
-| `make clean` | `npm run clean` | Removes `dist/` build artifacts and cache. |
-| `make ai-test` | `node bin/shongre.js ai-test` | Tests Gemini AI assistant and anti-fraud heuristic validation. |
-| `make info` | `node bin/shongre.js info` | Displays platform environment, versions, and configuration status. |
-| `make free-port` | `node bin/shongre.js free-port`| Terminates lingering processes occupying the configured port. |
-| `make cli` | `node bin/shongre.js help` | Displays the interactive Shongre Node.js CLI manual. |
+All development tasks can be run directly via `make` from the monorepo root:
+
+| Domain | Both (Frontend + Backend) | Frontend Only | Backend Only | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Dev Server** | `make dev` | `make frontend-dev` | `make backend-dev` | Starts dev server(s) with automatic port clearance. |
+| **Port Cleanup** | `make free-port` | `make frontend-free-port` | `make backend-free-port` | Terminates processes on ports 3000/4000. |
+| **Environment** | `make env` | `make frontend-env` | `make backend-env` | Initializes `.env` files from templates. |
+| **Testing** | `make test` | `make frontend-test` | `make backend-test` | Executes Vitest test suites. |
+| **Test Watch** | — | `make frontend-test-watch` | `make backend-test-watch` | Runs Vitest in interactive watch mode. |
+| **Granular Tests**| — | — | `make backend-test-unit`<br>`make backend-test-integration`<br>`make backend-test-rls`<br>`make backend-test-security` | Targeted test execution. |
+| **Benchmarks** | — | — | `make backend-benchmark` | Validates computation & latency SLA (<100µs). |
+| **Type Check** | `make lint` | `make frontend-lint` | `make backend-lint` | TypeScript compiler type-check (`tsc --noEmit`). |
+| **CI Quality** | `make check` | `make frontend-check` | `make backend-check` | Full quality pipeline (lint + test + build). |
+| **Production** | `make build` | `make frontend-build` | `make backend-build` | Compiles production builds. |
+| **Preview** | — | `make preview` | — | Locally previews frontend production build. |
+| **Clean** | `make clean` | `make frontend-clean` | `make backend-clean` | Removes `dist/` build artifacts. |
+| **Database** | — | — | `make db-migrate`<br>`make db-seed`<br>`make db-types` | Supabase migrations, seed and types. |
+| **Docker** | — | — | `make backend-docker-build`<br>`make backend-docker-run` | Production container build and run. |
+| **Diagnostics** | `make info` | `make frontend-info` | `make backend-info` | Environment information and status. |
+| **AI Audit** | `make ai-test` | `make ai-test` | — | Runs Gemini AI & anti-fraud tests. |
+| **CLI Help** | `make help` | `make cli` | — | Displays interactive CLI & make help manuals. |
 
 ---
 

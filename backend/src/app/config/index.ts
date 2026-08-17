@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 import { resolve } from 'path';
 
-// Load .env if present
+// Load .env from backend directory, root directory, or cwd
 dotenv.config({ path: resolve(process.cwd(), '.env') });
+dotenv.config({ path: resolve(process.cwd(), 'backend/.env') });
+dotenv.config({ path: resolve(process.cwd(), '../.env') });
 
 export interface AppConfig {
   nodeEnv: string;
@@ -20,7 +22,7 @@ export interface AppConfig {
 
 export const config: AppConfig = {
   nodeEnv: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT || '4000', 10),
+  port: parseInt(process.env.BACKEND_PORT || process.env.PORT || '4000', 10),
   apiPrefix: process.env.API_PREFIX || '/api/v1',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   supabaseUrl: process.env.SUPABASE_URL || 'http://127.0.0.1:54321',

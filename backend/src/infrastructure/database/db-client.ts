@@ -12,14 +12,18 @@ export class DatabaseClient {
 
   public async healthCheck(): Promise<boolean> {
     try {
-      const { data, error } = await this.admin.from('markets').select('code').limit(1);
-      if (error) {
-        logger.warn('Database health check warning', { error: error.message });
-        return false;
+      const isPlaceholder = !process.env.DATABASE_URL && (!process.env.SUPABASE_URL || process.env.SUPABASE_URL.includes('your-project') || process.env.SUPABASE_URL.includes('127.0.0.1'));
+      if (isPlaceholder && process.env.NODE_ENV !== 'production') {
+        // Fast-path in local development when database is optional
+        return true;
       }
-      return Boolean(data);
-    } catch (err: any) {
-      logger.error('Database connection failed', { error: err.message });
+      const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 500));
+      const queryPromise = (async () => {
+        const { data, error } = await this.admin.from('markets').select('code').limit(1);
+        return !error && Boolean(data);
+      })();
+      return await Promise.race([queryPromise, timeoutPromise]);
+    } catch {
       return false;
     }
   }

@@ -56,12 +56,22 @@ frontend/
 
 ---
 
-## 3. Data Mode Configuration
+## 3. Environment & Data Mode Configuration
 
-The application runtime mode is configured centrally in `src/api/client/api-client.config.ts`:
+Create `frontend/.env` from template:
+```bash
+cp frontend/.env.example frontend/.env
+# or via make from monorepo root:
+make frontend-env
+```
+
+The application runtime mode is configured centrally in `src/api/client/api-client.config.ts` and `frontend/.env`:
 
 ```env
-# Available modes: 'demo' (default) | 'api'
+# Server Port
+PORT=3000
+
+# Available data modes: 'demo' (default) | 'api'
 VITE_DATA_MODE=demo
 VITE_API_URL=https://api.shongre.com/v1
 ```
@@ -69,7 +79,7 @@ VITE_API_URL=https://api.shongre.com/v1
 ### Switching to the Future Backend
 
 When the real backend is ready:
-1. Set `VITE_DATA_MODE=api` in `.env`.
+1. Set `VITE_DATA_MODE=api` in `frontend/.env`.
 2. Configure `VITE_API_URL`.
 3. The `serviceRegistry` will automatically route calls through `src/api/adapters/http/` without modifying any UI component or page.
 

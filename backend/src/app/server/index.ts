@@ -4,6 +4,217 @@ import { bootstrapApp } from '../bootstrap/index.js';
 import { apiV1Router } from '../../api/v1/router.js';
 import { logger } from '../../infrastructure/logging/logger.js';
 
+function renderBackendHomePage(port: number, prefix: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shongre Backend API</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --card-hover: #1f2937;
+      --border: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --primary: #38bdf8;
+      --success: #34d399;
+      --success-glow: rgba(52, 211, 153, 0.15);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2.5rem 1rem;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 760px;
+      width: 100%;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #090d16;
+      font-size: 1.25rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    .badge {
+      background: var(--success-glow);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+    }
+    .section-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin: 1.5rem 0 0.75rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .link-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .link-item:hover {
+      background: var(--card-hover);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .link-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.2rem;
+    }
+    .link-path {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: background 0.15s;
+    }
+    .cta-btn:hover {
+      background: #0369a1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">S</div>
+        <div>
+          <h1>Shongre Backend API</h1>
+          <p class="subtitle">Multi-Country Classifieds Marketplace & Escrow Platform</p>
+        </div>
+      </div>
+      <div class="badge">
+        <span class="dot"></span> Online (Port ${port})
+      </div>
+    </div>
+
+    <div class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+      <div>
+        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">Frontend Web Application</div>
+        <div style="color: var(--muted); font-size: 0.875rem;">Access the marketplace UI, search, publication wizard & workspaces.</div>
+      </div>
+      <a href="http://localhost:3000" class="cta-btn" target="_blank" rel="noreferrer">
+        Open Frontend (Port 3000) ➜
+      </a>
+    </div>
+
+    <div class="section-title">Core API Endpoints</div>
+    <div class="grid">
+      <a class="link-item" href="/health" target="_blank">
+        <span class="link-name">Health Check</span>
+        <span class="link-path">GET /health</span>
+      </a>
+      <a class="link-item" href="${prefix}/taxonomy/root" target="_blank">
+        <span class="link-name">Taxonomy Tree</span>
+        <span class="link-path">GET ${prefix}/taxonomy/root</span>
+      </a>
+      <a class="link-item" href="${prefix}/listings" target="_blank">
+        <span class="link-name">Listings Feed</span>
+        <span class="link-path">GET ${prefix}/listings</span>
+      </a>
+      <a class="link-item" href="${prefix}/markets" target="_blank">
+        <span class="link-name">Supported Markets</span>
+        <span class="link-path">GET ${prefix}/markets</span>
+      </a>
+      <a class="link-item" href="${prefix}/promotions/pro-plans" target="_blank">
+        <span class="link-name">Pro Subscription Plans</span>
+        <span class="link-path">GET ${prefix}/promotions/pro-plans</span>
+      </a>
+      <a class="link-item" href="${prefix}/admin/stats" target="_blank">
+        <span class="link-name">Admin Platform Stats</span>
+        <span class="link-path">GET ${prefix}/admin/stats</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export function createHttpServer() {
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     // Set CORS headers
@@ -18,8 +229,30 @@ export function createHttpServer() {
       return;
     }
 
-    // Health check root
-    if (req.url === '/health' || req.url === '/') {
+    const acceptHeader = req.headers.accept || '';
+
+    // Backend Home Page (HTML in browser, JSON otherwise)
+    if (req.url === '/') {
+      if (acceptHeader.includes('text/html')) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(renderBackendHomePage(config.port, config.apiPrefix));
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        status: 'ok',
+        service: 'shongre-backend',
+        version: '1.0.0',
+        port: config.port,
+        home: `http://localhost:${config.port}/`,
+        api: `http://localhost:${config.port}${config.apiPrefix}`,
+        health: `http://localhost:${config.port}/health`
+      }));
+      return;
+    }
+
+    // Health check endpoint
+    if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'ok', service: 'shongre-backend', version: '1.0.0' }));
       return;
@@ -37,8 +270,10 @@ export async function startServer() {
   const server = createHttpServer();
 
   server.listen(config.port, () => {
-    logger.info(`⚡ Shongre Backend API running on http://localhost:${config.port}${config.apiPrefix}`);
-    logger.info(`⚡ Health check available at http://localhost:${config.port}/health`);
+    console.log(`\n  \x1b[32m\x1b[1mSHONGRE BACKEND v1.0.0\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36mhttp://localhost:${config.port}/\x1b[0m`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mAPI:\x1b[0m     \x1b[36mhttp://localhost:${config.port}${config.apiPrefix}\x1b[0m`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mHealth:\x1b[0m  \x1b[36mhttp://localhost:${config.port}/health\x1b[0m\n`);
   });
 
   return server;

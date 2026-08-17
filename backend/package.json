@@ -5,7 +5,9 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
+    "predev": "node scripts/maintenance/free-port.js",
     "dev": "tsx watch src/app/server/index.ts",
+    "free-port": "node scripts/maintenance/free-port.js",
     "build": "tsc && tsc-alias",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
@@ -14,6 +16,8 @@
     "test:integration": "vitest run tests/integration",
     "test:rls": "vitest run tests/rls",
     "test:security": "vitest run tests/security",
+    "test:watch": "vitest",
+    "benchmark": "tsx scripts/benchmark/benchmark.ts",
     "db:migrate": "tsx scripts/database/migrate.ts",
     "db:seed": "tsx scripts/seed/seed.ts",
     "db:types": "tsx scripts/generate-types/generate-types.ts",
