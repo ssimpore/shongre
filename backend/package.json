@@ -13,6 +13,7 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
+    "test:contracts": "vitest run tests/contracts",
     "test:integration": "vitest run tests/integration",
     "test:rls": "vitest run tests/rls",
     "test:security": "vitest run tests/security",

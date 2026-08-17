@@ -1,33 +1,20 @@
-import { stripeIntegration } from '../../integrations/stripe/stripe-integration.js';
+import { IPaymentProvider, PaymentIntentResult, providers } from '../../integrations/providers/index.js';
 
-export interface PaymentIntentResult {
-  clientSecret: string;
-  status: 'succeeded' | 'requires_action' | 'pending' | 'failed';
-  amount: number;
-  currency: string;
-}
+export type { PaymentIntentResult };
 
 export class PaymentsService {
+  constructor(private paymentProvider: IPaymentProvider = providers.payment) {}
+
   async createPaymentIntent(amount: number, currency = 'EUR', metadata?: Record<string, string>): Promise<PaymentIntentResult> {
-    const res = await stripeIntegration.initiateEscrowHold('order_temp', amount, currency);
-    return {
-      clientSecret: res.clientSecret,
-      status: res.status,
-      amount: res.amount,
-      currency: res.currency,
-    };
+    return this.paymentProvider.createPaymentIntent(amount, currency, metadata);
   }
 
   async requestSellerPayout(sellerId: string, amount: number, iban: string): Promise<{ payoutId: string; status: 'completed' | 'processing' }> {
-    return stripeIntegration.payoutSeller(sellerId, amount, iban);
+    return this.paymentProvider.requestPayout(sellerId, amount, iban);
   }
 
   async getSellerBalance(sellerId: string): Promise<{ available: number; pending: number; currency: string }> {
-    return {
-      available: 480.0,
-      pending: 250.0,
-      currency: 'EUR',
-    };
+    return this.paymentProvider.getBalance(sellerId);
   }
 }
 

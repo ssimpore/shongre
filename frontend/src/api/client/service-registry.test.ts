@@ -1,26 +1,77 @@
 import { describe, it, expect } from 'vitest';
 import { createServiceRegistry, services } from './service-registry.js';
 import { isDemoMode } from './api-client.config.js';
+import {
+  HttpListingsService,
+  HttpSearchService,
+  HttpAuthService,
+  HttpMarketsService,
+  HttpTaxonomyService,
+  HttpMessagingService,
+  HttpNotificationsService,
+  HttpOrdersService,
+  HttpPaymentsService,
+  HttpPromotionsService,
+  HttpVerificationService,
+  HttpWorkspaceService,
+  HttpAdminService,
+  HttpReviewsService,
+} from '../adapters/http/index.js';
+import {
+  DemoListingsService,
+  DemoSearchService,
+  DemoAuthService,
+  DemoMarketsService,
+  DemoTaxonomyService,
+  DemoMessagingService,
+  DemoNotificationsService,
+  DemoOrdersService,
+  DemoPaymentsService,
+  DemoPromotionsService,
+  DemoVerificationService,
+  DemoWorkspaceService,
+  DemoAdminService,
+  DemoReviewsService,
+} from '../adapters/demo/index.js';
 
 describe('Service Registry & API Adapter Boundary', () => {
   it('instantiates the service registry in demo mode by default', () => {
     expect(isDemoMode()).toBe(true);
-    const registry = createServiceRegistry();
+    const registry = createServiceRegistry('demo');
     expect(registry).toBeDefined();
-    expect(registry.listings).toBeDefined();
-    expect(registry.search).toBeDefined();
-    expect(registry.auth).toBeDefined();
-    expect(registry.markets).toBeDefined();
-    expect(registry.taxonomy).toBeDefined();
-    expect(registry.messaging).toBeDefined();
-    expect(registry.notifications).toBeDefined();
-    expect(registry.orders).toBeDefined();
-    expect(registry.payments).toBeDefined();
-    expect(registry.promotions).toBeDefined();
-    expect(registry.verification).toBeDefined();
-    expect(registry.workspace).toBeDefined();
-    expect(registry.admin).toBeDefined();
-    expect(registry.reviews).toBeDefined();
+    expect(registry.listings instanceof DemoListingsService).toBe(true);
+    expect(registry.search instanceof DemoSearchService).toBe(true);
+    expect(registry.auth instanceof DemoAuthService).toBe(true);
+    expect(registry.markets instanceof DemoMarketsService).toBe(true);
+    expect(registry.taxonomy instanceof DemoTaxonomyService).toBe(true);
+    expect(registry.messaging instanceof DemoMessagingService).toBe(true);
+    expect(registry.notifications instanceof DemoNotificationsService).toBe(true);
+    expect(registry.orders instanceof DemoOrdersService).toBe(true);
+    expect(registry.payments instanceof DemoPaymentsService).toBe(true);
+    expect(registry.promotions instanceof DemoPromotionsService).toBe(true);
+    expect(registry.verification instanceof DemoVerificationService).toBe(true);
+    expect(registry.workspace instanceof DemoWorkspaceService).toBe(true);
+    expect(registry.admin instanceof DemoAdminService).toBe(true);
+    expect(registry.reviews instanceof DemoReviewsService).toBe(true);
+  });
+
+  it('instantiates the service registry in api mode when configured', () => {
+    const apiRegistry = createServiceRegistry('api');
+    expect(apiRegistry).toBeDefined();
+    expect(apiRegistry.listings instanceof HttpListingsService).toBe(true);
+    expect(apiRegistry.search instanceof HttpSearchService).toBe(true);
+    expect(apiRegistry.auth instanceof HttpAuthService).toBe(true);
+    expect(apiRegistry.markets instanceof HttpMarketsService).toBe(true);
+    expect(apiRegistry.taxonomy instanceof HttpTaxonomyService).toBe(true);
+    expect(apiRegistry.messaging instanceof HttpMessagingService).toBe(true);
+    expect(apiRegistry.notifications instanceof HttpNotificationsService).toBe(true);
+    expect(apiRegistry.orders instanceof HttpOrdersService).toBe(true);
+    expect(apiRegistry.payments instanceof HttpPaymentsService).toBe(true);
+    expect(apiRegistry.promotions instanceof HttpPromotionsService).toBe(true);
+    expect(apiRegistry.verification instanceof HttpVerificationService).toBe(true);
+    expect(apiRegistry.workspace instanceof HttpWorkspaceService).toBe(true);
+    expect(apiRegistry.admin instanceof HttpAdminService).toBe(true);
+    expect(apiRegistry.reviews instanceof HttpReviewsService).toBe(true);
   });
 
   it('exposes asynchronous Promise-based APIs on all domain services in demo mode', async () => {

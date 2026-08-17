@@ -1,0 +1,267 @@
+import { UserProfile, UserRole } from '../../../shared/types/index.js';
+import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
+import { logger } from '../../logging/logger.js';
+
+export interface IUserRepository {
+  findById(id: string): Promise<UserProfile | null>;
+  findByEmail(email: string): Promise<UserProfile | null>;
+  save(user: UserProfile): Promise<UserProfile>;
+  update(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
+  getAll(): Promise<UserProfile[]>;
+}
+
+export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
+  'thomas.laurent@example.fr': {
+    id: 'user_thomas',
+    slug: 'thomas-laurent',
+    email: 'thomas.laurent@example.fr',
+    name: 'Thomas Laurent',
+    accountType: 'individual',
+    primaryRole: 'individual_buyer',
+    role: 'individual_buyer',
+    status: 'active',
+    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+    city: 'Paris',
+    postalCode: '75011',
+    department: '75 - Paris',
+    region: 'Île-de-France',
+    country: 'FR',
+    isVerified: true,
+    isIdentityVerified: true,
+    isPhoneVerified: true,
+    isEmailVerified: true,
+    rating: 4.9,
+    reviewCount: 14,
+    responseRatePercent: 98,
+    responseTimeText: "en moins d'une heure",
+  },
+  'camille.martin@example.fr': {
+    id: 'user_camille',
+    slug: 'camille-martin',
+    email: 'camille.martin@example.fr',
+    name: 'Camille Martin',
+    accountType: 'individual',
+    primaryRole: 'individual_seller',
+    role: 'individual_seller',
+    sellerType: 'individual',
+    status: 'active',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+    city: 'Lyon',
+    postalCode: '69002',
+    department: '69 - Rhône',
+    region: 'Auvergne-Rhône-Alpes',
+    country: 'FR',
+    isVerified: true,
+    isIdentityVerified: true,
+    isPhoneVerified: true,
+    isEmailVerified: true,
+    rating: 4.95,
+    reviewCount: 42,
+    responseRatePercent: 100,
+    responseTimeText: 'en quelques minutes',
+  },
+  'admin@shongre.com': {
+    id: 'user_admin',
+    slug: 'admin-shongre',
+    email: 'admin@shongre.com',
+    name: 'Administrateur Shongre',
+    accountType: 'internal',
+    primaryRole: 'admin',
+    role: 'admin',
+    status: 'active',
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80',
+    city: 'Paris',
+    postalCode: '75008',
+    department: '75 - Paris',
+    region: 'Île-de-France',
+    country: 'FR',
+    isVerified: true,
+    isIdentityVerified: true,
+    isPhoneVerified: true,
+    isEmailVerified: true,
+    rating: 5.0,
+    reviewCount: 0,
+    responseRatePercent: 100,
+  },
+};
+
+export class DemoUserRepository implements IUserRepository {
+  private users: Map<string, UserProfile> = new Map();
+
+  constructor(initialUsers: Record<string, UserProfile> = CANONICAL_DEMO_USERS) {
+    this.reset(initialUsers);
+  }
+
+  reset(initialUsers: Record<string, UserProfile> = CANONICAL_DEMO_USERS) {
+    this.users.clear();
+    Object.values(initialUsers).forEach((u) => this.users.set(u.id, { ...u }));
+  }
+
+  async findById(id: string): Promise<UserProfile | null> {
+    const user = this.users.get(id);
+    return user ? { ...user } : null;
+  }
+
+  async findByEmail(email: string): Promise<UserProfile | null> {
+    const lower = (email || '').toLowerCase().trim();
+    for (const u of this.users.values()) {
+      if (u.email.toLowerCase() === lower) {
+        return { ...u };
+      }
+    }
+    return null;
+  }
+
+  async save(user: UserProfile): Promise<UserProfile> {
+    this.users.set(user.id, { ...user });
+    return { ...user };
+  }
+
+  async update(id: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+    const existing = this.users.get(id);
+    if (!existing) {
+      throw new Error(`User with id ${id} not found in Demo repository`);
+    }
+    const updated = { ...existing, ...updates };
+    this.users.set(id, updated);
+    return { ...updated };
+  }
+
+  async getAll(): Promise<UserProfile[]> {
+    return Array.from(this.users.values()).map((u) => ({ ...u }));
+  }
+}
+
+export class PostgresUserRepository implements IUserRepository {
+  private mapRowToUserProfile(row: any): UserProfile {
+    return {
+      id: row.id,
+      slug: row.slug,
+      email: row.email,
+      name: row.name,
+      accountType: row.account_type,
+      primaryRole: row.primary_role,
+      role: (row.primary_role || 'individual_buyer') as UserRole,
+      sellerType: row.account_type === 'professional' ? 'pro' : 'individual',
+      status: row.status,
+      avatarUrl: row.avatar_url || undefined,
+      phone: row.phone || undefined,
+      city: row.city || undefined,
+      postalCode: row.postal_code || undefined,
+      department: row.department || undefined,
+      region: row.region || undefined,
+      country: row.country || 'FR',
+      bio: row.bio || undefined,
+      isVerified: Boolean(row.is_verified),
+      isIdentityVerified: Boolean(row.is_identity_verified),
+      isPhoneVerified: Boolean(row.is_phone_verified),
+      isEmailVerified: Boolean(row.is_email_verified),
+      isBusinessVerified: Boolean(row.is_business_verified),
+      rating: Number(row.rating || 5.0),
+      reviewCount: Number(row.review_count || 0),
+      responseRatePercent: Number(row.response_rate_percent || 100),
+      responseTimeText: row.response_time_text || undefined,
+      createdAt: row.created_at,
+    };
+  }
+
+  async findById(id: string): Promise<UserProfile | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+      if (error || !data) return null;
+      return this.mapRowToUserProfile(data);
+    } catch (err: any) {
+      logger.error(`PostgresUserRepository.findById error: ${err.message}`);
+      return null;
+    }
+  }
+
+  async findByEmail(email: string): Promise<UserProfile | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase.from('profiles').select('*').eq('email', email.toLowerCase().trim()).single();
+      if (error || !data) return null;
+      return this.mapRowToUserProfile(data);
+    } catch (err: any) {
+      logger.error(`PostgresUserRepository.findByEmail error: ${err.message}`);
+      return null;
+    }
+  }
+
+  async save(user: UserProfile): Promise<UserProfile> {
+    const supabase = getSupabaseAdminClient();
+    const payload = {
+      id: user.id.includes('-') ? user.id : undefined,
+      slug: user.slug,
+      email: user.email.toLowerCase(),
+      name: user.name,
+      account_type: user.accountType,
+      primary_role: user.primaryRole || user.role,
+      status: user.status,
+      avatar_url: user.avatarUrl || null,
+      phone: user.phone || null,
+      city: user.city || null,
+      postal_code: user.postalCode || null,
+      department: user.department || null,
+      region: user.region || null,
+      country: user.country,
+      bio: user.bio || null,
+      is_verified: user.isVerified,
+      is_identity_verified: user.isIdentityVerified,
+      is_phone_verified: user.isPhoneVerified,
+      is_email_verified: user.isEmailVerified,
+      is_business_verified: Boolean(user.isBusinessVerified),
+      rating: user.rating,
+      review_count: user.reviewCount,
+      response_rate_percent: user.responseRatePercent,
+      response_time_text: user.responseTimeText || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await (supabase.from('profiles').upsert(payload as any).select().single() as any);
+    if (error || !data) {
+      throw new Error(`Failed to save user to PostgreSQL: ${error?.message}`);
+    }
+    return this.mapRowToUserProfile(data);
+  }
+
+  async update(id: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+    const supabase = getSupabaseAdminClient();
+    const payload: any = { updated_at: new Date().toISOString() };
+    if (updates.name !== undefined) payload.name = updates.name;
+    if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
+    if (updates.phone !== undefined) payload.phone = updates.phone;
+    if (updates.city !== undefined) payload.city = updates.city;
+    if (updates.postalCode !== undefined) payload.postal_code = updates.postalCode;
+    if (updates.department !== undefined) payload.department = updates.department;
+    if (updates.region !== undefined) payload.region = updates.region;
+    if (updates.country !== undefined) payload.country = updates.country;
+    if (updates.bio !== undefined) payload.bio = updates.bio;
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.primaryRole !== undefined || updates.role !== undefined) payload.primary_role = updates.primaryRole || updates.role;
+    if (updates.isVerified !== undefined) payload.is_verified = updates.isVerified;
+    if (updates.isIdentityVerified !== undefined) payload.is_identity_verified = updates.isIdentityVerified;
+    if (updates.isPhoneVerified !== undefined) payload.is_phone_verified = updates.isPhoneVerified;
+    if (updates.isEmailVerified !== undefined) payload.is_email_verified = updates.isEmailVerified;
+    if (updates.isBusinessVerified !== undefined) payload.is_business_verified = updates.isBusinessVerified;
+
+    const { data, error } = await ((supabase.from('profiles' as any) as any).update(payload).eq('id', id).select().single() as any);
+    if (error || !data) {
+      throw new Error(`Failed to update user in PostgreSQL: ${error?.message}`);
+    }
+    return this.mapRowToUserProfile(data);
+  }
+
+  async getAll(): Promise<UserProfile[]> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+      if (error || !data) return [];
+      return data.map((r) => this.mapRowToUserProfile(r));
+    } catch (err: any) {
+      logger.error(`PostgresUserRepository.getAll error: ${err.message}`);
+      return [];
+    }
+  }
+}

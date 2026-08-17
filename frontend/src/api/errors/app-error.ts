@@ -9,6 +9,7 @@ export type AppErrorCode =
   | 'CONFLICT'
   | 'RATE_LIMITED'
   | 'NETWORK_ERROR'
+  | 'TIMEOUT'
   | 'PAYMENT_REQUIRED'
   | 'PAYMENT_FAILED'
   | 'LISTING_NOT_ELIGIBLE'
@@ -68,6 +69,8 @@ export function getFriendlyErrorMessage(error: unknown): string {
         return 'Votre compte vendeur fait l’objet d’une restriction temporaire.';
       case 'NETWORK_ERROR':
         return 'Erreur de communication réseau. Veuillez vérifier votre connexion.';
+      case 'TIMEOUT':
+        return 'Délai d’attente dépassé lors de la communication avec le serveur.';
       default:
         return error.message || 'Une erreur inattendue est survenue.';
     }

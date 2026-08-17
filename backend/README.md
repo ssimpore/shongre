@@ -9,11 +9,18 @@ This directory (`backend/`) contains 100% of the server-side code, database migr
 ```text
 backend/
 ├── src/
-│   ├── app/            # Application configuration, bootstrap lifecycle, and HTTP server
+│   ├── app/            # Application configuration (BACKEND_DATA_MODE), bootstrap, and HTTP server
 │   ├── api/v1/         # Versioned REST API route handlers
 │   ├── modules/        # Domain business logic (Listings, Escrow, KYC, Monetization, etc.)
-│   ├── infrastructure/ # Low-level clients (PostgreSQL, Supabase, Storage, Search, Logger)
-│   ├── integrations/   # External service adapters (Stripe, Gemini AI, SIRENE, KYC, Resend)
+│   ├── infrastructure/
+│   │   ├── database/   # Repository layer (I*, Demo*, Postgres*) and DB clients
+│   │   │   └── repositories/
+│   │   ├── logging/    # Structured logger
+│   │   ├── payments/   # Stripe adapter
+│   │   ├── search/     # PostgreSQL full-text search provider
+│   │   └── supabase/   # Supabase client singleton
+│   ├── integrations/   # External provider abstractions (Stripe, Gemini AI, SIRENE, KYC)
+│   │   └── providers/  # Provider interfaces and containers (payment, kyc, registry, ai)
 │   ├── shared/         # Common error classes, money calculations, RBAC and DTO types
 │   └── workers/        # Asynchronous job runners (Lifecycle cleanup, Notifications, AI screening)
 ├── supabase/
@@ -24,16 +31,31 @@ backend/
 │   ├── policies/       # Row Level Security documentation
 │   └── tests/          # SQL RLS tests
 ├── scripts/            # Database migration, seed, type generation, and boundary checks
-├── tests/              # Vitest test suites (Unit, Integration, RLS, Security)
+├── tests/              # Vitest test suites (Unit, Contracts, Integration, RLS, Security)
 ├── docs/               # Architecture, Database, API, and Security technical specifications
 └── generated/          # Database type declarations generated from schema
 ```
 
 ---
 
-## Getting Started & Makefile Automation
+## Central Data Mode & Provider Configuration
 
-All backend operations can be executed directly from the monorepo root via `make` or inside `backend/`:
+The backend supports switching between in-memory demo repositories and live PostgreSQL/Supabase database tables through `BACKEND_DATA_MODE`:
+
+```env
+# BACKEND_DATA_MODE: "demo" (default) | "database"
+BACKEND_DATA_MODE=demo
+
+# External Providers: "demo" | "stripe", "demo" | "live", "demo" | "siret", "demo" | "gemini"
+PAYMENT_PROVIDER=demo
+KYC_PROVIDER=demo
+BUSINESS_REGISTRY_PROVIDER=demo
+AI_PROVIDER=demo
+```
+
+---
+
+## Getting Started & Makefile Automation
 
 ### 1. Environment & Setup
 ```bash
@@ -49,16 +71,23 @@ make install
 # Start BOTH Frontend (:3000) and Backend (:4000) concurrently
 make dev
 
-# Start Backend API server only on port 4000 (with hot-reload and port-freeing)
+# Run Frontend in API mode against Backend in Demo mode
+make dev-api-demo
+
+# Run Frontend in API mode against Backend in PostgreSQL mode
+make dev-db
+
+# Start Backend API server only on port 4000
 make backend-dev
-# or
-make dev-backend
 ```
 
 ### 3. Testing & Benchmarking
 ```bash
 # Run all backend Vitest tests
 make backend-test
+
+# Run repository contract tests across Demo and PostgreSQL modes
+make backend-test-contracts
 
 # Run specific backend test suites
 make backend-test-unit         # Escrow, monetization, KYC, lifecycle
@@ -105,10 +134,4 @@ make backend-docker-build
 
 # Run backend container locally
 make backend-docker-run
-```
-
-### 7. Information & Status
-```bash
-# Display backend status, endpoints and configuration
-make backend-info
 ```

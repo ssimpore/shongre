@@ -1,28 +1,13 @@
 import { Listing, Transaction } from '../../shared/types/index.js';
+import { IWorkspaceRepository, repositories, UserWorkspaceSummary } from '../../infrastructure/database/repositories/index.js';
 
-export interface UserWorkspaceSummary {
-  activeListingsCount: number;
-  totalViewsCount: number;
-  totalFavoritesCount: number;
-  unreadMessagesCount: number;
-  pendingTransactionsCount: number;
-  totalEarningsAmount: number;
-  recentListings: Listing[];
-  recentPurchases: Transaction[];
-}
+export type { UserWorkspaceSummary };
 
 export class WorkspaceService {
+  constructor(private workspaceRepo: IWorkspaceRepository = repositories.workspace) {}
+
   async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
-    return {
-      activeListingsCount: 3,
-      totalViewsCount: 412,
-      totalFavoritesCount: 28,
-      unreadMessagesCount: 2,
-      pendingTransactionsCount: 1,
-      totalEarningsAmount: 1450.0,
-      recentListings: [],
-      recentPurchases: [],
-    };
+    return this.workspaceRepo.getUserWorkspaceSummary(userId);
   }
 
   async getProAnalytics(sellerId: string): Promise<{
@@ -31,12 +16,7 @@ export class WorkspaceService {
     conversionRate: number;
     topListings: Listing[];
   }> {
-    return {
-      monthlyRevenue: 3840.0,
-      monthlyViews: 12450,
-      conversionRate: 3.2,
-      topListings: [],
-    };
+    return this.workspaceRepo.getProAnalytics(sellerId);
   }
 }
 

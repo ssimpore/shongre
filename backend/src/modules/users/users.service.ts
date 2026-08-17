@@ -1,11 +1,12 @@
 import { UserProfile } from '../../shared/types/index.js';
-import { DEMO_PROFILES } from '../auth/auth.service.js';
 import { AppError } from '../../shared/errors/app-error.js';
+import { IUserRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 
 export class UsersService {
+  constructor(private userRepo: IUserRepository = repositories.users) {}
+
   async getUserById(id: string): Promise<UserProfile | null> {
-    const user = Object.values(DEMO_PROFILES).find((u) => u.id === id);
-    return user || null;
+    return this.userRepo.findById(id);
   }
 
   async updateUserProfile(id: string, updates: Partial<UserProfile>): Promise<UserProfile> {
@@ -13,7 +14,7 @@ export class UsersService {
     if (!existing) {
       throw new AppError({ code: 'NOT_FOUND', message: `User ${id} not found` });
     }
-    return { ...existing, ...updates };
+    return this.userRepo.update(id, updates);
   }
 }
 

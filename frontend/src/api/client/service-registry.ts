@@ -1,4 +1,4 @@
-import { apiClientConfig, isDemoMode } from './api-client.config.js';
+import { apiClientConfig, DataMode } from './api-client.config.js';
 import {
   demoListingsService,
   demoSearchService,
@@ -67,8 +67,8 @@ export interface ServiceRegistry {
   reviews: ReviewsServiceContract;
 }
 
-export function createServiceRegistry(): ServiceRegistry {
-  const useDemo = isDemoMode();
+export function createServiceRegistry(mode: DataMode = apiClientConfig.dataMode): ServiceRegistry {
+  const useDemo = mode === 'demo';
 
   return {
     listings: useDemo ? demoListingsService : httpListingsService,

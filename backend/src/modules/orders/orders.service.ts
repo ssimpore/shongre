@@ -1,7 +1,7 @@
 import { Transaction, DeliveryType } from '../../shared/types/index.js';
 import { calculateOrderTotal } from '../../shared/money/escrow.js';
 import { AppError } from '../../shared/errors/app-error.js';
-import { listingsService } from '../listings/listings.service.js';
+import { IOrderRepository, IListingRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { logger } from '../../infrastructure/logging/logger.js';
 
 export interface CreateDirectPurchaseInput {
@@ -27,37 +27,25 @@ export interface CreateReservationInput {
 }
 
 export class OrdersService {
+  constructor(
+    private orderRepo: IOrderRepository = repositories.orders,
+    private listingRepo: IListingRepository = repositories.listings
+  ) {}
+
   async getOrderById(orderId: string): Promise<Transaction | null> {
-    return {
-      id: orderId,
-      orderNumber: `CMD-${orderId.substring(0, 8).toUpperCase()}`,
-      transactionType: 'DIRECT_PURCHASE',
-      listingId: 'list_1',
-      buyerId: 'user_thomas',
-      sellerId: 'user_camille',
-      status: 'escrow_funded',
-      itemAmount: 250,
-      protectionFee: 10.7,
-      shippingFee: 8.5,
-      totalCharged: 269.2,
-      escrowSecuredAmount: 258.5,
-      deliveryMethod: 'relay_point',
-      paymentMethod: 'card',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    return this.orderRepo.findById(orderId);
   }
 
   async getPurchases(userId: string): Promise<Transaction[]> {
-    return [];
+    return this.orderRepo.getPurchases(userId);
   }
 
   async getSales(userId: string): Promise<Transaction[]> {
-    return [];
+    return this.orderRepo.getSales(userId);
   }
 
   async createDirectPurchase(input: CreateDirectPurchaseInput): Promise<Transaction> {
-    const listing = await listingsService.getListingById(input.listingId);
+    const listing = await this.listingRepo.findById(input.listingId);
     if (!listing) {
       throw new AppError({ code: 'NOT_FOUND', message: 'Annonce introuvable' });
     }
@@ -101,12 +89,13 @@ export class OrdersService {
       updatedAt: new Date().toISOString(),
     };
 
-    logger.info(`Direct Purchase created & Escrow funded: ${orderId} (Total: ${breakdown.totalCharged} EUR)`);
-    return transaction;
+    const saved = await this.orderRepo.create(transaction);
+    logger.info(`Direct Purchase created & Escrow funded: ${saved.id} (Total: ${breakdown.totalCharged} EUR)`);
+    return saved;
   }
 
   async createReservation(input: CreateReservationInput): Promise<Transaction> {
-    const listing = await listingsService.getListingById(input.listingId);
+    const listing = await this.listingRepo.findById(input.listingId);
     if (!listing) {
       throw new AppError({ code: 'NOT_FOUND', message: 'Annonce introuvable' });
     }
@@ -140,8 +129,9 @@ export class OrdersService {
       updatedAt: new Date().toISOString(),
     };
 
-    logger.info(`Reservation created: ${orderId} (Deposit Escrow: ${input.depositAmount} EUR, Remaining: ${input.remainingAmount} EUR)`);
-    return transaction;
+    const saved = await this.orderRepo.create(transaction);
+    logger.info(`Reservation created: ${saved.id} (Deposit Escrow: ${input.depositAmount} EUR, Remaining: ${input.remainingAmount} EUR)`);
+    return saved;
   }
 
   async confirmHandoverPIN(orderId: string, enteredPin: string): Promise<{ success: boolean; message: string }> {
@@ -152,6 +142,11 @@ export class OrdersService {
       });
     }
 
+    await this.orderRepo.update(orderId, {
+      isPinVerified: true,
+      status: 'completed',
+    });
+
     logger.info(`Handover PIN ${enteredPin} verified for order ${orderId}. Escrow funds released to seller.`);
     return {
       success: true,
@@ -160,49 +155,21 @@ export class OrdersService {
   }
 
   async confirmDeliveryReceived(orderId: string): Promise<Transaction> {
-    logger.info(`Delivery confirmed by buyer for order ${orderId}. Escrow released.`);
-    return {
-      id: orderId,
-      orderNumber: `CMD-${orderId.substring(0, 6).toUpperCase()}`,
-      transactionType: 'DIRECT_PURCHASE',
-      listingId: 'list_1',
-      buyerId: 'user_thomas',
-      sellerId: 'user_camille',
+    const updated = await this.orderRepo.update(orderId, {
       status: 'completed',
-      itemAmount: 150,
-      protectionFee: 6.7,
-      shippingFee: 0,
-      totalCharged: 156.7,
-      escrowSecuredAmount: 150,
-      deliveryMethod: 'relay_point',
-      paymentMethod: 'card',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    });
+    logger.info(`Delivery confirmed by buyer for order ${orderId}. Escrow released.`);
+    return updated;
   }
 
   async openDispute(orderId: string, reason: string, details: string): Promise<Transaction> {
-    logger.warn(`Dispute opened on order ${orderId}: ${reason}`);
-    return {
-      id: orderId,
-      orderNumber: `CMD-${orderId.substring(0, 6).toUpperCase()}`,
-      transactionType: 'DIRECT_PURCHASE',
-      listingId: 'list_1',
-      buyerId: 'user_thomas',
-      sellerId: 'user_camille',
+    const updated = await this.orderRepo.update(orderId, {
       status: 'disputed',
-      itemAmount: 150,
-      protectionFee: 6.7,
-      shippingFee: 0,
-      totalCharged: 156.7,
-      escrowSecuredAmount: 150,
-      deliveryMethod: 'relay_point',
-      paymentMethod: 'card',
       disputeReason: reason,
       disputeDetails: details,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    });
+    logger.warn(`Dispute opened on order ${orderId}: ${reason}`);
+    return updated;
   }
 }
 

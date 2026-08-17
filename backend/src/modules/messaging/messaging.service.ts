@@ -1,4 +1,5 @@
 import { Conversation, Message } from '../../shared/types/index.js';
+import { IMessagingRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { realtimeBroadcaster } from '../../infrastructure/realtime/realtime-broadcaster.js';
 
 export interface SendMessageInput {
@@ -10,12 +11,14 @@ export interface SendMessageInput {
 }
 
 export class MessagingService {
+  constructor(private messagingRepo: IMessagingRepository = repositories.messaging) {}
+
   async getUserConversations(userId: string): Promise<Conversation[]> {
-    return [];
+    return this.messagingRepo.getUserConversations(userId);
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {
-    return null;
+    return this.messagingRepo.getConversationById(id);
   }
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
@@ -31,8 +34,9 @@ export class MessagingService {
       createdAt: new Date().toISOString(),
     };
 
-    await realtimeBroadcaster.broadcastEvent(`conversation:${input.conversationId}`, 'new_message', message);
-    return message;
+    const saved = await this.messagingRepo.saveMessage(message);
+    await realtimeBroadcaster.broadcastEvent(`conversation:${input.conversationId}`, 'new_message', saved);
+    return saved;
   }
 
   async makeOffer(conversationId: string, senderId: string, senderName: string, amount: number): Promise<Message> {
@@ -60,9 +64,13 @@ export class MessagingService {
     });
   }
 
-  async markAsRead(conversationId: string, userId: string): Promise<void> {}
+  async markAsRead(conversationId: string, userId: string): Promise<void> {
+    return this.messagingRepo.markAsRead(conversationId, userId);
+  }
 
-  async blockUser(userId: string, targetUserId: string): Promise<void> {}
+  async blockUser(userId: string, targetUserId: string): Promise<void> {
+    return this.messagingRepo.blockUser(userId, targetUserId);
+  }
 }
 
 export const messagingService = new MessagingService();

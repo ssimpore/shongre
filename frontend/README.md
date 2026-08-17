@@ -1,13 +1,14 @@
 # Shongre Frontend — Architecture & Developer Guide
 
-> **Note**: The frontend is **intentionally not connected to `backend/` yet**.
-> It operates with high-fidelity, deterministic **Demo Adapters** backed by local storage and state machines, allowing 100% of user and admin flows to be executed, tested, and demonstrated standalone without external services.
+The Shongre frontend is a multi-market, multi-category marketplace interface supporting both individual (*Particuliers*) and professional sellers (*Professionnels*).
+
+It features a dual-mode service architecture that allows running either:
+1. **Standalone Demo Mode** (`VITE_DATA_MODE=demo`): Fully deterministic, in-memory local fixtures, no backend or database required.
+2. **Live HTTP API Mode** (`VITE_DATA_MODE=api`): Connects over HTTP REST to `backend/` (`http://localhost:4000/api/v1` or staging/production API).
 
 ---
 
-## 1. Architectural Overview
-
-The Shongre frontend is architected around a strict decoupled contract layer:
+## 1. Architectural Flow
 
 ```text
 Pages & Views (src/features/, src/app/)
@@ -20,12 +21,12 @@ Pages & Views (src/features/, src/app/)
                │
       ┌────────┴────────┐
       ▼                 ▼
-Demo Adapters     HTTP Adapters (Future)
+Demo Adapters     HTTP Adapters
 (src/api/adapters/demo/)   (src/api/adapters/http/)
       │                 │
       ▼                 ▼
-Local Repositories   Shongre Backend API
-& StorageService     & Supabase
+Deterministic Fixtures  Shongre Backend API
+& StorageService        & Supabase
 ```
 
 ---
@@ -36,9 +37,9 @@ Local Repositories   Shongre Backend API
 frontend/
 ├── src/
 │   ├── api/                      # Service contracts, demo/http adapters, error normalizer
-│   │   ├── contracts/            # TypeScript interfaces for all 20 marketplace domains
+│   │   ├── contracts/            # TypeScript interfaces for all marketplace domains
 │   │   ├── adapters/demo/        # Deterministic simulation adapters (Promise<T>)
-│   │   ├── adapters/http/        # Inactive REST adapters prepared for future backend
+│   │   ├── adapters/http/        # Complete HTTP client adapters targeting /api/v1/*
 │   │   ├── client/               # Service registry & DATA_MODE toggle
 │   │   └── errors/               # Normalized AppError and localized messages
 │   │
@@ -71,17 +72,17 @@ The application runtime mode is configured centrally in `src/api/client/api-clie
 # Server Port
 PORT=3000
 
-# Available data modes: 'demo' (default) | 'api'
+# Central Data Mode: "demo" (default) | "api"
 VITE_DATA_MODE=demo
-VITE_API_URL=https://api.shongre.com/v1
+
+# Backend API Endpoint (Used when VITE_DATA_MODE=api)
+VITE_API_URL=http://localhost:4000/api/v1
 ```
 
-### Switching to the Future Backend
+### Switching Modes
 
-When the real backend is ready:
-1. Set `VITE_DATA_MODE=api` in `frontend/.env`.
-2. Configure `VITE_API_URL`.
-3. The `serviceRegistry` will automatically route calls through `src/api/adapters/http/` without modifying any UI component or page.
+- **Demo Mode**: `VITE_DATA_MODE=demo` — runs entirely in-browser, no backend required.
+- **API Mode**: `VITE_DATA_MODE=api` — calls backend REST API over HTTP with request IDs and token transport.
 
 ---
 
@@ -99,13 +100,13 @@ npm run dev
 # Run TypeScript typecheck
 npm run lint
 
-# Run all unit tests
+# Run all Vitest tests
 npm test
 
 # Build production bundle
 npm run build
 
-# Run end-to-end check
+# Run end-to-end check (lint + test + build)
 npm run check
 ```
 
@@ -117,3 +118,4 @@ All contributions must pass the continuous verification pipeline:
 1. `npm run lint` (`tsc --noEmit` — 0 type errors).
 2. `npm test` (`vitest run` — 100% test suites passing).
 3. `npm run build` (`vite build` — clean production bundle).
+4. `make check-boundary` (0 server secrets leaked into frontend).

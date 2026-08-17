@@ -51,6 +51,10 @@ export const AccountOverviewPage: React.FC = () => {
   const toast = useToast();
   const navigate = useNavigate();
 
+  // A verified flag with no number on file is not a verified phone — showing the
+  // badge on its own contradicts the "Non renseigné" value rendered right below it.
+  const hasVerifiedPhone = isPhoneVerified && Boolean(currentUser?.phone);
+
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showMfaModal, setShowMfaModal] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
@@ -226,8 +230,8 @@ export const AccountOverviewPage: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
                   <Smartphone className="w-4 h-4" />
                 </div>
-                {isPhoneVerified ? (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                {hasVerifiedPhone ? (
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
                     <CheckCircle2 className="w-3 h-3" /> Vérifié SMS
                   </span>
                 ) : (
@@ -247,7 +251,7 @@ export const AccountOverviewPage: React.FC = () => {
                 onClick={() => setShowPhoneModal(true)}
                 className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
               >
-                {isPhoneVerified ? 'Modifier / Re-vérifier' : 'Vérifier par SMS (6 chiffres) →'}
+                {hasVerifiedPhone ? 'Modifier / Re-vérifier' : 'Vérifier par SMS (6 chiffres) →'}
               </button>
             </div>
           </div>

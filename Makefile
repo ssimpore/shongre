@@ -1,10 +1,11 @@
 .DEFAULT_GOAL := help
 .PHONY: help install dev dev-frontend frontend-dev dev-backend backend-dev \
+        dev-api-demo dev-db \
         free-port free-port-frontend frontend-free-port free-port-backend backend-free-port \
         env frontend-env backend-env \
         build build-frontend frontend-build build-backend backend-build preview \
         test test-frontend frontend-test test-backend backend-test test-watch frontend-test-watch backend-test-watch \
-        backend-test-unit backend-test-integration backend-test-rls backend-test-security \
+        backend-test-unit backend-test-contracts test-contracts backend-test-integration backend-test-rls backend-test-security \
         benchmark benchmark-backend backend-benchmark \
         lint lint-frontend frontend-lint lint-backend backend-lint \
         check check-frontend frontend-check check-backend backend-check check-boundary \
@@ -44,6 +45,8 @@ help:
 	@echo ""
 	@echo "$(MAGENTA)$(BOLD)🚀 Development & Servers:$(RESET)"
 	@printf "  $(GREEN)%-30s$(RESET) %s (Ports: $(YELLOW)%s$(RESET) & $(YELLOW)%s$(RESET))\n" "dev" "Start BOTH Frontend & Backend concurrently" "$(PORT)" "$(BACKEND_PORT)"
+	@printf "  $(GREEN)%-30s$(RESET) %s\n" "dev-api-demo" "Run Frontend in API mode against Backend in Demo mode"
+	@printf "  $(GREEN)%-30s$(RESET) %s\n" "dev-db" "Run Frontend in API mode against Backend in PostgreSQL mode"
 	@printf "  $(GREEN)%-30s$(RESET) %s (Port: $(YELLOW)%s$(RESET))\n" "frontend-dev (dev-frontend)" "Start Frontend Vite dev server only" "$(PORT)"
 	@printf "  $(GREEN)%-30s$(RESET) %s (Port: $(YELLOW)%s$(RESET))\n" "backend-dev (dev-backend)" "Start Backend HTTP API dev server only" "$(BACKEND_PORT)"
 	@printf "  $(GREEN)%-30s$(RESET) %s (Ports: $(YELLOW)%s$(RESET), $(YELLOW)%s$(RESET))\n" "free-port" "Free both Frontend and Backend ports" "$(PORT)" "$(BACKEND_PORT)"
@@ -56,6 +59,7 @@ help:
 	@printf "  $(GREEN)%-30s$(RESET) %s\n" "test" "Execute all unit & integration test suites (both)"
 	@printf "  $(GREEN)%-30s$(RESET) %s\n" "frontend-test (test-frontend)" "Run frontend Vitest test suite"
 	@printf "  $(GREEN)%-30s$(RESET) %s\n" "backend-test (test-backend)" "Run all backend Vitest test suites"
+	@printf "  $(GREEN)%-30s$(RESET) %s\n" "backend-test-contracts" "Run repository dual-mode contract test suite"
 	@printf "  $(GREEN)%-30s$(RESET) %s\n" "frontend-test-watch (test-watch)" "Run frontend tests in interactive watch mode"
 	@printf "  $(GREEN)%-30s$(RESET) %s\n" "backend-test-watch" "Run backend tests in interactive watch mode"
 	@printf "  $(GREEN)%-30s$(RESET) %s\n" "backend-test-unit" "Run backend unit tests (escrow, lifecycle, KYC)"
@@ -153,6 +157,20 @@ dev: free-port
 		"cd frontend && npm run dev" \
 		"cd backend && npm run dev"
 
+## dev-api-demo: Run Frontend in API mode against Backend in Demo mode
+dev-api-demo: free-port
+	@echo "$(CYAN)$(BOLD)🚀 Starting Shongre (Frontend: API Mode, Backend: Demo Mode)...$(RESET)\n"
+	@npx concurrently -k -n "FRONTEND,BACKEND" -c "cyan.bold,green.bold" \
+		"cd frontend && VITE_DATA_MODE=api VITE_API_URL=http://localhost:$(BACKEND_PORT)/api/v1 npm run dev" \
+		"cd backend && BACKEND_DATA_MODE=demo npm run dev"
+
+## dev-db: Run Frontend in API mode against Backend in Database mode (Supabase Local)
+dev-db: free-port
+	@echo "$(CYAN)$(BOLD)🚀 Starting Shongre (Frontend: API Mode, Backend: PostgreSQL Mode)...$(RESET)\n"
+	@npx concurrently -k -n "FRONTEND,BACKEND" -c "cyan.bold,green.bold" \
+		"cd frontend && VITE_DATA_MODE=api VITE_API_URL=http://localhost:$(BACKEND_PORT)/api/v1 npm run dev" \
+		"cd backend && BACKEND_DATA_MODE=database npm run dev"
+
 ## frontend-dev: Start Frontend Vite dev server only (auto-frees port)
 dev-frontend: frontend-dev
 frontend-dev: frontend-free-port
@@ -183,6 +201,11 @@ frontend-test:
 test-backend: backend-test
 backend-test:
 	cd backend && npm run test
+
+## backend-test-contracts: Run repository contract tests across dual modes
+test-contracts: backend-test-contracts
+backend-test-contracts:
+	cd backend && npm run test:contracts
 
 ## frontend-test-watch: Run frontend tests in interactive watch mode
 test-watch: frontend-test-watch
@@ -282,7 +305,6 @@ frontend-clean:
 	cd frontend && npm run clean
 
 ## backend-clean: Clean only backend build artifacts
-clean-backend: backend-clean
 backend-clean:
 	@if [ -d backend/dist ]; then rm -rf backend/dist && echo "$(GREEN)✔ Cleaned backend/dist/$(RESET)"; fi
 
@@ -337,10 +359,11 @@ backend-info:
 	@echo "$(CYAN)$(BOLD)         SHONGRE BACKEND CORE CONFIGURATION           $(RESET)"
 	@echo "$(CYAN)$(BOLD)======================================================$(RESET)"
 	@echo "  • Service Port : $(GREEN)$(BACKEND_PORT)$(RESET) (configured in backend/.env)"
+	@echo "  • Data Mode    : $(YELLOW)$(shell grep -E '^BACKEND_DATA_MODE=' backend/.env 2>/dev/null | cut -d '=' -f2 || echo 'demo')$(RESET)"
 	@echo "  • Node Engine  : $(shell node -v 2>/dev/null || echo 'Unknown')"
 	@echo "  • Health Route : $(CYAN)http://localhost:$(BACKEND_PORT)/health$(RESET)"
 	@echo "  • API Base URL : $(CYAN)http://localhost:$(BACKEND_PORT)/api/v1$(RESET)"
-	@echo "  • Tests Suites : 8 test suites (unit, integration, rls, security)"
+	@echo "  • Tests Suites : 9 test suites (unit, contracts, integration, rls, security)"
 	@echo ""
 
 ## ai-test: Run Gemini AI tests
@@ -350,4 +373,3 @@ ai-test:
 ## cli: Open the platform CLI
 cli:
 	@node frontend/bin/shongre.js help
-

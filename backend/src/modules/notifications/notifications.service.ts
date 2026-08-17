@@ -1,30 +1,29 @@
 import { NotificationItem } from '../../shared/types/index.js';
+import { INotificationRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { realtimeBroadcaster } from '../../infrastructure/realtime/realtime-broadcaster.js';
 
 export class NotificationsService {
+  constructor(private notificationRepo: INotificationRepository = repositories.notifications) {}
+
   async getUserNotifications(userId: string): Promise<NotificationItem[]> {
-    return [
-      {
-        id: 'notif_1',
-        userId,
-        type: 'escrow',
-        title: 'Séquestre sécurisé',
-        body: 'Le paiement de 250 € pour votre annonce a été sécurisé par Shongre Escrow.',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    return this.notificationRepo.getUserNotifications(userId);
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    return 1;
+    return this.notificationRepo.getUnreadCount(userId);
   }
 
-  async markAsRead(notificationId: string): Promise<void> {}
+  async markAsRead(notificationId: string): Promise<void> {
+    return this.notificationRepo.markAsRead(notificationId);
+  }
 
-  async markAllAsRead(userId: string): Promise<void> {}
+  async markAllAsRead(userId: string): Promise<void> {
+    return this.notificationRepo.markAllAsRead(userId);
+  }
 
-  async deleteNotification(notificationId: string): Promise<void> {}
+  async deleteNotification(notificationId: string): Promise<void> {
+    return this.notificationRepo.delete(notificationId);
+  }
 
   async dispatchNotification(userId: string, type: string, title: string, body: string, linkUrl?: string): Promise<NotificationItem> {
     const notif: NotificationItem = {
@@ -38,8 +37,9 @@ export class NotificationsService {
       createdAt: new Date().toISOString(),
     };
 
-    await realtimeBroadcaster.broadcastEvent(`user:${userId}:notifications`, 'notification_received', notif);
-    return notif;
+    const saved = await this.notificationRepo.save(notif);
+    await realtimeBroadcaster.broadcastEvent(`user:${userId}:notifications`, 'notification_received', saved);
+    return saved;
   }
 }
 

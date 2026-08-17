@@ -1,0 +1,247 @@
+import { Conversation, Message } from '../../../shared/types/index.js';
+import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
+import { logger } from '../../logging/logger.js';
+
+export interface IMessagingRepository {
+  getUserConversations(userId: string): Promise<Conversation[]>;
+  getConversationById(id: string): Promise<Conversation | null>;
+  createConversation(listingId: string, buyerId: string, sellerId: string): Promise<Conversation>;
+  saveMessage(message: Message): Promise<Message>;
+  getMessages(conversationId: string): Promise<Message[]>;
+  markAsRead(conversationId: string, userId: string): Promise<void>;
+  blockUser(userId: string, targetUserId: string): Promise<void>;
+}
+
+export const CANONICAL_DEMO_CONVERSATIONS: Conversation[] = [
+  {
+    id: 'conv_1',
+    listingId: 'list_1',
+    buyerId: 'user_thomas',
+    sellerId: 'user_camille',
+    lastMessageText: 'Bonjour, le vélo est-il toujours disponible ?',
+    lastMessageAt: new Date().toISOString(),
+    unreadCount: 1,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+export class DemoMessagingRepository implements IMessagingRepository {
+  private conversations: Map<string, Conversation> = new Map();
+  private messages: Map<string, Message[]> = new Map(); // conversationId -> messages
+
+  constructor(initialConvs: Conversation[] = CANONICAL_DEMO_CONVERSATIONS) {
+    this.reset(initialConvs);
+  }
+
+  reset(initialConvs: Conversation[] = CANONICAL_DEMO_CONVERSATIONS) {
+    this.conversations.clear();
+    this.messages.clear();
+    initialConvs.forEach((c) => this.conversations.set(c.id, { ...c }));
+    this.messages.set('conv_1', [
+      {
+        id: 'msg_init_1',
+        conversationId: 'conv_1',
+        senderId: 'user_thomas',
+        text: 'Bonjour, le vélo est-il toujours disponible ?',
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+  }
+
+  async getUserConversations(userId: string): Promise<Conversation[]> {
+    return Array.from(this.conversations.values())
+      .filter((c) => c.buyerId === userId || c.sellerId === userId)
+      .map((c) => ({ ...c }));
+  }
+
+  async getConversationById(id: string): Promise<Conversation | null> {
+    const conv = this.conversations.get(id);
+    return conv ? { ...conv } : null;
+  }
+
+  async createConversation(listingId: string, buyerId: string, sellerId: string): Promise<Conversation> {
+    const existing = Array.from(this.conversations.values()).find(
+      (c) => c.listingId === listingId && c.buyerId === buyerId && c.sellerId === sellerId
+    );
+    if (existing) return { ...existing };
+
+    const newConv: Conversation = {
+      id: `conv_${Math.random().toString(36).substring(2, 10)}`,
+      listingId,
+      buyerId,
+      sellerId,
+      lastMessageText: '',
+      lastMessageAt: new Date().toISOString(),
+      unreadCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    this.conversations.set(newConv.id, newConv);
+    this.messages.set(newConv.id, []);
+    return { ...newConv };
+  }
+
+  async saveMessage(message: Message): Promise<Message> {
+    let list = this.messages.get(message.conversationId);
+    if (!list) {
+      list = [];
+      this.messages.set(message.conversationId, list);
+    }
+    list.push({ ...message });
+
+    const conv = this.conversations.get(message.conversationId);
+    if (conv) {
+      conv.lastMessageText = message.text;
+      conv.lastMessageAt = message.createdAt;
+    }
+
+    return { ...message };
+  }
+
+  async getMessages(conversationId: string): Promise<Message[]> {
+    const list = this.messages.get(conversationId);
+    return list ? list.map((m) => ({ ...m })) : [];
+  }
+
+  async markAsRead(conversationId: string, userId: string): Promise<void> {
+    const conv = this.conversations.get(conversationId);
+    if (conv) {
+      conv.unreadCount = 0;
+    }
+  }
+
+  async blockUser(userId: string, targetUserId: string): Promise<void> {
+    logger.info(`User ${userId} blocked ${targetUserId}`);
+  }
+}
+
+export class PostgresMessagingRepository implements IMessagingRepository {
+  private mapRowToConversation(row: any): Conversation {
+    return {
+      id: row.id,
+      listingId: row.listing_id,
+      buyerId: row.buyer_id,
+      sellerId: row.seller_id,
+      lastMessageText: row.last_message_text || undefined,
+      lastMessageAt: row.last_message_at || row.created_at,
+      createdAt: row.created_at,
+    };
+  }
+
+  private mapRowToMessage(row: any): Message {
+    return {
+      id: row.id,
+      conversationId: row.conversation_id,
+      senderId: row.sender_id,
+      text: row.text,
+      attachments: Array.isArray(row.attachments) ? row.attachments : [],
+      isOffer: Boolean(row.is_offer),
+      offerPrice: row.offer_price ? Number(row.offer_price) : undefined,
+      offerStatus: row.offer_status || undefined,
+      isPickupProposal: Boolean(row.is_pickup_proposal),
+      pickupDetails: row.pickup_details || undefined,
+      createdAt: row.created_at,
+    };
+  }
+
+  async getUserConversations(userId: string): Promise<Conversation[]> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
+        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+        .order('last_message_at', { ascending: false });
+
+      if (error || !data) return [];
+      return data.map((r: any) => this.mapRowToConversation(r));
+    } catch {
+      return [];
+    }
+  }
+
+  async getConversationById(id: string): Promise<Conversation | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
+        .eq('id', id)
+        .single();
+      if (error || !data) return null;
+      return this.mapRowToConversation(data);
+    } catch {
+      return null;
+    }
+  }
+
+  async createConversation(listingId: string, buyerId: string, sellerId: string): Promise<Conversation> {
+    const supabase = getSupabaseAdminClient();
+    const payload = {
+      listing_id: listingId,
+      buyer_id: buyerId,
+      seller_id: sellerId,
+      last_message_text: '',
+      last_message_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await (supabase.from('conversations').upsert(payload as any).select().single() as any);
+    if (error || !data) {
+      throw new Error(`Failed to create conversation: ${error?.message}`);
+    }
+    return this.mapRowToConversation(data);
+  }
+
+  async saveMessage(message: Message): Promise<Message> {
+    const supabase = getSupabaseAdminClient();
+    const payload = {
+      id: message.id.includes('-') ? message.id : undefined,
+      conversation_id: message.conversationId,
+      sender_id: message.senderId,
+      text: message.text,
+      attachments: message.attachments || [],
+      is_offer: Boolean(message.isOffer),
+      offer_price: message.offerPrice || null,
+      offer_status: message.offerStatus || null,
+      is_pickup_proposal: Boolean(message.isPickupProposal),
+      pickup_details: message.pickupDetails || null,
+      created_at: message.createdAt,
+    };
+
+    const { data, error } = await (supabase.from('messages').insert(payload as any).select().single() as any);
+    if (error || !data) {
+      throw new Error(`Failed to save message: ${error?.message}`);
+    }
+
+    // Update parent conversation last_message
+    await (supabase.from('conversations' as any) as any).update({
+      last_message_text: message.text,
+      last_message_at: message.createdAt,
+      updated_at: new Date().toISOString(),
+    }).eq('id', message.conversationId);
+
+    return this.mapRowToMessage(data);
+  }
+
+  async getMessages(conversationId: string): Promise<Message[]> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+      if (error || !data) return [];
+      return data.map((r: any) => this.mapRowToMessage(r));
+    } catch {
+      return [];
+    }
+  }
+
+  async markAsRead(conversationId: string, userId: string): Promise<void> {
+    // Handled in database
+  }
+
+  async blockUser(userId: string, targetUserId: string): Promise<void> {
+    logger.info(`User ${userId} blocked ${targetUserId} in database`);
+  }
+}

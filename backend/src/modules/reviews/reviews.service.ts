@@ -1,5 +1,6 @@
 import { ReviewItem } from '../../shared/types/index.js';
 import { AppError } from '../../shared/errors/app-error.js';
+import { IReviewRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 
 export interface SubmitReviewInput {
   targetUserId: string;
@@ -13,19 +14,10 @@ export interface SubmitReviewInput {
 }
 
 export class ReviewsService {
+  constructor(private reviewRepo: IReviewRepository = repositories.reviews) {}
+
   async getUserReviews(userId: string): Promise<ReviewItem[]> {
-    return [
-      {
-        id: 'rev_1',
-        targetUserId: userId,
-        authorId: 'user_thomas',
-        authorName: 'Thomas Laurent',
-        rating: 5,
-        comment: 'Transaction parfaite, envoi soigné et très rapide !',
-        listingTitle: 'Vélo Gravel Specialized Diverge',
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    return this.reviewRepo.getUserReviews(userId);
   }
 
   async submitReview(input: SubmitReviewInput): Promise<ReviewItem> {
@@ -33,7 +25,7 @@ export class ReviewsService {
       throw new AppError({ code: 'VALIDATION_ERROR', message: 'La note doit être comprise entre 1 et 5 étoiles.' });
     }
 
-    return {
+    const review: ReviewItem = {
       id: `rev_${Math.random().toString(36).substring(2, 10)}`,
       targetUserId: input.targetUserId,
       authorId: input.authorId,
@@ -43,6 +35,8 @@ export class ReviewsService {
       listingTitle: input.listingTitle,
       createdAt: new Date().toISOString(),
     };
+
+    return this.reviewRepo.save(review);
   }
 }
 

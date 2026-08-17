@@ -45,6 +45,36 @@ describe('API v1 Endpoints Integration', () => {
     expect(categories.length).toBeGreaterThan(0);
   });
 
+  it('GET /api/v1/listings returns paginated listings', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/listings`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.listings).toBeDefined();
+    expect(Array.isArray(data.listings)).toBe(true);
+    expect(data.total).toBeGreaterThanOrEqual(1);
+  });
+
+  it('GET /api/v1/listings/list_1 returns listing detail', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/listings/list_1`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toBeDefined();
+    expect(data.id).toBe('list_1');
+    expect(data.title).toContain('Vélo');
+  });
+
+  it('POST /api/v1/listings/search executes structured search query', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/listings/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'Vélo' }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.items).toBeDefined();
+    expect(Array.isArray(data.items)).toBe(true);
+  });
+
   it('POST /api/v1/auth/login logs in a user and returns token', async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
       method: 'POST',
@@ -82,5 +112,33 @@ describe('API v1 Endpoints Integration', () => {
     const boosts = await res.json();
     expect(Array.isArray(boosts)).toBe(true);
     expect(boosts.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('GET /api/v1/verification/status/user_thomas returns verification status', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/verification/status/user_thomas`);
+    expect(res.status).toBe(200);
+    const status = await res.json();
+    expect(status.state).toBeDefined();
+    expect(status.isPhoneVerified).toBe(true);
+  });
+
+  it('GET /api/v1/admin/stats returns platform statistics', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/admin/stats`);
+    expect(res.status).toBe(200);
+    const stats = await res.json();
+    expect(stats.totalUsers).toBeGreaterThan(0);
+    expect(stats.activeTransactions).toBeGreaterThan(0);
+  });
+
+  it('POST /api/v1/payments/intent generates payment intent', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/payments/intent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 150, currency: 'EUR' }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.clientSecret).toBeDefined();
+    expect(data.amount).toBe(150);
   });
 });

@@ -1,7 +1,7 @@
 /**
  * Central API Client & Data Mode Configuration.
  * Controls whether the frontend runs against local deterministic Demo adapters
- * or live future HTTP backend adapters.
+ * or live HTTP backend adapters.
  */
 export type DataMode = 'demo' | 'api';
 
@@ -15,7 +15,7 @@ export const apiClientConfig: ApiClientConfig = {
   dataMode: (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_DATA_MODE === 'api')
     ? 'api'
     : 'demo',
-  apiBaseUrl: (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || 'https://api.shongre.com/v1',
+  apiBaseUrl: (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || 'http://localhost:4000/api/v1',
   demoLatencyMs: 0, // 0 for instantaneous deterministic tests, adjustable for UI loaders
 };
 

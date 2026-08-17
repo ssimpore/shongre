@@ -1,52 +1,44 @@
-import { businessRegistryResolver, CompanyInfo } from '../../integrations/business-registry/siret-resolver.js';
-import { kycProvider } from '../../integrations/kyc/kyc-provider.js';
+import {
+  IVerificationRepository,
+  repositories,
+  VerificationState,
+  UserVerificationStatus,
+} from '../../infrastructure/database/repositories/index.js';
+import {
+  IBusinessRegistryProvider,
+  IKYCProvider,
+  providers,
+} from '../../integrations/providers/index.js';
+import { CompanyInfo } from '../../integrations/business-registry/siret-resolver.js';
 import { AppError } from '../../shared/errors/app-error.js';
 import { logger } from '../../infrastructure/logging/logger.js';
 
-export interface VerificationState {
-  currentTier: number; // 0 (unverified), 1 (email/phone), 2 (identity), 3 (business), 4 (bank payout)
-  isIdentityVerified: boolean;
-  isBusinessVerified: boolean;
-  isPhoneVerified: boolean;
-  isEmailVerified: boolean;
-  isBankPayoutConfigured: boolean;
-  status: 'pending' | 'verified' | 'unverified';
-}
+export type { VerificationState, CompanyInfo };
 
 export class VerificationService {
-  async getUserVerificationStatus(userId: string): Promise<{
-    state: VerificationState;
-    isPhoneVerified: boolean;
-    isIdentityVerified: boolean;
-    isBusinessVerified: boolean;
-    isBankPayoutConfigured: boolean;
-  }> {
-    const state: VerificationState = {
-      currentTier: 2,
-      isEmailVerified: true,
-      isPhoneVerified: true,
-      isIdentityVerified: true,
-      isBusinessVerified: false,
-      isBankPayoutConfigured: true,
-      status: 'verified',
-    };
+  constructor(
+    private verificationRepo: IVerificationRepository = repositories.verification,
+    private businessRegistry: IBusinessRegistryProvider = providers.businessRegistry,
+    private kyc: IKYCProvider = providers.kyc
+  ) {}
 
-    return {
-      state,
-      isPhoneVerified: state.isPhoneVerified,
-      isIdentityVerified: state.isIdentityVerified,
-      isBusinessVerified: state.isBusinessVerified,
-      isBankPayoutConfigured: state.isBankPayoutConfigured,
-    };
+  async getUserVerificationStatus(userId: string): Promise<UserVerificationStatus> {
+    return this.verificationRepo.getUserStatus(userId);
   }
 
   async submitIdentityDocument(userId: string, docType: string, fileUrl: string): Promise<{ status: 'pending' | 'verified' }> {
-    const res = await kycProvider.submitDocument(userId, docType, fileUrl);
+    const res = await this.kyc.submitDocument(userId, docType, fileUrl);
+    await this.verificationRepo.saveVerificationRequest({
+      userId,
+      type: 'identity_document',
+      documentType: docType,
+      documentUrl: fileUrl,
+    });
     return { status: res.status === 'verified' ? 'verified' : 'pending' };
   }
 
   async lookupCompanyBySiret(siretOrSiren: string): Promise<CompanyInfo | null> {
-    return businessRegistryResolver.lookupBySiret(siretOrSiren);
+    return this.businessRegistry.lookupBySiret(siretOrSiren);
   }
 
   async submitBusinessRegistration(userId: string, siret: string, representativeName: string): Promise<{ status: 'verified' }> {
@@ -58,6 +50,14 @@ export class VerificationService {
       });
     }
 
+    await this.verificationRepo.saveVerificationRequest({
+      userId,
+      type: 'siret_registry',
+      siret,
+      companyName: company.name,
+    });
+    await this.verificationRepo.updateUserVerification(userId, { isBusinessVerified: true });
+
     logger.info(`Business verified for user ${userId}: SIRET ${siret} (${company.name})`);
     return { status: 'verified' };
   }
@@ -67,6 +67,14 @@ export class VerificationService {
     if (cleanIban.length < 15) {
       throw new AppError({ code: 'VALIDATION_ERROR', message: 'Numéro IBAN invalide.' });
     }
+
+    await this.verificationRepo.saveVerificationRequest({
+      userId,
+      type: 'bank_iban',
+      iban: cleanIban,
+      bic,
+      companyName: holderName,
+    });
 
     logger.info(`Bank coordinates configured for user ${userId} (IBAN: ...${cleanIban.slice(-4)})`);
     return { status: 'configured' };

@@ -1,4 +1,5 @@
 import { getSupabaseAdminClient, getSupabaseAnonClient } from '../supabase/supabase-client.js';
+import { isBackendDemoMode } from '../../app/config/index.js';
 import { logger } from '../logging/logger.js';
 
 export class DatabaseClient {
@@ -11,19 +12,19 @@ export class DatabaseClient {
   }
 
   public async healthCheck(): Promise<boolean> {
+    if (isBackendDemoMode()) {
+      return true;
+    }
+
     try {
-      const isPlaceholder = !process.env.DATABASE_URL && (!process.env.SUPABASE_URL || process.env.SUPABASE_URL.includes('your-project') || process.env.SUPABASE_URL.includes('127.0.0.1'));
-      if (isPlaceholder && process.env.NODE_ENV !== 'production') {
-        // Fast-path in local development when database is optional
-        return true;
-      }
-      const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 500));
+      const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2000));
       const queryPromise = (async () => {
         const { data, error } = await this.admin.from('markets').select('code').limit(1);
         return !error && Boolean(data);
       })();
       return await Promise.race([queryPromise, timeoutPromise]);
-    } catch {
+    } catch (err: any) {
+      logger.error(`Database healthCheck failed: ${err.message}`);
       return false;
     }
   }
