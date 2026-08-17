@@ -1,0 +1,35 @@
+{
+  "name": "shongre-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/app/server/index.ts",
+    "build": "tsc && tsc-alias",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:rls": "vitest run tests/rls",
+    "test:security": "vitest run tests/security",
+    "db:migrate": "tsx scripts/database/migrate.ts",
+    "db:seed": "tsx scripts/seed/seed.ts",
+    "db:types": "tsx scripts/generate-types/generate-types.ts",
+    "check:boundary": "node scripts/maintenance/check-boundary.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsc-alias": "^1.8.10",
+    "tsx": "^4.19.3",
+    "typescript": "~5.8.2",
+    "vitest": "^3.0.8"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "shongre-platform-monorepo",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend && rm -rf dist && cp -r frontend/dist ./dist",
+    "build:frontend": "npm run build --workspace=frontend && rm -rf dist && cp -r frontend/dist ./dist",
+    "build:backend": "npm run build --workspace=backend",
+    "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "test": "npm run test --workspace=frontend && npm run test --workspace=backend",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "check:boundary": "node backend/scripts/maintenance/check-boundary.js",
+    "check": "npm run check --workspace=frontend && npm run test --workspace=backend && npm run build --workspace=backend && npm run check:boundary",
+    "preview": "npm run preview --workspace=frontend"
+  }
+}

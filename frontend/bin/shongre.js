@@ -1,0 +1,213 @@
+#!/usr/bin/env node
+
+/**
+ * Shongre Platform CLI
+ * Utility tool for administration, AI testing, and project management.
+ */
+
+import { existsSync, readFileSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { spawnSync, spawn } from 'child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const rootDir = resolve(__dirname, '..');
+
+const args = process.argv.slice(2);
+const command = args[0] || 'help';
+
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  magenta: '\x1b[35m',
+};
+
+function getPort() {
+  const envPath = resolve(rootDir, '.env');
+  if (existsSync(envPath)) {
+    const content = readFileSync(envPath, 'utf8');
+    const match = content.match(/^PORT\s*=\s*"?([0-9]+)"?/m);
+    if (match && match[1]) {
+      return parseInt(match[1], 10);
+    }
+  }
+  return parseInt(process.env.PORT || '3000', 10);
+}
+
+function freePort(port) {
+  try {
+    const lsof = spawnSync('lsof', ['-ti', `:${port}`], { encoding: 'utf8' });
+    if (lsof.stdout) {
+      const pids = lsof.stdout.trim().split('\n').filter(Boolean);
+      if (pids.length > 0) {
+        console.log(`${colors.yellow}⚡ Port ${port} is occupied. Killing lingering process (PID: ${pids.join(', ')})...${colors.reset}`);
+        pids.forEach((pid) => {
+          try {
+            process.kill(parseInt(pid, 10), 'SIGKILL');
+          } catch (e) {
+            // ignore
+          }
+        });
+        console.log(`${colors.green}✔ Port ${port} successfully freed.${colors.reset}\n`);
+      }
+    }
+  } catch (err) {
+    // ignore if lsof is not found
+  }
+}
+
+function printBanner() {
+  console.log(`${colors.cyan}${colors.bright}
+  ======================================================
+     SHONGRE PLATFORM CLI - Marketplace & Escrow Core   
+  ======================================================${colors.reset}\n`);
+}
+
+function printHelp() {
+  printBanner();
+  const port = getPort();
+  console.log(`${colors.bright}Usage:${colors.reset}
+  node bin/shongre.js <command> [options]
+  make <target>
+
+${colors.bright}Available Commands:${colors.reset}
+  ${colors.green}dev${colors.reset}             Start Vite dev server on port ${port} (auto-kills any process on this port)
+  ${colors.green}free-port${colors.reset}       Kill any running process occupying port ${port}
+  ${colors.green}build${colors.reset}           Compile production bundle with chunk optimizations
+  ${colors.green}test${colors.reset}            Run Vitest unit test suite (RBAC, Escrow, AI, SIRET)
+  ${colors.green}test-watch${colors.reset}      Run tests in interactive watch mode
+  ${colors.green}lint${colors.reset}            Run TypeScript type-check compiler (tsc --noEmit)
+  ${colors.green}check${colors.reset}           Run complete CI pipeline (lint + test + build)
+  ${colors.green}info${colors.reset}            Display platform environment, versions & configuration
+  ${colors.green}ai-test [prompt]${colors.reset} Test the Gemini AI assistant directly from the CLI
+  ${colors.green}clean${colors.reset}           Remove build artifacts and cache
+  ${colors.green}help${colors.reset}            Show this help manual
+`);
+}
+
+function runInfo() {
+  printBanner();
+  const pkg = JSON.parse(readFileSync(resolve(rootDir, 'package.json'), 'utf8'));
+  const port = getPort();
+  console.log(`${colors.bright}Project Information:${colors.reset}`);
+  console.log(`  • Name        : ${pkg.name}`);
+  console.log(`  • Version     : ${pkg.version}`);
+  console.log(`  • Config Port : ${colors.green}${port}${colors.reset} (loaded from .env)`);
+  console.log(`  • Node        : ${process.version}`);
+  console.log(`  • Platform    : ${process.platform} (${process.arch})`);
+  console.log(`  • Root Path   : ${rootDir}`);
+  
+  const hasEnv = existsSync(resolve(rootDir, '.env')) || existsSync(resolve(rootDir, '.env.local'));
+  console.log(`  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}None (using offline fallback for Gemini)${colors.reset}`}`);
+  console.log(`  • Gemini API  : ${process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY ? `${colors.green}Configured${colors.reset}` : `${colors.dim}Offline heuristic engine active${colors.reset}`}\n`);
+}
+
+function runNpmCommand(script, extraArgs = []) {
+  console.log(`${colors.dim}> Executing: npm run ${script} ${extraArgs.join(' ')}${colors.reset}\n`);
+  const result = spawnSync('npm', ['run', script, ...extraArgs], {
+    cwd: rootDir,
+    stdio: 'inherit',
+  });
+  if (result.status !== 0) {
+    process.exit(result.status || 1);
+  }
+}
+
+async function runAiTest(promptInput) {
+  printBanner();
+  const prompt = promptInput || 'Vélo de course carbone Shimano 105';
+  console.log(`${colors.bright}Testing Gemini Listing Assistance CLI...${colors.reset}`);
+  console.log(`${colors.dim}Input Prompt:${colors.reset} "${prompt}"\n`);
+
+  try {
+    console.log(`${colors.yellow}Running heuristic & AI generation validation...${colors.reset}`);
+    const result = spawnSync('npx', ['vitest', 'run', 'src/services/gemini.service.test.ts'], {
+      cwd: rootDir,
+      stdio: 'inherit',
+    });
+
+    if (result.status === 0) {
+      console.log(`\n${colors.green}✔ Gemini Service & Anti-fraud Audit tests passed successfully!${colors.reset}\n`);
+    } else {
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error(`${colors.red}Error executing AI test: ${err.message}${colors.reset}`);
+    process.exit(1);
+  }
+}
+
+function runCheck() {
+  printBanner();
+  console.log(`${colors.cyan}${colors.bright}Step 1/3: TypeScript Type Checking (Linter)...${colors.reset}`);
+  runNpmCommand('lint');
+  
+  console.log(`\n${colors.cyan}${colors.bright}Step 2/3: Running Vitest Test Suite...${colors.reset}`);
+  runNpmCommand('test');
+
+  console.log(`\n${colors.cyan}${colors.bright}Step 3/3: Running Production Build...${colors.reset}`);
+  runNpmCommand('build');
+
+  console.log(`\n${colors.green}${colors.bright}✔ All quality checks passed successfully!${colors.reset}\n`);
+}
+
+// Router
+switch (command) {
+  case 'dev':
+  case 'start': {
+    const port = getPort();
+    freePort(port);
+    console.log(`${colors.cyan}${colors.bright}🚀 Launching Vite dev server on http://localhost:${port}...${colors.reset}\n`);
+    const child = spawn('npx', ['vite', '--port', String(port), '--host', '0.0.0.0'], {
+      cwd: rootDir,
+      stdio: 'inherit',
+      env: { ...process.env, PORT: String(port) },
+    });
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+    break;
+  }
+  case 'free-port': {
+    const port = getPort();
+    freePort(port);
+    break;
+  }
+  case 'build':
+    runNpmCommand('build');
+    break;
+  case 'test':
+    runNpmCommand('test');
+    break;
+  case 'test-watch':
+    spawnSync('npx', ['vitest'], { cwd: rootDir, stdio: 'inherit' });
+    break;
+  case 'lint':
+    runNpmCommand('lint');
+    break;
+  case 'check':
+  case 'ci':
+    runCheck();
+    break;
+  case 'clean':
+    runNpmCommand('clean');
+    break;
+  case 'info':
+    runInfo();
+    break;
+  case 'ai-test':
+    runAiTest(args.slice(1).join(' '));
+    break;
+  case 'help':
+  case '--help':
+  case '-h':
+  default:
+    printHelp();
+    break;
+}

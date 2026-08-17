@@ -1,0 +1,125 @@
+import { ListingsServiceContract } from '../../contracts/listings.contract';
+import { listingRepository } from '../../../repositories/listing.repository';
+import { storageService } from '../../../services/storage.service';
+import { Listing, SearchFilters } from '../../../types';
+import { PublicationDraftState } from '../../../domains/publication/publication.types';
+import { publicationService } from '../../../domains/publication/publication.service';
+import { simulateNetworkDelay } from '../../client/api-client.config';
+
+export class DemoListingsService implements ListingsServiceContract {
+  async getListings(filter?: SearchFilters): Promise<{ listings: Listing[]; total: number }> {
+    await simulateNetworkDelay();
+    return listingRepository.getListings(filter);
+  }
+
+  async getListingById(id: string): Promise<Listing | null> {
+    await simulateNetworkDelay();
+    return listingRepository.getListingById(id);
+  }
+
+  async searchListings(params: SearchFilters): Promise<{ items: Listing[]; total: number; page: number; totalPages: number }> {
+    await simulateNetworkDelay();
+    const res = await listingRepository.getListings(params);
+    return {
+      items: res.listings,
+      total: res.total,
+      page: res.page,
+      totalPages: res.totalPages,
+    };
+  }
+
+  async createListingDraft(userId?: string): Promise<PublicationDraftState> {
+    await simulateNetworkDelay();
+    const existing = publicationService.getDraft(userId);
+    if (existing) return existing;
+
+    const defaultDraft: PublicationDraftState = {
+      marketCode: 'FR',
+      selectedMarkets: ['FR'],
+      taxonomyNodeId: '',
+      listingIntent: 'SELL',
+      title: '',
+      description: '',
+      condition: 'very_good',
+      attributes: {},
+      photos: [],
+      pricing: {
+        priceModel: 'fixed',
+        amount: 0,
+        currency: 'EUR',
+        isNegotiable: false,
+        isFreeDonation: false,
+      },
+      transaction: {
+        allowContact: true,
+        allowDirectPurchase: true,
+        allowReservation: true,
+        reservationType: 'request',
+      },
+      fulfillment: {
+        allowHandDelivery: true,
+        allowParcelShipping: false,
+        allowBulkyDelivery: false,
+        allowSellerDelivery: false,
+        allowStorePickup: false,
+      },
+      location: {
+        city: 'Paris',
+        postalCode: '75001',
+        countryCode: 'FR',
+        hideExactAddress: true,
+      },
+      currentStep: 1,
+      updatedAt: new Date().toISOString(),
+    };
+
+    publicationService.saveDraft(defaultDraft, userId);
+    return defaultDraft;
+  }
+
+  async saveListingDraft(draft: PublicationDraftState, userId?: string): Promise<void> {
+    await simulateNetworkDelay();
+    publicationService.saveDraft(draft, userId);
+  }
+
+  async publishListing(draft: PublicationDraftState, sellerId: string): Promise<Listing> {
+    await simulateNetworkDelay();
+    const allUsers = Object.values(storageService.getUsers());
+    const user = allUsers.find((u) => u.id === sellerId) || {
+      id: sellerId,
+      name: 'Vendeur Shongre',
+      email: 'vendeur@shongre.com',
+      role: 'individual_seller',
+      sellerType: 'individual',
+      status: 'active',
+      isVerified: true,
+      city: 'Paris',
+      postalCode: '75001',
+    };
+    return publicationService.publishListing(draft, user as any);
+  }
+
+  async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {
+    await simulateNetworkDelay();
+    const updated = await listingRepository.updateListing(id, updates);
+    if (!updated) throw new Error(`Listing with ID ${id} not found.`);
+    return updated;
+  }
+
+  async deleteListing(id: string): Promise<boolean> {
+    await simulateNetworkDelay();
+    return listingRepository.deleteListing(id);
+  }
+
+  async toggleFavorite(listingId: string): Promise<boolean> {
+    await simulateNetworkDelay();
+    return storageService.toggleFavorite(listingId);
+  }
+
+  async getFavorites(): Promise<string[]> {
+    await simulateNetworkDelay();
+    return storageService.getFavorites();
+  }
+}
+
+export const demoListingsService = new DemoListingsService();

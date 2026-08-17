@@ -1,0 +1,76 @@
+import { describe, it, expect } from 'vitest';
+import { authorizationService } from './authorization.service';
+import { UserProfile } from '../types';
+
+describe('AuthorizationService - RBAC Permissions & Security Rules', () => {
+  it('allows guests to read public listings and search', () => {
+    expect(authorizationService.can(null, 'listing.read')).toBe(true);
+    expect(authorizationService.can(null, 'listing.create')).toBe(false);
+    expect(authorizationService.can(null, 'moderation.review')).toBe(false);
+  });
+
+  it('allows individual buyer to create reservations and send messages', () => {
+    const buyer: Partial<UserProfile> = {
+      id: 'user-thomas',
+      role: 'buyer',
+      primaryRole: 'buyer',
+      status: 'active',
+    };
+
+    expect(authorizationService.can(buyer as UserProfile, 'order.create')).toBe(true);
+    expect(authorizationService.can(buyer as UserProfile, 'message.send')).toBe(true);
+    expect(authorizationService.can(buyer as UserProfile, 'user.suspend')).toBe(false);
+  });
+
+  it('enforces resource ownership when editing an announcement', () => {
+    const seller: Partial<UserProfile> = {
+      id: 'user-seller-1',
+      role: 'seller',
+      primaryRole: 'seller',
+      status: 'active',
+    };
+
+    const ownListing = { sellerId: 'user-seller-1', id: 'list-1' };
+    const otherListing = { sellerId: 'user-seller-2', id: 'list-2' };
+
+    expect(authorizationService.can(seller as UserProfile, 'listing.update.own', ownListing)).toBe(true);
+    expect(authorizationService.can(seller as UserProfile, 'listing.update.own', otherListing)).toBe(false);
+  });
+
+  it('restricts suspended users from creating listings or orders', () => {
+    const suspendedUser: Partial<UserProfile> = {
+      id: 'user-bad',
+      role: 'seller',
+      primaryRole: 'seller',
+      status: 'suspended',
+      isSuspended: true,
+    };
+
+    expect(authorizationService.can(suspendedUser as UserProfile, 'listing.create')).toBe(false);
+    expect(authorizationService.can(suspendedUser as UserProfile, 'order.create')).toBe(false);
+    // But allows reading profile and reporting
+    expect(authorizationService.can(suspendedUser as UserProfile, 'profile.read')).toBe(true);
+    expect(authorizationService.can(suspendedUser as UserProfile, 'report.create')).toBe(true);
+  });
+
+  it('grants moderation and audit permissions to moderators and admins', () => {
+    const moderator: Partial<UserProfile> = {
+      id: 'mod-1',
+      role: 'moderator',
+      primaryRole: 'moderator',
+      status: 'active',
+    };
+
+    const admin: Partial<UserProfile> = {
+      id: 'admin-1',
+      role: 'admin',
+      primaryRole: 'admin',
+      status: 'active',
+    };
+
+    expect(authorizationService.can(moderator as UserProfile, 'moderation.review')).toBe(true);
+    expect(authorizationService.can(moderator as UserProfile, 'listing.moderate')).toBe(true);
+    expect(authorizationService.can(admin as UserProfile, 'audit.read')).toBe(true);
+    expect(authorizationService.can(admin as UserProfile, 'user.suspend')).toBe(true);
+  });
+});

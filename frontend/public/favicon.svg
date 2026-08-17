@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="shongre-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7e36" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Rect -->
+  <rect width="64" height="64" rx="16" fill="url(#shongre-grad)" />
+
+  <!-- Inner subtle border glow -->
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.25" />
+
+  <!-- Bold Shongre "S" Icon -->
+  <path
+    d="M 39 21 C 39 16 35 13 28 13 C 20 13 16 17 16 22 C 16 31 38 27 38 37 C 38 43 33 46 26 46 C 18 46 14 41 14 36 L 22 36 C 22 38.5 24 40.5 26.5 40.5 C 29.5 40.5 31.5 39 31.5 37 C 31.5 29 10 32 10 21 C 10 13 17 8 28 8 C 39 8 45 13 45 21 Z"
+    fill="#ffffff"
+    filter="url(#shadow)"
+  />
+
+  <!-- Shongre Brand Accent Dot -->
+  <circle cx="49" cy="46" r="4.5" fill="#ffffff" filter="url(#shadow)" />
+</svg>

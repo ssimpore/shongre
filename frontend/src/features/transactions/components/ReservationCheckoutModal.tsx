@@ -1,0 +1,607 @@
+import React, { useState } from 'react';
+import {
+  ShieldCheck,
+  CreditCard,
+  Truck,
+  MapPin,
+  CheckCircle2,
+  Lock,
+  ArrowRight,
+  Info,
+  Clock,
+  Sparkles,
+  KeyRound,
+  Copy,
+  Check,
+} from 'lucide-react';
+import { Listing, UserProfile, DeliveryType, Transaction } from '../../../types';
+import { transactionService } from '../../../domains/transaction/transaction.service';
+import { Modal } from '../../../design-system/primitives/Modal';
+import { Button } from '../../../design-system/primitives/Button';
+import { formatPrice } from '../../../utilities/formatters';
+import { useAuth } from '../../../app/providers/AuthProvider';
+import { DEMO_USERS } from '../../../mocks/initialDemoData';
+import { Image } from '../../../design-system/primitives/Image';
+
+interface ReservationCheckoutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  listing: Listing;
+  currentUser?: UserProfile | null;
+  onReservationComplete: (transaction: Transaction) => void;
+}
+
+export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> = ({
+  isOpen,
+  onClose,
+  listing,
+  currentUser,
+  onReservationComplete,
+}) => {
+  const { currentUser: authUser } = useAuth();
+  const buyerUser: UserProfile = currentUser || authUser || DEMO_USERS.buyer_thomas;
+
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryType>('hand_delivery');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'apple_pay' | 'google_pay'>('card');
+  
+  // Card details
+  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
+  const [cardExpiry, setCardExpiry] = useState('12/28');
+  const [cardCvc, setCardCvc] = useState('123');
+  const [cardHolder, setCardHolder] = useState(buyerUser.name || 'Thomas Laurent');
+
+  // Delivery details
+  const [recipientName, setRecipientName] = useState(buyerUser.name || '');
+  const [street, setStreet] = useState('15 rue Saint-Ferréol');
+  const [postalCode, setPostalCode] = useState(buyerUser.postalCode || '13001');
+  const [city, setCity] = useState(buyerUser.city || 'Marseille');
+  const [relayPoint, setRelayPoint] = useState('Tabac Presse des Halles (MR-13001)');
+  const [meetingNotes, setMeetingNotes] = useState('Disponible en fin de journée ou le week-end');
+  const [buyerPhone, setBuyerPhone] = useState('06 12 34 56 78');
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [createdTx, setCreatedTx] = useState<Transaction | null>(null);
+  const [copiedPin, setCopiedPin] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Price calculations
+  const breakdown = transactionService.calculateAmounts(listing.price, deliveryMethod, listing.sellerType);
+
+  const handlePayAndReserve = async () => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Simulate 3D Secure / Escrow authorization
+      await new Promise((resolve) => setTimeout(resolve, 1400));
+
+      const tx = await transactionService.createReservation({
+        listingId: listing.id,
+        buyer: buyerUser,
+        deliveryMethod,
+        carrierName: deliveryMethod === 'relay_point' ? 'Mondial Relay' : deliveryMethod === 'home_delivery' ? 'Colissimo' : 'Remise en main propre',
+        paymentMethod,
+        cardLast4: cardNumber.slice(-4).trim() || '4242',
+        cardBrand: paymentMethod === 'apple_pay' ? 'Apple Pay' : paymentMethod === 'google_pay' ? 'Google Pay' : 'Visa',
+        deliveryAddress: deliveryMethod !== 'hand_delivery' ? {
+          fullName: recipientName || buyerUser.name,
+          street,
+          postalCode,
+          city,
+          relayPointName: deliveryMethod === 'relay_point' ? relayPoint : undefined,
+        } : undefined,
+        pickupDetails: deliveryMethod === 'hand_delivery' ? {
+          notes: meetingNotes,
+          buyerPhone,
+        } : undefined,
+      });
+
+      setCreatedTx(tx);
+      setStep(4);
+      onReservationComplete(tx);
+    } catch (err: any) {
+      setError(err.message || 'Une erreur est survenue lors du paiement.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const copyPinToClipboard = () => {
+    if (createdTx?.verificationCode) {
+      navigator.clipboard.writeText(createdTx.verificationCode);
+      setCopiedPin(true);
+      setTimeout(() => setCopiedPin(false), 2500);
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={step === 4 ? "Réservation confirmée avec succès !" : "Réserver avec Paiement Sécurisé Shongre"}
+      description={step === 4 ? "Vos fonds sont protégés sous séquestre bancaire jusqu'à la validation de la transaction." : "Vos fonds sont bloqués sous séquestre et reversés au vendeur uniquement après votre confirmation."}
+    >
+      <div className="space-y-4 text-xs">
+        {/* Stepper Header */}
+        {step < 4 && (
+          <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+            <div className="flex items-center gap-2">
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-micro ${
+                step >= 1 ? 'bg-primary text-white' : 'bg-stone-200 text-stone-600'
+              }`}>
+                1
+              </span>
+              <span className={`font-semibold ${step === 1 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>
+                Remise
+              </span>
+            </div>
+            <div className="w-8 h-px bg-stone-200" />
+            <div className="flex items-center gap-2">
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-micro ${
+                step >= 2 ? 'bg-primary text-white' : 'bg-stone-200 text-stone-600'
+              }`}>
+                2
+              </span>
+              <span className={`font-semibold ${step === 2 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>
+                Détails & Coûts
+              </span>
+            </div>
+            <div className="w-8 h-px bg-stone-200" />
+            <div className="flex items-center gap-2">
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-micro ${
+                step >= 3 ? 'bg-primary text-white' : 'bg-stone-200 text-stone-600'
+              }`}>
+                3
+              </span>
+              <span className={`font-semibold ${step === 3 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>
+                Paiement Séquestre
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Item Preview Card */}
+        {step < 4 && (
+          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-3">
+            <Image
+              src={listing.coverImageUrl}
+              alt={listing.title}
+              className="w-14 h-14 rounded-lg object-cover border border-stone-200 shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-stone-900 truncate">{listing.title}</h4>
+              <p className="text-stone-500 text-micro flex items-center gap-1 mt-0.5">
+                <span>Vendeur : <strong className="text-stone-700">{listing.sellerName}</strong></span>
+                <span>•</span>
+                <span>{listing.city} ({listing.postalCode})</span>
+              </p>
+              <p className="text-primary font-black text-sm mt-0.5">{formatPrice(listing.price)}</p>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-medium">
+            {error}
+          </div>
+        )}
+
+        {/* STEP 1: DELIVERY CHOICE */}
+        {step === 1 && (
+          <div className="space-y-3">
+            <h5 className="font-bold text-stone-800">Choisissez votre mode d'obtention :</h5>
+
+            <div className="space-y-2">
+              {/* Hand delivery */}
+              <div
+                onClick={() => setDeliveryMethod('hand_delivery')}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  deliveryMethod === 'hand_delivery'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+                      <MapPin className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-stone-900">Remise en main propre sécurisée</p>
+                        <span className="text-micro font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                          Gratuit
+                        </span>
+                      </div>
+                      <p className="text-micro text-stone-500 mt-0.5">
+                        Rendez-vous direct avec validation par code secret à 6 chiffres.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-bold text-stone-900">0,00 €</span>
+                </div>
+
+                {deliveryMethod === 'hand_delivery' && (
+                  <div className="mt-3 pt-3 border-t border-stone-200 space-y-2 text-micro">
+                    <div>
+                      <label className="font-semibold text-stone-700 block mb-1">Votre numéro de téléphone (pour fixer le RDV) :</label>
+                      <input
+                        type="text"
+                        value={buyerPhone}
+                        onChange={(e) => setBuyerPhone(e.target.value)}
+                        placeholder="ex: 06 12 34 56 78"
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-stone-700 block mb-1">Disponibilités ou lieu souhaité :</label>
+                      <input
+                        type="text"
+                        value={meetingNotes}
+                        onChange={(e) => setMeetingNotes(e.target.value)}
+                        placeholder="ex: En centre-ville, samedi après-midi"
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mondial Relay */}
+              <div
+                onClick={() => setDeliveryMethod('relay_point')}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  deliveryMethod === 'relay_point'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+                      <Truck className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-stone-900">Livraison en Point Relais (Mondial Relay)</p>
+                      <p className="text-micro text-stone-500 mt-0.5">
+                        Retrait chez un commerçant partenaire avec suivi en temps réel (3-4 jours).
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-bold text-stone-900">4,90 €</span>
+                </div>
+
+                {deliveryMethod === 'relay_point' && (
+                  <div className="mt-3 pt-3 border-t border-stone-200 space-y-2 text-micro">
+                    <div>
+                      <label className="font-semibold text-stone-700 block mb-1">Point Relais sélectionné :</label>
+                      <select
+                        value={relayPoint}
+                        onChange={(e) => setRelayPoint(e.target.value)}
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      >
+                        <option value="Tabac Presse des Halles (MR-13001)">Tabac Presse des Halles (15 rue République, 13001 Marseille)</option>
+                        <option value="Relais Colis City Express (MR-13002)">Relais Colis City Express (8 bd Longchamp, 13001 Marseille)</option>
+                        <option value="Épicerie Bio du Vieux-Port (MR-13003)">Épicerie Bio du Vieux-Port (4 quai des Belges, 13001 Marseille)</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Home delivery */}
+              <div
+                onClick={() => setDeliveryMethod('home_delivery')}
+                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  deliveryMethod === 'home_delivery'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+                      <Truck className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-stone-900">Livraison à domicile (Colissimo)</p>
+                      <p className="text-micro text-stone-500 mt-0.5">
+                        Directement dans votre boîte aux lettres ou avec signature (48h).
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-bold text-stone-900">6,90 €</span>
+                </div>
+
+                {deliveryMethod === 'home_delivery' && (
+                  <div className="mt-3 pt-3 border-t border-stone-200 grid grid-cols-2 gap-2 text-micro">
+                    <div className="col-span-2">
+                      <label className="font-semibold text-stone-700 block mb-1">Nom du destinataire :</label>
+                      <input
+                        type="text"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                        placeholder="Nom et prénom"
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="font-semibold text-stone-700 block mb-1">Adresse postale :</label>
+                      <input
+                        type="text"
+                        value={street}
+                        onChange={(e) => setStreet(e.target.value)}
+                        placeholder="N° et nom de rue"
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-stone-700 block mb-1">Code postal :</label>
+                      <input
+                        type="text"
+                        value={postalCode}
+                        onChange={(e) => setPostalCode(e.target.value)}
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-stone-700 block mb-1">Ville :</label>
+                      <input
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="primary"
+              fullWidth
+              size="md"
+              onClick={() => setStep(2)}
+              className="mt-4"
+            >
+              Continuer vers le récapitulatif <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
+
+        {/* STEP 2: SUMMARY & BREAKDOWN */}
+        {step === 2 && (
+          <div className="space-y-4">
+            <h5 className="font-bold text-stone-800">Détail des coûts et garanties :</h5>
+
+            {/* Escrow guarantee explanation */}
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-950 flex items-start gap-2.5">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Paiement 100% protégé sous séquestre</p>
+                <p className="text-micro text-emerald-800 mt-0.5 leading-relaxed">
+                  L'argent ne sera versé au vendeur qu'après remise de l'article conforme. Si le vendeur décline ou si l'article est non conforme, vous êtes intégralement remboursé.
+                </p>
+              </div>
+            </div>
+
+            {/* Breakdown table */}
+            <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2 text-xs">
+              <div className="flex justify-between text-stone-600">
+                <span>Prix de l'article :</span>
+                <span className="font-semibold text-stone-900">{formatPrice(breakdown.itemPrice)}</span>
+              </div>
+              <div className="flex justify-between text-stone-600 items-center">
+                <span className="flex items-center gap-1">
+                  Protection Acheteurs Shongre :
+                  <Info className="w-3 h-3 text-stone-400 cursor-help" />
+                </span>
+                <span className="font-semibold text-stone-900">{formatPrice(breakdown.protectionFee)}</span>
+              </div>
+              <div className="flex justify-between text-stone-600">
+                <span>Frais de port ({deliveryMethod === 'hand_delivery' ? 'Remise en main propre' : deliveryMethod === 'relay_point' ? 'Point Relais' : 'Colissimo'}) :</span>
+                <span className="font-semibold text-stone-900">{formatPrice(breakdown.shippingFee)}</span>
+              </div>
+              <div className="border-t border-stone-200 pt-2 flex justify-between font-black text-stone-900 text-sm">
+                <span>Total à régler :</span>
+                <span className="text-primary">{formatPrice(breakdown.totalAmount)}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2.5 pt-2">
+              <Button type="button" variant="outline" fullWidth onClick={() => setStep(1)}>
+                Retour
+              </Button>
+              <Button type="button" variant="primary" fullWidth onClick={() => setStep(3)}>
+                Passer au paiement sécurisé <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: PAYMENT INTERFACE */}
+        {step === 3 && (
+          <div className="space-y-4">
+            <h5 className="font-bold text-stone-800">Choisissez votre moyen de paiement :</h5>
+
+            {/* Payment method tabs */}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('card')}
+                className={`p-2.5 rounded-xl border font-bold flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'card'
+                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                    : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                <span className="text-micro">Carte bancaire</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('apple_pay')}
+                className={`p-2.5 rounded-xl border font-bold flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'apple_pay'
+                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                    : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                }`}
+              >
+                <span className="text-base font-black">Pay</span>
+                <span className="text-micro">Apple Pay</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('google_pay')}
+                className={`p-2.5 rounded-xl border font-bold flex flex-col items-center gap-1 transition-all ${
+                  paymentMethod === 'google_pay'
+                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                    : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                }`}
+              >
+                <span className="text-base font-black text-blue-600">GPay</span>
+                <span className="text-micro">Google Pay</span>
+              </button>
+            </div>
+
+            {/* Credit Card Form */}
+            {paymentMethod === 'card' && (
+              <div className="space-y-3 p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Titulaire de la carte</label>
+                  <input
+                    type="text"
+                    value={cardHolder}
+                    onChange={(e) => setCardHolder(e.target.value)}
+                    className="w-full h-9 px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Numéro de carte</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                      placeholder="4242 4242 4242 4242"
+                      className="w-full h-9 px-3 pr-10 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                    />
+                    <Lock className="w-4 h-4 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Date d'expiration</label>
+                    <input
+                      type="text"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                      placeholder="MM/AA"
+                      className="w-full h-9 px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Cryptogramme (CVC)</label>
+                    <input
+                      type="password"
+                      maxLength={4}
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value)}
+                      placeholder="123"
+                      className="w-full h-9 px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 text-micro text-stone-500">
+              <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Chiffrement SSL 256 bits et authentification 3D Secure 2.0.</span>
+            </div>
+
+            <div className="flex gap-2.5 pt-2">
+              <Button type="button" variant="outline" fullWidth onClick={() => setStep(2)}>
+                Retour
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                fullWidth
+                disabled={isProcessing}
+                onClick={handlePayAndReserve}
+              >
+                {isProcessing ? 'Sécurisation des fonds...' : `Payer et Réserver (${formatPrice(breakdown.totalAmount)})`}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: SUCCESS CONFIRMATION & SECRET PIN */}
+        {step === 4 && createdTx && (
+          <div className="space-y-4 text-center pt-2">
+            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h4 className="text-lg font-black text-stone-900">
+                Paiement sécurisé de {formatPrice(createdTx.totalAmount)} validé !
+              </h4>
+              <p className="text-stone-500 text-xs mt-1">
+                Référence dossier : <strong className="text-stone-800 font-mono">{createdTx.code}</strong>
+              </p>
+            </div>
+
+            {/* Hand delivery PIN code box */}
+            {createdTx.deliveryMethod === 'hand_delivery' && createdTx.verificationCode && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-left space-y-2">
+                <div className="flex items-center gap-2 text-amber-900 font-bold">
+                  <KeyRound className="w-4 h-4 text-amber-600" />
+                  <span>Votre code secret de confirmation de remise</span>
+                </div>
+                <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-amber-200">
+                  <span className="text-2xl font-black font-mono tracking-widest text-amber-950">
+                    {createdTx.verificationCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyPinToClipboard}
+                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 bg-primary/10 px-2.5 py-1.5 rounded-lg transition-colors"
+                  >
+                    {copiedPin ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedPin ? 'Copié !' : 'Copier'}</span>
+                  </button>
+                </div>
+                <p className="text-micro text-amber-800 leading-relaxed">
+                  ⚠️ <strong>Règle de sécurité :</strong> Ne transmettez ce code à 6 chiffres au vendeur qu'une fois sur place après avoir inspecté et validé la conformité de l'article.
+                </p>
+              </div>
+            )}
+
+            {/* Shipping instructions */}
+            {createdTx.deliveryMethod !== 'hand_delivery' && (
+              <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-left text-blue-950 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-blue-600" /> Préparation de votre colis
+                </p>
+                <p className="text-micro text-blue-800 leading-relaxed">
+                  Le vendeur a été notifié et dispose de 48h pour valider la réservation et déposer le colis avec l'étiquette {createdTx.carrierName}. Vous recevrez un numéro de suivi dès l'expédition.
+                </p>
+              </div>
+            )}
+
+            <div className="pt-2">
+              <Button type="button" variant="primary" fullWidth onClick={onClose}>
+                Accéder au suivi de ma réservation
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};

@@ -1,0 +1,568 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { X, Sparkles } from 'lucide-react';
+import { messagingRepository } from '../../repositories/messaging.repository';
+import {
+  ConversationPreview,
+  InboxFilterTab,
+  TimelineItem,
+  UserTimelineMessage,
+  TypingState,
+  ConversationParticipant,
+  ListingConversationContext,
+  TransactionConversationContext,
+} from '../../domains/messaging/messaging.types';
+import { messagingService } from '../../domains/messaging/messaging.service';
+import { messagingCapabilitiesService } from '../../domains/messaging/messaging.capabilities';
+import { messagingRealtimeClient } from '../../domains/messaging/messaging.realtime';
+import { useAuth } from '../../app/providers/AuthProvider';
+import { useToast } from '../../app/providers/ToastProvider';
+import { storageService } from '../../services/storage.service';
+import { Transaction } from '../../types';
+import { DEMO_USERS } from '../../mocks/initialDemoData';
+
+import { ConversationList } from './components/ConversationList';
+import { ConversationHeader } from './components/ConversationHeader';
+import { ConversationContextBar } from './components/ConversationContextBar';
+import { MessageTimeline } from './components/MessageTimeline';
+import { MessageComposer } from './components/MessageComposer';
+import { PickupSchedulerModal } from './components/PickupSchedulerModal';
+import { MakeOfferModal } from './components/MakeOfferModal';
+import { TransactionDetailModal } from '../transactions/components/TransactionDetailModal';
+import { Modal } from '../../design-system/primitives/Modal';
+import { useDialogBehavior } from '../../design-system/primitives/useDialogBehavior';
+import { Button } from '../../design-system/primitives/Button';
+import { Image } from '../../design-system/primitives/Image';
+
+export const MessagingPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { currentUser, isPro } = useAuth();
+  const toast = useToast();
+
+  const currentUserId = currentUser ? currentUser.id : 'user-thomas';
+
+  // State
+  const [conversations, setConversations] = useState<ConversationPreview[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string | null>(searchParams.get('convId'));
+  const [activeRawConv, setActiveRawConv] = useState<any | null>(null);
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<InboxFilterTab>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Modals & Popovers
+  const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+  const [blockModalTarget, setBlockModalTarget] = useState<string | null>(null);
+  const [reportModalTarget, setReportModalTarget] = useState<string | null>(null);
+
+  // Real-time typing state
+  const [typingState, setTypingState] = useState<TypingState | null>(null);
+
+  // Blocked users set
+  const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
+
+  // 1. Load User's Conversations
+  const loadConversations = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const rawList = await messagingRepository.getUserConversations(currentUserId);
+      const blocked = storageService.getBlockedUsers();
+      setBlockedUsers(blocked);
+
+      const previews: ConversationPreview[] = rawList.map((c) => {
+        const isBuyer = c.buyerId === currentUserId;
+        const counterpartName = isBuyer ? c.sellerName : c.buyerName;
+        const counterpartId = isBuyer ? c.sellerId : c.buyerId;
+        const counterpartAvatar = isBuyer ? c.sellerAvatarUrl : c.buyerAvatarUrl;
+        const isBlocked = blocked.includes(counterpartId);
+
+        return {
+          id: c.id,
+          type: 'listing',
+          counterpart: {
+            id: counterpartId,
+            name: counterpartName || 'Utilisateur Shongre',
+            avatarUrl: counterpartAvatar,
+            accountType: c.sellerType === 'pro' && !isBuyer ? 'pro' : 'individual',
+            isVerified: true,
+            rating: 4.9,
+            reviewCount: 12,
+          },
+          context: {
+            type: 'listing',
+            listingId: c.listingId,
+            listingTitle: c.listingTitle || 'Annonce',
+            listingPrice: c.listingPrice || 0,
+            listingPhotoUrl: c.listingPhotoUrl,
+            listingStatus: c.listingStatus || 'active',
+            sellerId: c.sellerId,
+            sellerName: c.sellerName || 'Vendeur',
+          },
+          lastMessageText: c.lastMessage || 'Nouvelle conversation',
+          lastMessageAt: c.lastMessageAt || (c as any).updatedAt || new Date().toISOString(),
+          unreadCount: c.unreadCount || 0,
+          isBlocked,
+          status: isBlocked ? 'blocked' : 'active',
+          createdAt: (c as any).createdAt || new Date().toISOString(),
+          updatedAt: c.lastMessageAt || new Date().toISOString(),
+        };
+      });
+
+      setConversations(previews);
+
+      // Auto-select first conversation on desktop if none selected
+      if (!activeConvId && previews.length > 0 && window.innerWidth >= 768) {
+        setActiveConvId(previews[0].id);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUserId, activeConvId]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
+
+  // 2. Load Active Conversation Detail & Messages
+  useEffect(() => {
+    if (!activeConvId) {
+      setActiveRawConv(null);
+      setTimelineItems([]);
+      return;
+    }
+
+    messagingRepository.getConversationById(activeConvId).then((conv) => {
+      if (conv) {
+        setActiveRawConv(conv);
+        const mappedItems = (conv.messages || []).map((m) => messagingService.mapMessageToTimelineItem(m));
+        setTimelineItems(mappedItems);
+        messagingRepository.markAsRead(activeConvId, currentUserId);
+      }
+    });
+  }, [activeConvId, currentUserId]);
+
+  // 3. Real-time Subscription to Active Conversation
+  useEffect(() => {
+    if (!activeConvId) return;
+
+    const unsubscribe = messagingRealtimeClient.subscribeToConversation(activeConvId, (event) => {
+      if (event.type === 'new_message') {
+        const incomingMsg = event.payload as UserTimelineMessage;
+        setTimelineItems((prev) => {
+          if (prev.some((m) => m.id === incomingMsg.id)) return prev;
+          return [...prev, incomingMsg];
+        });
+      } else if (event.type === 'system_event') {
+        const sysEvent = event.payload;
+        setTimelineItems((prev) => [...prev, sysEvent]);
+      } else if (event.type === 'typing') {
+        const typing = event.payload as TypingState;
+        if (typing.userId !== currentUserId) {
+          setTypingState(typing.isTyping ? typing : null);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [activeConvId, currentUserId]);
+
+  // Derive active counterpart and capabilities
+  const activeConversationPreview = useMemo(() => {
+    return conversations.find((c) => c.id === activeConvId) || null;
+  }, [conversations, activeConvId]);
+
+  const capabilities = useMemo(() => {
+    const counterpartId = activeConversationPreview?.counterpart.id || '';
+    const isBlocked = blockedUsers.includes(counterpartId);
+
+    return messagingCapabilitiesService.resolve({
+      viewer: currentUser,
+      counterpartId,
+      isBlockedByViewer: isBlocked,
+      conversationStatus: isBlocked ? 'blocked' : 'active',
+      isViewerSuspended: currentUser?.status === 'suspended',
+    });
+  }, [currentUser, activeConversationPreview, blockedUsers]);
+
+  // Handlers
+  const handleSelectConversation = (id: string) => {
+    setActiveConvId(id);
+    setSearchParams({ convId: id });
+  };
+
+  const handleBackToInbox = () => {
+    setActiveConvId(null);
+    setSearchParams({});
+  };
+
+  const handleSendMessage = async (text: string, attachmentUrl?: string) => {
+    if (!activeConvId) return;
+
+    const clientMsgId = `msg-opt-${Date.now()}`;
+    const optimisticMsg: UserTimelineMessage = {
+      itemType: 'message',
+      id: clientMsgId,
+      conversationId: activeConvId,
+      senderId: currentUserId,
+      senderName: currentUser?.name || 'Moi',
+      content: text || (attachmentUrl ? 'Photo partagée' : ''),
+      contentType: attachmentUrl ? 'image' : 'text',
+      status: 'sending',
+      isRead: false,
+      attachment: attachmentUrl ? { id: `att-${Date.now()}`, type: 'image', url: attachmentUrl } : undefined,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Optimistic insert
+    setTimelineItems((prev) => [...prev, optimisticMsg]);
+
+    try {
+      const savedMsg = await messagingRepository.sendMessage(
+        activeConvId,
+        currentUserId,
+        currentUser?.name || 'Moi',
+        text || (attachmentUrl ? 'Photo partagée' : ''),
+        attachmentUrl ? 'image' : 'text',
+        undefined,
+        attachmentUrl,
+        attachmentUrl ? 'image' : undefined
+      );
+
+      // Upgrade status to delivered
+      setTimelineItems((prev) =>
+        prev.map((m) => (m.id === clientMsgId ? { ...m, id: savedMsg.id, status: 'delivered' } : m))
+      );
+
+      // Refresh list previews
+      loadConversations();
+    } catch {
+      // Mark failed
+      setTimelineItems((prev) =>
+        prev.map((m) => (m.id === clientMsgId ? { ...m, status: 'failed' } : m))
+      );
+      toast.error('Échec de l\'envoi du message.');
+    }
+  };
+
+  const handleRetryMessage = async (msg: UserTimelineMessage) => {
+    setTimelineItems((prev) => prev.filter((m) => m.id !== msg.id));
+    await handleSendMessage(msg.content, msg.attachment?.url);
+  };
+
+  const handleTyping = (isTyping: boolean) => {
+    if (!activeConvId) return;
+    messagingRealtimeClient.sendTyping(
+      activeConvId,
+      currentUserId,
+      currentUser?.name || 'Moi',
+      isTyping
+    );
+  };
+
+  const handleSimulateReply = () => {
+    if (!activeConvId || !activeConversationPreview) return;
+    const counterpart = activeConversationPreview.counterpart;
+    messagingRealtimeClient.simulateSellerAutoReply(
+      activeConvId,
+      counterpart.id,
+      counterpart.name,
+      'Bonjour, je confirme que la disponibilité et le créneau conviennent parfaitement !'
+    );
+  };
+
+  const handleBlockToggle = () => {
+    if (!activeConversationPreview) return;
+    const counterpart = activeConversationPreview.counterpart;
+    const isCurrentlyBlocked = blockedUsers.includes(counterpart.id);
+
+    if (isCurrentlyBlocked) {
+      storageService.unblockUser(counterpart.id);
+      setBlockedUsers((prev) => prev.filter((id) => id !== counterpart.id));
+      toast.success(`${counterpart.name} a été débloqué.`);
+    } else {
+      setBlockModalTarget(counterpart.id);
+    }
+  };
+
+  const confirmBlock = () => {
+    if (!blockModalTarget) return;
+    storageService.blockUser(blockModalTarget);
+    setBlockedUsers((prev) => [...prev, blockModalTarget]);
+    setBlockModalTarget(null);
+    toast.info('Utilisateur bloqué. Vous ne recevrez plus de messages de sa part.');
+  };
+
+  const handleConfirmPickup = async (date: string, timeSlot: string, address: string) => {
+    if (!activeConvId) return;
+    await messagingRepository.schedulePickup(activeConvId, date, timeSlot, address);
+    toast.success('Rendez-vous planifié et partagé dans la conversation.');
+    loadConversations();
+  };
+
+  const handleSendOffer = async (amount: number) => {
+    if (!activeConvId) return;
+    await messagingRepository.makeOffer(
+      activeConvId,
+      currentUserId,
+      currentUser?.name || 'Moi',
+      amount
+    );
+    toast.success(`Offre de ${amount} € transmise au vendeur !`);
+    loadConversations();
+  };
+
+  const handleRespondOffer = async (accept: boolean, amount?: number) => {
+    if (!activeConvId) return;
+    await messagingRepository.respondToOffer(
+      activeConvId,
+      currentUserId,
+      currentUser?.name || 'Moi',
+      accept
+    );
+    toast.success(accept ? `Offre acceptée à ${amount} € !` : 'Offre déclinée.');
+    loadConversations();
+  };
+
+  const filteredConversations = useMemo(() => {
+    return messagingService.filterConversations(conversations, selectedFilter, searchQuery, currentUserId);
+  }, [conversations, selectedFilter, searchQuery, currentUserId]);
+
+  const activeListingContext: ListingConversationContext | null = useMemo(() => {
+    if (!activeRawConv) return null;
+    return {
+      type: 'listing',
+      listingId: activeRawConv.listingId,
+      listingTitle: activeRawConv.listingTitle || 'Annonce',
+      listingPrice: activeRawConv.listingPrice || 0,
+      listingPhotoUrl: activeRawConv.listingPhotoUrl,
+      listingStatus: activeRawConv.listingStatus || 'active',
+      sellerId: activeRawConv.sellerId,
+      sellerName: activeRawConv.sellerName || 'Vendeur',
+    };
+  }, [activeRawConv]);
+
+  // The attachment lightbox closed on backdrop click only — no Escape, no focus
+  // trap, and focus was never returned to the thumbnail that opened it.
+  const { containerRef: lightboxRef, titleId: lightboxTitleId } = useDialogBehavior(
+    Boolean(lightboxImageUrl),
+    () => setLightboxImageUrl(null)
+  );
+  return (
+    // `dvh`, not `vh`: the dynamic viewport shrinks when the mobile keyboard
+    // opens, which keeps the composer on screen. With `100vh` plus a 600px floor
+    // the thread stayed full height and pushed the input behind the keyboard, so
+    // the user could not see what they were typing. The minimum height only
+    // applies from `md` up, where there is no virtual keyboard.
+    <div className="bg-white rounded-3xl border border-border-base overflow-hidden shadow-xs h-[calc(100dvh-140px)] md:min-h-[600px] max-h-[850px] flex flex-col md:flex-row relative">
+      {/* 1. Left Inbox Sidebar */}
+      <div
+        className={`w-full md:w-80 lg:w-96 shrink-0 h-full flex flex-col ${
+          activeConvId ? 'hidden md:flex' : 'flex'
+        }`}
+      >
+        <ConversationList
+          conversations={filteredConversations}
+          activeConversationId={activeConvId}
+          onSelectConversation={handleSelectConversation}
+          selectedFilter={selectedFilter}
+          onSelectFilter={setSelectedFilter}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* 2. Right Conversation Pane */}
+      <div
+        className={`flex-1 h-full flex flex-col min-w-0 bg-white ${
+          !activeConvId ? 'hidden md:flex' : 'flex'
+        }`}
+      >
+        {activeConversationPreview ? (
+          <>
+            {/* Conversation Header */}
+            <ConversationHeader
+              counterpart={activeConversationPreview.counterpart}
+              capabilities={capabilities}
+              onBack={handleBackToInbox}
+              onBlockToggle={handleBlockToggle}
+              onReport={() => setReportModalTarget(activeConversationPreview.id)}
+              onSimulateReply={handleSimulateReply}
+            />
+
+            {/* Contextual Listing Banner */}
+            <ConversationContextBar
+              listingContext={activeListingContext}
+              onMakeOffer={() => setIsOfferModalOpen(true)}
+              onSchedulePickup={() => setIsPickupModalOpen(true)}
+              onViewTransaction={() => {
+                if (activeRawConv?.transactionId) {
+                  const foundTx = storageService.getTransactions().find((t) => t.id === activeRawConv.transactionId);
+                  if (foundTx) setSelectedTx(foundTx);
+                }
+              }}
+            />
+
+            {/* Message Timeline */}
+            <MessageTimeline
+              items={timelineItems}
+              currentUserId={currentUserId}
+              typingState={typingState}
+              onOpenImage={(url) => setLightboxImageUrl(url)}
+              onRetryMessage={handleRetryMessage}
+              onRespondOffer={handleRespondOffer}
+            />
+
+            {/* Message Composer */}
+            <MessageComposer
+              onSendMessage={handleSendMessage}
+              onTyping={handleTyping}
+              capabilities={capabilities}
+              isPro={isPro}
+            />
+          </>
+        ) : (
+          /* Empty Active Selection on Desktop */
+          <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-stone-500">
+            <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400">
+              <Sparkles className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <p className="text-base font-black text-stone-800">Sélectionnez une conversation</p>
+              <p className="text-xs text-stone-500 mt-1 max-w-sm">
+                Choisissez une conversation dans la liste de gauche pour échanger avec vos acheteurs et vendeurs en toute sécurité.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* MODALS */}
+      {/* ========================================================================= */}
+
+      {/* 1. Schedule Pickup Modal */}
+      {isPickupModalOpen && (
+        <PickupSchedulerModal
+          isOpen={isPickupModalOpen}
+          onClose={() => setIsPickupModalOpen(false)}
+          onConfirm={handleConfirmPickup}
+        />
+      )}
+
+      {/* 2. Make Offer Modal */}
+      {isOfferModalOpen && activeListingContext && (
+        <MakeOfferModal
+          isOpen={isOfferModalOpen}
+          onClose={() => setIsOfferModalOpen(false)}
+          currentPrice={activeListingContext.listingPrice}
+          onSendOffer={handleSendOffer}
+        />
+      )}
+
+      {/* 3. Transaction Detail Modal */}
+      {selectedTx && (
+        <TransactionDetailModal
+          isOpen={!!selectedTx}
+          onClose={() => setSelectedTx(null)}
+          transaction={selectedTx}
+          currentUser={currentUser || DEMO_USERS.buyer_thomas}
+          onUpdate={(_updatedTx) => {
+            loadConversations();
+          }}
+        />
+      )}
+
+      {/* 4. Block Confirmation Modal */}
+      {blockModalTarget && (
+        <Modal
+          isOpen={!!blockModalTarget}
+          onClose={() => setBlockModalTarget(null)}
+          title="Bloquer cet utilisateur"
+          description="Cet utilisateur ne pourra plus vous envoyer de messages ni interagir avec vos annonces."
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-stone-600 leading-relaxed font-medium">
+              Êtes-vous sûr de vouloir bloquer cet utilisateur ? Vous pourrez le débloquer à tout moment depuis les options de la conversation.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" fullWidth onClick={() => setBlockModalTarget(null)}>
+                Annuler
+              </Button>
+              <Button variant="danger" fullWidth onClick={confirmBlock}>
+                Confirmer le blocage
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* 5. Report Conversation Modal */}
+      {reportModalTarget && (
+        <Modal
+          isOpen={!!reportModalTarget}
+          onClose={() => setReportModalTarget(null)}
+          title="Signaler la conversation"
+          description="Aidez l'équipe de modération à garantir la sécurité sur Shongre."
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-stone-600 leading-relaxed">
+              Votre signalement sera examiné en priorité par notre équipe de modération. En cas d'urgence ou de tentative d'escroquerie, nous prendrons des mesures immédiates.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" fullWidth onClick={() => setReportModalTarget(null)}>
+                Annuler
+              </Button>
+              <Button
+                variant="danger"
+                fullWidth
+                onClick={() => {
+                  setReportModalTarget(null);
+                  toast.success('Votre signalement a été transmis à la modération.');
+                }}
+              >
+                Envoyer le signalement
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* 6. Image Lightbox Modal */}
+      {lightboxImageUrl && (
+        <div
+          ref={lightboxRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={lightboxTitleId}
+          tabIndex={-1}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setLightboxImageUrl(null)}
+        >
+          <h2 id={lightboxTitleId} className="sr-only">
+            Pièce jointe en plein écran
+          </h2>
+          <button
+            type="button"
+            onClick={() => setLightboxImageUrl(null)}
+            className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            aria-label="Fermer la vue plein écran"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <Image
+            src={lightboxImageUrl}
+            alt="Vue plein écran"
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </div>
+  );
+};

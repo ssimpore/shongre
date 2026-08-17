@@ -1,0 +1,84 @@
+import React from 'react';
+import { Mail, Sparkles, Tag, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { NewsletterSignup } from './components/NewsletterSignup';
+import { newsletterTopicsService } from '../../domains/newsletter/newsletter.topics';
+
+export const NewsletterLandingPage: React.FC = () => {
+  const topics = newsletterTopicsService.getAllTopics();
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16 space-y-12">
+      {/* 1. Header & Value Proposition */}
+      <div className="text-center max-w-2xl mx-auto space-y-4">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+          <Mail className="w-3.5 h-3.5" />
+          <span>La Newsletter Shongre</span>
+        </div>
+
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 tracking-tight leading-tight">
+          Ne manquez plus aucune pépite ni bonne affaire
+        </h1>
+
+        <p className="text-xs sm:text-base text-stone-600 leading-relaxed">
+          Chaque semaine, recevez dans votre boîte mail une sélection d'articles uniques, les baisses de prix vérifiées et des conseils pour acheter et vendre en toute confiance.
+        </p>
+      </div>
+
+      {/* 2. Embedded Main Signup Band */}
+      <div className="max-w-3xl mx-auto">
+        <NewsletterSignup variant="band" source="newsletter_page" />
+      </div>
+
+      {/* 3. Topics Grid */}
+      <div className="space-y-6 pt-6">
+        <div className="text-center max-w-xl mx-auto space-y-1">
+          <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            Ce que vous trouverez dans nos éditions
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-500">
+            Vous gardez le contrôle total sur vos préférences et pouvez vous désabonner en 1 clic.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {topics.map((topic) => (
+            <div
+              key={topic.id}
+              className="bg-white border border-border-base rounded-2xl p-5 space-y-2 shadow-xs"
+            >
+              <h3 className="font-bold text-sm text-stone-900">{topic.label}</h3>
+              <p className="text-xs text-stone-500 leading-relaxed">{topic.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. Trust & Privacy Guarantees */}
+      <div className="bg-stone-50 border border-border-base rounded-3xl p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center text-xs text-stone-600">
+        <div className="space-y-1">
+          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <h4 className="font-black text-stone-900">100% Sans Spam</h4>
+          <p>Une fréquence raisonnée d'un à deux emails par semaine maximum.</p>
+        </div>
+
+        <div className="space-y-1">
+          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <h4 className="font-black text-stone-900">Contenu éditorial soigné</h4>
+          <p>Des sélections manuelles préparées par nos équipes basées en France.</p>
+        </div>
+
+        <div className="space-y-1">
+          <div className="w-8 h-8 rounded-full bg-stone-200 text-stone-700 flex items-center justify-center mx-auto mb-2">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <h4 className="font-black text-stone-900">Désinscription instantanée</h4>
+          <p>Un lien de désabonnement en 1 clic dans chaque email envoyé.</p>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Production builds & caches
+dist/
+frontend/dist/
+build/
+.vite/
+frontend/.vite/
+coverage/
+frontend/coverage/
+
+# Logs & System
+*.log
+.DS_Store
+*.tmp
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+!.env.example
+!frontend/.env.example

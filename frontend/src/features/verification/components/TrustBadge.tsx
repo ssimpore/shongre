@@ -1,0 +1,130 @@
+import React from 'react';
+import { ShieldCheck, Building2, CheckCircle2, Smartphone, Lock, Award } from 'lucide-react';
+import { TrustLevel, VerificationDimensionId } from '../../../domains/verification/verification.types';
+
+export interface TrustBadgeProps {
+  level?: TrustLevel;
+  dimension?: VerificationDimensionId;
+  size?: 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
+  className?: string;
+}
+
+export const TrustBadge: React.FC<TrustBadgeProps> = ({
+  level,
+  dimension,
+  size = 'md',
+  showLabel = true,
+  className = '',
+}) => {
+  const sizeClasses = {
+    sm: 'text-micro px-1.5 py-0.5 gap-1',
+    md: 'text-xs px-2.5 py-1 gap-1.5 font-bold',
+    lg: 'text-sm px-3.5 py-1.5 gap-2 font-black',
+  };
+
+  const iconSizes = {
+    sm: 'w-3 h-3',
+    md: 'w-3.5 h-3.5',
+    lg: 'w-4 h-4',
+  };
+
+  if (dimension) {
+    switch (dimension) {
+      case 'identity':
+        return (
+          <span
+            className={`inline-flex items-center rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 ${sizeClasses[size]} ${className}`}
+            title="Identité officielle vérifiée (CNI / Passeport)"
+          >
+            <ShieldCheck className={iconSizes[size]} />
+            {showLabel && <span>Identité vérifiée</span>}
+          </span>
+        );
+      case 'business':
+        return (
+          <span
+            className={`inline-flex items-center rounded-full bg-amber-50 text-amber-900 border border-amber-300 ${sizeClasses[size]} ${className}`}
+            title="Entreprise certifiée au Registre du Commerce (RCS)"
+          >
+            <Building2 className={iconSizes[size]} />
+            {showLabel && <span>Pro Certifié RCS</span>}
+          </span>
+        );
+      case 'phone':
+        return (
+          <span
+            className={`inline-flex items-center rounded-full bg-sky-50 text-sky-800 border border-sky-200 ${sizeClasses[size]} ${className}`}
+            title="Numéro de téléphone vérifié par SMS"
+          >
+            <Smartphone className={iconSizes[size]} />
+            {showLabel && <span>Téléphone certifié</span>}
+          </span>
+        );
+      case 'bank_payout':
+        return (
+          <span
+            className={`inline-flex items-center rounded-full bg-stone-100 text-stone-800 border border-stone-300 ${sizeClasses[size]} ${className}`}
+            title="Compte bancaire SEPA validé pour le séquestre"
+          >
+            <CheckCircle2 className={iconSizes[size]} />
+            {showLabel && <span>IBAN vérifié</span>}
+          </span>
+        );
+      case 'mfa':
+        return (
+          <span
+            className={`inline-flex items-center rounded-full bg-purple-50 text-purple-800 border border-purple-200 ${sizeClasses[size]} ${className}`}
+            title="Double authentification active"
+          >
+            <Lock className={iconSizes[size]} />
+            {showLabel && <span>Compte 2FA</span>}
+          </span>
+        );
+      default:
+        return null;
+    }
+  }
+
+  // Level based badge
+  switch (level) {
+    case 'tier_4_verified_pro':
+      return (
+        <span
+          className={`inline-flex items-center rounded-full bg-stone-900 text-amber-300 border border-amber-400/50 shadow-2xs ${sizeClasses[size]} ${className}`}
+        >
+          <Building2 className={iconSizes[size]} />
+          {showLabel && <span>Boutique Pro Vérifiée</span>}
+        </span>
+      );
+    case 'tier_3_trusted_seller':
+      return (
+        <span
+          className={`inline-flex items-center rounded-full bg-emerald-700 text-white shadow-2xs ${sizeClasses[size]} ${className}`}
+        >
+          <Award className={iconSizes[size]} />
+          {showLabel && <span>Vendeur de Confiance</span>}
+        </span>
+      );
+    case 'tier_2_verified_member':
+      return (
+        <span
+          className={`inline-flex items-center rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 ${sizeClasses[size]} ${className}`}
+        >
+          <CheckCircle2 className={iconSizes[size]} />
+          {showLabel && <span>Membre Vérifié</span>}
+        </span>
+      );
+    case 'tier_1_starter':
+      return (
+        <span
+          className={`inline-flex items-center rounded-full bg-stone-100 text-stone-700 border border-stone-200 ${sizeClasses[size]} ${className}`}
+        >
+          <ShieldCheck className={iconSizes[size]} />
+          {showLabel && <span>Compte Débutant</span>}
+        </span>
+      );
+    default:
+      return null;
+  }
+};
