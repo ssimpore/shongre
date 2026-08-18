@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Settings2, ChevronRight } from 'lucide-react';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
+import {
+  DROPDOWN_PANEL_CLASSES,
+  DROPDOWN_HEADER_CLASSES,
+  DROPDOWN_HEADER_TITLE_CLASSES,
+  DROPDOWN_ITEM_CLASSES,
+} from './DropdownMenu';
 
 export interface LanguageOption {
   code: string;
@@ -133,10 +139,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           role="menu"
           aria-orientation="vertical"
           aria-labelledby={`${idPrefix}-button`}
-          className={`absolute ${dropdownPlacement} w-60 bg-white rounded-2xl shadow-xl border border-border-base py-1.5 z-50 animate-in fade-in zoom-in-95`}
+          className={`absolute ${dropdownPlacement} w-60 ${DROPDOWN_PANEL_CLASSES}`}
         >
-          <div className="px-3.5 py-1.5 text-micro font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100">
-            Choisir la langue
+          <div className={DROPDOWN_HEADER_CLASSES}>
+            <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
+              <span>Choisir la langue</span>
+            </div>
           </div>
 
           <div className="py-1">
@@ -150,12 +158,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   disabled={!lang.isAvailable}
                   aria-disabled={!lang.isAvailable}
                   onClick={() => handleSelectLanguage(lang)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors text-left ${
+                  className={`${DROPDOWN_ITEM_CLASSES.base} ${
                     !lang.isAvailable
-                      ? 'text-stone-400 cursor-not-allowed'
+                      ? DROPDOWN_ITEM_CLASSES.disabled
                       : isSelected
-                      ? 'bg-primary-light text-primary font-bold cursor-pointer'
-                      : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium cursor-pointer'
+                      ? DROPDOWN_ITEM_CLASSES.selected
+                      : DROPDOWN_ITEM_CLASSES.unselected
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -167,7 +175,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                       <span className="text-micro text-stone-500 font-normal">{lang.name}</span>
                     </div>
                   </div>
-                  {isSelected && lang.isAvailable && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  {isSelected && lang.isAvailable && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                   {!lang.isAvailable && (
                     <span className="text-micro font-bold uppercase tracking-wider text-stone-400 shrink-0">
                       Bientôt

@@ -8,6 +8,7 @@ import {
   X,
   Sparkles,
   Check,
+  Compass,
 } from 'lucide-react';
 import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
@@ -21,6 +22,15 @@ import {
 } from '../../configuration/search.config';
 import { SearchAutocomplete, AutocompleteSelection } from './SearchAutocomplete';
 import { storageService } from '../../services/storage.service';
+import {
+  DropdownMenu,
+  DropdownOption,
+  DROPDOWN_PANEL_CLASSES,
+  DROPDOWN_HEADER_CLASSES,
+  DROPDOWN_HEADER_TITLE_CLASSES,
+  DROPDOWN_ITEM_CLASSES,
+  DROPDOWN_SEARCH_INPUT_CLASSES,
+} from './DropdownMenu';
 
 export interface GlobalSearchCriteria {
   query: string;
@@ -428,18 +438,18 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 <div
                   id={`${idPrefix}-header-category-menu`}
                   role="menu"
-                  className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-2xl shadow-xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95 max-h-[380px] overflow-y-auto"
+                  className={`absolute top-full left-0 mt-1.5 w-72 ${DROPDOWN_PANEL_CLASSES}`}
                 >
-                  <div className="px-3 pb-2 border-b border-border-subtle">
-                    <div className="text-micro font-bold text-stone-500 uppercase tracking-wider mb-1.5">
-                      Filtrer par catégorie
+                  <div className={DROPDOWN_HEADER_CLASSES}>
+                    <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
+                      <span>Filtrer par catégorie</span>
                     </div>
                     <input
                       type="text"
                       placeholder="Rechercher une catégorie…"
                       value={categoryFilterText}
                       onChange={(e) => setCategoryFilterText(e.target.value)}
-                      className="w-full h-8 px-2.5 bg-bg-base border border-border-base rounded-lg text-xs text-stone-900 focus:outline-none focus:border-primary"
+                      className={DROPDOWN_SEARCH_INPUT_CLASSES}
                       autoFocus
                     />
                   </div>
@@ -447,10 +457,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCategorySelect(undefined)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer text-left ${
+                    className={`${DROPDOWN_ITEM_CLASSES.base} ${
                       !selectedCategorySlug
-                        ? 'bg-primary-light text-primary'
-                        : 'text-stone-800 hover:bg-bg-subtle'
+                        ? DROPDOWN_ITEM_CLASSES.selected
+                        : DROPDOWN_ITEM_CLASSES.unselected
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -465,10 +475,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                       key={cat.id}
                       type="button"
                       onClick={() => handleCategorySelect(cat.slug)}
-                      className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-left ${
+                      className={`${DROPDOWN_ITEM_CLASSES.base} ${
                         selectedCategorySlug === cat.slug
-                          ? 'bg-primary-light text-primary font-bold'
-                          : 'text-stone-800 hover:bg-primary-light/50'
+                          ? DROPDOWN_ITEM_CLASSES.selected
+                          : DROPDOWN_ITEM_CLASSES.unselected
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
@@ -486,7 +496,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           )}
 
           {/* Search Keyword Input with Autocomplete */}
-          <div className="flex-1 min-w-[230px] relative flex items-center pl-3">
+          <div className="flex-1 min-w-[120px] relative flex items-center pl-3">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
               ref={searchInputRef}
@@ -528,10 +538,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               type="button"
               onClick={openLocationModal}
               aria-label={`Localisation : ${city || userLocation.label}`}
-              className="hidden lg:flex items-center gap-1.5 px-3 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle transition-colors cursor-pointer max-w-[104px] xl:max-w-[160px] truncate min-w-0 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
+              className="hidden lg:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle transition-colors cursor-pointer shrink-0 whitespace-nowrap focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
             >
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="truncate">{city || userLocation.label}</span>
+              <span className="whitespace-nowrap">{city || userLocation.label}</span>
             </button>
           )}
 
@@ -734,7 +744,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
                 aria-expanded={isCategoryMenuOpen}
                 aria-haspopup="menu"
-                className={`h-11 px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto transition-colors cursor-pointer ${
+                className={`h-control-touch px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto transition-colors cursor-pointer ${
                   selectedCategorySlug
                     ? 'bg-primary-light border-primary-border text-primary font-bold'
                     : 'bg-bg-base border-border-base hover:bg-bg-subtle text-stone-700'
@@ -760,15 +770,21 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 <div
                   id={`${idPrefix}-page-category-menu`}
                   role="menu"
-                  className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-2xl shadow-xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95 max-h-[380px] overflow-y-auto"
+                  className={`absolute top-full left-0 mt-1.5 w-72 ${DROPDOWN_PANEL_CLASSES}`}
                 >
-                  <div className="px-3 pb-2 border-b border-border-subtle">
+                  <div className={DROPDOWN_HEADER_CLASSES}>
+                    <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
+                      <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                        <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Catégories</span>
+                      </div>
+                    </div>
                     <input
                       type="text"
                       placeholder="Filtrer les catégories…"
                       value={categoryFilterText}
                       onChange={(e) => setCategoryFilterText(e.target.value)}
-                      className="w-full h-8 px-2.5 bg-bg-base border border-border-base rounded-lg text-xs text-stone-900 focus:outline-none focus:border-primary"
+                      className={DROPDOWN_SEARCH_INPUT_CLASSES}
                       autoFocus
                     />
                   </div>
@@ -776,10 +792,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCategorySelect(undefined)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer text-left ${
+                    className={`${DROPDOWN_ITEM_CLASSES.base} ${
                       !selectedCategorySlug
-                        ? 'bg-primary-light text-primary'
-                        : 'text-stone-800 hover:bg-bg-subtle'
+                        ? DROPDOWN_ITEM_CLASSES.selected
+                        : DROPDOWN_ITEM_CLASSES.unselected
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -794,10 +810,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                       key={cat.id}
                       type="button"
                       onClick={() => handleCategorySelect(cat.slug)}
-                      className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-left ${
+                      className={`${DROPDOWN_ITEM_CLASSES.base} ${
                         selectedCategorySlug === cat.slug
-                          ? 'bg-primary-light text-primary font-bold'
-                          : 'text-stone-800 hover:bg-primary-light/50'
+                          ? DROPDOWN_ITEM_CLASSES.selected
+                          : DROPDOWN_ITEM_CLASSES.unselected
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
@@ -865,19 +881,28 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             )}
 
             {showRadius && city && !isCountryWide && (
-              <select
-                id={`${idPrefix}-page-radius-select`}
-                value={String(radiusKm || 0)}
-                onChange={(e) => setRadiusKm(Number(e.target.value))}
-                aria-label="Rayon de recherche en kilomètres"
-                className="hidden sm:block h-control-touch px-2.5 rounded-xl border border-border-base bg-bg-base text-xs font-semibold text-stone-700 focus:outline-none focus:border-primary cursor-pointer"
-              >
-                <option value="0">Ville exacte</option>
-                <option value="10">+10 km</option>
-                <option value="30">+30 km</option>
-                <option value="50">+50 km</option>
-                <option value="100">+100 km</option>
-              </select>
+              <div className="hidden sm:block">
+                <DropdownMenu
+                  id={`${idPrefix}-page-radius-select`}
+                  size="touch"
+                  panelWidth="w-40"
+                  headerTitle={
+                    <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                      <Compass className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>Rayon</span>
+                    </div>
+                  }
+                  options={[
+                    { value: '0', label: 'Ville exacte' },
+                    { value: '10', label: '+10 km' },
+                    { value: '30', label: '+30 km' },
+                    { value: '50', label: '+50 km' },
+                    { value: '100', label: '+100 km' },
+                  ]}
+                  value={String(radiusKm || 0)}
+                  onChange={(val) => setRadiusKm(Number(val))}
+                />
+              </div>
             )}
 
             <button
@@ -962,18 +987,21 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <div
                 id={`${idPrefix}-hero-category-menu`}
                 role="menu"
-                className="absolute top-full left-0 mt-1.5 w-80 bg-white rounded-2xl shadow-2xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95 max-h-[380px] overflow-y-auto"
+                className={`absolute top-full left-0 mt-1.5 w-80 ${DROPDOWN_PANEL_CLASSES}`}
               >
-                <div className="px-3 pb-2 border-b border-border-subtle">
-                  <div className="text-micro font-bold text-stone-500 uppercase tracking-wider mb-1.5">
-                    Sélectionner une catégorie
+                <div className={DROPDOWN_HEADER_CLASSES}>
+                  <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
+                    <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                      <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>Catégories</span>
+                    </div>
                   </div>
                   <input
                     type="text"
                     placeholder="Chercher une catégorie…"
                     value={categoryFilterText}
                     onChange={(e) => setCategoryFilterText(e.target.value)}
-                    className="w-full h-8 px-2.5 bg-bg-base border border-border-base rounded-lg text-xs text-stone-900 focus:outline-none focus:border-primary"
+                    className={DROPDOWN_SEARCH_INPUT_CLASSES}
                     autoFocus
                   />
                 </div>
@@ -981,10 +1009,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 <button
                   type="button"
                   onClick={() => handleCategorySelect(undefined)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-bold transition-colors cursor-pointer text-left ${
+                  className={`${DROPDOWN_ITEM_CLASSES.base} py-2.5 ${
                     !selectedCategorySlug
-                      ? 'bg-primary-light text-primary'
-                      : 'text-stone-800 hover:bg-bg-subtle'
+                      ? DROPDOWN_ITEM_CLASSES.selected
+                      : DROPDOWN_ITEM_CLASSES.unselected
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -999,10 +1027,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategorySelect(cat.slug)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-left ${
+                    className={`${DROPDOWN_ITEM_CLASSES.base} ${
                       selectedCategorySlug === cat.slug
-                        ? 'bg-primary-light text-primary font-bold'
-                        : 'text-stone-800 hover:bg-primary-light/50'
+                        ? DROPDOWN_ITEM_CLASSES.selected
+                        : DROPDOWN_ITEM_CLASSES.unselected
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">

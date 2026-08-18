@@ -48,6 +48,7 @@ import { DirectPurchaseCheckoutModal } from '../transactions/DirectPurchaseCheck
 import { ReservationCheckoutModal } from '../transactions/components/ReservationCheckoutModal';
 import { ListingMediaGallery } from './components/ListingMediaGallery';
 import { ListingCharacteristics } from './components/ListingCharacteristics';
+import { DropdownMenu } from '../../design-system/primitives/DropdownMenu';
 import { ListingFulfillmentSummary } from './components/ListingFulfillmentSummary';
 import { ListingSellerTrustSection } from './components/ListingSellerTrustSection';
 import { ListingSafetyNotice } from './components/ListingSafetyNotice';
@@ -753,17 +754,20 @@ export const ListingDetailPage: React.FC = () => {
       >
         <div className="space-y-4 text-xs">
           <FormField label="Motif du signalement">
-            <select
+            <DropdownMenu
+              id="report-reason-select"
+              fullWidth
+              headerTitle="Motif du signalement"
+              options={[
+                { value: 'suspicious', label: 'Tentative de fraude ou arnaque' },
+                { value: 'prohibited', label: 'Article illégal ou interdit' },
+                { value: 'counterfeit', label: 'Contrefaçon' },
+                { value: 'wrong_category', label: 'Mauvaise catégorie' },
+                { value: 'other', label: 'Autre motif' },
+              ]}
               value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              className="w-full h-10 px-3 border border-border-base rounded-xl bg-white text-xs font-semibold"
-            >
-              <option value="suspicious">Tentative de fraude ou arnaque</option>
-              <option value="prohibited">Article illégal ou interdit</option>
-              <option value="counterfeit">Contrefaçon</option>
-              <option value="wrong_category">Mauvaise catégorie</option>
-              <option value="other">Autre motif</option>
-            </select>
+              onChange={(val) => setReportReason(val)}
+            />
           </FormField>
 
           <FormField label="Précisions complémentaires">

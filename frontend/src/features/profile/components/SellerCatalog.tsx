@@ -19,6 +19,7 @@ import { ListingCard } from '../../../design-system/primitives/ListingCard';
 import { Button } from '../../../design-system/primitives/Button';
 import { NoResultsFound } from '../../../design-system/primitives/NoResultsFound';
 import { usePublishCta } from '../../../security/usePublishCta';
+import { DropdownMenu, DropdownOption } from '../../../design-system/primitives/DropdownMenu';
 
 export interface SellerCatalogProps {
   listings: Listing[];
@@ -235,20 +236,21 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
           {/* Controls: Sort, Filter Toggle, View Toggle */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Sort Selector */}
-            <div className="relative flex items-center">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                aria-label="Trier les annonces"
-                className="appearance-none pl-3 pr-8 py-2 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-800 focus:bg-white focus:outline-hidden focus:border-primary cursor-pointer"
-              >
-                <option value="recent">Plus récentes</option>
-                <option value="price_asc">Prix croissant</option>
-                <option value="price_desc">Prix décroissant</option>
-                <option value="popular">Popularité</option>
-              </select>
-              <ArrowUpDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 pointer-events-none" />
-            </div>
+            <DropdownMenu<SortOption>
+              id="seller-catalog-sort"
+              size="sm"
+              placement="bottom-right"
+              panelWidth="w-48"
+              headerTitle="Trier par"
+              options={[
+                { value: 'recent', label: 'Plus récentes' },
+                { value: 'price_asc', label: 'Prix croissant' },
+                { value: 'price_desc', label: 'Prix décroissant' },
+                { value: 'popular', label: 'Popularité' },
+              ]}
+              value={sortBy}
+              onChange={(val) => setSortBy(val)}
+            />
 
             {/* Price filter drawer button */}
             <button

@@ -15,6 +15,12 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { Market } from '../../domains/market/market.types';
 import { Modal } from './Modal';
 import { Button } from './Button';
+import {
+  DROPDOWN_PANEL_CLASSES,
+  DROPDOWN_HEADER_CLASSES,
+  DROPDOWN_HEADER_TITLE_CLASSES,
+  DROPDOWN_ITEM_CLASSES,
+} from './DropdownMenu';
 
 interface MarketSelectorProps {
   variant?: 'header' | 'footer' | 'compact' | 'pill';
@@ -126,19 +132,21 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
 
         {isOpen && (
           <div
-            className={`absolute right-0 w-72 bg-white rounded-2xl shadow-2xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95 duration-fast ${
+            className={`absolute right-0 w-72 ${DROPDOWN_PANEL_CLASSES} ${
               isFooter ? 'bottom-full mb-2' : 'top-full mt-2'
             }`}
           >
             {/* Header */}
-            <div className="px-3.5 py-2 border-b border-border-subtle flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
-                <Globe className="w-3.5 h-3.5 text-primary" />
-                <span>Marché & Territoire</span>
+            <div className={DROPDOWN_HEADER_CLASSES}>
+              <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
+                <div className="flex items-center gap-1.5 text-stone-800 normal-case font-bold">
+                  <Globe className="w-3.5 h-3.5 text-primary" />
+                  <span>Marché & Territoire</span>
+                </div>
+                <span className="text-micro font-semibold text-stone-500 uppercase tracking-wider">
+                  {availableMarkets.length} pays
+                </span>
               </div>
-              <span className="text-micro font-semibold text-stone-500 uppercase tracking-wider">
-                {availableMarkets.length} pays
-              </span>
             </div>
 
             {/* Markets List */}
@@ -150,10 +158,10 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                     key={m.code}
                     type="button"
                     onClick={() => handleSelectMarket(m)}
-                    className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between transition-colors cursor-pointer ${
+                    className={`${DROPDOWN_ITEM_CLASSES.base} py-2.5 ${
                       isCurrent
-                        ? 'bg-primary-light text-primary font-bold'
-                        : 'hover:bg-bg-base text-stone-800'
+                        ? DROPDOWN_ITEM_CLASSES.selected
+                        : DROPDOWN_ITEM_CLASSES.unselected
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -178,7 +186,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                       </div>
                     </div>
 
-                    {isCurrent && <Check className="w-4 h-4 text-primary shrink-0" />}
+                    {isCurrent && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                   </button>
                 );
               })}

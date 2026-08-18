@@ -40,6 +40,7 @@ import { useDialogBehavior } from '../../design-system/primitives/useDialogBehav
 import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
+import { DROPDOWN_PANEL_CLASSES } from '../../design-system/primitives/DropdownMenu';
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -244,7 +245,7 @@ export const Header: React.FC = () => {
 
               {/* Account Dropdown */}
               {isAccountMenuOpen && isAuthenticated && currentUser && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95">
+                <div className={`absolute right-0 mt-2 w-64 ${DROPDOWN_PANEL_CLASSES}`}>
                   <div className="px-4 py-2.5 border-b border-border-subtle">
                     <div className="font-bold text-sm text-stone-900 truncate">
                       {currentUser.name}

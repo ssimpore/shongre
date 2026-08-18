@@ -10,6 +10,8 @@ export interface CategoryFilterRailProps {
   selectedCategorySlug?: string;
   /** Callback fired when category is toggled or selected. Passing undefined resets to all. */
   onSelectCategory: (categorySlug: string | undefined) => void;
+  /** Optional callback fired when the master "Toutes les annonces" button is clicked */
+  onSelectAll?: () => void;
   /** Optional selected subcategory slug */
   selectedSubCategorySlug?: string;
   /** Optional callback when subcategory is toggled */
@@ -31,6 +33,7 @@ export interface CategoryFilterRailProps {
 export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
   selectedCategorySlug,
   onSelectCategory,
+  onSelectAll,
   selectedSubCategorySlug,
   onSelectSubCategory,
   showAllOption = true,
@@ -56,12 +59,28 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
     if (!el) return;
 
     checkScrollBoundaries();
+    const rafId = requestAnimationFrame(checkScrollBoundaries);
+    const timer = setTimeout(checkScrollBoundaries, 150);
+
     el.addEventListener('scroll', checkScrollBoundaries, { passive: true });
     window.addEventListener('resize', checkScrollBoundaries);
 
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        checkScrollBoundaries();
+      });
+      resizeObserver.observe(el);
+    }
+
     return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer);
       el.removeEventListener('scroll', checkScrollBoundaries);
       window.removeEventListener('resize', checkScrollBoundaries);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
   }, []);
 
@@ -99,11 +118,9 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
     if (isCurrentlySelected) {
       // Toggle off if already selected
       onSelectCategory(undefined);
-      if (onSelectSubCategory) onSelectSubCategory(undefined);
     } else {
       // Select new category by canonical slug
       onSelectCategory(cat.slug);
-      if (onSelectSubCategory) onSelectSubCategory(undefined);
     }
   };
 
@@ -141,10 +158,14 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               id={`${idPrefix}-chip-all`}
               type="button"
               onClick={() => {
-                onSelectCategory(undefined);
-                if (onSelectSubCategory) onSelectSubCategory(undefined);
+                if (onSelectAll) {
+                  onSelectAll();
+                } else {
+                  onSelectCategory(undefined);
+                }
               }}
               aria-pressed={!selectedCategorySlug}
+              title="Afficher toutes les annonces actives"
               className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.98] ${
                 !selectedCategorySlug
                   ? 'bg-stone-900 text-white border-stone-900 shadow-xs'

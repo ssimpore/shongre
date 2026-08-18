@@ -17,6 +17,7 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeft,
+  Layers,
 } from 'lucide-react';
 import { listingRepository } from '../../repositories/listing.repository';
 import { Listing, SearchFilters, ListingCondition } from '../../types';
@@ -24,7 +25,7 @@ import { TAXONOMY, CONDITION_OPTIONS } from '../../domains/taxonomy/taxonomy.dat
 import { taxonomyService, getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Button } from '../../design-system/primitives/Button';
-import { Input, Checkbox, Select } from '../../design-system/primitives/FormField';
+import { Input, Checkbox } from '../../design-system/primitives/FormField';
 import { Drawer } from '../../design-system/primitives/Modal';
 import { plural } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
@@ -38,11 +39,12 @@ import { FilterChip } from '../../design-system/primitives/FilterChip';
 import { CategoryFilterRail } from '../../design-system/primitives/CategoryFilterRail';
 import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
+import { DropdownMenu, DropdownOption } from '../../design-system/primitives/DropdownMenu';
 
 export const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { location: userLocation, openLocationModal } = useMarketLocation();
+  const { location: userLocation, openLocationModal, resetLocation } = useMarketLocation();
   const toast = useToast();
 
   const urlViewParam = searchParams.get('view') as 'grid' | 'list' | 'map' | null;
@@ -59,8 +61,9 @@ export const SearchPage: React.FC = () => {
   const query = searchParams.get('query') || '';
   const categorySlug = searchParams.get('category') || '';
   const subCategorySlug = searchParams.get('subCategory') || '';
-  const isCountryWide = userLocation.city.startsWith('Tout') || userLocation.city.startsWith('Toute');
-  const city = searchParams.get('city') || (!isCountryWide ? userLocation.city : '');
+  const cityParam = searchParams.get('city');
+  // Only filter by city if the URL specifically specifies an active, non-countrywide city query parameter
+  const city = (cityParam && !cityParam.startsWith('Tout') && !cityParam.startsWith('Toute') && cityParam !== 'all') ? cityParam : '';
   const radiusKm = searchParams.get('radius') ? Number(searchParams.get('radius')) : (userLocation.radiusKm || 30);
   const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
   const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
@@ -113,30 +116,34 @@ export const SearchPage: React.FC = () => {
   }, [query, categorySlug, subCategorySlug, city, radiusKm, minPrice, maxPrice, sellerType, delivery, onlinePayment, onlyDeals, sortBy, marketCode]);
 
   const updateFilter = (key: string, value: string | undefined) => {
-    const next = new URLSearchParams(searchParams);
-    if (value === undefined || value === '' || value === 'all') {
-      next.delete(key);
-      if (key === 'category') {
-        next.delete('subCategory');
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value === undefined || value === '' || value === 'all') {
+        next.delete(key);
+        if (key === 'category') {
+          next.delete('subCategory');
+        }
+      } else {
+        next.set(key, value);
+        if (key === 'category') {
+          next.delete('subCategory');
+        }
       }
-    } else {
-      next.set(key, value);
-      if (key === 'category') {
-        next.delete('subCategory');
-      }
-    }
-    next.delete('page');
-    setSearchParams(next);
+      next.delete('page');
+      return next;
+    });
   };
 
   const handlePriceApply = () => {
-    const next = new URLSearchParams(searchParams);
-    if (tempMinPrice) next.set('minPrice', tempMinPrice);
-    else next.delete('minPrice');
-    if (tempMaxPrice) next.set('maxPrice', tempMaxPrice);
-    else next.delete('maxPrice');
-    next.delete('page');
-    setSearchParams(next);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tempMinPrice) next.set('minPrice', tempMinPrice);
+      else next.delete('minPrice');
+      if (tempMaxPrice) next.set('maxPrice', tempMaxPrice);
+      else next.delete('maxPrice');
+      next.delete('page');
+      return next;
+    });
   };
 
   const clearAllFilters = () => {
@@ -144,6 +151,7 @@ export const SearchPage: React.FC = () => {
     setTempQuery('');
     setTempMinPrice('');
     setTempMaxPrice('');
+    resetLocation();
   };
 
   const handleSaveSearch = () => {
@@ -166,6 +174,40 @@ export const SearchPage: React.FC = () => {
   const dynamicFacets = useMemo(() => {
     return taxonomyService.resolveSearchFilters(activeNodeId);
   }, [activeNodeId]);
+
+  const categoryDropdownOptions: DropdownOption[] = useMemo(() => [
+    {
+      value: '',
+      label: 'Toutes les catégories',
+      icon: <Layers className="w-3.5 h-3.5 text-stone-500" />,
+    },
+    ...TAXONOMY.map((cat) => ({
+      value: cat.slug,
+      label: getTaxonomyLabel(cat, 'compact'),
+      icon: <CategoryIcon category={cat} size="xs" />,
+      sublabel: `${cat.subCategories.length} sous-catégories`,
+    })),
+  ], []);
+
+  const subcategoryDropdownOptions: DropdownOption[] = useMemo(() => {
+    const activeNode = categorySlug ? taxonomyService.getNodeBySlug(categorySlug) : undefined;
+    const children = activeNode ? taxonomyService.getChildren(activeNode.id) : [];
+    if (children.length === 0) return [];
+    return [
+      { value: '', label: 'Toutes les sous-catégories' },
+      ...children.map((sub) => ({
+        value: sub.slug,
+        label: getTaxonomyLabel(sub, 'compact'),
+      })),
+    ];
+  }, [categorySlug]);
+
+  const sortDropdownOptions: DropdownOption[] = [
+    { value: 'date_desc', label: 'Plus récentes' },
+    { value: 'price_asc', label: 'Prix : croissant' },
+    { value: 'price_desc', label: 'Prix : décroissant' },
+    { value: 'relevance', label: 'Pertinence' },
+  ];
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -235,18 +277,21 @@ export const SearchPage: React.FC = () => {
           showRadius={true}
           navigateOnSubmit={false}
           onSearch={({ query: newQ, categorySlug: newCat, subCategorySlug: newSub, city: newCity, radiusKm: newRad }) => {
-            const next = new URLSearchParams(searchParams);
-            if (newQ) next.set('query', newQ);
-            else next.delete('query');
-            if (newCat) next.set('category', newCat);
-            else next.delete('category');
-            if (newSub) next.set('subCategory', newSub);
-            else next.delete('subCategory');
-            if (newCity) next.set('city', newCity);
-            else next.delete('city');
-            if (newRad && newRad > 0) next.set('radius', String(newRad));
-            else next.delete('radius');
-            setSearchParams(next);
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              if (newQ) next.set('query', newQ);
+              else next.delete('query');
+              if (newCat) next.set('category', newCat);
+              else next.delete('category');
+              if (newSub) next.set('subCategory', newSub);
+              else next.delete('subCategory');
+              if (newCity) next.set('city', newCity);
+              else next.delete('city');
+              if (newRad && newRad > 0) next.set('radius', String(newRad));
+              else next.delete('radius');
+              next.delete('page');
+              return next;
+            });
           }}
         />
 
@@ -320,27 +365,45 @@ export const SearchPage: React.FC = () => {
       <div className="mb-6">
         <CategoryFilterRail
           selectedCategorySlug={categorySlug || undefined}
+          onSelectAll={() => {
+            setSearchParams(new URLSearchParams());
+            setTempQuery('');
+            setTempMinPrice('');
+            setTempMaxPrice('');
+            resetLocation();
+          }}
           onSelectCategory={(slug) => {
-            const next = new URLSearchParams(searchParams);
-            if (slug) {
-              next.set('category', slug);
-            } else {
-              next.delete('category');
-            }
-            next.delete('subCategory');
-            next.delete('page');
-            setSearchParams(next);
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              if (slug) {
+                next.set('category', slug);
+              } else {
+                next.delete('category');
+              }
+              next.delete('subCategory');
+              if (!slug) {
+                for (const key of Array.from(next.keys())) {
+                  if (key.startsWith('attr_')) {
+                    next.delete(key);
+                  }
+                }
+              }
+              next.delete('page');
+              return next;
+            });
           }}
           selectedSubCategorySlug={subCategorySlug || undefined}
           onSelectSubCategory={(subSlug) => {
-            const next = new URLSearchParams(searchParams);
-            if (subSlug) {
-              next.set('subCategory', subSlug);
-            } else {
-              next.delete('subCategory');
-            }
-            next.delete('page');
-            setSearchParams(next);
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              if (subSlug) {
+                next.set('subCategory', subSlug);
+              } else {
+                next.delete('subCategory');
+              }
+              next.delete('page');
+              return next;
+            });
           }}
           showAllOption={true}
           showSubCategories={true}
@@ -382,70 +445,71 @@ export const SearchPage: React.FC = () => {
                   Catégories
                 </label>
                 <div className="space-y-2.5">
-                  <Select
+                  <DropdownMenu
                     id="desktop-category-select"
+                    fullWidth
+                    searchable
+                    searchPlaceholder="Rechercher une catégorie…"
+                    headerTitle={
+                      <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                        <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Catégories</span>
+                      </div>
+                    }
+                    options={categoryDropdownOptions}
                     value={categorySlug || ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const next = new URLSearchParams(searchParams);
-                      if (val) {
-                        next.set('category', val);
-                      } else {
-                        next.delete('category');
-                      }
-                      next.delete('subCategory');
-                      next.delete('page');
-                      setSearchParams(next);
+                    onChange={(val) => {
+                      setSearchParams((prev) => {
+                        const next = new URLSearchParams(prev);
+                        if (val) {
+                          next.set('category', val);
+                        } else {
+                          next.delete('category');
+                        }
+                        next.delete('subCategory');
+                        next.delete('page');
+                        return next;
+                      });
                     }}
-                  >
-                    <option value="">Toutes les catégories</option>
-                    {TAXONOMY.map((cat) => (
-                      <option key={cat.id} value={cat.slug}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </Select>
+                  />
 
                   {/* Subcategory dropdown when category with children is active */}
-                  {(() => {
-                    const activeNode = categorySlug ? taxonomyService.getNodeBySlug(categorySlug) : undefined;
-                    const children = activeNode ? taxonomyService.getChildren(activeNode.id) : [];
-                    if (children.length > 0) {
-                      return (
-                        <div className="pt-1">
-                          <label
-                            htmlFor="desktop-subcategory-select"
-                            className="text-[11px] font-semibold text-stone-600 block mb-1.5"
-                          >
-                            Sous-catégorie
-                          </label>
-                          <Select
-                            id="desktop-subcategory-select"
-                            value={subCategorySlug || ''}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              const next = new URLSearchParams(searchParams);
-                              if (val) {
-                                next.set('subCategory', val);
-                              } else {
-                                next.delete('subCategory');
-                              }
-                              next.delete('page');
-                              setSearchParams(next);
-                            }}
-                          >
-                            <option value="">Toutes les sous-catégories</option>
-                            {children.map((sub) => (
-                              <option key={sub.id} value={sub.slug}>
-                                {getTaxonomyLabel(sub, 'compact')}
-                              </option>
-                            ))}
-                          </Select>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
+                  {subcategoryDropdownOptions.length > 0 && (
+                    <div className="pt-1">
+                      <label
+                        htmlFor="desktop-subcategory-select"
+                        className="text-[11px] font-semibold text-stone-600 block mb-1.5"
+                      >
+                        Sous-catégorie
+                      </label>
+                      <DropdownMenu
+                        id="desktop-subcategory-select"
+                        fullWidth
+                        searchable={subcategoryDropdownOptions.length > 5}
+                        searchPlaceholder="Rechercher une sous-catégorie…"
+                        headerTitle={
+                          <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                            <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span>Sous-catégories</span>
+                          </div>
+                        }
+                        options={subcategoryDropdownOptions}
+                        value={subCategorySlug || ''}
+                        onChange={(val) => {
+                          setSearchParams((prev) => {
+                            const next = new URLSearchParams(prev);
+                            if (val) {
+                              next.set('subCategory', val);
+                            } else {
+                              next.delete('subCategory');
+                            }
+                            next.delete('page');
+                            return next;
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -539,23 +603,28 @@ export const SearchPage: React.FC = () => {
                     const currentValue = searchParams.get(`attr_${attr.code}`) || '';
 
                     if (facet.facetType === 'select' && attr.options) {
+                      const facetOptions: DropdownOption[] = [
+                        { value: '', label: 'Tous / Toutes' },
+                        ...attr.options.map((opt) => ({
+                          value: opt.value,
+                          label: opt.label,
+                        })),
+                      ];
+
                       return (
                         <div key={attr.id} className="space-y-1">
                           <label className="text-xs font-semibold text-stone-700 block">
                             {attr.label}
                           </label>
-                          <select
+                          <DropdownMenu
+                            id={`attr-${attr.code}-select`}
+                            fullWidth
+                            size="sm"
+                            headerTitle={attr.label}
+                            options={facetOptions}
                             value={currentValue}
-                            onChange={(e) => updateFilter(`attr_${attr.code}`, e.target.value || undefined)}
-                            className="w-full h-8 px-2 bg-bg-base border border-border-base rounded-lg text-xs font-medium text-stone-800 focus:border-primary focus:outline-none"
-                          >
-                            <option value="">Tous / Toutes</option>
-                            {attr.options.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(val) => updateFilter(`attr_${attr.code}`, val || undefined)}
+                          />
                         </div>
                       );
                     }
@@ -635,10 +704,10 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSaveSearch}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary-light px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border border-border-base bg-bg-base text-stone-700 hover:bg-bg-subtle hover:text-primary transition-colors cursor-pointer"
                 title="Sauvegarder cette recherche"
               >
-                <Bookmark className="w-3.5 h-3.5" />
+                <Bookmark className="w-3.5 h-3.5 text-stone-500" />
                 <span>Sauvegarder</span>
               </button>
             </div>
@@ -666,18 +735,22 @@ export const SearchPage: React.FC = () => {
 
               {/* Sort selector */}
               <div className="flex items-center gap-1.5 text-xs min-w-0">
-                <span className="text-stone-500 hidden sm:inline shrink-0">Trier par :</span>
-                <select
-                  aria-label="Trier les résultats"
+                <span className="text-stone-500 hidden sm:inline shrink-0 font-medium">Trier par :</span>
+                <DropdownMenu
+                  id="sort-select"
+                  size="sm"
+                  placement="bottom-right"
+                  panelWidth="w-48"
+                  headerTitle={
+                    <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                      <ArrowUpDown className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>Trier par</span>
+                    </div>
+                  }
+                  options={sortDropdownOptions}
                   value={sortBy}
-                  onChange={(e) => updateFilter('sortBy', e.target.value)}
-                  className="min-w-0 max-w-[10.5rem] truncate bg-bg-base border border-border-base rounded-lg px-2.5 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-primary cursor-pointer"
-                >
-                  <option value="date_desc">Plus récentes</option>
-                  <option value="price_asc">Prix : croissant</option>
-                  <option value="price_desc">Prix : décroissant</option>
-                  <option value="relevance">Pertinence</option>
-                </select>
+                  onChange={(val) => updateFilter('sortBy', val)}
+                />
               </div>
 
               {/* View Mode Toggle */}
@@ -786,49 +859,45 @@ export const SearchPage: React.FC = () => {
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
               Catégorie
             </label>
-            <select
+            <DropdownMenu
+              id="mobile-category-select"
+              fullWidth
+              searchable
+              searchPlaceholder="Rechercher une catégorie…"
+              headerTitle={
+                <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                  <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span>Catégories</span>
+                </div>
+              }
+              options={categoryDropdownOptions}
               value={categorySlug || ''}
-              onChange={(e) => {
-                const val = e.target.value;
-                updateFilter('category', val || undefined);
-              }}
-              className="w-full h-10 px-3 bg-white border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
-            >
-              <option value="">Toutes les catégories</option>
-              {TAXONOMY.map((c) => (
-                <option key={c.id} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => updateFilter('category', val || undefined)}
+            />
 
             {/* Subcategory dropdown if active category has children */}
-            {(() => {
-              const activeNode = categorySlug ? taxonomyService.getNodeBySlug(categorySlug) : undefined;
-              const children = activeNode ? taxonomyService.getChildren(activeNode.id) : [];
-              if (children.length > 0) {
-                return (
-                  <div className="pt-3">
-                    <label className="text-[11px] font-semibold text-stone-600 block mb-1.5">
-                      Sous-catégorie
-                    </label>
-                    <select
-                      value={subCategorySlug || ''}
-                      onChange={(e) => updateFilter('subCategory', e.target.value || undefined)}
-                      className="w-full h-10 px-3 bg-white border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
-                    >
-                      <option value="">Toutes les sous-catégories</option>
-                      {children.map((sub) => (
-                        <option key={sub.id} value={sub.slug}>
-                          {getTaxonomyLabel(sub, 'compact')}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                );
-              }
-              return null;
-            })()}
+            {subcategoryDropdownOptions.length > 0 && (
+              <div className="pt-3">
+                <label className="text-[11px] font-semibold text-stone-600 block mb-1.5">
+                  Sous-catégorie
+                </label>
+                <DropdownMenu
+                  id="mobile-subcategory-select"
+                  fullWidth
+                  searchable={subcategoryDropdownOptions.length > 5}
+                  searchPlaceholder="Rechercher une sous-catégorie…"
+                  headerTitle={
+                    <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                      <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>Sous-catégories</span>
+                    </div>
+                  }
+                  options={subcategoryDropdownOptions}
+                  value={subCategorySlug || ''}
+                  onChange={(val) => updateFilter('subCategory', val || undefined)}
+                />
+              </div>
+            )}
           </div>
 
           {/* Seller type */}
@@ -910,23 +979,28 @@ export const SearchPage: React.FC = () => {
                 const currentValue = searchParams.get(`attr_${attr.code}`) || '';
 
                 if (facet.facetType === 'select' && attr.options) {
+                  const facetOptions: DropdownOption[] = [
+                    { value: '', label: 'Tous / Toutes' },
+                    ...attr.options.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                    })),
+                  ];
+
                   return (
                     <div key={attr.id} className="space-y-1">
                       <label className="text-xs font-semibold text-stone-700 block">
                         {attr.label}
                       </label>
-                      <select
+                      <DropdownMenu
+                        id={`mobile-attr-${attr.code}-select`}
+                        fullWidth
+                        size="md"
+                        headerTitle={attr.label}
+                        options={facetOptions}
                         value={currentValue}
-                        onChange={(e) => updateFilter(`attr_${attr.code}`, e.target.value || undefined)}
-                        className="w-full h-10 px-3 bg-white border border-border-base rounded-xl text-xs font-medium text-stone-900 focus:border-primary focus:outline-none"
-                      >
-                        <option value="">Tous / Toutes</option>
-                        {attr.options.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => updateFilter(`attr_${attr.code}`, val || undefined)}
+                      />
                     </div>
                   );
                 }
