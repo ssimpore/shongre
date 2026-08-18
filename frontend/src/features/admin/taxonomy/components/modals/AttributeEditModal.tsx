@@ -291,7 +291,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
                       size="sm"
                       type="button"
                       onClick={() => handleRemoveOption(idx)}
-                      className="text-stone-500 hover:text-red-600 p-2"
+                      className="text-stone-500 hover:text-danger p-2"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

@@ -1,12 +1,12 @@
 import { routes } from '../../configuration/routes';
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, Trash2, ArrowRight, Check } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { SavedSearch } from '../../types';
 import { storageService } from '../../services/storage.service';
 import { Button } from '../../design-system/primitives/Button';
 import { EmptyState } from '../../design-system/primitives/UIComponents';
-import { formatRelativeDate } from '../../utilities/formatters';
+import { formatRelativeDate, plural } from '../../utilities/formatters';
 import { useToast } from '../../app/providers/ToastProvider';
 
 export const SavedSearchesPage: React.FC = () => {
@@ -54,7 +54,7 @@ export const SavedSearchesPage: React.FC = () => {
                   <div className="text-xs text-stone-500 flex items-center gap-2 mt-0.5">
                     <span>Créée {formatRelativeDate(search.createdAt)}</span>
                     {search.matchCount !== undefined && (
-                      <span>• {search.matchCount} annonces trouvées</span>
+                      <span>• {plural(search.matchCount, 'annonce trouvée', 'annonces trouvées')}</span>
                     )}
                   </div>
                 </div>
@@ -66,7 +66,7 @@ export const SavedSearchesPage: React.FC = () => {
                   onClick={() => handleToggleNotif(search.id)}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                     search.hasNotifications
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      ? 'bg-success-surface text-success border-success-border'
                       : 'bg-stone-50 text-stone-600 border-stone-200'
                   }`}
                 >
@@ -105,9 +105,12 @@ export const SavedSearchesPage: React.FC = () => {
           title="Aucune recherche sauvegardée"
           description="Lancez une recherche puis cliquez sur 'Sauvegarder la recherche' pour être prévenu des nouvelles annonces."
           action={
-            <Link to={routes.search()}>
-              <Button variant="primary">Lancer une recherche</Button>
-            </Link>
+            <Button
+              to={routes.search()}
+              variant="primary"
+            >
+              Lancer une recherche
+            </Button>
           }
         />
       )}

@@ -30,12 +30,12 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
     <div className="bg-bg-base rounded-2xl border border-border-base p-4 sm:p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-700" />
+          <ShieldCheck className="w-4 h-4 text-success" />
           <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
             Garanties & Signaux de confiance
           </h2>
         </div>
-        <div className="flex items-center gap-1.5 text-micro font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+        <div className="flex items-center gap-1.5 text-micro font-bold text-success bg-success-surface px-2.5 py-0.5 rounded-full border border-success-border">
           <Sparkles className="w-3 h-3" />
           <span>Indice de confiance : {trustScore.score}/100 ({trustScore.levelLabel})</span>
         </div>
@@ -44,7 +44,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
         {/* Verification badge */}
         <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 shrink-0">
+          <div className="p-1.5 rounded-lg bg-success-surface text-success shrink-0">
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <div>
@@ -61,7 +61,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
 
         {/* Escrow Payment & Payout */}
         <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-sky-50 text-sky-700 shrink-0">
+          <div className="p-1.5 rounded-lg bg-info-surface text-info shrink-0">
             <Lock className="w-4 h-4" />
           </div>
           <div>
@@ -76,7 +76,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
 
         {/* Delivery Options */}
         <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-amber-50 text-amber-700 shrink-0">
+          <div className="p-1.5 rounded-lg bg-warning-surface text-warning shrink-0">
             <Truck className="w-4 h-4" />
           </div>
           <div>

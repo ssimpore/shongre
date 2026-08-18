@@ -19,6 +19,8 @@ import { getRolePermissionMatrix, getRoleStats, MatrixCategoryGroup } from '../.
 import { ROLE_DEFINITIONS, ALL_PLATFORM_ROLES } from '../../security/roles.config';
 import { PlatformRole, Permission } from '../../types';
 import { Button } from '../../design-system/primitives/Button';
+import { plural } from '../../utilities/formatters';
+import { roleLabel } from '../../security/roles.config';
 
 export const AdminRolesMatrixPage: React.FC = () => {
   const { currentUser, platformRole, switchDemoUser } = useAuth();
@@ -102,7 +104,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <strong className="text-stone-900 font-bold">{currentUser?.name}</strong>
               <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded-full">
-                {platformRole}
+                {roleLabel(platformRole)}
               </span>
             </div>
           </div>
@@ -171,6 +173,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
 
           {/* Category Selector */}
           <select
+            aria-label="Filtrer les permissions par catégorie"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="py-2 px-3 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-white"
@@ -194,14 +197,21 @@ export const AdminRolesMatrixPage: React.FC = () => {
             onChange={(e) => setShowSensitiveOnly(e.target.checked)}
             className="rounded text-primary focus:ring-primary"
           />
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+          <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <span>Permissions sensibles uniquement</span>
         </label>
       </div>
 
       {/* Matrix Table */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Focusable so the matrix can be scrolled without a pointer — it is
+            far wider than any viewport by design. */}
+        <div
+          className="overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Matrice des permissions par rôle"
+        >
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-stone-900 text-white font-bold border-b border-stone-800">
@@ -254,7 +264,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                               <ChevronRight className="w-4 h-4 text-stone-500" />
                             )}
                             <span className="uppercase text-xs tracking-wider text-stone-700">
-                              Catégorie : {group.category} ({group.rows.length} permissions)
+                              Catégorie : {group.category} ({plural(group.rows.length, 'permission')})
                             </span>
                           </div>
                         </td>
@@ -281,7 +291,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                   </div>
                                   {row.permission.isSensitive && (
                                     <span
-                                      className="shrink-0 text-micro bg-red-100 text-red-800 font-bold px-2 py-1 rounded-sm border border-red-200"
+                                      className="shrink-0 text-micro bg-danger-surface text-danger font-bold px-2 py-1 rounded-sm border border-danger-border"
                                       title="Permission sensible ou irréversible"
                                     >
                                       SENSIBLE
@@ -302,7 +312,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                     }`}
                                   >
                                     {isGranted ? (
-                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700">
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-success-surface text-success">
                                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                                       </span>
                                     ) : (

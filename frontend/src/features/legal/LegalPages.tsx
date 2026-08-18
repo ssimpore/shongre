@@ -35,7 +35,7 @@ export const PrivacyPage: React.FC = () => {
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-6 text-xs sm:text-sm text-stone-700 leading-relaxed">
         <h1 className="text-2xl sm:text-3xl font-black text-stone-900">Politique de Confidentialité & RGPD</h1>
         <p>Shongre attache la plus grande importance à la protection de vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD 2016/679) et à la loi Informatique et Libertés.</p>
-        <div className="p-4 bg-emerald-50 text-emerald-900 rounded-xl border border-emerald-200 text-xs">
+        <div className="p-4 bg-success-surface text-success rounded-xl border border-success-border text-xs">
           <strong>Principe de minimisation :</strong> Nous ne collectons que les données strictement nécessaires au bon déroulement des transactions et à la sécurité des utilisateurs.
         </div>
       </div>
@@ -82,12 +82,12 @@ export const HelpSafetyPage: React.FC = () => {
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-6 text-xs sm:text-sm text-stone-700 leading-relaxed">
         <h1 className="text-2xl sm:text-3xl font-black text-stone-900">Conseils de Sécurité & Anti-Fraude</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 space-y-1">
-            <h2 className="font-bold flex items-center gap-1.5"><AlertTriangle className="w-4 h-4 text-red-600" /> Ne payez jamais hors plateforme</h2>
+          <div className="p-4 rounded-xl bg-danger-surface border border-danger-border text-danger space-y-1">
+            <h2 className="font-bold flex items-center gap-1.5"><AlertTriangle className="w-4 h-4 text-danger" /> Ne payez jamais hors plateforme</h2>
             <p className="text-xs">Refusez les virements directs, mandats Western Union ou chèques sans garantie.</p>
           </div>
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-1">
-            <h2 className="font-bold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-600" /> Utilisez le séquestre Shongre</h2>
+          <div className="p-4 rounded-xl bg-success-surface border border-success-border text-success space-y-1">
+            <h2 className="font-bold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-success" /> Utilisez le séquestre Shongre</h2>
             <p className="text-xs">Votre argent est protégé jusqu'à ce que vous confirmiez la conformité du colis reçu.</p>
           </div>
         </div>
@@ -103,8 +103,8 @@ export const DealsPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: 'Bons plans & Réductions' }]} />
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-2">
-          <Tag className="w-3.5 h-3.5 text-amber-600" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning-surface border border-warning-border text-warning text-xs font-bold mb-2">
+          <Tag className="w-3.5 h-3.5 text-warning" />
           Offres vérifiées à prix réduits
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-stone-900">

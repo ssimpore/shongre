@@ -52,7 +52,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
           <div className="space-y-2">
             {candidate.fit.reasons.map((reason, idx) => (
               <div key={idx} className="flex items-start gap-2 p-2.5 bg-stone-50 rounded-xl">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
                 <span className="text-stone-800 leading-relaxed text-xs">{reason}</span>
               </div>
             ))}
@@ -60,8 +60,8 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
 
           {candidate.fit.caveats && candidate.fit.caveats.length > 0 && (
             <div className="pt-2 space-y-1.5">
-              <span className="font-bold text-amber-900 text-xs flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span className="font-bold text-warning text-xs flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-warning" />
                 Points d'attention :
               </span>
               {candidate.fit.caveats.map((cav, idx) => (
@@ -115,7 +115,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
 
         {/* Transparency Notice */}
         <div className="p-3.5 bg-stone-100 rounded-xl flex items-start gap-2.5 text-micro text-stone-500">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
           <span>
             Ces informations sont issues exclusivement de sources professionnelles publiques. Elles sont soumises à la validation d'un opérateur avant toute prise de contact.
           </span>

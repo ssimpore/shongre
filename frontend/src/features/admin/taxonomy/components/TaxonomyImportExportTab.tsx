@@ -120,15 +120,15 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
           <div
             className={`p-4 rounded-xl border text-xs space-y-2 ${
               importResult.success
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                : 'bg-red-50 border-red-200 text-red-950'
+                ? 'bg-success-surface border-success-border text-success'
+                : 'bg-danger-surface border-danger-border text-danger'
             }`}
           >
             <div className="flex items-center gap-2 font-bold">
               {importResult.success ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-success" />
               ) : (
-                <AlertOctagon className="w-4 h-4 text-red-600" />
+                <AlertOctagon className="w-4 h-4 text-danger" />
               )}
               <span>{importResult.success ? 'Rapport d\'import validé' : 'Échec de validation de l\'import'}</span>
             </div>

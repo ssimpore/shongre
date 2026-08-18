@@ -32,9 +32,12 @@ export const AccountLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const isPro = isProSeller(currentUser);
-  const favCount = storageService.getFavorites().length;
-  const savedSearchCount = storageService.getSavedSearches().length;
-  const unreadMsgCount = storageService.getConversations().reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+
+  // Every badge here must be scoped to the signed-in user — see
+  // storageService.getUnreadMessageCount for why.
+  const unreadMsgCount = storageService.getUnreadMessageCount(currentUser?.id);
+  const favCount = currentUser ? storageService.getFavorites().length : 0;
+  const savedSearchCount = currentUser ? storageService.getSavedSearches().length : 0;
   const myListingsCount = currentUser
     ? storageService.getListings().filter((l) => l.sellerId === currentUser.id).length
     : 0;
@@ -47,7 +50,7 @@ export const AccountLayout: React.FC = () => {
     { to: '/compte/messages', label: 'Messages & Offres', icon: <MessageSquare className="w-4 h-4" />, count: unreadMsgCount },
     { to: '/compte/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" />, count: unreadNotifCount },
     { to: '/compte/achats', label: 'Transactions & Séquestre', icon: <ShoppingBag className="w-4 h-4" /> },
-    { to: '/compte/verification', label: 'Sécurité & Vérification', icon: <Shield className="w-4 h-4 text-emerald-600" /> },
+    { to: '/compte/verification', label: 'Sécurité & Vérification', icon: <Shield className="w-4 h-4 text-success" /> },
     { to: '/compte/support', label: 'Aide & Assistance', icon: <Headphones className="w-4 h-4" /> },
     { to: '/compte/newsletter', label: 'Newsletter & Alertes', icon: <Mail className="w-4 h-4" /> },
     { to: '/compte/profil', label: 'Mon profil & Coordonnées', icon: <Settings className="w-4 h-4" /> },
@@ -131,7 +134,7 @@ export const AccountLayout: React.FC = () => {
                     `flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors shrink-0 ${
                       isActive
                         ? 'bg-primary text-white shadow-xs'
-                        : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                        : 'bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface'
                     }`
                   }
                 >
@@ -235,9 +238,9 @@ export const AccountLayout: React.FC = () => {
                     logout();
                     navigate(routes.home());
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-danger hover:bg-danger-surface rounded-lg transition-colors cursor-pointer text-left"
                 >
-                  <LogOut className="w-4 h-4 text-red-500" />
+                  <LogOut className="w-4 h-4 text-danger" />
                   <span>Se déconnecter</span>
                 </button>
               </div>

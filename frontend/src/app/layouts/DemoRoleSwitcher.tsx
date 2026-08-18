@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { UserRole } from '../../types';
 import { useAuth } from '../providers/AuthProvider';
+import { normalizePlatformRole } from '../../security/roles.config';
 import { Shield, Sparkles, User, Briefcase, ChevronDown, Check } from 'lucide-react';
 
 export const DemoRoleSwitcher: React.FC = () => {
-  const { role, currentUser, switchRole } = useAuth();
+  const { platformRole, currentUser, switchRole } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const roles: { role: UserRole; label: string; desc: string; icon: React.ReactNode }[] = [
@@ -18,13 +19,13 @@ export const DemoRoleSwitcher: React.FC = () => {
       role: 'individual_buyer',
       label: '2. Acheteur Particulier (Thomas)',
       desc: 'Favoris, offres, achats, messagerie acheteur',
-      icon: <User className="w-4 h-4 text-sky-600" />,
+      icon: <User className="w-4 h-4 text-info" />,
     },
     {
       role: 'individual_seller',
       label: '3. Vendeur Particulier (Camille)',
       desc: 'Publication, gestion d\'annonces, offres reçues',
-      icon: <Sparkles className="w-4 h-4 text-amber-600" />,
+      icon: <Sparkles className="w-4 h-4 text-warning" />,
     },
     {
       role: 'pro_seller',
@@ -42,11 +43,17 @@ export const DemoRoleSwitcher: React.FC = () => {
       role: 'admin',
       label: '6. Administrateur Système (Antoine)',
       desc: 'Accès intégral plateforme, plans, configuration',
-      icon: <Shield className="w-4 h-4 text-emerald-600" />,
+      icon: <Shield className="w-4 h-4 text-success" />,
     },
   ];
 
-  const currentRoleObj = roles.find((r) => r.role === role) || roles[0];
+  // Match on the normalised platform role, not the raw switcher id. The list
+  // is keyed by `individual_seller` while the demo user carries `primaryRole:
+  // 'seller'`, so a direct comparison never matched and the switcher fell back
+  // to entry zero — it reported "Visiteur non connecté" while signed in as
+  // Camille, the one thing this control exists to tell you.
+  const currentRoleObj =
+    roles.find((r) => normalizePlatformRole(r.role) === platformRole) || roles[0];
 
   return (
     <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-40">
@@ -73,12 +80,12 @@ export const DemoRoleSwitcher: React.FC = () => {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-2xl border border-stone-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-2xl border border-stone-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-fast">
               <div className="px-3 py-1.5 border-b border-stone-100 text-xs font-bold text-stone-400 uppercase tracking-wider">
                 Changer de rôle pour tester
               </div>
               {roles.map((r) => {
-                const isActive = r.role === role;
+                const isActive = normalizePlatformRole(r.role) === platformRole;
                 return (
                   <button
                     key={r.role}
@@ -148,7 +155,7 @@ export const DemoRoleSwitcher: React.FC = () => {
                   <a
                     href="/profil/vendeur-suspendu"
                     onClick={() => setIsOpen(false)}
-                    className="p-1 rounded hover:bg-red-50 text-red-600 truncate"
+                    className="p-1 rounded hover:bg-danger-surface text-danger truncate"
                   >
                     🚫 Profil Suspendu (Sécurité)
                   </a>

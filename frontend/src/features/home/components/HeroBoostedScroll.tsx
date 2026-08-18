@@ -17,12 +17,20 @@ import {
   Star,
 } from 'lucide-react';
 import { Listing } from '../../../types';
+import { FavoriteButton } from '../../../design-system/primitives/FavoriteButton';
 import { listingRepository } from '../../../repositories/listing.repository';
 import { taxonomyService, getTaxonomyLabel } from '../../../domains/taxonomy/taxonomy.service';
 import { PriceDisplay } from '../../../design-system/primitives/UIComponents';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { Image } from '../../../design-system/primitives/Image';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { usePublishCta } from '../../../security/usePublishCta';
+
+/* Rail geometry. The viewport height, the step distance and the card's own
+   height are all derived from these, so a card can never end up half-visible. */
+const RAIL_CARD_H = 84;   // px — image (64) + card padding (2 × 8) + borders
+const RAIL_GAP = 10;      // px — matches gap-2.5
+const VISIBLE = 2;        // listings on screen at once
 
 interface HeroBoostedScrollProps {
   onListingClick?: (listing: Listing) => void;
@@ -35,6 +43,7 @@ function getListingPhotoUrl(photo: any): string {
 }
 
 export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
+  const publishCta = usePublishCta();
   const [isPaused, setIsPaused] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [allListings, setAllListings] = useState<Listing[]>([]);
@@ -84,6 +93,52 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
   }, [promotedListings, allListings]);
 
   const isDesktopRail = useMediaQuery('(min-width: 640px)');
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+
+  /* ---------------------------------------------------------------------------
+     Stepped auto-scroll.
+
+     The rail previously carried `animate-marquee-vertical`, a class that does not
+     exist — only `-up`, `-up-slow` and `-down` are defined — so the desktop rail
+     never actually moved. Rather than restore a continuous marquee, this advances
+     one card at a time on a timer, which is easier to read: a card holds still
+     long enough to be taken in, then the list steps.
+
+     The track renders the list plus a clone of the first `VISIBLE` cards, so the
+     final step slides into a copy of the start and then resets without a
+     transition — the loop has no visible jump.
+     ------------------------------------------------------------------------ */
+  const STEP_MS = 3200;
+  const [step, setStep] = useState(0);
+  const [animate, setAnimate] = useState(true);
+
+  const loopItems = useMemo(
+    () => (scrollSequence.length ? [...scrollSequence, ...scrollSequence.slice(0, VISIBLE)] : []),
+    [scrollSequence]
+  );
+
+  useEffect(() => {
+    setStep(0);
+  }, [activeCategory, scrollSequence.length]);
+
+  useEffect(() => {
+    if (!isDesktopRail || isPaused || prefersReducedMotion) return;
+    if (scrollSequence.length <= VISIBLE) return;
+    const id = setInterval(() => setStep((s) => s + 1), STEP_MS);
+    return () => clearInterval(id);
+  }, [isDesktopRail, isPaused, prefersReducedMotion, scrollSequence.length]);
+
+  // Reaching the cloned tail means we are visually at the start again: drop the
+  // transition, snap back to 0, then restore it on the next frame.
+  useEffect(() => {
+    if (step !== scrollSequence.length || scrollSequence.length === 0) return;
+    const id = setTimeout(() => {
+      setAnimate(false);
+      setStep(0);
+      requestAnimationFrame(() => requestAnimationFrame(() => setAnimate(true)));
+    }, 600);
+    return () => clearTimeout(id);
+  }, [step, scrollSequence.length]);
 
   const handleToggleFavorite = async (e: React.MouseEvent, listingId: string) => {
     e.preventDefault();
@@ -123,8 +178,8 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
                 Vedettes
               </h2>
             </div>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-micro font-bold shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success-surface text-success border border-success-border text-micro font-bold shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
               Direct
             </span>
           </div>
@@ -148,7 +203,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
 
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="p-1 rounded-lg hover:bg-bg-subtle text-stone-500 hover:text-stone-900 transition-colors"
+              className="p-1 rounded-lg hover:bg-bg-subtle text-stone-500 hover:text-stone-900 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center pointer-coarse:min-w-control-touch pointer-coarse:min-h-control-touch"
               title={isPaused ? 'Reprendre le défilement' : 'Mettre en pause'}
               aria-label={isPaused ? 'Reprendre le défilement' : 'Mettre en pause'}
             >
@@ -158,14 +213,27 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
         </div>
       </div>
 
-      {/* Main Track Section */}
-      <div className="relative flex-1 overflow-hidden my-1 py-1">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-white/90 to-transparent z-10 hidden sm:block" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white/90 to-transparent z-10 hidden sm:block" />
-
+      {/* Main Track Section.
+          The viewport is sized to exactly VISIBLE cards (card height + gap), so
+          the rail always shows two whole listings rather than a half-cut third. */}
+      <div
+        className="relative my-1 overflow-hidden sm:h-(--rail-viewport)"
+        style={
+          {
+            '--rail-card-h': `${RAIL_CARD_H}px`,
+            '--rail-gap': `${RAIL_GAP}px`,
+            '--rail-viewport': `${VISIBLE * RAIL_CARD_H + (VISIBLE - 1) * RAIL_GAP}px`,
+          } as React.CSSProperties
+        }
+      >
         {isDesktopRail ? (
-          <div className="space-y-2.5 animate-marquee-vertical">
-            {scrollSequence.map((item, index) => renderItemCard(item, `vert-${item.id}-${index}`))}
+          <div
+            className={`flex flex-col gap-(--rail-gap) will-change-transform ${
+              animate ? 'transition-transform duration-slow ease-out-soft' : ''
+            }`}
+            style={{ transform: `translate3d(0, -${step * (RAIL_CARD_H + RAIL_GAP)}px, 0)` }}
+          >
+            {loopItems.map((item, index) => renderItemCard(item, `vert-${item.id}-${index}`))}
           </div>
         ) : (
           <div className="flex gap-2.5 animate-marquee-horizontal w-max">
@@ -177,11 +245,11 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       {/* Bottom Sub-footer Link */}
       <div className="shrink-0 pt-2 border-t border-border-subtle flex items-center justify-between text-micro font-medium text-stone-500">
         <span className="flex items-center gap-1">
-          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+          <ShieldCheck className="w-3 h-3 text-success" />
           Annonces contrôlées
         </span>
         <Link
-          to="/deposer"
+          to={publishCta.to}
           className="text-primary hover:text-primary-hover font-bold flex items-center gap-0.5 hover:underline"
         >
           Booster la vôtre
@@ -200,13 +268,13 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       <Link
         key={key}
         to={`/annonce/${item.id}`}
-        className="group relative flex items-center gap-3 p-2 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-200 w-[240px] sm:w-full shrink-0"
+        className="group relative flex items-center gap-3 p-2 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-normal w-[240px] sm:w-full shrink-0 sm:h-(--rail-card-h)"
       >
         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-bg-muted border border-border-subtle">
           <Image
             src={photoUrl}
             alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
           {item.isBoosted && (
             <span className="absolute top-1 left-1 p-0.5 rounded bg-amber-500 text-white shadow-xs">
@@ -220,18 +288,14 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
             <span className="text-micro font-bold uppercase tracking-wider text-primary truncate">
               {item.categoryLabel}
             </span>
-            <button
-              onClick={(e) => handleToggleFavorite(e, item.id)}
-              className={`p-1 rounded-full hover:bg-stone-100 transition-colors ${
-                isFav ? 'text-rose-500' : 'text-stone-400 hover:text-stone-600'
-              }`}
-              aria-label={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-            >
-              <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-rose-500' : ''}`} />
-            </button>
+            <FavoriteButton
+              isFavorite={isFav}
+              onToggle={(e) => handleToggleFavorite(e, item.id)}
+              size="sm"
+            />
           </div>
 
-          <h3 className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
+          <h3 title={item.title} className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
             {item.title}
           </h3>
 

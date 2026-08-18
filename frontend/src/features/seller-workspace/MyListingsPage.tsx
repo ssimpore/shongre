@@ -24,10 +24,11 @@ import { formatPrice, formatRelativeDate } from '../../utilities/formatters';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Image } from '../../design-system/primitives/Image';
-import { Tabs, EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
+import { Tabs, TabPanel, EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
 import { Modal } from '../../design-system/primitives/Modal';
 import { DataTable } from '../../design-system/primitives/DataTable';
 import { BulkImportModal } from './components/BulkImportModal';
+import { usePublishCta } from '../../security/usePublishCta';
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
@@ -38,6 +39,7 @@ function getPhotoUrl(photo: any): string {
 export const MyListingsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const toast = useToast();
+  const publishCta = usePublishCta();
 
   const [activeTab, setActiveTab] = useState<string>('all');
   const [boostModalListing, setBoostModalListing] = useState<Listing | null>(null);
@@ -184,7 +186,7 @@ export const MyListingsPage: React.FC = () => {
           </Button>
 
           <Link
-            to="/deposer"
+            to={publishCta.to}
             className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-xs"
           >
             <PlusCircle className="w-4 h-4" />
@@ -195,167 +197,175 @@ export const MyListingsPage: React.FC = () => {
 
       {/* Filter tabs */}
       <div className="bg-white rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs space-y-4">
-        <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+        <Tabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          label="Filtrer mes annonces par statut"
+          idPrefix="my-listings"
+        />
 
-        {isLoading ? (
-          <div className="space-y-3 py-4">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-          </div>
-        ) : (
-          <DataTable
-            rows={filteredListings}
-            getRowKey={(listing) => listing.id}
-            caption="Mes annonces"
-            empty={
-              <EmptyState
-                icon={<List className="w-8 h-8 text-stone-500" />}
-                title={emptyStateCopy.title}
-                description={emptyStateCopy.description}
-                action={
-                  <Link
-                    to="/deposer"
-                    className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors"
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    Déposer une annonce
-                  </Link>
-                }
-              />
-            }
-            columns={[
-              {
-                id: 'Annonce',
-                header: 'Annonce',
-                isRowTitle: true,
-                cell: (listing) => (
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Image
-                      src={getPhotoUrl(listing.coverImageUrl || listing.photos?.[0])}
-                      alt=""
-                      className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <Link
-                        to={`/annonce/${listing.id}`}
-                        className="font-bold text-sm text-stone-900 hover:text-primary line-clamp-2 block"
-                      >
-                        {listing.title}
-                      </Link>
-                      <span className="text-xs text-stone-500">{listing.categoryLabel}</span>
+        <TabPanel tab={activeTab} idPrefix="my-listings">
+          {isLoading ? (
+            <div className="space-y-3 py-4">
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+          ) : (
+            <DataTable
+              rows={filteredListings}
+              getRowKey={(listing) => listing.id}
+              caption="Mes annonces"
+              empty={
+                <EmptyState
+                  icon={<List className="w-8 h-8 text-stone-500" />}
+                  title={emptyStateCopy.title}
+                  description={emptyStateCopy.description}
+                  action={
+                    <Link
+                      to={publishCta.to}
+                      className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      Déposer une annonce
+                    </Link>
+                  }
+                />
+              }
+              columns={[
+                {
+                  id: 'Annonce',
+                  header: 'Annonce',
+                  isRowTitle: true,
+                  cell: (listing) => (
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Image
+                        src={getPhotoUrl(listing.coverImageUrl || listing.photos?.[0])}
+                        alt=""
+                        className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <Link
+                          to={`/annonce/${listing.id}`}
+                          className="font-bold text-sm text-stone-900 hover:text-primary line-clamp-2 block"
+                        >
+                          {listing.title}
+                        </Link>
+                        <span className="text-xs text-stone-500">{listing.categoryLabel}</span>
+                      </div>
                     </div>
-                  </div>
-                ),
-              },
-              {
-                id: 'Statut',
-                header: 'Statut',
-                cell: (listing) => (
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <Badge variant={listing.status === 'active' ? 'success' : 'neutral'} size="sm">
-                      {listing.status === 'active' ? 'En ligne' : 'Vendu'}
-                    </Badge>
-                    {listing.isBoosted && <Badge variant="urgent" size="sm">Vedette</Badge>}
-                  </div>
-                ),
-              },
-              {
-                id: 'Marches',
-                header: 'Marchés',
-                cell: (listing) => {
-                  const markets = listing.marketCodes && listing.marketCodes.length > 0
-                    ? listing.marketCodes
-                    : [listing.marketCode || 'FR'];
-
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMarketsModalListing(listing);
-                        setSelectedMarketsInModal(markets);
-                      }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg-base hover:bg-bg-subtle border border-border-base text-xs font-semibold text-stone-700 transition-colors"
-                      title="Gérer les pays de publication"
-                    >
-                      <Globe className="w-3.5 h-3.5 text-primary" />
-                      <span>{markets.join(', ')}</span>
-                      <span className="text-micro text-stone-400 font-normal">({markets.length})</span>
-                    </button>
-                  );
+                  ),
                 },
-              },
-              {
-                id: 'Prix',
-                header: 'Prix',
-                cell: (listing) => (
-                  <span className="font-extrabold text-sm text-stone-900">
-                    {formatPrice(listing.price, { currency: listing.currency })}
-                  </span>
-                ),
-              },
-              {
-                id: 'Vues',
-                header: 'Vues',
-                cell: (listing) => (
-                  <div className="flex items-center gap-1.5 text-xs text-stone-600">
-                    <Eye className="w-3.5 h-3.5 text-stone-400" />
-                    <span>{listing.viewsCount ?? listing.viewCount ?? 0}</span>
-                  </div>
-                ),
-              },
-              {
-                id: 'Date',
-                header: 'Date',
-                cell: (listing) => (
-                  <span className="text-xs text-stone-500">
-                    {formatRelativeDate(listing.createdAt)}
-                  </span>
-                ),
-              },
-              {
-                id: 'Actions',
-                header: 'Actions',
-                align: 'right',
-                cell: (listing) => (
-                  <div className="flex items-center justify-end gap-1.5">
-                    {listing.status === 'active' && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setBoostModalListing(listing)}
-                          className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold text-xs flex items-center gap-1 transition-colors"
-                          title="Booster l'annonce"
-                        >
-                          <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                          <span className="hidden lg:inline">Booster</span>
-                        </button>
+                {
+                  id: 'Statut',
+                  header: 'Statut',
+                  cell: (listing) => (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant={listing.status === 'active' ? 'success' : 'neutral'} size="sm">
+                        {listing.status === 'active' ? 'En ligne' : 'Vendu'}
+                      </Badge>
+                      {listing.isBoosted && <Badge variant="urgent" size="sm">Vedette</Badge>}
+                    </div>
+                  ),
+                },
+                {
+                  id: 'Marches',
+                  header: 'Marchés',
+                  cell: (listing) => {
+                    const markets = listing.marketCodes && listing.marketCodes.length > 0
+                      ? listing.marketCodes
+                      : [listing.marketCode || 'FR'];
 
-                        <button
-                          type="button"
-                          onClick={() => handleMarkAsSold(listing.id)}
-                          className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-colors"
-                          title="Marquer comme vendu"
-                        >
-                          Vendu
-                        </button>
-                      </>
-                    )}
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMarketsModalListing(listing);
+                          setSelectedMarketsInModal(markets);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg-base hover:bg-bg-subtle border border-border-base text-xs font-semibold text-stone-700 transition-colors"
+                        title="Gérer les pays de publication"
+                      >
+                        <Globe className="w-3.5 h-3.5 text-primary" />
+                        <span>{markets.join(', ')}</span>
+                        <span className="text-micro text-stone-500 font-normal">({markets.length})</span>
+                      </button>
+                    );
+                  },
+                },
+                {
+                  id: 'Prix',
+                  header: 'Prix',
+                  cell: (listing) => (
+                    <span className="font-extrabold text-sm text-stone-900">
+                      {formatPrice(listing.price, { currency: listing.currency })}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'Vues',
+                  header: 'Vues',
+                  cell: (listing) => (
+                    <div className="flex items-center gap-1.5 text-xs text-stone-600">
+                      <Eye className="w-3.5 h-3.5 text-stone-400" />
+                      <span>{listing.viewsCount ?? listing.viewCount ?? 0}</span>
+                    </div>
+                  ),
+                },
+                {
+                  id: 'Date',
+                  header: 'Date',
+                  cell: (listing) => (
+                    <span className="text-xs text-stone-500">
+                      {formatRelativeDate(listing.createdAt)}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'Actions',
+                  header: 'Actions',
+                  align: 'right',
+                  cell: (listing) => (
+                    <div className="flex items-center justify-end gap-1.5">
+                      {listing.status === 'active' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setBoostModalListing(listing)}
+                            className="px-2.5 py-1 rounded-lg bg-warning-surface hover:bg-warning-surface border border-warning-border text-warning font-bold text-xs flex items-center gap-1 transition-colors"
+                            title="Booster l'annonce"
+                          >
+                            <Zap className="w-3.5 h-3.5 text-warning fill-amber-500" />
+                            <span className="hidden lg:inline">Booster</span>
+                          </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteListing(listing.id)}
-                      className="p-1.5 rounded-lg hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition-colors"
-                      title="Supprimer l'annonce"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        )}
+                          <button
+                            type="button"
+                            onClick={() => handleMarkAsSold(listing.id)}
+                            className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-colors"
+                            title="Marquer comme vendu"
+                          >
+                            Vendu
+                          </button>
+                        </>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteListing(listing.id)}
+                        className="p-1.5 rounded-lg hover:bg-danger-surface text-stone-400 hover:text-danger transition-colors"
+                        title="Supprimer l'annonce"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          )}
+        </TabPanel>
       </div>
 
       {/* Boost Modal */}
@@ -374,7 +384,7 @@ export const MyListingsPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div
                 onClick={() => handleApplyBoost(boostModalListing.id, 'urgent')}
-                className="p-4 rounded-xl border border-border-base hover:border-amber-500 hover:bg-amber-50/50 cursor-pointer transition-all space-y-2 group"
+                className="p-4 rounded-xl border border-border-base hover:border-amber-500 hover:bg-warning-surface/50 cursor-pointer transition-all space-y-2 group"
               >
                 <div className="flex items-center justify-between">
                   <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white font-black text-micro uppercase tracking-wider">

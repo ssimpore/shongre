@@ -22,6 +22,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Image } from '../../design-system/primitives/Image';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
+import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
 
 export const AdminVerificationsPage: React.FC = () => {
   const toast = useToast();
@@ -107,7 +108,7 @@ export const AdminVerificationsPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-micro font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">
             Conformité & LCB-FT
           </span>
           <span className="text-stone-300">•</span>
@@ -122,280 +123,270 @@ export const AdminVerificationsPage: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex gap-2 border-b border-stone-200 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('kyc')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === 'kyc' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4" />
-          <span>Identités KYC ({pendingKycUsers.length})</span>
-        </button>
+      <Tabs
+        variant="segmented"
+        label="Files d'attente de vérification"
+        idPrefix="admin-verifications"
+        activeTab={activeTab}
+        onChange={(tab) => setActiveTab(tab as typeof activeTab)}
+        tabs={[
+          {
+            id: 'kyc',
+            label: 'Identités KYC',
+            count: pendingKycUsers.length,
+            icon: <ShieldCheck className="w-4 h-4" />,
+          },
+          {
+            id: 'kyb',
+            label: 'Entreprises KYB',
+            count: pendingKybUsers.length,
+            icon: <Building2 className="w-4 h-4" />,
+          },
+          {
+            id: 'bank',
+            label: 'Comptes IBAN',
+            count: pendingBankUsers.length,
+            icon: <CreditCard className="w-4 h-4" />,
+          },
+          {
+            id: 'audit',
+            label: "Journal d'audit",
+            count: auditLogs.length,
+            icon: <History className="w-4 h-4" />,
+          },
+        ]}
+      />
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('kyb')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === 'kyb' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span>Entreprises KYB ({pendingKybUsers.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('bank')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === 'bank' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>Comptes IBAN ({pendingBankUsers.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('audit')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === 'audit' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
-          }`}
-        >
-          <History className="w-4 h-4" />
-          <span>Journal d'audit global ({auditLogs.length})</span>
-        </button>
-      </div>
-
-      {/* Tab: KYC Identity */}
-      {activeTab === 'kyc' && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-            <h2 className="text-xs font-bold text-stone-900">Dossiers d'identité en file d'attente</h2>
-            <span className="text-micro text-stone-500">{pendingKycUsers.length} dossier(s)</span>
-          </div>
-
-          {pendingKycUsers.length === 0 ? (
-            <div className="p-8 text-center text-xs text-stone-500 font-semibold">
-              Aucun dossier KYC en attente de vérification.
+      <TabPanel tab={activeTab} idPrefix="admin-verifications">
+        {/* Tab: KYC Identity */}
+        {activeTab === 'kyc' && (
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+              <h2 className="text-xs font-bold text-stone-900">Dossiers d'identité en file d'attente</h2>
+              <span className="text-micro text-stone-500">{pendingKycUsers.length} dossier(s)</span>
             </div>
-          ) : (
-            <div className="divide-y divide-stone-100">
-              {pendingKycUsers.map((u) => {
-                const kyc = u.identityVerification;
-                const isPending = kyc?.status === 'pending';
-                const isVerified = kyc?.status === 'verified';
 
-                return (
-                  <div key={u.id} className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <Image
-                        src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
-                        alt={u.name}
-                        className="w-11 h-11 rounded-full object-cover border border-stone-200 shrink-0"
-                      />
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-stone-900">{u.name}</span>
-                          <span className="text-micro text-stone-500 font-mono">({u.email})</span>
-                          <span
-                            className={`text-micro px-2 py-0.5 rounded-full font-bold uppercase ${
-                              isVerified
-                                ? 'bg-emerald-50 text-emerald-800'
-                                : isPending
-                                ? 'bg-amber-50 text-amber-800'
-                                : 'bg-red-50 text-red-800'
-                            }`}
-                          >
-                            {kyc?.status || 'Non commencé'}
-                          </span>
-                        </div>
-                        <div className="text-xs text-stone-600">
-                          <strong>Pièce :</strong> {kyc?.documentType?.toUpperCase() || 'CNI'} • <strong>Pays :</strong> {kyc?.issuingCountry || 'FR'} • <strong>Date naiss. :</strong> {kyc?.birthDate || 'Non spécifiée'}
-                        </div>
-                        {kyc?.notes && (
-                          <div className="text-micro text-stone-500 bg-stone-50 p-2 rounded-lg border border-stone-200">
-                            {kyc.notes}
+            {pendingKycUsers.length === 0 ? (
+              <div className="p-8 text-center text-xs text-stone-500 font-semibold">
+                Aucun dossier KYC en attente de vérification.
+              </div>
+            ) : (
+              <div className="divide-y divide-stone-100">
+                {pendingKycUsers.map((u) => {
+                  const kyc = u.identityVerification;
+                  const isPending = kyc?.status === 'pending';
+                  const isVerified = kyc?.status === 'verified';
+
+                  return (
+                    <div key={u.id} className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <Image
+                          src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
+                          alt={u.name}
+                          className="w-11 h-11 rounded-full object-cover border border-stone-200 shrink-0"
+                        />
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-stone-900">{u.name}</span>
+                            <span className="text-micro text-stone-500 font-mono">({u.email})</span>
+                            <span
+                              className={`text-micro px-2 py-0.5 rounded-full font-bold uppercase ${
+                                isVerified
+                                  ? 'bg-success-surface text-success'
+                                  : isPending
+                                  ? 'bg-warning-surface text-warning'
+                                  : 'bg-danger-surface text-danger'
+                              }`}
+                            >
+                              {kyc?.status || 'Non commencé'}
+                            </span>
                           </div>
-                        )}
+                          <div className="text-xs text-stone-600">
+                            <strong>Pièce :</strong> {kyc?.documentType?.toUpperCase() || 'CNI'} • <strong>Pays :</strong> {kyc?.issuingCountry || 'FR'} • <strong>Date naiss. :</strong> {kyc?.birthDate || 'Non spécifiée'}
+                          </div>
+                          {kyc?.notes && (
+                            <div className="text-micro text-stone-500 bg-stone-50 p-2 rounded-lg border border-stone-200">
+                              {kyc.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end md:self-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setRejectModal({ user: u, dimension: 'identity' })}
+                          leftIcon={<X className="w-3.5 h-3.5" />}
+                        >
+                          Refuser
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleApproveIdentity(u)}
+                          leftIcon={<Check className="w-3.5 h-3.5" />}
+                        >
+                          Valider l'identité
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 self-end md:self-center">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setRejectModal({ user: u, dimension: 'identity' })}
-                        leftIcon={<X className="w-3.5 h-3.5" />}
-                      >
-                        Refuser
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleApproveIdentity(u)}
-                        leftIcon={<Check className="w-3.5 h-3.5" />}
-                      >
-                        Valider l'identité
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab: KYB Business */}
-      {activeTab === 'kyb' && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-            <h2 className="text-xs font-bold text-stone-900">Dossiers d'immatriculation Pro & KBIS</h2>
-            <span className="text-micro text-stone-500">{pendingKybUsers.length} dossier(s)</span>
+                  );
+                })}
+              </div>
+            )}
           </div>
+        )}
 
-          {pendingKybUsers.length === 0 ? (
-            <div className="p-8 text-center text-xs text-stone-500 font-semibold">
-              Aucun dossier KYB en attente de vérification.
+        {/* Tab: KYB Business */}
+        {activeTab === 'kyb' && (
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+              <h2 className="text-xs font-bold text-stone-900">Dossiers d'immatriculation Pro & KBIS</h2>
+              <span className="text-micro text-stone-500">{pendingKybUsers.length} dossier(s)</span>
             </div>
-          ) : (
+
+            {pendingKybUsers.length === 0 ? (
+              <div className="p-8 text-center text-xs text-stone-500 font-semibold">
+                Aucun dossier KYB en attente de vérification.
+              </div>
+            ) : (
+              <div className="divide-y divide-stone-100">
+                {pendingKybUsers.map((u) => {
+                  const kyb = u.professionalVerification;
+                  const isPending = kyb?.status === 'pending';
+                  const isVerified = kyb?.status === 'verified';
+
+                  return (
+                    <div key={u.id} className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-warning-surface text-warning flex items-center justify-center shrink-0">
+                          <Building2 className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-stone-900">
+                              {kyb?.companyName || u.companyName || u.name}
+                            </span>
+                            <span
+                              className={`text-micro px-2 py-0.5 rounded-full font-bold uppercase ${
+                                isVerified
+                                  ? 'bg-success-surface text-success'
+                                  : isPending
+                                  ? 'bg-warning-surface text-warning'
+                                  : 'bg-danger-surface text-danger'
+                              }`}
+                            >
+                              {kyb?.status || 'Non commencé'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-stone-600">
+                            <strong>SIRET :</strong> {kyb?.siret || u.siret || 'N/A'} • <strong>Forme :</strong> {kyb?.legalForm || u.legalForm || 'SAS'} • <strong>TVA :</strong> {kyb?.vatNumber || 'FR --'}
+                          </div>
+                          <div className="text-micro text-stone-500">
+                            Contact : {u.name} ({u.email})
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end md:self-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setRejectModal({ user: u, dimension: 'business' })}
+                          leftIcon={<X className="w-3.5 h-3.5" />}
+                        >
+                          Refuser
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleApproveBusiness(u)}
+                          leftIcon={<Check className="w-3.5 h-3.5" />}
+                        >
+                          Certifier KBIS
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Bank Payouts */}
+        {activeTab === 'bank' && (
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+              <h2 className="text-xs font-bold text-stone-900">Comptes bancaires de séquestre enregistrés</h2>
+              <span className="text-micro text-stone-500">{pendingBankUsers.length} compte(s)</span>
+            </div>
+
             <div className="divide-y divide-stone-100">
-              {pendingKybUsers.map((u) => {
-                const kyb = u.professionalVerification;
-                const isPending = kyb?.status === 'pending';
-                const isVerified = kyb?.status === 'verified';
-
+              {pendingBankUsers.map((u) => {
+                const bank = u.bankPayoutVerification;
                 return (
-                  <div key={u.id} className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
-                        <Building2 className="w-6 h-6" />
+                  <div key={u.id} className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-stone-100 text-stone-800 flex items-center justify-center">
+                        <CreditCard className="w-5 h-5" />
                       </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-stone-900">
-                            {kyb?.companyName || u.companyName || u.name}
-                          </span>
-                          <span
-                            className={`text-micro px-2 py-0.5 rounded-full font-bold uppercase ${
-                              isVerified
-                                ? 'bg-emerald-50 text-emerald-800'
-                                : isPending
-                                ? 'bg-amber-50 text-amber-800'
-                                : 'bg-red-50 text-red-800'
-                            }`}
-                          >
-                            {kyb?.status || 'Non commencé'}
-                          </span>
+                      <div>
+                        <div className="text-xs font-bold text-stone-900">
+                          {bank?.accountHolderName || u.name} • {bank?.bankName || 'Banque SEPA'}
                         </div>
-                        <div className="text-xs text-stone-600">
-                          <strong>SIRET :</strong> {kyb?.siret || u.siret || 'N/A'} • <strong>Forme :</strong> {kyb?.legalForm || u.legalForm || 'SAS'} • <strong>TVA :</strong> {kyb?.vatNumber || 'FR --'}
-                        </div>
-                        <div className="text-micro text-stone-500">
-                          Contact : {u.name} ({u.email})
+                        <div className="text-micro font-mono text-stone-500">
+                          IBAN : {bank?.iban || 'FR76 ••••'} • BIC : {bank?.bic || 'BNPAFRPP'}
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 self-end md:self-center">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setRejectModal({ user: u, dimension: 'business' })}
-                        leftIcon={<X className="w-3.5 h-3.5" />}
-                      >
-                        Refuser
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleApproveBusiness(u)}
-                        leftIcon={<Check className="w-3.5 h-3.5" />}
-                      >
-                        Certifier KBIS
-                      </Button>
-                    </div>
+                    <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">
+                      Vérifié pour virements
+                    </span>
                   </div>
                 );
               })}
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab: Bank Payouts */}
-      {activeTab === 'bank' && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-            <h2 className="text-xs font-bold text-stone-900">Comptes bancaires de séquestre enregistrés</h2>
-            <span className="text-micro text-stone-500">{pendingBankUsers.length} compte(s)</span>
           </div>
+        )}
 
-          <div className="divide-y divide-stone-100">
-            {pendingBankUsers.map((u) => {
-              const bank = u.bankPayoutVerification;
-              return (
-                <div key={u.id} className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 text-stone-800 flex items-center justify-center">
-                      <CreditCard className="w-5 h-5" />
+        {/* Tab: Global Audit Trail */}
+        {activeTab === 'audit' && (
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+              <h2 className="text-xs font-bold text-stone-900">Journal d'audit inaltérable des vérifications</h2>
+              <span className="text-micro text-stone-500">{auditLogs.length} événement(s)</span>
+            </div>
+
+            <div className="divide-y divide-stone-100">
+              {auditLogs.map((log) => (
+                <div key={log.id} className="p-4 flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-xs font-bold text-stone-900">
+                      {log.dimension.toUpperCase()} : {log.previousState} ➔ {log.newState}
                     </div>
-                    <div>
-                      <div className="text-xs font-bold text-stone-900">
-                        {bank?.accountHolderName || u.name} • {bank?.bankName || 'Banque SEPA'}
-                      </div>
-                      <div className="text-micro font-mono text-stone-500">
-                        IBAN : {bank?.iban || 'FR76 ••••'} • BIC : {bank?.bic || 'BNPAFRPP'}
-                      </div>
+                    <div className="text-micro text-stone-500">
+                      Utilisateur ID: {log.userId} • Par: {log.performedBy}
                     </div>
+                    {log.notes && <div className="text-micro text-stone-600 mt-0.5">{log.notes}</div>}
+                    {log.reason && (
+                      <div className="text-micro text-danger font-semibold mt-0.5">Motif: {log.reason}</div>
+                    )}
                   </div>
-                  <span className="text-micro font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Vérifié pour virements
+                  <span className="text-micro text-stone-500 shrink-0">
+                    {new Date(log.timestamp).toLocaleString('fr-FR')}
                   </span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Tab: Global Audit Trail */}
-      {activeTab === 'audit' && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-            <h2 className="text-xs font-bold text-stone-900">Journal d'audit inaltérable des vérifications</h2>
-            <span className="text-micro text-stone-500">{auditLogs.length} événement(s)</span>
-          </div>
-
-          <div className="divide-y divide-stone-100">
-            {auditLogs.map((log) => (
-              <div key={log.id} className="p-4 flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-xs font-bold text-stone-900">
-                    {log.dimension.toUpperCase()} : {log.previousState} ➔ {log.newState}
-                  </div>
-                  <div className="text-micro text-stone-500">
-                    Utilisateur ID: {log.userId} • Par: {log.performedBy}
-                  </div>
-                  {log.notes && <div className="text-micro text-stone-600 mt-0.5">{log.notes}</div>}
-                  {log.reason && (
-                    <div className="text-micro text-red-700 font-semibold mt-0.5">Motif: {log.reason}</div>
-                  )}
-                </div>
-                <span className="text-micro text-stone-500 shrink-0">
-                  {new Date(log.timestamp).toLocaleString('fr-FR')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
+      </TabPanel>
 
       {/* Prompt modal for rejection */}
       <PromptModal

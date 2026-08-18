@@ -1,6 +1,6 @@
 import { isProSeller } from '../../../domains/user/user.domain';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import {
   MapPin,
   Star,
@@ -229,16 +229,26 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           <div className="flex items-center gap-2 w-full md:w-auto shrink-0 pt-2 md:pt-0">
             {isOwnProfile ? (
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Link to={isPro ? '/compte/pro/vitrine' : '/compte'} className="flex-1 sm:flex-initial">
-                  <Button variant="outline" size="md" fullWidth leftIcon={<Edit3 className="w-4 h-4" />}>
-                    Modifier mon profil
-                  </Button>
-                </Link>
-                <Link to="/compte/annonces" className="flex-1 sm:flex-initial">
-                  <Button variant="secondary" size="md" fullWidth leftIcon={<List className="w-4 h-4" />}>
-                    Gérer mes annonces
-                  </Button>
-                </Link>
+                <Button
+                  to={isPro ? '/compte/pro/vitrine' : '/compte'}
+                  variant="outline"
+                  size="md"
+                  fullWidth
+                  leftIcon={<Edit3 className="w-4 h-4" />}
+                  className="flex-1 sm:flex-initial"
+                >
+                  Modifier mon profil
+                </Button>
+                <Button
+                  to="/compte/annonces"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
+                  leftIcon={<List className="w-4 h-4" />}
+                  className="flex-1 sm:flex-initial"
+                >
+                  Gérer mes annonces
+                </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -285,7 +295,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
                   {isMenuOpen && (
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-xl border border-border-base py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100"
+                      className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-xl border border-border-base py-1.5 z-30 animate-in fade-in zoom-in-95 duration-fast"
                       onMouseLeave={() => setIsMenuOpen(false)}
                     >
                       <button
@@ -311,17 +321,17 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                           setIsMenuOpen(false);
                           onOpenReportModal();
                         }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-50 text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-warning hover:bg-warning-surface text-left"
                       >
-                        <Flag className="w-4 h-4 text-amber-600" />
+                        <Flag className="w-4 h-4 text-warning" />
                         Signaler ce profil
                       </button>
                       <button
                         type="button"
                         onClick={handleBlockToggle}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-danger hover:bg-danger-surface text-left"
                       >
-                        <Ban className="w-4 h-4 text-red-500" />
+                        <Ban className="w-4 h-4 text-danger" />
                         {isBlocked ? 'Débloquer cet utilisateur' : 'Bloquer cet utilisateur'}
                       </button>
                     </div>

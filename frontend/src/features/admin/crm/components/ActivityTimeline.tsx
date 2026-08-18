@@ -53,16 +53,16 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
     if (isAi) return <Sparkles className="w-4 h-4 text-purple-600" />;
     switch (type) {
       case 'note':
-        return <MessageSquare className="w-4 h-4 text-blue-600" />;
+        return <MessageSquare className="w-4 h-4 text-info" />;
       case 'call':
-        return <Phone className="w-4 h-4 text-emerald-600" />;
+        return <Phone className="w-4 h-4 text-success" />;
       case 'email':
         return <Mail className="w-4 h-4 text-stone-600" />;
       case 'stage_changed':
       case 'pro_conversion':
-        return <TrendingUp className="w-4 h-4 text-amber-600" />;
+        return <TrendingUp className="w-4 h-4 text-warning" />;
       case 'task_completed':
-        return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
+        return <CheckCircle2 className="w-4 h-4 text-success" />;
       default:
         return <MessageSquare className="w-4 h-4 text-stone-600" />;
     }

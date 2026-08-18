@@ -118,7 +118,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
                 {hasOverride && (
                   <span
                     className={`text-micro px-1 rounded ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                      isSelected ? 'bg-white/20 text-white' : 'bg-info-surface text-info'
                     }`}
                   >
                     Surcharge
@@ -172,7 +172,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
         <div
           className={`p-5 rounded-xl border shadow-xs space-y-4 ${
             isOverridden
-              ? 'bg-blue-50/30 border-blue-200'
+              ? 'bg-info-surface/30 border-info-border'
               : 'bg-white border-stone-200'
           }`}
         >
@@ -183,7 +183,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
             </span>
 
             {isOverridden ? (
-              <span className="text-micro font-bold bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded">
+              <span className="text-micro font-bold bg-info-surface text-info border border-info-border px-2 py-0.5 rounded">
                 ★ Configuration Personnalisée
               </span>
             ) : (
@@ -194,7 +194,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
           </div>
 
           {!isMarketSupported && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+            <div className="p-3 bg-warning-surface border border-warning-border rounded-lg text-xs text-warning">
               Attention : Le prestataire {provider.name} ne supporte pas officiellement le pays {selectedMarket}.
             </div>
           )}
@@ -247,7 +247,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
                 size="sm"
                 onClick={handleResetOverride}
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-                className="text-xs text-rose-700 hover:bg-rose-50"
+                className="text-xs text-danger hover:bg-danger-surface"
               >
                 Réinitialiser sur France
               </Button>

@@ -27,9 +27,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 import { useMarketLocation } from '../providers/MarketLocationProvider';
+import { useFavorites } from '../providers/FavoritesProvider';
 import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { storageService } from '../../services/storage.service';
+import { usePublishCta } from '../../security/usePublishCta';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Avatar } from '../../design-system/primitives/Badge';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
@@ -48,6 +50,9 @@ export const Header: React.FC = () => {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
+  // Set when the drawer is opened via the search button rather than the burger,
+  // so the field takes focus instead of the user having to tap it again.
+  const [shouldFocusMobileSearch, setShouldFocusMobileSearch] = useState(false);
 
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +60,12 @@ export const Header: React.FC = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
+
+  // Reset the focus intent once the drawer closes, so opening it later via the
+  // burger does not steal focus into the search field.
+  useEffect(() => {
+    if (!isMobileMenuOpen) setShouldFocusMobileSearch(false);
+  }, [isMobileMenuOpen]);
 
   // Close the header dropdowns on route change, Escape, or a click outside.
   useEffect(() => {
@@ -91,8 +102,9 @@ export const Header: React.FC = () => {
     () => setIsMobileMenuOpen(false)
   );
 
-  const favCount = storageService.getFavorites().length;
-  const unreadMessagesCount = storageService.getConversations().reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+  const { count: favCount } = useFavorites();
+  const unreadMessagesCount = storageService.getUnreadMessageCount(currentUser?.id);
+  const publishCta = usePublishCta();
   const unreadNotifsCount = storageService.getNotifications().filter((n) => !n.isRead).length;
 
   return (
@@ -100,30 +112,42 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
           
-          {/* Logo & Category trigger */}
-          <div className="flex items-center gap-4 shrink-0">
-            <Link to={routes.home()} className="flex items-center gap-2 select-none group">
-              <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 transition-transform">
+          {/* Logo & Category trigger.
+              `min-w-0` rather than `shrink-0`: on tablet the wordmark is allowed
+              to give up space to the search field instead of forcing the row
+              wider than the viewport. */}
+          <div className="flex items-center gap-3 lg:gap-4 shrink-0">
+            <Link to={routes.home()} className="flex items-center gap-2 select-none group min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 transition-transform shrink-0">
                 S
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-extrabold tracking-tight uppercase text-stone-900 leading-none">
+              <div className="flex flex-col min-w-0">
+                <span className="text-xl font-extrabold tracking-tight uppercase text-stone-900 leading-none truncate">
                   Shongre<span className="text-primary">.</span>
                 </span>
-                <span className="text-micro font-bold text-stone-600 tracking-wider uppercase mt-0.5">
+                {/* The market name repeats the market selector in the actions
+                    row, so tablet drops it rather than the search field. */}
+                <span className="hidden lg:block text-micro font-bold text-stone-600 tracking-wider uppercase mt-0.5 truncate">
                   {activeMarket.name}
                 </span>
               </div>
             </Link>
 
-            {/* Language selector (Desktop) */}
-            <div className="hidden lg:block">
+            {/* Language selector.
+                A preference, not navigation, so it yields the header's width to
+                the search field until `xl`. It stays reachable at every width
+                from the footer and from the mobile/tablet drawer. */}
+            <div className="hidden xl:block">
               <LanguageSelector idPrefix="header-desktop-lang" />
             </div>
           </div>
 
-          {/* Global Search bar (Desktop) */}
-          <div className="flex-1 max-w-2xl hidden md:block">
+          {/* Global Search bar (Desktop).
+              The single search surface on desktop: sticky, so it is reachable
+              from any scroll position, including the homepage. The homepage hero
+              used to carry a second copy with the same placeholder — one search
+              per screen, and this is it. */}
+          <div className="flex-1 min-w-0 max-w-xl xl:max-w-2xl hidden md:block">
             <GlobalSearchBar
               variant="header"
               idPrefix="header-desktop"
@@ -132,22 +156,30 @@ export const Header: React.FC = () => {
             />
           </div>
 
-          {/* Header Action Items */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Header Action Items.
+              `shrink-0` so the actions keep their intrinsic size and the search
+              field absorbs the remaining width. Without it the flex row had no
+              stable give-and-take: the search bar claimed its `flex-1` share
+              first, the brand collapsed to 4px, and the actions ran 58px past
+              the right edge at exactly 1024px. */}
+          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
             
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
             <Link
-              to="/deposer"
-              className="hidden md:flex bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs sm:text-sm font-bold px-3.5 sm:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95"
+              to={publishCta.to}
+              aria-label={publishCta.label}
+              className="hidden md:flex bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Déposer une annonce</span>
+              {/* Tablet keeps the publish action but not its label — it is the
+                  one action that must survive the narrower row. */}
+              <span className="hidden lg:inline">{publishCta.label}</span>
             </Link>
 
             {/* Favorites */}
             <Link
               to="/compte/favoris"
-              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors hidden sm:flex items-center justify-center"
+              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors hidden lg:flex items-center justify-center"
               aria-label="Favoris"
             >
               <Heart className="w-5 h-5" />
@@ -161,7 +193,7 @@ export const Header: React.FC = () => {
             {/* Messages */}
             <Link
               to="/compte/messages"
-              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors hidden sm:flex items-center justify-center"
+              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors hidden lg:flex items-center justify-center"
               aria-label="Messagerie"
             >
               <MessageSquare className="w-5 h-5" />
@@ -173,7 +205,7 @@ export const Header: React.FC = () => {
             </Link>
 
             {/* Notifications */}
-            <div className="hidden sm:block">
+            <div className="hidden lg:block">
               <NotificationBell />
             </div>
 
@@ -294,9 +326,9 @@ export const Header: React.FC = () => {
                         logout();
                         setIsAccountMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-red-500" />
+                      <LogOut className="w-4 h-4 text-danger" />
                       Déconnexion
                     </button>
                   </div>
@@ -304,13 +336,34 @@ export const Header: React.FC = () => {
               )}
             </div>
 
+            {/* Mobile search entry.
+                The header search bar is desktop-only, so without this the
+                homepage had no visible search affordance at all on a phone —
+                for a marketplace, that is the wrong thing to hide behind a
+                hamburger. Opens the same drawer and focuses its search field. */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(true);
+                setShouldFocusMobileSearch(true);
+              }}
+              aria-label="Rechercher une annonce"
+              /* `md:hidden`, unlike the burger next to it: from `md` up the
+                 inline search bar is already on screen, and a second search
+                 entry point in the same header is exactly the duplication the
+                 single-search-surface rule exists to prevent. */
+              className="md:hidden p-2 rounded-xl text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted transition-colors flex items-center justify-center cursor-pointer"
+            >
+              <Search className="w-6 h-6 text-stone-900" />
+            </button>
+
             {/* Mobile Hamburger Toggle Button */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={isMobileMenuOpen}
-              className="md:hidden p-2 rounded-xl text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted transition-colors flex items-center justify-center cursor-pointer"
+              className="lg:hidden p-2 rounded-xl text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted transition-colors flex items-center justify-center cursor-pointer"
             >
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6 text-stone-900" />
@@ -324,10 +377,10 @@ export const Header: React.FC = () => {
 
       {/* Mobile Drawer Navigation (rendered via Portal to prevent sticky header clipping) */}
       {isMobileMenuOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[9999] md:hidden flex justify-end">
+        <div className="fixed inset-0 z-[9999] lg:hidden flex justify-end">
           {/* Backdrop overlay */}
           <div
-            className="fixed inset-0 bg-stone-950/60 backdrop-blur-xs transition-opacity duration-200"
+            className="fixed inset-0 bg-stone-950/60 backdrop-blur-xs transition-opacity duration-normal"
             onClick={() => setIsMobileMenuOpen(false)}
             aria-hidden="true"
           />
@@ -339,7 +392,7 @@ export const Header: React.FC = () => {
             aria-modal="true"
             aria-labelledby={drawerTitleId}
             tabIndex={-1}
-            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-200"
+            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
           >
             
             {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
@@ -434,6 +487,7 @@ export const Header: React.FC = () => {
                   idPrefix="header-mobile"
                   showCategory={true}
                   showLocation={true}
+                  autoFocus={shouldFocusMobileSearch}
                   onSubmitComplete={() => setIsMobileMenuOpen(false)}
                 />
               </div>
@@ -441,12 +495,12 @@ export const Header: React.FC = () => {
               {/* Mobile CTA: Déposer une annonce */}
               <div className="p-4 border-b border-border-base shrink-0">
                 <Link
-                  to="/deposer"
+                  to={publishCta.to}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full py-3 px-4 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs hover:bg-primary-hover active:bg-primary-active active:scale-98 transition-all"
                 >
                   <PlusCircle className="w-5 h-5" />
-                  <span>Déposer une annonce</span>
+                  <span>{publishCta.label}</span>
                 </Link>
               </div>
 
@@ -470,7 +524,7 @@ export const Header: React.FC = () => {
                 <Link
                   to="/bons-plans"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-amber-800 hover:bg-amber-50 transition-colors"
+                  className="flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
                     <Sparkles className="w-4 h-4 text-amber-500" />
@@ -511,7 +565,7 @@ export const Header: React.FC = () => {
                   </button>
 
                   {isMobileCategoriesOpen && (
-                    <div className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-150">
+                    <div className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-fast">
                       {TAXONOMY.map((cat) => (
                         <Link
                           key={cat.id}
@@ -574,7 +628,7 @@ export const Header: React.FC = () => {
                     <Link
                       to="/solutions-pro"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-amber-700 hover:bg-amber-50 transition-colors"
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-warning hover:bg-warning-surface transition-colors"
                     >
                       <Sparkles className="w-4 h-4 text-amber-500" />
                       Solutions Pro
@@ -585,9 +639,9 @@ export const Header: React.FC = () => {
                         logout();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-red-500" />
+                      <LogOut className="w-4 h-4 text-danger" />
                       Déconnexion
                     </button>
                   </div>

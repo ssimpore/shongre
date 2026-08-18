@@ -62,7 +62,7 @@ export const PreferencesModal: React.FC = () => {
                     <span className="text-lg leading-none">{m.flag}</span>
                     <div className="truncate">
                       <div className="text-xs truncate">{m.name}</div>
-                      <div className="text-micro text-stone-400 font-normal">{m.code}</div>
+                      <div className="text-micro text-stone-500 font-normal">{m.code}</div>
                     </div>
                   </div>
                   {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
@@ -93,7 +93,7 @@ export const PreferencesModal: React.FC = () => {
                   }`}
                 >
                   <div className="text-xs font-bold">{c.symbol} {c.code}</div>
-                  <div className="text-micro text-stone-400 font-normal truncate">{c.label}</div>
+                  <div className="text-micro text-stone-500 font-normal truncate">{c.label}</div>
                 </button>
               );
             })}
@@ -115,21 +115,29 @@ export const PreferencesModal: React.FC = () => {
                 <button
                   key={lang.code}
                   type="button"
-                  onClick={() => setLocale(lang.code)}
-                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-                    isSelected
-                      ? 'border-primary bg-primary-light text-primary font-bold ring-1 ring-primary'
-                      : 'border-border-base bg-white hover:bg-stone-50 text-stone-800 font-medium'
+                  disabled={!lang.isAvailable}
+                  aria-disabled={!lang.isAvailable}
+                  onClick={() => lang.isAvailable && setLocale(lang.code)}
+                  className={`p-2 rounded-xl border text-left transition-all flex items-center justify-between ${
+                    !lang.isAvailable
+                      ? 'border-border-subtle bg-bg-subtle text-stone-400 cursor-not-allowed'
+                      : isSelected
+                      ? 'border-primary bg-primary-light text-primary font-bold ring-1 ring-primary cursor-pointer'
+                      : 'border-border-base bg-white hover:bg-stone-50 text-stone-800 font-medium cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <span className="text-base leading-none">{lang.flag}</span>
+                    <span className={`text-base leading-none ${lang.isAvailable ? '' : 'grayscale opacity-60'}`}>
+                      {lang.flag}
+                    </span>
                     <div className="truncate">
                       <div className="text-xs truncate">{lang.nativeName}</div>
-                      <div className="text-micro text-stone-400 font-normal uppercase">{lang.code.slice(0, 2)}</div>
+                      <div className="text-micro text-stone-500 font-normal uppercase">
+                        {lang.isAvailable ? lang.code.slice(0, 2) : 'Bientôt'}
+                      </div>
                     </div>
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  {isSelected && lang.isAvailable && <Check className="w-4 h-4 text-primary shrink-0" />}
                 </button>
               );
             })}

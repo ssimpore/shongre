@@ -436,3 +436,19 @@ export function normalizePlatformRole(rawRole?: string): PlatformRole {
       return 'buyer';
   }
 }
+
+/**
+ * Staff-readable name for a role identifier.
+ *
+ * Role keys are storage values, not copy. Rendering them directly put
+ * `super_admin` in front of staff in audit rows and role columns. Falls back to
+ * a de-slugified form so an unknown key still reads as words rather than as an
+ * identifier.
+ */
+export function roleLabel(role: string | undefined | null): string {
+  if (!role) return '—';
+  const known = ROLE_DEFINITIONS[role as PlatformRole];
+  if (known) return known.shortLabel;
+  const spaced = String(role).replace(/_/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}

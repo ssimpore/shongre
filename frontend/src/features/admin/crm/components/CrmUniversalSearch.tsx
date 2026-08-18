@@ -62,11 +62,11 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       case 'company':
         return <Building2 className="w-4 h-4 text-primary" />;
       case 'contact':
-        return <User className="w-4 h-4 text-blue-600" />;
+        return <User className="w-4 h-4 text-info" />;
       case 'opportunity':
-        return <TrendingUp className="w-4 h-4 text-amber-600" />;
+        return <TrendingUp className="w-4 h-4 text-warning" />;
       case 'shongre_user':
-        return <Sparkles className="w-4 h-4 text-emerald-600" />;
+        return <Sparkles className="w-4 h-4 text-success" />;
     }
   };
 

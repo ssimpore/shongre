@@ -61,12 +61,12 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
     >
       <div className="space-y-4">
         {!impact.isSafeToDelete ? (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3 text-xs text-red-950">
-            <div className="flex items-center gap-2 font-bold text-red-700">
+          <div className="p-4 bg-danger-surface border border-danger-border rounded-xl space-y-3 text-xs text-danger">
+            <div className="flex items-center gap-2 font-bold text-danger">
               <AlertOctagon className="w-5 h-5 shrink-0" />
               <span>Suppression bloquée par les règles de sécurité :</span>
             </div>
-            <ul className="list-disc list-inside space-y-1 text-red-900">
+            <ul className="list-disc list-inside space-y-1 text-danger">
               {impact.blockingReasons.map((reason, idx) => (
                 <li key={idx}>{reason}</li>
               ))}
@@ -94,7 +94,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
                   onClose();
                   onSwitchToDeprecate();
                 }}
-                leftIcon={<Archive className="w-4 h-4 text-amber-600" />}
+                leftIcon={<Archive className="w-4 h-4 text-warning" />}
               >
                 Déprécier à la place
               </Button>

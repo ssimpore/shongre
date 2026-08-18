@@ -12,12 +12,13 @@ import {
   Tag,
   PlusCircle,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import { Listing, UserProfile } from '../../../types';
 import { taxonomyService, getTaxonomyLabel } from '../../../domains/taxonomy/taxonomy.service';
 import { ListingCard } from '../../../design-system/primitives/ListingCard';
 import { Button } from '../../../design-system/primitives/Button';
 import { NoResultsFound } from '../../../design-system/primitives/NoResultsFound';
+import { usePublishCta } from '../../../security/usePublishCta';
 
 export interface SellerCatalogProps {
   listings: Listing[];
@@ -32,6 +33,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
   seller,
   isOwnProfile = false,
 }) => {
+  const publishCta = usePublishCta();
   const isPro = isProSeller(seller);
 
   // Filters state
@@ -181,17 +183,22 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             : `${seller.name} n'a aucune annonce active en ce moment.`}
         </p>
         {isOwnProfile ? (
-          <Link to="/deposer">
-            <Button variant="primary" size="md" leftIcon={<PlusCircle className="w-4 h-4" />}>
-              Publier une première annonce
-            </Button>
-          </Link>
+          <Button
+            to={publishCta.to}
+            variant="primary"
+            size="md"
+            leftIcon={<PlusCircle className="w-4 h-4" />}
+          >
+            Publier une première annonce
+          </Button>
         ) : (
-          <Link to={routes.search()}>
-            <Button variant="outline" size="md">
-              Explorer les annonces du marché
-            </Button>
-          </Link>
+          <Button
+            to={routes.search()}
+            variant="outline"
+            size="md"
+          >
+            Explorer les annonces du marché
+          </Button>
         )}
       </div>
     );
@@ -288,7 +295,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
 
         {/* Collapsible Price Filter Tray */}
         {isFilterDrawerOpen && (
-          <div className="mt-3 pt-3 border-t border-border-subtle flex flex-wrap items-center gap-3 animate-in fade-in duration-150">
+          <div className="mt-3 pt-3 border-t border-border-subtle flex flex-wrap items-center gap-3 animate-in fade-in duration-fast">
             <span className="text-xs font-bold text-stone-700">Fourchette de prix (€) :</span>
             <div className="flex items-center gap-2">
               <input

@@ -98,8 +98,8 @@ export const AdminMonetizationPage: React.FC = () => {
         </p>
 
         {saveSuccess && (
-          <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-lg flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="mt-4 p-3 bg-success-surface border border-success-border text-success text-xs font-semibold rounded-lg flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
             <span>{saveSuccess}</span>
           </div>
         )}
@@ -132,10 +132,14 @@ export const AdminMonetizationPage: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 mb-1">
+                  <label
+                    htmlFor={`plan-${plan.id}-quota`}
+                    className="block text-xs font-bold text-stone-600 mb-1"
+                  >
                     Quota max d'annonces actives
                   </label>
                   <input
+                    id={`plan-${plan.id}-quota`}
                     type="number"
                     value={plan.maxActiveListings}
                     onChange={(e) => {
@@ -148,10 +152,14 @@ export const AdminMonetizationPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-600 mb-1">
+                  <label
+                    htmlFor={`plan-${plan.id}-commission`}
+                    className="block text-xs font-bold text-stone-600 mb-1"
+                  >
                     Commission sur vente (%)
                   </label>
                   <input
+                    id={`plan-${plan.id}-commission`}
                     type="number"
                     step="0.5"
                     value={plan.commissionRate}

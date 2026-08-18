@@ -41,7 +41,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none p-4">
+      {/* Clears the mobile tab bar so toasts never sit on top of navigation;
+          falls back to a plain inset once the bar is gone at md. */}
+      <div className="fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-4 md:inset-x-auto md:right-4 z-50 flex flex-col gap-2 md:max-w-sm w-full pointer-events-none p-4">
         {toasts.map((toast) => {
           const typeStyles = {
             success: 'bg-emerald-900/90 text-white border-emerald-700',
@@ -60,7 +62,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto p-3.5 rounded-xl shadow-xl border backdrop-blur-md flex items-start gap-3 animate-in slide-in-from-bottom duration-200 ${typeStyles[toast.type]}`}
+              className={`pointer-events-auto p-3.5 rounded-xl shadow-xl border backdrop-blur-md flex items-start gap-3 animate-in slide-in-from-bottom duration-normal ${typeStyles[toast.type]}`}
             >
               {icons[toast.type]}
               <div className="flex-1 text-xs sm:text-sm">

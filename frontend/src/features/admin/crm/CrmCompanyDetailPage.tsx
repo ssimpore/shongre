@@ -251,6 +251,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="font-bold text-stone-500">Changer de statut :</span>
             <Select
+              aria-label="Cycle de vie de l'entreprise"
               value={company.lifecycle}
               onChange={(e) => handleUpdateLifecycle(e.target.value as CompanyLifecycle)}
               options={[

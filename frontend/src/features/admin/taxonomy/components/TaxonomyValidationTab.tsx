@@ -60,12 +60,12 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>État global</span>
             {errors.length === 0 ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <CheckCircle2 className="w-4 h-4 text-success" />
             ) : (
-              <AlertOctagon className="w-4 h-4 text-red-600" />
+              <AlertOctagon className="w-4 h-4 text-danger" />
             )}
           </div>
-          <p className={`text-xl font-black ${errors.length === 0 ? 'text-success' : 'text-red-600'}`}>
+          <p className={`text-xl font-black ${errors.length === 0 ? 'text-success' : 'text-danger'}`}>
             {errors.length === 0 ? 'Conforme' : `${errors.length} Bloquants`}
           </p>
         </div>
@@ -73,15 +73,15 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Erreurs bloquantes</span>
-            <AlertOctagon className="w-4 h-4 text-red-600" />
+            <AlertOctagon className="w-4 h-4 text-danger" />
           </div>
-          <p className="text-xl font-black text-red-600">{errors.length}</p>
+          <p className="text-xl font-black text-danger">{errors.length}</p>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Avertissements</span>
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <AlertTriangle className="w-4 h-4 text-warning" />
           </div>
           <p className="text-xl font-black text-warning">{warnings.length}</p>
         </div>
@@ -89,9 +89,9 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Recommandations</span>
-            <Info className="w-4 h-4 text-blue-600" />
+            <Info className="w-4 h-4 text-info" />
           </div>
-          <p className="text-xl font-black text-blue-600">{infos.length}</p>
+          <p className="text-xl font-black text-info">{infos.length}</p>
         </div>
       </div>
 
@@ -113,8 +113,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           onClick={() => setSeverityFilter('error')}
           className={`px-3 py-1.5 rounded-xl transition-all ${
             severityFilter === 'error'
-              ? 'bg-red-600 text-white'
-              : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+              ? 'bg-danger text-white'
+              : 'bg-danger-surface text-danger hover:bg-danger-surface border border-danger-border'
           }`}
         >
           Erreurs ({errors.length})
@@ -125,7 +125,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           className={`px-3 py-1.5 rounded-xl transition-all ${
             severityFilter === 'warning'
               ? 'bg-amber-500 text-white'
-              : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200'
+              : 'bg-warning-surface text-warning hover:bg-warning-surface border border-warning-border'
           }`}
         >
           Avertissements ({warnings.length})
@@ -135,8 +135,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           onClick={() => setSeverityFilter('info')}
           className={`px-3 py-1.5 rounded-xl transition-all ${
             severityFilter === 'info'
-              ? 'bg-blue-600 text-white'
-              : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+              ? 'bg-info text-white'
+              : 'bg-info-surface text-info hover:bg-info-surface border border-info-border'
           }`}
         >
           Recommandations ({infos.length})
@@ -147,7 +147,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       <div className="space-y-3">
         {filteredIssues.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-2xl border border-border-base text-xs text-stone-500 space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+            <CheckCircle2 className="w-8 h-8 text-success mx-auto" />
             <p className="font-bold text-stone-900 text-sm">Aucune anomalie détectée dans ce filtre.</p>
             <p className="text-stone-500">La taxonomie respecte toutes les règles de cohérence structurelle.</p>
           </div>
@@ -160,20 +160,20 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                 key={issue.id}
                 className={`p-4 rounded-2xl border bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                   issue.severity === 'error'
-                    ? 'border-red-200 hover:border-red-400'
+                    ? 'border-danger-border hover:border-danger'
                     : issue.severity === 'warning'
-                    ? 'border-amber-200 hover:border-amber-400'
-                    : 'border-blue-200 hover:border-blue-400'
+                    ? 'border-warning-border hover:border-amber-400'
+                    : 'border-info-border hover:border-blue-400'
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 shrink-0">
                     {issue.severity === 'error' ? (
-                      <AlertOctagon className="w-5 h-5 text-red-600" />
+                      <AlertOctagon className="w-5 h-5 text-danger" />
                     ) : issue.severity === 'warning' ? (
                       <AlertTriangle className="w-5 h-5 text-amber-500" />
                     ) : (
-                      <Info className="w-5 h-5 text-blue-500" />
+                      <Info className="w-5 h-5 text-info" />
                     )}
                   </div>
 
@@ -182,10 +182,10 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                       <span
                         className={`text-micro px-2 py-0.5 rounded-full font-mono font-bold uppercase ${
                           issue.severity === 'error'
-                            ? 'bg-red-100 text-red-800'
+                            ? 'bg-danger-surface text-danger'
                             : issue.severity === 'warning'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-warning-surface text-warning'
+                            : 'bg-info-surface text-info'
                         }`}
                       >
                         {issue.code}

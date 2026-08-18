@@ -53,13 +53,13 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
     >
       <div className="space-y-5 p-1">
         {/* Warning banner */}
-        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900">
-          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-warning-surface border border-warning-border flex items-start gap-3 text-warning">
+          <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
-            <p className="font-bold text-amber-950">
+            <p className="font-bold text-warning">
               {customMessage || `Vous vous apprêtez à modifier la configuration de ${provider.name}.`}
             </p>
-            <p className="text-amber-800">
+            <p className="text-warning">
               Veuillez examiner attentivement les répercussions sur les marchés territoriaux et les fonctionnalités en ligne.
             </p>
           </div>
@@ -70,12 +70,12 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           {/* Affected Markets */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
             <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
-              <Globe className="w-3.5 h-3.5 text-blue-600" />
+              <Globe className="w-3.5 h-3.5 text-info" />
               Marchés Territoriaux Affectés
             </span>
             <div className="flex flex-wrap gap-1.5">
               {impact.directlyAffectedMarkets.map((m) => (
-                <span key={m} className="px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-bold border border-blue-200">
+                <span key={m} className="px-2 py-0.5 rounded bg-info-surface text-info font-bold border border-info-border">
                   {m} (Direct)
                 </span>
               ))}
@@ -120,11 +120,11 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
               </span>
             </div>
             {impact.hasAlternativeFallback ? (
-              <span className="text-emerald-700 bg-emerald-100 font-bold text-xs px-2 py-1 rounded">
+              <span className="text-success bg-success-surface font-bold text-xs px-2 py-1 rounded">
                 Secours Prêt
               </span>
             ) : (
-              <span className="text-rose-700 bg-rose-100 font-bold text-xs px-2 py-1 rounded">
+              <span className="text-danger bg-danger-surface font-bold text-xs px-2 py-1 rounded">
                 Sans Secours
               </span>
             )}

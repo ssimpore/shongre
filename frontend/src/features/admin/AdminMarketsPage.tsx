@@ -34,7 +34,7 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { Badge } from '../../design-system/primitives/Badge';
 import { marketService } from '../../domains/market/market.service';
 import { Market, MarketStatus, MarketConfiguration } from '../../domains/market/market.types';
-import { formatPrice } from '../../utilities/formatters';
+import { formatPrice, plural } from '../../utilities/formatters';
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -269,11 +269,11 @@ export const AdminMarketsPage: React.FC = () => {
                 ⭐ Valeur Canonique France (Défaut)
               </span>
             ) : isOverridden ? (
-              <span className="inline-flex items-center gap-1 text-micro bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+              <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-full border border-warning-border">
                 ✏️ Surcharge Locale ({selectedMarket.code})
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-micro bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="inline-flex items-center gap-1 text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full border border-success-border">
                 🔄 Hérité de France 🇫🇷
               </span>
             )}
@@ -293,12 +293,12 @@ export const AdminMarketsPage: React.FC = () => {
               </div>
             )}
             {!isFR && isOverridden && (
-              <div className="text-micro text-amber-700">
+              <div className="text-micro text-warning">
                 (France: {frenchRefDisplay})
               </div>
             )}
             {isFR && impactedMarkets.length > 0 && (
-              <div className="text-micro text-blue-600 font-medium">
+              <div className="text-micro text-info font-medium">
                 Hérité par {impactedMarkets.join(', ')}
               </div>
             )}
@@ -310,7 +310,7 @@ export const AdminMarketsPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-micro h-7 px-2.5"
+                className="text-micro h-control-sm px-2.5"
                 onClick={() => openEditOverride(path, label, resolution.value, type)}
               >
                 {isFR ? 'Modifier' : isOverridden ? 'Modifier' : 'Personnaliser'}
@@ -321,7 +321,7 @@ export const AdminMarketsPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-micro h-7 px-2 text-stone-500 hover:text-red-600 hover:bg-red-50"
+                className="text-micro h-control-sm px-2 text-stone-500 hover:text-danger hover:bg-danger-surface"
                 title="Supprimer la surcharge et réactiver l'héritage dynamique de France"
                 onClick={() => handleResetOverride(path)}
               >
@@ -379,7 +379,7 @@ export const AdminMarketsPage: React.FC = () => {
               : 'border-transparent text-stone-500 hover:text-stone-900'
           }`}
         >
-          Vue d'ensemble ({markets.length} marchés)
+          Vue d'ensemble ({plural(markets.length, 'marché')})
         </button>
         <button
           type="button"
@@ -407,11 +407,11 @@ export const AdminMarketsPage: React.FC = () => {
 
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (
-        <div className="space-y-6 animate-in fade-in duration-150">
+        <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Informational Banner */}
-          <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-3">
-            <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-900 space-y-1">
+          <div className="p-4 rounded-2xl bg-warning-surface/80 border border-warning-border/80 flex items-start gap-3">
+            <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+            <div className="text-xs text-warning space-y-1">
               <span className="font-bold">Moteur d'héritage hiérarchique en cascade :</span>
               <p>
                 Chaque paramètre non explicitement configuré pour la Belgique, l'Espagne ou la Suisse hérite automatiquement et dynamiquement de la configuration de référence française.
@@ -436,20 +436,20 @@ export const AdminMarketsPage: React.FC = () => {
                   }`}
                 >
                   <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{m.flag}</span>
-                        <div>
-                          <div className="font-bold text-sm text-stone-900 flex items-center gap-1.5">
-                            <span>{m.name}</span>
-                            <span className="font-mono text-xs text-stone-500">({m.code})</span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-2xl shrink-0">{m.flag}</span>
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm text-stone-900 flex items-center gap-1.5 min-w-0">
+                            <span className="truncate">{m.name}</span>
+                            <span className="font-mono text-xs text-stone-500 shrink-0">({m.code})</span>
                           </div>
-                          <div className="text-micro text-stone-500 font-medium">
+                          <div className="text-micro text-stone-500 font-medium truncate">
                             {m.currency} ({m.currencySymbol}) • {m.defaultLocale}
                           </div>
                         </div>
                       </div>
-                      {renderStatusBadge(m.status)}
+                      <span className="shrink-0">{renderStatusBadge(m.status)}</span>
                     </div>
 
                     {/* Inheritance Metrics Bar */}
@@ -459,10 +459,10 @@ export const AdminMarketsPage: React.FC = () => {
                           <span className="text-primary">Marché Source Canonique (100%)</span>
                         ) : (
                           <>
-                            <span className="text-emerald-700">
+                            <span className="text-success">
                               {metrics.percentInherited}% hérité de France
                             </span>
-                            <span className="text-amber-700">
+                            <span className="text-warning">
                               {metrics.percentOverridden}% personnalisé
                             </span>
                           </>
@@ -474,7 +474,7 @@ export const AdminMarketsPage: React.FC = () => {
                         ) : (
                           <>
                             <div
-                              className="h-full bg-emerald-500"
+                              className="h-full bg-success"
                               style={{ width: `${metrics.percentInherited}%` }}
                             />
                             <div
@@ -505,6 +505,7 @@ export const AdminMarketsPage: React.FC = () => {
                     {/* Quick status toggle for non-default */}
                     {!isDefault && canManageMarkets && (
                       <select
+                        aria-label={`Statut du marché ${m.name}`}
                         value={m.status}
                         onChange={(e) => handleStatusChange(m.code, e.target.value as MarketStatus)}
                         className="text-micro bg-bg-base border border-border-base rounded-lg px-2 py-1 font-semibold text-stone-700 focus:outline-none"
@@ -526,7 +527,7 @@ export const AdminMarketsPage: React.FC = () => {
 
       {/* TAB 2: INHERITANCE & OVERRIDE EDITOR */}
       {activeTab === 'editor' && (
-        <div className="space-y-6 animate-in fade-in duration-150">
+        <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Market Picker Selector for Editor */}
           <div className="p-4 rounded-2xl bg-white border border-border-base flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -569,7 +570,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs text-stone-600 hover:text-red-600"
+                  className="text-xs text-stone-600 hover:text-danger"
                   onClick={() => handleResetAllToFrance(selectedMarket.code)}
                 >
                   <RefreshCw className="w-3.5 h-3.5 mr-1" />
@@ -581,9 +582,9 @@ export const AdminMarketsPage: React.FC = () => {
 
           {/* Canonical Warning for France */}
           {selectedMarket.isDefault && (
-            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
-              <div className="text-xs text-blue-900 space-y-1">
+            <div className="p-4 rounded-2xl bg-info-surface border border-info-border flex items-start gap-3">
+              <ShieldAlert className="w-5 h-5 text-info shrink-0 mt-0.5" />
+              <div className="text-xs text-info space-y-1">
                 <span className="font-bold">Avertissement d'impact global :</span>
                 <p>
                   Vous éditez actuellement la <strong>configuration canonique France</strong>. Toute modification de valeur sur cette page se propagera automatiquement et instantanément à tous les marchés dépendants (Belgique, Espagne, Suisse, etc.) qui n'ont pas défini de surcharge explicite sur le paramètre concerné.
@@ -649,9 +650,9 @@ export const AdminMarketsPage: React.FC = () => {
 
             {activeDomainTab === 'taxonomy' && (
               <div className="space-y-4">
-                <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl flex items-start gap-3">
-                  <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                  <div className="text-xs text-amber-900 space-y-1">
+                <div className="p-4 bg-warning-surface/70 border border-warning-border rounded-2xl flex items-start gap-3">
+                  <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                  <div className="text-xs text-warning space-y-1">
                     <span className="font-bold">Gestion des catégories par marché :</span>
                     <p>
                       Par défaut, tous les marchés héritent des catégories de la France. Vous pouvez activer ou désactiver spécifiquement des catégories ou sous-catégories pour {selectedMarket.name} ({selectedMarket.code}).
@@ -687,7 +688,7 @@ export const AdminMarketsPage: React.FC = () => {
                             <span
                               className={`text-micro font-bold px-2 py-0.5 rounded-full ${
                                 isRootEnabled
-                                  ? 'bg-emerald-100 text-emerald-800'
+                                  ? 'bg-success-surface text-success'
                                   : 'bg-stone-200 text-stone-700'
                               }`}
                             >
@@ -712,8 +713,8 @@ export const AdminMarketsPage: React.FC = () => {
                                 }}
                                 className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors cursor-pointer ${
                                   isRootEnabled
-                                    ? 'border-red-200 text-red-700 hover:bg-red-50'
-                                    : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                                    ? 'border-danger-border text-danger hover:bg-danger-surface'
+                                    : 'border-success-border text-success hover:bg-success-surface'
                                 }`}
                               >
                                 {isRootEnabled ? 'Désactiver' : 'Activer'}
@@ -867,7 +868,7 @@ export const AdminMarketsPage: React.FC = () => {
 
       {/* TAB 3: COMPARATIVE MATRIX */}
       {activeTab === 'matrix' && (
-        <div className="space-y-6 animate-in fade-in duration-150">
+        <div className="space-y-6 animate-in fade-in duration-fast">
           <div className="p-4 rounded-2xl bg-white border border-border-base overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
@@ -908,7 +909,7 @@ export const AdminMarketsPage: React.FC = () => {
                           {cfg.localization.defaultCurrency} ({cfg.localization.currencySymbol})
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-amber-700 font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
                         )}
                       </td>
                     );
@@ -925,7 +926,7 @@ export const AdminMarketsPage: React.FC = () => {
                           {(cfg.taxes.vatRateStandard * 100).toFixed(1)} %
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-amber-700 font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
                         )}
                       </td>
                     );
@@ -942,7 +943,7 @@ export const AdminMarketsPage: React.FC = () => {
                           {cfg.payments.buyerProtectionFixedFee.toFixed(2)} {cfg.localization.currencySymbol} + {(cfg.payments.buyerProtectionFeePercent * 100).toFixed(1)}%
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-amber-700 font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
                         )}
                       </td>
                     );
@@ -959,7 +960,7 @@ export const AdminMarketsPage: React.FC = () => {
                           {cfg.pro.businessIdentifierLabel}
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-amber-700 font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
                         )}
                       </td>
                     );
@@ -972,11 +973,11 @@ export const AdminMarketsPage: React.FC = () => {
                     const res = marketService.resolveSetting(m.code, 'reservation.enabled');
                     return (
                       <td key={m.code} className="p-3">
-                        <span className={`font-bold ${cfg.reservation.enabled ? 'text-emerald-700' : 'text-stone-500'}`}>
+                        <span className={`font-bold ${cfg.reservation.enabled ? 'text-success' : 'text-stone-500'}`}>
                           {cfg.reservation.enabled ? '✓ Activée' : '✗ Désactivée'}
                         </span>
                         {res.overrideDefined && (
-                          <span className="block text-micro text-amber-700 font-bold">✏️ Surchargé ({String(res.value)})</span>
+                          <span className="block text-micro text-warning font-bold">✏️ Surchargé ({String(res.value)})</span>
                         )}
                       </td>
                     );

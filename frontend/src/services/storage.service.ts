@@ -233,6 +233,21 @@ class StorageService {
     this.set(KEYS.CONVERSATIONS, convs);
   }
 
+  /**
+   * Unread messages for one user only.
+   *
+   * Header, mobile nav and the account sidebar each used to reduce over *every*
+   * conversation in storage, while the inbox renders only the current user's —
+   * so a signed-in user saw a badge count for conversations they cannot open.
+   * Badge and inbox must read from the same scope.
+   */
+  getUnreadMessageCount(userId?: string | null): number {
+    if (!userId) return 0;
+    return this.getConversations()
+      .filter((c) => c.buyerId === userId || c.sellerId === userId)
+      .reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+  }
+
   getMessages(conversationId: string): import('../types').Message[] {
     const all = this.get<Record<string, import('../types').Message[]>>(KEYS.MESSAGES, INITIAL_MESSAGES);
     return all[conversationId] || [];

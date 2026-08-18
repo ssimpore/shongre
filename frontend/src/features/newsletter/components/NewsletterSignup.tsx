@@ -75,12 +75,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     }
 
     return (
-      <div className={`p-6 rounded-3xl bg-emerald-50 border border-emerald-200 text-center space-y-2 ${className}`}>
-        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+      <div className={`p-6 rounded-3xl bg-success-surface border border-success-border text-center space-y-2 ${className}`}>
+        <div className="w-10 h-10 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-5 h-5" />
         </div>
-        <h4 className="text-sm font-black text-emerald-950">Vous êtes bien inscrit !</h4>
-        <p className="text-xs text-emerald-800 max-w-sm mx-auto">
+        <h4 className="text-sm font-black text-success">Vous êtes bien inscrit !</h4>
+        <p className="text-xs text-success max-w-sm mx-auto">
           Vous recevrez nos sélections et bons plans. Vous pourrez vous désabonner en 1 clic à tout moment.
         </p>
       </div>
@@ -99,15 +99,16 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Votre adresse email"
+              aria-label="Votre adresse email"
               autoComplete="email"
               disabled={isSubmitting}
-              className="w-full h-9 pl-9 pr-3 text-xs bg-stone-800 border border-stone-700 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
+              className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-800 border border-stone-700 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
             />
           </div>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="h-9 px-3.5 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs font-bold rounded-xl transition-colors shrink-0 flex items-center gap-1 disabled:opacity-50 cursor-pointer shadow-xs"
+            className="h-control-md px-3.5 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs font-bold rounded-xl transition-colors shrink-0 flex items-center gap-1 disabled:opacity-50 cursor-pointer shadow-xs"
           >
             <span>{isSubmitting ? '...' : 'S\'inscrire'}</span>
           </button>
@@ -152,6 +153,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Saisissez votre adresse email"
+                  aria-label="Votre adresse email"
                   autoComplete="email"
                   disabled={isSubmitting}
                   className="w-full h-12 pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
@@ -171,12 +173,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             </div>
 
             {showConsentCheckbox && (
-              <label className="flex items-start gap-2 cursor-pointer select-none text-micro text-stone-400">
+              <label className="flex items-start gap-2 cursor-pointer select-none text-micro text-stone-400 min-h-6">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
+                  className="w-3.5 h-3.5 shrink-0 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
                 />
                 <span>
                   J'accepte de recevoir la newsletter Shongre. Désinscription possible à tout moment en 1 clic.

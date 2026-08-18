@@ -100,8 +100,8 @@ export const LoginPage: React.FC = () => {
       }}
     >
       {errorMessage && (
-        <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2.5">
-          <ShieldAlert className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+        <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+          <ShieldAlert className="w-4 h-4 text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
       )}
@@ -192,7 +192,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 text-xs font-medium text-stone-700 cursor-pointer select-none">
+            <label className="flex items-center gap-2 min-h-6 text-xs font-medium text-stone-700 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={rememberMe}
@@ -234,7 +234,7 @@ export const LoginPage: React.FC = () => {
             className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-primary flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+              <User className="w-3.5 h-3.5 text-info shrink-0" />
               <span>Thomas (Particulier)</span>
             </div>
             <div className="text-micro text-stone-600 truncate">Acheteur / Vendeur</div>
@@ -258,7 +258,7 @@ export const LoginPage: React.FC = () => {
             className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-warning flex items-center gap-1">
-              <Briefcase className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <Briefcase className="w-3.5 h-3.5 text-warning shrink-0" />
               <span>Sophie (Pro en cours)</span>
             </div>
             <div className="text-micro text-stone-600 truncate">Dossier Kbis en examen</div>
@@ -270,7 +270,7 @@ export const LoginPage: React.FC = () => {
             className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-success flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <Shield className="w-3.5 h-3.5 text-success shrink-0" />
               <span>Antoine (Admin)</span>
             </div>
             <div className="text-micro text-stone-600 truncate">Administration globale</div>

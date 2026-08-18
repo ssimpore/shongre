@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Clock, Shield, User, FileText } from 'lucide-react';
 import { providerService } from '../../../../domains/providers/provider.service';
+import { roleLabel } from '../../../../security/roles.config';
 
 interface ProviderAuditLogsTabProps {
   providerId?: string;
@@ -35,7 +36,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({ prov
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-stone-900">{log.action.toUpperCase()}</span>
                   {log.marketCode && (
-                    <span className="text-micro font-bold bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded">
+                    <span className="text-micro font-bold bg-info-surface text-info px-1.5 py-0.2 rounded">
                       Marché {log.marketCode}
                     </span>
                   )}
@@ -44,7 +45,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({ prov
               </div>
 
               <div className="flex sm:flex-col items-start sm:items-end text-micro text-stone-500 shrink-0">
-                <span className="font-medium text-stone-600">{log.actorName} ({log.actorRole})</span>
+                <span className="font-medium text-stone-600">{log.actorName} ({roleLabel(log.actorRole)})</span>
                 <span>{new Date(log.timestamp).toLocaleString('fr-FR')}</span>
               </div>
             </div>

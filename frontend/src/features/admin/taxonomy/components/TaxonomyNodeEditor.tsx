@@ -38,6 +38,7 @@ import { IconPickerModal } from './modals/IconPickerModal';
 import { MoveNodeModal } from './modals/MoveNodeModal';
 import { DeprecateNodeModal } from './modals/DeprecateNodeModal';
 import { DeleteNodeModal } from './modals/DeleteNodeModal';
+import { plural } from '../../../../utilities/formatters';
 
 export interface TaxonomyNodeEditorProps {
   nodeId: string;
@@ -320,7 +321,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               </span>
               <h2 className="text-lg font-black text-stone-900">{node.name}</h2>
               {node.shortLabel && (
-                <span className="text-xs bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full font-bold">
+                <span className="text-xs bg-warning-surface text-warning border border-warning-border px-2 py-0.5 rounded-full font-bold">
                   Alias : {node.shortLabel}
                 </span>
               )}
@@ -338,7 +339,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <button
                   type="button"
                   onClick={handleCopyId}
-                  className="p-1 hover:text-stone-900 rounded"
+                  className="p-1 hover:text-stone-900 rounded min-w-6 min-h-6 inline-flex items-center justify-center"
                   title="Copier l'ID stable"
                 >
                   <Copy className="w-3 h-3" />
@@ -375,22 +376,15 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setIsDeprecateModalOpen(true)}
-              leftIcon={<Archive className="w-3.5 h-3.5 text-amber-600" />}
+              leftIcon={<Archive className="w-3.5 h-3.5 text-warning" />}
             >
               Déprécier
             </Button>
           )}
 
-          <Button
-            aria-label="Supprimer ce noeud de taxonomie"
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsDeleteModalOpen(true)}
-            className="text-stone-500 hover:text-red-600"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
-
+          {/* Delete lives in the danger zone at the foot of the editor, not here.
+              It previously sat 8px from "Déprécier" and 8px above "Enregistrer" —
+              an irreversible action wedged between the two most-used controls. */}
           <Button
             variant="primary"
             size="sm"
@@ -559,6 +553,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
+                    aria-label="Couleur d'accentuation de la catégorie"
                     value={accentColor}
                     onChange={(e) => setAccentColor(e.target.value)}
                     className="w-10 h-10 rounded-xl cursor-pointer border border-border-base"
@@ -582,6 +577,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   onChange={(e) => setNewAlias(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAlias())}
                   placeholder="Ajouter un synonyme (ex: Smartphone, Portable, GSM...)"
+                  aria-label="Ajouter un synonyme"
                 />
                 <Button variant="outline" size="sm" onClick={handleAddAlias}>
                   Ajouter
@@ -635,6 +631,35 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     <span>Nœud publiable (sélectionnable comme catégorie finale d'annonce)</span>
                   </label>
                 </div>
+              </div>
+            </div>
+
+            {/* Danger zone.
+                Deleting a taxonomy node is irreversible and cascades into every
+                listing filed under it, so it is separated from the routine
+                actions, styled as a hazard, and still gated by ConfirmModal. */}
+            <div className="rounded-xl border border-danger-border bg-danger-surface p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-danger flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    Zone de danger
+                  </h4>
+                  <p className="text-xs text-stone-600 mt-1 max-w-prose">
+                    La suppression est définitive et affecte toutes les annonces rattachées à cette
+                    rubrique. Préférez <strong>Déprécier</strong> pour la retirer des nouvelles
+                    publications sans toucher à l'existant.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                  className="border-danger-border text-danger hover:bg-danger hover:text-white shrink-0"
+                >
+                  Supprimer ce nœud
+                </Button>
               </div>
             </div>
           </div>
@@ -703,7 +728,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <select
                     value={selectedRegistryAttrId}
                     onChange={(e) => setSelectedRegistryAttrId(e.target.value)}
-                    className="h-9 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold max-w-xs"
+                    className="h-control-md px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold max-w-xs"
                   >
                     <option value="">-- Choisir dans le Registre --</option>
                     {availableRegistryAttributes.map((attr) => (
@@ -750,12 +775,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                               </span>
                             )}
                             {attr.required && (
-                              <span className="text-micro bg-red-50 text-red-700 px-1.5 py-0.2 rounded font-bold">
+                              <span className="text-micro bg-danger-surface text-danger px-1.5 py-0.2 rounded font-bold">
                                 Requis
                               </span>
                             )}
                             {attr.filterable && (
-                              <span className="text-micro bg-blue-50 text-blue-700 px-1.5 py-0.2 rounded font-bold">
+                              <span className="text-micro bg-info-surface text-info px-1.5 py-0.2 rounded font-bold">
                                 Filtre
                               </span>
                             )}
@@ -770,7 +795,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveLocalAttribute(attr.id)}
-                          className="text-stone-500 hover:text-red-600"
+                          className="text-stone-500 hover:text-danger"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -801,7 +826,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 </div>
                 <div>
                   <span className="text-stone-500">Options d'état :</span>
-                  <p className="font-bold text-stone-900">{resolvedSchema.conditionScheme.length} paliers</p>
+                  <p className="font-bold text-stone-900">{plural(resolvedSchema.conditionScheme.length, 'palier')}</p>
                 </div>
                 <div>
                   <span className="text-stone-500">Vente autorisée :</span>
@@ -852,9 +877,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {/* ========================================================================= */}
         {activeTab === 'capabilities' && (
           <div className="space-y-6 max-w-3xl">
-            <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1">
-              <div className="font-bold text-blue-950 flex items-center gap-1.5">
-                <HelpCircle className="w-4 h-4 text-blue-700" />
+            <div className="p-3.5 bg-info-surface border border-info-border rounded-xl text-xs text-info space-y-1">
+              <div className="font-bold text-info flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4 text-info" />
                 <span>Frontière d'architecture :</span>
               </div>
               <p>
@@ -1071,10 +1096,10 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               <div className="text-micro text-stone-500 font-bold uppercase tracking-wider">
                 Aperçu Google Search :
               </div>
-              <div className="text-xs text-blue-800 font-medium hover:underline cursor-pointer">
+              <div className="text-xs text-info font-medium hover:underline cursor-pointer">
                 {metaTitleTemplate.replace('{category}', node.name) || `${node.name} d'occasion - Shongre`}
               </div>
-              <div className="text-micro text-emerald-800 font-mono">
+              <div className="text-micro text-success font-mono">
                 https://shongre.com/categorie/{node.slug}
               </div>
               <div className="text-xs text-stone-600 line-clamp-2">
@@ -1174,7 +1199,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
 
             <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-2 text-xs text-stone-700">
               <div className="font-bold text-stone-900 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <ShieldCheck className="w-4 h-4 text-success" />
                 <span>Politique d'intégrité canonique :</span>
               </div>
               <p>

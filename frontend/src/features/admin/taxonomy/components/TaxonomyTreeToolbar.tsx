@@ -35,9 +35,10 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           <input
             type="text"
             placeholder="Rechercher par libellé, nom court, alias, ID, slug..."
+            aria-label="Rechercher dans l'arborescence"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-9 pl-9 pr-8 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           />
           {searchQuery && (
             <button
@@ -71,9 +72,10 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           </div>
 
           <select
+            aria-label="Filtrer par niveau de taxonomie"
             value={levelFilter}
             onChange={(e) => onLevelFilterChange(e.target.value)}
-            className="h-7 px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
+            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
           >
             <option value="all">Tous les niveaux</option>
             <option value="category">Catégories racines (Univers)</option>
@@ -83,9 +85,10 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           </select>
 
           <select
+            aria-label="Filtrer par statut de nœud"
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="h-7 px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
+            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
           >
             <option value="all">Tous les statuts</option>
             <option value="active">Actifs uniquement</option>
@@ -98,14 +101,14 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           <button
             type="button"
             onClick={onExpandAll}
-            className="px-2 py-1 text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
+            className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
           >
             Déplier tout
           </button>
           <button
             type="button"
             onClick={onCollapseAll}
-            className="px-2 py-1 text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
+            className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
           >
             Replier tout
           </button>

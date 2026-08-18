@@ -74,7 +74,7 @@ export const NotificationPreferencesPage: React.FC = () => {
       <div className="space-y-6" aria-busy="true" aria-live="polite">
         <span className="sr-only">Chargement de vos préférences de notification…</span>
         <div className="space-y-2">
-          <Skeleton className="h-7 w-72 rounded-lg" />
+          <Skeleton className="h-control-sm w-72 rounded-lg" />
           <Skeleton className="h-4 w-96 max-w-full rounded-lg" />
         </div>
         <div className="bg-white rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs">

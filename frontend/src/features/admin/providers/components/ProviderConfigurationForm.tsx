@@ -162,7 +162,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-            <Lock className="w-3.5 h-3.5 text-amber-600" />
+            <Lock className="w-3.5 h-3.5 text-warning" />
             <span>Sécurité certifiée</span>
           </div>
         </div>
@@ -180,23 +180,23 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
                       {field.label}
-                      {field.required && <span className="text-rose-500">*</span>}
+                      {field.required && <span className="text-danger">*</span>}
                     </label>
                     {isSecret && (
-                      <span className="text-micro font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
+                      <span className="text-micro font-semibold text-warning bg-warning-surface border border-warning-border px-1.5 py-0.2 rounded">
                         Secret Serveur
                       </span>
                     )}
                   </div>
 
                   {isSecret ? (
-                    <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/40 space-y-2">
+                    <div className="p-3 rounded-lg border border-warning-border bg-warning-surface/40 space-y-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-stone-600">Statut des identifiants :</span>
                         <select
                           value={credentialStatus}
                           onChange={(e) => setCredentialStatus(e.target.value as any)}
-                          className="py-1 px-2 text-xs rounded border border-amber-300 bg-white font-semibold text-amber-900"
+                          className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning"
                         >
                           <option value="configured">✓ Clé configurée et validée</option>
                           <option value="not_configured">⚠ Non configurée</option>

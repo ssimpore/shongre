@@ -59,7 +59,16 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/50">
+    /* A scrollable region needs to be reachable by keyboard, otherwise a
+       keyboard-only user can read only the messages that happen to fit. The
+       role/label pair keeps it announced as the message history rather than as
+       an unnamed scroll box. */
+    <div
+      className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/50"
+      tabIndex={0}
+      role="log"
+      aria-label="Historique de la conversation"
+    >
       {groups.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-500 space-y-2">
           <Info className="w-8 h-8 text-stone-300" />
@@ -146,9 +155,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
 
                       {/* Offer Card */}
                       {isOffer && (
-                        <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 mb-2 space-y-2">
+                        <div className="p-2.5 rounded-xl bg-warning-surface border border-warning-border text-warning mb-2 space-y-2">
                           <div className="flex items-center gap-1.5 font-extrabold text-xs">
-                            <DollarSign className="w-4 h-4 text-amber-600" />
+                            <DollarSign className="w-4 h-4 text-warning" />
                             <span>Offre proposée : {formatPrice(msg.offerAmount || 0)}</span>
                           </div>
                           {!isMe && onRespondOffer && (
@@ -179,8 +188,12 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
 
                       {/* Timestamp & Status Ticks */}
                       <div
+                        /* `text-white/75` on the terracotta bubble measured
+                           3.48:1 — the timestamp and read receipt are real
+                           content, so they take the full-strength white the
+                           message body already uses. */
                         className={`flex items-center justify-end gap-1 text-micro mt-1 ${
-                          isMe ? 'text-white/75' : 'text-stone-500'
+                          isMe ? 'text-white' : 'text-stone-500'
                         }`}
                       >
                         <span>{formatTime(msg.createdAt)}</span>

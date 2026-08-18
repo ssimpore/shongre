@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, MessageSquare, Search } from 'lucide-react';
+import { routes } from '../../configuration/routes';
 import { messagingRepository } from '../../repositories/messaging.repository';
 import {
   ConversationPreview,
@@ -332,6 +333,10 @@ export const MessagingPage: React.FC = () => {
     return messagingService.filterConversations(conversations, selectedFilter, searchQuery, currentUserId);
   }, [conversations, selectedFilter, searchQuery, currentUserId]);
 
+  // Distinct from "filtered to nothing": the filters and search are still useful
+  // in that case, so they stay on screen and the list shows its own no-match copy.
+  const hasNoConversations = !isLoading && conversations.length === 0;
+
   const activeListingContext: ListingConversationContext | null = useMemo(() => {
     if (!activeRawConv) return null;
     return {
@@ -359,6 +364,34 @@ export const MessagingPage: React.FC = () => {
     // the user could not see what they were typing. The minimum height only
     // applies from `md` up, where there is no virtual keyboard.
     <div className="bg-white rounded-3xl border border-border-base overflow-hidden shadow-xs h-[calc(100dvh-140px)] md:min-h-[600px] max-h-[850px] flex flex-col md:flex-row relative">
+      {/* Inbox with nothing in it at all — not merely filtered to nothing.
+          Splitting this across two panes produced a list saying "Aucune
+          conversation trouvée" beside a pane saying "choisissez une conversation
+          dans la liste de gauche", i.e. an instruction to pick from an empty
+          list. One panel, one message, one way forward. */}
+      {hasNoConversations ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center text-primary">
+            <MessageSquare className="w-7 h-7" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-base font-black text-stone-800">Aucun message pour le moment</p>
+            <p className="text-xs text-stone-500 max-w-sm leading-relaxed">
+              Vos échanges avec les acheteurs et les vendeurs apparaîtront ici, avec le paiement
+              sécurisé et le suivi de commande.
+            </p>
+          </div>
+          <Button
+            to={routes.search()}
+            variant="primary"
+            size="md"
+            leftIcon={<Search className="w-4 h-4" />}
+          >
+            Parcourir les annonces
+          </Button>
+        </div>
+      ) : (
+      <>
       {/* 1. Left Inbox Sidebar */}
       <div
         className={`w-full md:w-80 lg:w-96 shrink-0 h-full flex flex-col ${
@@ -427,7 +460,8 @@ export const MessagingPage: React.FC = () => {
             />
           </>
         ) : (
-          /* Empty Active Selection on Desktop */
+          /* Nothing selected, but conversations do exist — so pointing at the
+             list is genuinely actionable here. */
           <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-stone-500">
             <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400">
               <Sparkles className="w-7 h-7 text-primary" />
@@ -441,6 +475,8 @@ export const MessagingPage: React.FC = () => {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* ========================================================================= */}
       {/* MODALS */}

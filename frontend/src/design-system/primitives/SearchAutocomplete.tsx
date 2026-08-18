@@ -211,7 +211,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                           <HighlightMatch text={kw.keyword} highlight={trimmedQuery} />
                         </span>
                         {kw.isTrending && (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-warning-surface text-warning border border-warning-border shrink-0">
                             <TrendingUp className="w-2.5 h-2.5" />
                             Tendance
                           </span>

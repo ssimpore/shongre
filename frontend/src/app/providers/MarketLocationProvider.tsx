@@ -104,6 +104,14 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
     storageService.saveUserLocale(locale);
   }, []);
 
+  // Keep the document language in sync with the active locale. Screen readers
+  // pick pronunciation from `<html lang>`, and it was pinned to the `fr` in
+  // index.html no matter what the user selected.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.lang = currentLocale.slice(0, 2);
+  }, [currentLocale]);
+
   const setCurrency = useCallback((currency: string) => {
     const clean = currency.toUpperCase();
     setCurrentCurrencyState(clean);

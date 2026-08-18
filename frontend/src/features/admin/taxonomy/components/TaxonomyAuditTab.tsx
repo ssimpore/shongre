@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
 import { Search, History, Clock, User, FileSpreadsheet } from 'lucide-react';
+import { roleLabel } from '../../../../security/roles.config';
 
 export const TaxonomyAuditTab: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -38,7 +39,7 @@ export const TaxonomyAuditTab: React.FC = () => {
             placeholder="Filtrer les logs d'audit..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
       </div>
@@ -80,7 +81,7 @@ export const TaxonomyAuditTab: React.FC = () => {
                       <div className="flex items-center gap-1.5 text-stone-700 font-medium">
                         <User className="w-3.5 h-3.5 text-stone-400" />
                         <span>{log.actor.name}</span>
-                        <span className="text-micro text-stone-500 font-mono">({log.actor.role})</span>
+                        <span className="text-micro text-stone-500 font-mono">({roleLabel(log.actor.role)})</span>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-stone-500 max-w-sm truncate">

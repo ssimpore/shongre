@@ -14,7 +14,7 @@ import {
   Compass,
 } from 'lucide-react';
 import { Listing } from '../../types';
-import { formatPrice } from '../../utilities/formatters';
+import { formatPrice, plural } from '../../utilities/formatters';
 import { getListingCoordinates, FRENCH_MAJOR_CITIES, FRANCE_CENTER } from '../../configuration/geoCoordinates';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Button } from '../../design-system/primitives/Button';
@@ -123,7 +123,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       // Custom HTML Marker Pill
       const customHtml = `
-        <div class="shongre-map-marker-wrapper transition-all duration-200 transform ${
+        <div class="shongre-map-marker-wrapper transition-all duration-normal transform ${
           isSelected ? 'scale-115 z-50' : isHovered ? 'scale-110 z-40' : 'z-10'
         }">
           <div class="px-2.5 py-1 rounded-full font-bold text-xs shadow-md border flex items-center gap-1 cursor-pointer select-none transition-colors ${
@@ -281,7 +281,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
         {/* Floating Active Listing Preview Card */}
         {activeListing && (
-          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:w-96 z-30 bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:w-96 z-30 bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-normal">
             <button
               type="button"
               onClick={() => setActiveListing(null)}
@@ -415,7 +415,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       <div className="absolute top-14 left-4 z-20 pointer-events-none">
         <div className="bg-stone-900/85 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
           <Navigation className="w-3.5 h-3.5 text-primary" />
-          <span>{listings.length} annonces géolocalisées</span>
+          <span>{plural(listings.length, 'annonce géolocalisée', 'annonces géolocalisées')}</span>
         </div>
       </div>
     </div>

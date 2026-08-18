@@ -108,7 +108,7 @@ export const CrmPipelinePage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-black text-stone-900">
               Pipeline des Ventes & Forfaits Pro
             </h1>
-            <span className="text-xs bg-primary/10 text-primary font-black px-2.5 py-0.5 rounded-full">
+            <span className="text-xs bg-primary-light text-primary font-black px-2.5 py-0.5 rounded-full">
               {crmService.formatCrmMoney({ amountMinor: totalPipelineValue, currency: 'EUR' })}
             </span>
           </div>
@@ -189,7 +189,7 @@ export const CrmPipelinePage: React.FC = () => {
                           type="button"
                           disabled={stageIndex === 0}
                           onClick={() => handleStageChange(opp.id, PIPELINE_STAGES[stageIndex - 1].id)}
-                          className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                          className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
                           title="Étape précédente"
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
@@ -201,7 +201,7 @@ export const CrmPipelinePage: React.FC = () => {
                           type="button"
                           disabled={stageIndex === PIPELINE_STAGES.length - 1}
                           onClick={() => handleStageChange(opp.id, PIPELINE_STAGES[stageIndex + 1].id)}
-                          className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                          className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
                           title="Étape suivante"
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
@@ -253,6 +253,7 @@ export const CrmPipelinePage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Type d'opportunité">
               <Select
+                aria-label="Type d'opportunité"
                 value={oppType}
                 onChange={(e) => setOppType(e.target.value as OpportunityType)}
                 options={[

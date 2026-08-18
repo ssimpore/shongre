@@ -1,6 +1,6 @@
 import { routes } from '../../configuration/routes';
 import React from 'react';
-import { Link } from 'react-router-dom';
+
 import { AlertCircle, Home, Search } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 
@@ -17,16 +17,20 @@ export const NotFoundPage: React.FC = () => {
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Link to={routes.home()}>
-          <Button variant="primary" leftIcon={<Home className="w-4 h-4" />}>
-            Retour à l'accueil
-          </Button>
-        </Link>
-        <Link to={routes.search()}>
-          <Button variant="outline" leftIcon={<Search className="w-4 h-4" />}>
-            Rechercher une annonce
-          </Button>
-        </Link>
+        <Button
+          to={routes.home()}
+          variant="primary"
+          leftIcon={<Home className="w-4 h-4" />}
+        >
+          Retour à l'accueil
+        </Button>
+        <Button
+          to={routes.search()}
+          variant="outline"
+          leftIcon={<Search className="w-4 h-4" />}
+        >
+          Rechercher une annonce
+        </Button>
       </div>
     </div>
   );

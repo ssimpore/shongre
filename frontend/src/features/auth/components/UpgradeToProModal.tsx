@@ -72,7 +72,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
   // bypassed the shared Modal primitive and had none of them.
   const { containerRef, titleId } = useDialogBehavior(true, onClose);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto"
@@ -103,7 +103,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
         </p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -199,8 +199,8 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             />
           </div>
 
-          <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-950 flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-xl bg-warning-surface/70 border border-warning-border/80 text-xs text-warning flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-warning shrink-0 mt-0.5" />
             <div className="leading-relaxed">
               <strong>Vérification légale :</strong> Votre immatriculation fera l'objet d'un examen par nos services de conformité. Votre badge Vendeur Pro sera délivré dès validation du dossier.
             </div>

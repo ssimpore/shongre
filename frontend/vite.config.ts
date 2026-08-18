@@ -32,9 +32,6 @@ export default defineConfig(({ mode }) => {
               if (id.includes('leaflet')) {
                 return 'vendor-leaflet';
               }
-              if (id.includes('@google/genai')) {
-                return 'vendor-genai';
-              }
               if (id.includes('lucide-react') || id.includes('canvas-confetti')) {
                 return 'vendor-ui';
               }

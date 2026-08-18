@@ -126,7 +126,7 @@ export const AdminUsersPage: React.FC = () => {
 
       {/* Filters Bar */}
       <div className="bg-white rounded-2xl border border-border-base p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-        <div className="flex-1 flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -134,11 +134,13 @@ export const AdminUsersPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher un nom, email, entreprise, SIRET..."
+              aria-label="Rechercher un utilisateur"
               className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary bg-bg-base"
             />
           </div>
 
           <select
+            aria-label="Filtrer par type de compte"
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
             className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary bg-bg-base"
@@ -150,6 +152,7 @@ export const AdminUsersPage: React.FC = () => {
           </select>
 
           <select
+            aria-label="Filtrer par rôle plateforme"
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
             className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary bg-bg-base"
@@ -201,7 +204,7 @@ export const AdminUsersPage: React.FC = () => {
                           <div className="font-bold text-stone-900 flex items-center gap-1.5">
                             <span>{u.name}</span>
                             {u.isVerified && (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-sky-500" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-info" />
                             )}
                           </div>
                           <div className="text-xs text-stone-500">
@@ -228,15 +231,15 @@ export const AdminUsersPage: React.FC = () => {
                     <td className="p-3.5">
                       <div className="flex flex-col gap-1 items-start">
                         {u.isSuspended ? (
-                          <span className="text-micro bg-red-100 text-red-800 font-bold px-2 py-1 rounded-sm">
+                          <span className="text-micro bg-danger-surface text-danger font-bold px-2 py-1 rounded-sm">
                             SUSPENDU
                           </span>
                         ) : isPendingPro ? (
-                          <span className="text-micro bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded-sm flex items-center gap-1">
+                          <span className="text-micro bg-warning-surface text-warning font-bold px-2 py-1 rounded-sm flex items-center gap-1">
                             <AlertTriangle className="w-3 h-3" /> KBIS En attente
                           </span>
                         ) : (
-                          <span className="text-micro bg-emerald-100 text-emerald-800 font-bold px-2 py-1 rounded-sm">
+                          <span className="text-micro bg-success-surface text-success font-bold px-2 py-1 rounded-sm">
                             ACTIF
                           </span>
                         )}
@@ -264,7 +267,7 @@ export const AdminUsersPage: React.FC = () => {
                           <Button
                             size="sm"
                             onClick={() => setKbisModalUser(u)}
-                            className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1"
+                            className="text-xs bg-success hover:bg-success text-white flex items-center gap-1"
                           >
                             <FileCheck className="w-3 h-3" />
                             <span>Valider KBIS</span>
@@ -284,7 +287,7 @@ export const AdminUsersPage: React.FC = () => {
                               }
                             }}
                             className={`text-xs ${
-                              u.isSuspended ? 'text-emerald-700 border-emerald-300' : 'text-red-700 border-red-200'
+                              u.isSuspended ? 'text-success border-success-border' : 'text-danger border-danger-border'
                             }`}
                           >
                             {u.isSuspended ? 'Réactiver' : 'Suspendre'}

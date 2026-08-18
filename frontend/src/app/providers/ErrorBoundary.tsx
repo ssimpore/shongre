@@ -64,7 +64,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReload}
-                className="flex-1 h-11 px-4 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                className="flex-1 h-control-touch px-4 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Actualiser la page</span>
@@ -73,7 +73,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReset}
-                className="flex-1 h-11 px-4 rounded-xl bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                className="flex-1 h-control-touch px-4 rounded-xl bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <Home className="w-4 h-4 text-primary" />
                 <span>Retour accueil</span>

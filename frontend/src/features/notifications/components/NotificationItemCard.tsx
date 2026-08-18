@@ -29,14 +29,14 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
 }) => {
   const getCategoryIcon = (category: NotificationCategory, priority: string) => {
     if (priority === 'critical') {
-      return <AlertCircle className="w-4 h-4 text-red-600" />;
+      return <AlertCircle className="w-4 h-4 text-danger" />;
     }
 
     switch (category) {
       case 'messages':
-        return <MessageSquare className="w-4 h-4 text-sky-600" />;
+        return <MessageSquare className="w-4 h-4 text-info" />;
       case 'transactions':
-        return <ShoppingBag className="w-4 h-4 text-emerald-600" />;
+        return <ShoppingBag className="w-4 h-4 text-success" />;
       case 'listings':
         return <Tag className="w-4 h-4 text-primary" />;
       case 'delivery':
@@ -44,12 +44,12 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       case 'reviews':
         return <Star className="w-4 h-4 text-amber-500 fill-amber-400" />;
       case 'monetization':
-        return <DollarSign className="w-4 h-4 text-amber-600" />;
+        return <DollarSign className="w-4 h-4 text-warning" />;
       case 'account':
       case 'security':
-        return <ShieldCheck className="w-4 h-4 text-emerald-600" />;
+        return <ShieldCheck className="w-4 h-4 text-success" />;
       case 'moderation':
-        return <AlertCircle className="w-4 h-4 text-amber-600" />;
+        return <AlertCircle className="w-4 h-4 text-warning" />;
       case 'system':
       default:
         return <Sparkles className="w-4 h-4 text-stone-600" />;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MailCheck, AlertCircle, ArrowRight, RefreshCw, CheckCircle2, ShieldCheck, Mail } from 'lucide-react';
 import { authService } from '../../domains/auth/auth.service';
 import { useAuth } from '../../app/providers/AuthProvider';
@@ -74,7 +74,7 @@ export const VerifyEmailPage: React.FC = () => {
     >
       {status === 'success' ? (
         <div className="text-center py-4 space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-success-surface text-success mx-auto flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
@@ -101,21 +101,21 @@ export const VerifyEmailPage: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {errorMessage && (
-            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMessage}</div>
             </div>
           )}
 
           {resendStatus && (
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex flex-col gap-1.5">
+            <div className="p-3.5 rounded-xl bg-success-surface border border-success-border text-xs text-success flex flex-col gap-1.5">
               <div className="flex items-center gap-2 font-bold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-success" />
                 <span>{resendStatus}</span>
               </div>
               {demoCodeHint && (
-                <p className="text-micro text-emerald-800">
-                  Token démo : <code className="bg-emerald-100 px-1 py-0.5 rounded font-bold">{demoCodeHint}</code>
+                <p className="text-micro text-success">
+                  Token démo : <code className="bg-success-surface px-1 py-0.5 rounded font-bold">{demoCodeHint}</code>
                 </p>
               )}
             </div>

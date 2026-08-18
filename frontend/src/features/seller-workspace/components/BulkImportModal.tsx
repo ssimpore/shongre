@@ -245,7 +245,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                 <div
                   key={item.id}
                   className={`p-2.5 flex items-center justify-between gap-3 ${
-                    !item.isValid ? 'bg-rose-50/50' : 'hover:bg-stone-50'
+                    !item.isValid ? 'bg-danger-surface/50' : 'hover:bg-stone-50'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">

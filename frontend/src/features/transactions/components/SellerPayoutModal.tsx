@@ -91,7 +91,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-medium">
+          <div className="p-3 bg-danger-surface border border-danger-border text-danger rounded-xl font-medium">
             {error}
           </div>
         )}
@@ -107,7 +107,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
               max={availableBalance}
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
-              className="w-full h-11 px-3.5 pr-10 text-stone-900 bg-white rounded-xl border border-stone-200 focus:outline-none focus:border-primary font-bold text-base"
+              className="w-full h-control-touch px-3.5 pr-10 text-stone-900 bg-white rounded-xl border border-stone-200 focus:outline-none focus:border-primary font-bold text-base"
             />
             <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-stone-500">€</span>
           </div>
@@ -127,7 +127,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-bold text-stone-900">Standard</span>
-                <span className="text-micro font-bold text-success bg-emerald-50 px-1.5 py-0.5 rounded">
+                <span className="text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded">
                   Gratuit
                 </span>
               </div>
@@ -166,7 +166,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
               <p className="text-micro text-stone-500 font-mono">IBAN •••• {bankIban.slice(-4)}</p>
             </div>
           </div>
-          <span className="text-micro font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+          <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-full flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3" /> Vérifié
           </span>
         </div>

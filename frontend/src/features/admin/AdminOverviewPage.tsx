@@ -15,7 +15,9 @@ import {
 import { useAuth } from '../../app/providers/AuthProvider';
 import { storageService } from '../../services/storage.service';
 import { auditService } from '../../security/audit.service';
-import { ROLE_DEFINITIONS } from '../../security/roles.config';
+import { auditActionLabel } from '../../types';
+import { formatLogTimestamp } from '../../utilities/formatters';
+import { ROLE_DEFINITIONS, roleLabel } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
 
@@ -73,18 +75,16 @@ export const AdminOverviewPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link to="/admin/roles">
-            <Button variant="outline" size="sm" className="text-xs">
-              Vérifier mes permissions
-            </Button>
-          </Link>
+        {/* Wraps rather than shrinks: both labels are long enough to push the
+            document past a 320px viewport when forced onto one line. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button to="/admin/roles" variant="outline" size="sm">
+            Vérifier mes permissions
+          </Button>
           {can('moderation.review') && (
-            <Link to="/admin/moderation">
-              <Button size="sm" className="text-xs bg-primary hover:bg-primary-hover active:bg-primary-active text-white">
-                Traiter les signalements ({reportsCount})
-              </Button>
-            </Link>
+            <Button to="/admin/moderation" size="sm">
+              Traiter les signalements ({reportsCount})
+            </Button>
           )}
         </div>
       </div>
@@ -127,7 +127,7 @@ export const AdminOverviewPage: React.FC = () => {
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between text-stone-500 mb-2">
             <span className="text-xs font-semibold">Catalogue d'annonces</span>
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
+            <TrendingUp className="w-4 h-4 text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">{listingsCount}</div>
           <div className="text-xs text-stone-500 mt-1">
@@ -157,7 +157,7 @@ export const AdminOverviewPage: React.FC = () => {
 
           {pendingVerifications.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-stone-50 rounded-lg border border-dashed border-stone-200">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+              <CheckCircle2 className="w-8 h-8 text-success mb-2" />
               <div className="text-xs font-bold text-stone-700">Aucun dossier en attente</div>
               <div className="text-xs text-stone-500">
                 Toutes les immatriculations KBIS soumises ont été vérifiées.
@@ -179,7 +179,7 @@ export const AdminOverviewPage: React.FC = () => {
                     <div>
                       <div className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
                         <span>{pro.companyName || pro.name}</span>
-                        <span className="text-micro bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded-sm">
+                        <span className="text-micro bg-warning-surface text-warning font-bold px-2 py-1 rounded-sm">
                           En attente
                         </span>
                       </div>
@@ -189,11 +189,14 @@ export const AdminOverviewPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <Link to="/admin/utilisateurs">
-                    <Button size="sm" variant="outline" className="text-xs">
-                      Examiner
-                    </Button>
-                  </Link>
+                  <Button
+                    to="/admin/utilisateurs"
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                  >
+                    Examiner
+                  </Button>
                 </div>
               ))}
             </div>
@@ -228,15 +231,15 @@ export const AdminOverviewPage: React.FC = () => {
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-stone-900 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    {log.action}
+                    {auditActionLabel(log.action)}
                   </span>
-                  <span className="text-micro text-stone-500">
-                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  <span className="text-micro text-stone-500 shrink-0">
+                    {formatLogTimestamp(log.timestamp)}
                   </span>
                 </div>
                 <div className="text-xs text-stone-600 line-clamp-1">{log.details}</div>
                 <div className="text-micro text-stone-500">
-                  Par: <strong className="text-stone-700">{log.actorName}</strong> ({log.actorRole})
+                  Par: <strong className="text-stone-700">{log.actorName}</strong> ({roleLabel(log.actorRole)})
                 </div>
               </div>
             ))}

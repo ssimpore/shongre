@@ -109,9 +109,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={error ? 'true' : undefined}
           className={`w-full h-10 px-3.5 ${leftIcon ? 'pl-10' : ''} ${
             rightIcon ? 'pr-10' : ''
-          } bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-150 placeholder:text-stone-400 focus:bg-white focus:outline-none ${
+          } bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-fast placeholder:text-stone-400 focus:bg-white focus:outline-none ${
             error
-              ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+              ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger-border'
               : 'border-border-base focus:border-primary focus:ring-2 focus:ring-primary-light'
           } disabled:bg-stone-50 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
           {...props}
@@ -138,9 +138,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         ref={ref}
         rows={rows}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full p-3.5 bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-150 placeholder:text-stone-500 focus:bg-white focus:outline-none ${
+        className={`w-full p-3.5 bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-fast placeholder:text-stone-500 focus:bg-white focus:outline-none ${
           error
-            ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger-border'
             : 'border-border-base focus:border-primary focus:ring-2 focus:ring-primary-light'
         } disabled:bg-stone-50 disabled:text-stone-500 ${className}`}
         {...props}
@@ -150,10 +150,26 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 );
 Textarea.displayName = 'Textarea';
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectBaseProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: boolean;
   options?: { value: string | number; label: string }[];
 }
+
+/**
+ * A select must be nameable, the same way a `Button` must.
+ *
+ * Standalone filter selects shipped with no accessible name at all — a screen
+ * reader announced "combo box" with no indication of what it filtered. Inside a
+ * `FormField` the `id`/`htmlFor` pairing supplies the name, so passing `id` is
+ * accepted as proof; anywhere else the call site must say what the control is
+ * for. The compiler now asks the question instead of an audit finding it later.
+ */
+export type SelectProps = SelectBaseProps &
+  (
+    | { id: string }
+    | { 'aria-label': string }
+    | { 'aria-labelledby': string }
+  );
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className = '', error, children, options, ...props }, ref) => {
@@ -161,9 +177,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full h-10 px-3.5 bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-150 focus:outline-none cursor-pointer ${
+        className={`w-full h-10 px-3.5 bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-fast focus:outline-none cursor-pointer ${
           error
-            ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger-border'
             : 'border-border-base focus:border-primary focus:ring-2 focus:ring-primary-light'
         } disabled:bg-stone-50 disabled:text-stone-400 ${className}`}
         {...props}
@@ -181,30 +197,68 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = 'Select';
 
-export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface CheckboxBaseProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: React.ReactNode;
   description?: string;
 }
 
+/**
+ * A checkbox must end up with a name, from one of three places: its own `label`
+ * prop, a caller's `<label>` wrapping it, or an explicit `aria-label` when the
+ * describing text is a sibling rather than an ancestor. The wrapping case is
+ * legitimate and common here, so this is not narrowed in the type the way
+ * `Button` and `Select` are — `e2e/accessibility.spec.ts` is what holds the
+ * line, since only the rendered tree can tell the three cases apart.
+ */
+export type CheckboxProps = CheckboxBaseProps;
+
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, description, className = '', id, ...props }, ref) => {
-    const inputId = id || (label ? `cb-${String(label).slice(0, 15).replace(/\s+/g, '-')}` : undefined);
+    // The id used to be derived from the first 15 characters of the label
+    // (`cb-Livraison-dispo`), so two checkboxes whose labels share an opening
+    // phrase produced the same id — and a duplicate id silently breaks the
+    // label/input association for both. `useId` is unique by construction.
+    const generatedId = useId();
+    const inputId = id || `cb-${generatedId}`;
+
+    // A checkbox with a visible label gets a generous target for free, because
+    // the wrapping label is clickable. A bare one (table row selectors, compact
+    // filters) is only 16px, so the wrapper carries the minimum itself.
+    const isBare = !label && !description;
+
+    const input = (
+      <input
+        ref={ref}
+        type="checkbox"
+        id={inputId}
+        className={`w-4 h-4 ${isBare ? '' : 'mt-0.5'} rounded border-border-base text-primary focus:ring-primary cursor-pointer ${className}`}
+        {...props}
+      />
+    );
+
+    // Without a visible label there is nothing for a `<label>` to hold, and a
+    // great many bare checkboxes sit *inside* a caller's own `<label>` — nesting
+    // one label in another, which no browser resolves into a usable name. A
+    // plain span keeps the enlarged hit area without inventing that structure;
+    // the type signature guarantees an `aria-label` is present instead.
+    if (isBare) {
+      return (
+        <span className="inline-flex items-center justify-center min-w-6 min-h-6 pointer-coarse:min-w-control-touch pointer-coarse:min-h-control-touch">
+          {input}
+        </span>
+      );
+    }
 
     return (
-      <label htmlFor={inputId} className="flex items-start gap-2.5 cursor-pointer select-none">
-        <input
-          ref={ref}
-          type="checkbox"
-          id={inputId}
-          className={`w-4 h-4 mt-0.5 rounded border-border-base text-primary focus:ring-primary cursor-pointer ${className}`}
-          {...props}
-        />
-        {(label || description) && (
-          <div className="flex flex-col">
-            {label && <span className="text-sm font-semibold text-stone-900">{label}</span>}
-            {description && <span className="text-xs text-stone-500">{description}</span>}
-          </div>
-        )}
+      <label
+        htmlFor={inputId}
+        className="flex items-start gap-2.5 cursor-pointer select-none min-h-6"
+      >
+        {input}
+        <div className="flex flex-col">
+          {label && <span className="text-sm font-semibold text-stone-900">{label}</span>}
+          {description && <span className="text-xs text-stone-500">{description}</span>}
+        </div>
       </label>
     );
   }
@@ -235,12 +289,12 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, descri
         aria-label={label}
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
-        className={`w-11 h-6 shrink-0 flex items-center rounded-full p-1 transition-colors duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+        className={`w-11 h-6 shrink-0 flex items-center rounded-full p-1 transition-colors duration-normal cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
           checked ? 'bg-primary' : 'bg-stone-400'
         }`}
       >
         <div
-          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-normal ${
             checked ? 'translate-x-5' : 'translate-x-0'
           }`}
         />

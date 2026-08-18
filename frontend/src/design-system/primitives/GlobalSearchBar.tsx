@@ -369,8 +369,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     }
   };
 
+  // The header field shares its row with the logo, market selector and five
+  // action items, so the long placeholder truncated mid-word to "Que recher".
+  // The examples it carried are already offered by the autocomplete panel, which
+  // shows trending searches as soon as the field is focused.
+  const isNarrowSurface = variant === 'minimal' || variant === 'header';
   const resolvedPlaceholder =
-    placeholder || (variant === 'minimal' ? SEARCH_PLACEHOLDER.compact : SEARCH_PLACEHOLDER.full);
+    placeholder || (isNarrowSurface ? SEARCH_PLACEHOLDER.compact : SEARCH_PLACEHOLDER.full);
 
   // ---------------------------------------------------------------------------
   // Variant: HEADER (Desktop Header Bar)
@@ -384,9 +389,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           onSubmit={handleSubmit}
           className={`flex items-stretch h-10 bg-bg-base border border-border-base rounded-xl overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white focus-within:shadow-xs transition-all ${className}`}
         >
-          {/* Category Trigger Dropdown */}
+          {/* Category Trigger Dropdown.
+              Hidden below `lg`: between 768px and 1024px the category picker and
+              the location trigger together left the keyword field with almost no
+              room and pushed the whole header past the viewport. On tablet the
+              bar narrows to keyword + submit, and category/location stay
+              reachable from the results page filters. */}
           {showCategory && (
-            <div className="relative shrink-0 flex items-center" ref={categoryDropdownRef}>
+            <div className="relative shrink-0 hidden lg:flex items-center" ref={categoryDropdownRef}>
               <button
                 id={`${idPrefix}-header-category-button`}
                 type="button"
@@ -405,7 +415,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 ) : (
                   <Layers className="w-3.5 h-3.5 text-stone-500" />
                 )}
-                <span className="max-w-[110px] truncate">{activeCategoryLabel}</span>
+                <span className="max-w-[76px] xl:max-w-[110px] truncate">{activeCategoryLabel}</span>
                 <ChevronDown
                   className={`w-3 h-3 text-stone-500 transition-transform ${
                     isCategoryMenuOpen ? 'rotate-180' : ''
@@ -476,12 +486,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           )}
 
           {/* Search Keyword Input with Autocomplete */}
-          <div className="flex-1 relative flex items-center pl-3">
+          <div className="flex-1 min-w-[230px] relative flex items-center pl-3">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
               ref={searchInputRef}
               id={`${idPrefix}-header-query-input`}
               type="search"
+              aria-label="Rechercher une annonce"
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
@@ -503,21 +514,21 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={handleClearQuery}
                 aria-label="Effacer le texte"
-                className="p-1 mr-1.5 text-stone-400 hover:text-stone-600 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center w-6 h-6 mr-1.5 text-stone-500 hover:text-stone-700 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          {/* Location Trigger Button */}
+          {/* Location Trigger Button (desktop only — see the category note above) */}
           {showLocation && (
             <button
               id={`${idPrefix}-header-location-button`}
               type="button"
               onClick={openLocationModal}
               aria-label={`Localisation : ${city || userLocation.label}`}
-              className="flex items-center gap-1.5 px-3 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle transition-colors cursor-pointer max-w-[160px] truncate shrink-0 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
+              className="hidden lg:flex items-center gap-1.5 px-3 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle transition-colors cursor-pointer max-w-[104px] xl:max-w-[160px] truncate min-w-0 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
             >
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
               <span className="truncate">{city || userLocation.label}</span>
@@ -529,7 +540,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             id={`${idPrefix}-header-submit-button`}
             type="submit"
             aria-label="Lancer la recherche"
-            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white px-4 h-full flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shrink-0 rounded-r-[11px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset shadow-xs"
+            /* Negative margins pull the button over the form's 1px border so it
+               reaches the outer edge — otherwise a pale 1px rim traced the top,
+               right and bottom of the orange block and read as a seam. The radius
+               matches the form's *outer* 10px, not the inner 11px. */
+            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white px-4 -my-px -mr-px h-[calc(100%+2px)] flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shrink-0 rounded-r-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
           >
             <Search className="w-4 h-4" />
           </button>
@@ -576,6 +591,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
               aria-controls={`${idPrefix}-autocomplete-dropdown`}
+              aria-label="Rechercher une annonce"
               placeholder={resolvedPlaceholder}
               value={query}
               onChange={(e) => {
@@ -585,6 +601,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               }}
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
+              autoFocus={autoFocus}
               className="w-full h-10 pl-9 pr-9 text-xs text-stone-900 placeholder:text-stone-400 bg-bg-base border border-border-base rounded-xl focus:outline-none focus:border-primary"
             />
             <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400 pointer-events-none" />
@@ -593,7 +610,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={handleClearQuery}
                 aria-label="Effacer le texte"
-                className="absolute right-2.5 p-1 text-stone-400 hover:text-stone-600 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
+                className="absolute right-2.5 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -651,7 +668,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   id={`${idPrefix}-minimal-location-button`}
                   type="button"
                   onClick={openLocationModal}
-                  className="w-full h-9 flex items-center justify-between px-2.5 rounded-xl border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 transition-colors cursor-pointer truncate"
+                  className="w-full h-control-md flex items-center justify-between px-2.5 rounded-xl border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 transition-colors cursor-pointer truncate"
                 >
                   <div className="flex items-center gap-1 truncate">
                     <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -703,11 +720,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           role="search"
           aria-label="Recherche et filtres"
           onSubmit={handleSubmit}
-          className={`flex flex-col sm:flex-row gap-2 ${className}`}
+          className={`flex flex-row flex-wrap sm:flex-nowrap gap-2 ${className}`}
         >
-          {/* Category Trigger Dropdown on Search Page */}
+          {/* Category Trigger Dropdown on Search Page.
+              Hidden below sm: the mobile filter drawer already carries category,
+              sub-category and location, and stacking them here pushed the first
+              result off the fold. */}
           {showCategory && (
-            <div className="relative shrink-0" ref={categoryDropdownRef}>
+            <div className="relative shrink-0 hidden sm:block" ref={categoryDropdownRef}>
               <button
                 id={`${idPrefix}-page-category-button`}
                 type="button"
@@ -795,12 +815,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           )}
 
           {/* Keyword Search Input */}
-          <div className="flex-1 relative flex items-center">
+          <div className="flex-1 min-w-0 relative flex items-center">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5" />
             <input
               ref={searchInputRef}
               id={`${idPrefix}-page-query-input`}
               type="search"
+              aria-label="Rechercher une annonce"
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
@@ -814,14 +835,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               }}
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
-              className="w-full h-11 pl-10 pr-9 bg-bg-base text-sm text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary"
+              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary"
             />
             {query && (
               <button
                 type="button"
                 onClick={handleClearQuery}
                 aria-label="Effacer le texte"
-                className="absolute right-3 p-1 text-stone-400 hover:text-stone-600 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
+                className="absolute right-3 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -829,14 +850,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           </div>
 
           {/* Location & Radius */}
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 flex-nowrap shrink-0">
             {showLocation && (
               <button
                 id={`${idPrefix}-page-location-button`}
                 type="button"
                 onClick={openLocationModal}
                 aria-label={`Localisation : ${city || userLocation.label}`}
-                className="h-11 px-3.5 rounded-xl border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 flex items-center gap-1.5 cursor-pointer max-w-full sm:max-w-[160px] truncate"
+                className="hidden sm:flex h-control-touch px-3.5 rounded-xl border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 items-center gap-1.5 cursor-pointer max-w-full sm:max-w-[160px] truncate"
               >
                 <MapPin className="w-4 h-4 text-primary shrink-0" />
                 <span className="truncate">{city || userLocation.label}</span>
@@ -849,7 +870,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 value={String(radiusKm || 0)}
                 onChange={(e) => setRadiusKm(Number(e.target.value))}
                 aria-label="Rayon de recherche en kilomètres"
-                className="h-11 px-2.5 rounded-xl border border-border-base bg-bg-base text-xs font-semibold text-stone-700 focus:outline-none focus:border-primary cursor-pointer"
+                className="hidden sm:block h-control-touch px-2.5 rounded-xl border border-border-base bg-bg-base text-xs font-semibold text-stone-700 focus:outline-none focus:border-primary cursor-pointer"
               >
                 <option value="0">Ville exacte</option>
                 <option value="10">+10 km</option>
@@ -862,10 +883,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <button
               id={`${idPrefix}-page-submit-button`}
               type="submit"
-              className="h-11 px-5 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer shrink-0 ml-auto sm:ml-0"
+              className="h-control-touch px-3.5 sm:px-5 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer shrink-0"
+              aria-label="Lancer la recherche"
             >
               <Search className="w-4 h-4" />
-              <span>Filtrer</span>
+              <span className="hidden sm:inline">Filtrer</span>
             </button>
           </div>
         </form>
@@ -1003,12 +1025,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         )}
 
         {/* 2. Keyword Search Query Input */}
-        <div className="flex-1 flex items-center gap-2.5 px-3.5 h-11 bg-bg-base rounded-xl border border-border-base hover:border-stone-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light focus-within:bg-white transition-all">
+        <div className="flex-1 flex items-center gap-2.5 px-3.5 h-control-touch bg-bg-base rounded-xl border border-border-base hover:border-stone-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light focus-within:bg-white transition-all">
           <Search className="w-4 h-4 text-stone-400 shrink-0" />
           <input
             ref={searchInputRef}
             id={`${idPrefix}-hero-query-input`}
             type="search"
+            aria-label="Rechercher une annonce"
             role="combobox"
             aria-expanded={isAutocompleteOpen}
             aria-autocomplete="list"
@@ -1044,7 +1067,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             type="button"
             onClick={openLocationModal}
             aria-label={`Changer de localisation et préférences, actuellement : ${city || userLocation.label} (${activeMarket.name})`}
-            className="flex items-center justify-between md:justify-start gap-2 px-3.5 h-11 bg-bg-base hover:bg-bg-subtle active:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-border-base hover:border-stone-300 transition-all cursor-pointer shrink-0 max-w-full md:max-w-[200px]"
+            className="flex items-center justify-between md:justify-start gap-2 px-3.5 h-control-touch bg-bg-base hover:bg-bg-subtle active:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-border-base hover:border-stone-300 transition-all cursor-pointer shrink-0 max-w-full md:max-w-[200px]"
           >
             <div className="flex items-center gap-1.5 truncate">
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -1059,7 +1082,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           id={`${idPrefix}-hero-submit-button`}
           type="submit"
           aria-label="Lancer la recherche de petites annonces"
-          className="h-11 px-5 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+          className="h-control-touch px-5 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
         >
           <Search className="w-4 h-4 shrink-0" />
           <span>Rechercher</span>

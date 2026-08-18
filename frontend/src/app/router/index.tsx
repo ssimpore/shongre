@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { MainLayout } from '../layouts/MainLayout';
 import { AccountLayout } from '../layouts/AccountLayout';
+import { FocusedLayout } from '../layouts/FocusedLayout';
 import { PageSuspense } from '../layouts/PageSuspense';
 
 // Security & RBAC Guards
@@ -85,14 +86,11 @@ const withSuspense = (Component: React.ComponentType) => (
 );
 
 export const router = createBrowserRouter([
+  // Task-completion flows get a focused shell rather than the marketplace one.
   {
     path: '/',
-    element: <MainLayout />,
+    element: <FocusedLayout />,
     children: [
-      { index: true, element: withSuspense(HomePage) },
-      { path: 'recherche', element: withSuspense(SearchPage) },
-      { path: 'categorie/:categorySlug', element: withSuspense(SearchPage) },
-      { path: 'annonce/:id', element: withSuspense(ListingDetailPage) },
       {
         path: 'deposer',
         element: (
@@ -101,6 +99,16 @@ export const router = createBrowserRouter([
           </RequirePermission>
         ),
       },
+    ],
+  },
+  {
+    path: '/',
+    element: <MainLayout />,
+    children: [
+      { index: true, element: withSuspense(HomePage) },
+      { path: 'recherche', element: withSuspense(SearchPage) },
+      { path: 'categorie/:categorySlug', element: withSuspense(SearchPage) },
+      { path: 'annonce/:id', element: withSuspense(ListingDetailPage) },
       {
         path: 'publier',
         element: <Navigate to="/deposer" replace />,

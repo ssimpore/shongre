@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Bell,
   Check,
@@ -97,7 +97,7 @@ export const NotificationsPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
           {unreadCount > 0 && (
             <Button
               variant="outline"
@@ -110,16 +110,14 @@ export const NotificationsPage: React.FC = () => {
             </Button>
           )}
 
-          <Link to="/compte/notifications/preferences">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<Settings className="w-3.5 h-3.5" />}
-              className="text-xs"
-            >
+          <Button
+            to="/compte/notifications/preferences" variant="outline"
+                          size="sm"
+                          leftIcon={<Settings className="w-3.5 h-3.5" />}
+                          className="text-xs"
+          >
               Préférences
-            </Button>
-          </Link>
+          </Button>
         </div>
       </div>
 

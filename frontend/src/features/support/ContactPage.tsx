@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   HelpCircle,
   User,
@@ -205,7 +205,7 @@ export const ContactPage: React.FC = () => {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
         <div className="bg-white border border-border-base rounded-3xl p-8 sm:p-12 text-center shadow-xs space-y-6">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
@@ -279,7 +279,7 @@ export const ContactPage: React.FC = () => {
       {/* 2. Step 1: Category Selector */}
       <div className="space-y-3">
         <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
-          1. Quel est le sujet de votre demande ? <span className="text-rose-500">*</span>
+          1. Quel est le sujet de votre demande ? <span className="text-danger">*</span>
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -320,14 +320,14 @@ export const ContactPage: React.FC = () => {
             );
           })}
         </div>
-        {errors.category && <p className="text-xs font-bold text-rose-600">{errors.category}</p>}
+        {errors.category && <p className="text-xs font-bold text-danger">{errors.category}</p>}
       </div>
 
       {/* 3. Step 2: Reason Selector & Handoffs */}
       {currentCategoryDef && (
         <div className="space-y-4 pt-2 animate-fadeIn">
           <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
-            2. Précisez votre situation <span className="text-rose-500">*</span>
+            2. Précisez votre situation <span className="text-danger">*</span>
           </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -357,24 +357,27 @@ export const ContactPage: React.FC = () => {
               );
             })}
           </div>
-          {errors.reason && <p className="text-xs font-bold text-rose-600">{errors.reason}</p>}
+          {errors.reason && <p className="text-xs font-bold text-danger">{errors.reason}</p>}
 
           {/* Handoff Banners */}
           {currentReasonDef?.isDisputeHandoff && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-3 text-warning text-xs">
+              <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-bold text-amber-950">
+                <p className="font-bold text-warning">
                   Besoin d'ouvrir un litige sur une commande en cours ?
                 </p>
                 <p className="leading-relaxed">
                   Pour geler les fonds sous séquestre et être remboursé en cas de non-réception ou de colis non conforme, vous devez ouvrir un dossier de litige officiel directement depuis la transaction.
                 </p>
-                <Link to="/compte/achats">
-                  <Button variant="primary" size="sm" className="font-bold mt-1">
-                    Accéder à mes achats pour ouvrir le litige
-                  </Button>
-                </Link>
+                <Button
+                  to="/compte/achats"
+                  variant="primary"
+                  size="sm"
+                  className="font-bold mt-1"
+                >
+                  Accéder à mes achats pour ouvrir le litige
+                </Button>
               </div>
             </div>
           )}
@@ -387,11 +390,14 @@ export const ContactPage: React.FC = () => {
                 <p className="leading-relaxed">
                   Le support Shongre n'intervient pas pour les questions sur l'article (disponibilité, négociations de prix). Contactez directement le vendeur via la messagerie sécurisée.
                 </p>
-                <Link to="/compte/messages">
-                  <Button variant="outline" size="sm" className="font-bold mt-1">
-                    Ouvrir la messagerie
-                  </Button>
-                </Link>
+                <Button
+                  to="/compte/messages"
+                  variant="outline"
+                  size="sm"
+                  className="font-bold mt-1"
+                >
+                  Ouvrir la messagerie
+                </Button>
               </div>
             </div>
           )}
@@ -506,7 +512,7 @@ export const ContactPage: React.FC = () => {
           </div>
 
           {errors.submit && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
+            <div className="p-3 bg-danger-surface border border-danger-border text-danger rounded-xl text-xs font-medium">
               {errors.submit}
             </div>
           )}

@@ -1,32 +1,47 @@
 import { routes } from '../../configuration/routes';
 import React, { useState, useEffect } from 'react';
 import { Heart, Trash2, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { listingRepository } from '../../repositories/listing.repository';
+
 import { Listing } from '../../types';
-import { storageService } from '../../services/storage.service';
+import { services } from '../../api/client/service-registry';
+import { useFavorites } from '../../app/providers/FavoritesProvider';
+import { useToast } from '../../app/providers/ToastProvider';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Button } from '../../design-system/primitives/Button';
-import { EmptyState } from '../../design-system/primitives/UIComponents';
+import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
 
 export const FavoritesPage: React.FC = () => {
-  const [favoriteListings, setFavoriteListings] = useState<Listing[]>([]);
+  const { favoriteIds, clearFavorites, isLoading: isLoadingIds } = useFavorites();
+  const toast = useToast();
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
 
   useEffect(() => {
-    const favIds = storageService.getFavorites();
-    const all = storageService.getListings();
-    setFavoriteListings(all.filter((l) => favIds.includes(l.id)));
+    let cancelled = false;
+    services.listings
+      .getListings()
+      .then((result) => {
+        if (!cancelled) setListings(result.listings);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingListings(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleFavoriteToggle = (id: string, isFav: boolean) => {
-    if (!isFav) {
-      setFavoriteListings((prev) => prev.filter((l) => l.id !== id));
-    }
-  };
+  // Derived from the shared favourite set, so un-hearting a card removes it
+  // here without this page tracking its own copy of the truth.
+  const favoriteListings = listings.filter((listing) => favoriteIds.includes(listing.id));
+  const isLoading = isLoadingIds || isLoadingListings;
 
-  const handleClearAll = () => {
-    storageService.getFavorites().forEach((id) => storageService.toggleFavorite(id));
-    setFavoriteListings([]);
+  const handleClearAll = async () => {
+    try {
+      await clearFavorites();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Une erreur est survenue.');
+    }
   };
 
   return (
@@ -48,7 +63,13 @@ export const FavoritesPage: React.FC = () => {
         )}
       </div>
 
-      {favoriteListings.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-72 rounded-2xl" />
+          ))}
+        </div>
+      ) : favoriteListings.length > 0 ? (
         // Card titles are h3, so the grid gets its own section heading instead of
         // jumping from the page h1.
         <section aria-labelledby="favorites-grid-heading">
@@ -57,11 +78,7 @@ export const FavoritesPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {favoriteListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                onFavoriteToggle={handleFavoriteToggle}
-              />
+              <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
         </section>
@@ -71,11 +88,13 @@ export const FavoritesPage: React.FC = () => {
           title="Aucun favori pour le moment"
           description="Cliquez sur le cœur d'une annonce pour la sauvegarder et la retrouver facilement ici."
           action={
-            <Link to={routes.search()}>
-              <Button variant="primary" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                Explorer les annonces
-              </Button>
-            </Link>
+            <Button
+              to={routes.search()}
+              variant="primary"
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              Explorer les annonces
+            </Button>
           }
         />
       )}

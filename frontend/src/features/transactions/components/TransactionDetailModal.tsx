@@ -199,7 +199,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'pending_seller_confirmation':
         return {
           label: 'En attente d\'acceptation du vendeur',
-          bg: 'bg-amber-100 text-amber-900 border-amber-300',
+          bg: 'bg-warning-surface text-warning border-warning-border',
           desc: 'Le vendeur dispose de 48h pour valider la réservation. Les fonds sont sécurisés sous séquestre.',
         };
       case 'seller_confirmed':
@@ -207,13 +207,13 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'pickup_scheduled':
         return {
           label: tx.deliveryMethod === 'hand_delivery' ? 'Réservé - Remise en main propre' : 'Réservé - En préparation d\'envoi',
-          bg: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          bg: 'bg-success-surface text-success border-success-border',
           desc: 'Réservation confirmée par le vendeur. Procédez à la remise physique ou à l\'expédition.',
         };
       case 'shipped':
         return {
           label: 'Colis expédié',
-          bg: 'bg-blue-100 text-blue-900 border-blue-300',
+          bg: 'bg-info-surface text-info border-info-border',
           desc: `Colis en cours de livraison (${tx.carrierName || 'Mondial Relay'}).`,
         };
       case 'delivered':
@@ -225,13 +225,13 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       case 'completed':
         return {
           label: 'Vente finalisée & Fonds débloqués',
-          bg: 'bg-emerald-600 text-white border-emerald-700',
+          bg: 'bg-success text-white border-emerald-700',
           desc: 'Transaction terminée avec succès. Les fonds ont été reversés sur le solde vendeur.',
         };
       case 'disputed':
         return {
           label: 'Litige ouvert - Arbitrage en cours',
-          bg: 'bg-rose-100 text-rose-900 border-rose-300',
+          bg: 'bg-danger-surface text-danger border-danger-border',
           desc: 'Un problème a été signalé. Les fonds sous séquestre sont temporairement gelés.',
         };
       case 'seller_rejected':
@@ -268,14 +268,14 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           <div
             className={`p-3 rounded-xl font-semibold flex items-center gap-2 ${
               feedbackMsg.type === 'success'
-                ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border border-rose-200 text-rose-800'
+                ? 'bg-success-surface border border-success-border text-success'
+                : 'bg-danger-surface border border-danger-border text-danger'
             }`}
           >
             {feedbackMsg.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
             ) : (
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
             )}
             <span>{feedbackMsg.text}</span>
           </div>
@@ -319,7 +319,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 Mode : {tx.deliveryMethod === 'hand_delivery' ? 'Remise en main propre' : tx.carrierName || 'Livraison'}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-black flex items-center justify-center text-sm">
+            <div className="w-10 h-10 rounded-full bg-primary-light text-primary font-black flex items-center justify-center text-sm">
               {(isBuyer ? tx.sellerName : tx.buyerName).charAt(0)}
             </div>
           </div>
@@ -327,19 +327,19 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
         {/* SELLER ACTION: ACCEPT OR REJECT PENDING RESERVATION */}
         {isSeller && tx.status === 'pending_seller_confirmation' && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2 text-amber-950 font-bold">
-              <Clock className="w-4 h-4 text-amber-600" />
+          <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl space-y-3">
+            <div className="flex items-center gap-2 text-warning font-bold">
+              <Clock className="w-4 h-4 text-warning" />
               <span>Action requise : Accepter ou Refuser la réservation</span>
             </div>
-            <p className="text-micro text-amber-900 leading-relaxed">
+            <p className="text-micro text-warning leading-relaxed">
               L'acheteur a payé {formatPrice(tx.totalAmount)} qui sont actuellement garantis sous séquestre. En acceptant, vous vous engagez à remettre ou expédier l'article.
             </p>
             <div className="flex gap-2.5 pt-1">
               <Button
                 variant="outline"
                 size="sm"
-                className="border-rose-300 text-rose-700 hover:bg-rose-50"
+                className="border-danger-border text-danger hover:bg-danger-surface"
                 disabled={actionLoading}
                 onClick={() => setIsRejectConfirmOpen(true)}
               >
@@ -366,7 +366,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 <KeyRound className="w-4 h-4 text-primary" />
                 <span className="font-bold text-stone-100">Code secret de confirmation</span>
               </div>
-              <span className="text-micro bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">
+              <span className="text-micro bg-success/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">
                 Sécurité main propre
               </span>
             </div>
@@ -409,7 +409,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     placeholder="ex: 849201"
                     value={sellerInputPin}
                     onChange={(e) => setSellerInputPin(e.target.value)}
-                    className="flex-1 h-11 px-3.5 bg-stone-800 text-white font-mono text-lg font-bold tracking-widest rounded-xl border border-stone-700 focus:outline-none focus:border-primary"
+                    className="flex-1 h-control-touch px-3.5 bg-stone-800 text-white font-mono text-lg font-bold tracking-widest rounded-xl border border-stone-700 focus:outline-none focus:border-primary"
                   />
                   <Button
                     type="button"
@@ -435,7 +435,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 <span className="font-bold text-stone-900">Suivi d'expédition ({tx.carrierName})</span>
               </div>
               {tx.trackingNumber && (
-                <span className="text-micro font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded font-mono">
+                <span className="text-micro font-bold text-info bg-info-surface px-2 py-0.5 rounded font-mono">
                   {tx.trackingNumber}
                 </span>
               )}
@@ -470,9 +470,9 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
             {/* Buyer confirms receipt */}
             {isBuyer && (tx.status === 'shipped' || tx.status === 'delivered') && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
-                <p className="font-bold text-emerald-950">Avez-vous bien reçu l'article ?</p>
-                <p className="text-micro text-emerald-800 leading-relaxed">
+              <div className="p-3 bg-success-surface border border-success-border rounded-xl space-y-2">
+                <p className="font-bold text-success">Avez-vous bien reçu l'article ?</p>
+                <p className="text-micro text-success leading-relaxed">
                   Si le colis est arrivé et que l'objet est conforme à la description, validez la réception pour débloquer les fonds au vendeur.
                 </p>
                 <Button
@@ -591,7 +591,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <span className="text-primary">{formatPrice(tx.totalAmount)}</span>
           </div>
           {isSeller && (
-            <div className="bg-emerald-50 p-2 rounded-lg mt-2 flex justify-between font-bold text-emerald-900">
+            <div className="bg-success-surface p-2 rounded-lg mt-2 flex justify-between font-bold text-success">
               <span>Montant net versé au vendeur :</span>
               <span>{formatPrice(tx.sellerPayoutAmount || tx.amount)}</span>
             </div>
@@ -626,7 +626,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               type="button"
               onClick={() => setIsCancelConfirmOpen(true)}
               disabled={actionLoading}
-              className="text-micro font-bold text-stone-500 hover:text-rose-600 transition-colors"
+              className="text-micro font-bold text-stone-500 hover:text-danger transition-colors"
             >
               Annuler ma réservation
             </button>
@@ -650,7 +650,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <button
               type="button"
               onClick={() => setIsDisputeModalOpen(true)}
-              className="text-micro font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1"
+              className="text-micro font-bold text-warning hover:text-warning flex items-center gap-1"
             >
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>Signaler un problème / Litige</span>

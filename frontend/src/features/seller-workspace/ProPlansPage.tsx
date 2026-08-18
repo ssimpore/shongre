@@ -4,7 +4,6 @@ import { PRO_PLANS, LISTING_BOOSTS } from '../../configuration/plans.config';
 import { formatPrice } from '../../utilities/formatters';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
-import { Link } from 'react-router-dom';
 
 export const ProPlansPage: React.FC = () => {
   return (
@@ -25,13 +24,17 @@ export const ProPlansPage: React.FC = () => {
       </div>
 
       {/* Subscription Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      {/* Three pricing columns only from `xl`. Each card carries 32px of padding
+          a side plus a feature list, so a third of 768px (and still a third of
+          1024px, inside the account shell) left the plan name and its quota
+          badge fighting over the same line and pushed the page sideways. */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {PRO_PLANS.map((plan) => {
           const isPopular = plan.isPopular;
           return (
             <div
               key={plan.id}
-              className={`bg-white rounded-2xl border p-6 sm:p-8 flex flex-col justify-between transition-all duration-200 ${
+              className={`bg-white rounded-2xl border p-6 sm:p-8 flex flex-col justify-between transition-all duration-normal ${
                 isPopular
                   ? 'border-primary ring-2 ring-primary shadow-xl relative'
                   : 'border-border-base shadow-xs hover:border-stone-400'
@@ -44,7 +47,7 @@ export const ProPlansPage: React.FC = () => {
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
                   <h2 className="text-lg font-black text-stone-900">{plan.name}</h2>
                   <Badge variant={isPopular ? 'primary' : 'neutral'} size="sm">
                     {plan.maxActiveListings} annonces
@@ -63,7 +66,7 @@ export const ProPlansPage: React.FC = () => {
                 <ul className="space-y-3 text-xs text-stone-700 pb-6 border-b border-border-subtle">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-2.5">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -71,16 +74,13 @@ export const ProPlansPage: React.FC = () => {
               </div>
 
               <div className="pt-6">
-                <Link to="/inscription/professionnel">
-                  <Button
-                    variant={isPopular ? 'primary' : 'outline'}
-                    size="lg"
-                    fullWidth
-                    className="font-bold shadow-xs"
-                  >
+                <Button
+                  to="/inscription/professionnel" variant={isPopular ? 'primary' : 'outline'}
+                                      size="lg"
+                                      fullWidth className="font-bold shadow-xs"
+                >
                     Choisir l'offre {plan.name}
-                  </Button>
-                </Link>
+                </Button>
               </div>
             </div>
           );

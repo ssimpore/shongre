@@ -22,7 +22,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: 'Nouveau message',
       type: 'message.received',
-      icon: <MessageSquare className="w-3.5 h-3.5 text-sky-600" />,
+      icon: <MessageSquare className="w-3.5 h-3.5 text-info" />,
       context: {
         type: 'conversation',
         conversationId: 'conv-101',
@@ -33,7 +33,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: 'Réservation acceptée',
       type: 'reservation.accepted',
-      icon: <ShoppingBag className="w-3.5 h-3.5 text-emerald-600" />,
+      icon: <ShoppingBag className="w-3.5 h-3.5 text-success" />,
       context: {
         type: 'transaction',
         transactionId: 'tx-201',
@@ -43,7 +43,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: 'Nouvelle commande',
       type: 'order.created',
-      icon: <ShoppingBag className="w-3.5 h-3.5 text-emerald-600" />,
+      icon: <ShoppingBag className="w-3.5 h-3.5 text-success" />,
       context: {
         type: 'transaction',
         transactionId: 'tx-301',
@@ -53,7 +53,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: 'Paiement échoué (Critique)',
       type: 'payment.failed',
-      icon: <AlertCircle className="w-3.5 h-3.5 text-red-600" />,
+      icon: <AlertCircle className="w-3.5 h-3.5 text-danger" />,
       context: {
         type: 'transaction',
         transactionId: 'tx-401',
@@ -82,7 +82,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: 'Abonnement Pro activé',
       type: 'subscription.started',
-      icon: <DollarSign className="w-3.5 h-3.5 text-amber-600" />,
+      icon: <DollarSign className="w-3.5 h-3.5 text-warning" />,
       context: {
         type: 'subscription',
         planId: 'plan_pro_premium',

@@ -227,6 +227,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="font-bold text-stone-500">Changer de statut :</span>
             <Select
+              aria-label="Cycle de vie du contact"
               value={contact.lifecycle}
               onChange={(e) => handleUpdateLifecycle(e.target.value as ContactLifecycle)}
               options={[
@@ -247,15 +248,15 @@ export const CrmContactDetailPage: React.FC = () => {
 
       {/* 3. Linked Shongre Account (if available) */}
       {linkedUser && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 shadow-xs space-y-3">
+        <div className="bg-success-surface border border-success-border rounded-3xl p-6 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-emerald-950">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            <div className="flex items-center gap-2 text-success">
+              <ShieldCheck className="w-5 h-5 text-success" />
               <h2 className="text-sm font-black">Compte Plateforme Shongre Rattaché</h2>
             </div>
             <Link
               to={linkedUser.sellerType === 'pro' ? `/vendeur/${linkedUser.slug || linkedUser.id}` : '#'}
-              className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-success hover:underline flex items-center gap-1"
             >
               <span>Voir la vitrine publique</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -264,20 +265,20 @@ export const CrmContactDetailPage: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-              <span className="text-emerald-700 text-micro block">Type de compte</span>
-              <strong className="text-emerald-950">{linkedUser.sellerType === 'pro' ? 'Vendeur Professionnel' : 'Particulier'}</strong>
+              <span className="text-success text-micro block">Type de compte</span>
+              <strong className="text-success">{linkedUser.sellerType === 'pro' ? 'Vendeur Professionnel' : 'Particulier'}</strong>
             </div>
             <div>
-              <span className="text-emerald-700 text-micro block">Membre depuis</span>
-              <strong className="text-emerald-950">{formatDate(linkedUser.createdAt)}</strong>
+              <span className="text-success text-micro block">Membre depuis</span>
+              <strong className="text-success">{formatDate(linkedUser.createdAt)}</strong>
             </div>
             <div>
-              <span className="text-emerald-700 text-micro block">Note vendeur</span>
-              <strong className="text-emerald-950">{linkedUser.rating || 5.0} / 5.0 ({linkedUser.reviewCount || 0} avis)</strong>
+              <span className="text-success text-micro block">Note vendeur</span>
+              <strong className="text-success">{linkedUser.rating || 5.0} / 5.0 ({linkedUser.reviewCount || 0} avis)</strong>
             </div>
             <div>
-              <span className="text-emerald-700 text-micro block">Localisation</span>
-              <strong className="text-emerald-950">{linkedUser.city || 'France'}</strong>
+              <span className="text-success text-micro block">Localisation</span>
+              <strong className="text-success">{linkedUser.city || 'France'}</strong>
             </div>
           </div>
         </div>

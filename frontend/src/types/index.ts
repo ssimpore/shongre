@@ -158,6 +158,82 @@ export type Permission =
   | 'crm.opportunity.manage'
   | 'crm.ai_prospecting.use';
 
+export type SecurityAuditAction =
+  | 'role_assigned'
+  | 'role_removed'
+  | 'user_suspended'
+  | 'user_reactivated'
+  | 'verification_approved'
+  | 'verification_rejected'
+  | 'listing_moderated'
+  | 'market_scope_updated'
+  | 'plan_modified'
+  | 'permission_overridden'
+  | 'listing_hidden'
+  | 'listing_restored'
+  | 'password_reset_completed'
+  | 'mfa_enabled'
+  | 'mfa_disabled'
+  | 'account_type_upgraded_to_pro'
+  | 'account_deleted'
+  | 'email_verified'
+  | 'phone_verified'
+  | 'provider_configured'
+  | 'provider_enabled'
+  | 'provider_disabled'
+  | 'provider_market_override_set'
+  | 'provider_market_override_reset'
+  | 'provider_priority_changed'
+  | 'provider_fallback_changed'
+  | 'provider_credential_status_updated';
+
+/**
+ * Human labels for audit actions.
+ *
+ * The raw union members are storage keys, not copy. Rendering them directly put
+ * `verification_approved` in front of staff as the primary label of every log
+ * row, with the readable French `details` demoted underneath. Read through
+ * `auditActionLabel` so a missing entry degrades to something legible rather
+ * than to a snake_case identifier.
+ */
+export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> = {
+  role_assigned: 'Rôle attribué',
+  role_removed: 'Rôle retiré',
+  user_suspended: 'Compte suspendu',
+  user_reactivated: 'Compte réactivé',
+  verification_approved: 'Vérification approuvée',
+  verification_rejected: 'Vérification refusée',
+  listing_moderated: 'Annonce modérée',
+  market_scope_updated: 'Périmètre de marché modifié',
+  plan_modified: 'Forfait modifié',
+  permission_overridden: 'Permission surchargée',
+  listing_hidden: 'Annonce masquée',
+  listing_restored: 'Annonce restaurée',
+  password_reset_completed: 'Mot de passe réinitialisé',
+  mfa_enabled: 'Double authentification activée',
+  mfa_disabled: 'Double authentification désactivée',
+  account_type_upgraded_to_pro: 'Compte passé en Pro',
+  account_deleted: 'Compte supprimé',
+  email_verified: 'Email vérifié',
+  phone_verified: 'Téléphone vérifié',
+  provider_configured: 'Fournisseur configuré',
+  provider_enabled: 'Fournisseur activé',
+  provider_disabled: 'Fournisseur désactivé',
+  provider_market_override_set: 'Surcharge marché appliquée',
+  provider_market_override_reset: 'Surcharge marché réinitialisée',
+  provider_priority_changed: 'Priorité fournisseur modifiée',
+  provider_fallback_changed: 'Repli fournisseur modifié',
+  provider_credential_status_updated: 'Identifiants fournisseur mis à jour',
+};
+
+/** Falls back to a de-slugified label so an unmapped action never renders raw. */
+export function auditActionLabel(action: SecurityAuditAction | string): string {
+  const known = SECURITY_AUDIT_ACTION_LABELS[action as SecurityAuditAction];
+  if (known) return known;
+  const spaced = String(action).replace(/_/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
 export interface SecurityAuditLog {
   id: string;
   timestamp: string;
@@ -166,34 +242,7 @@ export interface SecurityAuditLog {
   actorRole: PlatformRole | string;
   targetId?: string;
   targetName?: string;
-  action:
-    | 'role_assigned'
-    | 'role_removed'
-    | 'user_suspended'
-    | 'user_reactivated'
-    | 'verification_approved'
-    | 'verification_rejected'
-    | 'listing_moderated'
-    | 'market_scope_updated'
-    | 'plan_modified'
-    | 'permission_overridden'
-    | 'listing_hidden'
-    | 'listing_restored'
-    | 'password_reset_completed'
-    | 'mfa_enabled'
-    | 'mfa_disabled'
-    | 'account_type_upgraded_to_pro'
-    | 'account_deleted'
-    | 'email_verified'
-    | 'phone_verified'
-    | 'provider_configured'
-    | 'provider_enabled'
-    | 'provider_disabled'
-    | 'provider_market_override_set'
-    | 'provider_market_override_reset'
-    | 'provider_priority_changed'
-    | 'provider_fallback_changed'
-    | 'provider_credential_status_updated';
+  action: SecurityAuditAction;
   details: string;
   previousValue?: any;
   newValue?: any;

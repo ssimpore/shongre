@@ -14,6 +14,7 @@ import {
   demoWorkspaceService,
   demoAdminService,
   demoReviewsService,
+  demoAiService,
 } from '../adapters/demo/index.js';
 
 import {
@@ -31,6 +32,7 @@ import {
   httpWorkspaceService,
   httpAdminService,
   httpReviewsService,
+  httpAiService,
 } from '../adapters/http/index.js';
 
 import {
@@ -48,6 +50,7 @@ import {
   WorkspaceServiceContract,
   AdminServiceContract,
   ReviewsServiceContract,
+  AiServiceContract,
 } from '../contracts/index.js';
 
 export interface ServiceRegistry {
@@ -65,6 +68,7 @@ export interface ServiceRegistry {
   workspace: WorkspaceServiceContract;
   admin: AdminServiceContract;
   reviews: ReviewsServiceContract;
+  ai: AiServiceContract;
 }
 
 export function createServiceRegistry(mode: DataMode = apiClientConfig.dataMode): ServiceRegistry {
@@ -85,6 +89,7 @@ export function createServiceRegistry(mode: DataMode = apiClientConfig.dataMode)
     workspace: useDemo ? demoWorkspaceService : httpWorkspaceService,
     admin: useDemo ? demoAdminService : httpAdminService,
     reviews: useDemo ? demoReviewsService : httpReviewsService,
+    ai: useDemo ? demoAiService : httpAiService,
   };
 }
 

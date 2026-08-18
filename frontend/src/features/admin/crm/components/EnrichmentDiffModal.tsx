@@ -67,7 +67,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
                 <div className="text-stone-500">
                   Actuel : <strong className="text-stone-700">{company.industry || 'Non renseigné'}</strong>
                 </div>
-                <div className="text-emerald-700 font-bold">
+                <div className="text-success font-bold">
                   Suggéré : {diff.suggestedIndustry}
                 </div>
               </div>
@@ -90,7 +90,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
                 <div className="text-stone-500 truncate">
                   Actuel : <strong className="text-stone-700">{company.website || 'Non renseigné'}</strong>
                 </div>
-                <div className="text-emerald-700 font-bold truncate">
+                <div className="text-success font-bold truncate">
                   Suggéré : {diff.suggestedWebsite}
                 </div>
               </div>

@@ -24,6 +24,7 @@ import { SellerReviewsTab } from './components/SellerReviewsTab';
 import { ProBusinessInfo } from './components/ProBusinessInfo';
 import { SellerReportModal } from './components/SellerReportModal';
 import { Button } from '../../design-system/primitives/Button';
+import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
 
 export const SellerPublicPage: React.FC = () => {
   const { slug, sellerSlug } = useParams<{ slug?: string; sellerSlug?: string }>();
@@ -123,7 +124,7 @@ export const SellerPublicPage: React.FC = () => {
   if (!seller) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-black text-stone-900 mb-2">Profil introuvable</h2>
@@ -131,16 +132,22 @@ export const SellerPublicPage: React.FC = () => {
           L'utilisateur ou la boutique demandée n'existe pas ou le lien est erroné.
         </p>
         <div className="flex items-center justify-center gap-3">
-          <Link to={routes.home()}>
-            <Button variant="outline" size="md" leftIcon={<Home className="w-4 h-4" />}>
-              Retour à l'accueil
-            </Button>
-          </Link>
-          <Link to={routes.search()}>
-            <Button variant="primary" size="md" leftIcon={<Search className="w-4 h-4" />}>
-              Rechercher des annonces
-            </Button>
-          </Link>
+          <Button
+            to={routes.home()}
+            variant="outline"
+            size="md"
+            leftIcon={<Home className="w-4 h-4" />}
+          >
+            Retour à l'accueil
+          </Button>
+          <Button
+            to={routes.search()}
+            variant="primary"
+            size="md"
+            leftIcon={<Search className="w-4 h-4" />}
+          >
+            Rechercher des annonces
+          </Button>
         </div>
       </div>
     );
@@ -150,7 +157,7 @@ export const SellerPublicPage: React.FC = () => {
   if (seller.isSuspended) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-200 text-red-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
           <ShieldAlert className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-black text-stone-900 mb-2">
@@ -159,11 +166,14 @@ export const SellerPublicPage: React.FC = () => {
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
           Ce compte vendeur a été restreint ou suspendu par nos équipes de modération pour des raisons de conformité et de sécurité. Ses annonces ne sont plus visibles.
         </p>
-        <Link to={routes.search()}>
-          <Button variant="primary" size="md" leftIcon={<ArrowLeft className="w-4 h-4" />}>
-            Retourner aux annonces
-          </Button>
-        </Link>
+        <Button
+          to={routes.search()}
+          variant="primary"
+          size="md"
+          leftIcon={<ArrowLeft className="w-4 h-4" />}
+        >
+          Retourner aux annonces
+        </Button>
       </div>
     );
   }
@@ -216,51 +226,38 @@ export const SellerPublicPage: React.FC = () => {
         <SellerTrustIndicators seller={seller} />
 
         {/* 3. Navigation Tabs */}
-        <div className="border-b border-border-base flex items-center gap-6 text-sm font-bold">
-          <button
-            type="button"
-            onClick={() => handleTabChange('catalog')}
-            className={`pb-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
-              activeTab === 'catalog'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Package className="w-4 h-4" />
-            <span>Annonces en ligne ({activeListingsCount})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleTabChange('reviews')}
-            className={`pb-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
-              activeTab === 'reviews'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Star className="w-4 h-4" />
-            <span>Avis vérifiés ({reviews.length})</span>
-          </button>
-
-          {isPro && (
-            <button
-              type="button"
-              onClick={() => handleTabChange('about')}
-              className={`pb-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
-                activeTab === 'about'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Informations légales & SIRET</span>
-            </button>
-          )}
-        </div>
+        <Tabs
+          label="Sections du profil vendeur"
+          idPrefix="seller"
+          activeTab={activeTab}
+          onChange={(tab) => handleTabChange(tab as typeof activeTab)}
+          tabs={[
+            {
+              id: 'catalog',
+              label: 'Annonces en ligne',
+              count: activeListingsCount,
+              icon: <Package className="w-4 h-4" />,
+            },
+            {
+              id: 'reviews',
+              label: 'Avis vérifiés',
+              count: reviews.length,
+              icon: <Star className="w-4 h-4" />,
+            },
+            ...(isPro
+              ? [
+                  {
+                    id: 'about',
+                    label: 'Informations légales',
+                    icon: <Building2 className="w-4 h-4" />,
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         {/* 4. Tab Content */}
-        <div>
+        <TabPanel tab={activeTab} idPrefix="seller">
           {activeTab === 'catalog' && (
             <SellerCatalog
               listings={listings}
@@ -279,7 +276,7 @@ export const SellerPublicPage: React.FC = () => {
           {activeTab === 'about' && isPro && (
             <ProBusinessInfo seller={seller} />
           )}
-        </div>
+        </TabPanel>
       </div>
 
       {/* Safety Report Modal */}

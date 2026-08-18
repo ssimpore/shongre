@@ -34,7 +34,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
       case 'identity':
         return (
           <span
-            className={`inline-flex items-center rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 ${sizeClasses[size]} ${className}`}
+            className={`inline-flex items-center rounded-full bg-success-surface text-success border border-success-border ${sizeClasses[size]} ${className}`}
             title="Identité officielle vérifiée (CNI / Passeport)"
           >
             <ShieldCheck className={iconSizes[size]} />
@@ -44,7 +44,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
       case 'business':
         return (
           <span
-            className={`inline-flex items-center rounded-full bg-amber-50 text-amber-900 border border-amber-300 ${sizeClasses[size]} ${className}`}
+            className={`inline-flex items-center rounded-full bg-warning-surface text-warning border border-warning-border ${sizeClasses[size]} ${className}`}
             title="Entreprise certifiée au Registre du Commerce (RCS)"
           >
             <Building2 className={iconSizes[size]} />
@@ -54,7 +54,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
       case 'phone':
         return (
           <span
-            className={`inline-flex items-center rounded-full bg-sky-50 text-sky-800 border border-sky-200 ${sizeClasses[size]} ${className}`}
+            className={`inline-flex items-center rounded-full bg-info-surface text-info border border-info-border ${sizeClasses[size]} ${className}`}
             title="Numéro de téléphone vérifié par SMS"
           >
             <Smartphone className={iconSizes[size]} />
@@ -100,7 +100,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
     case 'tier_3_trusted_seller':
       return (
         <span
-          className={`inline-flex items-center rounded-full bg-emerald-700 text-white shadow-2xs ${sizeClasses[size]} ${className}`}
+          className={`inline-flex items-center rounded-full bg-success text-white shadow-2xs ${sizeClasses[size]} ${className}`}
         >
           <Award className={iconSizes[size]} />
           {showLabel && <span>Vendeur de Confiance</span>}
@@ -109,7 +109,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
     case 'tier_2_verified_member':
       return (
         <span
-          className={`inline-flex items-center rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 ${sizeClasses[size]} ${className}`}
+          className={`inline-flex items-center rounded-full bg-success-surface text-success border border-success-border ${sizeClasses[size]} ${className}`}
         >
           <CheckCircle2 className={iconSizes[size]} />
           {showLabel && <span>Membre Vérifié</span>}

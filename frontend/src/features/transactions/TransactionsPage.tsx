@@ -16,7 +16,7 @@ import {
   Filter,
   Search,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import { useAuth } from '../../app/providers/AuthProvider';
 import { transactionRepository } from '../../repositories/transaction.repository';
 import { transactionService } from '../../domains/transaction/transaction.service';
@@ -140,7 +140,7 @@ export const TransactionsPage: React.FC = () => {
         {/* Seller Earnings Card */}
         {earningsSummary.totalEarnings > 0 || earningsSummary.escrowHeldBalance > 0 ? (
           <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-border-base shadow-xs">
-            <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl">
+            <div className="p-2.5 bg-success-surface text-success rounded-xl">
               <Landmark className="w-5 h-5" />
             </div>
             <div>
@@ -166,15 +166,15 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Escrow Banner info */}
-      <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 text-xs text-emerald-950">
+      <div className="p-3.5 bg-success-surface border border-success-border rounded-2xl flex items-center justify-between gap-3 text-xs text-success">
         <div className="flex items-center gap-2.5">
-          <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+          <ShieldCheck className="w-5 h-5 text-success shrink-0" />
           <span>
             <strong>Garantie Séquestre Shongre :</strong> Vos fonds restent protégés par un tiers de confiance agréé ACPR. Les paiements ne sont débloqués qu'après validation conforme de la remise.
           </span>
         </div>
         {earningsSummary.escrowHeldBalance > 0 && (
-          <span className="text-xs font-bold text-emerald-900 bg-emerald-200/60 px-2.5 py-1 rounded-xl shrink-0">
+          <span className="text-xs font-bold text-success bg-emerald-200/60 px-2.5 py-1 rounded-xl shrink-0">
             {formatPrice(earningsSummary.escrowHeldBalance)} sous séquestre
           </span>
         )}
@@ -228,7 +228,7 @@ export const TransactionsPage: React.FC = () => {
           className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
             statusFilter === 'pending'
               ? 'bg-amber-600 text-white'
-              : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+              : 'bg-warning-surface text-warning hover:bg-warning-surface'
           }`}
         >
           En attente confirmation ({userTransactions.filter((t) => t.status === 'pending_seller_confirmation').length})
@@ -239,7 +239,7 @@ export const TransactionsPage: React.FC = () => {
           className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
             statusFilter === 'in_progress'
               ? 'bg-primary text-white'
-              : 'bg-primary/10 text-primary hover:bg-primary/20'
+              : 'bg-primary-light text-primary hover:bg-primary-light/70'
           }`}
         >
           En cours & Réservées ({userTransactions.filter((t) => t.status === 'seller_confirmed' || t.status === 'ready_for_pickup' || t.status === 'pickup_scheduled' || t.status === 'shipped' || t.status === 'delivered').length})
@@ -249,8 +249,8 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter('completed')}
           className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
             statusFilter === 'completed'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+              ? 'bg-success text-white'
+              : 'bg-success-surface text-success hover:bg-success-surface'
           }`}
         >
           Finalisées ({userTransactions.filter((t) => t.status === 'completed').length})
@@ -260,8 +260,8 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter('disputed')}
           className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
             statusFilter === 'disputed'
-              ? 'bg-rose-600 text-white'
-              : 'bg-rose-50 text-rose-800 hover:bg-rose-100'
+              ? 'bg-danger text-white'
+              : 'bg-danger-surface text-danger hover:bg-danger-surface'
           }`}
         >
           Litiges ({userTransactions.filter((t) => t.status === 'disputed').length})
@@ -319,18 +319,18 @@ export const TransactionsPage: React.FC = () => {
                       {/* Delivery badge */}
                       <div className="flex items-center gap-2 mt-1.5 text-micro">
                         {tx.deliveryMethod === 'hand_delivery' ? (
-                          <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                          <span className="inline-flex items-center gap-1 font-semibold text-success bg-success-surface px-2 py-0.5 rounded">
                             <MapPin className="w-3 h-3" /> Remise en main propre
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                          <span className="inline-flex items-center gap-1 font-semibold text-info bg-info-surface px-2 py-0.5 rounded">
                             <Truck className="w-3 h-3" /> {tx.carrierName || 'Livraison Colis'}
                           </span>
                         )}
 
                         {/* Verification PIN preview for Buyer */}
                         {isBuyer && tx.verificationCode && (tx.status === 'ready_for_pickup' || tx.status === 'pickup_scheduled') && (
-                          <span className="inline-flex items-center gap-1 font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-mono">
+                          <span className="inline-flex items-center gap-1 font-bold text-warning bg-warning-surface px-2 py-0.5 rounded font-mono">
                             <KeyRound className="w-3 h-3" /> Code PIN : {tx.verificationCode}
                           </span>
                         )}
@@ -365,25 +365,25 @@ export const TransactionsPage: React.FC = () => {
                     arrows cannot fit a 320px screen, and wrapping would break the
                     left-to-right progression — so the rail scrolls instead. */}
                 <div className="p-3 bg-stone-50 rounded-xl border border-stone-100 flex items-center justify-between gap-2 text-micro text-stone-600 overflow-x-auto no-scrollbar">
-                  <div className="flex items-center gap-1 font-semibold text-emerald-700 shrink-0">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-1 font-semibold text-success shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                     <span className="whitespace-nowrap">Paiement sous séquestre</span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
-                    tx.status !== 'pending_seller_confirmation' ? 'text-emerald-700' : 'text-warning'
+                    tx.status !== 'pending_seller_confirmation' ? 'text-success' : 'text-warning'
                   }`}>
                     {tx.status !== 'pending_seller_confirmation' ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0 animate-pulse" />
+                      <Clock className="w-3.5 h-3.5 text-warning shrink-0 animate-pulse" />
                     )}
                     <span>Validation vendeur</span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
                     tx.status === 'completed' || tx.status === 'shipped' || tx.status === 'delivered' || tx.status === 'handover_confirmed'
-                      ? 'text-emerald-700'
+                      ? 'text-success'
                       : 'text-stone-500'
                   }`}>
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
@@ -391,7 +391,7 @@ export const TransactionsPage: React.FC = () => {
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
-                    tx.status === 'completed' ? 'text-emerald-700 font-bold' : 'text-stone-500'
+                    tx.status === 'completed' ? 'text-success font-bold' : 'text-stone-500'
                   }`}>
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                     <span>Fonds versés</span>
@@ -411,11 +411,12 @@ export const TransactionsPage: React.FC = () => {
               : "Activez l'option de réservation sur vos annonces pour recevoir des paiements sécurisés immédiats."
           }
           action={
-            <Link to={activeTab === 'purchases' ? routes.search() : routes.listing.publish()}>
-              <Button variant="primary">
-                {activeTab === 'purchases' ? "Explorer les annonces" : "Déposer une annonce"}
-              </Button>
-            </Link>
+            <Button
+              to={activeTab === 'purchases' ? routes.search() : routes.listing.publish()}
+              variant="primary"
+            >
+              {activeTab === 'purchases' ? "Explorer les annonces" : "Déposer une annonce"}
+            </Button>
           }
         />
       )}

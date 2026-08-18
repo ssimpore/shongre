@@ -200,6 +200,16 @@ export const AdminNewsletterPage: React.FC = () => {
             title="Aucune campagne créée"
             description="Créez une première campagne pour envoyer une sélection d'annonces aux abonnés de la newsletter."
             className="border-0 shadow-none"
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCreateModalOpen(true)}
+                leftIcon={<PlusCircle className="w-3.5 h-3.5" />}
+              >
+                Nouvelle campagne
+              </Button>
+            }
           />
         ) : (
           <div className="divide-y divide-border-subtle">
@@ -310,6 +320,7 @@ export const AdminNewsletterPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Audience ciblée">
               <Select
+                aria-label="Audience ciblée par l'envoi"
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value as any)}
                 options={[
@@ -322,6 +333,7 @@ export const AdminNewsletterPage: React.FC = () => {
 
             <FormField label="Thématique">
               <Select
+                aria-label="Thématique ciblée par l'envoi"
                 value={targetTopic}
                 onChange={(e) => setTargetTopic(e.target.value as any)}
                 options={newsletterTopicsService.getAllTopics().map((t) => ({

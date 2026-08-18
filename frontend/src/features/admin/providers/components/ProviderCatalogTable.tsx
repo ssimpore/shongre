@@ -261,7 +261,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-2">
                           {isEnabled ? (
-                            <span className="inline-flex items-center gap-1 text-micro font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface border border-success-border px-2 py-0.5 rounded-full">
                               <CheckCircle2 className="w-3 h-3" />
                               Actif (P{cfg?.priority || 1})
                             </span>
@@ -273,13 +273,13 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           )}
 
                           {isEnabled && health === 'healthy' && (
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" title="Opérationnel" />
+                            <span className="w-2 h-2 rounded-full bg-success" title="Opérationnel" />
                           )}
                           {isEnabled && health === 'degraded' && (
                             <span className="w-2 h-2 rounded-full bg-amber-500" title="Dégradé" />
                           )}
                           {isEnabled && health === 'unavailable' && (
-                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="Indisponible" />
+                            <span className="w-2 h-2 rounded-full bg-danger animate-pulse" title="Indisponible" />
                           )}
                         </div>
                       </td>
@@ -297,7 +297,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                                 key={m}
                                 className={`text-micro font-mono px-1.5 py-0.5 rounded border ${
                                   cfg?.marketOverrides?.[m]
-                                    ? 'bg-blue-50 text-blue-700 border-blue-200 font-bold'
+                                    ? 'bg-info-surface text-info border-info-border font-bold'
                                     : 'bg-stone-100 text-stone-600 border-stone-200'
                                 }`}
                                 title={cfg?.marketOverrides?.[m] ? `Surchargé pour ${m}` : `Hérite pour ${m}`}
@@ -307,7 +307,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             ))
                           )}
                           {overridesCount > 0 && (
-                            <span className="text-micro text-blue-600 font-semibold ml-1">
+                            <span className="text-micro text-info font-semibold ml-1">
                               ({overridesCount} surcharge{overridesCount > 1 ? 's' : ''})
                             </span>
                           )}
@@ -322,20 +322,18 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             size="sm"
                             onClick={() => onOpenTestModal(p.id)}
                             leftIcon={<Play className="w-3 h-3" />}
-                            className="h-7 text-xs px-2 text-stone-600 hover:text-stone-900"
+                            className="h-control-sm text-xs px-2 text-stone-600 hover:text-stone-900"
                           >
                             Tester
                           </Button>
-                          <Link to={`/admin/fournisseurs/${p.id}`}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
-                              className="h-7 text-xs px-2.5 font-bold"
-                            >
+                          <Button
+                            to={`/admin/fournisseurs/${p.id}`} variant="outline"
+                                                          size="sm"
+                                                          rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+                                                          className="h-control-sm text-xs px-2.5 font-bold"
+                          >
                               Gérer
-                            </Button>
-                          </Link>
+                          </Button>
                         </div>
                       </td>
                     </tr>

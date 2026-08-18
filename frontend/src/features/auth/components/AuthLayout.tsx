@@ -89,7 +89,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           </div>
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
             <span>Protection Acheteur & Vendeur</span>
           </div>
         </div>

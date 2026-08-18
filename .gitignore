@@ -29,3 +29,9 @@ backend/.env.*.local
 !.env.example
 !frontend/.env.example
 !backend/.env.example
+
+# Playwright artefacts
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/.playwright/

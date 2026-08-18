@@ -47,7 +47,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
     }
   > = {
     identity: {
-      icon: <ShieldCheck className="w-6 h-6 text-emerald-700" />,
+      icon: <ShieldCheck className="w-6 h-6 text-success" />,
       title: 'Vérification d\'identité requise (KYC)',
       defaultReason: 'Cette action requiert une identité vérifiée (CNI ou Passeport) pour garantir la conformité financière et la sécurité des transactions sur la place de marché.',
       benefits: [
@@ -56,10 +56,10 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
         'Badge officiel "Identité Vérifiée" affiché sur votre profil',
       ],
       ctaLabel: 'Vérifier mon identité',
-      badgeColor: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+      badgeColor: 'bg-success-surface border-success-border text-success',
     },
     business: {
-      icon: <Building2 className="w-6 h-6 text-amber-700" />,
+      icon: <Building2 className="w-6 h-6 text-warning" />,
       title: 'Vérification Professionnelle requise (KYB)',
       defaultReason: 'Pour accéder aux fonctionnalités professionnelles (boutique dédiée, facturation automatisée, multi-annonces), votre immatriculation RCS doit être validée.',
       benefits: [
@@ -68,10 +68,10 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
         'Badge "Boutique Pro Certifiée RCS"',
       ],
       ctaLabel: 'Certifier mon entreprise',
-      badgeColor: 'bg-amber-50 border-amber-200 text-amber-900',
+      badgeColor: 'bg-warning-surface border-warning-border text-warning',
     },
     phone: {
-      icon: <Smartphone className="w-6 h-6 text-sky-700" />,
+      icon: <Smartphone className="w-6 h-6 text-info" />,
       title: 'Vérification de téléphone requise (SMS)',
       defaultReason: 'Un numéro de mobile vérifié est indispensable pour sécuriser les remises en main propre et recevoir les codes PIN de déblocage.',
       benefits: [
@@ -80,7 +80,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
         'Prise de contact directe et rapide avec les acheteurs',
       ],
       ctaLabel: 'Vérifier par SMS',
-      badgeColor: 'bg-sky-50 border-sky-200 text-sky-800',
+      badgeColor: 'bg-info-surface border-info-border text-info',
     },
     bank_payout: {
       icon: <CreditCard className="w-6 h-6 text-stone-700" />,
@@ -116,7 +116,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -163,7 +163,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
           <ul className="space-y-1.5 text-xs text-stone-700 font-semibold">
             {config.benefits.map((benefit, idx) => (
               <li key={idx} className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                 <span>{benefit}</span>
               </li>
             ))}

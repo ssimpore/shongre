@@ -9,22 +9,22 @@ export interface ListingCharacteristicsProps {
 
 const GROUP_ICONS: Record<string, React.ReactNode> = {
   general: <Tag className="w-4 h-4 text-primary" />,
-  technical: <Cpu className="w-4 h-4 text-blue-600" />,
-  engine: <Car className="w-4 h-4 text-amber-600" />,
-  property: <Home className="w-4 h-4 text-emerald-600" />,
+  technical: <Cpu className="w-4 h-4 text-info" />,
+  engine: <Car className="w-4 h-4 text-warning" />,
+  property: <Home className="w-4 h-4 text-success" />,
   energy: <Zap className="w-4 h-4 text-yellow-500" />,
   dimensions: <Sliders className="w-4 h-4 text-purple-600" />,
 };
 
 // DPE Energy Rating Colors
 const DPE_COLORS: Record<string, string> = {
-  A: 'bg-emerald-600 text-white',
-  B: 'bg-emerald-500 text-white',
+  A: 'bg-success text-white',
+  B: 'bg-success text-white',
   C: 'bg-lime-500 text-stone-900',
   D: 'bg-yellow-400 text-stone-900',
   E: 'bg-amber-500 text-white',
   F: 'bg-orange-600 text-white',
-  G: 'bg-red-700 text-white',
+  G: 'bg-danger text-white',
 };
 
 export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({

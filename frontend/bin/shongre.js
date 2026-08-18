@@ -82,10 +82,11 @@ ${colors.bright}Available Commands:${colors.reset}
   ${colors.green}build${colors.reset}           Compile production bundle with chunk optimizations
   ${colors.green}test${colors.reset}            Run Vitest unit test suite (RBAC, Escrow, AI, SIRET)
   ${colors.green}test-watch${colors.reset}      Run tests in interactive watch mode
-  ${colors.green}lint${colors.reset}            Run TypeScript type-check compiler (tsc --noEmit)
-  ${colors.green}check${colors.reset}           Run complete CI pipeline (lint + test + build)
+  ${colors.green}lint${colors.reset}            Type-check (tsc --noEmit) + design-token guard
+  ${colors.green}check${colors.reset}           Run complete CI pipeline (lint + unit + e2e + build)
+  ${colors.green}test-e2e${colors.reset}        Playwright: responsive overflow, axe a11y, journey matrix
   ${colors.green}info${colors.reset}            Display platform environment, versions & configuration
-  ${colors.green}ai-test [prompt]${colors.reset} Test the Gemini AI assistant directly from the CLI
+  ${colors.green}ai-test [prompt]${colors.reset} Exercise the AI listing-assistance adapter (demo, deterministic)
   ${colors.green}clean${colors.reset}           Remove build artifacts and cache
   ${colors.green}help${colors.reset}            Show this help manual
 `);
@@ -104,8 +105,11 @@ function runInfo() {
   console.log(`  • Root Path   : ${rootDir}`);
   
   const hasEnv = existsSync(resolve(rootDir, '.env')) || existsSync(resolve(rootDir, '.env.local'));
-  console.log(`  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}None (using offline fallback for Gemini)${colors.reset}`}`);
-  console.log(`  • Gemini API  : ${process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY ? `${colors.green}Configured${colors.reset}` : `${colors.dim}Offline heuristic engine active${colors.reset}`}\n`);
+  console.log(`  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}None (defaults apply; demo mode needs no configuration)${colors.reset}`}`);
+  console.log(`  • Data mode   : ${colors.green}${process.env.VITE_DATA_MODE || 'demo'}${colors.reset} (frontend runs on local adapters)`);
+  // AI runs behind the service contract now, so the browser holds no provider
+  // key to report on — credentials belong to backend/ when the HTTP adapter lands.
+  console.log(`  • AI          : ${colors.dim}deterministic demo adapter (no provider key in the browser)${colors.reset}\n`);
 }
 
 function runNpmCommand(script, extraArgs = []) {
@@ -122,18 +126,18 @@ function runNpmCommand(script, extraArgs = []) {
 async function runAiTest(promptInput) {
   printBanner();
   const prompt = promptInput || 'Vélo de course carbone Shimano 105';
-  console.log(`${colors.bright}Testing Gemini Listing Assistance CLI...${colors.reset}`);
+  console.log(`${colors.bright}Testing the AI listing assistance adapter...${colors.reset}`);
   console.log(`${colors.dim}Input Prompt:${colors.reset} "${prompt}"\n`);
 
   try {
-    console.log(`${colors.yellow}Running heuristic & AI generation validation...${colors.reset}`);
-    const result = spawnSync('npx', ['vitest', 'run', 'src/services/gemini.service.test.ts'], {
+    console.log(`${colors.yellow}Running listing-assistance & safety-audit validation...${colors.reset}`);
+    const result = spawnSync('npx', ['vitest', 'run', 'src/api/adapters/demo/demo-ai.service.test.ts'], {
       cwd: rootDir,
       stdio: 'inherit',
     });
 
     if (result.status === 0) {
-      console.log(`\n${colors.green}✔ Gemini Service & Anti-fraud Audit tests passed successfully!${colors.reset}\n`);
+      console.log(`\n${colors.green}✔ AI adapter & anti-fraud audit tests passed successfully!${colors.reset}\n`);
     } else {
       process.exit(1);
     }
@@ -145,13 +149,24 @@ async function runAiTest(promptInput) {
 
 function runCheck() {
   printBanner();
-  console.log(`${colors.cyan}${colors.bright}Step 1/3: TypeScript Type Checking (Linter)...${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bright}Step 1/4: Type Checking & Design Token Guard...${colors.reset}`);
   runNpmCommand('lint');
-  
-  console.log(`\n${colors.cyan}${colors.bright}Step 2/3: Running Vitest Test Suite...${colors.reset}`);
+
+  console.log(`\n${colors.cyan}${colors.bright}Step 2/4: Running Vitest Test Suite...${colors.reset}`);
   runNpmCommand('test');
 
-  console.log(`\n${colors.cyan}${colors.bright}Step 3/3: Running Production Build...${colors.reset}`);
+  // Responsive overflow, axe accessibility and the journey matrix. Skippable
+  // with SKIP_E2E=1 for a fast inner loop, but part of `check` by default —
+  // these are the suites that catch layout and a11y regressions, which nothing
+  // else in this pipeline can see.
+  if (process.env.SKIP_E2E === '1') {
+    console.log(`\n${colors.yellow}Step 3/4: End-to-end suite skipped (SKIP_E2E=1).${colors.reset}`);
+  } else {
+    console.log(`\n${colors.cyan}${colors.bright}Step 3/4: Running Playwright Suite (responsive, a11y, journeys)...${colors.reset}`);
+    runNpmCommand('test:e2e');
+  }
+
+  console.log(`\n${colors.cyan}${colors.bright}Step 4/4: Running Production Build...${colors.reset}`);
   runNpmCommand('build');
 
   console.log(`\n${colors.green}${colors.bright}✔ All quality checks passed successfully!${colors.reset}\n`);
@@ -184,6 +199,9 @@ switch (command) {
     break;
   case 'test':
     runNpmCommand('test');
+    break;
+  case 'test-e2e':
+    runNpmCommand('test:e2e');
     break;
   case 'test-watch':
     spawnSync('npx', ['vitest'], { cwd: rootDir, stdio: 'inherit' });

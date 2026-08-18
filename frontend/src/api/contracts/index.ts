@@ -1,3 +1,4 @@
+export * from './ai.contract';
 export * from './listings.contract';
 export * from './search.contract';
 export * from './auth.contract';

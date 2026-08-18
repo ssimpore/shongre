@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Edit3,
   FileText,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { listingRepository } from '../../repositories/listing.repository';
@@ -39,6 +40,7 @@ import { UpgradeToProModal } from '../auth/components/UpgradeToProModal';
 import { BillingHistoryModal } from './components/BillingHistoryModal';
 import { Image } from '../../design-system/primitives/Image';
 import { Listing } from '../../types';
+import { usePublishCta } from '../../security/usePublishCta';
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
@@ -50,6 +52,7 @@ export const AccountOverviewPage: React.FC = () => {
   const { currentUser, isEmailVerified, isPhoneVerified, refreshUser, updateProfile } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const publishCta = usePublishCta();
 
   // A verified flag with no number on file is not a verified phone — showing the
   // badge on its own contradicts the "Non renseigné" value rendered right below it.
@@ -158,7 +161,7 @@ export const AccountOverviewPage: React.FC = () => {
           </Link>
 
           <Link
-            to="/deposer"
+            to={publishCta.to}
             className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shrink-0 shadow-xs"
           >
             <PlusCircle className="w-4 h-4" />
@@ -171,14 +174,14 @@ export const AccountOverviewPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-600" />
+            <Shield className="w-5 h-5 text-success" />
             <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
               Niveaux de sécurité & Vérifications du compte
             </h2>
           </div>
           <Link
             to="/compte/verification"
-            className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
           >
             Centre de Vérification (KYC / KYB / IBAN) →
           </Link>
@@ -189,15 +192,15 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center font-bold">
                   <Mail className="w-4 h-4" />
                 </div>
                 {isEmailVerified ? (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
                     <CheckCircle2 className="w-3 h-3" /> Vérifié
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-2 py-0.5 rounded-md border border-warning-border">
                     <AlertCircle className="w-3 h-3" /> En attente
                   </span>
                 )}
@@ -210,12 +213,12 @@ export const AccountOverviewPage: React.FC = () => {
             <div className="mt-3 pt-2 border-t border-stone-200/60">
               {isEmailVerified ? (
                 <span className="text-micro text-stone-500 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Notifications actives
+                  <CheckCircle2 className="w-3 h-3 text-success" /> Notifications actives
                 </span>
               ) : (
                 <Link
                   to="/verification-email"
-                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
                 >
                   Confirmer mon email →
                 </Link>
@@ -227,7 +230,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold">
                   <Smartphone className="w-4 h-4" />
                 </div>
                 {hasVerifiedPhone ? (
@@ -249,7 +252,7 @@ export const AccountOverviewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPhoneModal(true)}
-                className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {hasVerifiedPhone ? 'Modifier / Re-vérifier' : 'Vérifier par SMS (6 chiffres) →'}
               </button>
@@ -264,7 +267,7 @@ export const AccountOverviewPage: React.FC = () => {
                   <KeyRound className="w-4 h-4" />
                 </div>
                 {currentUser?.mfaEnabled ? (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
                     <CheckCircle2 className="w-3 h-3" /> 2FA Actif
                   </span>
                 ) : (
@@ -282,7 +285,7 @@ export const AccountOverviewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowMfaModal(true)}
-                className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {currentUser?.mfaEnabled ? 'Gérer les codes de secours' : 'Activer le 2FA →'}
               </button>
@@ -308,7 +311,7 @@ export const AccountOverviewPage: React.FC = () => {
           to="/compte/messages"
           className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs block"
         >
-          <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center mb-2">
+          <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center mb-2">
             <MessageSquare className="w-4 h-4" />
           </div>
           <div className="text-2xl font-black text-stone-900">{unreadMsgCount}</div>
@@ -326,16 +329,25 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="text-xs font-semibold text-stone-500 mt-0.5">Annonces sauvegardées</div>
         </Link>
 
+        {/* This card opens the billing history — it is an action, not a metric.
+            It used to put the word "Factures" in the same 2xl-black slot the
+            three cards beside it use for a count, so it scanned as a broken
+            statistic. Same footprint, anatomy that matches what it does. */}
         <button
           type="button"
           onClick={() => setShowBillingModal(true)}
-          className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs text-left cursor-pointer group"
+          className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs text-left cursor-pointer group flex flex-col"
         >
           <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <FileText className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-stone-900">Factures</div>
-          <div className="text-xs font-semibold text-stone-500 mt-0.5">Reçus & Justificatifs</div>
+          <div className="mt-auto">
+            <div className="text-sm font-bold text-stone-900 flex items-center gap-1">
+              Factures
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <div className="text-xs font-semibold text-stone-500 mt-0.5">Reçus &amp; justificatifs</div>
+          </div>
         </button>
       </div>
 
@@ -353,7 +365,7 @@ export const AccountOverviewPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsEditingProfile(!isEditingProfile)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline cursor-pointer"
+            className="inline-flex items-center gap-1.5 min-h-6 text-xs font-bold text-primary hover:underline cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5" />
             {isEditingProfile ? 'Fermer' : 'Modifier mes informations'}
@@ -483,7 +495,7 @@ export const AccountOverviewPage: React.FC = () => {
           </h2>
           <Link
             to="/compte/annonces"
-            className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
           >
             Toutes mes annonces →
           </Link>

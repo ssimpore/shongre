@@ -126,7 +126,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
 
         {isOpen && (
           <div
-            className={`absolute right-0 w-72 bg-white rounded-2xl shadow-2xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95 duration-150 ${
+            className={`absolute right-0 w-72 bg-white rounded-2xl shadow-2xl border border-border-base py-2 z-50 animate-in fade-in zoom-in-95 duration-fast ${
               isFooter ? 'bottom-full mb-2' : 'top-full mt-2'
             }`}
           >
@@ -167,7 +167,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                             </span>
                           )}
                           {m.status === 'coming_soon' && (
-                            <span className="text-micro bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">
+                            <span className="text-micro bg-warning-surface text-warning px-1.5 py-0.5 rounded font-bold">
                               Bientôt
                             </span>
                           )}
@@ -263,7 +263,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             <select
               value={draftLocale}
               onChange={(e) => setDraftLocale(e.target.value)}
-              className="w-full h-11 px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
+              className="w-full h-control-touch px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
             >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -282,7 +282,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             <select
               value={draftCurrency}
               onChange={(e) => setDraftCurrency(e.target.value)}
-              className="w-full h-11 px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
+              className="w-full h-control-touch px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
             >
               {SUPPORTED_CURRENCIES.map((curr) => (
                 <option key={curr.code} value={curr.code}>

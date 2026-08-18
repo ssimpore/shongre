@@ -27,6 +27,7 @@ import {
 import { EvidenceDrawer } from './components/EvidenceDrawer';
 import { DuplicateConflictModal } from './components/DuplicateConflictModal';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { plural } from '../../../utilities/formatters';
 
 const EXAMPLE_PROMPTS = [
   'Boutiques de mobilier design vintage en Île-de-France',
@@ -248,9 +249,9 @@ export const CrmAiProspectingPage: React.FC = () => {
                   key={cand.id}
                   className={`bg-white border rounded-3xl p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all ${
                     cand.isDuplicate
-                      ? 'border-amber-300 bg-amber-50/20'
+                      ? 'border-warning-border bg-warning-surface/20'
                       : isImported
-                      ? 'border-emerald-300 bg-emerald-50/20'
+                      ? 'border-success-border bg-success-surface/20'
                       : 'border-border-base'
                   }`}
                 >
@@ -301,15 +302,15 @@ export const CrmAiProspectingPage: React.FC = () => {
                       </span>
                       {cand.fit.reasons.slice(0, 2).map((r, i) => (
                         <div key={i} className="flex items-start gap-1.5 text-micro">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
                           <span className="line-clamp-2">{r}</span>
                         </div>
                       ))}
                     </div>
 
                     {cand.isDuplicate && (
-                      <div className="p-2.5 rounded-xl bg-amber-100 text-amber-900 text-micro font-medium flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                      <div className="p-2.5 rounded-xl bg-warning-surface text-warning text-micro font-medium flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0" />
                         <span>Compte Shongre ou fiche CRM existante détectée</span>
                       </div>
                     )}
@@ -323,11 +324,11 @@ export const CrmAiProspectingPage: React.FC = () => {
                       className="text-xs text-stone-600 hover:text-stone-900 font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>{cand.sources.length} sources</span>
+                      <span>{plural(cand.sources.length, 'source')}</span>
                     </button>
 
                     {isImported ? (
-                      <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
+                      <span className="text-xs text-success font-bold flex items-center gap-1">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>Importé</span>
                       </span>

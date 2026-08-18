@@ -62,7 +62,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             <span className="text-sm font-black text-stone-900 truncate">{counterpart.name}</span>
             {counterpart.isVerified && (
               <span title="Identité vérifiée">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-success shrink-0" />
               </span>
             )}
             {counterpart.accountType === 'pro' && (
@@ -79,10 +79,10 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               </span>
             )}
             {capabilities.isBlockedByViewer ? (
-              <span className="text-red-600 font-bold">Utilisateur bloqué</span>
+              <span className="text-danger font-bold">Utilisateur bloqué</span>
             ) : (
               <span className="flex items-center gap-1 text-success font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                 <span>En ligne</span>
               </span>
             )}
@@ -141,13 +141,13 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                   }}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                     capabilities.isBlockedByViewer
-                      ? 'text-emerald-700 hover:bg-emerald-50'
+                      ? 'text-success hover:bg-success-surface'
                       : 'text-stone-700 hover:bg-stone-100'
                   }`}
                 >
                   {capabilities.isBlockedByViewer ? (
                     <>
-                      <UserCheck className="w-4 h-4 text-emerald-600" />
+                      <UserCheck className="w-4 h-4 text-success" />
                       <span>Débloquer l'utilisateur</span>
                     </>
                   ) : (
@@ -164,9 +164,9 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                     setIsMenuOpen(false);
                     onReport();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 text-left transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-danger hover:bg-danger-surface text-left transition-colors"
                 >
-                  <Flag className="w-4 h-4 text-red-500" />
+                  <Flag className="w-4 h-4 text-danger" />
                   <span>Signaler la conversation</span>
                 </button>
               </div>

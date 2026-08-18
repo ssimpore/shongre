@@ -16,6 +16,7 @@ import { taxonomyAdminRepository } from '../../repositories/taxonomy.repository'
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { TaxonomyNode } from '../../domains/taxonomy/taxonomy.types';
 import { Button } from '../../design-system/primitives/Button';
+import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { TaxonomyTreeToolbar } from './taxonomy/components/TaxonomyTreeToolbar';
 import { TaxonomyHierarchyTree } from './taxonomy/components/TaxonomyHierarchyTree';
 import { TaxonomyNodeEditor } from './taxonomy/components/TaxonomyNodeEditor';
@@ -158,7 +159,7 @@ export const AdminTaxonomyPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSelectTab('validation')}
-              className="px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-bold flex items-center gap-1.5 hover:bg-red-100 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-danger-surface text-danger border border-danger-border text-xs font-bold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
             >
               <AlertOctagon className="w-4 h-4" />
               <span>{blockingErrors.length} bloquant(s)</span>
@@ -175,16 +176,20 @@ export const AdminTaxonomyPage: React.FC = () => {
               {draftChanges.length} brouillon(s) à publier
             </Button>
           ) : (
-            <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span className="px-3 py-1.5 rounded-xl bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-success" />
               <span>Taxonomie Synchronisée</span>
             </span>
           )}
         </div>
       </div>
 
-      {/* Top Workspace Navigation Tabs */}
-      <div className="flex items-center gap-1 border-b border-border-base overflow-x-auto no-scrollbar text-xs font-semibold">
+      {/* Top Workspace Navigation Tabs.
+          Six tabs overflow a 1440px viewport, so the rail has to advertise it —
+          the last tab used to be clipped exactly at the boundary and read as
+          missing entirely. */}
+      <ScrollRail label="onglets" className="border-b border-border-base">
+      <div className="flex items-center gap-1 text-xs font-semibold w-max">
         {[
           { id: 'tree', label: 'Arborescence & Nœuds', icon: FolderTree, badge: undefined },
           {
@@ -198,7 +203,7 @@ export const AdminTaxonomyPage: React.FC = () => {
             label: 'Validation & Qualité',
             icon: ShieldCheck,
             badge: blockingErrors.length > 0 ? `${blockingErrors.length}` : undefined,
-            badgeClass: 'bg-red-600 text-white',
+            badgeClass: 'bg-danger text-white',
           },
           {
             id: 'drafts',
@@ -248,6 +253,7 @@ export const AdminTaxonomyPage: React.FC = () => {
           );
         })}
       </div>
+      </ScrollRail>
 
       {/* ========================================================================= */}
       {/* 1. HIERARCHICAL TREE & INSPECTOR TAB */}

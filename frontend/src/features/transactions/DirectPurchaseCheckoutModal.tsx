@@ -128,13 +128,6 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
     setIsProcessing(true);
     setPaymentError(null);
     try {
-      // Simulate payment processing delay (3D secure)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const orderId = `ord-${Date.now()}`;
-      const generatedPin = Math.floor(100000 + Math.random() * 900000).toString();
-      setPinCode(generatedPin);
-      setCompletedOrderId(orderId);
       const cardLast4 = selectedPaymentMethod === 'card' ? cardNumber.replace(/\s+/g, '').slice(-4) || '4242' : 'Wallet';
 
       const buyerUser = currentUser || {
@@ -147,8 +140,11 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
         isVerified: true,
       };
 
-      // Create direct purchase transaction in domain service
-      await transactionService.createDirectPurchase({
+      // The transaction is the single source of truth for the handover PIN and
+      // the order reference. This screen used to mint its own pair here, so the
+      // code the buyer was told to give the seller never matched the one stored
+      // on the transaction they were about to hand over against.
+      const transaction = await transactionService.createDirectPurchase({
         listingId: listing.id,
         buyer: buyerUser as any,
         deliveryMethod: selectedQuote?.deliveryType === 'hand_delivery' ? 'hand_delivery' : 'home_delivery',
@@ -166,12 +162,14 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
       // Atomically decrement stock / mark sold
       await listingRepository.decrementStock(listing.id, quantity);
 
+      setPinCode(transaction.verificationCode || '');
+      setCompletedOrderId(transaction.code);
       setStep('success');
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
       toast.success('Paiement sécurisé validé avec succès !', 'Commande confirmée');
 
       if (onSuccess) {
-        onSuccess(orderId);
+        onSuccess(transaction.id);
       }
     } catch (err: any) {
       setPaymentError('Échec de l\'autorisation bancaire. Veuillez vérifier vos informations ou réessayer.');
@@ -291,7 +289,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                         <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
                           <span>{quote.title}</span>
                           {quote.price === 0 && (
-                            <span className="text-micro bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
+                            <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.2 rounded">
                               Gratuit
                             </span>
                           )}
@@ -323,14 +321,14 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                     <Input
                       value={shippingAddress.fullName}
                       onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
-                      className="h-9 text-xs"
+                      className="h-control-md text-xs"
                     />
                   </FormField>
                   <FormField label="Téléphone">
                     <Input
                       value={shippingAddress.phone}
                       onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
-                      className="h-9 text-xs"
+                      className="h-control-md text-xs"
                     />
                   </FormField>
                   <div className="sm:col-span-2">
@@ -338,7 +336,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                       <Input
                         value={shippingAddress.addressLine}
                         onChange={(e) => setShippingAddress({ ...shippingAddress, addressLine: e.target.value })}
-                        className="h-9 text-xs"
+                        className="h-control-md text-xs"
                       />
                     </FormField>
                   </div>
@@ -346,14 +344,14 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                     <Input
                       value={shippingAddress.postalCode}
                       onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })}
-                      className="h-9 text-xs"
+                      className="h-control-md text-xs"
                     />
                   </FormField>
                   <FormField label="Ville">
                     <Input
                       value={shippingAddress.city}
                       onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                      className="h-9 text-xs"
+                      className="h-control-md text-xs"
                     />
                   </FormField>
                 </div>
@@ -375,7 +373,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
               {pricing.buyerServiceFee > 0 && (
                 <div className="flex justify-between text-stone-600">
                   <span className="flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-success" />
                     <span>Protection acheteur & Séquestre</span>
                   </span>
                   <span className="font-bold text-stone-900">{formatPrice(pricing.buyerServiceFee)}</span>
@@ -418,12 +416,12 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
 
             {/* Payment Method Selector */}
             {!isOnlinePaymentAvailable ? (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+              <div className="p-4 rounded-xl bg-warning-surface border border-warning-border text-warning text-xs space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-amber-600" />
+                  <AlertCircle className="w-4 h-4 text-warning" />
                   Paiement en ligne temporairement indisponible
                 </p>
-                <p className="text-amber-800">
+                <p className="text-warning">
                   Le système de séquestre en ligne est momentanément indisponible sur ce marché. Vous pouvez contacter le vendeur pour organiser une remise en main propre.
                 </p>
               </div>
@@ -468,7 +466,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                           : 'border-border-base bg-white text-stone-700 hover:bg-stone-50'
                       }`}
                     >
-                      <span className="text-base font-black text-blue-600">GPay</span>
+                      <span className="text-base font-black text-info">GPay</span>
                       <span>Google Pay</span>
                     </button>
                   </>
@@ -479,34 +477,34 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
             {isOnlinePaymentAvailable && selectedPaymentMethod === 'card' && (
               <div className="p-4 rounded-xl border border-border-base bg-stone-50/50 space-y-3">
                 <FormField label="Numéro de carte">
-                  <Input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="h-9 text-xs" />
+                  <Input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="h-control-md text-xs" />
                 </FormField>
 
                 <div className="grid grid-cols-2 gap-3">
                   <FormField label="Date d'expiration">
-                    <Input value={cardExpiry} onChange={(e) => setCardExpiry(e.target.value)} className="h-9 text-xs" />
+                    <Input value={cardExpiry} onChange={(e) => setCardExpiry(e.target.value)} className="h-control-md text-xs" />
                   </FormField>
                   <FormField label="Cryptogramme CVC">
-                    <Input value={cardCvc} onChange={(e) => setCardCvc(e.target.value)} className="h-9 text-xs" />
+                    <Input value={cardCvc} onChange={(e) => setCardCvc(e.target.value)} className="h-control-md text-xs" />
                   </FormField>
                 </div>
 
                 <div className="flex items-center gap-2 text-micro text-stone-500 pt-1">
-                  <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                  <Lock className="w-3.5 h-3.5 text-success" />
                   <span>Connexion chiffrée SSL 256 bits conforme PCI-DSS</span>
                 </div>
               </div>
             )}
 
             {paymentError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-800">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div className="p-3 bg-danger-surface border border-danger-border rounded-xl flex items-center gap-2 text-xs text-danger">
+                <AlertCircle className="w-4 h-4 text-danger shrink-0" />
                 <span>{paymentError}</span>
               </div>
             )}
 
-            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 text-xs flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3 bg-success-surface text-success rounded-xl border border-success-border text-xs flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-success shrink-0" />
               <span>
                 <strong>Garantie Shongre :</strong> Le vendeur ne reçoit son virement qu'après réception et validation du bien.
               </span>
@@ -533,7 +531,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
         {/* STEP 3: Success Confirmation */}
         {step === 'success' && (
           <div className="text-center py-4 space-y-5">
-            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-xs">
+            <div className="w-14 h-14 bg-success-surface text-success rounded-full flex items-center justify-center mx-auto shadow-xs">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 

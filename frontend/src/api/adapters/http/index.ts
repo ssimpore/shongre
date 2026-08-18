@@ -1,3 +1,4 @@
+export * from './http-ai.service';
 export * from './http-client.js';
 export * from './http-listings.service.js';
 export * from './http-auth.service.js';

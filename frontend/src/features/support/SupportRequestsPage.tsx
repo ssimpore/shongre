@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Headphones,
   PlusCircle,
@@ -60,12 +60,15 @@ export const SupportRequestsPage: React.FC = () => {
           </p>
         </div>
 
-        <Link to="/contact">
-          <Button variant="primary" size="sm" className="font-bold flex items-center gap-2">
-            <PlusCircle className="w-4 h-4" />
-            <span>Nouvelle demande</span>
-          </Button>
-        </Link>
+        <Button
+          to="/contact"
+          variant="primary"
+          size="sm"
+          className="font-bold flex items-center gap-2"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>Nouvelle demande</span>
+        </Button>
       </div>
 
       {/* 2. Filter Tabs */}
@@ -107,11 +110,14 @@ export const SupportRequestsPage: React.FC = () => {
               Si vous rencontrez une difficulté avec une transaction, une annonce ou votre compte, notre équipe est à votre disposition.
             </p>
           </div>
-          <Link to="/contact">
-            <Button variant="outline" size="sm" className="font-bold">
-              Contacter le support
-            </Button>
-          </Link>
+          <Button
+            to="/contact"
+            variant="outline"
+            size="sm"
+            className="font-bold"
+          >
+            Contacter le support
+          </Button>
         </div>
       ) : (
         <section aria-labelledby="support-requests-heading" className="space-y-3">

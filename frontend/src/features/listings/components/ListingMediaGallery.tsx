@@ -97,16 +97,31 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
     <div className={`bg-white rounded-2xl border border-border-base overflow-hidden shadow-xs space-y-0 ${className}`}>
       {/* Main Large Viewport with Touch Gestures */}
       <div
-        className="relative aspect-4/3 sm:aspect-16/10 bg-stone-950 flex items-center justify-center overflow-hidden group select-none touch-pan-y"
+        className="relative aspect-4/3 sm:aspect-16/10 bg-stone-100 flex items-center justify-center overflow-hidden group select-none touch-pan-y"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
+        {/* Ambient backdrop.
+            Catalogue photography is mostly portrait while this frame is
+            landscape, so `object-contain` — which we keep, because cropping a
+            product photo hides what is being sold — left up to 60% of the frame
+            as flat black. A blurred, over-scaled copy of the same photo fills
+            that space with something that belongs to the image. Decorative:
+            hidden from assistive tech, and it simply does not paint if the
+            source fails. */}
+        <img
+          src={currentUrl!}
+          alt=""
+          aria-hidden="true"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45 pointer-events-none"
+        />
         <Image
           src={currentUrl!}
           alt={`${title} - Photo ${activeIndex + 1}`}
           onClick={() => setIsLightboxOpen(true)}
-          className="w-full h-full object-contain cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]"
+          className="relative w-full h-full object-contain cursor-zoom-in transition-transform duration-normal hover:scale-[1.02]"
           referrerPolicy="no-referrer"
         />
 
@@ -180,8 +195,9 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               key={idx}
               type="button"
               onClick={() => setActiveIndex(idx)}
-              aria-label={`Afficher la photo ${idx + 1}`}
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-stone-900 ${
+              aria-label={`Afficher la photo ${idx + 1} sur ${photoList.length}`}
+              aria-current={activeIndex === idx ? 'true' : undefined}
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-stone-100 ${
                 activeIndex === idx
                   ? 'border-primary ring-2 ring-primary/20 scale-95 opacity-100'
                   : 'border-transparent opacity-60 hover:opacity-100'

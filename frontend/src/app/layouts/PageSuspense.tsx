@@ -3,10 +3,10 @@ import { Skeleton } from '../../design-system/primitives/UIComponents';
 
 export const PageSuspense: React.FC = () => {
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 w-full max-w-7xl mx-auto animate-in fade-in duration-200">
+    <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 w-full max-w-7xl mx-auto animate-in fade-in duration-normal">
       {/* Brand Icon Spinner */}
       <div className="relative flex items-center justify-center mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center animate-pulse">
+        <div className="w-14 h-14 rounded-2xl bg-primary-light border border-primary/20 flex items-center justify-center animate-pulse">
           <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-black text-lg shadow-sm">
             S
           </div>

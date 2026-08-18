@@ -83,7 +83,14 @@ export function DataTable<T>({
   const tableColumns = columns.filter((c) => !c.hideInTable);
 
   return (
-    <div className={`overflow-x-auto ${className}`}>
+    /* `tabIndex={0}` so the horizontal scroll is operable without a pointer;
+       the caption names the region so it is not announced as an unnamed group. */
+    <div
+      className={`overflow-x-auto ${className}`}
+      tabIndex={0}
+      role="region"
+      aria-label={caption}
+    >
       <table className="w-full text-left text-xs">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">

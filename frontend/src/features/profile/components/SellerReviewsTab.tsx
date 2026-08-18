@@ -121,7 +121,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
                 }
                 className={`w-full flex items-center gap-3 text-xs py-1 px-2 rounded-lg transition-colors cursor-pointer text-left ${
                   selectedRatingFilter === item.star
-                    ? 'bg-amber-50 font-bold'
+                    ? 'bg-warning-surface font-bold'
                     : 'hover:bg-bg-base'
                 }`}
               >
@@ -131,7 +131,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
 
                 <div className="flex-1 h-2.5 bg-border-subtle rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                    className="h-full bg-amber-400 rounded-full transition-all duration-normal"
                     style={{ width: `${item.percentage}%` }}
                   />
                 </div>
@@ -148,14 +148,14 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
 
       {/* Review List Filter Notification if Active */}
       {selectedRatingFilter && (
-        <div className="flex items-center justify-between bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-xl text-xs text-amber-900">
+        <div className="flex items-center justify-between bg-warning-surface border border-warning-border px-4 py-2.5 rounded-xl text-xs text-warning">
           <span>
             Affichage des avis avec la note de <strong>{selectedRatingFilter} étoile(s)</strong> ({displayedReviews.length})
           </span>
           <button
             type="button"
             onClick={() => setSelectedRatingFilter(null)}
-            className="font-bold underline text-amber-800 hover:text-amber-950"
+            className="font-bold underline text-warning hover:text-warning"
           >
             Afficher tous les avis
           </button>
@@ -183,7 +183,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
                       <span className="text-xs sm:text-sm font-bold text-stone-900">
                         {rev.authorName}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success-surface px-2 py-1 rounded-full border border-success-border">
                         <CheckCircle2 className="w-3 h-3" />
                         Achat vérifié
                       </span>

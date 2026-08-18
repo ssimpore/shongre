@@ -65,18 +65,24 @@ export const CrmOverviewPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <Link to="/admin/crm/prospection">
-              <Button variant="primary" size="sm" className="font-bold flex items-center gap-1.5 shadow-xs">
-                <Sparkles className="w-4 h-4" />
-                <span>Prospection IA</span>
-              </Button>
-            </Link>
-            <Link to="/admin/crm/pipeline">
-              <Button variant="outline" size="sm" className="font-bold">
-                <TrendingUp className="w-4 h-4" />
-                <span>Voir le Pipeline</span>
-              </Button>
-            </Link>
+            <Button
+              to="/admin/crm/prospection"
+              variant="primary"
+              size="sm"
+              className="font-bold flex items-center gap-1.5 shadow-xs"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Prospection IA</span>
+            </Button>
+            <Button
+              to="/admin/crm/pipeline"
+              variant="outline"
+              size="sm"
+              className="font-bold"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Voir le Pipeline</span>
+            </Button>
           </div>
         </div>
 
@@ -202,11 +208,14 @@ export const CrmOverviewPage: React.FC = () => {
               Décrivez en langage naturel les entreprises cibles et découvrez automatiquement leur potentiel pour Shongre.
             </p>
             <div className="pt-1">
-              <Link to="/admin/crm/prospection">
-                <Button variant="primary" size="sm" className="font-bold">
-                  Lancer une recherche IA
-                </Button>
-              </Link>
+              <Button
+                to="/admin/crm/prospection"
+                variant="primary"
+                size="sm"
+                className="font-bold"
+              >
+                Lancer une recherche IA
+              </Button>
             </div>
           </div>
 

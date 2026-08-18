@@ -156,7 +156,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
             </span>
             <span
               className={`p-2 rounded-lg shrink-0 ${
-                metrics.degraded === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                metrics.degraded === 0 ? 'bg-success-surface text-success' : 'bg-warning-surface text-warning'
               }`}
             >
               <Activity className="w-4 h-4" />
@@ -181,7 +181,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
               Surcharges Territoires
             </span>
-            <span className="p-2 rounded-lg bg-blue-50 text-blue-700">
+            <span className="p-2 rounded-lg bg-info-surface text-info">
               <Globe className="w-4 h-4" />
             </span>
           </div>
@@ -201,8 +201,8 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
             <span
               className={`p-2 rounded-lg shrink-0 ${
                 metrics.requiresAction === 0
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-rose-50 text-rose-700'
+                  ? 'bg-success-surface text-success'
+                  : 'bg-danger-surface text-danger'
               }`}
             >
               <AlertTriangle className="w-4 h-4" />
@@ -212,7 +212,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
             <span className="text-2xl font-black text-stone-900">{metrics.requiresAction}</span>
             <span
               className={`ml-2 text-xs font-medium ${
-                metrics.requiresAction === 0 ? 'text-success' : 'text-rose-600'
+                metrics.requiresAction === 0 ? 'text-success' : 'text-danger'
               }`}
             >
               {metrics.requiresAction === 0 ? 'Aucun blocage' : 'Identifiants en attente'}
@@ -226,7 +226,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <ShieldCheck className="w-4 h-4 text-success" />
               État des Fonctions Critiques de la Plateforme (France • Référence)
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
@@ -265,19 +265,19 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
                       {item.label}
                     </span>
                     {isOperational && (
-                      <span className="flex items-center gap-1 text-micro font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-sm">
+                      <span className="flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded-sm">
                         <CheckCircle2 className="w-3 h-3" />
                         Actif
                       </span>
                     )}
                     {isDegraded && (
-                      <span className="flex items-center gap-1 text-micro font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-sm">
+                      <span className="flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-1.5 py-0.5 rounded-sm">
                         <AlertTriangle className="w-3 h-3" />
                         Dégradé
                       </span>
                     )}
                     {isUnavailable && (
-                      <span className="flex items-center gap-1 text-micro font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded-sm">
+                      <span className="flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface px-1.5 py-0.5 rounded-sm">
                         <XCircle className="w-3 h-3" />
                         Inactif
                       </span>

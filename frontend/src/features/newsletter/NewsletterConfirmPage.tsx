@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
@@ -25,7 +25,7 @@ export const NewsletterConfirmPage: React.FC = () => {
   return (
     <div className="max-w-md mx-auto px-4 py-16 text-center">
       <div className="bg-white border border-border-base rounded-3xl p-8 sm:p-10 shadow-xs space-y-6">
-        <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-8 h-8" />
         </div>
 
@@ -39,7 +39,7 @@ export const NewsletterConfirmPage: React.FC = () => {
         </div>
 
         <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-xs text-stone-500 text-left flex items-start gap-3">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
           <span>
             Vous recevrez chaque semaine les meilleures pépites et bons plans. Vous pouvez modifier vos préférences ou vous désabonner à tout moment.
           </span>
@@ -49,11 +49,15 @@ export const NewsletterConfirmPage: React.FC = () => {
           <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">
             Explorer les annonces
           </Button>
-          <Link to="/compte/newsletter" className="block">
-            <Button variant="outline" fullWidth size="sm" className="font-semibold">
-              Gérer mes thématiques
-            </Button>
-          </Link>
+          <Button
+            to="/compte/newsletter"
+            variant="outline"
+            fullWidth
+            size="sm"
+            className="font-semibold"
+          >
+            Gérer mes thématiques
+          </Button>
         </div>
       </div>
     </div>

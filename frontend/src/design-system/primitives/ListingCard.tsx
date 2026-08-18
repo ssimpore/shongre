@@ -1,5 +1,6 @@
 import { isProSeller } from '../../domains/user/user.domain';
 import React, { useState } from 'react';
+import { FavoriteButton } from './FavoriteButton';
 import { Heart, MapPin, Truck, ShieldCheck, Camera, Sparkles, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Listing } from '../../types';
@@ -7,33 +8,29 @@ import { formatRelativeDate } from '../../utilities/formatters';
 import { PriceDisplay } from './UIComponents';
 import { Badge } from './Badge';
 import { Image } from './Image';
-import { storageService } from '../../services/storage.service';
+import { useFavorites } from '../../app/providers/FavoritesProvider';
 
 export interface ListingCardProps {
   listing: Listing;
   variant?: 'grid' | 'list' | 'compact';
-  onFavoriteToggle?: (listingId: string, isFav: boolean) => void;
   className?: string;
 }
 
 export const ListingCard: React.FC<ListingCardProps> = ({
   listing,
   variant = 'grid',
-  onFavoriteToggle,
   className = '',
 }) => {
-  const [isFavorite, setIsFavorite] = useState(() =>
-    storageService.getFavorites().includes(listing.id)
-  );
+  // Read from the shared store rather than keeping per-card state: two cards
+  // showing the same listing (a rail and the grid below it) used to disagree
+  // after a toggle, and the header badge never heard about it at all.
+  const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
+  const isFavorite = isListingFavorite(listing.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const nextState = storageService.toggleFavorite(listing.id);
-    setIsFavorite(nextState);
-    if (onFavoriteToggle) {
-      onFavoriteToggle(listing.id, nextState);
-    }
+    void toggleFavorite(listing.id);
   };
 
   const summarySnippets = React.useMemo(() => {
@@ -59,7 +56,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   if (variant === 'compact') {
     return (
       <article
-        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col ${
+        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col ${
           listing.isBoosted ? 'ring-1 ring-primary/30' : ''
         } ${className}`}
       >
@@ -68,7 +65,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
             />
           </Link>
           {/* Tags */}
@@ -83,7 +80,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         </div>
         <div className="p-3 flex-1 flex flex-col justify-between gap-1">
           <Link to={`/annonce/${listing.id}`} className="block">
-            <h3 className="text-xs font-bold text-stone-900 line-clamp-1 group-hover:text-primary transition-colors">
+            <h3 title={listing.title} className="text-xs font-bold text-stone-900 line-clamp-1 group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
           </Link>
@@ -105,7 +102,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   if (variant === 'list') {
     return (
       <article
-        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col sm:flex-row gap-4 p-3 ${
+        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col sm:flex-row gap-4 p-3 ${
           listing.isBoosted ? 'ring-1 ring-primary/30' : ''
         } ${className}`}
       >
@@ -113,7 +110,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
           {listing.photos.length > 1 && (
             <span className="absolute bottom-2 left-2 bg-stone-900/70 text-white text-xs px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1">
@@ -163,18 +160,15 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                   <Badge variant="deal" size="sm">Bon plan</Badge>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={handleFavoriteClick}
-                aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors cursor-pointer"
-              >
-                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
-              </button>
+              <FavoriteButton
+                isFavorite={isFavorite}
+                onToggle={handleFavoriteClick}
+                size="lg"
+              />
             </div>
 
             <Link to={`/annonce/${listing.id}`} className="block">
-              <h3 className="text-base font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors">
+              <h3 title={listing.title} className="text-base font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors">
                 {listing.title}
               </h3>
             </Link>
@@ -210,7 +204,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                 {listing.city} ({listing.postalCode.slice(0, 2)})
               </span>
               {hasDelivery && (
-                <span className="flex items-center gap-1 text-emerald-700 font-medium">
+                <span className="flex items-center gap-1 text-success font-medium">
                   <Truck className="w-3.5 h-3.5" />
                   Livraison possible
                 </span>
@@ -226,7 +220,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   // Default Grid Variant
   return (
     <article
-      className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col ${
+      className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col ${
         listing.isBoosted ? 'ring-1 ring-primary/30' : ''
       } ${className}`}
     >
@@ -235,19 +229,18 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
         </Link>
 
         {/* Favorite Button */}
-        <button
-          type="button"
-          onClick={handleFavoriteClick}
-          aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-          className="absolute top-2.5 right-2.5 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs shadow-xs flex items-center justify-center text-stone-600 hover:text-primary hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
-        >
-          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
-        </button>
+        <FavoriteButton
+          isFavorite={isFavorite}
+          onToggle={handleFavoriteClick}
+          size="lg"
+          variant="floating"
+          className="absolute top-2.5 right-2.5 z-10"
+        />
 
         {/* Tags / Badges — one controlled slot, at most two states, so cards
             never accumulate a wall of labels. */}
@@ -276,8 +269,14 @@ export const ListingCard: React.FC<ListingCardProps> = ({
 
       <div className="p-3.5 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap justify-between">
-            <div className="flex items-center gap-1.5 truncate max-w-[70%]">
+          {/* Meta row: category · seller, with the rating pinned right.
+              This used to be `flex-wrap`, so a long seller name pushed the rating
+              badge onto a second line — which made the meta row taller on some
+              cards than others and knocked the titles and prices out of
+              alignment across a row. One line, always: the left group truncates,
+              the badge never shrinks. */}
+          <div className="flex items-center gap-1.5 mb-1.5 justify-between">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <span className="text-xs font-semibold text-stone-500 truncate">{listing.categoryLabel}</span>
               <Link
                 to={isProSeller(listing) ? `/boutique/${listing.sellerId}` : `/profil/${listing.sellerId}`}
@@ -306,8 +305,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             )}
           </div>
 
+          {/* Reserves both lines whether or not the title needs them, so the
+              price sits at the same height on every card in a row. */}
           <Link to={`/annonce/${listing.id}`} className="block mb-2">
-            <h3 className="text-sm font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+            <h3
+              title={listing.title}
+              className="text-sm font-bold text-stone-900 line-clamp-2 min-h-[2.625rem] group-hover:text-primary transition-colors leading-snug"
+            >
               {listing.title}
             </h3>
           </Link>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { scrollToTop } from '../../utilities/motion';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import {
@@ -54,8 +55,9 @@ import { Notice } from '../../design-system/primitives/UIComponents';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
-import { geminiService, ListingAIGenerationResult } from '../../services/gemini.service';
-import { formatPrice } from '../../utilities/formatters';
+import { services } from '../../api/client/service-registry';
+import { ListingAssistanceResult } from '../../api/contracts/ai.contract';
+import { formatPrice, plural } from '../../utilities/formatters';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { Image } from '../../design-system/primitives/Image';
 
@@ -66,18 +68,43 @@ const samplePhotoUrls = [
   'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80',
 ];
 
-const STEPS = [
-  { id: 1, label: 'Catégorie' },
-  { id: 2, label: 'Caractéristiques' },
-  { id: 3, label: 'Photos' },
-  { id: 4, label: 'Description' },
-  { id: 5, label: 'Prix & Stock' },
-  { id: 6, label: 'Transactions' },
-  { id: 7, label: 'Livraison' },
-  { id: 8, label: 'Localisation' },
-  { id: 9, label: 'Marchés & Visibilité' },
-  { id: 10, label: 'Vérification' },
+/**
+ * Publication is three phases, not ten steps.
+ *
+ * Each phase still renders the original panels — they were already self-contained
+ * cards — but they now scroll together under one heading instead of costing a
+ * forward commitment each. Ten sequential screens to list a second-hand item was
+ * the biggest drop-off risk in the seller funnel; the reference competitor is
+ * effectively one long form, and the draft here already auto-saves, which is what
+ * makes a longer page safe.
+ *
+ * `panels` are the legacy step ids, kept so the existing panel JSX is untouched.
+ */
+const PHASES = [
+  {
+    id: 1,
+    label: 'Ce que vous vendez',
+    hint: 'Catégorie, caractéristiques et photos',
+    panels: [1, 2, 3],
+  },
+  {
+    id: 2,
+    label: 'Votre annonce',
+    hint: 'Titre, description et prix',
+    panels: [4, 5],
+  },
+  {
+    id: 3,
+    label: 'Remise & livraison',
+    hint: 'Paiement, expédition et localisation',
+    // 9 (marchés & visibilité) sits behind an "options avancées" disclosure and
+    // 10 is the inline review, rather than two more full screens.
+    panels: [6, 7, 8, 9, 10],
+  },
 ];
+
+const ADVANCED_PANEL = 9;
+const REVIEW_PANEL = 10;
 
 export const PublishWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -85,7 +112,8 @@ export const PublishWizard: React.FC = () => {
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
   const [aiPromptKeyword, setAiPromptKeyword] = useState('');
@@ -256,7 +284,7 @@ export const PublishWizard: React.FC = () => {
 
     setIsGeneratingWithAI(true);
     try {
-      const result: ListingAIGenerationResult = await geminiService.generateListingAssistance({
+      const result: ListingAssistanceResult = await services.ai.generateListingAssistance({
         rawInput: promptToUse,
         condition: draft.condition as any,
         categoryHint: schema?.node.name,
@@ -285,14 +313,23 @@ export const PublishWizard: React.FC = () => {
     }
   };
 
-  // Step Validation & Navigation
+  /** Is this legacy step panel part of the phase currently on screen? */
+  const showsPanel = (panel: number) =>
+    Boolean(PHASES[currentStep - 1]?.panels.includes(panel));
+
+  // Phase validation. Requirements are unchanged — they are just enforced once
+  // per phase now instead of once per screen.
   const handleNextStep = () => {
     if (currentStep === 1) {
       if (!draft.taxonomyNodeId) {
         toast.error('Veuillez sélectionner une catégorie finale pour continuer.');
         return;
       }
-    } else if (currentStep === 4) {
+      if (draft.photos.length === 0) {
+        toast.error('Veuillez ajouter au moins une photo pour illustrer votre annonce.');
+        return;
+      }
+    } else if (currentStep === 2) {
       if (!draft.title.trim()) {
         toast.error('Veuillez renseigner un titre pour votre annonce.');
         return;
@@ -301,20 +338,15 @@ export const PublishWizard: React.FC = () => {
         toast.error('Veuillez renseigner une description détaillée.');
         return;
       }
-    } else if (currentStep === 3) {
-      if (draft.photos.length === 0) {
-        toast.error('Veuillez ajouter au moins une photo pour illustrer votre annonce.');
-        return;
-      }
     }
 
-    setCurrentStep((prev) => Math.min(prev + 1, 10));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setCurrentStep((prev) => Math.min(prev + 1, PHASES.length));
+    scrollToTop();
   };
 
   const handlePrevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   };
 
   // Final Publish Handler
@@ -349,12 +381,12 @@ export const PublishWizard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
           <span className="text-xs font-bold text-primary uppercase tracking-wider block">
-            Publication Marketplace Canonique
+            Votre annonce
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
             Déposer une annonce sur Shongre
@@ -363,85 +395,77 @@ export const PublishWizard: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <Badge variant="neutral" size="sm">
-            Étape {currentStep} / {STEPS.length}
+            Étape {currentStep} / {PHASES.length}
           </Badge>
-          <span className="text-xs text-stone-500 font-mono hidden sm:inline">Brouillon auto-sauvegardé</span>
+          <span className="text-xs text-stone-500 hidden sm:inline">Brouillon auto-sauvegardé</span>
         </div>
       </div>
 
       {/* Progress.
-          Phones get a compact "where am I / what's next" summary with a progress
-          bar; the full 10-step rail only appears once there is room for it, so a
-          small screen is not asked to scroll a header sideways. */}
-      <div className="bg-white p-3 rounded-2xl border border-border-base shadow-xs">
-        {/* Compact mobile progress */}
-        <div className="md:hidden space-y-2">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-sm font-bold text-stone-900 truncate">
-              {STEPS[currentStep - 1]?.label}
-            </span>
-            <span className="text-xs font-semibold text-stone-500 shrink-0">
-              Étape {currentStep} / {STEPS.length}
-            </span>
-          </div>
+          Three phases fit a rail at every width, so the phone no longer needs a
+          separate compact treatment — it gets the same rail with the hint text
+          dropped. */}
+      <div className="bg-white p-3 rounded-2xl border border-border-base shadow-xs space-y-2.5">
+        <div
+          className="h-1.5 rounded-full bg-bg-muted overflow-hidden"
+          role="progressbar"
+          aria-valuenow={currentStep}
+          aria-valuemin={1}
+          aria-valuemax={PHASES.length}
+          aria-label={`Progression de la publication : étape ${currentStep} sur ${PHASES.length}`}
+        >
           <div
-            className="h-1.5 rounded-full bg-bg-muted overflow-hidden"
-            role="progressbar"
-            aria-valuenow={currentStep}
-            aria-valuemin={1}
-            aria-valuemax={STEPS.length}
-            aria-label={`Progression de la publication : étape ${currentStep} sur ${STEPS.length}`}
-          >
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-normal"
-              style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
-            />
-          </div>
-          {currentStep < STEPS.length && (
-            <p className="text-xs text-stone-500">
-              Ensuite : {STEPS[currentStep]?.label}
-            </p>
-          )}
+            className="h-full bg-primary rounded-full transition-all duration-normal"
+            style={{ width: `${(currentStep / PHASES.length) * 100}%` }}
+          />
         </div>
 
-        {/* Full step rail from md up */}
-        <ol className="hidden md:flex items-center justify-between text-xs">
-          {STEPS.map((s) => (
-            <li key={s.id}>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(s.id)}
-                aria-current={currentStep === s.id ? 'step' : undefined}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
-                  currentStep === s.id
-                    ? 'bg-primary-light text-primary ring-1 ring-primary'
-                    : currentStep > s.id
-                    ? 'text-success hover:bg-stone-50'
-                    : 'text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center text-micro font-black shrink-0 ${
-                    currentStep === s.id
-                      ? 'bg-primary text-white'
-                      : currentStep > s.id
-                      ? 'bg-success text-white'
-                      : 'bg-stone-200 text-stone-700'
+        <ol className="grid grid-cols-3 gap-1.5 text-xs">
+          {PHASES.map((p) => {
+            const isCurrent = currentStep === p.id;
+            const isDone = currentStep > p.id;
+            return (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(p.id)}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  className={`w-full text-left flex items-start gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors cursor-pointer ${
+                    isCurrent
+                      ? 'bg-primary-light text-primary ring-1 ring-primary'
+                      : isDone
+                      ? 'text-success hover:bg-stone-50'
+                      : 'text-stone-500 hover:text-stone-700'
                   }`}
                 >
-                  {currentStep > s.id ? '✓' : s.id}
-                </span>
-                <span>{s.label}</span>
-              </button>
-            </li>
-          ))}
+                  <span
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-black shrink-0 mt-px ${
+                      isCurrent
+                        ? 'bg-primary text-white'
+                        : isDone
+                        ? 'bg-success text-white'
+                        : 'bg-stone-200 text-stone-700'
+                    }`}
+                  >
+                    {isDone ? '✓' : p.id}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block leading-tight">{p.label}</span>
+                    <span className="hidden sm:block font-medium text-micro text-stone-500 leading-tight mt-0.5">
+                      {p.hint}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ol>
       </div>
 
       {/* ========================================================================= */}
       {/* STEP 1: CATEGORY & INTENT SELECTION */}
       {/* ========================================================================= */}
-      {currentStep === 1 && (
+      {showsPanel(1) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -559,14 +583,14 @@ export const PublishWizard: React.FC = () => {
 
           {/* Current Selected Breadcrumb Path */}
           {schema && (
-            <div className="p-3.5 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 text-xs flex items-center justify-between">
+            <div className="p-3.5 bg-success-surface text-success rounded-xl border border-success-border text-xs flex items-center justify-between">
               <div>
                 <span className="font-bold block mb-0.5">Catégorie active validée :</span>
-                <span className="font-mono text-emerald-900">
+                <span className="font-mono text-success">
                   {taxonomyService.getBreadcrumbs(schema.node.id).map((b) => b.label).join(' › ')}
                 </span>
               </div>
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
             </div>
           )}
         </div>
@@ -575,14 +599,20 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 2: CHARACTERISTICS & DYNAMIC ATTRIBUTES */}
       {/* ========================================================================= */}
-      {currentStep === 2 && (
+      {showsPanel(2) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
+            {/* The category name is only known once one is chosen. Now that this
+                panel shares a page with the category picker it can render before
+                that, so the suffix is conditional rather than "(  )". */}
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Caractéristiques techniques ({schema?.node.name})
+              Caractéristiques techniques
+              {schema?.node.name ? ` · ${schema.node.name}` : ''}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Renseignez l'état du produit et les critères spécifiques pour optimiser la recherche.
+              {schema?.node.name
+                ? "Renseignez l'état du produit et les critères spécifiques pour optimiser la recherche."
+                : 'Choisissez une catégorie ci-dessus pour voir les critères correspondants.'}
             </p>
           </div>
 
@@ -698,7 +728,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 3: PHOTOS & MEDIA */}
       {/* ========================================================================= */}
-      {currentStep === 3 && (
+      {showsPanel(3) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -721,7 +751,8 @@ export const PublishWizard: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(photo.id)}
-                      className="p-1 bg-red-600 text-white rounded-md hover:bg-red-700 cursor-pointer"
+                      aria-label={`Supprimer la photo ${index + 1}`}
+                      className="p-1 bg-danger text-white rounded-md hover:bg-danger cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -764,7 +795,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 4: TITLE, DESCRIPTION & AI */}
       {/* ========================================================================= */}
-      {currentStep === 4 && (
+      {showsPanel(4) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -826,7 +857,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 5: PRICING & STOCK */}
       {/* ========================================================================= */}
-      {currentStep === 5 && (
+      {showsPanel(5) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -937,7 +968,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 6: TRANSACTIONS & MODES */}
       {/* ========================================================================= */}
-      {currentStep === 6 && (
+      {showsPanel(6) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -963,6 +994,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
               </div>
               <Checkbox
+                aria-label="Autoriser le contact direct et la messagerie"
                 checked={draft.transaction.allowContact}
                 onChange={(e) =>
                   updateDraft({
@@ -981,13 +1013,13 @@ export const PublishWizard: React.FC = () => {
               } flex items-center justify-between`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
                     <span>Achat en ligne direct (Sans réservation)</span>
-                    <span className="text-micro bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
+                    <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.2 rounded">
                       Séquestre Garanti
                     </span>
                   </div>
@@ -997,6 +1029,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
               </div>
               <Checkbox
+                aria-label="Autoriser le paiement sécurisé direct"
                 disabled={!transactionCaps.canDirectPurchase}
                 checked={draft.transaction.allowDirectPurchase && transactionCaps.canDirectPurchase}
                 onChange={(e) =>
@@ -1043,7 +1076,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 7: FULFILLMENT & SHIPPING */}
       {/* ========================================================================= */}
-      {currentStep === 7 && (
+      {showsPanel(7) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -1083,7 +1116,7 @@ export const PublishWizard: React.FC = () => {
               <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center">
                       <Package className="w-4 h-4" />
                     </div>
                     <div>
@@ -1146,7 +1179,7 @@ export const PublishWizard: React.FC = () => {
             {fulfillmentCaps.allowBulkyDelivery && (
               <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-warning-surface text-warning flex items-center justify-center">
                     <Truck className="w-4 h-4" />
                   </div>
                   <div>
@@ -1173,7 +1206,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 8: LOCATION & PRIVACY */}
       {/* ========================================================================= */}
-      {currentStep === 8 && (
+      {showsPanel(8) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -1215,7 +1248,36 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 9: MARKETS & VISIBILITY BOOST OPTIONS */}
       {/* ========================================================================= */}
-      {currentStep === 9 && (
+      {/* Advanced: multi-market reach. Sensible defaults are already applied from
+          the seller's profile, so this is a disclosure rather than a required
+          screen — most sellers publish to their home market and never open it. */}
+      {showsPanel(ADVANCED_PANEL) && (
+        <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced((v) => !v)}
+            aria-expanded={showAdvanced}
+            className="w-full flex items-center justify-between gap-3 p-5 sm:p-6 text-left hover:bg-bg-base/60 transition-colors cursor-pointer"
+          >
+            <span className="flex items-center gap-2.5 min-w-0">
+              <Globe className="w-5 h-5 text-primary shrink-0" />
+              <span className="min-w-0">
+                <span className="block font-black text-stone-900">Options avancées</span>
+                <span className="block text-xs text-stone-500 mt-0.5">
+                  Diffusion multi-marchés et visibilité —{' '}
+                  {plural(draft.selectedMarkets?.length || 1, 'marché sélectionné', 'marchés sélectionnés')}
+                </span>
+              </span>
+            </span>
+            <ChevronRight
+              className={`w-5 h-5 text-stone-400 shrink-0 transition-transform duration-fast ${
+                showAdvanced ? 'rotate-90' : ''
+              }`}
+            />
+          </button>
+        </div>
+      )}
+      {showsPanel(ADVANCED_PANEL) && showAdvanced && (
         <div className="space-y-6">
           {/* MULTI-MARKET SELECTION CARD */}
           <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
@@ -1339,7 +1401,7 @@ export const PublishWizard: React.FC = () => {
                           </span>
                         )}
                         {isCatEnabled ? (
-                          <span className="text-micro bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                          <span className="text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full">
                             ✓ Catégorie éligible
                           </span>
                         ) : (
@@ -1348,7 +1410,7 @@ export const PublishWizard: React.FC = () => {
                           </span>
                         )}
                         {effectiveCfg.delivery?.enabled && (
-                          <span className="text-micro bg-blue-50 text-blue-700 font-medium px-2 py-0.5 rounded-full">
+                          <span className="text-micro bg-info-surface text-info font-medium px-2 py-0.5 rounded-full">
                             Livraison
                           </span>
                         )}
@@ -1362,7 +1424,7 @@ export const PublishWizard: React.FC = () => {
 
                     {/* Transborder Note for Special Currencies */}
                     {effectiveCfg.localization.defaultCurrency !== 'EUR' && (
-                      <div className="text-micro text-amber-800 bg-amber-50 rounded-lg p-1.5 mt-3 font-medium">
+                      <div className="text-micro text-warning bg-warning-surface rounded-lg p-1.5 mt-3 font-medium">
                         Conversion automatique en {effectiveCfg.localization.defaultCurrency} pour les acheteurs locaux.
                       </div>
                     )}
@@ -1427,11 +1489,13 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 10: REVIEW & INSTANT PUBLISH */}
       {/* ========================================================================= */}
-      {currentStep === 10 && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+      {/* Review is the tail of the final phase, not a screen of its own — the
+          seller reads it directly above the publish button. */}
+      {showsPanel(REVIEW_PANEL) && (
+        <div className="bg-white rounded-2xl border border-primary-border ring-1 ring-primary-border p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Vérification avant publication
+              Récapitulatif de votre annonce
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
               Relisez votre annonce. Vous pourrez la modifier à tout moment après publication.
@@ -1491,9 +1555,9 @@ export const PublishWizard: React.FC = () => {
               </div>
 
               {/* Multi-market compliance badge */}
-              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span className="text-xs font-bold text-emerald-900">
+              <div className="p-3.5 bg-success-surface border border-success-border rounded-xl flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                <span className="text-xs font-bold text-success">
                   Prête à être publiée sur {(draft.selectedMarkets || ['FR']).length} marché{(draft.selectedMarkets || ['FR']).length > 1 ? 's' : ''} Shongre.
                 </span>
               </div>
@@ -1554,8 +1618,14 @@ export const PublishWizard: React.FC = () => {
         </div>
       )}
 
-      {/* Sticky Bottom Actions Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs flex items-center justify-between">
+      {/* Primary actions, actually pinned.
+          This was labelled "sticky" but rendered as an ordinary block at the end
+          of the page, so on a phone "Continuer" sat below a full screen of form
+          — the user had to scroll to the bottom after every field group to
+          advance. It now stays on screen, clears the home indicator via the
+          safe-area inset, and keeps the step's one primary action reachable. */}
+      <div className="sticky bottom-0 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)] pt-3 bg-bg-base/95 backdrop-blur-sm border-t border-border-base z-30">
+      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-border-base shadow-xs flex items-center justify-between gap-3">
         <Button
           variant="outline"
           size="md"
@@ -1567,15 +1637,15 @@ export const PublishWizard: React.FC = () => {
         </Button>
 
         <div className="flex items-center gap-2">
-          {currentStep < 10 ? (
+          {currentStep < PHASES.length ? (
             <Button
               variant="primary"
               size="md"
               onClick={handleNextStep}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              <span className="hidden sm:inline">Étape suivante ({STEPS[currentStep]?.label || ''})</span>
-              <span className="sm:hidden">Suivant</span>
+              <span className="hidden sm:inline">Continuer : {PHASES[currentStep]?.label || ''}</span>
+              <span className="sm:hidden">Continuer</span>
             </Button>
           ) : (
             <Button
@@ -1589,6 +1659,7 @@ export const PublishWizard: React.FC = () => {
             </Button>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

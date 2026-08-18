@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, KeyRound, ArrowRight, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { authService } from '../../domains/auth/auth.service';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -95,22 +95,22 @@ export const ForgotPasswordPage: React.FC = () => {
       }}
     >
       {errorMessage && (
-        <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+        <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
       )}
 
       {successMessage && step === 'request' && (
-        <div className="mb-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-2">
-          <div className="flex items-start gap-2 font-bold text-emerald-950">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="mb-5 p-4 rounded-xl bg-success-surface border border-success-border text-xs text-success space-y-2">
+          <div className="flex items-start gap-2 font-bold text-success">
+            <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
             <span>{successMessage}</span>
           </div>
 
           {demoResetToken && (
-            <div className="pt-2 border-t border-emerald-200/80">
-              <p className="text-micro text-emerald-800 mb-1.5 font-medium">
+            <div className="pt-2 border-t border-success-border/80">
+              <p className="text-micro text-success mb-1.5 font-medium">
                 Environnement de démonstration — Cliquez ci-dessous pour procéder immédiatement à la réinitialisation :
               </p>
               <Button

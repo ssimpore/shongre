@@ -16,7 +16,8 @@ import {
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { auditService } from '../../security/audit.service';
-import { SecurityAuditLog } from '../../types';
+import { SecurityAuditLog, auditActionLabel } from '../../types';
+import { roleLabel } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
 
 export const AdminAuditLogsPage: React.FC = () => {
@@ -108,7 +109,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             size="sm"
             variant="ghost"
             onClick={() => setIsClearModalOpen(true)}
-            className="text-xs text-red-600 hover:bg-red-50"
+            className="text-xs text-danger hover:bg-danger-surface"
           >
             <Trash2 className="w-3.5 h-3.5 mr-1" />
             Réinitialiser
@@ -125,11 +126,13 @@ export const AdminAuditLogsPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher par acteur, action, cible, détails..."
+            aria-label="Rechercher dans le registre d'audit"
             className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
         <select
+          aria-label="Filtrer le journal par type d'action"
           value={selectedAction}
           onChange={(e) => setSelectedAction(e.target.value)}
           className="py-2 px-3 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-white"
@@ -137,7 +140,7 @@ export const AdminAuditLogsPage: React.FC = () => {
           <option value="all">Toutes les actions d'audit ({logs.length})</option>
           {uniqueActions.map((act) => (
             <option key={act} value={act}>
-              {act}
+              {auditActionLabel(act)}
             </option>
           ))}
         </select>
@@ -172,12 +175,13 @@ export const AdminAuditLogsPage: React.FC = () => {
                     </td>
                     <td className="p-3">
                       <div className="font-bold text-stone-900">{log.actorName}</div>
-                      <div className="text-micro text-stone-500 font-mono">{log.actorRole}</div>
+                      <div className="text-micro text-stone-500">{roleLabel(log.actorRole)}</div>
                     </td>
+                    {/* Human label leads; the raw key stays underneath because this
+                        is a forensic table and operators filter and grep by it. */}
                     <td className="p-3">
-                      <span className="text-micro font-bold font-mono bg-stone-800 text-stone-100 px-2 py-1 rounded-sm">
-                        {log.action}
-                      </span>
+                      <div className="font-semibold text-stone-900">{auditActionLabel(log.action)}</div>
+                      <div className="text-micro text-stone-500 font-mono">{log.action}</div>
                     </td>
                     <td className="p-3 text-stone-800">
                       {log.targetName || log.targetId || '-'}
@@ -218,7 +222,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                 <strong className="text-stone-700">Acteur :</strong> {selectedLog.actorName} (ID: {selectedLog.actorId})
               </div>
               <div>
-                <strong className="text-stone-700">Rôle :</strong> {selectedLog.actorRole}
+                <strong className="text-stone-700">Rôle :</strong> {roleLabel(selectedLog.actorRole)}
               </div>
               <div>
                 <strong className="text-stone-700">Action :</strong> {selectedLog.action}

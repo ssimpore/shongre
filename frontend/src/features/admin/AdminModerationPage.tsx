@@ -20,7 +20,8 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { storageService } from '../../services/storage.service';
 import { listingRepository } from '../../repositories/listing.repository';
 import { userRepository } from '../../repositories/user.repository';
-import { geminiService, ListingSafetyAnalysis } from '../../services/gemini.service';
+import { services } from '../../api/client/service-registry';
+import { ListingSafetyAnalysis } from '../../api/contracts/ai.contract';
 import { Listing, UserProfile } from '../../types';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
@@ -114,11 +115,10 @@ export const AdminModerationPage: React.FC = () => {
     setIsAiLoading(true);
     setAiAnalysis(null);
     try {
-      const result = await geminiService.analyzeListingSafety({
+      const result = await services.ai.analyzeListingSafety({
         title: listing.title,
         description: listing.description,
         price: listing.price,
-        categorySlug: listing.categorySlug,
         sellerName: listing.sellerName,
       });
       setAiAnalysis(result);
@@ -195,7 +195,7 @@ export const AdminModerationPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
           {reports.filter((r) => r.status !== 'resolved').length === 0 ? (
             <div className="p-12 text-center text-stone-500">
-              <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
+              <CheckCircle className="w-10 h-10 text-success mx-auto mb-2" />
               <div className="text-sm font-bold text-stone-800">Aucun signalement en attente</div>
               <div className="text-xs text-stone-500 mt-1">La file de signalements communautaires est propre et à jour.</div>
             </div>
@@ -234,7 +234,7 @@ export const AdminModerationPage: React.FC = () => {
                       <Button
                         size="sm"
                         onClick={() => setSuspendUserId(rep.targetUserId)}
-                        className="text-xs bg-red-600 hover:bg-red-700 text-white"
+                        className="text-xs bg-danger hover:bg-danger text-white"
                       >
                         Suspendre le profil
                       </Button>
@@ -312,7 +312,7 @@ export const AdminModerationPage: React.FC = () => {
                           size="sm"
                           variant="ghost"
                           onClick={() => setDeleteListingId(list.id)}
-                          className="text-red-600 hover:bg-red-50 text-xs"
+                          className="text-danger hover:bg-danger-surface text-xs"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -338,7 +338,7 @@ export const AdminModerationPage: React.FC = () => {
                     <Image
                       src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
                       alt={u.name}
-                      className="w-10 h-10 rounded-full object-cover border border-red-200"
+                      className="w-10 h-10 rounded-full object-cover border border-danger-border"
                     />
                     <div>
                       <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
@@ -355,7 +355,7 @@ export const AdminModerationPage: React.FC = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => handleReactivateUser(u.id)}
-                    className="text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                    className="text-xs text-success border-success-border hover:bg-success-surface"
                   >
                     <Unlock className="w-3.5 h-3.5 mr-1" />
                     Lever la suspension
@@ -389,10 +389,10 @@ export const AdminModerationPage: React.FC = () => {
               <div className="space-y-4">
                 <div className={`p-4 rounded-xl border flex items-center justify-between ${
                   aiAnalysis.riskScore > 50
-                    ? 'bg-red-50 border-red-200 text-red-900'
+                    ? 'bg-danger-surface border-danger-border text-danger'
                     : aiAnalysis.riskScore > 20
-                    ? 'bg-amber-50 border-amber-200 text-amber-900'
-                    : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                    ? 'bg-warning-surface border-warning-border text-warning'
+                    : 'bg-success-surface border-success-border text-success'
                 }`}>
                   <div>
                     <div className="text-xs uppercase font-bold tracking-wider">Score de Risque Détecté</div>
@@ -413,7 +413,7 @@ export const AdminModerationPage: React.FC = () => {
                     <span className="text-xs font-bold text-stone-900 block mb-1.5">Éléments signalés :</span>
                     <div className="flex flex-wrap gap-1.5">
                       {aiAnalysis.flaggedKeywords.map((kw, i) => (
-                        <span key={i} className="text-micro font-semibold bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                        <span key={i} className="text-micro font-semibold bg-danger-surface text-danger px-2 py-0.5 rounded">
                           {kw}
                         </span>
                       ))}
@@ -429,7 +429,7 @@ export const AdminModerationPage: React.FC = () => {
                     <Button
                       variant="primary"
                       size="sm"
-                      className="bg-red-600 hover:bg-red-700 text-white"
+                      className="bg-danger hover:bg-danger text-white"
                       onClick={() => {
                         handleToggleListingStatus(selectedListingForAI.id, selectedListingForAI.status);
                         setSelectedListingForAI(null);

@@ -46,7 +46,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-sky-600" />
+            <Globe className="w-4 h-4 text-info" />
             Matrice de Couverture Multi-Marchés & Héritage France
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
@@ -75,7 +75,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
       <div className="flex flex-wrap items-center gap-4 text-xs text-stone-600 bg-stone-50/80 p-3 rounded-lg border border-stone-200">
         <span className="font-semibold text-stone-700">Légende :</span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-success" />
           <span>Référence France active</span>
         </span>
         <span className="flex items-center gap-1.5">
@@ -83,11 +83,11 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
           <span>Hérité de France</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-info" />
           <span>Personnalisé (Surchargé)</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-danger" />
           <span>Désactivé / Indisponible</span>
         </span>
       </div>
@@ -161,7 +161,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                             cell.isAvailable ? (
                               <Link
                                 to={`/admin/fournisseurs/${cell.activeProviderId}`}
-                                className="inline-flex flex-col items-center p-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:border-emerald-400 transition-colors max-w-[130px]"
+                                className="inline-flex flex-col items-center p-1.5 rounded-lg bg-success-surface text-success border border-success-border hover:border-emerald-400 transition-colors max-w-[130px]"
                               >
                                 <span className="font-bold text-micro truncate max-w-[120px]">
                                   {cell.activeProviderName}
@@ -171,7 +171,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                                 </span>
                               </Link>
                             ) : (
-                              <span className="inline-block text-micro font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-1 rounded">
+                              <span className="inline-block text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-1 rounded">
                                 Non configuré
                               </span>
                             )
@@ -187,12 +187,12 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                           ) : isCustomized ? (
                             <Link
                               to={`/admin/fournisseurs/${cell.activeProviderId}`}
-                              className="inline-flex flex-col items-center p-1.5 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 hover:border-blue-400 transition-colors max-w-[130px]"
+                              className="inline-flex flex-col items-center p-1.5 rounded-lg bg-info-surface text-info border border-info-border hover:border-blue-400 transition-colors max-w-[130px]"
                             >
                               <span className="font-bold text-micro truncate max-w-[120px]">
                                 {cell.activeProviderName}
                               </span>
-                              <span className="text-micro text-blue-600 font-bold">
+                              <span className="text-micro text-info font-bold">
                                 ★ Personnalisé
                               </span>
                             </Link>

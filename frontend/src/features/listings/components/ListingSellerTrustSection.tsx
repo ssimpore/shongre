@@ -91,7 +91,7 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
           <span className="truncate">Répond {seller.responseTimeText || 'en quelques heures'}</span>
         </div>
         <div className="flex items-center gap-1.5 min-w-0">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0" />
           <span className="truncate">Taux de réponse : {seller.responseRatePercent ?? 100}%</span>
         </div>
       </div>

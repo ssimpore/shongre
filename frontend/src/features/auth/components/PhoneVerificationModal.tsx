@@ -109,7 +109,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   // bypassed the shared Modal primitive and had none of them.
   const { containerRef, titleId } = useDialogBehavior(true, onClose);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 relative"
@@ -140,19 +140,19 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         </p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {successMessage && step === 'otp' && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-success-surface border border-success-border text-xs font-semibold text-success flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
             <div>
               <p>{successMessage}</p>
               {demoCodeHint && (
-                <p className="mt-1 text-emerald-900 font-bold bg-emerald-100/80 px-2 py-0.5 rounded inline-block">
+                <p className="mt-1 text-success font-bold bg-success-surface/80 px-2 py-0.5 rounded inline-block">
                   Code SMS de test : {demoCodeHint}
                 </p>
               )}

@@ -106,7 +106,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -144,7 +144,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -210,7 +210,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
           </div>
 
           <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 flex items-start gap-2.5">
-            <Lock className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+            <Lock className="w-4 h-4 text-success shrink-0 mt-0.5" />
             <div className="leading-relaxed">
               <strong>Protection bancaire :</strong> Vos fonds issus des ventes sont protégés en séquestre réglementé et automatiquement virés sur ce compte dès confirmation de la transaction.
             </div>

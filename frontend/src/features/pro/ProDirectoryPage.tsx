@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Search, MapPin, Star, ShieldCheck, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import { userRepository } from '../../repositories/user.repository';
 import { UserProfile } from '../../types';
 import { SellerCard } from '../../design-system/primitives/SellerCard';
@@ -45,11 +45,14 @@ export const ProDirectoryPage: React.FC = () => {
           </p>
         </div>
 
-        <Link to="/inscription/professionnel">
-          <Button variant="primary" size="lg" className="shrink-0 font-bold">
-            Ouvrir ma boutique Pro
-          </Button>
-        </Link>
+        <Button
+          to="/inscription/professionnel"
+          variant="primary"
+          size="lg"
+          className="shrink-0 font-bold"
+        >
+          Ouvrir ma boutique Pro
+        </Button>
       </div>
 
       {/* Search Input */}
@@ -59,9 +62,10 @@ export const ProDirectoryPage: React.FC = () => {
           <input
             type="text"
             placeholder="Rechercher par nom de boutique ou par ville..."
+            aria-label="Rechercher une boutique professionnelle"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-11 pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary"
+            className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary"
           />
         </div>
         <span className="text-xs text-stone-500 font-semibold">

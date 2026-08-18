@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Building2,
   MapPin,
@@ -46,14 +46,20 @@ export const ProStorefrontPage: React.FC = () => {
           title="Boutique introuvable"
           description="Cette boutique n'existe plus ou son adresse a changé. Parcourez l'annuaire pour trouver un professionnel équivalent."
           action={
-            <Link to="/professionnels">
-              <Button variant="primary">Voir l'annuaire des professionnels</Button>
-            </Link>
+            <Button
+              to="/professionnels"
+              variant="primary"
+            >
+              Voir l'annuaire des professionnels
+            </Button>
           }
           secondaryAction={
-            <Link to="/">
-              <Button variant="outline">Retour à l'accueil</Button>
-            </Link>
+            <Button
+              to="/"
+              variant="outline"
+            >
+              Retour à l'accueil
+            </Button>
           }
         />
       </div>
@@ -122,11 +128,13 @@ export const ProStorefrontPage: React.FC = () => {
               </div>
 
               <div className="flex gap-2 w-full sm:w-auto">
-                <Link to={`/compte/messages`}>
-                  <Button variant="primary" leftIcon={<MessageSquare className="w-4 h-4" />}>
-                    Contacter la boutique
-                  </Button>
-                </Link>
+                <Button
+                  to={`/compte/messages`}
+                  variant="primary"
+                  leftIcon={<MessageSquare className="w-4 h-4" />}
+                >
+                  Contacter la boutique
+                </Button>
               </div>
             </div>
 

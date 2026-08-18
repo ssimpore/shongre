@@ -59,13 +59,13 @@ const FooterColumn: React.FC<{
         <button
           type="button"
           onClick={() => onToggle(id)}
-          className="w-full flex items-center justify-between py-1 md:py-0 text-left md:pointer-events-none group cursor-pointer md:cursor-default text-xs font-bold text-white uppercase tracking-wider md:mb-4 hover:text-primary md:hover:text-white transition-colors"
+          className="w-full flex items-center justify-between py-1 min-h-6 md:min-h-0 md:py-0 text-left md:pointer-events-none group cursor-pointer md:cursor-default text-xs font-bold text-white uppercase tracking-wider md:mb-4 hover:text-primary md:hover:text-white transition-colors"
           aria-expanded={isOpen}
           aria-controls={panelId}
         >
           <span>{title}</span>
           <ChevronDown
-            className={`w-4 h-4 text-stone-400 md:hidden transition-transform duration-200 ${
+            className={`w-4 h-4 text-stone-400 md:hidden transition-transform duration-normal ${
               isOpen ? 'rotate-180 text-primary' : ''
             }`}
           />

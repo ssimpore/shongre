@@ -110,7 +110,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -134,7 +134,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
 
         {/* Stepper Header */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-success-surface text-success flex items-center justify-center">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
@@ -144,7 +144,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
             <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
               <span>Étape {step} sur 3</span>
               <span>•</span>
-              <span className="flex items-center gap-1 text-emerald-700">
+              <span className="flex items-center gap-1 text-success">
                 <Lock className="w-3 h-3" /> Données chiffrées de bout en bout
               </span>
             </div>
@@ -154,13 +154,13 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
         {/* Progress Bar */}
         <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mb-6">
           <div
-            className="bg-emerald-600 h-full transition-all duration-300 rounded-full"
+            className="bg-success h-full transition-all duration-normal rounded-full"
             style={{ width: `${(step / 3) * 100}%` }}
           />
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -186,7 +186,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                     onClick={() => setDocumentType(doc.id as KycDocumentType)}
                     className={`p-3 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
                       documentType === doc.id
-                        ? 'border-emerald-600 bg-emerald-50/50 text-emerald-950 ring-2 ring-emerald-600/20'
+                        ? 'border-emerald-600 bg-success-surface/50 text-success ring-2 ring-emerald-600/20'
                         : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700'
                     }`}
                   >
@@ -283,14 +283,14 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               onClick={() => setFrontUploaded(true)}
               className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
                 frontUploaded
-                  ? 'border-emerald-500 bg-emerald-50/40 text-emerald-950'
+                  ? 'border-emerald-500 bg-success-surface/40 text-success'
                   : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    frontUploaded ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600'
+                    frontUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
                   }`}
                 >
                   {frontUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
@@ -302,7 +302,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   <div className="text-micro text-stone-500">Formats acceptés : JPG, PNG, PDF (max 8 Mo)</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-emerald-700 hover:underline">
+              <span className="text-xs font-bold text-success hover:underline">
                 {frontUploaded ? 'Remplacer' : 'Sélectionner'}
               </span>
             </div>
@@ -313,14 +313,14 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 onClick={() => setBackUploaded(true)}
                 className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
                   backUploaded
-                    ? 'border-emerald-500 bg-emerald-50/40 text-emerald-950'
+                    ? 'border-emerald-500 bg-success-surface/40 text-success'
                     : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      backUploaded ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600'
+                      backUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
                     }`}
                   >
                     {backUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
@@ -332,7 +332,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                     <div className="text-micro text-stone-500">Requis pour la validation optique</div>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-emerald-700 hover:underline">
+                <span className="text-xs font-bold text-success hover:underline">
                   {backUploaded ? 'Remplacer' : 'Sélectionner'}
                 </span>
               </div>
@@ -384,7 +384,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               <div className="w-24 h-24 mx-auto rounded-full border-4 border-emerald-400/80 flex items-center justify-center mb-3 relative bg-stone-800">
                 <Camera className="w-10 h-10 text-emerald-400" />
                 {selfieCaptured && (
-                  <div className="absolute inset-0 bg-emerald-600/90 rounded-full flex items-center justify-center text-white">
+                  <div className="absolute inset-0 bg-success/90 rounded-full flex items-center justify-center text-white">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                 )}
@@ -400,7 +400,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               <button
                 type="button"
                 onClick={() => setSelfieCaptured(true)}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 bg-success hover:bg-success text-white text-xs font-bold rounded-xl transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
               >
                 <Camera className="w-3.5 h-3.5" />
                 <span>{selfieCaptured ? 'Reprendre la photo' : 'Effectuer le selfie de contrôle'}</span>
@@ -408,12 +408,12 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
             </div>
 
             {/* Demo test toggle */}
-            <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-950 flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-warning-surface/70 border border-warning-border text-xs text-warning flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
                   <div className="font-bold">Mode Démonstration Shongre</div>
-                  <div className="text-micro text-amber-800">
+                  <div className="text-micro text-warning">
                     Validation instantanée par simulation OCR / Liveness
                   </div>
                 </div>
@@ -425,7 +425,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   onChange={(e) => setInstantApproval(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600" />
+                <div className="w-9 h-5 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-success" />
               </label>
             </div>
 

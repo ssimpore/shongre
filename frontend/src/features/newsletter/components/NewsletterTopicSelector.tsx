@@ -13,10 +13,10 @@ interface NewsletterTopicSelectorProps {
 const TOPIC_ICONS: Record<string, React.ReactNode> = {
   deals: <Tag className="w-4 h-4 text-amber-500" />,
   editorial: <Sparkles className="w-4 h-4 text-primary" />,
-  seller_tips: <Lightbulb className="w-4 h-4 text-emerald-500" />,
-  pro_insights: <Briefcase className="w-4 h-4 text-sky-500" />,
+  seller_tips: <Lightbulb className="w-4 h-4 text-success" />,
+  pro_insights: <Briefcase className="w-4 h-4 text-info" />,
   new_features: <Zap className="w-4 h-4 text-indigo-500" />,
-  local_trends: <MapPin className="w-4 h-4 text-rose-500" />,
+  local_trends: <MapPin className="w-4 h-4 text-danger" />,
 };
 
 export const NewsletterTopicSelector: React.FC<NewsletterTopicSelectorProps> = ({

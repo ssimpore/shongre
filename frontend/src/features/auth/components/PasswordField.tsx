@@ -40,12 +40,12 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
   const score = [hasMinLength, hasUppercase, hasLowercase, hasNumber, hasSpecial].filter(Boolean).length;
 
   let strengthLabel = 'Faible';
-  let strengthColor = 'bg-red-500 text-red-700';
+  let strengthColor = 'bg-danger text-danger';
   let strengthPercent = 20;
 
   if (score >= 4) {
     strengthLabel = 'Très robuste';
-    strengthColor = 'bg-emerald-500 text-emerald-700';
+    strengthColor = 'bg-success text-success';
     strengthPercent = 100;
   } else if (score === 3) {
     strengthLabel = 'Bon';
@@ -53,7 +53,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
     strengthPercent = 75;
   } else if (score === 2) {
     strengthLabel = 'Moyen';
-    strengthColor = 'bg-amber-500 text-amber-700';
+    strengthColor = 'bg-amber-500 text-warning';
     strengthPercent = 50;
   }
 
@@ -78,7 +78,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           disabled={disabled}
           className={`w-full px-3.5 py-2.5 pr-11 bg-white border rounded-xl text-sm text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
             error
-              ? 'border-red-400 focus:border-red-500 bg-red-50/20'
+              ? 'border-danger focus:border-danger bg-danger-surface/20'
               : 'border-stone-200 focus:border-primary'
           }`}
         />
@@ -94,7 +94,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       </div>
 
       {error && (
-        <p className="mt-1 text-xs font-semibold text-red-600 flex items-center gap-1">
+        <p className="mt-1 text-xs font-semibold text-danger flex items-center gap-1">
           <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
           <span>{error}</span>
         </p>
@@ -109,7 +109,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
 
           <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden mb-2">
             <div
-              className={`h-full transition-all duration-300 ${strengthColor.split(' ')[0]}`}
+              className={`h-full transition-all duration-normal ${strengthColor.split(' ')[0]}`}
               style={{ width: `${strengthPercent}%` }}
             />
           </div>
@@ -117,7 +117,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           <div className="grid grid-cols-2 gap-1 text-micro text-stone-600">
             <div className="flex items-center gap-1">
               {hasMinLength ? (
-                <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                <Check className="w-3 h-3 text-success shrink-0" />
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
@@ -125,7 +125,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
             </div>
             <div className="flex items-center gap-1">
               {hasUppercase ? (
-                <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                <Check className="w-3 h-3 text-success shrink-0" />
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
@@ -133,7 +133,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
             </div>
             <div className="flex items-center gap-1">
               {hasNumber ? (
-                <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                <Check className="w-3 h-3 text-success shrink-0" />
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
@@ -141,7 +141,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
             </div>
             <div className="flex items-center gap-1">
               {hasSpecial ? (
-                <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                <Check className="w-3 h-3 text-success shrink-0" />
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}

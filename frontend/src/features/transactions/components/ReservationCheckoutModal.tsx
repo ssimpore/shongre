@@ -73,9 +73,10 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
     setError(null);
 
     try {
-      // Simulate 3D Secure / Escrow authorization
-      await new Promise((resolve) => setTimeout(resolve, 1400));
-
+      // Authorisation timing belongs to the payment adapter, not to this modal:
+      // a hard-coded delay here made the demo slower than the real flow will be
+      // and could not be tuned or asserted on. `simulateNetworkDelay` in the
+      // adapter layer is the one place latency is configured.
       const tx = await transactionService.createReservation({
         listingId: listing.id,
         buyer: buyerUser,
@@ -182,7 +183,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
         )}
 
         {error && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-medium">
+          <div className="p-3 bg-danger-surface border border-danger-border text-danger rounded-xl font-medium">
             {error}
           </div>
         )}
@@ -210,7 +211,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-stone-900">Remise en main propre sécurisée</p>
-                        <span className="text-micro font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                        <span className="text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded">
                           Gratuit
                         </span>
                       </div>
@@ -378,11 +379,11 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             <h5 className="font-bold text-stone-800">Détail des coûts et garanties :</h5>
 
             {/* Escrow guarantee explanation */}
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-950 flex items-start gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="p-3 bg-success-surface border border-success-border rounded-xl text-success flex items-start gap-2.5">
+              <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">Paiement 100% protégé sous séquestre</p>
-                <p className="text-micro text-emerald-800 mt-0.5 leading-relaxed">
+                <p className="text-micro text-success mt-0.5 leading-relaxed">
                   L'argent ne sera versé au vendeur qu'après remise de l'article conforme. Si le vendeur décline ou si l'article est non conforme, vous êtes intégralement remboursé.
                 </p>
               </div>
@@ -462,7 +463,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
                 }`}
               >
-                <span className="text-base font-black text-blue-600">GPay</span>
+                <span className="text-base font-black text-info">GPay</span>
                 <span className="text-micro">Google Pay</span>
               </button>
             </div>
@@ -476,7 +477,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     type="text"
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value)}
-                    className="w-full h-9 px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-medium"
+                    className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-medium"
                   />
                 </div>
                 <div>
@@ -487,9 +488,9 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
                       placeholder="4242 4242 4242 4242"
-                      className="w-full h-9 px-3 pr-10 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                      className="w-full h-control-md px-3 pr-10 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
                     />
-                    <Lock className="w-4 h-4 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-success absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -500,7 +501,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(e.target.value)}
                       placeholder="MM/AA"
-                      className="w-full h-9 px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                      className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
                     />
                   </div>
                   <div>
@@ -511,7 +512,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       value={cardCvc}
                       onChange={(e) => setCardCvc(e.target.value)}
                       placeholder="123"
-                      className="w-full h-9 px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                      className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
                     />
                   </div>
                 </div>
@@ -519,7 +520,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             )}
 
             <div className="flex items-center gap-2 text-micro text-stone-500">
-              <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <Lock className="w-3.5 h-3.5 text-success shrink-0" />
               <span>Chiffrement SSL 256 bits et authentification 3D Secure 2.0.</span>
             </div>
 
@@ -543,7 +544,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
         {/* STEP 4: SUCCESS CONFIRMATION & SECRET PIN */}
         {step === 4 && createdTx && (
           <div className="space-y-4 text-center pt-2">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-7 h-7" />
             </div>
 
@@ -558,25 +559,25 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
 
             {/* Hand delivery PIN code box */}
             {createdTx.deliveryMethod === 'hand_delivery' && createdTx.verificationCode && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-left space-y-2">
-                <div className="flex items-center gap-2 text-amber-900 font-bold">
-                  <KeyRound className="w-4 h-4 text-amber-600" />
+              <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-left space-y-2">
+                <div className="flex items-center gap-2 text-warning font-bold">
+                  <KeyRound className="w-4 h-4 text-warning" />
                   <span>Votre code secret de confirmation de remise</span>
                 </div>
-                <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-amber-200">
-                  <span className="text-2xl font-black font-mono tracking-widest text-amber-950">
+                <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-warning-border">
+                  <span className="text-2xl font-black font-mono tracking-widest text-warning">
                     {createdTx.verificationCode}
                   </span>
                   <button
                     type="button"
                     onClick={copyPinToClipboard}
-                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 bg-primary/10 px-2.5 py-1.5 rounded-lg transition-colors"
+                    className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 bg-primary-light px-2.5 py-1.5 rounded-lg transition-colors"
                   >
-                    {copiedPin ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedPin ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedPin ? 'Copié !' : 'Copier'}</span>
                   </button>
                 </div>
-                <p className="text-micro text-amber-800 leading-relaxed">
+                <p className="text-micro text-warning leading-relaxed">
                   ⚠️ <strong>Règle de sécurité :</strong> Ne transmettez ce code à 6 chiffres au vendeur qu'une fois sur place après avoir inspecté et validé la conformité de l'article.
                 </p>
               </div>
@@ -584,11 +585,11 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
 
             {/* Shipping instructions */}
             {createdTx.deliveryMethod !== 'hand_delivery' && (
-              <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-left text-blue-950 space-y-1">
+              <div className="p-3.5 bg-info-surface border border-info-border rounded-xl text-left text-info space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-blue-600" /> Préparation de votre colis
+                  <Truck className="w-4 h-4 text-info" /> Préparation de votre colis
                 </p>
-                <p className="text-micro text-blue-800 leading-relaxed">
+                <p className="text-micro text-info leading-relaxed">
                   Le vendeur a été notifié et dispose de 48h pour valider la réservation et déposer le colis avec l'étiquette {createdTx.carrierName}. Vous recevrez un numéro de suivi dès l'expédition.
                 </p>
               </div>

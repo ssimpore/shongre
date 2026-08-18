@@ -10,7 +10,7 @@ export const NewsletterLandingPage: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16 space-y-12">
       {/* 1. Header & Value Proposition */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
           <Mail className="w-3.5 h-3.5" />
           <span>La Newsletter Shongre</span>
         </div>
@@ -56,7 +56,7 @@ export const NewsletterLandingPage: React.FC = () => {
       {/* 4. Trust & Privacy Guarantees */}
       <div className="bg-stone-50 border border-border-base rounded-3xl p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center text-xs text-stone-600">
         <div className="space-y-1">
-          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+          <div className="w-8 h-8 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto mb-2">
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <h4 className="font-black text-stone-900">100% Sans Spam</h4>
@@ -64,7 +64,7 @@ export const NewsletterLandingPage: React.FC = () => {
         </div>
 
         <div className="space-y-1">
-          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
+          <div className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center mx-auto mb-2">
             <Sparkles className="w-4 h-4" />
           </div>
           <h4 className="font-black text-stone-900">Contenu éditorial soigné</h4>

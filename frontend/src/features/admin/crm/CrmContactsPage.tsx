@@ -136,12 +136,13 @@ export const CrmContactsPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par nom, email, entreprise..."
-            className="w-full h-9 pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-primary"
           />
         </div>
 
         <div className="flex items-center gap-2">
           <Select
+            aria-label="Filtrer les contacts par cycle de vie"
             value={lifecycleFilter}
             onChange={(e) => setLifecycleFilter(e.target.value)}
             options={[

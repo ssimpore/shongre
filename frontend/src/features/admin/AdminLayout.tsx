@@ -1,6 +1,6 @@
 import { routes } from '../../configuration/routes';
-import React from 'react';
-import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Shield,
   LayoutDashboard,
@@ -19,17 +19,44 @@ import {
   Briefcase,
   Sparkles,
   Cpu,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { ROLE_DEFINITIONS } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
 import { useAuthorization } from '../../security/useAuthorization';
 import { Image } from '../../design-system/primitives/Image';
+import { AppScrollRestoration } from '../../app/router/AppScrollRestoration';
 
 export const AdminLayout: React.FC = () => {
   const { currentUser, role: platformRole } = useAuth();
   const { can } = useAuthorization();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
+  const sectionMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsSectionMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isSectionMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsSectionMenuOpen(false);
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      if (sectionMenuRef.current && !sectionMenuRef.current.contains(e.target as Node)) {
+        setIsSectionMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [isSectionMenuOpen]);
 
   const roleMeta = ROLE_DEFINITIONS[platformRole] || ROLE_DEFINITIONS.guest;
   const marketScope = currentUser?.marketScope?.countries || ['FR'];
@@ -119,8 +146,19 @@ export const AdminLayout: React.FC = () => {
     },
   ];
 
+  const visibleNavItems = navItems.filter((item) => item.show);
+  // Longest matching path wins, so `/admin/crm/contacts` reports "Contacts"
+  // rather than the `/admin` overview it also prefixes.
+  const activeNavItem = visibleNavItems
+    .filter((item) =>
+      item.end ? location.pathname === item.to : location.pathname.startsWith(item.to),
+    )
+    .sort((a, b) => b.to.length - a.to.length)[0];
+
+
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col font-sans text-stone-900">
+      <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
       <header className="bg-stone-900 text-white sticky top-0 z-40 border-b border-stone-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
@@ -191,52 +229,88 @@ export const AdminLayout: React.FC = () => {
       </header>
 
       {/* Main Admin Workspace Container */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col md:flex-row gap-6">
-        {/* Mobile & Tablet Horizontal Tab Rail (< md) */}
-        <div className="md:hidden min-w-0 bg-white rounded-xl border border-stone-200 shadow-xs p-3 space-y-2">
-          <div className="flex items-center justify-between text-micro font-bold uppercase tracking-wider text-stone-500 px-1">
-            <span>Navigation Console</span>
-            <div className="flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>RBAC Actif</span>
-            </div>
-          </div>
-          <nav
-            aria-label="Navigation console admin mobile"
-            className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 -mx-1 px-1 no-scrollbar"
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col lg:flex-row gap-6">
+        {/* Compact section menu (below `lg`).
+            This was a horizontal rail of every console section — fourteen items
+            on one scrolling line, where finding "Taxonomie" meant swiping past
+            nine others with no sense of how many remained. A disclosure showing
+            the current section, opening the full list, gives the same reach in
+            one tap and keeps the answer to "where am I" on screen. */}
+        <div className="lg:hidden relative min-w-0" ref={sectionMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsSectionMenuOpen((open) => !open)}
+            aria-expanded={isSectionMenuOpen}
+            aria-haspopup="menu"
+            aria-controls="admin-section-menu"
+            className="w-full flex items-center justify-between gap-3 bg-white rounded-xl border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
           >
-            {navItems.filter((i) => i.show).map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors shrink-0 ${
-                      isActive
-                        ? 'bg-primary text-white shadow-xs'
-                        : 'bg-bg-base text-stone-700 hover:bg-stone-200/80 border border-border-base'
-                    }`
-                  }
-                >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
+            <span className="flex items-center gap-2.5 min-w-0">
+              {activeNavItem ? (
+                <activeNavItem.icon className="w-4 h-4 text-primary shrink-0" />
+              ) : (
+                <LayoutDashboard className="w-4 h-4 text-primary shrink-0" />
+              )}
+              <span className="flex flex-col items-start min-w-0">
+                <span className="text-micro font-bold uppercase tracking-wider text-stone-500 leading-none">
+                  Console
+                </span>
+                <span className="text-xs font-bold text-stone-900 truncate max-w-full">
+                  {activeNavItem?.label || "Vue d'ensemble"}
+                </span>
+              </span>
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 text-stone-500 shrink-0 transition-transform ${
+                isSectionMenuOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {isSectionMenuOpen && (
+            <div
+              id="admin-section-menu"
+              role="menu"
+              aria-label="Sections de la console"
+              className="absolute top-full left-0 right-0 mt-1.5 z-30 bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top"
+            >
+              {visibleNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    role="menuitem"
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-colors ${
+                        isActive
+                          ? 'bg-primary-light text-primary font-bold'
+                          : 'text-stone-700 hover:bg-bg-subtle'
+                      }`
+                    }
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Desktop Sidebar Nav (md+) */}
-        <aside className="hidden md:block w-64 shrink-0">
+        {/* Desktop Sidebar Nav (lg+).
+            Held back to `lg`: at `md` the 256px rail left admin tables a 453px
+            column, which is narrower than the phone layout they were designed
+            to fall back to. */}
+        <aside className="hidden lg:block w-64 shrink-0">
           <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-3 sticky top-20">
             <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-stone-500">
               Espace Interne & Gouvernance
             </div>
 
             <nav className="space-y-1">
-              {navItems.filter((i) => i.show).map((item) => {
+              {visibleNavItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <NavLink
@@ -260,8 +334,8 @@ export const AdminLayout: React.FC = () => {
 
             <div className="mt-6 pt-4 border-t border-stone-100 px-3">
               <div className="text-xs text-stone-500 mb-2">Statut de session</div>
-              <div className="flex items-center gap-2 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="flex items-center gap-2 text-xs text-success font-semibold bg-success-surface px-2.5 py-1.5 rounded-md border border-success-border">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                 <span>Session authentifiée RBAC</span>
               </div>
             </div>

@@ -68,14 +68,14 @@ export const VerificationCenterPage: React.FC = () => {
     switch (state) {
       case 'verified':
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-full">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Vérifié
           </span>
         );
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning-surface border border-warning-border px-2.5 py-1 rounded-full">
             <Clock className="w-3.5 h-3.5" />
             Examen en cours
           </span>
@@ -89,7 +89,7 @@ export const VerificationCenterPage: React.FC = () => {
         );
       case 'rejected':
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-red-800 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-danger bg-danger-surface border border-danger-border px-2.5 py-1 rounded-full">
             <XCircle className="w-3.5 h-3.5" />
             Refusé
           </span>
@@ -110,7 +110,7 @@ export const VerificationCenterPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-micro font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2.5 py-0.5 rounded-full border border-success-border">
                 Centre de Confiance & Sécurité
               </span>
               <TrustBadge level={trustLevel} size="md" />
@@ -134,8 +134,8 @@ export const VerificationCenterPage: React.FC = () => {
             </div>
             <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden mt-3">
               <div
-                className={`h-full transition-all duration-500 rounded-full ${
-                  trustScore >= 80 ? 'bg-emerald-600' : trustScore >= 40 ? 'bg-amber-500' : 'bg-stone-400'
+                className={`h-full transition-all duration-slow rounded-full ${
+                  trustScore >= 80 ? 'bg-success' : trustScore >= 40 ? 'bg-amber-500' : 'bg-stone-400'
                 }`}
                 style={{ width: `${trustScore}%` }}
               />
@@ -143,7 +143,7 @@ export const VerificationCenterPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowDemoPresets(!showDemoPresets)}
-              className="mt-3 text-micro font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+              className="mt-3 text-micro font-bold text-success hover:text-success flex items-center gap-1 cursor-pointer"
             >
               <Sparkles className="w-3 h-3" />
               <span>{showDemoPresets ? 'Masquer le simulateur' : 'Simulateur de statut'}</span>
@@ -153,9 +153,9 @@ export const VerificationCenterPage: React.FC = () => {
 
         {/* Demo Preset Switcher Panel */}
         {showDemoPresets && (
-          <div className="mt-6 pt-6 border-t border-stone-200 animate-in fade-in duration-150">
+          <div className="mt-6 pt-6 border-t border-stone-200 animate-in fade-in duration-fast">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-amber-600" />
+              <Sparkles className="w-4 h-4 text-warning" />
               <span className="text-xs font-bold text-stone-900">
                 Mode Démonstration : Simuler un profil utilisateur
               </span>
@@ -164,13 +164,13 @@ export const VerificationCenterPage: React.FC = () => {
               {[
                 { id: 'tier_0_unverified', label: '1. Non vérifié', color: 'border-stone-200' },
                 { id: 'tier_1_email_only', label: '2. Email seul', color: 'border-stone-200' },
-                { id: 'tier_2_phone_verified', label: '3. Téléphone SMS', color: 'border-sky-200' },
-                { id: 'kyc_pending', label: '4. KYC en cours', color: 'border-amber-200' },
-                { id: 'tier_3_kyc_verified', label: '5. KYC Validé (CNI)', color: 'border-emerald-300' },
-                { id: 'kyc_rejected', label: '6. KYC Refusé', color: 'border-red-200' },
-                { id: 'kyb_pending', label: '7. Pro KYB en cours', color: 'border-amber-200' },
-                { id: 'tier_4_kyb_verified', label: '8. Pro Certifié KBIS', color: 'border-amber-300' },
-                { id: 'kyb_rejected', label: '9. KYB Refusé', color: 'border-red-200' },
+                { id: 'tier_2_phone_verified', label: '3. Téléphone SMS', color: 'border-info-border' },
+                { id: 'kyc_pending', label: '4. KYC en cours', color: 'border-warning-border' },
+                { id: 'tier_3_kyc_verified', label: '5. KYC Validé (CNI)', color: 'border-success-border' },
+                { id: 'kyc_rejected', label: '6. KYC Refusé', color: 'border-danger-border' },
+                { id: 'kyb_pending', label: '7. Pro KYB en cours', color: 'border-warning-border' },
+                { id: 'tier_4_kyb_verified', label: '8. Pro Certifié KBIS', color: 'border-warning-border' },
+                { id: 'kyb_rejected', label: '9. KYB Refusé', color: 'border-danger-border' },
                 { id: 'full_trust_pro', label: '10. Full Pro 100/100', color: 'border-emerald-500' },
               ].map((p) => (
                 <button
@@ -239,11 +239,11 @@ export const VerificationCenterPage: React.FC = () => {
                   key={dimKey}
                   className={`bg-white rounded-2xl border p-5 transition-all flex flex-col justify-between ${
                     isVerified
-                      ? 'border-emerald-200 bg-emerald-50/20'
+                      ? 'border-success-border bg-success-surface/20'
                       : isPending
-                      ? 'border-amber-200 bg-amber-50/20'
+                      ? 'border-warning-border bg-warning-surface/20'
                       : isRejected
-                      ? 'border-red-200 bg-red-50/20'
+                      ? 'border-danger-border bg-danger-surface/20'
                       : 'border-stone-200 hover:border-stone-300'
                   }`}
                 >
@@ -253,11 +253,11 @@ export const VerificationCenterPage: React.FC = () => {
                         <div
                           className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                             isVerified
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-success-surface text-success'
                               : isPending
-                              ? 'bg-amber-100 text-amber-800'
+                              ? 'bg-warning-surface text-warning'
                               : isRejected
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-danger-surface text-danger'
                               : 'bg-stone-100 text-stone-700'
                           }`}
                         >
@@ -276,7 +276,7 @@ export const VerificationCenterPage: React.FC = () => {
                     </p>
 
                     {dim.rejectionReason && (
-                      <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-micro text-red-800">
+                      <div className="p-3 rounded-xl bg-danger-surface border border-danger-border text-micro text-danger">
                         <strong>Motif du rejet :</strong> {dim.rejectionReason}
                       </div>
                     )}
@@ -393,7 +393,7 @@ export const VerificationCenterPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-stone-900">{item.title}</span>
                     {item.active ? (
-                      <span className="text-micro font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
                         Débloqué
                       </span>
                     ) : (

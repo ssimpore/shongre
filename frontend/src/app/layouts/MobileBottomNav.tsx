@@ -3,12 +3,14 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Search, PlusCircle, MessageSquare, User } from 'lucide-react';
 import { storageService } from '../../services/storage.service';
+import { useAuth } from '../providers/AuthProvider';
+import { usePublishCta } from '../../security/usePublishCta';
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
-  const unreadMessagesCount = storageService
-    .getConversations()
-    .reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+  const { currentUser } = useAuth();
+  const unreadMessagesCount = storageService.getUnreadMessageCount(currentUser?.id);
+  const publishCta = usePublishCta();
 
   // Hide bottom bar on fullscreen wizards / creation tunnels for maximum screen ergonomics
   if (location.pathname.startsWith('/deposer')) {
@@ -50,13 +52,13 @@ export const MobileBottomNav: React.FC = () => {
 
         {/* Publish Center Highlight Button */}
         <NavLink
-          to="/deposer"
+          to={publishCta.to}
           className="flex flex-col items-center justify-center -mt-3.5 group"
         >
           <div className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-md group-active:scale-95 transition-transform">
             <PlusCircle className="w-6 h-6" />
           </div>
-          <span className="text-xs font-bold text-stone-800 mt-0.5">Déposer</span>
+          <span className="text-xs font-bold text-stone-800 mt-0.5">{publishCta.shortLabel}</span>
         </NavLink>
 
         {/* Messages */}

@@ -28,16 +28,16 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 }) => {
   const iconConfig = {
     danger: {
-      icon: <ShieldAlert className="w-6 h-6 text-red-600" />,
+      icon: <ShieldAlert className="w-6 h-6 text-danger" />,
       btnVariant: 'primary' as const,
-      btnClass: 'bg-red-600 hover:bg-red-700 text-white',
-      bgClass: 'bg-red-50 border-red-100',
+      btnClass: 'bg-danger hover:bg-danger text-white',
+      bgClass: 'bg-danger-surface border-danger-border',
     },
     warning: {
-      icon: <AlertTriangle className="w-6 h-6 text-amber-600" />,
+      icon: <AlertTriangle className="w-6 h-6 text-warning" />,
       btnVariant: 'primary' as const,
       btnClass: 'bg-amber-600 hover:bg-amber-700 text-white',
-      bgClass: 'bg-amber-50 border-amber-100',
+      bgClass: 'bg-warning-surface border-warning-border',
     },
     primary: {
       icon: <Info className="w-6 h-6 text-primary" />,
@@ -46,10 +46,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       bgClass: 'bg-primary-light border-primary-border',
     },
     success: {
-      icon: <CheckCircle2 className="w-6 h-6 text-emerald-600" />,
+      icon: <CheckCircle2 className="w-6 h-6 text-success" />,
       btnVariant: 'primary' as const,
-      btnClass: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-      bgClass: 'bg-emerald-50 border-emerald-100',
+      btnClass: 'bg-success hover:bg-success text-white',
+      bgClass: 'bg-success-surface border-success-border',
     },
   }[variant];
 

@@ -63,8 +63,8 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-          <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-3 bg-warning-surface rounded-xl border border-warning-border text-xs text-warning">
+          <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
           <p>
             Vous êtes sur le point de signaler le profil de{' '}
             <strong>{seller.companyName || seller.name}</strong>. Nos équipes de sécurité

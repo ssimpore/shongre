@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Mail, CheckCircle2, ShieldCheck, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { FormField, Input } from '../../design-system/primitives/FormField';
@@ -71,18 +71,18 @@ export const NewsletterUnsubscribePage: React.FC = () => {
 
         {isUnsubscribed ? (
           <div className="space-y-5 animate-fadeIn">
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-950 text-xs space-y-1 text-left">
-              <span className="font-bold block flex items-center gap-1.5 text-emerald-900">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-4 bg-success-surface border border-success-border rounded-2xl text-success text-xs space-y-1 text-left">
+              <span className="font-bold block flex items-center gap-1.5 text-success">
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                 Désabonnement pris en compte
               </span>
-              <p className="text-emerald-800 leading-relaxed">
+              <p className="text-success leading-relaxed">
                 L'adresse <strong>{email}</strong> ne recevra plus nos communications promotionnelles.
               </p>
             </div>
 
             <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-micro text-stone-500 text-left flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
               <span>
                 Vous continuerez à recevoir les notifications nécessaires relatives à la sécurité de votre compte et à vos transactions en cours.
               </span>

@@ -62,7 +62,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-border-base z-50 overflow-hidden flex flex-col max-h-[500px] animate-in fade-in slide-in-from-top-2 duration-150"
+      className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-border-base z-50 overflow-hidden flex flex-col max-h-[500px] animate-in fade-in slide-in-from-top-2 duration-fast"
       role="region"
       aria-label="Panneau des notifications"
     >

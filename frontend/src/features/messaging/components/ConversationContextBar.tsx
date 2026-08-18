@@ -82,7 +82,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             variant="outline"
             size="sm"
             onClick={onViewTransaction}
-            leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />}
+            leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-success" />}
             className="text-xs"
           >
             Suivi de commande
@@ -94,7 +94,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={onMakeOffer}
-                leftIcon={<DollarSign className="w-3.5 h-3.5 text-amber-600" />}
+                leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 className="text-xs"
               >
                 Faire une offre

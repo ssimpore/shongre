@@ -26,21 +26,21 @@ export const Badge: React.FC<BadgeProps> = ({
     neutral: 'bg-stone-100 text-stone-700 border border-stone-200',
     primary: 'bg-primary-light text-primary border border-primary-border font-bold',
     pro: 'bg-stone-900 text-white font-bold tracking-wide uppercase text-micro',
-    verified: 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold',
-    urgent: 'bg-red-50 text-red-800 border border-red-200 font-bold',
-    deal: 'bg-amber-50 text-amber-900 border border-amber-200 font-bold',
-    warning: 'bg-amber-50 text-amber-800 border border-amber-200 font-semibold',
-    success: 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold',
+    verified: 'bg-success-surface text-success border border-success-border font-semibold',
+    urgent: 'bg-danger-surface text-danger border border-danger-border font-bold',
+    deal: 'bg-warning-surface text-warning border border-warning-border font-bold',
+    warning: 'bg-warning-surface text-warning border border-warning-border font-semibold',
+    success: 'bg-success-surface text-success border border-success-border font-semibold',
   };
 
   return (
     <span
       className={`inline-flex items-center rounded-md whitespace-nowrap leading-none ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
     >
-      {icon && variant === 'verified' && <ShieldCheck className="w-3 h-3 text-emerald-700" />}
+      {icon && variant === 'verified' && <ShieldCheck className="w-3 h-3 text-success" />}
       {icon && variant === 'pro' && <Sparkles className="w-3 h-3 text-amber-400" />}
-      {icon && variant === 'urgent' && <Zap className="w-3 h-3 text-red-600" />}
-      {icon && variant === 'deal' && <Tag className="w-3 h-3 text-amber-600" />}
+      {icon && variant === 'urgent' && <Zap className="w-3 h-3 text-danger" />}
+      {icon && variant === 'deal' && <Tag className="w-3 h-3 text-warning" />}
       {children}
     </span>
   );
@@ -95,7 +95,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 shadow-sm text-success"
           title="Profil vérifié"
         >
-          <CheckCircle2 className="w-3.5 h-3.5 fill-emerald-600 text-white" />
+          <CheckCircle2 className="w-3.5 h-3.5 fill-success text-white" />
         </span>
       )}
     </div>

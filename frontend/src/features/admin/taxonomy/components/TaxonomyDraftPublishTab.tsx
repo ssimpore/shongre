@@ -4,6 +4,7 @@ import { Button } from '../../../../design-system/primitives/Button';
 import { FormField, Input } from '../../../../design-system/primitives/FormField';
 import { useToast } from '../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../app/providers/AuthProvider';
+import { formatLogTimestamp } from '../../../../utilities/formatters';
 import {
   Send,
   RotateCcw,
@@ -119,8 +120,8 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
 
         {/* Blocking Error Notice if any */}
         {hasBlockingErrors && draftChanges.length > 0 && (
-          <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-950 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+          <div className="p-3.5 bg-danger-surface border border-danger-border rounded-xl text-xs text-danger flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-danger shrink-0" />
             <span>
               Publication bloquée : des anomalies critiques ont été détectées. Veuillez consulter l'onglet <strong>Validation</strong>.
             </span>
@@ -145,12 +146,12 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                     <span
                       className={`text-micro px-2 py-0.5 rounded-full font-mono font-bold uppercase ${
                         change.changeType === 'created'
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-success-surface text-success'
                           : change.changeType === 'deprecated'
-                          ? 'bg-red-100 text-red-800'
+                          ? 'bg-danger-surface text-danger'
                           : change.changeType === 'moved'
                           ? 'bg-purple-100 text-purple-800'
-                          : 'bg-blue-100 text-blue-800'
+                          : 'bg-info-surface text-info'
                       }`}
                     >
                       {change.changeType}
@@ -159,8 +160,8 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                     <span className="text-stone-500">{change.description}</span>
                   </div>
 
-                  <span className="text-micro text-stone-500 font-mono shrink-0">
-                    {new Date(change.timestamp).toLocaleTimeString()}
+                  <span className="text-micro text-stone-500 shrink-0 tabular-nums">
+                    {formatLogTimestamp(change.timestamp)}
                   </span>
                 </div>
               ))}
@@ -200,13 +201,13 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                     <GitCommit className="w-3.5 h-3.5 text-primary" />
                     <span>v{ver.versionNumber}.0</span>
                     {idx === 0 && (
-                      <span className="text-micro bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded font-bold">
+                      <span className="text-micro bg-success-surface text-success border border-success-border px-1.5 py-0.2 rounded font-bold">
                         Actuelle
                       </span>
                     )}
                   </td>
                   <td className="py-3 px-3">
-                    <span className="px-2 py-0.5 rounded-full text-micro font-bold uppercase bg-emerald-100 text-emerald-800">
+                    <span className="px-2 py-0.5 rounded-full text-micro font-bold uppercase bg-success-surface text-success">
                       {ver.status}
                     </span>
                   </td>

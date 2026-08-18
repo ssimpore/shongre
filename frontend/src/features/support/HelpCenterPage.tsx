@@ -114,7 +114,7 @@ export const HelpCenterPage: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
       {/* 1. Hero Search Header */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
           <Headphones className="w-3.5 h-3.5" />
           <span>Centre d'aide Shongre</span>
         </div>
@@ -131,6 +131,7 @@ export const HelpCenterPage: React.FC = () => {
           <input
             type="text"
             placeholder="Rechercher une question (ex: séquestre, virement, litige...)"
+            aria-label="Rechercher une question dans l'aide"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-12 pr-4 text-xs sm:text-sm font-semibold bg-white border border-border-base rounded-2xl shadow-xs focus:border-primary focus:outline-none transition-all placeholder:text-stone-400"
@@ -178,7 +179,7 @@ export const HelpCenterPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setOpenFaqId(isOpen ? null : art.id)}
-                    className="w-full flex items-center justify-between gap-4 text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-primary transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between gap-4 min-h-6 text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-primary transition-colors cursor-pointer"
                   >
                     <span>{art.question}</span>
                     <ChevronDown
@@ -219,11 +220,14 @@ export const HelpCenterPage: React.FC = () => {
           </p>
         </div>
 
-        <Link to="/contact">
-          <Button variant="primary" size="lg" className="shrink-0 font-black">
-            Contacter l'assistance Shongre
-          </Button>
-        </Link>
+        <Button
+          to="/contact"
+          variant="primary"
+          size="lg"
+          className="shrink-0 font-black"
+        >
+          Contacter l'assistance Shongre
+        </Button>
       </div>
     </div>
   );

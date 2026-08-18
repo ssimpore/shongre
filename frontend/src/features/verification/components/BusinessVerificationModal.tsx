@@ -71,7 +71,10 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
     }
 
     setIsLookingUp(true);
-    setTimeout(() => {
+    // The registry lookup is a service call, not a timer. The 400ms wait here
+    // only made the spinner visible; whether the lookup is instant (demo) or a
+    // real round trip (backend) is the adapter's business.
+    try {
       const info = verificationService.lookupCompanyBySiret(siret);
       if (info) {
         setCompanyName(info.companyName);
@@ -84,8 +87,9 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
       } else {
         setError('Aucune entreprise trouvée pour ce numéro. Vous pouvez saisir les informations manuellement.');
       }
+    } finally {
       setIsLookingUp(false);
-    }, 400);
+    }
   };
 
   const handleStep1Submit = (e: React.FormEvent) => {
@@ -170,7 +174,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -194,7 +198,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
 
         {/* Stepper Header */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-warning-surface text-warning flex items-center justify-center">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
@@ -204,7 +208,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
               <span>Étape {step} sur 4</span>
               <span>•</span>
-              <span className="text-amber-800 font-bold">Immatriculation RCS & INSEE</span>
+              <span className="text-warning font-bold">Immatriculation RCS & INSEE</span>
             </div>
           </div>
         </div>
@@ -212,13 +216,13 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         {/* Progress Bar */}
         <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden mb-6">
           <div
-            className="bg-amber-600 h-full transition-all duration-300 rounded-full"
+            className="bg-amber-600 h-full transition-all duration-normal rounded-full"
             style={{ width: `${(step / 4) * 100}%` }}
           />
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -257,8 +261,8 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             </div>
 
             {lookupFound && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-3 rounded-xl bg-success-surface border border-success-border text-xs text-success flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                 <span>Entreprise identifiée dans le répertoire officiel SIRENE.</span>
               </div>
             )}
@@ -439,14 +443,14 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               onClick={() => setKbisUploaded(true)}
               className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
                 kbisUploaded
-                  ? 'border-emerald-500 bg-emerald-50/40 text-emerald-950'
+                  ? 'border-emerald-500 bg-success-surface/40 text-success'
                   : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    kbisUploaded ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600'
+                    kbisUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
                   }`}
                 >
                   {kbisUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
@@ -458,7 +462,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   <div className="text-micro text-stone-500">Document obligatoire délivré par le Greffe du Tribunal</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-amber-800 hover:underline">
+              <span className="text-xs font-bold text-warning hover:underline">
                 {kbisUploaded ? 'Remplacer' : 'Sélectionner'}
               </span>
             </div>
@@ -468,14 +472,14 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               onClick={() => setRibUploaded(true)}
               className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
                 ribUploaded
-                  ? 'border-emerald-500 bg-emerald-50/40 text-emerald-950'
+                  ? 'border-emerald-500 bg-success-surface/40 text-success'
                   : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    ribUploaded ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600'
+                    ribUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
                   }`}
                 >
                   {ribUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
@@ -487,7 +491,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   <div className="text-micro text-stone-500">Pour accélérer la validation des virements de séquestre</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-amber-800 hover:underline">
+              <span className="text-xs font-bold text-warning hover:underline">
                 {ribUploaded ? 'Remplacer' : 'Sélectionner'}
               </span>
             </div>
@@ -517,12 +521,12 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         {/* Step 4: UBO & Confirmation */}
         {step === 4 && (
           <form onSubmit={handleFinalSubmit} className="space-y-4">
-            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-950 space-y-2">
+            <div className="p-4 rounded-xl bg-warning-surface/70 border border-warning-border/80 text-xs text-warning space-y-2">
               <div className="font-bold flex items-center gap-1.5">
-                <FileCheck className="w-4 h-4 text-amber-700" />
+                <FileCheck className="w-4 h-4 text-warning" />
                 Déclaration des Bénéficiaires Effectifs (RBE / LCB-FT)
               </div>
-              <p className="text-micro leading-relaxed text-amber-900">
+              <p className="text-micro leading-relaxed text-warning">
                 En application de la directive européenne anti-blanchiment et du Code Monétaire et Financier, je certifie que les informations d'immatriculation et les bénéficiaires effectifs déclarés sont sincères et conformes à la réalité.
               </p>
             </div>
@@ -532,7 +536,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 type="checkbox"
                 checked={uboAccepted}
                 onChange={(e) => setUboAccepted(e.target.checked)}
-                className="mt-0.5 rounded text-amber-800 focus:ring-amber-800"
+                className="mt-0.5 rounded text-warning focus:ring-amber-800"
               />
               <span className="text-xs font-semibold text-stone-800 leading-snug">
                 Je certifie sur l'honneur l'exactitude des pièces fournies et accepte la vérification de conformité Shongre.
@@ -542,7 +546,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             {/* Demo simulation toggle */}
             <div className="p-3.5 rounded-xl bg-stone-100 border border-stone-200 text-xs text-stone-900 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
                   <div className="font-bold">Mode Démonstration Shongre</div>
                   <div className="text-micro text-stone-600">

@@ -76,7 +76,7 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div>
             <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-600" />
+              <Activity className="w-4 h-4 text-success" />
               État de Santé & Disponibilité en Temps Réel
             </h4>
             <p className="text-xs text-stone-500">
@@ -87,10 +87,10 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
           <span
             className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
               configuration.health === 'healthy'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                ? 'bg-success-surface text-success border-success-border'
                 : configuration.health === 'degraded'
-                ? 'bg-amber-50 text-amber-800 border-amber-200'
-                : 'bg-rose-50 text-rose-800 border-rose-200'
+                ? 'bg-warning-surface text-warning border-warning-border'
+                : 'bg-danger-surface text-danger border-danger-border'
             }`}
           >
             {configuration.health === 'healthy' && '● Opérationnel'}
@@ -106,11 +106,11 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
             onClick={() => handleSetHealth('healthy')}
             className={`p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
               configuration.health === 'healthy'
-                ? 'bg-emerald-50/80 border-emerald-300 ring-2 ring-emerald-500/20'
+                ? 'bg-success-surface/80 border-success-border ring-2 ring-emerald-500/20'
                 : 'bg-stone-50 hover:bg-stone-100 border-stone-200'
             }`}
           >
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
             <div>
               <span className="font-bold text-xs text-stone-900 block">Opérationnel (Healthy)</span>
               <span className="text-micro text-stone-500">Toutes les requêtes aboutissent</span>
@@ -122,11 +122,11 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
             onClick={() => handleSetHealth('degraded')}
             className={`p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
               configuration.health === 'degraded'
-                ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-500/20'
+                ? 'bg-warning-surface/80 border-warning-border ring-2 ring-amber-500/20'
                 : 'bg-stone-50 hover:bg-stone-100 border-stone-200'
             }`}
           >
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
             <div>
               <span className="font-bold text-xs text-stone-900 block">Dégradé (Degraded)</span>
               <span className="text-micro text-stone-500">Ralentissements ou échecs partiels</span>
@@ -138,11 +138,11 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
             onClick={() => handleSetHealth('unavailable')}
             className={`p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
               configuration.health === 'unavailable'
-                ? 'bg-rose-50/80 border-rose-300 ring-2 ring-rose-500/20'
+                ? 'bg-danger-surface/80 border-danger-border ring-2 ring-rose-500/20'
                 : 'bg-stone-50 hover:bg-stone-100 border-stone-200'
             }`}
           >
-            <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+            <XCircle className="w-5 h-5 text-danger shrink-0" />
             <div>
               <span className="font-bold text-xs text-stone-900 block">Indisponible (Unavailable)</span>
               <span className="text-micro text-stone-500">Bascule immédiate sur le secours</span>

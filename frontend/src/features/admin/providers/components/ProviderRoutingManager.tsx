@@ -118,10 +118,10 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
               {/* Routing Chain (Primary -> Fallback) */}
               <div className="flex flex-1 items-center gap-3">
                 {/* Primary Provider Box */}
-                <div className="flex-1 p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/50">
-                  <div className="text-micro font-bold uppercase tracking-wider text-emerald-700 mb-1 flex items-center justify-between">
+                <div className="flex-1 p-2.5 rounded-lg border border-success-border bg-success-surface/50">
+                  <div className="text-micro font-bold uppercase tracking-wider text-success mb-1 flex items-center justify-between">
                     <span>1. Prestataire Primaire</span>
-                    <span className="bg-emerald-200/70 text-emerald-900 px-1 rounded text-micro">P1</span>
+                    <span className="bg-emerald-200/70 text-success px-1 rounded text-micro">P1</span>
                   </div>
                   {primary ? (
                     <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                       >
                         {primary.name}
                       </Link>
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" title="Opérationnel" />
+                      <span className="w-2 h-2 rounded-full bg-success" title="Opérationnel" />
                     </div>
                   ) : (
                     <span className="text-xs font-medium text-stone-500 italic">Aucun</span>
@@ -144,13 +144,13 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                 <div
                   className={`flex-1 p-2.5 rounded-lg border ${
                     fallback
-                      ? 'border-blue-200 bg-blue-50/50'
+                      ? 'border-info-border bg-info-surface/50'
                       : 'border-stone-200 bg-stone-50/50 border-dashed'
                   }`}
                 >
                   <div className="text-micro font-bold uppercase tracking-wider text-stone-600 mb-1 flex items-center justify-between">
                     <span>2. Secours (Fallback)</span>
-                    {fallback && <span className="bg-blue-200/70 text-blue-900 px-1 rounded text-micro">P2</span>}
+                    {fallback && <span className="bg-blue-200/70 text-info px-1 rounded text-micro">P2</span>}
                   </div>
                   {fallback ? (
                     <div className="flex items-center justify-between">
@@ -160,7 +160,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                       >
                         {fallback.name}
                       </Link>
-                      <span className="w-2 h-2 rounded-full bg-blue-500" title="Prêt pour bascule" />
+                      <span className="w-2 h-2 rounded-full bg-info" title="Prêt pour bascule" />
                     </div>
                   ) : (
                     <span className="text-xs text-stone-500 italic">Aucun secours défini</span>
@@ -171,7 +171,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
               {/* Status Pill */}
               <div className="shrink-0 flex items-center gap-2">
                 {hasRedundancy ? (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-1 rounded-full">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     Redondance active
                   </span>

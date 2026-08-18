@@ -7,16 +7,28 @@ export interface LanguageOption {
   name: string;
   nativeName: string;
   flag: string;
+  /**
+   * Whether the interface is actually available in this language.
+   *
+   * The selector used to offer six languages and switch none of them: picking
+   * `Deutsch` stored a locale nobody read and left every string in French. A
+   * control that claims to do something it cannot is worse than a shorter list,
+   * so unavailable languages are shown as coming soon and cannot be selected.
+   * Flip the flag here when a locale's translations actually ship.
+   */
+  isAvailable: boolean;
 }
 
 export const SUPPORTED_LANGUAGES: LanguageOption[] = [
-  { code: 'fr-FR', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
-  { code: 'en-US', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'de-DE', name: 'Deutsch', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'es-ES', name: 'Español', nativeName: 'Español', flag: '🇪🇸' },
-  { code: 'nl-NL', name: 'Nederlands', nativeName: 'Nederlands', flag: '🇳🇱' },
-  { code: 'it-IT', name: 'Italiano', nativeName: 'Italiano', flag: '🇮🇹' },
+  { code: 'fr-FR', name: 'Français', nativeName: 'Français', flag: '🇫🇷', isAvailable: true },
+  { code: 'en-US', name: 'English', nativeName: 'English', flag: '🇬🇧', isAvailable: false },
+  { code: 'de-DE', name: 'Deutsch', nativeName: 'Deutsch', flag: '🇩🇪', isAvailable: false },
+  { code: 'es-ES', name: 'Español', nativeName: 'Español', flag: '🇪🇸', isAvailable: false },
+  { code: 'nl-NL', name: 'Nederlands', nativeName: 'Nederlands', flag: '🇳🇱', isAvailable: false },
+  { code: 'it-IT', name: 'Italiano', nativeName: 'Italiano', flag: '🇮🇹', isAvailable: false },
 ];
+
+export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter((lang) => lang.isAvailable);
 
 export interface LanguageSelectorProps {
   /** Optional custom styling for the container */
@@ -67,8 +79,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     };
   }, [isOpen]);
 
-  const handleSelectLanguage = (code: string) => {
-    setLocale(code);
+  const handleSelectLanguage = (lang: LanguageOption) => {
+    if (!lang.isAvailable) return;
+    setLocale(lang.code);
     setIsOpen(false);
   };
 
@@ -134,21 +147,32 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   key={lang.code}
                   role="menuitem"
                   type="button"
-                  onClick={() => handleSelectLanguage(lang.code)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors cursor-pointer text-left ${
-                    isSelected
-                      ? 'bg-primary-light text-primary font-bold'
-                      : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium'
+                  disabled={!lang.isAvailable}
+                  aria-disabled={!lang.isAvailable}
+                  onClick={() => handleSelectLanguage(lang)}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors text-left ${
+                    !lang.isAvailable
+                      ? 'text-stone-400 cursor-not-allowed'
+                      : isSelected
+                      ? 'bg-primary-light text-primary font-bold cursor-pointer'
+                      : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base leading-none">{lang.flag}</span>
+                    <span className={`text-base leading-none ${lang.isAvailable ? '' : 'grayscale opacity-60'}`}>
+                      {lang.flag}
+                    </span>
                     <div className="flex flex-col">
                       <span className="leading-tight">{lang.nativeName}</span>
-                      <span className="text-micro text-stone-400 font-normal">{lang.name}</span>
+                      <span className="text-micro text-stone-500 font-normal">{lang.name}</span>
                     </div>
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  {isSelected && lang.isAvailable && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  {!lang.isAvailable && (
+                    <span className="text-micro font-bold uppercase tracking-wider text-stone-400 shrink-0">
+                      Bientôt
+                    </span>
+                  )}
                 </button>
               );
             })}

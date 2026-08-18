@@ -10,6 +10,30 @@ const FOCUSABLE = [
 ].join(',');
 
 /**
+ * The last control the user actually pressed.
+ *
+ * Safari does not focus a `<button>` when it is clicked, so on open
+ * `document.activeElement` is `<body>` — and "return focus to whatever was
+ * focused before" restored focus to nothing, dropping keyboard and VoiceOver
+ * users back at the top of the document every time they closed a sheet.
+ * Tracking the pressed control gives the restore step something real to aim at
+ * on every engine.
+ */
+let lastPressedControl: HTMLElement | null = null;
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'pointerdown',
+    (event) => {
+      const control = (event.target as HTMLElement | null)?.closest?.(
+        'button, a[href], [role="button"], summary',
+      );
+      if (control) lastPressedControl = control as HTMLElement;
+    },
+    true,
+  );
+}
+
+/**
  * Shared modal/drawer behaviour: Escape to dismiss, body scroll lock, focus
  * moved into the dialog on open, focus trapped inside it while open, and focus
  * returned to the trigger on close.
@@ -25,7 +49,9 @@ export function useDialogBehavior(isOpen: boolean, onClose: () => void) {
   useEffect(() => {
     if (!isOpen) return;
 
-    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    const active = document.activeElement as HTMLElement | null;
+    previouslyFocused.current =
+      active && active !== document.body ? active : lastPressedControl;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -74,7 +100,18 @@ export function useDialogBehavior(isOpen: boolean, onClose: () => void) {
       cancelAnimationFrame(raf);
       document.removeEventListener('keydown', handleKeyDown, true);
       document.body.style.overflow = previousOverflow;
-      previouslyFocused.current?.focus?.({ preventScroll: true });
+
+      // Restore focus on the next frame rather than inside cleanup. The trigger
+      // usually re-renders as part of the same close (a burger button swapping
+      // its icon and label), and WebKit drops a focus call made before that
+      // render commits — the drawer closed and focus fell back to the document,
+      // stranding keyboard users at the top of the page.
+      const trigger = previouslyFocused.current;
+      if (trigger?.isConnected) {
+        requestAnimationFrame(() => {
+          if (trigger.isConnected) trigger.focus({ preventScroll: true });
+        });
+      }
     };
   }, [isOpen, onClose]);
 

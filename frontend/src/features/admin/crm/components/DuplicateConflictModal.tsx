@@ -31,11 +31,11 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
       description="Une correspondance a été trouvée avec un compte déjà enregistré dans Shongre."
     >
       <div className="space-y-4 text-xs">
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-amber-950">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-3.5 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-2.5 text-warning">
+          <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
           <div className="space-y-1">
             <span className="font-bold block">Doublon potentiel identifié</span>
-            <p className="text-amber-800 text-micro leading-relaxed">
+            <p className="text-warning text-micro leading-relaxed">
               L'entreprise <strong className="text-stone-900">{candidate.company.name}</strong> partage le même domaine web ou nom commercial qu'une entité existante.
             </p>
           </div>

@@ -5,6 +5,7 @@ import { Button } from '../../../../design-system/primitives/Button';
 import { Input } from '../../../../design-system/primitives/FormField';
 import { Plus, Search, Filter, Layers, Edit2, Archive, CheckCircle2 } from 'lucide-react';
 import { AttributeEditModal } from './modals/AttributeEditModal';
+import { plural } from '../../../../utilities/formatters';
 
 export const TaxonomyAttributeRegistryTab: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -74,9 +75,10 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           <input
             type="text"
             placeholder="Rechercher par libellé, ID ou code d'attribut..."
+            aria-label="Rechercher un attribut"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
 
@@ -85,7 +87,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           <select
             value={dataTypeFilter}
             onChange={(e) => setDataTypeFilter(e.target.value)}
-            className="h-9 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-700"
+            className="h-control-md px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-700"
           >
             <option value="all">Tous les types de données</option>
             <option value="text">Texte libre (String)</option>
@@ -135,23 +137,23 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                 {/* Behavioral tags */}
                 <div className="flex flex-wrap gap-1 pt-1 text-micro">
                   {attr.required && (
-                    <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded font-semibold">
+                    <span className="bg-danger-surface text-danger px-1.5 py-0.5 rounded font-semibold">
                       Requis
                     </span>
                   )}
                   {attr.filterable && (
-                    <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-semibold">
+                    <span className="bg-info-surface text-info px-1.5 py-0.5 rounded font-semibold">
                       Facette filtre
                     </span>
                   )}
                   {attr.searchable && (
-                    <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-semibold">
+                    <span className="bg-success-surface text-success px-1.5 py-0.5 rounded font-semibold">
                       Moteur recherche
                     </span>
                   )}
                   {attr.options && (
                     <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-semibold">
-                      {attr.options.length} options
+                      {plural(attr.options.length, 'option')}
                     </span>
                   )}
                 </div>

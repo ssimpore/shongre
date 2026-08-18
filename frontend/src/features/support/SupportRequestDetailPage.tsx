@@ -139,9 +139,9 @@ export const SupportRequestDetailPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleMarkResolved}
-            className="font-bold flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800"
+            className="font-bold flex items-center gap-1.5 text-success hover:text-success"
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-success" />
             <span>Marquer comme résolu</span>
           </Button>
         )}
@@ -270,9 +270,9 @@ export const SupportRequestDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={handleSimulateAgentReply}
-              className="text-micro font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-micro font-bold text-warning bg-warning-surface hover:bg-warning-surface border border-warning-border px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
             >
-              <Sparkles className="w-3 h-3 text-amber-600" />
+              <Sparkles className="w-3 h-3 text-warning" />
               <span>Simuler réponse conseiller (Démo)</span>
             </button>
           </div>

@@ -70,12 +70,12 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
     return (
       <div className="flex items-center justify-between gap-3 p-3 bg-stone-50 border border-border-base rounded-2xl">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-success-surface text-success border border-success-border flex items-center justify-center shrink-0">
             <ShoppingBag className="w-5 h-5" />
           </div>
 
           <div className="min-w-0">
-            <span className="text-micro font-bold uppercase tracking-wider text-emerald-700 block">
+            <span className="text-micro font-bold uppercase tracking-wider text-success block">
               Commande / Séquestre lié
             </span>
             <span className="text-xs font-black text-stone-900 truncate block">

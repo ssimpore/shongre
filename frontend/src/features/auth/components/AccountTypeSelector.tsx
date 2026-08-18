@@ -54,15 +54,15 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
             <span>Dépôt d'annonces gratuit et instantané</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
             <span>Paiement sécurisé avec séquestre</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
             <span>Messagerie instantanée directe</span>
           </div>
         </div>

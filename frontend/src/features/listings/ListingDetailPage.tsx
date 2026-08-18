@@ -82,8 +82,6 @@ export const ListingDetailPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
     setIsLoading(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
     listingRepository.getListingById(id).then((item) => {
       if (item) {
         setListing(item);
@@ -294,6 +292,9 @@ export const ListingDetailPage: React.FC = () => {
   }
 
   const buyerFee = calculateBuyerFee(listing.price);
+  // Buyer protection only applies to online payment, so it is the only case where
+  // the price shown to the buyer differs from the amount they actually pay.
+  const showsBuyerFee = Boolean(listing.isOnlinePaymentAvailable) && listing.price > 0;
   const breadcrumbItems = [
     { label: 'Accueil', href: '/' },
     { label: listing.categoryLabel, href: `/categorie/${listing.categorySlug}` },
@@ -323,7 +324,7 @@ export const ListingDetailPage: React.FC = () => {
             type="button"
             onClick={() => setIsReportModalOpen(true)}
             aria-label="Signaler cette annonce"
-            className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-red-600 bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-danger bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Flag className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Signaler</span>
@@ -351,8 +352,8 @@ export const ListingDetailPage: React.FC = () => {
                   <Badge variant="primary" size="md">{listing.categoryLabel}</Badge>
                   {isProSeller(listing) && <Badge variant="pro" size="md">Vendeur Pro</Badge>}
                   {listing.isBoosted && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs">
-                      <Sparkles className="w-3 h-3 text-amber-600" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
+                      <Sparkles className="w-3 h-3 text-warning" />
                       À la une
                     </span>
                   )}
@@ -473,10 +474,13 @@ export const ListingDetailPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white rounded-2xl border border-border-base p-6 space-y-5 shadow-sm sticky top-20">
             
-            {/* Price Box */}
+            {/* Price Box.
+                The headline figure is the *item* price, so it must not be labelled
+                "Prix total" — when buyer protection applies, the amount actually
+                payable is larger and is emphasised in the breakdown below. */}
             <div className="space-y-1">
               <span className="text-micro text-stone-500 font-bold uppercase tracking-wider block">
-                Prix total
+                Prix de l'article
               </span>
               <PriceDisplay
                 price={listing.price}
@@ -497,13 +501,15 @@ export const ListingDetailPage: React.FC = () => {
                 <div className="flex items-center justify-between text-stone-600">
                   <span className="flex items-center gap-1">
                     Protection Acheteur Shongre
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-success" />
                   </span>
                   <span className="font-semibold">{formatPrice(buyerFee)}</span>
                 </div>
-                <div className="pt-2 border-t border-border-subtle flex items-center justify-between font-bold text-stone-900 text-sm">
-                  <span>Total estimé</span>
-                  <span className="text-primary">{formatPrice(listing.price + buyerFee)}</span>
+                <div className="pt-2.5 mt-0.5 border-t border-border-base flex items-baseline justify-between">
+                  <span className="font-bold text-stone-900 text-sm">Total à payer</span>
+                  <span className="text-primary font-extrabold text-lg tabular-nums">
+                    {formatPrice(listing.price + buyerFee)}
+                  </span>
                 </div>
               </div>
             )}
@@ -518,34 +524,46 @@ export const ListingDetailPage: React.FC = () => {
                   <span>Vous êtes l'auteur de cette annonce</span>
                 </div>
                 <div className="space-y-2">
-                  <Link to={`/deposer?edit=${listing.id}`} className="block">
-                    <Button variant="primary" size="md" fullWidth leftIcon={<Edit3 className="w-4 h-4" />}>
-                      Modifier mon annonce
-                    </Button>
-                  </Link>
-                  <Link to="/compte/annonces" className="block">
-                    <Button variant="outline" size="sm" fullWidth leftIcon={<Sliders className="w-4 h-4" />}>
-                      Gérer mes annonces & stats
-                    </Button>
-                  </Link>
+                  <Button
+                    to={`/deposer?edit=${listing.id}`}
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    leftIcon={<Edit3 className="w-4 h-4" />}
+                  >
+                    Modifier mon annonce
+                  </Button>
+                  <Button
+                    to="/compte/annonces"
+                    variant="outline"
+                    size="sm"
+                    fullWidth
+                    leftIcon={<Sliders className="w-4 h-4" />}
+                  >
+                    Gérer mes annonces & stats
+                  </Button>
                 </div>
               </div>
             ) : actions.statusNotice ? (
               /* Non-Active Status Notice (Reserved, Sold, Expired) */
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-2 text-center">
-                <div className="flex items-center justify-center gap-1.5 font-bold text-amber-900 text-sm">
-                  <Clock className="w-4 h-4 text-amber-600" />
+              <div className="p-4 bg-warning-surface border border-warning-border rounded-xl space-y-2 text-center">
+                <div className="flex items-center justify-center gap-1.5 font-bold text-warning text-sm">
+                  <Clock className="w-4 h-4 text-warning" />
                   <span>{actions.statusNotice.title}</span>
                 </div>
-                <p className="text-xs text-amber-800 leading-relaxed">
+                <p className="text-xs text-warning leading-relaxed">
                   {actions.statusNotice.message}
                 </p>
                 {actions.statusNotice.isBuyerReserver && (
-                  <Link to="/compte/achats" className="block pt-2">
-                    <Button variant="primary" size="sm" fullWidth>
-                      Consulter ma commande
-                    </Button>
-                  </Link>
+                  <Button
+                    to="/compte/achats"
+                    variant="primary"
+                    size="sm"
+                    fullWidth
+                    className="pt-2"
+                  >
+                    Consulter ma commande
+                  </Button>
                 )}
               </div>
             ) : (
@@ -571,7 +589,7 @@ export const ListingDetailPage: React.FC = () => {
                     size={actions.primaryAction === 'reservation' ? 'lg' : 'md'}
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
-                    leftIcon={<Clock className="w-4 h-4 text-amber-600" />}
+                    leftIcon={<Clock className="w-4 h-4 text-warning" />}
                   >
                     Réserver l'article
                   </Button>
@@ -584,7 +602,7 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     fullWidth
                     onClick={() => setIsOfferModalOpen(true)}
-                    leftIcon={<DollarSign className="w-4 h-4 text-amber-600" />}
+                    leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
                   >
                     Faire une offre de prix
                   </Button>
@@ -778,23 +796,30 @@ export const ListingDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* STICKY MOBILE ACTION BAR (< lg) */}
       {/* ========================================================================= */}
-      <div className="lg:hidden fixed bottom-16 inset-x-0 bg-white/95 backdrop-blur-md border-t border-border-base p-3 shadow-lg z-30 flex items-center justify-between gap-3">
+      <div className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] bg-white/95 backdrop-blur-md border-t border-border-base p-3 shadow-lg z-30 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-micro text-stone-500 font-semibold uppercase tracking-wider">Prix total</div>
-          <div className="text-base font-black text-stone-900 truncate">
-            {listing.isFreeDonation ? 'Don gratuit' : formatPrice(listing.price)}
+          <div className="text-micro text-stone-500 font-semibold uppercase tracking-wider">
+            {showsBuyerFee ? 'Total à payer' : 'Prix'}
+          </div>
+          <div className="text-base font-black text-stone-900 truncate tabular-nums">
+            {listing.isFreeDonation
+              ? 'Don gratuit'
+              : formatPrice(showsBuyerFee ? listing.price + buyerFee : listing.price)}
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           {actions.isOwner ? (
-            <Link to={`/deposer?edit=${listing.id}`}>
-              <Button variant="primary" size="sm" leftIcon={<Edit3 className="w-3.5 h-3.5" />}>
-                Modifier
-              </Button>
-            </Link>
+            <Button
+              to={`/deposer?edit=${listing.id}`}
+              variant="primary"
+              size="sm"
+              leftIcon={<Edit3 className="w-3.5 h-3.5" />}
+            >
+              Modifier
+            </Button>
           ) : actions.statusNotice ? (
-            <span className="text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1.5 rounded-lg">
+            <span className="text-xs font-bold text-warning bg-warning-surface px-3 py-1.5 rounded-lg">
               {actions.statusNotice.title}
             </span>
           ) : (
@@ -804,7 +829,7 @@ export const ListingDetailPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsOfferModalOpen(true)}
-                  leftIcon={<DollarSign className="w-3.5 h-3.5 text-amber-600" />}
+                  leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 >
                   Offre
                 </Button>
@@ -814,7 +839,7 @@ export const ListingDetailPage: React.FC = () => {
                   variant={actions.canDirectPurchase ? 'outline' : 'primary'}
                   size="sm"
                   onClick={() => setIsReservationModalOpen(true)}
-                  leftIcon={<Clock className="w-3.5 h-3.5 text-amber-600" />}
+                  leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
                 >
                   Réserver
                 </Button>

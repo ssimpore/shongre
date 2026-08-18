@@ -59,11 +59,14 @@ export const AdminProviderDetailPage: React.FC = () => {
         description="Cet identifiant de prestataire n'est pas répertorié dans le registre canonique Shongre. Il a peut-être été retiré ou renommé."
         technicalDetail={`providerId: ${providerId}`}
         action={
-          <Link to="/admin/fournisseurs">
-            <Button variant="primary" size="sm" leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}>
-              Retour aux intégrations
-            </Button>
-          </Link>
+          <Button
+            to="/admin/fournisseurs"
+            variant="primary"
+            size="sm"
+            leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
+          >
+            Retour aux intégrations
+          </Button>
         }
       />
     );
@@ -140,7 +143,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           {/* Status & Health Indicators */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {isEnabled ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-full">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Actif (Priorité {configuration.priority})
               </span>
@@ -153,10 +156,10 @@ export const AdminProviderDetailPage: React.FC = () => {
             <span
               className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${
                 health === 'healthy'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  ? 'bg-success-surface text-success border-success-border'
                   : health === 'degraded'
-                  ? 'bg-amber-50 text-amber-800 border-amber-200'
-                  : 'bg-rose-50 text-rose-800 border-rose-200'
+                  ? 'bg-warning-surface text-warning border-warning-border'
+                  : 'bg-danger-surface text-danger border-danger-border'
               }`}
             >
               {health === 'healthy' && '● Opérationnel'}

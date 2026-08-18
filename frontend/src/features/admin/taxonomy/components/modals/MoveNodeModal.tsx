@@ -83,12 +83,12 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
         </div>
 
         {/* Impact Warning */}
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5 text-xs text-amber-900">
-          <div className="flex items-center gap-1.5 font-bold text-amber-800">
+        <div className="p-3.5 bg-warning-surface border border-warning-border rounded-xl space-y-1.5 text-xs text-warning">
+          <div className="flex items-center gap-1.5 font-bold text-warning">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Impact structurel du déplacement :</span>
           </div>
-          <ul className="list-disc list-inside space-y-0.5 pl-1 text-amber-800/90">
+          <ul className="list-disc list-inside space-y-0.5 pl-1 text-warning/90">
             <li>
               <strong>{impact.descendantsCount}</strong> sous-catégories / types enfants seront déplacés.
             </li>

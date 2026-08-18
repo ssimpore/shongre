@@ -60,12 +60,12 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
     >
       <div className="space-y-4">
         {/* Safety Guarantees Notice */}
-        <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl space-y-2 text-xs text-blue-900">
-          <div className="flex items-center gap-2 font-bold text-blue-950">
-            <ShieldCheck className="w-4 h-4 text-blue-700" />
+        <div className="p-3.5 bg-info-surface border border-info-border rounded-xl space-y-2 text-xs text-info">
+          <div className="flex items-center gap-2 font-bold text-info">
+            <ShieldCheck className="w-4 h-4 text-info" />
             <span>Garanties de rétrocompatibilité :</span>
           </div>
-          <ul className="list-disc list-inside space-y-1 text-blue-800">
+          <ul className="list-disc list-inside space-y-1 text-info">
             <li>Les annonces existantes publiées sous cette catégorie restent 100% consultables.</li>
             <li>Le wizard de publication ne proposera plus cette rubrique aux vendeurs.</li>
             <li>Si un successeur est défini, les redirections de recherche s'appliqueront harmonieusement.</li>

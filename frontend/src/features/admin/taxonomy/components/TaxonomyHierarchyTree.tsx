@@ -80,7 +80,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
       <div key={node.id} className="space-y-1">
         <div
           onClick={() => onSelectNode(node)}
-          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs cursor-pointer transition-all duration-150 border ${
+          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs cursor-pointer transition-all duration-fast border ${
             isSelected
               ? 'bg-primary-light/80 border-primary text-primary font-bold shadow-xs'
               : 'border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle'
@@ -93,7 +93,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onToggleExpand(node.id, e)}
-                className="p-1 rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-200/50 transition-colors"
+                className="p-1 rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-200/50 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center"
                 title={isExpanded ? 'Replier' : 'Déplier'}
               >
                 {isExpanded ? (
@@ -113,7 +113,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
               {/* shortLabel pill if exists */}
               {node.shortLabel && node.shortLabel !== node.name && (
-                <span className="shrink-0 text-micro bg-amber-50 text-amber-800 border border-amber-200/80 px-1.5 py-0.2 rounded-full font-normal">
+                <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.2 rounded-full font-normal">
                   {node.shortLabel}
                 </span>
               )}
@@ -126,7 +126,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               </span>
             )}
             {node.status === 'deprecated' && (
-              <span className="shrink-0 text-micro bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
+              <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
                 <Archive className="w-2.5 h-2.5" />
                 Déprécié
               </span>
@@ -140,7 +140,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onReorderNode(node.id, 'up', e)}
-                className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60"
+                className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
                 title="Monter d'un rang"
               >
                 <ArrowUp className="w-3 h-3" />
@@ -150,7 +150,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onReorderNode(node.id, 'down', e)}
-                className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60"
+                className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
                 title="Descendre d'un rang"
               >
                 <ArrowDown className="w-3 h-3" />
@@ -162,7 +162,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onAddChild(node, e)}
-                className="p-1 rounded text-stone-500 hover:text-primary hover:bg-primary-light"
+                className="p-1 rounded text-stone-500 hover:text-primary hover:bg-primary-light min-w-6 min-h-6 inline-flex items-center justify-center"
                 title="Ajouter une sous-rubrique"
               >
                 <Plus className="w-3 h-3" />

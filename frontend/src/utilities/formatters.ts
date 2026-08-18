@@ -272,6 +272,59 @@ export function formatDate(isoDateString: string, locale?: string): string {
 }
 
 /**
+ * French pluralisation for counted nouns.
+ *
+ * Counts were concatenated with a hard-coded `s`, which shipped "1 rubriques" to
+ * the homepage. French treats 0 as singular ("0 rubrique"), unlike English — so
+ * this cannot be `n === 1 ? …` alone.
+ *
+ *   plural(1, 'rubrique')            → "1 rubrique"
+ *   plural(4, 'rubrique')            → "4 rubriques"
+ *   plural(0, 'annonce')             → "0 annonce"
+ *   plural(2, 'journal', 'journaux') → "2 journaux"
+ */
+export function plural(count: number, singular: string, pluralForm?: string): string {
+  const isPlural = Math.abs(count) >= 2;
+  const word = isPlural ? (pluralForm ?? `${singular}s`) : singular;
+  return `${count} ${word}`;
+}
+
+/**
+ * Timestamp for log and event rows: date-qualified, so a correctly sorted list
+ * never *looks* unsorted.
+ *
+ * A bare `toLocaleTimeString` renders entries spanning several days as bare
+ * clock times ("16:32", "11:15", "18:45"), which reads as random order. Today
+ * and yesterday stay relative because that is how people scan recent activity;
+ * anything older carries its date. Seconds are omitted — they were always `:00`
+ * and added noise without information.
+ */
+export function formatLogTimestamp(isoDateString: string, locale?: string): string {
+  try {
+    const date = new Date(isoDateString);
+    if (Number.isNaN(date.getTime())) return isoDateString;
+    const activeLocale = locale || MARKET_CONFIG.defaultLocale;
+    const time = date.toLocaleTimeString(activeLocale, { hour: '2-digit', minute: '2-digit' });
+
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const dayDelta = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86_400_000);
+
+    if (dayDelta === 0) return `Aujourd'hui ${time}`;
+    if (dayDelta === 1) return `Hier ${time}`;
+
+    const sameYear = date.getFullYear() === new Date().getFullYear();
+    const day = date.toLocaleDateString(activeLocale, {
+      day: 'numeric',
+      month: 'short',
+      ...(sameYear ? {} : { year: 'numeric' }),
+    });
+    return `${day} ${time}`;
+  } catch {
+    return isoDateString;
+  }
+}
+
+/**
  * Format phone number for display
  */
 export function formatPhoneNumber(phone: string): string {

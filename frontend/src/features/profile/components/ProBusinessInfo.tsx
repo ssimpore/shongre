@@ -103,7 +103,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
           {seller.storeOpeningHours ? (
             <div className="space-y-3 text-xs text-stone-700">
               <div className="flex items-center gap-2">
-                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-success" />
                 <span className="font-bold text-stone-900">Boutique physique ouverte</span>
               </div>
               <p className="p-3 bg-bg-base rounded-xl border border-border-base font-medium leading-relaxed">
@@ -141,7 +141,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
         {/* Guarantees & Commitments */}
         <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border-subtle">
-            <ShieldCheck className="w-4 h-4 text-emerald-700" />
+            <ShieldCheck className="w-4 h-4 text-success" />
             <h4 className="text-sm font-black text-stone-900">
               Engagements & Services professionnels
             </h4>
@@ -149,11 +149,11 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
 
           <div className="space-y-2.5 text-xs text-stone-700">
             {/* Return Policy */}
-            <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
-              <RotateCcw className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-success-surface/50 border border-success-border">
+              <RotateCcw className="w-4 h-4 text-success shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold text-emerald-950 block">Droit de rétractation</span>
-                <span className="text-emerald-800 text-xs">
+                <span className="font-bold text-success block">Droit de rétractation</span>
+                <span className="text-success text-xs">
                   {seller.returnPolicy || '14 jours francs pour retourner l\'article conformément au Code de la consommation.'}
                 </span>
               </div>

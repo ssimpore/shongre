@@ -103,7 +103,7 @@ export const RegisterChoicePage: React.FC = () => {
 
         {/* FAQ note */}
         <div className="mt-6 p-4 rounded-xl bg-stone-100/60 border border-stone-200 text-xs text-stone-600 flex items-start gap-3">
-          <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
           <div>
             <strong className="text-stone-900">Évolution de compte souple :</strong> Vous commencez en tant que particulier et souhaitez ouvrir une boutique plus tard ? Vous pourrez passer en compte professionnel en 1 clic depuis vos paramètres.
           </div>
@@ -183,8 +183,8 @@ export const RegisterIndividualPage: React.FC = () => {
       }}
     >
       {errorMessage && (
-        <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+        <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
       )}
@@ -467,7 +467,7 @@ export const RegisterProPage: React.FC = () => {
         {/* Step progress bar */}
         <div className="mb-6 flex items-center justify-center gap-3 text-xs font-bold">
           <div className={`flex items-center gap-1.5 ${step === 1 ? 'text-primary' : 'text-success'}`}>
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? 'bg-primary text-white' : 'bg-emerald-100 text-emerald-700'}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? 'bg-primary text-white' : 'bg-success-surface text-success'}`}>
               {step > 1 ? <Check className="w-3.5 h-3.5" /> : '1'}
             </span>
             <span>Identité du gérant</span>
@@ -483,8 +483,8 @@ export const RegisterProPage: React.FC = () => {
 
         <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xl shadow-stone-200/40 p-6 sm:p-8">
           {errorMessage && (
-            <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMessage}</div>
             </div>
           )}

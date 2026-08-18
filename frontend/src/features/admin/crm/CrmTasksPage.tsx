@@ -162,6 +162,17 @@ export const CrmTasksPage: React.FC = () => {
             title="Aucune tâche dans cette vue"
             description="Les relances planifiées apparaîtront ici. Changez de filtre pour consulter les autres échéances."
             className="border-0 shadow-none"
+            action={
+              filter === 'all' ? (
+                <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
+                  Créer une tâche
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setFilter('all')}>
+                  Voir toutes les tâches
+                </Button>
+              )
+            }
           />
         ) : (
           <div className="divide-y divide-border-subtle">
@@ -254,6 +265,7 @@ export const CrmTasksPage: React.FC = () => {
 
             <FormField label="Priorité">
               <Select
+                aria-label="Priorité de la tâche"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 options={[

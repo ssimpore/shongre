@@ -26,6 +26,7 @@ import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Button } from '../../design-system/primitives/Button';
 import { Input, Checkbox, Select } from '../../design-system/primitives/FormField';
 import { Drawer } from '../../design-system/primitives/Modal';
+import { plural } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { NoResultsFound } from '../../design-system/primitives/NoResultsFound';
 import { ExploreMapView } from './ExploreMapView';
@@ -198,21 +199,29 @@ export const SearchPage: React.FC = () => {
 
       {/* Page heading. The search results are the page's subject, so they need a
           real h1 — it was previously the only top-level route with none. */}
-      <div className="mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
+      <div className="mb-3 sm:mb-4">
+        <h1 className="text-lg sm:text-2xl font-bold text-stone-900 tracking-tight">
           {pageHeading}
         </h1>
-        <p className="text-sm text-stone-500 mt-1" aria-live="polite" aria-atomic="true">
+        {/* The visible result count lives in the results toolbar, next to the
+            controls that change it. Printing it here too cost a line of mobile
+            fold for no new information — but the live region still has to
+            announce it, so it stays for assistive tech and shows from sm up. */}
+        <p
+          className="text-sm text-stone-500 mt-1 sr-only sm:not-sr-only"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {isLoading
             ? 'Recherche en cours…'
-            : `${totalCount} annonce${totalCount > 1 ? 's' : ''} ${
+            : `${plural(totalCount, 'annonce')} ${
                 totalCount > 1 ? 'correspondent' : 'correspond'
               } à votre recherche`}
         </p>
       </div>
 
       {/* Top Search bar on Search Page */}
-      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-border-base shadow-xs mb-6">
+      <div className="bg-white p-2 sm:p-4 rounded-2xl border border-border-base shadow-xs mb-4 sm:mb-6">
         <GlobalSearchBar
           variant="search-page"
           idPrefix="search-page"
@@ -299,7 +308,7 @@ export const SearchPage: React.FC = () => {
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs text-stone-500 hover:text-red-600 font-semibold underline ml-2 cursor-pointer"
+              className="text-xs text-stone-500 hover:text-danger font-semibold underline ml-2 cursor-pointer"
             >
               Effacer tout
             </button>
@@ -451,7 +460,7 @@ export const SearchPage: React.FC = () => {
                     { value: 'individual', label: 'Particuliers uniquement' },
                     { value: 'pro', label: 'Professionnels (Boutiques)' },
                   ].map((s) => (
-                    <label key={s.value} className="flex items-center gap-2 text-xs font-medium text-stone-700 cursor-pointer">
+                    <label key={s.value} className="flex items-center gap-2 min-h-6 text-xs font-medium text-stone-700 cursor-pointer">
                       <input
                         type="radio"
                         name="sellerType"
@@ -474,6 +483,7 @@ export const SearchPage: React.FC = () => {
                   <Input
                     type="number"
                     placeholder="Min"
+                    aria-label="Prix minimum en euros"
                     value={tempMinPrice}
                     onChange={(e) => setTempMinPrice(e.target.value)}
                     className="h-8 text-xs"
@@ -481,6 +491,7 @@ export const SearchPage: React.FC = () => {
                   <Input
                     type="number"
                     placeholder="Max"
+                    aria-label="Prix maximum en euros"
                     value={tempMaxPrice}
                     onChange={(e) => setTempMaxPrice(e.target.value)}
                     className="h-8 text-xs"
@@ -559,6 +570,7 @@ export const SearchPage: React.FC = () => {
                             <Input
                               type="number"
                               placeholder="Min"
+                    aria-label="Prix minimum en euros"
                               value={searchParams.get(`attr_${attr.code}_min`) || ''}
                               onChange={(e) => updateFilter(`attr_${attr.code}_min`, e.target.value || undefined)}
                               className="h-8 text-xs"
@@ -566,6 +578,7 @@ export const SearchPage: React.FC = () => {
                             <Input
                               type="number"
                               placeholder="Max"
+                    aria-label="Prix maximum en euros"
                               value={searchParams.get(`attr_${attr.code}_max`) || ''}
                               onChange={(e) => updateFilter(`attr_${attr.code}_max`, e.target.value || undefined)}
                               className="h-8 text-xs"
@@ -588,10 +601,10 @@ export const SearchPage: React.FC = () => {
         <div className={showDesktopFilters ? "lg:col-span-3 space-y-4" : "w-full space-y-4"}>
           
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
-          <div className="bg-white p-3.5 rounded-xl border border-border-base flex items-center justify-between gap-x-3 gap-y-2 flex-wrap">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-white p-3.5 rounded-xl border border-border-base flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap">
+            <div className="flex items-center gap-3 min-w-0 shrink">
               <span className="text-sm font-bold text-stone-900 shrink-0">
-                {totalCount} annonce{totalCount > 1 ? 's' : ''}
+                {plural(totalCount, 'annonce')}
               </span>
 
               {/* Desktop Toggle Filter Panel Button */}
@@ -629,7 +642,7 @@ export const SearchPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center gap-2 min-w-0 flex-wrap justify-end">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap lg:flex-nowrap justify-end">
               {/* Mobile Filter Button with active count indicator */}
               <button
                 type="button"
@@ -657,7 +670,7 @@ export const SearchPage: React.FC = () => {
                   aria-label="Trier les résultats"
                   value={sortBy}
                   onChange={(e) => updateFilter('sortBy', e.target.value)}
-                  className="min-w-0 bg-bg-base border border-border-base rounded-lg px-2.5 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-primary cursor-pointer"
+                  className="min-w-0 max-w-[10.5rem] truncate bg-bg-base border border-border-base rounded-lg px-2.5 py-1.5 text-xs font-semibold text-stone-800 focus:outline-none focus:border-primary cursor-pointer"
                 >
                   <option value="date_desc">Plus récentes</option>
                   <option value="price_asc">Prix : croissant</option>
@@ -927,12 +940,14 @@ export const SearchPage: React.FC = () => {
                         <Input
                           type="number"
                           placeholder="Min"
+                    aria-label="Prix minimum en euros"
                           value={searchParams.get(`attr_${attr.code}_min`) || ''}
                           onChange={(e) => updateFilter(`attr_${attr.code}_min`, e.target.value || undefined)}
                         />
                         <Input
                           type="number"
                           placeholder="Max"
+                    aria-label="Prix maximum en euros"
                           value={searchParams.get(`attr_${attr.code}_max`) || ''}
                           onChange={(e) => updateFilter(`attr_${attr.code}_max`, e.target.value || undefined)}
                         />

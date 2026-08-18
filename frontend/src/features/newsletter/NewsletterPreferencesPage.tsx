@@ -130,7 +130,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
           <div
             className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
               isSubscribed
-                ? 'bg-emerald-100 text-emerald-700'
+                ? 'bg-success-surface text-success'
                 : 'bg-stone-100 text-stone-500'
             }`}
           >
@@ -205,7 +205,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
 
       {/* 4. Transactional Communication Isolation Notice */}
       <div className="p-4 bg-stone-50 border border-border-base rounded-2xl flex items-start gap-3 text-xs text-stone-600">
-        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+        <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-bold text-stone-900 block">
             Communications obligatoires de service

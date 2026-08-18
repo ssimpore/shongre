@@ -59,25 +59,25 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
       description="Les fonds sous séquestre resteront gelés jusqu'à résolution par le service client Shongre."
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 flex items-start gap-2.5">
-          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-3 bg-warning-surface border border-warning-border rounded-xl text-warning flex items-start gap-2.5">
+          <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-amber-950">Protection Acheteur & Vendeur active</p>
-            <p className="text-micro text-amber-800 mt-0.5">
+            <p className="font-bold text-warning">Protection Acheteur & Vendeur active</p>
+            <p className="text-micro text-warning mt-0.5">
               En ouvrant ce dossier, aucun versement ne sera exécuté tant que la situation n'est pas clarifiée entre les deux parties ou arbitrée par nos équipes.
             </p>
           </div>
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-medium">
+          <div className="p-3 bg-danger-surface border border-danger-border text-danger rounded-xl font-medium">
             {error}
           </div>
         )}
 
         <div>
           <label className="block font-bold text-stone-700 mb-1.5">
-            Motif principal du litige <span className="text-rose-500">*</span>
+            Motif principal du litige <span className="text-danger">*</span>
           </label>
           <select
             value={reason}
@@ -94,7 +94,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
 
         <div>
           <label className="block font-bold text-stone-700 mb-1.5">
-            Description détaillée des faits <span className="text-rose-500">*</span>
+            Description détaillée des faits <span className="text-danger">*</span>
           </label>
           <textarea
             rows={4}

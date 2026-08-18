@@ -1,3 +1,4 @@
+export * from './demo-ai.service';
 export * from './demo-listings.service';
 export * from './demo-search.service';
 export * from './demo-auth.service';

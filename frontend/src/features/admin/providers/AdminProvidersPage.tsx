@@ -102,7 +102,7 @@ export const AdminProvidersPage: React.FC = () => {
             size="sm"
             onClick={handleRefresh}
             leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-            className="text-xs h-9 font-semibold"
+            className="text-xs h-control-md font-semibold"
           >
             Actualiser
           </Button>

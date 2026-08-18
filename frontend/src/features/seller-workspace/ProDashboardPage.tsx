@@ -108,7 +108,7 @@ export const ProDashboardPage: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
             <span>Demandes & Contacts</span>
-            <MessageSquare className="w-4 h-4 text-sky-600" />
+            <MessageSquare className="w-4 h-4 text-info" />
           </div>
           <div className="text-2xl font-black text-stone-900">194</div>
           <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
@@ -128,7 +128,7 @@ export const ProDashboardPage: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
             <span>Volume de ventes estimé</span>
-            <DollarSign className="w-4 h-4 text-emerald-600" />
+            <DollarSign className="w-4 h-4 text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">{formatPrice(14250)}</div>
           <div className="text-xs text-stone-500 mt-1">Ce mois-ci</div>
@@ -151,7 +151,7 @@ export const ProDashboardPage: React.FC = () => {
               <div key={item.day} className="flex flex-col items-center gap-1.5 h-full justify-end">
                 <div className="text-micro font-bold text-stone-600">{item.views}</div>
                 <div
-                  className="w-full max-w-[40px] bg-gradient-to-t from-primary to-orange-400 rounded-t-lg transition-all duration-300 hover:opacity-90 shadow-2xs"
+                  className="w-full max-w-[40px] bg-gradient-to-t from-primary to-orange-400 rounded-t-lg transition-all duration-normal hover:opacity-90 shadow-2xs"
                   style={{ height: `${heightPercent}%` }}
                 />
                 <span className="text-xs font-bold text-stone-500">{item.day}</span>

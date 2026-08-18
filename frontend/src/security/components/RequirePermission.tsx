@@ -13,8 +13,121 @@ export interface RequirePermissionProps {
   options?: AuthorizationContextOptions;
   customTitle?: string;
   customMessage?: string;
+  /**
+   * Set when the guard sits outside `MainLayout` — the `/admin` tree is a
+   * top-level route, so a denial there rendered as a bare card with no header
+   * and no footer, stranding the user. Adds a minimal branded bar with a way home.
+   */
+  standalone?: boolean;
   children: React.ReactNode;
 }
+
+interface DenialCopy {
+  title: string;
+  message: string;
+  /** Where the user can actually go to obtain this capability, when such a path exists. */
+  action?: { label: string; to: string };
+}
+
+/**
+ * User-facing copy for each guarded capability.
+ *
+ * The previous fallback interpolated the raw permission constant — so a buyer who
+ * tapped the header's primary "Déposer une annonce" button was told they lacked
+ * `[listing.create]`. A denial has to say what the person cannot do in their own
+ * vocabulary, and, wherever one exists, offer the door that leads forward.
+ */
+const DENIAL_COPY: Partial<Record<Permission, DenialCopy>> = {
+  'listing.create': {
+    title: 'Créez un compte vendeur pour publier',
+    message:
+      'La publication d\'annonces est réservée aux comptes vendeurs. La création est gratuite et ne prend qu\'une minute.',
+    action: { label: 'Devenir vendeur', to: '/inscription' },
+  },
+  'message.read.own': {
+    title: 'Connectez-vous pour voir vos messages',
+    message: 'Votre messagerie est privée : connectez-vous pour retrouver vos échanges.',
+    action: { label: 'Se connecter', to: '/connexion' },
+  },
+  'moderation.review': {
+    title: 'Espace de modération',
+    message: 'La revue des signalements est réservée aux équipes de modération Shongre.',
+  },
+  'user.read': {
+    title: 'Gestion des comptes',
+    message: 'La consultation des comptes utilisateurs est réservée aux équipes internes habilitées.',
+  },
+  'market.manage': {
+    title: 'Configuration des marchés',
+    message: 'Le paramétrage des marchés est réservé aux responsables de marché.',
+  },
+  'taxonomy.manage': {
+    title: 'Gestion du catalogue',
+    message: 'La structure des catégories est gérée par les équipes contenu de Shongre.',
+  },
+  'monetization.manage': {
+    title: 'Forfaits et monétisation',
+    message: 'La configuration des forfaits est réservée aux équipes finance de Shongre.',
+  },
+  'provider.read': {
+    title: 'Fournisseurs et intégrations',
+    message: 'Le registre des fournisseurs est réservé aux équipes techniques de Shongre.',
+  },
+  'audit.read': {
+    title: 'Registre d\'audit',
+    message: 'Le journal de sécurité est réservé aux administrateurs de la plateforme.',
+  },
+  'crm.access': {
+    title: 'Espace commercial',
+    message: 'Le CRM est réservé aux équipes commerciales de Shongre.',
+  },
+  'crm.contact.read': {
+    title: 'Espace commercial',
+    message: 'La consultation des contacts est réservée aux équipes commerciales de Shongre.',
+  },
+  'crm.company.read': {
+    title: 'Espace commercial',
+    message: 'La consultation des entreprises est réservée aux équipes commerciales de Shongre.',
+  },
+  'crm.opportunity.read': {
+    title: 'Espace commercial',
+    message: 'Le pipeline commercial est réservé aux équipes commerciales de Shongre.',
+  },
+  'crm.ai_prospecting.use': {
+    title: 'Prospection assistée',
+    message: 'La prospection assistée par IA est réservée aux équipes commerciales de Shongre.',
+  },
+};
+
+const FALLBACK_DENIAL: DenialCopy = {
+  title: 'Accès restreint',
+  message:
+    "Votre compte n'a pas accès à cette page. Si vous pensez qu'il s'agit d'une erreur, contactez notre support.",
+  action: { label: 'Contacter le support', to: '/contact' },
+};
+
+/** Keeps a route home when the denial renders outside the site shell. */
+const GuardShell: React.FC<{ standalone?: boolean; children: React.ReactNode }> = ({
+  standalone,
+  children,
+}) => {
+  if (!standalone) return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-bg-base flex flex-col">
+      <div className="border-b border-border-base bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center">
+          <Link to={routes.home()} className="flex items-center gap-2.5 font-black text-stone-900">
+            <span className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center text-sm">
+              S
+            </span>
+            <span className="tracking-tight">SHONGRE.</span>
+          </Link>
+        </div>
+      </div>
+      <div className="flex-1 flex items-center justify-center">{children}</div>
+    </div>
+  );
+};
 
 export const RequirePermission: React.FC<RequirePermissionProps> = ({
   permission,
@@ -22,34 +135,40 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   options,
   customTitle,
   customMessage,
+  standalone,
   children,
 }) => {
   const { currentUser, can, isSuspended, isPro } = useAuthorization();
 
   if (!currentUser) {
     return (
+      <GuardShell standalone={standalone}>
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
           <Lock className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-black text-stone-900 mb-2">Authentification requise</h1>
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">
           Vous devez être connecté pour accéder à cette section.
         </p>
-        <Link to="/connexion">
-          <Button variant="primary" size="md">
-            Se connecter
-          </Button>
-        </Link>
+        <Button
+          to="/connexion"
+          variant="primary"
+          size="md"
+        >
+          Se connecter
+        </Button>
       </div>
+      </GuardShell>
     );
   }
 
   // Check Suspended state
   if (isSuspended) {
     return (
+      <GuardShell standalone={standalone}>
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-200 text-red-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
           <ShieldAlert className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-black text-stone-900 mb-2">Compte suspendu</h1>
@@ -58,12 +177,15 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
             ? `Votre compte a été restreint par nos équipes : "${currentUser.suspendedReason}".`
             : 'Votre compte fait l\'objet d\'une restriction temporaire pour des raisons de conformité.'}
         </p>
-        <Link to="/aide">
-          <Button variant="outline" size="md">
-            Contacter le support de sécurité
-          </Button>
-        </Link>
+        <Button
+          to="/aide"
+          variant="outline"
+          size="md"
+        >
+          Contacter le support de sécurité
+        </Button>
       </div>
+      </GuardShell>
     );
   }
 
@@ -74,8 +196,9 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
     // Specific UX if Pro permission required
     if (permission.startsWith('store.') || permission === 'listing.bulk_import' || permission === 'subscription.manage.own') {
       return (
+        <GuardShell standalone={standalone}>
         <div className="max-w-xl mx-auto px-4 py-16 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 text-primary flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-primary-light border border-primary-border text-primary flex items-center justify-center mx-auto mb-4">
             <Briefcase className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-black text-stone-900 mb-2">
@@ -86,47 +209,62 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
               'Cette fonctionnalité (vitrine officielle, multi-annonces, statistiques avancées) est réservée aux comptes professionnels vérifiés.'}
           </p>
           <div className="flex items-center justify-center gap-3">
-            <Link to="/solutions-pro">
-              <Button variant="primary" size="md">
-                Découvrir les offres Pro
-              </Button>
-            </Link>
-            <Link to="/compte">
-              <Button variant="outline" size="md" leftIcon={<ArrowLeft className="w-4 h-4" />}>
-                Retour à mon compte
-              </Button>
-            </Link>
+            <Button
+              to="/solutions-pro"
+              variant="primary"
+              size="md"
+            >
+              Découvrir les offres Pro
+            </Button>
+            <Button
+              to="/compte"
+              variant="outline"
+              size="md"
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+            >
+              Retour à mon compte
+            </Button>
           </div>
         </div>
+        </GuardShell>
       );
     }
 
     // Default 403 Forbidden Guard Card
+    const copy = DENIAL_COPY[permission] ?? FALLBACK_DENIAL;
+    const forward = copy.action ?? { label: 'Accéder à mon espace', to: '/compte' };
+
     return (
+      <GuardShell standalone={standalone}>
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-black text-stone-900 mb-2">
-          {customTitle || 'Accès restreint'}
+          {customTitle || copy.title}
         </h1>
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
-          {customMessage ||
-            `Votre profil ne dispose pas de l'autorisation requise [${permission}] pour afficher cette page ou administrer cette ressource.`}
+          {customMessage || copy.message}
         </p>
-        <div className="flex items-center justify-center gap-3">
-          <Link to={routes.home()}>
-            <Button variant="outline" size="md" leftIcon={<ArrowLeft className="w-4 h-4" />}>
-              Retour à l'accueil
-            </Button>
-          </Link>
-          <Link to="/compte">
-            <Button variant="primary" size="md">
-              Accéder à mon espace
-            </Button>
-          </Link>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            to={routes.home()}
+            variant="outline"
+            size="md"
+            leftIcon={<ArrowLeft className="w-4 h-4" />}
+          >
+            Retour à l'accueil
+          </Button>
+          <Button
+            to={forward.to}
+            variant="primary"
+            size="md"
+          >
+            {forward.label}
+          </Button>
         </div>
       </div>
+      </GuardShell>
     );
   }
 

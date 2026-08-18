@@ -5,6 +5,8 @@ import {
   formatPrice,
   formatDate,
   formatPhoneNumber,
+  formatLogTimestamp,
+  plural,
 } from './formatters';
 
 describe('formatRelativeTimestamp', () => {
@@ -99,5 +101,51 @@ describe('other formatters', () => {
 
   it('formats phone numbers properly', () => {
     expect(formatPhoneNumber('0612345678')).toBe('06 12 34 56 78');
+  });
+});
+
+describe('plural', () => {
+  it('keeps the singular at 1 — the "1 rubriques" bug', () => {
+    expect(plural(1, 'rubrique')).toBe('1 rubrique');
+  });
+
+  it('treats 0 as singular, per French usage', () => {
+    expect(plural(0, 'annonce')).toBe('0 annonce');
+  });
+
+  it('pluralises from 2 upward', () => {
+    expect(plural(2, 'rubrique')).toBe('2 rubriques');
+    expect(plural(17, 'annonce')).toBe('17 annonces');
+  });
+
+  it('accepts an irregular plural form', () => {
+    expect(plural(2, 'journal', 'journaux')).toBe('2 journaux');
+    expect(plural(1, 'journal', 'journaux')).toBe('1 journal');
+  });
+});
+
+describe('formatLogTimestamp', () => {
+  it('qualifies older entries with a date so ordering stays legible', () => {
+    // Four audit entries spanning six days used to render as bare clock times
+    // (16:32, 11:15, 18:45, 13:20), which reads as unsorted.
+    const older = formatLogTimestamp('2020-08-12T16:45:00Z');
+    expect(older).toMatch(/\d/);
+    expect(older).not.toMatch(/^\d{2}:\d{2}$/);
+    expect(older).toContain('2020');
+  });
+
+  it('uses relative wording for today and yesterday', () => {
+    const now = new Date();
+    expect(formatLogTimestamp(now.toISOString())).toContain("Aujourd'hui");
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    expect(formatLogTimestamp(yesterday.toISOString())).toContain('Hier');
+  });
+
+  it('omits seconds', () => {
+    expect(formatLogTimestamp('2020-08-12T16:45:30Z')).not.toMatch(/:\d{2}:\d{2}/);
+  });
+
+  it('returns the input unchanged when it is not a date', () => {
+    expect(formatLogTimestamp('not-a-date')).toBe('not-a-date');
   });
 });

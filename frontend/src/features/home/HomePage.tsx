@@ -39,11 +39,12 @@ import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { NewsletterSignup } from '../newsletter/components/NewsletterSignup';
-import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
-import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
+import { usePublishCta } from '../../security/usePublishCta';
+import { plural } from '../../utilities/formatters';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const publishCta = usePublishCta();
   const { location: userLocation, openLocationModal } = useMarketLocation();
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
@@ -109,53 +110,54 @@ export const HomePage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Integrated Hero Search Box & Popular Quick Tags */}
-              <div className="space-y-2.5 sm:space-y-3 w-full">
-                <GlobalSearchBar
-                  variant="hero"
-                  idPrefix="hero-search"
-                  showCategory={true}
-                  showLocation={true}
-                />
-
-                {/* Inline Quick Search Trending Tags */}
-                <div className="flex items-center gap-1.5 flex-wrap text-xs pt-0.5">
-                  <span className="text-stone-500 font-semibold text-micro uppercase tracking-wider flex items-center gap-1 shrink-0">
-                    <Sparkles className="w-3 h-3 text-primary" />
-                    Tendance :
-                  </span>
-                  {['iPhone', 'Vélo électrique', 'Canapé', 'Voiture', 'PlayStation 5'].map((term) => (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => navigate(routes.search(term))}
-                      className="px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white border border-border-base text-stone-600 hover:text-primary hover:border-primary-border transition-all cursor-pointer font-semibold text-xs shadow-2xs shrink-0"
-                    >
-                      {term}
-                    </button>
-                  ))}
-                </div>
+              {/* Quick search suggestions.
+                  Search itself lives in the header, which is sticky and therefore
+                  available from anywhere on the page — the hero no longer carries
+                  a second copy of the same field. These chips remain because they
+                  are shortcuts to results, not an input: each one navigates
+                  straight to a search. */}
+              <div className="flex items-center gap-1.5 flex-wrap text-xs w-full">
+                <span className="text-stone-500 font-semibold text-micro uppercase tracking-wider flex items-center gap-1 shrink-0">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  Tendance :
+                </span>
+                {popularSearches.map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => navigate(routes.search(term))}
+                    className="px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white border border-border-base text-stone-600 hover:text-primary hover:border-primary-border transition-all cursor-pointer font-semibold text-xs shadow-2xs shrink-0"
+                  >
+                    {term}
+                  </button>
+                ))}
               </div>
 
-              {/* Hero Secondary Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2 sm:pt-3 border-t border-stone-200/60 w-full">
-                <button
-                  type="button"
-                  onClick={() => navigate('/deposer')}
-                  className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer w-full"
-                >
-                  <PlusCircle className="w-4 h-4 text-primary" />
-                  <span>Déposer une annonce</span>
-                </button>
+              {/* Hero Secondary Actions.
+                  From sm up the row shrinks to its content (`w-fit`) while the two
+                  `1fr` tracks stay equal, so both buttons size to the wider label
+                  rather than stretching across the column. Full-width stacked on
+                  phones, where edge-to-edge is the better target. */}
+              <div className="border-t border-stone-200/60 pt-2 sm:pt-3 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full sm:w-fit">
+                  <button
+                    type="button"
+                    onClick={() => navigate(publishCta.to)}
+                    className="h-10 sm:h-11 px-4 sm:px-6 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer w-full whitespace-nowrap"
+                  >
+                    <PlusCircle className="w-4 h-4 text-primary shrink-0" />
+                    <span>{publishCta.label}</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => navigate('/recherche?view=map')}
-                  className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl border border-border-base bg-white hover:bg-bg-base text-stone-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs w-full"
-                >
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <span>Explorer sur la carte</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/recherche?view=map')}
+                    className="h-10 sm:h-11 px-4 sm:px-6 rounded-xl border border-border-base bg-white hover:bg-bg-base text-stone-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs w-full whitespace-nowrap"
+                  >
+                    <MapPin className="w-4 h-4 text-primary shrink-0" />
+                    <span>Explorer sur la carte</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -167,30 +169,6 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Popular Searches Chips & Map Explorer shortcut */}
-          <div className="flex items-center justify-start gap-1.5 flex-wrap mt-6 sm:mt-8 pt-3 sm:pt-4 border-t border-border-base/60 text-xs">
-            <button
-              type="button"
-              onClick={() => navigate('/recherche?view=map')}
-              className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-primary-light border border-primary-border text-primary hover:bg-primary-light/80 transition-colors cursor-pointer font-bold text-xs flex items-center gap-1 shrink-0"
-            >
-              <MapPin className="w-3.5 h-3.5 text-primary" />
-              <span>Carte</span>
-            </button>
-            <span className="text-stone-500 font-semibold text-xs ml-1 shrink-0">Populaires :</span>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {popularSearches.slice(0, 8).map((term) => (
-                <button
-                  key={term}
-                  type="button"
-                  onClick={() => navigate(routes.search(term))}
-                  className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white border border-border-base text-stone-700 hover:border-primary hover:text-primary hover:shadow-xs transition-all cursor-pointer font-medium text-xs shrink-0"
-                >
-                  {term}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -219,7 +197,7 @@ export const HomePage: React.FC = () => {
             <Link
               key={cat.id}
               to={`/categorie/${cat.slug}`}
-              className="group bg-white rounded-2xl border border-border-base hover:border-primary hover:shadow-md p-2 sm:p-3.5 flex flex-col items-center text-center transition-all duration-200"
+              className="group bg-white rounded-2xl border border-border-base hover:border-primary hover:shadow-md p-2 sm:p-3.5 flex flex-col items-center text-center transition-all duration-normal"
             >
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-bg-base group-hover:bg-primary-light flex items-center justify-center mb-1.5 sm:mb-2 transition-colors shrink-0">
                 <CategoryIcon category={cat} size="lg" />
@@ -231,7 +209,7 @@ export const HomePage: React.FC = () => {
                 {getTaxonomyLabel(cat, 'compact')}
               </h3>
               <span className="hidden sm:block text-micro text-stone-500 mt-0.5">
-                {cat.subCategories.length} rubriques
+                {plural(cat.subCategories.length, 'rubrique')}
               </span>
             </Link>
           ))}
