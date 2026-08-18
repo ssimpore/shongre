@@ -345,23 +345,26 @@ export const ListingDetailPage: React.FC = () => {
           <ListingMediaGallery photos={listing.photos} title={listing.title} />
 
           {/* 2. PRIMARY SUMMARY CARD */}
-          <div className="bg-white rounded-2xl border border-border-base p-6 space-y-4 shadow-xs">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1.5 flex-1">
+          <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm relative overflow-hidden">
+            {/* Subtle background glow */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="flex items-start justify-between gap-4 relative z-10">
+              <div className="space-y-2 flex-1">
                 {/* Badges strip: Category, Pro, Boosted */}
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap mb-2">
                   <Badge variant="primary" size="md">{listing.categoryLabel}</Badge>
                   {isProSeller(listing) && <Badge variant="pro" size="md">Vendeur Pro</Badge>}
                   {listing.isBoosted && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
-                      <Sparkles className="w-3 h-3 text-warning" />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
+                      <Sparkles className="w-3.5 h-3.5 text-warning" />
                       À la une
                     </span>
                   )}
                 </div>
 
                 {/* Main H1 Title */}
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 leading-[1.1] tracking-[-0.01em]">
                   {listing.title}
                 </h1>
               </div>
@@ -371,14 +374,14 @@ export const ListingDetailPage: React.FC = () => {
                 type="button"
                 onClick={handleFavoriteToggle}
                 aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                className="p-3 rounded-full bg-stone-50 hover:bg-primary-light text-stone-600 hover:text-primary transition-colors cursor-pointer shrink-0 border border-border-base shadow-2xs"
+                className="p-3.5 rounded-2xl bg-white hover:bg-primary/5 text-stone-400 hover:text-primary transition-all duration-fast cursor-pointer shrink-0 border border-stone-200 shadow-xs hover:shadow-sm hover:-translate-y-0.5 group"
               >
-                <Heart className={`w-6 h-6 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
+                <Heart className={`w-6 h-6 transition-all duration-fast ${isFavorite ? 'fill-primary text-primary scale-110' : 'group-hover:scale-110'}`} />
               </button>
             </div>
 
             {/* Main Price on Mobile (< lg) */}
-            <div className="lg:hidden pt-1 pb-2">
+            <div className="lg:hidden pt-2 pb-3">
               <PriceDisplay
                 price={listing.price}
                 originalPrice={listing.originalPrice}
@@ -394,7 +397,7 @@ export const ListingDetailPage: React.FC = () => {
                 {summaryAttributes.map((attrText, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-3 py-1.5 rounded-xl bg-bg-base text-xs font-bold text-stone-800 border border-border-base"
+                    className="inline-flex items-center px-3.5 py-2 rounded-xl bg-stone-50 text-xs font-bold text-stone-700 border border-stone-200/60"
                   >
                     {attrText}
                   </span>
@@ -403,13 +406,13 @@ export const ListingDetailPage: React.FC = () => {
             )}
 
             {/* Metadata Footer: Location, Publication Date */}
-            <div className="flex items-center gap-4 text-xs text-stone-500 pt-3 border-t border-border-subtle flex-wrap">
-              <span className="flex items-center gap-1 font-semibold text-stone-700">
+            <div className="flex items-center gap-4 text-xs font-medium text-stone-500 pt-5 mt-2 border-t border-stone-100 flex-wrap">
+              <span className="flex items-center gap-1.5 text-stone-700">
                 <MapPin className="w-4 h-4 text-primary" />
                 {listing.city} ({listing.postalCode})
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-stone-400" />
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-stone-400" />
                 Publiée {formatRelativeDate(listing.createdAt)}
               </span>
             </div>
@@ -419,25 +422,28 @@ export const ListingDetailPage: React.FC = () => {
           <ListingCharacteristics groups={groupedCharacteristics} />
 
           {/* 4. DESCRIPTION */}
-          <div className="bg-white rounded-2xl border border-border-base p-6 space-y-3 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-stone-900 uppercase tracking-wider pb-2 border-b border-border-subtle">
+          <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-4 shadow-sm">
+            <h2 className="text-base font-black text-stone-900 pb-3 border-b border-stone-100 flex items-center gap-2">
               Description
             </h2>
             <div
-              className={`text-xs sm:text-sm text-stone-700 leading-relaxed whitespace-pre-line font-normal ${
-                !isDescriptionExpanded && listing.description.length > 450 ? 'line-clamp-6' : ''
+              className={`text-sm text-stone-600 leading-[1.7] whitespace-pre-line font-medium ${
+                !isDescriptionExpanded && listing.description.length > 450 ? 'line-clamp-6 relative' : ''
               }`}
             >
               {listing.description}
+              {!isDescriptionExpanded && listing.description.length > 450 && (
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+              )}
             </div>
 
             {listing.description.length > 450 && (
               <button
                 type="button"
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className="text-xs font-bold text-primary hover:underline pt-1 cursor-pointer"
+                className="text-sm font-bold text-primary hover:text-primary-hover hover:underline pt-2 cursor-pointer transition-colors"
               >
-                {isDescriptionExpanded ? 'Afficher moins' : 'Afficher la suite de la description'}
+                {isDescriptionExpanded ? 'Afficher moins' : 'Afficher la suite'}
               </button>
             )}
           </div>
@@ -473,14 +479,14 @@ export const ListingDetailPage: React.FC = () => {
         {/* RIGHT COLUMN: Desktop Sticky Action & Transaction Panel */}
         {/* ========================================================================= */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-2xl border border-border-base p-6 space-y-5 shadow-sm sticky top-20">
+          <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-6 shadow-md sticky top-24">
             
             {/* Price Box.
                 The headline figure is the *item* price, so it must not be labelled
                 "Prix total" — when buyer protection applies, the amount actually
                 payable is larger and is emphasised in the breakdown below. */}
             <div className="space-y-1">
-              <span className="text-micro text-stone-500 font-bold uppercase tracking-wider block">
+              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
                 Prix de l'article
               </span>
               <PriceDisplay
@@ -494,21 +500,21 @@ export const ListingDetailPage: React.FC = () => {
 
             {/* Buyer fee breakdown (Only if online purchase active) */}
             {listing.isOnlinePaymentAvailable && listing.price > 0 && (
-              <div className="p-3.5 bg-bg-base/70 rounded-xl border border-border-base space-y-2 text-xs">
+              <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-2.5 text-sm">
                 <div className="flex items-center justify-between text-stone-600">
                   <span>Prix de l'article</span>
                   <span className="font-semibold">{formatPrice(listing.price)}</span>
                 </div>
                 <div className="flex items-center justify-between text-stone-600">
-                  <span className="flex items-center gap-1">
-                    Protection Acheteur Shongre
-                    <ShieldCheck className="w-3.5 h-3.5 text-success" />
+                  <span className="flex items-center gap-1.5">
+                    Protection Acheteur
+                    <ShieldCheck className="w-4 h-4 text-success" />
                   </span>
                   <span className="font-semibold">{formatPrice(buyerFee)}</span>
                 </div>
-                <div className="pt-2.5 mt-0.5 border-t border-border-base flex items-baseline justify-between">
-                  <span className="font-bold text-stone-900 text-sm">Total à payer</span>
-                  <span className="text-primary font-extrabold text-lg tabular-nums">
+                <div className="pt-3 mt-1 border-t border-stone-200 flex items-baseline justify-between">
+                  <span className="font-black text-stone-900 text-base">Total à payer</span>
+                  <span className="text-primary font-black text-xl tabular-nums">
                     {formatPrice(listing.price + buyerFee)}
                   </span>
                 </div>
@@ -519,8 +525,8 @@ export const ListingDetailPage: React.FC = () => {
             {/* OWNER ACTIONS vs BUYER ACTIONS */}
             {/* ===================================================================== */}
             {actions.isOwner ? (
-              <div className="p-4 bg-primary-light/60 border border-primary/20 rounded-xl space-y-3">
-                <div className="flex items-center gap-2 text-primary font-bold text-xs">
+              <div className="p-5 bg-primary/5 border border-primary/20 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <Edit3 className="w-4 h-4" />
                   <span>Vous êtes l'auteur de cette annonce</span>
                 </div>
@@ -528,7 +534,7 @@ export const ListingDetailPage: React.FC = () => {
                   <Button
                     to={`/deposer?edit=${listing.id}`}
                     variant="primary"
-                    size="md"
+                    size="lg"
                     fullWidth
                     leftIcon={<Edit3 className="w-4 h-4" />}
                   >
@@ -537,7 +543,7 @@ export const ListingDetailPage: React.FC = () => {
                   <Button
                     to="/compte/annonces"
                     variant="outline"
-                    size="sm"
+                    size="md"
                     fullWidth
                     leftIcon={<Sliders className="w-4 h-4" />}
                   >
@@ -547,21 +553,21 @@ export const ListingDetailPage: React.FC = () => {
               </div>
             ) : actions.statusNotice ? (
               /* Non-Active Status Notice (Reserved, Sold, Expired) */
-              <div className="p-4 bg-warning-surface border border-warning-border rounded-xl space-y-2 text-center">
-                <div className="flex items-center justify-center gap-1.5 font-bold text-warning text-sm">
-                  <Clock className="w-4 h-4 text-warning" />
+              <div className="p-5 bg-warning/10 border border-warning/20 rounded-2xl space-y-3 text-center">
+                <div className="flex items-center justify-center gap-2 font-bold text-warning text-base">
+                  <Clock className="w-5 h-5 text-warning" />
                   <span>{actions.statusNotice.title}</span>
                 </div>
-                <p className="text-xs text-warning leading-relaxed">
+                <p className="text-sm text-warning-dark leading-relaxed font-medium">
                   {actions.statusNotice.message}
                 </p>
                 {actions.statusNotice.isBuyerReserver && (
                   <Button
                     to="/compte/achats"
                     variant="primary"
-                    size="sm"
+                    size="md"
                     fullWidth
-                    className="pt-2"
+                    className="mt-2"
                   >
                     Consulter ma commande
                   </Button>
@@ -569,7 +575,7 @@ export const ListingDetailPage: React.FC = () => {
               </div>
             ) : (
               /* Active Listing Buyer Actions */
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
                   <Button
@@ -578,6 +584,7 @@ export const ListingDetailPage: React.FC = () => {
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
                     leftIcon={<ShieldCheck className="w-5 h-5" />}
+                    className="shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 py-3.5"
                   >
                     Acheter maintenant
                   </Button>
@@ -590,37 +597,39 @@ export const ListingDetailPage: React.FC = () => {
                     size={actions.primaryAction === 'reservation' ? 'lg' : 'md'}
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
-                    leftIcon={<Clock className="w-4 h-4 text-warning" />}
+                    leftIcon={<Clock className="w-5 h-5 text-warning" />}
                   >
                     Réserver l'article
                   </Button>
                 )}
 
-                {/* 3. Price Negotiation Offer */}
-                {actions.canMakeOffer && (
-                  <Button
-                    variant="outline"
-                    size="md"
-                    fullWidth
-                    onClick={() => setIsOfferModalOpen(true)}
-                    leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
-                  >
-                    Faire une offre de prix
-                  </Button>
-                )}
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  {/* 3. Price Negotiation Offer */}
+                  {actions.canMakeOffer && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      fullWidth
+                      onClick={() => setIsOfferModalOpen(true)}
+                      leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
+                    >
+                      Offre de prix
+                    </Button>
+                  )}
 
-                {/* 4. Direct Contact Message */}
-                {actions.canContact && (
-                  <Button
-                    variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
-                    size="md"
-                    fullWidth
-                    onClick={() => setIsContactModalOpen(true)}
-                    leftIcon={<MessageSquare className="w-4 h-4" />}
-                  >
-                    Contacter le vendeur
-                  </Button>
-                )}
+                  {/* 4. Direct Contact Message */}
+                  {actions.canContact && (
+                    <Button
+                      variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
+                      size="md"
+                      fullWidth
+                      onClick={() => setIsContactModalOpen(true)}
+                      leftIcon={<MessageSquare className="w-4 h-4" />}
+                    >
+                      Message
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -800,12 +809,12 @@ export const ListingDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* STICKY MOBILE ACTION BAR (< lg) */}
       {/* ========================================================================= */}
-      <div className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] bg-white/95 backdrop-blur-md border-t border-border-base p-3 shadow-lg z-30 flex items-center justify-between gap-3">
+      <div className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-micro text-stone-500 font-semibold uppercase tracking-wider">
+          <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-0.5">
             {showsBuyerFee ? 'Total à payer' : 'Prix'}
           </div>
-          <div className="text-base font-black text-stone-900 truncate tabular-nums">
+          <div className="text-lg font-black text-stone-900 truncate tabular-nums leading-none">
             {listing.isFreeDonation
               ? 'Don gratuit'
               : formatPrice(showsBuyerFee ? listing.price + buyerFee : listing.price)}

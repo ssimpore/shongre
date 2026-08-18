@@ -263,7 +263,7 @@ export const SearchPage: React.FC = () => {
       </div>
 
       {/* Top Search bar on Search Page */}
-      <div className="bg-white p-2 sm:p-4 rounded-2xl border border-border-base shadow-xs mb-4 sm:mb-6">
+      <div className="bg-white p-3 sm:p-5 rounded-3xl border border-stone-200/60 shadow-sm mb-4 sm:mb-6">
         <GlobalSearchBar
           variant="search-page"
           idPrefix="search-page"
@@ -417,10 +417,10 @@ export const SearchPage: React.FC = () => {
         {/* Desktop Sidebar Filters */}
         {showDesktopFilters && (
           <aside className="hidden lg:block lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-2xl border border-border-base p-5 space-y-6 shadow-xs">
+            <div className="bg-white rounded-3xl border border-stone-200/60 p-6 space-y-6 shadow-sm">
               
               {/* Header with collapse button */}
-              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+              <div className="flex items-center justify-between pb-4 border-b border-stone-100">
                 <span className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                   <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
                   Filtres
@@ -670,7 +670,7 @@ export const SearchPage: React.FC = () => {
         <div className={showDesktopFilters ? "lg:col-span-3 space-y-4" : "w-full space-y-4"}>
           
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
-          <div className="bg-white p-3.5 rounded-xl border border-border-base flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap">
+          <div className="bg-white p-4 rounded-2xl border border-stone-200/60 shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4">
             <div className="flex items-center gap-3 min-w-0 shrink">
               <span className="text-sm font-bold text-stone-900 shrink-0">
                 {plural(totalCount, 'annonce')}

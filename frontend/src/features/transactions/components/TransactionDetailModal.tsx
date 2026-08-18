@@ -282,44 +282,44 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         )}
 
         {/* Top Status Banner */}
-        <div className={`p-4 rounded-2xl border ${statusInfo.bg} shadow-xs`}>
+        <div className={`p-5 rounded-3xl border ${statusInfo.bg} shadow-sm`}>
           <div className="flex items-center justify-between">
             <span className="font-black text-sm uppercase tracking-wide">{statusInfo.label}</span>
-            <span className="text-micro font-bold opacity-80 font-mono">{tx.code || tx.id}</span>
+            <span className="text-xs font-bold opacity-80 font-mono">{tx.code || tx.id}</span>
           </div>
-          <p className="text-xs mt-1 opacity-90 leading-relaxed">{statusInfo.desc}</p>
+          <p className="text-sm mt-1 opacity-90 leading-relaxed font-medium">{statusInfo.desc}</p>
         </div>
 
         {/* Item & Counterpart summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Item details */}
-          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-3">
+          <div className="p-4 bg-stone-50 border border-stone-200/60 rounded-2xl flex items-center gap-4 shadow-2xs">
             <Image
               src={tx.listingPhotoUrl || tx.listingCoverImageUrl}
               alt={tx.listingTitle}
-              className="w-14 h-14 rounded-lg object-cover border border-stone-200 shrink-0"
+              className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
                 Article réservé
               </span>
-              <h4 className="font-bold text-stone-900 truncate">{tx.listingTitle}</h4>
-              <p className="text-primary font-black text-sm mt-0.5">{formatPrice(tx.amount)}</p>
+              <h4 className="font-black text-stone-900 truncate">{tx.listingTitle}</h4>
+              <p className="text-primary font-black text-base mt-0.5">{formatPrice(tx.amount)}</p>
             </div>
           </div>
 
           {/* Counterpart profile */}
-          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between">
+          <div className="p-4 bg-stone-50 border border-stone-200/60 rounded-2xl flex items-center justify-between shadow-2xs">
             <div>
-              <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
                 {isBuyer ? 'Vendeur' : 'Acheteur'}
               </span>
-              <p className="font-bold text-stone-900 mt-0.5">{isBuyer ? tx.sellerName : tx.buyerName}</p>
-              <p className="text-micro text-stone-500">
+              <p className="font-black text-stone-900">{isBuyer ? tx.sellerName : tx.buyerName}</p>
+              <p className="text-xs font-medium text-stone-500 mt-0.5">
                 Mode : {tx.deliveryMethod === 'hand_delivery' ? 'Remise en main propre' : tx.carrierName || 'Livraison'}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary-light text-primary font-black flex items-center justify-center text-sm">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary font-black flex items-center justify-center text-lg shadow-inner">
               {(isBuyer ? tx.sellerName : tx.buyerName).charAt(0)}
             </div>
           </div>
@@ -572,26 +572,26 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         )}
 
         {/* FINANCIAL SUMMARY & ESCROW STATUS */}
-        <div className="p-3.5 bg-white border border-stone-200 rounded-xl space-y-1.5">
-          <span className="font-bold text-stone-800 block mb-2">Récapitulatif financier :</span>
+        <div className="p-5 bg-white border border-stone-200/60 rounded-2xl space-y-2 shadow-2xs font-medium text-sm">
+          <span className="font-black text-stone-800 block mb-3">Récapitulatif financier :</span>
           <div className="flex justify-between text-stone-600">
             <span>Prix article :</span>
-            <span className="font-semibold text-stone-900">{formatPrice(tx.amount)}</span>
+            <span className="font-black text-stone-900">{formatPrice(tx.amount)}</span>
           </div>
           <div className="flex justify-between text-stone-600">
             <span>Protection Acheteurs Shongre :</span>
-            <span className="font-semibold text-stone-900">{formatPrice(tx.protectionFee)}</span>
+            <span className="font-black text-stone-900">{formatPrice(tx.protectionFee)}</span>
           </div>
           <div className="flex justify-between text-stone-600">
             <span>Frais de port :</span>
-            <span className="font-semibold text-stone-900">{formatPrice(tx.shippingFee)}</span>
+            <span className="font-black text-stone-900">{formatPrice(tx.shippingFee)}</span>
           </div>
-          <div className="border-t border-stone-100 pt-1.5 flex justify-between font-black text-stone-900">
+          <div className="border-t border-stone-100 pt-3 flex justify-between font-black text-stone-900 text-base">
             <span>Total réglé par l'acheteur :</span>
-            <span className="text-primary">{formatPrice(tx.totalAmount)}</span>
+            <span className="text-primary text-lg">{formatPrice(tx.totalAmount)}</span>
           </div>
           {isSeller && (
-            <div className="bg-success-surface p-2 rounded-lg mt-2 flex justify-between font-bold text-success">
+            <div className="bg-success/10 p-3 rounded-xl mt-3 flex justify-between font-bold text-success border border-success/20">
               <span>Montant net versé au vendeur :</span>
               <span>{formatPrice(tx.sellerPayoutAmount || tx.amount)}</span>
             </div>

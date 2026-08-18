@@ -72,19 +72,19 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
     >
       <div className="space-y-4 text-xs">
         {/* Available Balance Box */}
-        <div className="p-4 bg-stone-900 text-white rounded-2xl flex items-center justify-between shadow-xs">
+        <div className="p-5 bg-stone-900 text-white rounded-3xl flex items-center justify-between shadow-xs">
           <div>
-            <span className="text-micro font-bold text-stone-500 uppercase tracking-wider block">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">
               Solde Shongre disponible
             </span>
-            <span className="text-2xl font-black tracking-tight text-white mt-0.5 block">
+            <span className="text-3xl font-black tracking-tight text-white block">
               {formatPrice(availableBalance)}
             </span>
           </div>
           <button
             type="button"
             onClick={() => setAmountStr(availableBalance.toFixed(2))}
-            className="text-micro font-bold text-primary bg-primary/20 hover:bg-primary/30 px-2.5 py-1.5 rounded-lg transition-colors"
+            className="text-xs font-bold text-primary bg-primary/20 hover:bg-primary/30 px-3 py-2 rounded-xl transition-colors cursor-pointer"
           >
             Tout transférer
           </button>
@@ -98,7 +98,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
 
         {/* Amount Input */}
         <div>
-          <label className="block font-bold text-stone-700 mb-1.5">Montant du virement (€)</label>
+          <label className="block font-bold text-stone-700 mb-2 text-sm">Montant du virement (€)</label>
           <div className="relative">
             <input
               type="number"
@@ -107,83 +107,83 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
               max={availableBalance}
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
-              className="w-full h-control-touch px-3.5 pr-10 text-stone-900 bg-white rounded-xl border border-stone-200 focus:outline-none focus:border-primary font-bold text-base"
+              className="w-full h-12 px-4 pr-10 text-stone-900 bg-white rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary font-black text-lg transition-colors"
             />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-stone-500">€</span>
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-stone-500">€</span>
           </div>
         </div>
 
         {/* Payout Options */}
-        <div className="space-y-2">
-          <label className="block font-bold text-stone-700">Type de virement</label>
-          <div className="grid grid-cols-2 gap-2.5">
+        <div className="space-y-3">
+          <label className="block font-bold text-stone-700 text-sm">Type de virement</label>
+          <div className="grid grid-cols-2 gap-3 text-sm">
             <div
               onClick={() => setPayoutType('standard')}
-              className={`p-3 rounded-xl border cursor-pointer transition-all ${
+              className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
                 payoutType === 'standard'
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                  : 'border-stone-200 bg-white hover:bg-stone-50'
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                  : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-stone-900">Standard</span>
-                <span className="text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded">
+                <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
                   Gratuit
                 </span>
               </div>
-              <p className="text-micro text-stone-500">Délai SEPA classique (24 à 48h ouvrées)</p>
+              <p className="text-xs font-medium text-stone-500">Délai SEPA classique (24 à 48h ouvrées)</p>
             </div>
 
             <div
               onClick={() => setPayoutType('instant')}
-              className={`p-3 rounded-xl border cursor-pointer transition-all ${
+              className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
                 payoutType === 'instant'
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                  : 'border-stone-200 bg-white hover:bg-stone-50'
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                  : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-bold text-stone-900 flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> Instantané
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-stone-900 flex items-center gap-1.5">
+                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> Instantané
                 </span>
-                <span className="text-micro font-bold text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded">
+                <span className="text-xs font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md">
                   0,90 €
                 </span>
               </div>
-              <p className="text-micro text-stone-500">Crédité en moins de 10 minutes sur votre IBAN</p>
+              <p className="text-xs font-medium text-stone-500">Crédité en moins de 10 minutes sur votre IBAN</p>
             </div>
           </div>
         </div>
 
         {/* Destination Bank Account */}
-        <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white border border-stone-200 flex items-center justify-center text-stone-600 shrink-0">
-              <Landmark className="w-4 h-4" />
+        <div className="p-4 bg-stone-50 border border-stone-200/60 rounded-2xl flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 shrink-0 shadow-sm">
+              <Landmark className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-stone-900">{bankName}</p>
-              <p className="text-micro text-stone-500 font-mono">IBAN •••• {bankIban.slice(-4)}</p>
+              <p className="font-bold text-stone-900 text-sm">{bankName}</p>
+              <p className="text-xs text-stone-500 font-mono mt-0.5">IBAN •••• {bankIban.slice(-4)}</p>
             </div>
           </div>
-          <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-full flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Vérifié
+          <span className="text-xs font-bold text-success bg-success/10 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Vérifié
           </span>
         </div>
 
         {/* Summary Breakdown */}
-        <div className="p-3 bg-white border border-stone-200 rounded-xl space-y-1.5">
+        <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-2xl space-y-3 shadow-inner font-medium text-sm">
           <div className="flex justify-between text-stone-600">
             <span>Montant prélevé du solde :</span>
-            <span className="font-semibold text-stone-900">{formatPrice(amount)}</span>
+            <span className="font-black text-stone-900">{formatPrice(amount)}</span>
           </div>
           <div className="flex justify-between text-stone-600">
             <span>Frais de virement {payoutType === 'instant' ? 'instantané' : 'standard'} :</span>
-            <span className="font-semibold text-stone-900">{formatPrice(fee)}</span>
+            <span className="font-black text-stone-900">{formatPrice(fee)}</span>
           </div>
-          <div className="border-t border-stone-100 pt-1.5 flex justify-between font-bold text-stone-900 text-sm">
+          <div className="border-t border-stone-200 pt-3 flex justify-between font-black text-stone-900 text-base">
             <span>Montant net versé sur votre compte :</span>
-            <span className="text-success">{formatPrice(netTransfer)}</span>
+            <span className="text-success text-lg">{formatPrice(netTransfer)}</span>
           </div>
         </div>
 

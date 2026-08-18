@@ -58,21 +58,21 @@ export type ButtonProps = (
 // `whitespace-nowrap` is load-bearing: the size variants below pin an exact
 // height, so a label allowed to wrap spills out through the bottom edge.
 const baseStyles =
-  'inline-flex items-center justify-center font-medium whitespace-nowrap transition-all duration-fast rounded-xl cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+  'inline-flex items-center justify-center font-medium whitespace-nowrap transition-all duration-fast cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
 const sizeStyles = {
-  sm: 'text-xs px-3 py-1.5 gap-1.5 h-8 font-semibold',
-  md: 'text-sm px-4 py-2 gap-2 h-10 font-bold',
-  lg: 'text-base px-5 py-2.5 gap-2.5 h-12 font-bold',
+  sm: 'text-xs px-4 py-1.5 gap-1.5 h-9 font-semibold rounded-xl',
+  md: 'text-sm px-5 py-2 gap-2 h-11 font-bold rounded-xl',
+  lg: 'text-base px-6 py-2.5 gap-2.5 h-14 font-bold rounded-2xl',
 };
 
 const variantStyles = {
-  primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm',
-  secondary: 'bg-bg-subtle text-stone-900 hover:bg-bg-muted active:bg-stone-300',
-  outline: 'border border-border-base bg-bg-surface text-stone-900 hover:bg-bg-base hover:border-border-hover active:bg-bg-subtle shadow-2xs',
-  ghost: 'bg-transparent text-stone-700 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted',
-  danger: 'bg-danger text-white hover:bg-danger active:bg-red-800 shadow-xs',
-  pro: 'bg-stone-900 text-white hover:bg-stone-800 shadow-xs',
+  primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:shadow-md hover:shadow-primary/20',
+  secondary: 'bg-stone-50 text-stone-900 hover:bg-stone-100 active:bg-stone-200 shadow-2xs',
+  outline: 'border-2 border-stone-200 bg-white text-stone-800 hover:bg-stone-50 hover:border-stone-300 active:bg-stone-100 shadow-2xs',
+  ghost: 'bg-transparent text-stone-700 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200',
+  danger: 'bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm',
+  pro: 'bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:shadow-md hover:shadow-stone-900/10',
 };
 
 export const Button: React.FC<ButtonProps> = (props) => {

@@ -94,68 +94,68 @@ export const HomePage: React.FC = () => {
   return (
     <div className="space-y-8 sm:space-y-12 pb-16">
       {/* 1. Hero Section - Two Columns Balanced */}
-      <section className="relative bg-gradient-to-b from-bg-base via-[#FFF8F5] to-bg-base pt-6 sm:pt-12 pb-8 sm:pb-14 border-b border-border-base overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-stretch w-full">
+      <section className="relative bg-gradient-to-b from-[#FAF8F5] via-[#FFF3EF]/50 to-[#FAF8F5] pt-8 sm:pt-16 pb-10 sm:pb-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
             {/* Column 1: Hero Pitch, Search & CTAs */}
-            <div className="lg:col-span-7 space-y-4 lg:space-y-6 text-left flex flex-col justify-center py-1 lg:py-4 w-full">
-              <div className="space-y-2 sm:space-y-3">
-                <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-[50px] font-black text-stone-900 tracking-tight leading-[1.15] sm:leading-[1.12]">
-                  Achetez & vendez <br className="hidden sm:inline" />
-                  <span className="text-primary">en toute sécurité</span>
+            <div className="lg:col-span-7 space-y-6 lg:space-y-8 text-left flex flex-col justify-center w-full">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-stone-200/60 shadow-xs w-fit">
+                  <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                  <span className="text-xs font-bold text-stone-600">Plus de 2 millions d'annonces vérifiées</span>
+                </div>
+                <h1 className="text-[32px] sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-[-0.02em] leading-[1.1]">
+                  Trouvez la perle rare, <br className="hidden sm:inline" />
+                  <span className="text-primary relative inline-block">
+                    sans tracas.
+                    <svg className="absolute w-full h-3 -bottom-1 left-0 text-primary/30" viewBox="0 0 100 10" preserveAspectRatio="none">
+                      <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="transparent"/>
+                    </svg>
+                  </span>
                 </h1>
 
-                <p className="text-xs sm:text-base text-stone-600 max-w-lg leading-relaxed font-normal">
-                  Paiement sécurisé avec séquestre et livraison garantie partout en France.
+                <p className="text-sm sm:text-lg text-stone-600 max-w-lg leading-relaxed font-medium">
+                  Le marché local français qui protège votre argent. Séquestre, livraison intégrée et vendeurs vérifiés.
                 </p>
               </div>
 
-              {/* Quick search suggestions.
-                  Search itself lives in the header, which is sticky and therefore
-                  available from anywhere on the page — the hero no longer carries
-                  a second copy of the same field. These chips remain because they
-                  are shortcuts to results, not an input: each one navigates
-                  straight to a search. */}
-              <div className="flex items-center gap-1.5 flex-wrap text-xs w-full">
-                <span className="text-stone-500 font-semibold text-micro uppercase tracking-wider flex items-center gap-1 shrink-0">
-                  <Sparkles className="w-3 h-3 text-primary" />
-                  Tendance :
+              {/* Quick search suggestions. */}
+              <div className="flex items-center gap-2 flex-wrap text-sm w-full">
+                <span className="text-stone-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shrink-0 mr-1">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  Populaire :
                 </span>
                 {popularSearches.map((term) => (
                   <button
                     key={term}
                     type="button"
                     onClick={() => navigate(routes.search(term))}
-                    className="px-2.5 py-1 rounded-lg bg-white/80 hover:bg-white border border-border-base text-stone-600 hover:text-primary hover:border-primary-border transition-all cursor-pointer font-semibold text-xs shadow-2xs shrink-0"
+                    className="px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 hover:border-stone-300 transition-all cursor-pointer font-semibold text-xs shadow-2xs shrink-0 active:scale-95"
                   >
                     {term}
                   </button>
                 ))}
               </div>
 
-              {/* Hero Secondary Actions.
-                  From sm up the row shrinks to its content (`w-fit`) while the two
-                  `1fr` tracks stay equal, so both buttons size to the wider label
-                  rather than stretching across the column. Full-width stacked on
-                  phones, where edge-to-edge is the better target. */}
-              <div className="border-t border-stone-200/60 pt-2 sm:pt-3 w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full sm:w-fit">
+              {/* Hero Secondary Actions. */}
+              <div className="pt-2 sm:pt-4 w-full">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-fit">
                   <button
                     type="button"
                     onClick={() => navigate(publishCta.to)}
-                    className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-start gap-2.5 cursor-pointer w-full whitespace-nowrap"
+                    className="h-12 sm:h-14 px-6 sm:px-8 rounded-2xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-bold text-sm sm:text-base shadow-lg shadow-stone-900/10 hover:shadow-xl hover:shadow-stone-900/10 transition-all flex items-center justify-center gap-2.5 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap"
                   >
-                    <PlusCircle className="w-4 h-4 text-primary shrink-0" />
+                    <PlusCircle className="w-5 h-5 text-primary" />
                     <span>{publishCta.label}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => navigate(routes.search())}
-                    className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl border border-border-base bg-white hover:bg-bg-base text-stone-800 font-bold text-xs sm:text-sm flex items-center justify-start gap-2.5 transition-all cursor-pointer shadow-2xs w-full whitespace-nowrap"
+                    className="h-12 sm:h-14 px-6 sm:px-8 rounded-2xl bg-white hover:bg-stone-50 border-2 border-stone-200 text-stone-800 font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm hover:shadow active:scale-95 w-full sm:w-auto whitespace-nowrap"
                   >
-                    <Compass className="w-4 h-4 text-primary shrink-0" />
-                    <span>Explorer les annonces</span>
+                    <Compass className="w-5 h-5 text-stone-400" />
+                    <span>Explorer le catalogue</span>
                   </button>
                 </div>
               </div>
@@ -173,66 +173,64 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 2. Categories Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-12">
+        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
-            <h2 className="text-lg sm:text-2xl font-black text-stone-900 truncate sm:whitespace-normal">
+            <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
               Explorer par catégorie
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-0.5 hidden xs:block">
-              Découvrez les annonces classées selon votre besoin
+            <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
+              Découvrez des millions d'annonces classées selon votre besoin
             </p>
           </div>
           <Link
             to={routes.search()}
-            className="text-xs sm:text-sm font-bold text-primary hover:text-primary-hover hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap bg-primary-light hover:bg-primary-light/80 sm:bg-transparent sm:hover:bg-transparent px-2.5 py-1.5 sm:p-0 rounded-xl transition-colors"
+            className="text-sm font-bold text-stone-900 bg-white border border-stone-200 hover:border-stone-300 hover:bg-stone-50 px-4 py-2 rounded-xl transition-all shadow-2xs active:scale-95 hidden sm:flex items-center gap-1.5"
           >
-            <span>Tout voir</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Toutes les annonces</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-5">
           {TAXONOMY.map((cat) => (
             <Link
               key={cat.id}
               to={`/categorie/${cat.slug}`}
-              className="group bg-white rounded-2xl border border-border-base hover:border-primary hover:shadow-md p-2 sm:p-3.5 flex flex-col items-center text-center transition-all duration-normal"
+              className="group bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-lg p-3 sm:p-5 flex flex-col items-center text-center transition-all duration-normal active:scale-95"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-bg-base group-hover:bg-primary-light flex items-center justify-center mb-1.5 sm:mb-2 transition-colors shrink-0">
-                <CategoryIcon category={cat} size="lg" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#FAF8F5] group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors shrink-0">
+                <CategoryIcon category={cat} size="lg" className="w-6 h-6 sm:w-8 sm:h-8 text-stone-700 group-hover:text-primary transition-colors" />
               </div>
               <h3
-                className="text-xs sm:text-xs font-bold text-stone-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2rem] flex items-center justify-center text-center w-full leading-tight break-words px-0.5"
+                className="text-[13px] sm:text-sm font-bold text-stone-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] flex items-center justify-center text-center w-full leading-tight break-words"
                 title={cat.name}
               >
                 {getTaxonomyLabel(cat, 'compact')}
               </h3>
-              <span className="hidden sm:block text-micro text-stone-500 mt-0.5">
-                {plural(cat.subCategories.length, 'rubrique')}
-              </span>
             </Link>
           ))}
         </div>
       </section>
 
       {/* 3. Fresh Listings */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
-            <h2 className="text-lg sm:text-2xl font-black text-stone-900 truncate sm:whitespace-normal">
+            <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
               Annonces récentes
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-0.5 hidden sm:block">
-              Publiées aujourd'hui par des particuliers et des professionnels
+            <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
+              Les dernières offres publiées près de chez vous
             </p>
           </div>
           <Link
             to="/recherche?sortBy=date_desc"
-            className="text-xs sm:text-sm font-bold text-primary hover:text-primary-hover hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap bg-primary-light hover:bg-primary-light/80 sm:bg-transparent sm:hover:bg-transparent px-2.5 py-1.5 sm:p-0 rounded-xl transition-colors"
+            className="text-sm font-bold text-stone-900 bg-white border border-stone-200 hover:border-stone-300 hover:bg-stone-50 px-4 py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5"
           >
-            <span>Tout voir</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Toutes les nouveautés</span>
+            <span className="sm:hidden">Voir tout</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 

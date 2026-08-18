@@ -164,20 +164,20 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
 
         {/* Item Preview Card */}
         {step < 4 && (
-          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center gap-3">
+          <div className="p-4 bg-stone-50 border border-stone-200/60 rounded-2xl flex items-center gap-4 shadow-2xs">
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
-              className="w-14 h-14 rounded-lg object-cover border border-stone-200 shrink-0"
+              className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <h4 className="font-bold text-stone-900 truncate">{listing.title}</h4>
-              <p className="text-stone-500 text-micro flex items-center gap-1 mt-0.5">
-                <span>Vendeur : <strong className="text-stone-700">{listing.sellerName}</strong></span>
+              <h4 className="font-black text-sm text-stone-900 truncate mb-1">{listing.title}</h4>
+              <p className="text-stone-500 text-xs font-medium flex items-center gap-2 mb-1">
+                <span>Vendeur : <strong className="text-stone-900">{listing.sellerName}</strong></span>
                 <span>•</span>
                 <span>{listing.city} ({listing.postalCode})</span>
               </p>
-              <p className="text-primary font-black text-sm mt-0.5">{formatPrice(listing.price)}</p>
+              <p className="text-primary font-black text-base">{formatPrice(listing.price)}</p>
             </div>
           </div>
         )}
@@ -197,52 +197,52 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               {/* Hand delivery */}
               <div
                 onClick={() => setDeliveryMethod('hand_delivery')}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'hand_delivery'
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                    : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
-                      <MapPin className="w-4 h-4 text-primary" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+                      <MapPin className="w-5 h-5 text-primary" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-stone-900">Remise en main propre sécurisée</p>
-                        <span className="text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded">
+                        <p className="font-bold text-stone-900 text-sm">Remise en main propre sécurisée</p>
+                        <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
                           Gratuit
                         </span>
                       </div>
-                      <p className="text-micro text-stone-500 mt-0.5">
+                      <p className="text-xs font-medium text-stone-500 mt-0.5">
                         Rendez-vous direct avec validation par code secret à 6 chiffres.
                       </p>
                     </div>
                   </div>
-                  <span className="font-bold text-stone-900">0,00 €</span>
+                  <span className="font-black text-stone-900">0,00 €</span>
                 </div>
 
                 {deliveryMethod === 'hand_delivery' && (
-                  <div className="mt-3 pt-3 border-t border-stone-200 space-y-2 text-micro">
+                  <div className="mt-4 pt-4 border-t border-stone-200 space-y-3 text-sm">
                     <div>
-                      <label className="font-semibold text-stone-700 block mb-1">Votre numéro de téléphone (pour fixer le RDV) :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Votre numéro de téléphone (pour fixer le RDV) :</label>
                       <input
                         type="text"
                         value={buyerPhone}
                         onChange={(e) => setBuyerPhone(e.target.value)}
                         placeholder="ex: 06 12 34 56 78"
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
                     <div>
-                      <label className="font-semibold text-stone-700 block mb-1">Disponibilités ou lieu souhaité :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Disponibilités ou lieu souhaité :</label>
                       <input
                         type="text"
                         value={meetingNotes}
                         onChange={(e) => setMeetingNotes(e.target.value)}
                         placeholder="ex: En centre-ville, samedi après-midi"
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
                   </div>
@@ -252,35 +252,35 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               {/* Mondial Relay */}
               <div
                 onClick={() => setDeliveryMethod('relay_point')}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'relay_point'
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                    : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
-                      <Truck className="w-4 h-4 text-primary" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+                      <Truck className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-bold text-stone-900">Livraison en Point Relais (Mondial Relay)</p>
-                      <p className="text-micro text-stone-500 mt-0.5">
+                      <p className="font-bold text-stone-900 text-sm">Livraison en Point Relais (Mondial Relay)</p>
+                      <p className="text-xs font-medium text-stone-500 mt-0.5">
                         Retrait chez un commerçant partenaire avec suivi en temps réel (3-4 jours).
                       </p>
                     </div>
                   </div>
-                  <span className="font-bold text-stone-900">4,90 €</span>
+                  <span className="font-black text-stone-900">4,90 €</span>
                 </div>
 
                 {deliveryMethod === 'relay_point' && (
-                  <div className="mt-3 pt-3 border-t border-stone-200 space-y-2 text-micro">
+                  <div className="mt-4 pt-4 border-t border-stone-200 space-y-3 text-sm">
                     <div>
-                      <label className="font-semibold text-stone-700 block mb-1">Point Relais sélectionné :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Point Relais sélectionné :</label>
                       <select
                         value={relayPoint}
                         onChange={(e) => setRelayPoint(e.target.value)}
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       >
                         <option value="Tabac Presse des Halles (MR-13001)">Tabac Presse des Halles (15 rue République, 13001 Marseille)</option>
                         <option value="Relais Colis City Express (MR-13002)">Relais Colis City Express (8 bd Longchamp, 13001 Marseille)</option>
@@ -294,65 +294,65 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               {/* Home delivery */}
               <div
                 onClick={() => setDeliveryMethod('home_delivery')}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'home_delivery'
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                    : 'border-stone-200 bg-white hover:bg-stone-50'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                    : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
-                      <Truck className="w-4 h-4 text-primary" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+                      <Truck className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-bold text-stone-900">Livraison à domicile (Colissimo)</p>
-                      <p className="text-micro text-stone-500 mt-0.5">
+                      <p className="font-bold text-stone-900 text-sm">Livraison à domicile (Colissimo)</p>
+                      <p className="text-xs font-medium text-stone-500 mt-0.5">
                         Directement dans votre boîte aux lettres ou avec signature (48h).
                       </p>
                     </div>
                   </div>
-                  <span className="font-bold text-stone-900">6,90 €</span>
+                  <span className="font-black text-stone-900">6,90 €</span>
                 </div>
 
                 {deliveryMethod === 'home_delivery' && (
-                  <div className="mt-3 pt-3 border-t border-stone-200 grid grid-cols-2 gap-2 text-micro">
+                  <div className="mt-4 pt-4 border-t border-stone-200 grid grid-cols-2 gap-3 text-sm">
                     <div className="col-span-2">
-                      <label className="font-semibold text-stone-700 block mb-1">Nom du destinataire :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Nom du destinataire :</label>
                       <input
                         type="text"
                         value={recipientName}
                         onChange={(e) => setRecipientName(e.target.value)}
                         placeholder="Nom et prénom"
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="font-semibold text-stone-700 block mb-1">Adresse postale :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Adresse postale :</label>
                       <input
                         type="text"
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
                         placeholder="N° et nom de rue"
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
                     <div>
-                      <label className="font-semibold text-stone-700 block mb-1">Code postal :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Code postal :</label>
                       <input
                         type="text"
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
                     <div>
-                      <label className="font-semibold text-stone-700 block mb-1">Ville :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">Ville :</label>
                       <input
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg text-stone-900"
+                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
                   </div>
@@ -390,25 +390,25 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             </div>
 
             {/* Breakdown table */}
-            <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2 text-xs">
+            <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-2xl space-y-3 text-sm font-medium shadow-inner">
               <div className="flex justify-between text-stone-600">
                 <span>Prix de l'article :</span>
-                <span className="font-semibold text-stone-900">{formatPrice(breakdown.itemPrice)}</span>
+                <span className="font-black text-stone-900">{formatPrice(breakdown.itemPrice)}</span>
               </div>
               <div className="flex justify-between text-stone-600 items-center">
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1.5">
                   Protection Acheteurs Shongre :
-                  <Info className="w-3 h-3 text-stone-400 cursor-help" />
+                  <Info className="w-4 h-4 text-stone-400 cursor-help" />
                 </span>
-                <span className="font-semibold text-stone-900">{formatPrice(breakdown.protectionFee)}</span>
+                <span className="font-black text-stone-900">{formatPrice(breakdown.protectionFee)}</span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Frais de port ({deliveryMethod === 'hand_delivery' ? 'Remise en main propre' : deliveryMethod === 'relay_point' ? 'Point Relais' : 'Colissimo'}) :</span>
-                <span className="font-semibold text-stone-900">{formatPrice(breakdown.shippingFee)}</span>
+                <span className="font-black text-stone-900">{formatPrice(breakdown.shippingFee)}</span>
               </div>
-              <div className="border-t border-stone-200 pt-2 flex justify-between font-black text-stone-900 text-sm">
+              <div className="border-t border-stone-200 pt-3 flex justify-between font-black text-stone-900 text-base">
                 <span>Total à régler :</span>
-                <span className="text-primary">{formatPrice(breakdown.totalAmount)}</span>
+                <span className="text-primary text-lg">{formatPrice(breakdown.totalAmount)}</span>
               </div>
             </div>
 
@@ -429,90 +429,90 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             <h5 className="font-bold text-stone-800">Choisissez votre moyen de paiement :</h5>
 
             {/* Payment method tabs */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('card')}
-                className={`p-2.5 rounded-xl border font-bold flex flex-col items-center gap-1 transition-all ${
+                className={`p-4 rounded-2xl border text-sm font-bold flex flex-col items-center gap-2 transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   paymentMethod === 'card'
-                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
-                    : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/50'
+                    : 'border-stone-200/60 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
-                <CreditCard className="w-4 h-4" />
-                <span className="text-micro">Carte bancaire</span>
+                <CreditCard className="w-6 h-6" />
+                <span>Carte bancaire</span>
               </button>
               <button
                 type="button"
                 onClick={() => setPaymentMethod('apple_pay')}
-                className={`p-2.5 rounded-xl border font-bold flex flex-col items-center gap-1 transition-all ${
+                className={`p-4 rounded-2xl border text-sm font-bold flex flex-col items-center gap-2 transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   paymentMethod === 'apple_pay'
-                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
-                    : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/50'
+                    : 'border-stone-200/60 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
-                <span className="text-base font-black">Pay</span>
-                <span className="text-micro">Apple Pay</span>
+                <span className="text-xl font-black">Pay</span>
+                <span>Apple Pay</span>
               </button>
               <button
                 type="button"
                 onClick={() => setPaymentMethod('google_pay')}
-                className={`p-2.5 rounded-xl border font-bold flex flex-col items-center gap-1 transition-all ${
+                className={`p-4 rounded-2xl border text-sm font-bold flex flex-col items-center gap-2 transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   paymentMethod === 'google_pay'
-                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
-                    : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                    ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/50'
+                    : 'border-stone-200/60 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
-                <span className="text-base font-black text-info">GPay</span>
-                <span className="text-micro">Google Pay</span>
+                <span className="text-xl font-black text-info">GPay</span>
+                <span>Google Pay</span>
               </button>
             </div>
 
             {/* Credit Card Form */}
             {paymentMethod === 'card' && (
-              <div className="space-y-3 p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+              <div className="space-y-4 p-5 bg-stone-50 border border-stone-200/60 rounded-2xl shadow-inner text-sm">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Titulaire de la carte</label>
+                  <label className="font-bold text-stone-700 block mb-1.5">Titulaire de la carte</label>
                   <input
                     type="text"
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value)}
-                    className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-medium"
+                    className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-stone-900 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Numéro de carte</label>
+                  <label className="font-bold text-stone-700 block mb-1.5">Numéro de carte</label>
                   <div className="relative">
                     <input
                       type="text"
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
                       placeholder="4242 4242 4242 4242"
-                      className="w-full h-control-md px-3 pr-10 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                      className="w-full h-11 px-3 pr-10 bg-white border border-stone-200 rounded-xl text-stone-900 font-mono"
                     />
-                    <Lock className="w-4 h-4 text-success absolute right-3 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-5 h-5 text-success absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Date d'expiration</label>
+                    <label className="font-bold text-stone-700 block mb-1.5">Date d'expiration</label>
                     <input
                       type="text"
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(e.target.value)}
                       placeholder="MM/AA"
-                      className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-stone-900 font-mono"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-stone-700 block mb-1">Cryptogramme (CVC)</label>
+                    <label className="font-bold text-stone-700 block mb-1.5">Cryptogramme (CVC)</label>
                     <input
                       type="password"
                       maxLength={4}
                       value={cardCvc}
                       onChange={(e) => setCardCvc(e.target.value)}
                       placeholder="123"
-                      className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-lg text-stone-900 font-mono"
+                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-stone-900 font-mono"
                     />
                   </div>
                 </div>

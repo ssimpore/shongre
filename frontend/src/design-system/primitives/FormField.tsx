@@ -107,13 +107,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           aria-invalid={error ? 'true' : undefined}
-          className={`w-full h-10 px-3.5 ${leftIcon ? 'pl-10' : ''} ${
-            rightIcon ? 'pr-10' : ''
-          } bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-fast placeholder:text-stone-400 focus:bg-white focus:outline-none ${
+          className={`w-full h-11 sm:h-12 px-4 ${leftIcon ? 'pl-11' : ''} ${
+            rightIcon ? 'pr-11' : ''
+          } bg-stone-50 text-stone-900 text-base sm:text-sm rounded-xl sm:rounded-2xl border border-stone-200/80 transition-all duration-normal placeholder:text-stone-400 focus:bg-white focus:outline-none ${
             error
-              ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger-border'
-              : 'border-border-base focus:border-primary focus:ring-2 focus:ring-primary-light'
-          } disabled:bg-stone-50 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
+              ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
+              : 'hover:border-stone-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
+          } disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
           {...props}
         />
         {rightIcon && (
@@ -138,11 +138,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         ref={ref}
         rows={rows}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full p-3.5 bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-fast placeholder:text-stone-500 focus:bg-white focus:outline-none ${
+        className={`w-full p-4 bg-stone-50 text-stone-900 text-base sm:text-sm rounded-xl sm:rounded-2xl border border-stone-200/80 transition-all duration-normal placeholder:text-stone-400 focus:bg-white focus:outline-none ${
           error
-            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger-border'
-            : 'border-border-base focus:border-primary focus:ring-2 focus:ring-primary-light'
-        } disabled:bg-stone-50 disabled:text-stone-500 ${className}`}
+            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
+            : 'hover:border-stone-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
+        } disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
         {...props}
       />
     );
@@ -177,11 +177,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full h-10 px-3.5 bg-bg-surface text-stone-900 text-base sm:text-sm rounded-xl border transition-all duration-fast focus:outline-none cursor-pointer ${
+        className={`w-full h-11 sm:h-12 px-4 bg-stone-50 text-stone-900 text-base sm:text-sm rounded-xl sm:rounded-2xl border border-stone-200/80 transition-all duration-normal focus:outline-none cursor-pointer ${
           error
-            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger-border'
-            : 'border-border-base focus:border-primary focus:ring-2 focus:ring-primary-light'
-        } disabled:bg-stone-50 disabled:text-stone-400 ${className}`}
+            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
+            : 'hover:border-stone-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
+        } disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
         {...props}
       >
         {options

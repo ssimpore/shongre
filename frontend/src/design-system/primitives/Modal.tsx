@@ -47,9 +47,9 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-3xl shadow-2xl border border-border-base overflow-hidden animate-in zoom-in-95 ${className}`}
+        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-[28px] shadow-xl border border-stone-200/60 overflow-hidden animate-in zoom-in-95 ${className}`}
       >
-        <div className="flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-border-subtle shrink-0">
+        <div className="flex items-start justify-between gap-3 p-5 sm:p-6 border-b border-stone-100 shrink-0">
           <div className="min-w-0">
             {title && (
               <h2 id={titleId} className="text-lg font-bold text-stone-900">
@@ -58,11 +58,11 @@ export const Modal: React.FC<ModalProps> = ({
             )}
             {description && <p className="text-xs text-stone-500 mt-0.5">{description}</p>}
           </div>
-          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
-            <X className="w-5 h-5" />
+          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose} className="hover:bg-stone-100 active:bg-stone-200">
+            <X className="w-5 h-5 text-stone-500" />
           </IconButton>
         </div>
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );
@@ -102,9 +102,9 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-border-base max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
+        className={`w-full max-w-lg bg-white rounded-t-[28px] sm:rounded-[28px] shadow-2xl border border-stone-200/60 max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border-subtle shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-stone-100 shrink-0">
           {title ? (
             <h2 id={titleId} className="text-base font-bold text-stone-900">
               {title}
@@ -112,11 +112,11 @@ export const Drawer: React.FC<DrawerProps> = ({
           ) : (
             <div />
           )}
-          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
-            <X className="w-5 h-5" />
+          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose} className="hover:bg-stone-100 active:bg-stone-200">
+            <X className="w-5 h-5 text-stone-500" />
           </IconButton>
         </div>
-        <div className="p-4 overflow-y-auto flex-1">{children}</div>
+        <div className="p-5 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

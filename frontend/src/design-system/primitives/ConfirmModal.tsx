@@ -55,19 +55,19 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
-      <div className="space-y-5">
-        <div className={`p-4 rounded-xl border flex items-start gap-3.5 ${iconConfig.bgClass}`}>
-          <div className="shrink-0 mt-0.5">{iconConfig.icon}</div>
-          <p className="text-xs sm:text-sm text-stone-800 leading-relaxed font-medium">{message}</p>
+      <div className="space-y-6">
+        <div className={`p-4 rounded-2xl border flex items-start gap-4 shadow-2xs ${iconConfig.bgClass}`}>
+          <div className="shrink-0 mt-0.5 bg-white p-1.5 rounded-xl shadow-xs border border-stone-100">{iconConfig.icon}</div>
+          <p className="text-sm text-stone-800 leading-relaxed font-medium">{message}</p>
         </div>
 
-        <div className="flex items-center justify-end gap-2.5 pt-2">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isLoading}>
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Button variant="outline" size="md" onClick={onClose} disabled={isLoading}>
             {cancelText}
           </Button>
           <Button
             variant={iconConfig.btnVariant}
-            size="sm"
+            size="md"
             className={iconConfig.btnClass}
             onClick={onConfirm}
             isLoading={isLoading}

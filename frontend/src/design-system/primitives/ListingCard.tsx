@@ -56,11 +56,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   if (variant === 'compact') {
     return (
       <article
-        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col ${
+        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col p-2 ${
           listing.isBoosted ? 'ring-1 ring-primary/30' : ''
         } ${className}`}
       >
-        <div className="relative aspect-square w-full bg-stone-100 overflow-hidden">
+        <div className="relative aspect-square w-full bg-stone-100 overflow-hidden rounded-xl">
           <Link to={`/annonce/${listing.id}`} className="block w-full h-full">
             <Image
               src={listing.coverImageUrl}
@@ -78,7 +78,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             )}
           </div>
         </div>
-        <div className="p-3 flex-1 flex flex-col justify-between gap-1">
+        <div className="px-1 pt-2 pb-1 flex-1 flex flex-col justify-between gap-1">
           <Link to={`/annonce/${listing.id}`} className="block">
             <h3 title={listing.title} className="text-xs font-bold text-stone-900 line-clamp-1 group-hover:text-primary transition-colors">
               {listing.title}
@@ -102,15 +102,15 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   if (variant === 'list') {
     return (
       <article
-        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col sm:flex-row gap-4 p-3 ${
-          listing.isBoosted ? 'ring-1 ring-primary/30' : ''
+        className={`group bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-normal overflow-hidden flex flex-col sm:flex-row p-3 ${
+          listing.isBoosted ? 'ring-2 ring-primary/20' : ''
         } ${className}`}
       >
-        <Link to={`/annonce/${listing.id}`} className="relative w-full sm:w-56 h-44 sm:h-auto rounded-lg overflow-hidden shrink-0 bg-stone-100 block">
+        <Link to={`/annonce/${listing.id}`} className="relative w-full sm:w-[220px] h-48 sm:h-full min-h-[160px] rounded-xl overflow-hidden shrink-0 bg-stone-100 block mr-0 sm:mr-4 mb-3 sm:mb-0">
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
           />
           {listing.photos.length > 1 && (
             <span className="absolute bottom-2 left-2 bg-stone-900/70 text-white text-xs px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1">
@@ -220,16 +220,16 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   // Default Grid Variant
   return (
     <article
-      className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col ${
-        listing.isBoosted ? 'ring-1 ring-primary/30' : ''
+      className={`group bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-xl transition-all duration-normal overflow-hidden flex flex-col p-2 ${
+        listing.isBoosted ? 'ring-2 ring-primary/20' : ''
       } ${className}`}
     >
-      <div className="relative aspect-4/3 w-full bg-stone-100 overflow-hidden">
+      <div className="relative aspect-[4/3] w-full bg-stone-100 overflow-hidden rounded-2xl shrink-0">
         <Link to={`/annonce/${listing.id}`} className="block w-full h-full">
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
           />
         </Link>
 
@@ -267,7 +267,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         )}
       </div>
 
-      <div className="p-3.5 flex-1 flex flex-col justify-between">
+      <div className="px-2 pt-3 pb-2 flex-1 flex flex-col justify-between">
         <div>
           {/* Meta row: category · seller, with the rating pinned right.
               This used to be `flex-wrap`, so a long seller name pushed the rating
@@ -307,10 +307,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({
 
           {/* Reserves both lines whether or not the title needs them, so the
               price sits at the same height on every card in a row. */}
-          <Link to={`/annonce/${listing.id}`} className="block mb-2">
+          <Link to={`/annonce/${listing.id}`} className="block mb-2.5">
             <h3
               title={listing.title}
-              className="text-sm font-bold text-stone-900 line-clamp-2 min-h-[2.625rem] group-hover:text-primary transition-colors leading-snug"
+              className="text-sm sm:text-[15px] font-bold text-stone-900 line-clamp-2 min-h-[2.75rem] group-hover:text-primary transition-colors leading-[1.4]"
             >
               {listing.title}
             </h3>

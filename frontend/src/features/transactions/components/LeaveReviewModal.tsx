@@ -128,7 +128,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
           <label className="text-xs font-bold text-stone-700 block">
             Ce que vous avez particulièrement apprécié :
           </label>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {POSITIVE_BADGES.map((badge) => {
               const isSelected = selectedBadges.includes(badge);
               return (
@@ -136,13 +136,13 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
                   key={badge}
                   type="button"
                   onClick={() => toggleBadge(badge)}
-                  className={`text-xs px-2.5 py-1 rounded-full border transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`text-sm px-3 py-1.5 rounded-xl border transition-all duration-normal cursor-pointer flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-primary-light text-primary border-primary font-bold'
-                      : 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100'
+                      ? 'bg-primary/10 text-primary border-primary/40 font-bold shadow-sm'
+                      : 'bg-stone-50 text-stone-600 border-stone-200/60 hover:bg-stone-100 hover:border-stone-300 shadow-2xs'
                   }`}
                 >
-                  {isSelected && <Check className="w-3 h-3 text-primary" />}
+                  {isSelected && <Check className="w-4 h-4 text-primary" />}
                   {badge}
                 </button>
               );
@@ -164,8 +164,8 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2 pt-2">
-          <Button variant="outline" fullWidth onClick={onClose} type="button">
+        <div className="flex gap-3 pt-4">
+          <Button variant="outline" fullWidth onClick={onClose} type="button" size="md">
             Annuler
           </Button>
           <Button
@@ -173,7 +173,8 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
             fullWidth
             type="submit"
             isLoading={isSubmitting}
-            leftIcon={<Sparkles className="w-4 h-4" />}
+            size="md"
+            leftIcon={<Sparkles className="w-5 h-5" />}
           >
             Publier mon avis
           </Button>

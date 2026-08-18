@@ -163,15 +163,15 @@ export const Header: React.FC = () => {
               stable give-and-take: the search bar claimed its `flex-1` share
               first, the brand collapsed to 4px, and the actions ran 58px past
               the right edge at exactly 1024px. */}
-          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
             <Link
               to={publishCta.to}
               aria-label={publishCta.label}
-              className="hidden md:flex bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95 whitespace-nowrap"
+              className="hidden md:flex bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95 whitespace-nowrap mr-1 lg:mr-2"
             >
-              <PlusCircle className="w-4 h-4 shrink-0" />
+              <PlusCircle className="w-4 h-4 text-primary shrink-0" />
               {/* Tablet keeps the publish action but not its label — it is the
                   one action that must survive the narrower row. */}
               <span className="hidden lg:inline whitespace-nowrap">{publishCta.label}</span>
@@ -180,12 +180,12 @@ export const Header: React.FC = () => {
             {/* Favorites */}
             <Link
               to="/compte/favoris"
-              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors hidden lg:flex items-center justify-center"
+              className="relative p-2 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200 transition-all hidden lg:flex items-center justify-center group"
               aria-label="Favoris"
             >
-              <Heart className="w-5 h-5" />
+              <Heart className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
               {favCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {favCount}
                 </span>
               )}
@@ -194,24 +194,24 @@ export const Header: React.FC = () => {
             {/* Messages */}
             <Link
               to="/compte/messages"
-              className="relative p-2 rounded-xl text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors hidden lg:flex items-center justify-center"
+              className="relative p-2 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200 transition-all hidden lg:flex items-center justify-center group"
               aria-label="Messagerie"
             >
-              <MessageSquare className="w-5 h-5" />
+              <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
               {unreadMessagesCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {unreadMessagesCount}
                 </span>
               )}
             </Link>
 
             {/* Notifications */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:flex items-center justify-center">
               <NotificationBell />
             </div>
 
             {/* User Account Menu (Desktop) */}
-            <div className="relative hidden md:block" ref={accountMenuRef}>
+            <div className="relative hidden md:block ml-1" ref={accountMenuRef}>
               {isAuthenticated && currentUser ? (
                 <button
                   type="button"
@@ -219,7 +219,7 @@ export const Header: React.FC = () => {
                   aria-expanded={isAccountMenuOpen}
                   aria-haspopup="menu"
                   aria-label={`Menu du compte de ${currentUser.name}`}
-                  className="flex items-center gap-2 p-1 pl-2 rounded-xl border border-border-base hover:bg-bg-subtle transition-colors cursor-pointer"
+                  className={`flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border transition-all cursor-pointer ${isAccountMenuOpen ? 'bg-stone-100 border-stone-300 shadow-inner' : 'bg-white border-border-base hover:bg-stone-50 hover:border-stone-300 hover:shadow-2xs'}`}
                 >
                   <Avatar
                     src={currentUser.avatarUrl}
@@ -228,15 +228,15 @@ export const Header: React.FC = () => {
                     isVerified={currentUser.isVerified}
                     isPro={isProSeller(currentUser)}
                   />
-                  <span className="text-xs font-bold text-stone-900 hidden lg:inline max-w-[100px] truncate">
+                  <span className="text-sm font-bold text-stone-800 hidden lg:inline max-w-[100px] truncate">
                     {currentUser.name.split(' ')[0]}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-stone-400 hidden sm:inline" />
+                  <ChevronDown className={`w-3.5 h-3.5 text-stone-400 hidden sm:inline transition-transform duration-normal ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
               ) : (
                 <Link
                   to="/connexion"
-                  className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-stone-700 hover:text-stone-950 px-3 py-2 rounded-xl hover:bg-bg-subtle transition-colors"
+                  className="flex items-center gap-2 text-sm font-bold text-stone-700 hover:text-stone-950 px-3 py-2 rounded-xl hover:bg-stone-100 active:bg-stone-200 transition-all"
                 >
                   <User className="w-4 h-4" />
                   <span>Se connecter</span>
@@ -381,7 +381,7 @@ export const Header: React.FC = () => {
         <div className="fixed inset-0 z-[9999] lg:hidden flex justify-end">
           {/* Backdrop overlay */}
           <div
-            className="fixed inset-0 bg-stone-950/60 backdrop-blur-xs transition-opacity duration-normal"
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-[2px] transition-opacity duration-normal"
             onClick={() => setIsMobileMenuOpen(false)}
             aria-hidden="true"
           />
@@ -393,24 +393,24 @@ export const Header: React.FC = () => {
             aria-modal="true"
             aria-labelledby={drawerTitleId}
             tabIndex={-1}
-            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
+            className="relative w-[85vw] max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
           >
             
             {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
-            <div className="p-4 sm:p-5 border-b border-border-base flex items-center justify-between bg-bg-base shrink-0 sticky top-0 z-20 shadow-2xs">
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-stone-50 shrink-0 sticky top-0 z-20">
               <Link
                 to={routes.home()}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-2.5 select-none"
               >
-                <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-lg shadow-xs">
+                <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-black text-lg shadow-sm">
                   S
                 </div>
                 <div className="flex flex-col">
                   <span id={drawerTitleId} className="text-lg font-black text-stone-900 tracking-tight leading-none">
                     Shongre<span className="text-primary">.</span>
                   </span>
-                  <span className="text-micro font-bold text-stone-600 tracking-wider uppercase mt-0.5">
+                  <span className="text-[10px] font-bold text-stone-500 tracking-wider uppercase mt-0.5">
                     {activeMarket.name}
                   </span>
                 </div>
@@ -419,10 +419,10 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-200/70 transition-colors cursor-pointer"
+                className="p-2 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-200/70 transition-all active:scale-95 cursor-pointer bg-white shadow-2xs border border-stone-200"
                 aria-label="Fermer le menu"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 

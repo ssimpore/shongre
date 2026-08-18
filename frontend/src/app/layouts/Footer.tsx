@@ -38,7 +38,7 @@ const TRUST_HIGHLIGHTS = [
   },
 ] as const;
 
-const FOOTER_LINK = 'text-stone-400 hover:text-white transition-colors block py-1';
+const FOOTER_LINK = 'text-stone-400 hover:text-white hover:translate-x-1 transition-all duration-fast block py-1.5 font-medium';
 
 /**
  * Footer navigation column: a real heading wrapping the disclosure button
@@ -100,22 +100,22 @@ export const Footer: React.FC = () => {
     // navigation (57px) plus a page-level sticky action bar such as the one on
     // listing detail (64px). At `pb-24` the last row of legal links sat behind
     // that bar and could not be tapped.
-    <footer className="bg-stone-900 text-stone-300 pt-12 pb-36 md:pb-12 border-t border-stone-800 text-xs">
+    <footer className="bg-stone-950 text-stone-300 pt-16 pb-36 md:pb-16 border-t border-stone-800 text-xs">
       {/* Value props & Trust Badges.
           These are reassurance statements, not document sections: rendering them
           as headings injected an h1 → h4 jump into every single page of the app. */}
       <section
         aria-label="Garanties Shongre"
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 border-b border-stone-800"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-stone-800/60"
       >
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {TRUST_HIGHLIGHTS.map(({ id, Icon, title, description }) => (
-            <li key={id} className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-stone-800 text-primary flex items-center justify-center shrink-0 border border-stone-700">
-                <Icon className="w-5 h-5" />
+            <li key={id} className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-stone-900 text-primary flex items-center justify-center shrink-0 border border-stone-800 shadow-inner">
+                <Icon className="w-6 h-6" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm mb-1">{title}</p>
+                <p className="font-bold text-white text-sm mb-1.5">{title}</p>
                 <p className="text-stone-400 text-xs leading-relaxed">{description}</p>
               </div>
             </li>

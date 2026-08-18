@@ -30,12 +30,12 @@ export const ListingFulfillmentSummary: React.FC<ListingFulfillmentSummaryProps>
   }
 
   return (
-    <div className={`bg-white rounded-2xl border border-border-base p-5 sm:p-6 space-y-4 shadow-xs ${className}`}>
-      <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-        <h2 className="text-sm sm:text-base font-bold text-stone-900 uppercase tracking-wider">
-          Modes de remise & Expédition
+    <div className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}>
+      <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h2 className="text-base font-black text-stone-900">
+          Remise & Expédition
         </h2>
-        <span className="text-micro text-stone-500 font-medium">
+        <span className="text-xs text-stone-500 font-medium bg-stone-50 px-2 py-1 rounded-md">
           Choix définitif à la commande
         </span>
       </div>

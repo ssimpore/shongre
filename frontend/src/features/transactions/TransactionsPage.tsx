@@ -139,22 +139,22 @@ export const TransactionsPage: React.FC = () => {
 
         {/* Seller Earnings Card */}
         {earningsSummary.totalEarnings > 0 || earningsSummary.escrowHeldBalance > 0 ? (
-          <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-border-base shadow-xs">
-            <div className="p-2.5 bg-success-surface text-success rounded-xl">
+          <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-stone-200/60 shadow-sm">
+            <div className="p-3 bg-success-surface text-success rounded-xl">
               <Landmark className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-micro font-bold text-stone-500 uppercase tracking-wider">
+              <div className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-0.5">
                 Solde disponible
               </div>
-              <div className="text-base font-black text-stone-900">
+              <div className="text-lg font-black text-stone-900">
                 {formatPrice(earningsSummary.availableBalance)}
               </div>
             </div>
             {earningsSummary.availableBalance > 0 && (
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 className="ml-2 font-bold"
                 onClick={() => setIsPayoutModalOpen(true)}
               >
@@ -166,15 +166,15 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Escrow Banner info */}
-      <div className="p-3.5 bg-success-surface border border-success-border rounded-2xl flex items-center justify-between gap-3 text-xs text-success">
-        <div className="flex items-center gap-2.5">
-          <ShieldCheck className="w-5 h-5 text-success shrink-0" />
-          <span>
+      <div className="p-4 bg-success/10 border border-success/20 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-success">
+        <div className="flex items-start sm:items-center gap-3">
+          <ShieldCheck className="w-6 h-6 text-success shrink-0" />
+          <span className="leading-relaxed">
             <strong>Garantie Séquestre Shongre :</strong> Vos fonds restent protégés par un tiers de confiance agréé ACPR. Les paiements ne sont débloqués qu'après validation conforme de la remise.
           </span>
         </div>
         {earningsSummary.escrowHeldBalance > 0 && (
-          <span className="text-xs font-bold text-success bg-emerald-200/60 px-2.5 py-1 rounded-xl shrink-0">
+          <span className="text-sm font-bold text-success bg-white/60 px-3 py-1.5 rounded-xl shrink-0 border border-success/10 shadow-2xs">
             {formatPrice(earningsSummary.escrowHeldBalance)} sous séquestre
           </span>
         )}
@@ -281,17 +281,17 @@ export const TransactionsPage: React.FC = () => {
             return (
               <div
                 key={tx.id}
-                className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs space-y-4 hover:border-primary/40 transition-all cursor-pointer"
+                className="bg-white rounded-3xl border border-stone-200/60 p-6 shadow-sm space-y-5 hover:border-primary/40 transition-all cursor-pointer"
                 onClick={() => setSelectedTx(tx)}
               >
                 {/* Card Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-100">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-stone-900 font-mono">
-                      Dossier {tx.code || `#${tx.id.toUpperCase()}`}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs font-black text-stone-900 font-mono tracking-wider uppercase">
+                      Dossier {tx.code || `#${tx.id.slice(0, 8)}`}
                     </span>
                     <span className="text-stone-300">•</span>
-                    <span className="text-xs text-stone-500">{formatRelativeDate(tx.createdAt)}</span>
+                    <span className="text-xs font-medium text-stone-500">{formatRelativeDate(tx.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(tx.status, tx.deliveryMethod)}
@@ -299,21 +299,21 @@ export const TransactionsPage: React.FC = () => {
                 </div>
 
                 {/* Main Card Content */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5 min-w-0 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                  <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
                     <Image
                       src={tx.listingCoverImageUrl || tx.listingPhotoUrl}
                       alt=""
-                      className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
+                      className="w-20 h-20 rounded-xl object-cover border border-stone-200 shrink-0"
                       referrerPolicy="no-referrer"
                     />
                     <div className="min-w-0">
-                      <h3 className="font-bold text-sm text-stone-900 hover:text-primary truncate block">
+                      <h3 className="font-black text-base text-stone-900 hover:text-primary transition-colors truncate block mb-1">
                         {tx.listingTitle}
                       </h3>
-                      <div className="text-xs text-stone-500 mt-0.5 flex items-center gap-1.5">
+                      <div className="text-sm text-stone-500 font-medium flex items-center gap-1.5 mb-2">
                         <span>{isBuyer ? 'Vendeur' : 'Acheteur'} :</span>
-                        <strong className="text-stone-800 font-semibold">{isBuyer ? tx.sellerName : tx.buyerName}</strong>
+                        <strong className="text-stone-900">{isBuyer ? tx.sellerName : tx.buyerName}</strong>
                       </div>
 
                       {/* Delivery badge */}
@@ -339,18 +339,18 @@ export const TransactionsPage: React.FC = () => {
                   </div>
 
                   {/* Financial Total & CTA */}
-                  <div className="text-right sm:self-center shrink-0 flex flex-col items-end gap-1">
-                    <div className="text-lg font-black text-stone-900">
+                  <div className="text-right sm:self-center shrink-0 flex flex-col items-end gap-1.5 w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-0 border-stone-100 mt-2 sm:mt-0">
+                    <div className="text-xl font-black text-stone-900">
                       {formatPrice(isSeller ? (tx.sellerPayoutAmount || tx.amount) : tx.totalAmount)}
                     </div>
-                    <span className="text-micro text-stone-500">
+                    <span className="text-xs font-medium text-stone-500 mb-1">
                       {isSeller ? '(Gain net vendeur)' : `(Total avec protection)`}
                     </span>
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
-                      className="mt-1"
+                      size="md"
+                      className="w-full sm:w-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedTx(tx);
@@ -361,10 +361,8 @@ export const TransactionsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Progress Mini Step Tracker. The four escrow stages plus their
-                    arrows cannot fit a 320px screen, and wrapping would break the
-                    left-to-right progression — so the rail scrolls instead. */}
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-100 flex items-center justify-between gap-2 text-micro text-stone-600 overflow-x-auto no-scrollbar">
+                {/* Progress Mini Step Tracker. */}
+                <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-3 text-xs font-medium text-stone-600 overflow-x-auto no-scrollbar shadow-inner">
                   <div className="flex items-center gap-1 font-semibold text-success shrink-0">
                     <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                     <span className="whitespace-nowrap">Paiement sous séquestre</span>

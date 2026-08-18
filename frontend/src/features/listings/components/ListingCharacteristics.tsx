@@ -38,16 +38,16 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
       {groups.map((group) => (
         <div
           key={group.groupKey}
-          className="bg-white rounded-2xl border border-border-base p-5 sm:p-6 space-y-4 shadow-xs"
+          className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm"
         >
-          <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
-            {GROUP_ICONS[group.groupKey] || <Sparkles className="w-4 h-4 text-primary" />}
-            <h2 className="text-sm sm:text-base font-bold text-stone-900 uppercase tracking-wider">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-stone-100">
+            {GROUP_ICONS[group.groupKey] || <Sparkles className="w-5 h-5 text-primary" />}
+            <h2 className="text-base font-black text-stone-900">
               {group.groupTitle}
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {group.items.map((item) => {
               const isDpeOrGes = item.code.includes('energy_class') || item.code.includes('ges_class');
               const dpeVal = String(item.value).toUpperCase();
@@ -55,21 +55,21 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
               return (
                 <div
                   key={item.code}
-                  className="p-3 rounded-xl bg-bg-base/70 border border-border-base flex flex-col justify-between"
+                  className="p-4 rounded-2xl bg-stone-50 border border-stone-200/60 flex flex-col justify-between hover:bg-stone-100/50 transition-colors"
                 >
-                  <span className="text-micro text-stone-500 font-medium block truncate mb-1">
+                  <span className="text-xs text-stone-500 font-medium block truncate mb-1.5">
                     {item.label}
                   </span>
 
                   {isDpeOrGes && DPE_COLORS[dpeVal] ? (
                     <div className="flex items-center gap-2">
-                      <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shadow-xs ${DPE_COLORS[dpeVal]}`}>
+                      <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shadow-xs ${DPE_COLORS[dpeVal]}`}>
                         {dpeVal}
                       </span>
-                      <span className="text-xs font-bold text-stone-900">Classe {dpeVal}</span>
+                      <span className="text-sm font-bold text-stone-900">Classe {dpeVal}</span>
                     </div>
                   ) : (
-                    <span className="text-xs sm:text-sm font-black text-stone-900 break-words">
+                    <span className="text-sm font-black text-stone-900 break-words">
                       {item.value}
                     </span>
                   )}

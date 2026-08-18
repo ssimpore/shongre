@@ -20,18 +20,18 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
   const profileUrl = isPro && seller.storeSlug ? `/boutique/${seller.storeSlug}` : `/profil/${seller.slug || seller.id}`;
 
   return (
-    <div className={`bg-white rounded-2xl border border-border-base p-5 sm:p-6 space-y-5 shadow-xs ${className}`}>
+    <div className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
-        <h2 className="text-sm sm:text-base font-bold text-stone-900 uppercase tracking-wider">
+      <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h2 className="text-base font-black text-stone-900">
           À propos du vendeur
         </h2>
         <Link
           to={profileUrl}
-          className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5"
+          className="text-sm font-bold text-primary hover:text-primary-hover hover:underline flex items-center gap-1 transition-colors"
         >
           <span>{isPro ? 'Voir la boutique' : 'Voir le profil'}</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
 

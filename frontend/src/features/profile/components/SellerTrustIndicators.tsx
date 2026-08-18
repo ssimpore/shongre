@@ -27,31 +27,31 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
   const isBankVerified = seller.bankPayoutVerification?.status === 'verified';
 
   return (
-    <div className="bg-bg-base rounded-2xl border border-border-base p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-stone-50 rounded-3xl border border-stone-200/60 p-5 sm:p-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-success" />
-          <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+          <ShieldCheck className="w-5 h-5 text-success" />
+          <h2 className="text-sm font-black text-stone-900 uppercase tracking-wider">
             Garanties & Signaux de confiance
           </h2>
         </div>
-        <div className="flex items-center gap-1.5 text-micro font-bold text-success bg-success-surface px-2.5 py-0.5 rounded-full border border-success-border">
-          <Sparkles className="w-3 h-3" />
+        <div className="flex items-center gap-1.5 text-xs font-bold text-success bg-success-surface px-3 py-1 rounded-full border border-success/20 w-fit">
+          <Sparkles className="w-3.5 h-3.5" />
           <span>Indice de confiance : {trustScore.score}/100 ({trustScore.levelLabel})</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         {/* Verification badge */}
-        <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-success-surface text-success shrink-0">
-            <CheckCircle2 className="w-4 h-4" />
+        <div className="flex items-start gap-3 bg-white p-4 rounded-2xl border border-stone-200/60 shadow-2xs hover:shadow-sm transition-shadow">
+          <div className="p-2 rounded-xl bg-success-surface text-success shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block">
+            <span className="font-bold text-stone-900 block mb-0.5">
               {isPro ? (isKybVerified ? 'Société Vérifiée RCS' : 'Identité Pro') : (isIdentityVerified ? 'Identité KYC Certifiée' : 'Profil vérifié')}
             </span>
-            <span className="text-stone-500 text-xs">
+            <span className="text-stone-500 text-xs leading-relaxed">
               {isPro
                 ? (seller.siret ? `RCS SIRET ${seller.siret.slice(0, 9)} • KBIS Validé` : 'Professionnel enregistré')
                 : (isIdentityVerified ? 'Pièce d\'identité CNI / Passeport validée' : 'Email & Téléphone validés')}
@@ -60,13 +60,13 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
         </div>
 
         {/* Escrow Payment & Payout */}
-        <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-info-surface text-info shrink-0">
-            <Lock className="w-4 h-4" />
+        <div className="flex items-start gap-3 bg-white p-4 rounded-2xl border border-stone-200/60 shadow-2xs hover:shadow-sm transition-shadow">
+          <div className="p-2 rounded-xl bg-info-surface text-info shrink-0">
+            <Lock className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block">Paiement sécurisé</span>
-            <span className="text-stone-500 text-xs">
+            <span className="font-bold text-stone-900 block mb-0.5">Paiement sécurisé</span>
+            <span className="text-stone-500 text-xs leading-relaxed">
               {isBankVerified
                 ? 'Séquestre Shongre & Virement SEPA certifié'
                 : 'Fonds bloqués sur compte séquestre jusqu\'à réception'}
@@ -75,26 +75,26 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
         </div>
 
         {/* Delivery Options */}
-        <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-warning-surface text-warning shrink-0">
-            <Truck className="w-4 h-4" />
+        <div className="flex items-start gap-3 bg-white p-4 rounded-2xl border border-stone-200/60 shadow-2xs hover:shadow-sm transition-shadow">
+          <div className="p-2 rounded-xl bg-warning-surface text-warning shrink-0">
+            <Truck className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block">Livraison & Retrait</span>
-            <span className="text-stone-500 text-xs">
+            <span className="font-bold text-stone-900 block mb-0.5">Livraison & Retrait</span>
+            <span className="text-stone-500 text-xs leading-relaxed">
               Remise en main propre ou envoi avec numéro de suivi
             </span>
           </div>
         </div>
 
         {/* Responsiveness */}
-        <div className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-border-base">
-          <div className="p-1.5 rounded-lg bg-purple-50 text-purple-700 shrink-0">
-            <Clock className="w-4 h-4" />
+        <div className="flex items-start gap-3 bg-white p-4 rounded-2xl border border-stone-200/60 shadow-2xs hover:shadow-sm transition-shadow">
+          <div className="p-2 rounded-xl bg-purple-50 text-purple-700 shrink-0">
+            <Clock className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block">Réactivité certifiée</span>
-            <span className="text-stone-500 text-xs">
+            <span className="font-bold text-stone-900 block mb-0.5">Réactivité certifiée</span>
+            <span className="text-stone-500 text-xs leading-relaxed">
               {seller.responseRatePercent}% de réponses {seller.responseTimeText}
             </span>
           </div>
