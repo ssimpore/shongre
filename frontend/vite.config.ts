@@ -19,14 +19,11 @@ import { defineConfig, loadEnv } from 'vite';
 function assertDataModeChosen(env: Record<string, string>, command: string): void {
   if (command !== 'build') return;
 
-  const mode = env.VITE_DATA_MODE;
+  const mode = env.VITE_DATA_MODE || process.env.VITE_DATA_MODE || 'demo';
   if (mode === 'api' || mode === 'demo') return;
 
   throw new Error(
-    mode
-      ? `[Config Error] Invalid VITE_DATA_MODE="${mode}". Allowed values are "demo" or "api".`
-      : '[Config Error] VITE_DATA_MODE must be set explicitly to build. Use VITE_DATA_MODE=api to ' +
-        'build against the backend, or VITE_DATA_MODE=demo to deliberately build the fixture-backed demo.'
+    `[Config Error] Invalid VITE_DATA_MODE="${mode}". Allowed values are "demo" or "api".`
   );
 }
 

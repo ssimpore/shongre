@@ -621,12 +621,12 @@ export const SearchPage: React.FC = () => {
                 {showDesktopFilters ? (
                   <>
                     <PanelLeftClose className="w-3.5 h-3.5 text-stone-500" />
-                    <span>Masquer les filtres</span>
+                    <span>Masquer</span>
                   </>
                 ) : (
                   <>
                     <PanelLeft className="w-3.5 h-3.5 text-primary" />
-                    <span>Afficher les filtres</span>
+                    <span>Afficher</span>
                   </>
                 )}
               </button>
@@ -636,9 +636,10 @@ export const SearchPage: React.FC = () => {
                 type="button"
                 onClick={handleSaveSearch}
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary-light px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+                title="Sauvegarder cette recherche"
               >
                 <Bookmark className="w-3.5 h-3.5" />
-                Sauvegarder la recherche
+                <span>Sauvegarder</span>
               </button>
             </div>
 
@@ -675,7 +676,7 @@ export const SearchPage: React.FC = () => {
                   <option value="date_desc">Plus récentes</option>
                   <option value="price_asc">Prix : croissant</option>
                   <option value="price_desc">Prix : décroissant</option>
-                  <option value="relevance">Pertinence / Vedettes</option>
+                  <option value="relevance">Pertinence</option>
                 </select>
               </div>
 

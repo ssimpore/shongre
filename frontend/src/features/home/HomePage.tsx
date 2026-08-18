@@ -143,7 +143,7 @@ export const HomePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate(publishCta.to)}
-                    className="h-10 sm:h-11 px-4 sm:px-6 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer w-full whitespace-nowrap"
+                    className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-start gap-2.5 cursor-pointer w-full whitespace-nowrap"
                   >
                     <PlusCircle className="w-4 h-4 text-primary shrink-0" />
                     <span>{publishCta.label}</span>
@@ -151,19 +151,19 @@ export const HomePage: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => navigate('/recherche?view=map')}
-                    className="h-10 sm:h-11 px-4 sm:px-6 rounded-xl border border-border-base bg-white hover:bg-bg-base text-stone-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs w-full whitespace-nowrap"
+                    onClick={() => navigate(routes.search())}
+                    className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl border border-border-base bg-white hover:bg-bg-base text-stone-800 font-bold text-xs sm:text-sm flex items-center justify-start gap-2.5 transition-all cursor-pointer shadow-2xs w-full whitespace-nowrap"
                   >
-                    <MapPin className="w-4 h-4 text-primary shrink-0" />
-                    <span>Explorer sur la carte</span>
+                    <Compass className="w-4 h-4 text-primary shrink-0" />
+                    <span>Explorer les annonces</span>
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Column 2: Boosted & Promoted Listings Auto-Scrolling */}
-            <div className="lg:col-span-5 relative w-full min-h-0 sm:min-h-[440px] lg:min-h-0 lg:h-auto">
-              <div className="lg:absolute lg:inset-0 w-full h-full">
+            <div className="lg:col-span-5 relative w-full flex flex-col justify-center min-w-0">
+              <div className="w-full h-full flex flex-col">
                 <HeroBoostedScroll />
               </div>
             </div>

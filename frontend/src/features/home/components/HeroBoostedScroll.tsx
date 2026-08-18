@@ -1,5 +1,5 @@
 import { isProSeller } from '../../../domains/user/user.domain';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles,
@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Filter,
   Star,
+  Check,
 } from 'lucide-react';
 import { Listing } from '../../../types';
 import { FavoriteButton } from '../../../design-system/primitives/FavoriteButton';
@@ -23,14 +24,15 @@ import { taxonomyService, getTaxonomyLabel } from '../../../domains/taxonomy/tax
 import { PriceDisplay } from '../../../design-system/primitives/UIComponents';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { Image } from '../../../design-system/primitives/Image';
+import { CategoryIcon } from '../../../design-system/primitives/CategoryIcon';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { usePublishCta } from '../../../security/usePublishCta';
 
 /* Rail geometry. The viewport height, the step distance and the card's own
    height are all derived from these, so a card can never end up half-visible. */
-const RAIL_CARD_H = 84;   // px — image (64) + card padding (2 × 8) + borders
+const RAIL_CARD_H = 132;  // px — calibrated height filling container without overflow
 const RAIL_GAP = 10;      // px — matches gap-2.5
-const VISIBLE = 2;        // listings on screen at once
+const VISIBLE = 2;        // exactly 2 listings on screen at once to automatically fill the container
 
 interface HeroBoostedScrollProps {
   onListingClick?: (listing: Listing) => void;
@@ -46,8 +48,35 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
   const publishCta = usePublishCta();
   const [isPaused, setIsPaused] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close category dropdown on Escape or click outside
+  useEffect(() => {
+    if (!isCategoryMenuOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsCategoryMenuOpen(false);
+      }
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node)) {
+        setIsCategoryMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [isCategoryMenuOpen]);
 
   useEffect(() => {
     listingRepository.getListings({ limit: 50 }).then((res) => {
@@ -150,17 +179,18 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
   const categories = useMemo(() => {
     const roots = taxonomyService.getRootCategories();
     return [
-      { id: 'all', label: 'Toutes les catégories' },
+      { id: 'all', label: 'Toutes les catégories', rawCategory: undefined },
       ...roots.map((r) => ({
         id: r.slug,
         label: getTaxonomyLabel(r, 'compact'),
+        rawCategory: r,
       })),
     ];
   }, []);
 
   return (
     <section
-      className={`relative w-full h-auto sm:h-full rounded-2xl bg-white/90 backdrop-blur-md border border-border-base p-3 sm:p-4 shadow-xl shadow-stone-200/50 flex flex-col justify-between hover-pause ${
+      className={`relative w-full max-w-full rounded-2xl bg-white/90 backdrop-blur-md border border-border-base p-3 sm:p-3.5 shadow-xl shadow-stone-200/50 flex flex-col justify-between overflow-hidden hover-pause ${
         isPaused ? 'pause-animation' : ''
       }`}
       aria-labelledby="hero-boosted-heading"
@@ -185,20 +215,94 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <div className="relative">
-              <select
-                value={activeCategory}
-                onChange={(e) => setActiveCategory(e.target.value)}
-                className="appearance-none bg-bg-subtle hover:bg-bg-muted border border-border-base text-stone-900 text-xs font-bold rounded-lg pl-2 pr-6 py-1 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary transition-all max-w-[120px] truncate"
+            {/* Category Filter Dropdown (Harmonized with Header styling) */}
+            <div className="relative" ref={categoryMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
+                aria-expanded={isCategoryMenuOpen}
+                aria-haspopup="menu"
                 aria-label="Filtrer par catégorie"
+                className={`relative p-1.5 rounded-lg border transition-all inline-flex items-center gap-1 cursor-pointer select-none ${
+                  activeCategory !== 'all'
+                    ? 'bg-primary-light text-primary border-primary-border shadow-xs'
+                    : 'bg-bg-subtle text-stone-600 border-border-base hover:text-stone-900 hover:bg-bg-muted'
+                } ${isCategoryMenuOpen ? 'ring-1 ring-primary/40 border-primary text-primary' : ''}`}
+                title={
+                  activeCategory !== 'all'
+                    ? `Filtre actif : ${categories.find((c) => c.id === activeCategory)?.label || activeCategory}`
+                    : 'Filtrer par catégorie'
+                }
               >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3 h-3 text-stone-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Filter className="w-3.5 h-3.5" />
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform ${
+                    isCategoryMenuOpen ? 'rotate-180 text-primary' : 'text-stone-400'
+                  }`}
+                />
+                {activeCategory !== 'all' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary absolute top-1 right-1" />
+                )}
+              </button>
+
+              {isCategoryMenuOpen && (
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  className="absolute right-0 top-full mt-1.5 w-60 max-h-72 overflow-y-auto overscroll-contain bg-white rounded-2xl shadow-xl border border-border-base py-1.5 z-50 animate-in fade-in zoom-in-95"
+                >
+                  <div className="px-3.5 py-1.5 text-micro font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-xs">
+                    <span>Filtrer par catégorie</span>
+                    {activeCategory !== 'all' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveCategory('all');
+                          setIsCategoryMenuOpen(false);
+                        }}
+                        className="text-primary hover:underline lowercase font-semibold text-micro cursor-pointer"
+                      >
+                        Tout effacer
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="py-1">
+                    {categories.map((c) => {
+                      const isSelected = activeCategory === c.id;
+                      const rawCategory = c.rawCategory;
+                      return (
+                        <button
+                          key={c.id}
+                          role="menuitem"
+                          type="button"
+                          onClick={() => {
+                            setActiveCategory(c.id);
+                            setIsCategoryMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors text-left cursor-pointer ${
+                            isSelected
+                              ? 'bg-primary-light text-primary font-bold'
+                              : 'text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {rawCategory ? (
+                              <CategoryIcon category={rawCategory} size="xs" />
+                            ) : (
+                              <div className="w-4 h-4 rounded-md bg-stone-100 flex items-center justify-center text-stone-600 shrink-0">
+                                <Sparkles className="w-2.5 h-2.5" />
+                              </div>
+                            )}
+                            <span className="truncate leading-tight">{c.label}</span>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0 ml-1.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
@@ -215,9 +319,9 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
 
       {/* Main Track Section.
           The viewport is sized to exactly VISIBLE cards (card height + gap), so
-          the rail always shows two whole listings rather than a half-cut third. */}
+          the rail always shows two whole listings filling the full height of the container. */}
       <div
-        className="relative my-1 overflow-hidden sm:h-(--rail-viewport)"
+        className="relative my-1.5 overflow-hidden w-full max-w-full sm:h-(--rail-viewport) min-h-(--rail-viewport) shrink-0"
         style={
           {
             '--rail-card-h': `${RAIL_CARD_H}px`,
@@ -228,7 +332,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       >
         {isDesktopRail ? (
           <div
-            className={`flex flex-col gap-(--rail-gap) will-change-transform ${
+            className={`flex flex-col gap-(--rail-gap) will-change-transform w-full max-w-full ${
               animate ? 'transition-transform duration-slow ease-out-soft' : ''
             }`}
             style={{ transform: `translate3d(0, -${step * (RAIL_CARD_H + RAIL_GAP)}px, 0)` }}
@@ -245,7 +349,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       {/* Bottom Sub-footer Link */}
       <div className="shrink-0 pt-2 border-t border-border-subtle flex items-center justify-between text-micro font-medium text-stone-500">
         <span className="flex items-center gap-1">
-          <ShieldCheck className="w-3 h-3 text-success" />
+          <ShieldCheck className="w-3.5 h-3.5 text-success" />
           Annonces contrôlées
         </span>
         <Link
@@ -253,7 +357,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
           className="text-primary hover:text-primary-hover font-bold flex items-center gap-0.5 hover:underline"
         >
           Booster la vôtre
-          <ArrowUpRight className="w-3 h-3" />
+          <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </section>
@@ -268,58 +372,72 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       <Link
         key={key}
         to={`/annonce/${item.id}`}
-        className="group relative flex items-center gap-3 p-2 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-normal w-[240px] sm:w-full shrink-0 sm:h-(--rail-card-h)"
+        className="group relative flex items-stretch gap-3 p-2.5 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-normal w-[260px] sm:w-full max-w-full shrink-0 sm:h-(--rail-card-h) overflow-hidden box-border"
       >
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-bg-muted border border-border-subtle">
+        <div className="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-bg-muted border border-border-subtle">
           <Image
             src={photoUrl}
             alt={item.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
           {item.isBoosted && (
-            <span className="absolute top-1 left-1 p-0.5 rounded bg-amber-500 text-white shadow-xs">
+            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold text-micro shadow-xs flex items-center gap-1">
               <Zap className="w-2.5 h-2.5 fill-white" />
+              <span>Vedette</span>
             </span>
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-1 mb-0.5">
-            <span className="text-micro font-bold uppercase tracking-wider text-primary truncate">
-              {item.categoryLabel}
-            </span>
-            <FavoriteButton
-              isFavorite={isFav}
-              onToggle={(e) => handleToggleFavorite(e, item.id)}
-              size="sm"
-            />
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 overflow-hidden">
+          <div>
+            <div className="flex items-center justify-between gap-1.5 mb-0.5">
+              <span className="text-micro font-bold uppercase tracking-wider text-primary truncate">
+                {item.categoryLabel}
+              </span>
+              <FavoriteButton
+                isFavorite={isFav}
+                onToggle={(e) => handleToggleFavorite(e, item.id)}
+                size="sm"
+              />
+            </div>
+
+            <h3
+              title={item.title}
+              className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug"
+            >
+              {item.title}
+            </h3>
           </div>
 
-          <h3 title={item.title} className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
-            {item.title}
-          </h3>
-
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xs font-black text-stone-900">
-              <PriceDisplay price={item.price} />
-            </span>
-            {item.originalPrice && item.originalPrice > item.price && (
-              <span className="text-micro text-stone-400 line-through">
-                <PriceDisplay price={item.originalPrice} />
+          <div className="pt-0.5">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs sm:text-sm font-black text-stone-900">
+                <PriceDisplay price={item.price} />
               </span>
-            )}
-          </div>
+              {item.originalPrice && item.originalPrice > item.price && (
+                <span className="text-micro text-stone-400 line-through">
+                  <PriceDisplay price={item.originalPrice} />
+                </span>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2 mt-1 text-micro text-stone-500">
-            <span className="flex items-center gap-0.5 truncate">
-              <MapPin className="w-2.5 h-2.5 shrink-0" />
-              {item.city}
-            </span>
-            {isPro && (
-              <span className="inline-flex items-center px-1 rounded bg-stone-100 text-stone-800 font-bold">
-                PRO
+            <div className="flex items-center gap-2 mt-1 text-micro text-stone-500 flex-wrap">
+              <span className="flex items-center gap-0.5 truncate font-medium">
+                <MapPin className="w-2.5 h-2.5 shrink-0 text-stone-400" />
+                {item.city}
               </span>
-            )}
+              {isPro && (
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-stone-100 text-stone-800 font-bold text-micro">
+                  PRO
+                </span>
+              )}
+              {item.deliveryOptions?.some((o) => o.available && o.type !== 'hand_delivery') && (
+                <span className="inline-flex items-center gap-0.5 text-stone-500 font-medium">
+                  <Truck className="w-2.5 h-2.5 text-stone-400" />
+                  Livraison
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </Link>
