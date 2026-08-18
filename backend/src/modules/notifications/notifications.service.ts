@@ -13,6 +13,15 @@ export class NotificationsService {
     return this.notificationRepo.getUnreadCount(userId);
   }
 
+  /**
+   * Needed by the HTTP layer to check that a notification belongs to the
+   * caller before marking it read or deleting it — those routes take only a
+   * notification id, which is otherwise enough to act on anyone's inbox.
+   */
+  async getNotificationById(notificationId: string): Promise<NotificationItem | null> {
+    return this.notificationRepo.findById(notificationId);
+  }
+
   async markAsRead(notificationId: string): Promise<void> {
     return this.notificationRepo.markAsRead(notificationId);
   }

@@ -9,6 +9,8 @@ export interface RegisterInput {
   email: string;
   name: string;
   role: UserRole;
+  /** Required by the API backend, which stores a scrypt hash of it. */
+  password?: string;
   companyName?: string;
   siret?: string;
   phone?: string;

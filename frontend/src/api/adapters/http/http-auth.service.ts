@@ -38,7 +38,14 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async switchRole(role: UserRole): Promise<UserProfile> {
-    return httpClient.post<UserProfile>('/auth/switch-role', { role });
+    // The backend re-issues the token when the acting role changes, because the
+    // role is a signed claim: keeping the old token would leave the session
+    // asserting the role it just moved away from.
+    const res = await httpClient.post<{ user: UserProfile; token: string }>('/auth/switch-role', { role });
+    if (res.token && typeof localStorage !== 'undefined') {
+      localStorage.setItem('shongre_auth_token', res.token);
+    }
+    return res.user;
   }
 
   async verifyPhone(phone: string, code: string): Promise<boolean> {

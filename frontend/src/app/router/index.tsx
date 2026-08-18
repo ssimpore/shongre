@@ -99,6 +99,18 @@ export const router = createBrowserRouter([
           </RequirePermission>
         ),
       },
+
+      // Signing in and signing up are task-completion flows too: the full
+      // marketplace shell around a login form offers a dozen ways to wander off
+      // mid-task, and the footer's category and city links are noise to someone
+      // who is three fields from being done.
+      { path: 'connexion', element: withSuspense(LoginPage) },
+      { path: 'inscription', element: withSuspense(RegisterChoicePage) },
+      { path: 'inscription/particulier', element: withSuspense(RegisterIndividualPage) },
+      { path: 'inscription/professionnel', element: withSuspense(RegisterProPage) },
+      { path: 'mot-de-passe-oublie', element: withSuspense(ForgotPasswordPage) },
+      { path: 'reinitialisation-mot-de-passe', element: withSuspense(ForgotPasswordPage) },
+      { path: 'verification-email', element: withSuspense(VerifyEmailPage) },
     ],
   },
   {
@@ -129,15 +141,6 @@ export const router = createBrowserRouter([
           </RequirePermission>
         ),
       },
-      
-      // Auth
-      { path: 'connexion', element: withSuspense(LoginPage) },
-      { path: 'inscription', element: withSuspense(RegisterChoicePage) },
-      { path: 'inscription/particulier', element: withSuspense(RegisterIndividualPage) },
-      { path: 'inscription/professionnel', element: withSuspense(RegisterProPage) },
-      { path: 'mot-de-passe-oublie', element: withSuspense(ForgotPasswordPage) },
-      { path: 'reinitialisation-mot-de-passe', element: withSuspense(ForgotPasswordPage) },
-      { path: 'verification-email', element: withSuspense(VerifyEmailPage) },
 
       // Legal & Info
       { path: 'conditions-utilisation', element: withSuspense(TermsPage) },

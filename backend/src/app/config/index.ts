@@ -22,6 +22,8 @@ export interface AppConfig {
   supabaseAnonKey: string;
   supabaseServiceRoleKey: string;
   databaseUrl?: string;
+  jwtSecret: string;
+  authTokenTtlSeconds: number;
   paymentProvider: PaymentProviderMode;
   kycProvider: KYCProviderMode;
   businessRegistryProvider: BusinessRegistryProviderMode;
@@ -41,8 +43,56 @@ function resolveDataMode(): BackendDataMode {
   return rawMode as BackendDataMode;
 }
 
+/**
+ * Development-only signing secret.
+ *
+ * Deliberately a fixed, obviously-fake string rather than a random value
+ * generated at boot: a per-process random secret would silently invalidate
+ * every session on restart and make the failure look like a bug elsewhere.
+ * Production refuses to start with this value — see resolveJwtSecret.
+ */
+const INSECURE_DEV_JWT_SECRET = 'shongre-insecure-development-signing-key-do-not-use-in-production';
+
+const MIN_JWT_SECRET_LENGTH = 32;
+
+/**
+ * Resolves the token signing secret, failing fast when production is
+ * misconfigured. An unset or too-short secret in production means every
+ * session token on the platform is forgeable, so booting anyway is worse
+ * than not booting at all.
+ */
+function resolveJwtSecret(nodeEnv: string): string {
+  const secret = process.env.JWT_SECRET;
+  const isProduction = nodeEnv === 'production';
+
+  if (!secret) {
+    if (isProduction) {
+      throw new Error(
+        '[Config Error] JWT_SECRET is required in production. Set it to a random value of at least ' +
+          `${MIN_JWT_SECRET_LENGTH} characters.`
+      );
+    }
+    return INSECURE_DEV_JWT_SECRET;
+  }
+
+  if (isProduction) {
+    if (secret.length < MIN_JWT_SECRET_LENGTH) {
+      throw new Error(
+        `[Config Error] JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters in production.`
+      );
+    }
+    if (secret === INSECURE_DEV_JWT_SECRET || secret.includes('change-in-production')) {
+      throw new Error('[Config Error] JWT_SECRET is still set to a placeholder value in production.');
+    }
+  }
+
+  return secret;
+}
+
+const nodeEnv = process.env.NODE_ENV || 'development';
+
 export const config: AppConfig = {
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
   dataMode: resolveDataMode(),
   port: parseInt(process.env.BACKEND_PORT || process.env.PORT || '4000', 10),
   apiPrefix: process.env.API_PREFIX || '/api/v1',
@@ -51,6 +101,8 @@ export const config: AppConfig = {
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'dummy-anon-key',
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-service-role-key',
   databaseUrl: process.env.DATABASE_URL,
+  jwtSecret: resolveJwtSecret(nodeEnv),
+  authTokenTtlSeconds: parseInt(process.env.AUTH_TOKEN_TTL_SECONDS || '43200', 10),
   paymentProvider: (process.env.PAYMENT_PROVIDER as PaymentProviderMode) || 'demo',
   kycProvider: (process.env.KYC_PROVIDER as KYCProviderMode) || 'demo',
   businessRegistryProvider: (process.env.BUSINESS_REGISTRY_PROVIDER as BusinessRegistryProviderMode) || 'demo',

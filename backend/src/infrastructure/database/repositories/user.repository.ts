@@ -2,12 +2,27 @@ import { UserProfile, UserRole } from '../../../shared/types/index.js';
 import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
 import { logger } from '../../logging/logger.js';
 
+/**
+ * Credentials are stored separately from UserProfile on purpose.
+ *
+ * UserProfile is the DTO returned by /auth/me, /users/:id and the admin user
+ * list. Keeping the password hash off that type makes it structurally
+ * impossible for a hash to leak through an existing serialization path — there
+ * is no field to accidentally forget to strip.
+ */
+export interface UserCredential {
+  userId: string;
+  passwordHash: string;
+}
+
 export interface IUserRepository {
   findById(id: string): Promise<UserProfile | null>;
   findByEmail(email: string): Promise<UserProfile | null>;
   save(user: UserProfile): Promise<UserProfile>;
   update(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
   getAll(): Promise<UserProfile[]>;
+  findCredentialByUserId(userId: string): Promise<UserCredential | null>;
+  saveCredential(credential: UserCredential): Promise<void>;
 }
 
 export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
@@ -87,6 +102,8 @@ export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
 
 export class DemoUserRepository implements IUserRepository {
   private users: Map<string, UserProfile> = new Map();
+  /** userId -> password hash. Seeded demo accounts get hashes from the bootstrap step. */
+  private credentials: Map<string, string> = new Map();
 
   constructor(initialUsers: Record<string, UserProfile> = CANONICAL_DEMO_USERS) {
     this.reset(initialUsers);
@@ -94,6 +111,7 @@ export class DemoUserRepository implements IUserRepository {
 
   reset(initialUsers: Record<string, UserProfile> = CANONICAL_DEMO_USERS) {
     this.users.clear();
+    this.credentials.clear();
     Object.values(initialUsers).forEach((u) => this.users.set(u.id, { ...u }));
   }
 
@@ -129,6 +147,15 @@ export class DemoUserRepository implements IUserRepository {
 
   async getAll(): Promise<UserProfile[]> {
     return Array.from(this.users.values()).map((u) => ({ ...u }));
+  }
+
+  async findCredentialByUserId(userId: string): Promise<UserCredential | null> {
+    const passwordHash = this.credentials.get(userId);
+    return passwordHash ? { userId, passwordHash } : null;
+  }
+
+  async saveCredential(credential: UserCredential): Promise<void> {
+    this.credentials.set(credential.userId, credential.passwordHash);
   }
 }
 
@@ -262,6 +289,35 @@ export class PostgresUserRepository implements IUserRepository {
     } catch (err: any) {
       logger.error(`PostgresUserRepository.getAll error: ${err.message}`);
       return [];
+    }
+  }
+
+  async findCredentialByUserId(userId: string): Promise<UserCredential | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await ((supabase.from('user_credentials' as any) as any)
+        .select('user_id, password_hash')
+        .eq('user_id', userId)
+        .single() as any);
+      if (error || !data) return null;
+      return { userId: data.user_id, passwordHash: data.password_hash };
+    } catch (err: any) {
+      // Logged without the identifier: credential lookups are a login path and
+      // the log should not accumulate a list of probed accounts.
+      logger.error(`PostgresUserRepository.findCredentialByUserId error: ${err.message}`);
+      return null;
+    }
+  }
+
+  async saveCredential(credential: UserCredential): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await ((supabase.from('user_credentials' as any) as any).upsert({
+      user_id: credential.userId,
+      password_hash: credential.passwordHash,
+      updated_at: new Date().toISOString(),
+    }) as any);
+    if (error) {
+      throw new Error(`Failed to save credential: ${error.message}`);
     }
   }
 }

@@ -4,6 +4,7 @@ import { logger } from '../../logging/logger.js';
 
 export interface INotificationRepository {
   getUserNotifications(userId: string): Promise<NotificationItem[]>;
+  findById(notificationId: string): Promise<NotificationItem | null>;
   getUnreadCount(userId: string): Promise<number>;
   save(notification: NotificationItem): Promise<NotificationItem>;
   markAsRead(notificationId: string): Promise<void>;
@@ -53,6 +54,11 @@ export class DemoNotificationRepository implements INotificationRepository {
     return list.map((n) => ({ ...n }));
   }
 
+  async findById(notificationId: string): Promise<NotificationItem | null> {
+    const found = this.notifications.get(notificationId);
+    return found ? { ...found } : null;
+  }
+
   async getUnreadCount(userId: string): Promise<number> {
     const list = await this.getUserNotifications(userId);
     return list.filter((n) => !n.isRead).length;
@@ -91,6 +97,22 @@ export class PostgresNotificationRepository implements INotificationRepository {
       isRead: Boolean(row.is_read),
       createdAt: row.created_at,
     };
+  }
+
+  async findById(notificationId: string): Promise<NotificationItem | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('id', notificationId)
+        .single();
+      if (error || !data) return null;
+      return this.mapRowToNotification(data);
+    } catch (err: any) {
+      logger.error(`PostgresNotificationRepository.findById error: ${err.message}`);
+      return null;
+    }
   }
 
   async getUserNotifications(userId: string): Promise<NotificationItem[]> {

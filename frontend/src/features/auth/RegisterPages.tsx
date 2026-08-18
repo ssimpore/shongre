@@ -44,22 +44,15 @@ export const RegisterChoicePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    // 3.5rem is the FocusedLayout header. The brand mark it already shows is
+    // why there is no logo repeated here.
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
       <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <Link to={routes.home()} className="inline-flex items-center gap-2 group mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-2xl shadow-sm group-hover:scale-105 transition-transform">
-              S
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-2xl font-black tracking-tight text-stone-900 leading-none">
-                Shongre<span className="text-primary">.</span>
-              </span>
-              <span className="text-micro font-bold text-stone-600 tracking-wider uppercase">
-                Inscription Gratuite
-              </span>
-            </div>
-          </Link>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Inscription gratuite</span>
+          </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
             Créer votre compte Shongre
@@ -434,24 +427,11 @@ export const RegisterProPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    // 3.5rem is the FocusedLayout header, which already carries the brand mark.
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
       <div className="w-full max-w-xl mx-auto">
         <div className="text-center mb-8">
-          <Link to={routes.home()} className="inline-flex items-center gap-2 group mb-4">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 text-white flex items-center justify-center font-black text-2xl shadow-sm group-hover:scale-105 transition-transform">
-              S
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-2xl font-black tracking-tight text-stone-900 leading-none">
-                Shongre<span className="text-primary">.</span>
-              </span>
-              <span className="text-micro font-bold text-stone-600 tracking-wider uppercase">
-                Solutions Professionnelles
-              </span>
-            </div>
-          </Link>
-
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-3">
             <Briefcase className="w-3.5 h-3.5" />
             <span>Vendeur Professionnel</span>
           </div>

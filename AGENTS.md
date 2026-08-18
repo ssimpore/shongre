@@ -3766,3 +3766,96 @@ The platform should behave like **one integrated marketplace product**, not a co
 When in doubt, prefer:
 
 > **reuse over duplication, explicit contracts over coupling, domain ownership over scattered logic, configuration over hardcoding, measurable performance over assumptions, progressive UX over unnecessary friction, and simple scalable architecture over premature complexity.**
+
+---
+
+# 151. API authentication and authorization
+
+The backend authenticates every request from a signed bearer token. There is no
+ambient "current user" — identity is per-request state and must be threaded as
+such.
+
+## Where the pieces live
+
+| Concern | Module |
+| :--- | :--- |
+| Password hashing (scrypt) | `backend/src/shared/auth/password.ts` |
+| Token signing/verification (HS256) | `backend/src/shared/auth/tokens.ts` |
+| Principal + ownership guards | `backend/src/shared/auth/principal.ts` |
+| Role → permission matrix | `backend/src/shared/auth/rbac.ts` |
+| Route access declarations | `backend/src/api/v1/router.ts` |
+| Credential storage | `user_credentials` table, migration `00006` |
+
+## Every route declares its access rule
+
+`addRoute` takes the access rule as a required argument, so a route cannot be
+registered without stating one. Adding a route without thinking about auth is a
+type error, not a silent default.
+
+```ts
+this.addRoute('GET',  '/listings/:id', PUBLIC,                        handler);
+this.addRoute('POST', '/messaging/send', permission('message.send'),  handler);
+this.addRoute('GET',  '/admin/users',  permission('user.read'),       handler);
+```
+
+Use `PUBLIC` only for genuinely public marketplace surface (listings, taxonomy,
+markets, public seller profiles) and for endpoints that cannot carry a session
+token (login, register, Stripe webhooks).
+
+## Never take identity from the client
+
+The caller's identity comes from `ctx.principal`, never from a path parameter or
+request body. This is the rule that keeps the IDOR class of bug out:
+
+```ts
+// WRONG — the caller chooses whose data to read or write
+ordersService.getPurchases(params.userId);
+messagingService.sendMessage(body);            // body.senderId
+paymentsService.requestSellerPayout(body.sellerId, ...);
+
+// RIGHT
+ordersService.getPurchases(resolveOwnerId(principal, params.userId));
+messagingService.sendMessage({ ...body, senderId: principal.userId });
+paymentsService.requestSellerPayout(principal.userId, ...);
+```
+
+`resolveOwnerId` accepts the caller's own id or the literal `me`, and rejects
+anything else unless an override permission is named explicitly. Routes that act
+on a resource id (an order, a conversation, a notification) must load the
+resource and check participation before acting on it.
+
+Ownership failures answer **404, not 403**: confirming that a resource exists but
+belongs to someone else is enough to enumerate users and orders.
+
+## Writes must use an allowlist
+
+`PUT /users/:id` passes the body through `sanitizeProfileUpdate`. Never pass a
+request body straight into a repository update — a passthrough lets a caller set
+their own `primaryRole`, `status` or `isIdentityVerified`. State that belongs to
+admin, moderation or verification flows is never self-serviceable.
+
+## Roles are not self-assignable
+
+Registration may only claim the roles in `SELF_ASSIGNABLE_ROLES`. `switchRole`
+may only move a session between roles the account actually holds, and re-issues
+the token because the role is a signed claim.
+
+## Secrets and configuration
+
+`JWT_SECRET` is required in production; the server refuses to boot if it is
+missing, under 32 characters, or still a placeholder. Demo credentials are never
+seeded in production.
+
+## Frontend data mode
+
+`VITE_DATA_MODE` must be set explicitly to build. Demo mode's login accepts any
+password of six or more characters for the seeded personas by design, so an
+unconfigured production build is rejected in `vite.config.ts`.
+
+## When adding a feature
+
+1. Declare the route's access rule.
+2. Derive identity from `ctx.principal`.
+3. Check ownership on any resource addressed by id.
+4. Allowlist the fields a write may touch.
+5. Add a test that the wrong caller is refused — not only that the right one succeeds.

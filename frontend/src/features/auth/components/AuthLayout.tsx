@@ -1,8 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
-import { routes } from '../../../configuration/routes';
 
+/**
+ * Card frame for the authentication screens.
+ *
+ * These pages render inside FocusedLayout, the same shell as the publication
+ * wizard, which already supplies the brand mark and the two ways out (back and
+ * close). This component owns only what is specific to authentication: the
+ * heading, the card, and the trust strip. It deliberately does not repeat the
+ * logo — it used to, from a time when these routes sat inside the marketplace
+ * shell, which now would show the wordmark twice within 100px.
+ */
 export interface AuthLayoutProps {
   title: string;
   subtitle?: string;
@@ -23,24 +32,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   footerLink,
 }) => {
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    // 3.5rem is the FocusedLayout header, so the card centres in the space
+    // actually left to it rather than sitting slightly low.
+    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
       <div className="w-full max-w-md mx-auto">
-        {/* Brand header */}
         <div className="text-center mb-8">
-          <Link to={routes.home()} className="inline-flex items-center gap-2 group mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-2xl shadow-sm group-hover:scale-105 transition-transform">
-              S
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-2xl font-black tracking-tight text-stone-900 leading-none">
-                Shongre<span className="text-primary">.</span>
-              </span>
-              <span className="text-micro font-bold text-stone-600 tracking-wider uppercase">
-                Plateforme Sécurisée
-              </span>
-            </div>
-          </Link>
-
           {badgeText && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-2">
               <Sparkles className="w-3.5 h-3.5" />

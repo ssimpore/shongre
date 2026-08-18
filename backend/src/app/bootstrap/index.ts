@@ -1,9 +1,13 @@
 import { logger } from '../../infrastructure/logging/logger.js';
 import { db } from '../../infrastructure/database/db-client.js';
 import { lifecycleWorker } from '../../workers/lifecycle/lifecycle-worker.js';
+import { seedDemoCredentials } from './seed-demo-credentials.js';
 
 export async function bootstrapApp(): Promise<void> {
   logger.info('Bootstrapping Shongre Backend Services...');
+
+  // Demo personas need password hashes now that login actually verifies them.
+  await seedDemoCredentials();
 
   // Check database connectivity
   const dbOk = await db.healthCheck();

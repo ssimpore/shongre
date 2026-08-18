@@ -113,11 +113,14 @@ export class ListingsService {
     return success;
   }
 
-  async toggleFavorite(listingId: string, userId = 'user_thomas'): Promise<boolean> {
+  // userId is required rather than defaulted. These previously fell back to
+  // 'user_thomas', so any call that forgot to pass an identity silently read
+  // and mutated one specific demo account's favourites.
+  async toggleFavorite(listingId: string, userId: string): Promise<boolean> {
     return this.listingRepo.toggleFavorite(userId, listingId);
   }
 
-  async getFavorites(userId = 'user_thomas'): Promise<string[]> {
+  async getFavorites(userId: string): Promise<string[]> {
     return this.listingRepo.getFavorites(userId);
   }
 }

@@ -6,7 +6,12 @@ export interface PasswordFieldProps {
   name?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  label?: string;
+  /**
+   * Pass `null` when the caller renders its own label — the login form pairs
+   * one with a "forgot password" link on the same row. Omitting the prop keeps
+   * the default label, so the field is never accidentally unlabelled.
+   */
+  label?: string | null;
   placeholder?: string;
   required?: boolean;
   autoComplete?: string;

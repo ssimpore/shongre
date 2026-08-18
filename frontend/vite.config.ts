@@ -3,9 +3,38 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({ mode }) => {
+/**
+ * Refuses to produce a production bundle whose data mode was never chosen.
+ *
+ * Demo mode serves local fixtures and its login accepts any password of six
+ * characters or more for the seeded personas — deliberate, and fine for UI
+ * work. But demo is also what an unset VITE_DATA_MODE falls back to, so a
+ * release built without env configuration would quietly ship that login.
+ *
+ * This runs in Node while the build is being configured, so a misconfigured
+ * release fails in CI. The equivalent check inside application code could only
+ * throw in the visitor's browser, which trades a silent bad build for a blank
+ * page.
+ */
+function assertDataModeChosen(env: Record<string, string>, command: string): void {
+  if (command !== 'build') return;
+
+  const mode = env.VITE_DATA_MODE;
+  if (mode === 'api' || mode === 'demo') return;
+
+  throw new Error(
+    mode
+      ? `[Config Error] Invalid VITE_DATA_MODE="${mode}". Allowed values are "demo" or "api".`
+      : '[Config Error] VITE_DATA_MODE must be set explicitly to build. Use VITE_DATA_MODE=api to ' +
+        'build against the backend, or VITE_DATA_MODE=demo to deliberately build the fixture-backed demo.'
+  );
+}
+
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, path.resolve(__dirname, '.'), '');
   const port = parseInt(env.PORT || process.env.PORT || '3000', 10);
+
+  assertDataModeChosen(env, command);
 
   return {
     plugins: [react(), tailwindcss()],

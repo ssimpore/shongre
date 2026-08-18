@@ -188,6 +188,8 @@ export const LoginPage: React.FC = () => {
               placeholder="••••••••••••"
               required
               autoComplete="current-password"
+              // The label lives above, sharing its row with the reset link.
+              label={null}
             />
           </div>
 

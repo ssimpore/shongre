@@ -143,6 +143,31 @@ shongre/
 
 ## 5. Security & Boundary Guarantees
 
+- **Authenticated API**: Every `/api/v1` route declares an access rule (`PUBLIC`, `AUTHENTICATED`, or a required permission). Identity is resolved per request from a signed `Authorization: Bearer` token — never from a path parameter or request body. See AGENTS.md §151.
+- **Password storage**: scrypt (`node:crypto`), salted per account, in a dedicated `user_credentials` table that is never exposed to clients. Login is constant-time and does not reveal whether an account exists.
+- **Least privilege**: Roles map to permissions through `shared/auth/rbac.ts`. Registration cannot claim staff roles, and a session can only switch to roles the account actually holds.
+- **Webhook authenticity**: Stripe webhooks are verified against `STRIPE_WEBHOOK_SECRET` (HMAC-SHA256 over the raw body, with a replay window). Unsigned events are rejected.
 - **Zero Secret Leakage**: The frontend bundle never imports backend implementations or sensitive environment variables (`SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, Stripe secret keys). Verified automatically via `make check-boundary`.
 - **Relational Integrity & RLS**: All Supabase business tables are secured with Row Level Security (RLS) policies and PostgreSQL constraints.
 - **Contract Equivalence**: Frontend consumes typed service contracts (`ListingsServiceContract`, `OrdersServiceContract`, etc.) without branching conditionals in UI components.
+
+### Required configuration
+
+| Variable | Where | Notes |
+| :--- | :--- | :--- |
+| `JWT_SECRET` | backend | **Required in production.** The server refuses to boot if unset, shorter than 32 chars, or still a placeholder. Generate with `openssl rand -base64 48`. |
+| `AUTH_TOKEN_TTL_SECONDS` | backend | Session lifetime, default `43200` (12h). |
+| `STRIPE_WEBHOOK_SECRET` | backend | Required for the Stripe webhook endpoint to accept anything. |
+| `DEMO_ACCOUNT_PASSWORD` | backend | Password for seeded demo personas. Never seeded in production. |
+| `VITE_DATA_MODE` | frontend | **Must be set explicitly to build** (`api` or `demo`); the build fails otherwise. |
+
+### Demo credentials
+
+In non-production environments the canonical personas are seeded with the
+password `ShongreDemo2024!` (override via `DEMO_ACCOUNT_PASSWORD`):
+
+| Account | Role |
+| :--- | :--- |
+| `thomas.laurent@example.fr` | individual buyer |
+| `camille.martin@example.fr` | individual seller |
+| `admin@shongre.com` | admin |
