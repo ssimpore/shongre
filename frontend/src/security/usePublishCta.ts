@@ -22,9 +22,17 @@ export interface PublishCta {
  * to the step that actually unblocks them, and label it for what it does.
  */
 export function usePublishCta(): PublishCta {
-  const { can, currentUser } = useAuthorization();
+  const { can, currentUser, isSuspended, isDeactivated } = useAuthorization();
 
   return useMemo(() => {
+    if (isSuspended || isDeactivated) {
+      return {
+        to: '/compte',
+        label: isSuspended ? 'Compte suspendu' : 'Compte inactif',
+        shortLabel: isSuspended ? 'Suspendu' : 'Inactif',
+      };
+    }
+
     if (can('listing.create')) {
       return {
         to: '/deposer',
@@ -42,12 +50,11 @@ export function usePublishCta(): PublishCta {
       };
     }
 
-    // Guest: registering is the first step, and "Déposer une annonce" is still
-    // the promise that gets them there.
+    // Guest: "Déposer une annonce" leads them to the publish flow where auth/account is created.
     return {
-      to: '/inscription',
+      to: '/deposer',
       label: 'Déposer une annonce',
       shortLabel: 'Déposer',
     };
-  }, [can, currentUser]);
+  }, [can, currentUser, isSuspended, isDeactivated]);
 }

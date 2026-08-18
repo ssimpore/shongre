@@ -169,12 +169,12 @@ export const Header: React.FC = () => {
             <Link
               to={publishCta.to}
               aria-label={publishCta.label}
-              className="hidden md:flex bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95"
+              className="hidden md:flex bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95 whitespace-nowrap"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 shrink-0" />
               {/* Tablet keeps the publish action but not its label — it is the
                   one action that must survive the narrower row. */}
-              <span className="hidden lg:inline">{publishCta.label}</span>
+              <span className="hidden lg:inline whitespace-nowrap">{publishCta.label}</span>
             </Link>
 
             {/* Favorites */}

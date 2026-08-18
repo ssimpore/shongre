@@ -392,12 +392,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // ---------------------------------------------------------------------------
   if (variant === 'header') {
     return (
-      <div className="relative" ref={searchContainerRef}>
+      <div className="relative w-full min-w-0" ref={searchContainerRef}>
         <form
           role="search"
           aria-label="Recherche globale"
           onSubmit={handleSubmit}
-          className={`flex items-stretch h-10 bg-bg-base border border-border-base rounded-xl overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white focus-within:shadow-xs transition-all ${className}`}
+          className={`flex items-stretch h-10 w-full min-w-0 bg-bg-base border border-border-base rounded-xl overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white focus-within:shadow-xs transition-all ${className}`}
         >
           {/* Category Trigger Dropdown.
               Hidden below `lg`: between 768px and 1024px the category picker and
@@ -406,7 +406,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               bar narrows to keyword + submit, and category/location stay
               reachable from the results page filters. */}
           {showCategory && (
-            <div className="relative shrink-0 hidden lg:flex items-center" ref={categoryDropdownRef}>
+            <div className="relative shrink hidden lg:flex items-center min-w-0" ref={categoryDropdownRef}>
               <button
                 id={`${idPrefix}-header-category-button`}
                 type="button"
@@ -414,7 +414,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 aria-expanded={isCategoryMenuOpen}
                 aria-haspopup="menu"
                 aria-label="Sélectionner une catégorie"
-                className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-bold transition-colors cursor-pointer rounded-l-[11px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset ${
+                className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-bold transition-colors cursor-pointer rounded-l-[11px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset min-w-0 w-full ${
                   selectedCategorySlug
                     ? 'bg-primary-light text-primary hover:bg-primary-light/80'
                     : 'text-stone-700 hover:bg-bg-subtle'
@@ -496,7 +496,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           )}
 
           {/* Search Keyword Input with Autocomplete */}
-          <div className="flex-1 min-w-[120px] relative flex items-center pl-3">
+          <div className="flex-1 min-w-[60px] relative flex items-center pl-3">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
               ref={searchInputRef}
@@ -538,10 +538,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               type="button"
               onClick={openLocationModal}
               aria-label={`Localisation : ${city || userLocation.label}`}
-              className="hidden lg:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle transition-colors cursor-pointer shrink-0 whitespace-nowrap focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
+              className="hidden lg:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle transition-colors cursor-pointer shrink min-w-0 max-w-[150px] xl:max-w-[200px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
             >
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="whitespace-nowrap">{city || userLocation.label}</span>
+              <span className="truncate whitespace-nowrap">{city || userLocation.label}</span>
             </button>
           )}
 

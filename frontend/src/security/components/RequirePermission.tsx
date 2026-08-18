@@ -1,6 +1,6 @@
 import { routes } from '../../configuration/routes';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ShieldAlert, AlertTriangle, ArrowLeft, Briefcase, Lock } from 'lucide-react';
 import { Permission } from '../../types';
 import { useAuthorization } from '../useAuthorization';
@@ -139,8 +139,10 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   children,
 }) => {
   const { currentUser, can, isSuspended, isPro } = useAuthorization();
+  const location = useLocation();
 
   if (!currentUser) {
+    const redirectParam = encodeURIComponent(location.pathname + location.search);
     return (
       <GuardShell standalone={standalone}>
       <div className="max-w-lg mx-auto px-4 py-16 text-center">
@@ -151,13 +153,22 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">
           Vous devez être connecté pour accéder à cette section.
         </p>
-        <Button
-          to="/connexion"
-          variant="primary"
-          size="md"
-        >
-          Se connecter
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            to={`/connexion?redirect=${redirectParam}`}
+            variant="primary"
+            size="md"
+          >
+            Se connecter
+          </Button>
+          <Button
+            to="/inscription"
+            variant="outline"
+            size="md"
+          >
+            Créer un compte
+          </Button>
+        </div>
       </div>
       </GuardShell>
     );
