@@ -155,19 +155,30 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
       )}
 
       {/* Main Profile Info Section */}
+      {/* Only the avatar reaches up into the cover. The identity block always
+          sits on the white surface, at every width.
+
+          The whole row used to carry the lift, which put the store name over a
+          near-black gradient while it was still `text-stone-900` — 40px of its
+          50px height at 390px, so on a phone the shop's own name was the least
+          readable thing on its page, with the Pro / Vérifié badges cut by the
+          boundary underneath it. Scoping the lift by breakpoint only moved the
+          collision to whichever width left the identity block taller than the
+          lift (768px, then 1024px). One rule removes the class of bug: the
+          overlap is the avatar's alone. */}
       <div className="p-6 sm:p-8 relative">
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 -mt-16 sm:-mt-20 mb-8">
-          
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-8">
+
           {/* Avatar & Main Identity */}
-          <div className="flex items-end gap-5 w-full md:w-auto">
-            <div className="relative shrink-0">
+          <div className="flex items-start gap-5 w-full md:w-auto">
+            <div className="relative shrink-0 -mt-16 sm:-mt-20">
               <Avatar
                 src={seller.avatarUrl}
                 name={displayName}
-                size="xl"
+                size="2xl"
                 isVerified={seller.isVerified}
                 isPro={isPro}
-                className="ring-4 ring-white shadow-md bg-white w-24 h-24 sm:w-32 sm:h-32"
+                className="ring-4 ring-white shadow-md"
               />
             </div>
 

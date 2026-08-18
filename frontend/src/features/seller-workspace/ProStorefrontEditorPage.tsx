@@ -146,7 +146,16 @@ export const ProStorefrontEditorPage: React.FC = () => {
           <span>Voir ma vitrine en direct sur le site</span>
         </a>
 
-        <Button type="submit" variant="primary" size="lg" leftIcon={<Check className="w-4 h-4" />}>
+        {/* `size="lg"` + a nowrap label is 286px wide, which alone overflows a
+            320px viewport. Full-width below `sm` is the platform idiom for a
+            form's primary action and removes the overflow at its source. */}
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          leftIcon={<Check className="w-4 h-4" />}
+          className="w-full sm:w-auto"
+        >
           Enregistrer les modifications
         </Button>
       </div>

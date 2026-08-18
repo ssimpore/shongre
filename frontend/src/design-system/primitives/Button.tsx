@@ -60,10 +60,26 @@ export type ButtonProps = (
 const baseStyles =
   'inline-flex items-center justify-center font-medium whitespace-nowrap transition-all duration-fast cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
+/**
+ * Heights come from the shared control scale in `index.css`, not from ad-hoc
+ * `h-*` values:
+ *   md  → control-touch (44px) — the WCAG 2.5.5 target, the default
+ *   lg  → control-lg    (48px) — page-level primary actions
+ *
+ * `lg` was `h-14`. 56px is not a step on that scale, and it showed: the
+ * registration and pro-signup submit buttons towered over every other control
+ * on their form, and in the newsletter band the button stood 8px taller than
+ * the email field beside it. 48px is the scale's own large step and still reads
+ * as the biggest control on the page.
+ *
+ * `sm` stays at `h-9` (36px) deliberately. It is off-scale too, but it is the
+ * height dense admin tables and filter bars are laid out around, and moving it
+ * is a change to those screens rather than to this one.
+ */
 const sizeStyles = {
   sm: 'text-xs px-4 py-1.5 gap-1.5 h-9 font-semibold rounded-xl',
-  md: 'text-sm px-5 py-2 gap-2 h-11 font-bold rounded-xl',
-  lg: 'text-base px-6 py-2.5 gap-2.5 h-14 font-bold rounded-2xl',
+  md: 'text-sm px-5 py-2 gap-2 h-control-touch font-bold rounded-xl',
+  lg: 'text-base px-6 py-2.5 gap-2.5 h-control-lg font-bold rounded-2xl',
 };
 
 const variantStyles = {

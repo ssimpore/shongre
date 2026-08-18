@@ -279,11 +279,12 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
             </p>
 
             {/* Front Upload */}
-            <div
+            <button
+              type="button"
               onClick={() => setFrontUploaded(true)}
-              className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
+              className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 frontUploaded
-                  ? 'border-emerald-500 bg-success-surface/40 text-success'
+                  ? 'border-success bg-success-surface text-success'
                   : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
               }`}
             >
@@ -302,18 +303,19 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   <div className="text-micro text-stone-500">Formats acceptés : JPG, PNG, PDF (max 8 Mo)</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-success hover:underline">
+              <span className="text-xs font-bold text-success">
                 {frontUploaded ? 'Remplacer' : 'Sélectionner'}
               </span>
-            </div>
+            </button>
 
             {/* Back Upload (for CNI & Driving License) */}
             {(documentType === 'national_id' || documentType === 'driving_license') && (
-              <div
+              <button
+                type="button"
                 onClick={() => setBackUploaded(true)}
-                className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   backUploaded
-                    ? 'border-emerald-500 bg-success-surface/40 text-success'
+                    ? 'border-success bg-success-surface text-success'
                     : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
                 }`}
               >
@@ -332,10 +334,10 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                     <div className="text-micro text-stone-500">Requis pour la validation optique</div>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-success hover:underline">
+                <span className="text-xs font-bold text-success">
                   {backUploaded ? 'Remplacer' : 'Sélectionner'}
                 </span>
-              </div>
+              </button>
             )}
 
             <div>

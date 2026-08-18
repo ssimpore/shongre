@@ -28,7 +28,19 @@ export interface DropdownMenuProps<T = string> {
   headerTitle?: React.ReactNode;
   renderTrigger?: (selectedOption?: DropdownOption<T>, isOpen?: boolean) => React.ReactNode;
   renderOption?: (option: DropdownOption<T>, isSelected: boolean) => React.ReactNode;
-  ariaLabel?: string;
+  /**
+   * What this dropdown chooses, in the user's words — "Trier les résultats",
+   * "Filtrer par catégorie".
+   *
+   * Required, and deliberately so. The trigger is a `<button>`, which is not a
+   * labelable element, so the visible `<label htmlFor>` sitting above several of
+   * these never named them; they all fell back to a generic "Sélectionner une
+   * option", and the search page presented five identically-named controls to a
+   * screen reader. axe cannot catch it — the fallback is technically an
+   * accessible name — so the compiler catches it instead, the same way `Button`
+   * requires a name for icon-only controls.
+   */
+  ariaLabel: string;
   size?: 'sm' | 'md' | 'lg' | 'touch';
 }
 
@@ -131,7 +143,19 @@ export function DropdownMenu<T extends string | number = string>({
   return (
     <div className={`relative ${fullWidth ? 'w-full block' : 'inline-block'} text-left ${className}`} ref={containerRef}>
       {renderTrigger ? (
-        <div onClick={() => setIsOpen(!isOpen)}>{renderTrigger(selectedOption, isOpen)}</div>
+        // A custom trigger still has to be a real control: as a bare <div> the
+        // menu could not be opened from the keyboard and announced as nothing.
+        <button
+          id={id}
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-label={ariaLabel}
+          className={fullWidth ? 'w-full text-left cursor-pointer' : 'text-left cursor-pointer'}
+        >
+          {renderTrigger(selectedOption, isOpen)}
+        </button>
       ) : (
         <button
           id={id}
@@ -139,7 +163,7 @@ export function DropdownMenu<T extends string | number = string>({
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
-          aria-label={ariaLabel || label || 'Sélectionner une option'}
+          aria-label={ariaLabel}
           className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-stone-800 font-semibold transition-all cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
             fullWidth ? 'w-full' : ''
           } ${
@@ -211,17 +235,20 @@ export function DropdownMenu<T extends string | number = string>({
 
                 if (renderOption) {
                   return (
-                    <div
+                    <button
                       key={String(option.value)}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      disabled={option.disabled}
                       onClick={() => {
-                        if (!option.disabled) {
-                          onChange(option.value);
-                          setIsOpen(false);
-                        }
+                        onChange(option.value);
+                        setIsOpen(false);
                       }}
+                      className="w-full text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {renderOption(option, isSelected)}
-                    </div>
+                    </button>
                   );
                 }
 

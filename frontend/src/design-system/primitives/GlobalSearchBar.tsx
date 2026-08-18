@@ -884,6 +884,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <div className="hidden sm:block">
                 <DropdownMenu
                   id={`${idPrefix}-page-radius-select`}
+                  ariaLabel="Rayon de recherche autour de la ville"
                   size="touch"
                   panelWidth="w-40"
                   headerTitle={

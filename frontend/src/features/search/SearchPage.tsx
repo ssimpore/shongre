@@ -40,6 +40,7 @@ import { CategoryFilterRail } from '../../design-system/primitives/CategoryFilte
 import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { DropdownMenu, DropdownOption } from '../../design-system/primitives/DropdownMenu';
+import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
 
 export const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -76,8 +77,6 @@ export const SearchPage: React.FC = () => {
 
   // Temporary filter state for mobile drawer / inputs
   const [tempQuery, setTempQuery] = useState(query);
-  const [tempMinPrice, setTempMinPrice] = useState(minPrice !== undefined ? String(minPrice) : '');
-  const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice !== undefined ? String(maxPrice) : '');
 
   useEffect(() => {
     setTempQuery(query);
@@ -134,12 +133,12 @@ export const SearchPage: React.FC = () => {
     });
   };
 
-  const handlePriceApply = () => {
+  const handlePriceChange = ({ min, max }: { min?: number; max?: number }) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (tempMinPrice) next.set('minPrice', tempMinPrice);
+      if (min !== undefined) next.set('minPrice', String(min));
       else next.delete('minPrice');
-      if (tempMaxPrice) next.set('maxPrice', tempMaxPrice);
+      if (max !== undefined) next.set('maxPrice', String(max));
       else next.delete('maxPrice');
       next.delete('page');
       return next;
@@ -149,8 +148,6 @@ export const SearchPage: React.FC = () => {
   const clearAllFilters = () => {
     setSearchParams(new URLSearchParams());
     setTempQuery('');
-    setTempMinPrice('');
-    setTempMaxPrice('');
     resetLocation();
   };
 
@@ -365,13 +362,7 @@ export const SearchPage: React.FC = () => {
       <div className="mb-6">
         <CategoryFilterRail
           selectedCategorySlug={categorySlug || undefined}
-          onSelectAll={() => {
-            setSearchParams(new URLSearchParams());
-            setTempQuery('');
-            setTempMinPrice('');
-            setTempMaxPrice('');
-            resetLocation();
-          }}
+          onSelectAll={clearAllFilters}
           onSelectCategory={(slug) => {
             setSearchParams((prev) => {
               const next = new URLSearchParams(prev);
@@ -447,6 +438,7 @@ export const SearchPage: React.FC = () => {
                 <div className="space-y-2.5">
                   <DropdownMenu
                     id="desktop-category-select"
+                    ariaLabel="Filtrer par catégorie"
                     fullWidth
                     searchable
                     searchPlaceholder="Rechercher une catégorie…"
@@ -484,6 +476,7 @@ export const SearchPage: React.FC = () => {
                       </label>
                       <DropdownMenu
                         id="desktop-subcategory-select"
+                        ariaLabel="Filtrer par sous-catégorie"
                         fullWidth
                         searchable={subcategoryDropdownOptions.length > 5}
                         searchPlaceholder="Rechercher une sous-catégorie…"
@@ -538,32 +531,14 @@ export const SearchPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Price Range */}
+              {/* Price Range. The slider commits on release, so the separate
+                  "Appliquer le prix" button that the two number fields needed
+                  as a commit point is gone with them. */}
               <div className="pt-4 border-t border-border-subtle">
                 <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
                   Prix (€)
                 </h2>
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <Input
-                    type="number"
-                    placeholder="Min"
-                    aria-label="Prix minimum en euros"
-                    value={tempMinPrice}
-                    onChange={(e) => setTempMinPrice(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    aria-label="Prix maximum en euros"
-                    value={tempMaxPrice}
-                    onChange={(e) => setTempMaxPrice(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <Button variant="outline" size="sm" fullWidth onClick={handlePriceApply}>
-                  Appliquer le prix
-                </Button>
+                <PriceRangeSlider min={minPrice} max={maxPrice} onChange={handlePriceChange} />
               </div>
 
               {/* Delivery & Payment Toggles */}
@@ -618,6 +593,7 @@ export const SearchPage: React.FC = () => {
                           </label>
                           <DropdownMenu
                             id={`attr-${attr.code}-select`}
+                            ariaLabel={`Filtrer par ${attr.label}`}
                             fullWidth
                             size="sm"
                             headerTitle={attr.label}
@@ -712,7 +688,13 @@ export const SearchPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center gap-2 min-w-0 flex-wrap lg:flex-nowrap justify-end">
+            {/* Below `lg` this group wraps onto its own line, and it used to be
+                sized to its contents there — so the three controls huddled
+                against the left edge with 60px of empty bar beside them at
+                430px and 215px at 768px. It now claims the whole line, with
+                "Filtres" pinned left, the view toggle pinned right, and the
+                sort control absorbing whatever is left between them. */}
+            <div className="flex items-center gap-2 min-w-0 w-full lg:w-auto justify-between lg:justify-end">
               {/* Mobile Filter Button with active count indicator */}
               <button
                 type="button"
@@ -734,13 +716,16 @@ export const SearchPage: React.FC = () => {
               </button>
 
               {/* Sort selector */}
-              <div className="flex items-center gap-1.5 text-xs min-w-0">
+              <div className="flex items-center gap-1.5 text-xs min-w-0 flex-1 lg:flex-none">
                 <span className="text-stone-500 hidden sm:inline shrink-0 font-medium">Trier par :</span>
                 <DropdownMenu
                   id="sort-select"
+                  ariaLabel="Trier les résultats"
                   size="sm"
                   placement="bottom-right"
                   panelWidth="w-48"
+                  className="flex-1 lg:flex-none min-w-0"
+                  triggerClassName="w-full lg:w-auto"
                   headerTitle={
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                       <ArrowUpDown className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -861,6 +846,7 @@ export const SearchPage: React.FC = () => {
             </label>
             <DropdownMenu
               id="mobile-category-select"
+              ariaLabel="Filtrer par catégorie"
               fullWidth
               searchable
               searchPlaceholder="Rechercher une catégorie…"
@@ -883,6 +869,7 @@ export const SearchPage: React.FC = () => {
                 </label>
                 <DropdownMenu
                   id="mobile-subcategory-select"
+                  ariaLabel="Filtrer par sous-catégorie"
                   fullWidth
                   searchable={subcategoryDropdownOptions.length > 5}
                   searchPlaceholder="Rechercher une sous-catégorie…"
@@ -929,23 +916,10 @@ export const SearchPage: React.FC = () => {
 
           {/* Price */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+            <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
               Budget (€)
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="number"
-                placeholder="Prix Min"
-                value={tempMinPrice}
-                onChange={(e) => setTempMinPrice(e.target.value)}
-              />
-              <Input
-                type="number"
-                placeholder="Prix Max"
-                value={tempMaxPrice}
-                onChange={(e) => setTempMaxPrice(e.target.value)}
-              />
-            </div>
+            </span>
+            <PriceRangeSlider min={minPrice} max={maxPrice} onChange={handlePriceChange} />
           </div>
 
           {/* Delivery & Security Checkboxes */}
@@ -994,6 +968,7 @@ export const SearchPage: React.FC = () => {
                       </label>
                       <DropdownMenu
                         id={`mobile-attr-${attr.code}-select`}
+                        ariaLabel={`Filtrer par ${attr.label}`}
                         fullWidth
                         size="md"
                         headerTitle={attr.label}
@@ -1050,10 +1025,7 @@ export const SearchPage: React.FC = () => {
             <Button
               variant="primary"
               fullWidth
-              onClick={() => {
-                handlePriceApply();
-                setIsFilterDrawerOpen(false);
-              }}
+              onClick={() => setIsFilterDrawerOpen(false)}
             >
               Voir les résultats ({totalCount})
             </Button>

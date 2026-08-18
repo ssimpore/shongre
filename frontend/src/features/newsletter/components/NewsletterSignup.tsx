@@ -91,8 +91,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   if (variant === 'footer') {
     return (
       <form onSubmit={handleSubmit} className={`space-y-2 ${className}`}>
-        <div className="flex items-center gap-1.5 max-w-sm">
-          <div className="relative flex-1">
+        {/* Stacked, not side by side. This sits in the footer's narrowest
+            column, where a row left the field about 100px wide — enough to show
+            "thomas" and nothing else, so the reader could not check what they
+            had typed. Two rows give the field the column's full width. */}
+        <div className="flex flex-col gap-2 max-w-sm">
+          <div className="relative">
             <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="email"
@@ -108,9 +112,10 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="h-control-md px-3.5 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs font-bold rounded-xl transition-colors shrink-0 flex items-center gap-1 disabled:opacity-50 cursor-pointer shadow-xs"
+            className="h-control-md w-full px-3.5 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <span>{isSubmitting ? '...' : 'S\'inscrire'}</span>
+            <span>{isSubmitting ? 'Inscription…' : 'S\'inscrire'}</span>
+            {!isSubmitting && <ArrowRight className="w-3.5 h-3.5" />}
           </button>
         </div>
         {errorMessage && (
@@ -156,7 +161,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   aria-label="Votre adresse email"
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full h-12 pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
+                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
 

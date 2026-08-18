@@ -29,10 +29,18 @@ test.describe('public browsing', () => {
     await usePersona(page, 'guest');
     await page.goto('/recherche?query=velo&sortBy=price_asc');
 
-    await expect(page.getByLabel(/trier les résultats/i)).toHaveValue('price_asc');
+    /**
+     * The sort control is a custom listbox trigger rather than a `<select>`, so
+     * the state it carries is the option it displays, not a form value. The
+     * assertion is on that label — `toHaveValue` reads nothing from a `<button>`
+     * and passed vacuously against the old markup.
+     */
+    const sort = page.getByRole('button', { name: /trier les résultats/i });
+    await expect(sort).toContainText(/prix\s*:\s*croissant/i);
 
     await page.reload();
-    await expect(page.getByLabel(/trier les résultats/i)).toHaveValue('price_asc');
+    await expect(sort).toContainText(/prix\s*:\s*croissant/i);
+    await expect(page).toHaveURL(/sortBy=price_asc/);
   });
 
   test('a listing page shows price, seller and a primary action', async ({ page }) => {

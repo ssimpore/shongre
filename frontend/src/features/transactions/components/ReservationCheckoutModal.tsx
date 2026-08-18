@@ -18,6 +18,7 @@ import { Listing, UserProfile, DeliveryType, Transaction } from '../../../types'
 import { transactionService } from '../../../domains/transaction/transaction.service';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
+import { SelectableCard } from '../../../design-system/primitives/SelectableCard';
 import { formatPrice } from '../../../utilities/formatters';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { DEMO_USERS } from '../../../mocks/initialDemoData';
@@ -195,11 +196,13 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
 
             <div className="space-y-2">
               {/* Hand delivery */}
-              <div
-                onClick={() => setDeliveryMethod('hand_delivery')}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
+              <SelectableCard
+                selected={deliveryMethod === 'hand_delivery'}
+                onSelect={() => setDeliveryMethod('hand_delivery')}
+                aria-label="Remise en main propre sécurisée, gratuit"
+                className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'hand_delivery'
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                    ? 'border-primary bg-primary-light ring-1 ring-primary/50'
                     : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
@@ -211,7 +214,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-stone-900 text-sm">Remise en main propre sécurisée</p>
-                        <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
+                        <span className="text-xs font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
                           Gratuit
                         </span>
                       </div>
@@ -220,7 +223,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       </p>
                     </div>
                   </div>
-                  <span className="font-black text-stone-900">0,00 €</span>
+                  <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">0,00 €</span>
                 </div>
 
                 {deliveryMethod === 'hand_delivery' && (
@@ -247,14 +250,16 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     </div>
                   </div>
                 )}
-              </div>
+              </SelectableCard>
 
               {/* Mondial Relay */}
-              <div
-                onClick={() => setDeliveryMethod('relay_point')}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
+              <SelectableCard
+                selected={deliveryMethod === 'relay_point'}
+                onSelect={() => setDeliveryMethod('relay_point')}
+                aria-label="Livraison en Point Relais Mondial Relay, 4,90 €"
+                className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'relay_point'
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                    ? 'border-primary bg-primary-light ring-1 ring-primary/50'
                     : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
@@ -270,7 +275,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       </p>
                     </div>
                   </div>
-                  <span className="font-black text-stone-900">4,90 €</span>
+                  <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">4,90 €</span>
                 </div>
 
                 {deliveryMethod === 'relay_point' && (
@@ -289,14 +294,16 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     </div>
                   </div>
                 )}
-              </div>
+              </SelectableCard>
 
               {/* Home delivery */}
-              <div
-                onClick={() => setDeliveryMethod('home_delivery')}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
+              <SelectableCard
+                selected={deliveryMethod === 'home_delivery'}
+                onSelect={() => setDeliveryMethod('home_delivery')}
+                aria-label="Livraison à domicile Colissimo, 6,90 €"
+                className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'home_delivery'
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                    ? 'border-primary bg-primary-light ring-1 ring-primary/50'
                     : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                 }`}
               >
@@ -312,7 +319,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       </p>
                     </div>
                   </div>
-                  <span className="font-black text-stone-900">6,90 €</span>
+                  <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">6,90 €</span>
                 </div>
 
                 {deliveryMethod === 'home_delivery' && (
@@ -357,7 +364,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     </div>
                   </div>
                 )}
-              </div>
+              </SelectableCard>
             </div>
 
             <Button

@@ -439,11 +439,12 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             </p>
 
             {/* KBIS Upload */}
-            <div
+            <button
+              type="button"
               onClick={() => setKbisUploaded(true)}
-              className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
+              className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 kbisUploaded
-                  ? 'border-emerald-500 bg-success-surface/40 text-success'
+                  ? 'border-success bg-success-surface text-success'
                   : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
               }`}
             >
@@ -462,17 +463,18 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   <div className="text-micro text-stone-500">Document obligatoire délivré par le Greffe du Tribunal</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-warning hover:underline">
+              <span className="text-xs font-bold text-warning">
                 {kbisUploaded ? 'Remplacer' : 'Sélectionner'}
               </span>
-            </div>
+            </button>
 
             {/* RIB Upload */}
-            <div
+            <button
+              type="button"
               onClick={() => setRibUploaded(true)}
-              className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-between gap-3 ${
+              className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 ribUploaded
-                  ? 'border-emerald-500 bg-success-surface/40 text-success'
+                  ? 'border-success bg-success-surface text-success'
                   : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
               }`}
             >
@@ -491,10 +493,10 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   <div className="text-micro text-stone-500">Pour accélérer la validation des virements de séquestre</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-warning hover:underline">
+              <span className="text-xs font-bold text-warning">
                 {ribUploaded ? 'Remplacer' : 'Sélectionner'}
               </span>
-            </div>
+            </button>
 
             <div className="pt-3 flex items-center justify-between">
               <Button

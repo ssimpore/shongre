@@ -5,6 +5,7 @@ import { TRANSACTION_CONFIG } from '../../../configuration/transaction.config';
 import { transactionService } from '../../../domains/transaction/transaction.service';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
+import { SelectableCard } from '../../../design-system/primitives/SelectableCard';
 import { formatPrice } from '../../../utilities/formatters';
 
 interface SellerPayoutModalProps {
@@ -117,28 +118,32 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         <div className="space-y-3">
           <label className="block font-bold text-stone-700 text-sm">Type de virement</label>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div
-              onClick={() => setPayoutType('standard')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
+            <SelectableCard
+              selected={payoutType === 'standard'}
+              onSelect={() => setPayoutType('standard')}
+              aria-label="Virement standard, gratuit, 24 à 48h ouvrées"
+              className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                 payoutType === 'standard'
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                  ? 'border-primary bg-primary-light ring-1 ring-primary/50'
                   : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-stone-900">Standard</span>
-                <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
                   Gratuit
                 </span>
               </div>
               <p className="text-xs font-medium text-stone-500">Délai SEPA classique (24 à 48h ouvrées)</p>
-            </div>
+            </SelectableCard>
 
-            <div
-              onClick={() => setPayoutType('instant')}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all duration-normal shadow-2xs hover:shadow-sm ${
+            <SelectableCard
+              selected={payoutType === 'instant'}
+              onSelect={() => setPayoutType('instant')}
+              aria-label="Virement instantané, 0,90 €, crédité en moins de 10 minutes"
+              className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                 payoutType === 'instant'
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                  ? 'border-primary bg-primary-light ring-1 ring-primary/50'
                   : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
               }`}
             >
@@ -151,7 +156,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
                 </span>
               </div>
               <p className="text-xs font-medium text-stone-500">Crédité en moins de 10 minutes sur votre IBAN</p>
-            </div>
+            </SelectableCard>
           </div>
         </div>
 
@@ -166,7 +171,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
               <p className="text-xs text-stone-500 font-mono mt-0.5">IBAN •••• {bankIban.slice(-4)}</p>
             </div>
           </div>
-          <span className="text-xs font-bold text-success bg-success/10 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+          <span className="text-xs font-bold text-success bg-success-surface px-2.5 py-1 rounded-full flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" /> Vérifié
           </span>
         </div>

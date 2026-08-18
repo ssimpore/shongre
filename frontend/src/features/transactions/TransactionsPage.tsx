@@ -166,7 +166,7 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Escrow Banner info */}
-      <div className="p-4 bg-success/10 border border-success/20 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-success">
+      <div className="p-4 bg-success-surface border border-success-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-success">
         <div className="flex items-start sm:items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-success shrink-0" />
           <span className="leading-relaxed">
@@ -174,7 +174,7 @@ export const TransactionsPage: React.FC = () => {
           </span>
         </div>
         {earningsSummary.escrowHeldBalance > 0 && (
-          <span className="text-sm font-bold text-success bg-white/60 px-3 py-1.5 rounded-xl shrink-0 border border-success/10 shadow-2xs">
+          <span className="text-sm font-bold text-success bg-bg-surface px-3 py-1.5 rounded-xl shrink-0 border border-success-border shadow-2xs">
             {formatPrice(earningsSummary.escrowHeldBalance)} sous séquestre
           </span>
         )}

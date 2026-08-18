@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Headphones,
   PlusCircle,
@@ -20,7 +20,6 @@ import { Skeleton } from '../../design-system/primitives/UIComponents';
 
 export const SupportRequestsPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -128,10 +127,13 @@ export const SupportRequestsPage: React.FC = () => {
             const statusInfo = supportService.getStatusInfo(req.status);
 
             return (
-              <div
+              // A whole-card navigation target belongs in a <Link>: as a
+              // clickable <div> it could not be tabbed to, opened in a new tab,
+              // or announced as a link at all.
+              <Link
                 key={req.id}
-                onClick={() => navigate(`/compte/support/${req.id}`)}
-                className="bg-white border border-border-base rounded-2xl p-4 sm:p-5 shadow-xs hover:border-stone-400 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                to={`/compte/support/${req.id}`}
+                className="bg-white border border-border-base rounded-2xl p-4 sm:p-5 shadow-xs hover:border-stone-400 transition-all duration-fast cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <div className="space-y-1.5 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -162,7 +164,7 @@ export const SupportRequestsPage: React.FC = () => {
                   </div>
                   <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-0.5 transition-transform" />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </section>

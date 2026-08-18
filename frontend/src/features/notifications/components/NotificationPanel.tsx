@@ -142,7 +142,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         <Link
           to="/compte/notifications"
           onClick={onClose}
-          className="text-xs font-bold text-primary hover:text-primary-dark transition-colors inline-flex items-center gap-1.5"
+          className="text-xs font-bold text-primary hover:text-primary-hover transition-colors inline-flex items-center gap-1.5"
         >
           <span>Voir toutes les notifications</span>
           <ExternalLink className="w-3 h-3" />

@@ -38,6 +38,7 @@ import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
+import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { NewsletterSignup } from '../newsletter/components/NewsletterSignup';
 import { usePublishCta } from '../../security/usePublishCta';
 import { plural } from '../../utilities/formatters';
@@ -100,10 +101,6 @@ export const HomePage: React.FC = () => {
             {/* Column 1: Hero Pitch, Search & CTAs */}
             <div className="lg:col-span-7 space-y-6 lg:space-y-8 text-left flex flex-col justify-center w-full">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-stone-200/60 shadow-xs w-fit">
-                  <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span className="text-xs font-bold text-stone-600">Plus de 2 millions d'annonces vérifiées</span>
-                </div>
                 <h1 className="text-[32px] sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-[-0.02em] leading-[1.1]">
                   Trouvez la perle rare, <br className="hidden sm:inline" />
                   <span className="text-primary relative inline-block">
@@ -143,7 +140,7 @@ export const HomePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate(publishCta.to)}
-                    className="h-12 sm:h-14 px-6 sm:px-8 rounded-2xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-bold text-sm sm:text-base shadow-lg shadow-stone-900/10 hover:shadow-xl hover:shadow-stone-900/10 transition-all flex items-center justify-center gap-2.5 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap"
+                    className="h-control-md px-6 sm:px-8 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-bold text-sm sm:text-base shadow-lg shadow-stone-900/10 hover:shadow-xl hover:shadow-stone-900/10 transition-all flex items-center justify-center gap-2.5 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap"
                   >
                     <PlusCircle className="w-5 h-5 text-primary" />
                     <span>{publishCta.label}</span>
@@ -152,7 +149,7 @@ export const HomePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate(routes.search())}
-                    className="h-12 sm:h-14 px-6 sm:px-8 rounded-2xl bg-white hover:bg-stone-50 border-2 border-stone-200 text-stone-800 font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm hover:shadow active:scale-95 w-full sm:w-auto whitespace-nowrap"
+                    className="h-control-md px-6 sm:px-8 rounded-xl bg-white hover:bg-stone-50 border-2 border-stone-200 text-stone-800 font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm hover:shadow active:scale-95 w-full sm:w-auto whitespace-nowrap"
                   >
                     <Compass className="w-5 h-5 text-stone-400" />
                     <span>Explorer le catalogue</span>
@@ -192,25 +189,33 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-5">
-          {TAXONOMY.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/categorie/${cat.slug}`}
-              className="group bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-lg p-3 sm:p-5 flex flex-col items-center text-center transition-all duration-normal active:scale-95"
-            >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#FAF8F5] group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors shrink-0">
-                <CategoryIcon category={cat} size="lg" className="w-6 h-6 sm:w-8 sm:h-8 text-stone-700 group-hover:text-primary transition-colors" />
-              </div>
-              <h3
-                className="text-[13px] sm:text-sm font-bold text-stone-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] flex items-center justify-center text-center w-full leading-tight break-words"
-                title={cat.name}
+        {/* Below `sm` this is one horizontally scrolling row rather than a
+            2-column grid: sixteen categories stacked eight rows deep pushed the
+            listings themselves a full screen down the page. `ScrollRail` adds
+            the edge fade and nudge buttons so the overflow is visible instead
+            of implied. From `sm` up there is room to lay them all out at once,
+            so it goes back to a grid. */}
+        <ScrollRail label="catégories" className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
+          <div className="flex gap-3 sm:grid sm:grid-cols-4 lg:grid-cols-8 sm:gap-5">
+            {TAXONOMY.map((cat) => (
+              <Link
+                key={cat.id}
+                to={`/categorie/${cat.slug}`}
+                className="group w-[104px] shrink-0 snap-start sm:w-auto bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-lg p-3 sm:p-5 flex flex-col items-center text-center transition-all duration-normal active:scale-95"
               >
-                {getTaxonomyLabel(cat, 'compact')}
-              </h3>
-            </Link>
-          ))}
-        </div>
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#FAF8F5] group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors shrink-0">
+                  <CategoryIcon category={cat} size="lg" className="w-6 h-6 sm:w-8 sm:h-8 text-stone-700 group-hover:text-primary transition-colors" />
+                </div>
+                <h3
+                  className="text-[13px] sm:text-sm font-bold text-stone-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5em] flex items-center justify-center text-center w-full leading-tight break-words"
+                  title={cat.name}
+                >
+                  {getTaxonomyLabel(cat, 'compact')}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </ScrollRail>
       </section>
 
       {/* 3. Fresh Listings */}
@@ -280,11 +285,19 @@ export const HomePage: React.FC = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {/* The cards are the grid items themselves. They used to be wrapped
+                in a white `rounded-2xl` box, which duplicated the card's own
+                surface and corner at a different radius, and — because the
+                wrapper was what the grid stretched — left the card inside it
+                free to collapse to its content height. */}
+            {/* `auto-rows-fr` because this showcase wraps to two rows on a
+                phone, and a grid otherwise sizes each row to its own tallest
+                card — leaving the two rows 22px apart at 320px. Four items is a
+                small enough set for one uniform card height to be the right
+                call. */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 auto-rows-fr gap-3 sm:gap-4">
               {dealsListings.map((listing) => (
-                <div key={listing.id} className="bg-white rounded-2xl overflow-hidden text-stone-900">
-                  <ListingCard listing={listing} />
-                </div>
+                <ListingCard key={listing.id} listing={listing} />
               ))}
             </div>
           </div>

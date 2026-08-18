@@ -238,6 +238,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             {/* Sort Selector */}
             <DropdownMenu<SortOption>
               id="seller-catalog-sort"
+              ariaLabel="Trier le catalogue"
               size="sm"
               placement="bottom-right"
               panelWidth="w-48"

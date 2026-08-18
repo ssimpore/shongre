@@ -553,12 +553,12 @@ export const ListingDetailPage: React.FC = () => {
               </div>
             ) : actions.statusNotice ? (
               /* Non-Active Status Notice (Reserved, Sold, Expired) */
-              <div className="p-5 bg-warning/10 border border-warning/20 rounded-2xl space-y-3 text-center">
+              <div className="p-5 bg-warning-surface border border-warning-border rounded-2xl space-y-3 text-center">
                 <div className="flex items-center justify-center gap-2 font-bold text-warning text-base">
                   <Clock className="w-5 h-5 text-warning" />
                   <span>{actions.statusNotice.title}</span>
                 </div>
-                <p className="text-sm text-warning-dark leading-relaxed font-medium">
+                <p className="text-sm text-warning leading-relaxed font-medium">
                   {actions.statusNotice.message}
                 </p>
                 {actions.statusNotice.isBuyerReserver && (
@@ -765,6 +765,7 @@ export const ListingDetailPage: React.FC = () => {
           <FormField label="Motif du signalement">
             <DropdownMenu
               id="report-reason-select"
+              ariaLabel="Motif du signalement"
               fullWidth
               headerTitle="Motif du signalement"
               options={[
@@ -809,7 +810,12 @@ export const ListingDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* STICKY MOBILE ACTION BAR (< lg) */}
       {/* ========================================================================= */}
-      <div className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex items-center justify-between gap-4">
+      {/* This bar stacks above the mobile tab bar, but the tab bar stops at `md`
+          while the bar itself runs to `lg`. Between those two breakpoints it was
+          still holding the tab bar's 57px offset, so it floated with a strip of
+          page showing underneath it. It sits flush once there is nothing left to
+          clear. */}
+      <div className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-0.5">
             {showsBuyerFee ? 'Total à payer' : 'Prix'}

@@ -376,9 +376,17 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation (rendered via Portal to prevent sticky header clipping) */}
+      {/* Mobile Drawer Navigation (rendered via Portal to prevent sticky header
+          clipping).
+
+          `z-45` puts the drawer between page chrome and dialogs: above the
+          sticky header and the mobile tab bar (both `z-40`), below modals and
+          toasts (`z-50`). It was `z-[9999]`, the only arbitrary z-index in the
+          app, which stacked it over every dialog — including the ones it opens
+          itself. Tapping "Changer" beside the location did open the picker; it
+          just rendered underneath the drawer, so nothing appeared to happen. */}
       {isMobileMenuOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[9999] lg:hidden flex justify-end">
+        <div className="fixed inset-0 z-45 lg:hidden flex justify-end">
           {/* Backdrop overlay */}
           <div
             className="fixed inset-0 bg-stone-900/40 backdrop-blur-[2px] transition-opacity duration-normal"

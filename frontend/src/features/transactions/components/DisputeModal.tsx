@@ -59,18 +59,18 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
       description="Les fonds sous séquestre resteront gelés jusqu'à résolution par le service client Shongre."
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-sm font-medium">
-        <div className="p-4 bg-warning/10 border border-warning/20 rounded-2xl text-warning flex items-start gap-3 shadow-2xs">
+        <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-warning flex items-start gap-3 shadow-2xs">
           <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-warning">Protection Acheteur & Vendeur active</p>
-            <p className="text-xs text-warning/90 mt-1 font-medium">
+            <p className="text-xs text-warning mt-1 font-medium">
               En ouvrant ce dossier, aucun versement ne sera exécuté tant que la situation n'est pas clarifiée entre les deux parties ou arbitrée par nos équipes.
             </p>
           </div>
         </div>
 
         {error && (
-          <div className="p-4 bg-danger/10 border border-danger/20 text-danger rounded-2xl font-bold text-sm shadow-2xs">
+          <div className="p-4 bg-danger-surface border border-danger-border text-danger rounded-2xl font-bold text-sm shadow-2xs">
             {error}
           </div>
         )}

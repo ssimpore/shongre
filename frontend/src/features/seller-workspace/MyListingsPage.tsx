@@ -30,6 +30,57 @@ import { DataTable } from '../../design-system/primitives/DataTable';
 import { BulkImportModal } from './components/BulkImportModal';
 import { usePublishCta } from '../../security/usePublishCta';
 
+type BoostPack = 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight';
+
+/**
+ * The paid visibility options, and the swatch that previews each one.
+ *
+ * The swatch is a promise about what the listing will look like once the seller
+ * pays, so it has to match the badge they actually get. "Urgent" advertised a
+ * red badge in its copy while showing an amber chip — amber that was also
+ * `bg-amber-500` under white text, 2.13:1 and the worst contrast on the
+ * platform. It now shows the `danger` red the buyer will really see.
+ */
+const BOOST_OPTIONS: ReadonlyArray<{
+  id: BoostPack;
+  label: string;
+  price: string;
+  description: string;
+  swatchClass: string;
+  hoverClass: string;
+  spanClass: string;
+}> = [
+  {
+    id: 'urgent',
+    label: '⚡ Urgent',
+    price: '2,99 €',
+    description:
+      "Ajoute le badge rouge Urgent pour attirer immédiatement l'attention des acheteurs.",
+    swatchClass: 'bg-danger text-white',
+    hoverClass: 'hover:border-danger hover:bg-danger-surface',
+    spanClass: '',
+  },
+  {
+    id: 'top_of_list',
+    label: '📈 Remonter',
+    price: '1,99 €',
+    description: 'Repositionne instantanément votre annonce en tête des résultats de recherche.',
+    swatchClass: 'bg-primary text-white',
+    hoverClass: 'hover:border-primary hover:bg-primary-light',
+    spanClass: '',
+  },
+  {
+    id: 'highlight',
+    label: '🌟 À la une (7 jours)',
+    price: '7,99 €',
+    description:
+      "Affichage garanti dans le carrousel vedette de la page d'accueil et en tête de sa catégorie.",
+    swatchClass: 'bg-indigo-600 text-white',
+    hoverClass: 'hover:border-indigo-500 hover:bg-indigo-50',
+    spanClass: 'sm:col-span-2',
+  },
+];
+
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
   if (photo && typeof photo.url === 'string') return photo.url;
@@ -265,7 +316,7 @@ export const MyListingsPage: React.FC = () => {
                       <Badge variant={listing.status === 'active' ? 'success' : 'neutral'} size="sm">
                         {listing.status === 'active' ? 'En ligne' : 'Vendu'}
                       </Badge>
-                      {listing.isBoosted && <Badge variant="urgent" size="sm">Vedette</Badge>}
+                      {listing.isBoosted && <Badge variant="featured" size="sm">Vedette</Badge>}
                     </div>
                   ),
                 },
@@ -381,51 +432,28 @@ export const MyListingsPage: React.FC = () => {
               Choisissez une option de visibilité pour accélérer votre vente :
             </p>
 
+            {/* Each option is a real <button>: these are paid actions, and as
+                plain clickable <div>s they could not be reached by keyboard or
+                announced as controls at all. */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div
-                onClick={() => handleApplyBoost(boostModalListing.id, 'urgent')}
-                className="p-4 rounded-xl border border-border-base hover:border-amber-500 hover:bg-warning-surface/50 cursor-pointer transition-all space-y-2 group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white font-black text-micro uppercase tracking-wider">
-                    ⚡ Urgent
-                  </span>
-                  <span className="font-black text-sm text-stone-900">2,99 €</span>
-                </div>
-                <p className="text-xs text-stone-600">
-                  Ajoute le badge rouge Urgent pour attirer immédiatement l'attention des acheteurs.
-                </p>
-              </div>
-
-              <div
-                onClick={() => handleApplyBoost(boostModalListing.id, 'top_of_list')}
-                className="p-4 rounded-xl border border-border-base hover:border-primary hover:bg-primary-light/50 cursor-pointer transition-all space-y-2 group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-full bg-primary text-white font-black text-micro uppercase tracking-wider">
-                    📈 Remonter
-                  </span>
-                  <span className="font-black text-sm text-stone-900">1,99 €</span>
-                </div>
-                <p className="text-xs text-stone-600">
-                  Repositionne instantanément votre annonce en tête des résultats de recherche.
-                </p>
-              </div>
-
-              <div
-                onClick={() => handleApplyBoost(boostModalListing.id, 'highlight')}
-                className="p-4 rounded-xl border border-border-base hover:border-indigo-500 hover:bg-indigo-50/50 cursor-pointer transition-all space-y-2 group sm:col-span-2"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white font-black text-micro uppercase tracking-wider">
-                    🌟 À la une (7 jours)
-                  </span>
-                  <span className="font-black text-sm text-stone-900">7,99 €</span>
-                </div>
-                <p className="text-xs text-stone-600">
-                  Affichage garanti dans le carrousel vedette de la page d'accueil et en tête de sa catégorie.
-                </p>
-              </div>
+              {BOOST_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleApplyBoost(boostModalListing.id, option.id)}
+                  className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer transition-all duration-fast space-y-2 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${option.hoverClass} ${option.spanClass}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-full font-black text-micro uppercase tracking-wider ${option.swatchClass}`}
+                    >
+                      {option.label}
+                    </span>
+                    <span className="font-black text-sm text-stone-900 shrink-0">{option.price}</span>
+                  </div>
+                  <p className="text-xs text-stone-600">{option.description}</p>
+                </button>
+              ))}
             </div>
           </div>
         </Modal>

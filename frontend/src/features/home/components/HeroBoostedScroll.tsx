@@ -319,9 +319,15 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
 
       {/* Main Track Section.
           The viewport is sized to exactly VISIBLE cards (card height + gap), so
-          the rail always shows two whole listings filling the full height of the container. */}
+          the rail always shows two whole listings filling the full height of the container.
+
+          That two-card height belongs to the vertical rail only. Below `sm` the
+          track is a single-row horizontal marquee, and an unscoped
+          `min-h-(--rail-viewport)` was stretching those one-row cards to the
+          full 274px — 64px of dead space inside every card on a phone, with the
+          title and the price pushed apart to opposite ends of it. */}
       <div
-        className="relative my-1.5 overflow-hidden w-full max-w-full sm:h-(--rail-viewport) min-h-(--rail-viewport) shrink-0"
+        className="relative my-1.5 overflow-hidden w-full max-w-full sm:h-(--rail-viewport) min-h-(--rail-card-h) sm:min-h-(--rail-viewport) shrink-0"
         style={
           {
             '--rail-card-h': `${RAIL_CARD_H}px`,
@@ -372,7 +378,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       <Link
         key={key}
         to={`/annonce/${item.id}`}
-        className="group relative flex items-stretch gap-3 p-2.5 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-normal w-[260px] sm:w-full max-w-full shrink-0 sm:h-(--rail-card-h) overflow-hidden box-border"
+        className="group relative flex items-stretch gap-3 p-2.5 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-normal w-[260px] sm:w-full max-w-full shrink-0 h-(--rail-card-h) overflow-hidden box-border"
       >
         <div className="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-bg-muted border border-border-subtle">
           <Image
@@ -381,10 +387,12 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
           {item.isBoosted && (
-            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold text-micro shadow-xs flex items-center gap-1">
-              <Zap className="w-2.5 h-2.5 fill-white" />
-              <span>Vedette</span>
-            </span>
+            /* Icon-only: the rail thumbnail is 112px wide, and the full
+               "Vedette" wordmark covered 77% of it — the badge obscured the
+               photo the buyer is there to judge. */
+            <Badge variant="featured" size="sm" icon className="absolute top-1.5 left-1.5 px-1.5">
+              <span className="sr-only">Annonce à la une</span>
+            </Badge>
           )}
         </div>
 

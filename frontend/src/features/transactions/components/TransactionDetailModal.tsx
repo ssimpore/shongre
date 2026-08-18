@@ -591,7 +591,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <span className="text-primary text-lg">{formatPrice(tx.totalAmount)}</span>
           </div>
           {isSeller && (
-            <div className="bg-success/10 p-3 rounded-xl mt-3 flex justify-between font-bold text-success border border-success/20">
+            <div className="bg-success-surface p-3 rounded-xl mt-3 flex justify-between font-bold text-success border border-success-border">
               <span>Montant net versé au vendeur :</span>
               <span>{formatPrice(tx.sellerPayoutAmount || tx.amount)}</span>
             </div>

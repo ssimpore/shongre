@@ -100,7 +100,13 @@ export const Footer: React.FC = () => {
     // navigation (57px) plus a page-level sticky action bar such as the one on
     // listing detail (64px). At `pb-24` the last row of legal links sat behind
     // that bar and could not be tapped.
-    <footer className="bg-stone-950 text-stone-300 pt-16 pb-36 md:pb-16 border-t border-stone-800 text-xs">
+    //
+    // The relaxed value waits for `lg`, not `md`. The tab bar does stop at `md`,
+    // but the listing page's price/action bar runs all the way to `lg` — so
+    // between 768px and 1023px `md:pb-16` left that bar covering the final footer
+    // row: the copyright and the CGU / privacy / cookie links, which are exactly
+    // the ones that have to stay reachable.
+    <footer className="bg-stone-950 text-stone-300 pt-16 pb-36 lg:pb-16 border-t border-stone-800 text-xs">
       {/* Value props & Trust Badges.
           These are reassurance statements, not document sections: rendering them
           as headings injected an h1 → h4 jump into every single page of the app. */}

@@ -28,6 +28,7 @@ import { listingRepository } from '../../repositories/listing.repository';
 import { transactionService } from '../../domains/transaction/transaction.service';
 import { Modal } from '../../design-system/primitives/Modal';
 import { Button } from '../../design-system/primitives/Button';
+import { SelectableCard } from '../../design-system/primitives/SelectableCard';
 import { Input, FormField } from '../../design-system/primitives/FormField';
 import { Badge } from '../../design-system/primitives/Badge';
 import { storageService } from '../../services/storage.service';
@@ -268,12 +269,13 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
               {quotes.map((quote) => {
                 const isSelected = selectedQuote?.id === quote.id;
                 return (
-                  <div
+                  <SelectableCard
                     key={quote.id}
-                    onClick={() => setSelectedQuoteId(quote.id)}
-                    className={`p-4 rounded-2xl border transition-all duration-normal cursor-pointer flex items-center justify-between shadow-2xs hover:shadow-sm ${
+                    selected={isSelected}
+                    onSelect={() => setSelectedQuoteId(quote.id)}
+                    className={`p-4 rounded-2xl border transition-all duration-normal flex items-center justify-between shadow-2xs hover:shadow-sm ${
                       isSelected
-                        ? 'border-primary bg-primary/5 ring-1 ring-primary/50'
+                        ? 'border-primary bg-primary-light ring-1 ring-primary/50'
                         : 'border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300'
                     }`}
                   >
@@ -289,7 +291,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                         <div className="text-sm font-bold text-stone-900 flex items-center gap-2 mb-0.5">
                           <span>{quote.title}</span>
                           {quote.price === 0 && (
-                            <span className="text-xs bg-success/10 text-success font-bold px-2 py-0.5 rounded-md">
+                            <span className="text-xs bg-success-surface text-success font-bold px-2 py-0.5 rounded-md">
                               Gratuit
                             </span>
                           )}
@@ -303,7 +305,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                     <div className="text-right font-black text-sm text-stone-900">
                       {quote.price === 0 ? '0,00 €' : formatPrice(quote.price)}
                     </div>
-                  </div>
+                  </SelectableCard>
                 );
               })}
             </div>
@@ -498,7 +500,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
               </div>
             )}
 
-            <div className="p-4 bg-success/10 text-success rounded-2xl border border-success/20 text-xs flex items-center gap-3 shadow-2xs font-medium">
+            <div className="p-4 bg-success-surface text-success rounded-2xl border border-success-border text-xs flex items-center gap-3 shadow-2xs font-medium">
               <ShieldCheck className="w-5 h-5 text-success shrink-0" />
               <span>
                 <strong>Garantie Shongre :</strong> Le vendeur ne reçoit son virement qu'après réception et validation du bien.
@@ -526,7 +528,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
         {/* STEP 3: Success Confirmation */}
         {step === 'success' && (
           <div className="text-center py-6 space-y-6">
-            <div className="w-16 h-16 bg-success/10 text-success rounded-full flex items-center justify-center mx-auto shadow-inner border border-success/20">
+            <div className="w-16 h-16 bg-success-surface text-success rounded-full flex items-center justify-center mx-auto shadow-inner border border-success-border">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
