@@ -29,6 +29,11 @@ export const routes = {
     const qs = params.toString();
     return `/recherche${qs ? `?${qs}` : ''}`;
   },
+  categories: () => '/categories',
+  collections: {
+    list: () => '/collections',
+    detail: (slug: string) => `/collections/${slug}`,
+  },
   listing: {
     detail: (id: string) => `/annonce/${id}`,
     publish: () => `/deposer`,

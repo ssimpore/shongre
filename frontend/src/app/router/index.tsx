@@ -13,6 +13,8 @@ import { AdminLayout } from '../../features/admin/AdminLayout';
 
 // Lazy Loaded Features
 const HomePage = lazy(() => import('../../features/home/HomePage').then((m) => ({ default: m.HomePage })));
+const CategoriesPage = lazy(() => import('../../features/categories/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
+const CollectionsPage = lazy(() => import('../../features/collections/CollectionsPage').then((m) => ({ default: m.CollectionsPage })));
 const SearchPage = lazy(() => import('../../features/search/SearchPage').then((m) => ({ default: m.SearchPage })));
 const ListingDetailPage = lazy(() => import('../../features/listings/ListingDetailPage').then((m) => ({ default: m.ListingDetailPage })));
 const PublishWizard = lazy(() => import('../../features/publishing/PublishWizard').then((m) => ({ default: m.PublishWizard })));
@@ -118,6 +120,9 @@ export const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { index: true, element: withSuspense(HomePage) },
+      { path: 'categories', element: withSuspense(CategoriesPage) },
+      { path: 'collections', element: withSuspense(CollectionsPage) },
+      { path: 'collections/:slug', element: withSuspense(CollectionsPage) },
       { path: 'recherche', element: withSuspense(SearchPage) },
       { path: 'categorie/:categorySlug', element: withSuspense(SearchPage) },
       { path: 'annonce/:id', element: withSuspense(ListingDetailPage) },

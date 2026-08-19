@@ -42,6 +42,8 @@ import { Button } from '../../design-system/primitives/Button';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
+import { HomeCollectionsSection } from './components/HomeCollectionsSection';
+import { HomeCategoryExplorer } from './components/HomeCategoryExplorer';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { NewsletterSignup } from '../newsletter/components/NewsletterSignup';
@@ -105,32 +107,25 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-16">
-      {/* 1. Hero Section - Two Columns Balanced */}
-      {/* Flat warm ground, not the former top-to-bottom gradient: that tinted
-          the whole band pink and left the listing card sitting in a stripe of
-          it. The headline and the card carry the section on their own. */}
-      <section className="relative bg-bg-base pt-5 sm:pt-10 pb-10 sm:pb-14 overflow-hidden">
+      {/* 1. Hero Section - Two Columns Balanced & Compact */}
+      <section className="relative bg-[#FAF8F5] pt-4 sm:pt-6 pb-6 sm:pb-8 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center w-full">
             {/* Column 1: Hero Pitch, Search & CTAs */}
-            <div className="lg:col-span-7 space-y-5 lg:space-y-6 text-left flex flex-col justify-center w-full">
-              <div className="space-y-4">
-                <p className="inline-flex items-center gap-2 h-control-sm pl-3 pr-4 rounded-full border border-border-base bg-bg-surface text-xs font-semibold text-stone-700 shadow-2xs">
-                  <Sparkle className="w-3.5 h-3.5 text-primary fill-primary shrink-0" />
-                  Le marché local français de confiance
-                </p>
+            <div className="lg:col-span-7 space-y-4 lg:space-y-4.5 text-left flex flex-col justify-center w-full">
+              <div className="space-y-2.5 sm:space-y-3">
+                <div className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full border border-stone-200/90 bg-white text-xs font-semibold text-stone-700 shadow-2xs w-fit">
+                  <Sparkle className="w-3 h-3 text-primary fill-primary shrink-0" />
+                  <span>Le marché local français de confiance</span>
+                </div>
 
-                <h1 className="font-display text-[38px] sm:text-5xl lg:text-6xl font-bold text-stone-900 tracking-[-0.02em] leading-[1.05]">
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">
                   Trouvez la perle rare, <br className="hidden sm:inline" />
                   <span className="text-primary relative inline-block">
                     sans tracas.
-                    {/* Two offset strokes rather than one: a single curve at this
-                        weight reads as a rule, and the second pass is what makes
-                        it look drawn by hand. `stroke-linecap` keeps the ends
-                        tapered instead of chopped. */}
                     <svg
                       aria-hidden="true"
-                      className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-3 sm:h-4 text-primary/45 overflow-visible"
+                      className="absolute left-0 -bottom-1 sm:-bottom-1.5 w-full h-2.5 sm:h-3.5 text-primary/60 overflow-visible pointer-events-none"
                       viewBox="0 0 200 14"
                       preserveAspectRatio="none"
                       fill="none"
@@ -139,58 +134,57 @@ export const HomePage: React.FC = () => {
                       strokeLinecap="round"
                     >
                       <path d="M3 8.5C48 3.4 128 2.6 197 6.2" />
-                      <path d="M12 12.6C61 9 121 8.6 186 11.4" strokeWidth="2" opacity="0.55" />
+                      <path d="M12 12.6C61 9 121 8.6 186 11.4" strokeWidth="2" opacity="0.6" />
                     </svg>
                   </span>
                 </h1>
 
-                <p className="text-sm sm:text-lg text-stone-600 max-w-xl leading-relaxed">
+                <p className="text-xs sm:text-sm text-stone-600 max-w-lg leading-relaxed font-normal">
                   Achetez et vendez en toute sérénité : paiements sécurisés,
                   livraison intégrée et vendeurs vérifiés.
                 </p>
               </div>
 
-              {/* Quick search suggestions. The label sits on its own line so the
-                  chips wrap as one even block instead of flowing around it. */}
+              {/* Quick search suggestions */}
               <div className="w-full">
-                <p className="flex items-center gap-2 text-xs font-semibold text-stone-500 mb-2.5">
+                <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-stone-600 mb-1.5 sm:mb-2">
                   <TrendingUp className="w-3.5 h-3.5 text-primary shrink-0" />
-                  Recherches populaires
+                  <span>Recherches populaires</span>
                 </p>
-                <ul className="flex items-center gap-2 flex-wrap">
+                <ul className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                   {POPULAR_SEARCHES.map(({ term, Icon }) => (
                     <li key={term}>
                       <button
                         type="button"
                         onClick={() => navigate(routes.search(term))}
-                        className="group inline-flex items-center gap-2 h-control-md px-3.5 rounded-full bg-bg-surface hover:bg-bg-subtle border border-border-base text-stone-700 hover:text-stone-900 hover:border-border-hover transition-all cursor-pointer font-semibold text-xs shadow-2xs active:scale-95"
+                        className="group inline-flex items-center gap-1.5 h-7.5 px-3 rounded-full bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-700 hover:text-stone-900 transition-all cursor-pointer font-medium text-[11px] sm:text-xs shadow-2xs active:scale-95"
                       >
-                        <Icon className="w-4 h-4 shrink-0 text-stone-400 group-hover:text-primary transition-colors" />
-                        {term}
+                        <Icon className="w-3.5 h-3.5 shrink-0 text-stone-400 group-hover:text-primary transition-colors" />
+                        <span>{term}</span>
                       </button>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Hero Secondary Actions. */}
-              <div className="pt-1 sm:pt-2 w-full">
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-fit">
+              {/* Hero Secondary Actions */}
+              <div className="pt-0.5 sm:pt-1 w-full">
+                <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-fit">
                   <button
                     type="button"
                     onClick={() => navigate(publishCta.to)}
-                    className="h-control-touch px-5 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-bold text-sm sm:text-base shadow-lg shadow-stone-900/10 hover:shadow-xl hover:shadow-stone-900/10 transition-all inline-flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap"
+                    className="h-10.5 sm:h-11 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-black text-white font-bold text-xs sm:text-sm shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap transition-all"
                   >
-                    <PlusCircle className="w-5 h-5 text-primary shrink-0" />
+                    <PlusCircle className="w-4.5 h-4.5 text-primary shrink-0" />
                     <span>{publishCta.label}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => navigate(routes.search())}
-                    className="h-control-touch px-5 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-base hover:border-border-hover text-stone-800 font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs hover:shadow-sm active:scale-95 w-full sm:w-auto whitespace-nowrap"
+                    className="h-10.5 sm:h-11 px-5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/90 hover:border-stone-300 text-stone-800 font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 w-full sm:w-auto whitespace-nowrap"
                   >
-                    <ScanSearch className="w-5 h-5 text-stone-400 shrink-0" />
+                    <Search className="w-4 h-4 text-stone-400 shrink-0" />
                     <span>Explorer le catalogue</span>
                   </button>
                 </div>
@@ -208,57 +202,14 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. Categories Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-12">
-        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
-          <div className="min-w-0">
-            <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-              Explorer par catégorie
-            </h2>
-            <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
-              Découvrez des millions d'annonces classées selon votre besoin
-            </p>
-          </div>
-          <Link
-            to={routes.search()}
-            className="text-sm font-bold text-stone-900 bg-white border border-stone-200 hover:border-stone-300 hover:bg-stone-50 px-4 py-2 rounded-xl transition-all shadow-2xs active:scale-95 hidden sm:flex items-center gap-1.5"
-          >
-            <span>Toutes les annonces</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+      {/* 2. Upgraded Category Explorer */}
+      <HomeCategoryExplorer />
 
-        {/* Below `sm` this is one horizontally scrolling row rather than a
-            2-column grid: sixteen categories stacked eight rows deep pushed the
-            listings themselves a full screen down the page. `ScrollRail` adds
-            the edge fade and nudge buttons so the overflow is visible instead
-            of implied. From `sm` up there is room to lay them all out at once,
-            so it goes back to a grid. */}
-        <ScrollRail label="catégories" className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
-          <div className="flex gap-3 sm:grid sm:grid-cols-4 lg:grid-cols-8 sm:gap-5">
-            {TAXONOMY.map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/categorie/${cat.slug}`}
-                className="group w-[104px] shrink-0 snap-start sm:w-auto bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-lg p-3 sm:p-5 flex flex-col items-center text-center transition-all duration-normal active:scale-95"
-              >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#FAF8F5] group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors shrink-0">
-                  <CategoryIcon category={cat} size="lg" className="w-6 h-6 sm:w-8 sm:h-8 text-stone-700 group-hover:text-primary transition-colors" />
-                </div>
-                <h3
-                  className="text-[13px] sm:text-sm font-bold text-stone-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5em] flex items-center justify-center text-center w-full leading-tight break-words"
-                  title={cat.name}
-                >
-                  {getTaxonomyLabel(cat, 'compact')}
-                </h3>
-              </Link>
-            ))}
-          </div>
-        </ScrollRail>
-      </section>
+      {/* 3. Curated Thematic Collections */}
+      <HomeCollectionsSection />
 
-      {/* 3. Fresh Listings */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+      {/* 4. Fresh Listings */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
         <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
             <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
