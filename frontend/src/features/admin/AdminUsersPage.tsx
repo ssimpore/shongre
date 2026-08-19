@@ -135,7 +135,7 @@ export const AdminUsersPage: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher un nom, email, entreprise, SIRET..."
               aria-label="Rechercher un utilisateur"
-              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary bg-bg-base"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
             />
           </div>
 
@@ -143,7 +143,7 @@ export const AdminUsersPage: React.FC = () => {
             aria-label="Filtrer par type de compte"
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary bg-bg-base"
+            className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
           >
             <option value="all">Tous les types de compte</option>
             <option value="individual">Particulier</option>
@@ -155,7 +155,7 @@ export const AdminUsersPage: React.FC = () => {
             aria-label="Filtrer par rôle plateforme"
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary bg-bg-base"
+            className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
           >
             <option value="all">Tous les rôles ({ALL_PLATFORM_ROLES.length})</option>
             {ALL_PLATFORM_ROLES.map((r) => (
@@ -198,6 +198,7 @@ export const AdminUsersPage: React.FC = () => {
                         <Image
                           src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
                           alt={u.name}
+                          sizes="36px"
                           className="w-9 h-9 rounded-full object-cover border border-border-base"
                         />
                         <div>

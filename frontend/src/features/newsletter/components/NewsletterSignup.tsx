@@ -106,7 +106,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               aria-label="Votre adresse email"
               autoComplete="email"
               disabled={isSubmitting}
-              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary-on-dark transition-colors"
+              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20-on-dark transition-colors"
             />
           </div>
           <button
@@ -161,7 +161,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   aria-label="Votre adresse email"
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
+                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                 />
               </div>
 
@@ -183,7 +183,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="w-3.5 h-3.5 shrink-0 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
+                  className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
                 />
                 <span>
                   J'accepte de recevoir la newsletter Shongre. Désinscription possible à tout moment en 1 clic.

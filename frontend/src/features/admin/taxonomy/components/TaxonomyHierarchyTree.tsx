@@ -133,8 +133,11 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
             )}
           </div>
 
-          {/* Right: Quick actions (Reorder, Add Child, Count) */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Right: Quick actions (Reorder, Add Child, Count).
+              Revealed by focus as well as hover so tabbing through the tree does
+              not land on invisible controls, and shown outright on coarse
+              pointers, which have no hover to reveal them with. */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100 transition-opacity duration-fast">
             {/* Reorder Buttons */}
             {index > 0 && (
               <button

@@ -134,7 +134,7 @@ export const HelpCenterPage: React.FC = () => {
             aria-label="Rechercher une question dans l'aide"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-12 pr-4 text-xs sm:text-sm font-semibold bg-white border border-border-base rounded-2xl shadow-xs focus:border-primary focus:outline-none transition-all placeholder:text-stone-400"
+            className="w-full h-12 pl-12 pr-4 text-xs sm:text-sm font-semibold bg-white border border-border-base rounded-2xl shadow-xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400"
           />
         </div>
       </div>

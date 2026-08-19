@@ -5,10 +5,13 @@
 
 export const colors = {
   // Brand / Primary: Terracotta
+  // Kept in step with `--color-primary` in index.css (and its mirror in
+  // theme.ts), which was darkened to clear WCAG AA. This file previously still
+  // carried the pre-AA ramp, so the two token modules disagreed about the brand.
   primary: {
-    DEFAULT: '#D9532F',
-    hover: '#C24422',
-    active: '#A93719',
+    DEFAULT: '#C4431F',
+    hover: '#AB3919',
+    active: '#932F13',
     light: '#FFF3EF',
     lighter: '#FFF8F6',
     border: '#FED7CC',

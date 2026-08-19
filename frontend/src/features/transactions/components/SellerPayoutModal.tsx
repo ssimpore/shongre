@@ -108,7 +108,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
               max={availableBalance}
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
-              className="w-full h-12 px-4 pr-10 text-stone-900 bg-white rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary font-black text-lg transition-colors"
+              className="w-full h-12 px-4 pr-10 text-stone-900 bg-white rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-black text-lg transition-colors"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-stone-500">€</span>
           </div>

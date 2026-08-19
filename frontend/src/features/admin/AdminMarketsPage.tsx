@@ -1008,7 +1008,7 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder="ex: IT, PT, DE, UK"
                 value={newMarketCode}
                 onChange={(e) => setNewMarketCode(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3 text-xs uppercase font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+                className="w-full h-10 px-3 text-xs uppercase font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
@@ -1019,7 +1019,7 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder="ex: 🇮🇹, 🇵🇹, 🇩🇪"
                 value={newMarketFlag}
                 onChange={(e) => setNewMarketFlag(e.target.value)}
-                className="w-full h-10 px-3 text-sm bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+                className="w-full h-10 px-3 text-sm bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
           </div>
@@ -1032,7 +1032,7 @@ export const AdminMarketsPage: React.FC = () => {
               placeholder="ex: Italie, Portugal, Allemagne"
               value={newMarketName}
               onChange={(e) => setNewMarketName(e.target.value)}
-              className="w-full h-10 px-3 text-xs bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+              className="w-full h-10 px-3 text-xs bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
             />
           </div>
 
@@ -1045,7 +1045,7 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder="ex: it-IT, pt-PT, de-DE"
                 value={newMarketLocale}
                 onChange={(e) => setNewMarketLocale(e.target.value)}
-                className="w-full h-10 px-3 text-xs font-mono bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+                className="w-full h-10 px-3 text-xs font-mono bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
@@ -1056,7 +1056,7 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder="ex: EUR, CHF, GBP"
                 value={newMarketCurrency}
                 onChange={(e) => setNewMarketCurrency(e.target.value.toUpperCase())}
-                className="w-full h-10 px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+                className="w-full h-10 px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
           </div>
@@ -1066,7 +1066,7 @@ export const AdminMarketsPage: React.FC = () => {
             <select
               value={newMarketStatus}
               onChange={(e) => setNewMarketStatus(e.target.value as MarketStatus)}
-              className="w-full h-10 px-3 text-xs bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none font-semibold"
+              className="w-full h-10 px-3 text-xs bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none font-semibold"
             >
               <option value="draft">Brouillon (Non visible)</option>
               <option value="coming_soon">Bientôt disponible (Vitrine)</option>
@@ -1104,7 +1104,7 @@ export const AdminMarketsPage: React.FC = () => {
               <select
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
-                className="w-full h-10 px-3 text-xs font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+                className="w-full h-10 px-3 text-xs font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               >
                 <option value="true">Activé (true)</option>
                 <option value="false">Désactivé (false)</option>
@@ -1115,7 +1115,7 @@ export const AdminMarketsPage: React.FC = () => {
                 step={editingValueType === 'number' ? 'any' : undefined}
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
-                className="w-full h-10 px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:outline-none"
+                className="w-full h-10 px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             )}
           </div>

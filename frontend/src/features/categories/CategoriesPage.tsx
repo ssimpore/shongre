@@ -195,7 +195,7 @@ export const CategoriesPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filtrer une catégorie, sous-catégorie..."
-                className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:outline-none transition-all"
+                className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
               />
             </div>
           </div>

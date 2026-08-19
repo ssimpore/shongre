@@ -82,7 +82,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="w-full h-12 px-4 bg-white text-stone-900 rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary font-bold transition-colors"
+            className="w-full h-12 px-4 bg-white text-stone-900 rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-bold transition-colors"
           >
             {TRANSACTION_CONFIG.disputeReasons.map((r) => (
               <option key={r.id} value={r.id}>
@@ -101,7 +101,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Expliquez ce qui s'est passé (état du colis, non-conformité, échange avec l'autre partie...)"
-            className="w-full p-4 bg-white text-stone-900 rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary resize-none font-medium transition-colors"
+            className="w-full p-4 bg-white text-stone-900 rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none font-medium transition-colors"
           />
         </div>
 

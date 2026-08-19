@@ -273,6 +273,7 @@ export const AdminModerationPage: React.FC = () => {
                         <Image
                           src={list.coverImageUrl || list.photos?.[0]?.url}
                           alt={list.title}
+                          sizes="40px"
                           className="w-10 h-10 rounded-xl object-cover border border-border-base shrink-0"
                         />
                         <div>
@@ -338,6 +339,7 @@ export const AdminModerationPage: React.FC = () => {
                     <Image
                       src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
                       alt={u.name}
+                      sizes="40px"
                       className="w-10 h-10 rounded-full object-cover border border-danger-border"
                     />
                     <div>

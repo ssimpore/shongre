@@ -114,6 +114,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
               <Image
                 src={setupData.qrCodeUrl}
                 alt="2FA QR Code"
+                sizes="128px"
                 className="w-32 h-32 rounded-lg border border-stone-300 bg-white p-1"
               />
               <div className="flex-1 min-w-0">
@@ -181,7 +182,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                 onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="123456"
                 required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:bg-white"
+                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
               />
             </div>
 

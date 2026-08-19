@@ -612,7 +612,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
               autoFocus={autoFocus}
-              className="w-full h-10 pl-9 pr-9 text-xs text-stone-900 placeholder:text-stone-400 bg-bg-base border border-border-base rounded-xl focus:outline-none focus:border-primary"
+              className="w-full h-10 pl-9 pr-9 text-xs text-stone-900 placeholder:text-stone-400 bg-bg-base border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             <Search className="absolute left-3 top-3 w-4 h-4 text-stone-400 pointer-events-none" />
             {query && (
@@ -851,7 +851,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               }}
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
-              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary"
+              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             {query && (
               <button

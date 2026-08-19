@@ -594,7 +594,8 @@ export const MessagingPage: React.FC = () => {
           <Image
             src={lightboxImageUrl}
             alt="Vue plein écran"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl border border-white/10"
+            sizes="90vw"
+              className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl border border-white/10"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

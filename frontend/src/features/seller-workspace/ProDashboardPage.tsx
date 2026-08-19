@@ -174,6 +174,7 @@ export const ProDashboardPage: React.FC = () => {
                 <Image
                   src={getPhotoUrl(l.coverImageUrl || l.photos?.[0])}
                   alt=""
+                  sizes="48px"
                   className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
                   referrerPolicy="no-referrer"
                 />

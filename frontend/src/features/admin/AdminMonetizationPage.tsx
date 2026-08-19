@@ -174,7 +174,7 @@ export const AdminMonetizationPage: React.FC = () => {
 
                 {/* Features toggles */}
                 <div className="pt-2 border-t border-stone-100 space-y-2 text-xs text-stone-700">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 min-h-6 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={plan.features.storefrontCustomization}
@@ -183,12 +183,12 @@ export const AdminMonetizationPage: React.FC = () => {
                         updated[idx].features.storefrontCustomization = e.target.checked;
                         setPlans(updated);
                       }}
-                      className="rounded text-primary"
+                      className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
                     />
                     <span>Personnalisation Vitrine (Bannière, Story)</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 min-h-6 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={plan.features.prioritySupport}
@@ -197,12 +197,12 @@ export const AdminMonetizationPage: React.FC = () => {
                         updated[idx].features.prioritySupport = e.target.checked;
                         setPlans(updated);
                       }}
-                      className="rounded text-primary"
+                      className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
                     />
                     <span>Support prioritaire sous 2h</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 min-h-6 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={plan.features.bulkImportExport}
@@ -211,7 +211,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         updated[idx].features.bulkImportExport = e.target.checked;
                         setPlans(updated);
                       }}
-                      className="rounded text-primary"
+                      className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
                     />
                     <span>Import / Export CSV & API</span>
                   </label>

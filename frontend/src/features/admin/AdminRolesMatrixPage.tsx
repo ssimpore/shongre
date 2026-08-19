@@ -195,7 +195,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
             type="checkbox"
             checked={showSensitiveOnly}
             onChange={(e) => setShowSensitiveOnly(e.target.checked)}
-            className="rounded text-primary focus:ring-primary"
+            className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
           />
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <span>Permissions sensibles uniquement</span>

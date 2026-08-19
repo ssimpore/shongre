@@ -146,7 +146,7 @@ export const VerifyEmailPage: React.FC = () => {
                 onChange={(e) => setTokenInput(e.target.value)}
                 placeholder="Collez ici votre jeton de validation"
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 

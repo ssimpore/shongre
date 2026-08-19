@@ -169,6 +169,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
+              sizes="64px"
               className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
             />
             <div className="flex-1 min-w-0">

@@ -119,7 +119,7 @@ export const LoginPage: React.FC = () => {
               placeholder="Ex: 123456 ou 8492-1049"
               autoFocus
               required
-              className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:bg-white"
+              className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
             />
             <p className="mt-1.5 text-micro text-stone-500 text-center">
               Pour le test : vous pouvez utiliser le code <code>123456</code>.

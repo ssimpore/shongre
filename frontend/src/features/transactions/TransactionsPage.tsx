@@ -304,6 +304,7 @@ export const TransactionsPage: React.FC = () => {
                     <Image
                       src={tx.listingCoverImageUrl || tx.listingPhotoUrl}
                       alt=""
+                      sizes="80px"
                       className="w-20 h-20 rounded-xl object-cover border border-stone-200 shrink-0"
                       referrerPolicy="no-referrer"
                     />

@@ -384,7 +384,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -397,7 +397,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="06 12 34 56 78"
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -412,7 +412,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Paris"
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -425,7 +425,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   placeholder="75011"
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary"
+                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -439,7 +439,7 @@ export const AccountOverviewPage: React.FC = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Présentez-vous brièvement aux autres membres de la communauté..."
-                className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -511,6 +511,7 @@ export const AccountOverviewPage: React.FC = () => {
                     <Image
                       src={photoUrl}
                       alt=""
+                      sizes="48px"
                       className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
                       referrerPolicy="no-referrer"
                     />

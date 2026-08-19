@@ -174,6 +174,7 @@ export const AdminOverviewPage: React.FC = () => {
                     <Image
                       src={pro.avatarUrl}
                       alt={pro.name}
+                      sizes="36px"
                       className="w-9 h-9 rounded-full object-cover border border-stone-200"
                     />
                     <div>

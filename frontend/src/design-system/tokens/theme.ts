@@ -42,6 +42,8 @@ export const themeColors = {
   'warning-surface': '#FFFBEB',
   'warning-border': '#FDE68A',
   danger: '#B91C1C',
+  'danger-hover': '#991B1B',
+  'danger-active': '#7F1D1D',
   'danger-surface': '#FEF2F2',
   'danger-border': '#FECACA',
   info: '#0369A1',

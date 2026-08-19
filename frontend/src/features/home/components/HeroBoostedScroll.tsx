@@ -16,6 +16,7 @@ import { listingRepository } from '../../../repositories/listing.repository';
 import { Image } from '../../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../../design-system/primitives/responsiveImage';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { useMarketLocation } from '../../../app/providers/MarketLocationProvider';
 import { formatPrice } from '../../../utilities/formatters';
 
 /* Rail geometry: 2 cards perfectly filling the compact viewport without clipping or scrollbars. */
@@ -35,13 +36,18 @@ function getListingPhotoUrl(photo: any): string {
 }
 
 export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
+  const { activeMarket } = useMarketLocation();
   const [isPaused, setIsPaused] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
 
+  /* Scoped to the active market, and re-run when it changes. The rail is the
+     most prominent inventory on the page, so a market-blind query here put
+     another country's listings directly under the headline — the same promise
+     the search page would then refuse to honour. */
   useEffect(() => {
     listingRepository
-      .getListings({ limit: 50 })
+      .getListings({ marketCode: activeMarket.code, limit: 50 })
       .then((res) => {
         setAllListings(res.listings || []);
       })
@@ -57,7 +63,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       .catch(() => {
         setFavorites([]);
       });
-  }, []);
+  }, [activeMarket.code]);
 
   // Load and sort listings: give explicit priority to the Sézane coat (list-105) and De'Longhi espresso (list-109)
   const promotedListings = useMemo(() => {
@@ -127,6 +133,14 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
     const isFav = await listingRepository.toggleFavorite(listingId);
     setFavorites((prev) => (isFav ? [...prev, listingId] : prev.filter((id) => id !== listingId)));
   };
+
+  /* Now that the rail is scoped to the active market it can legitimately have
+     nothing to show — a market that has just opened has no boosted listings.
+     The shell is a header, a fixed-height viewport and a reassurance strip, so
+     rendering it empty leaves a ~250px blank panel under the headline that
+     reads as a broken component. Collapsing instead lets the hero fall back to
+     a single column. */
+  if (scrollSequence.length === 0) return null;
 
   return (
     <section
@@ -218,79 +232,86 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
     const photoUrl = getListingPhotoUrl(item.coverImageUrl || item.photos?.[0]);
 
     return (
-      <Link
+      /* The favourite control is a sibling of the link, not a child of it.
+         `<a>` may not contain interactive content: nesting the button gave
+         screen readers two overlapping controls for one card and left Enter
+         and Space ambiguous. The wrapper carries the rail geometry so the
+         link still fills the whole card. */
+      <div
         key={key}
-        to={`/annonce/${item.id}`}
-        className="group relative flex items-stretch gap-3 sm:gap-3.5 p-1 sm:p-1.5 rounded-xl hover:bg-stone-50/90 transition-colors duration-normal w-[290px] sm:w-full max-w-full shrink-0 h-(--rail-card-mobile-h) sm:h-(--rail-card-h) overflow-hidden box-border snap-start"
+        className="group relative w-[290px] sm:w-full max-w-full shrink-0 h-(--rail-card-mobile-h) sm:h-(--rail-card-h) snap-start"
       >
-        {/* Floating favorite button */}
-        <span className="absolute top-1.5 right-1.5 z-10">
-          <FavoriteButton
-            isFavorite={isFav}
-            onToggle={(e) => handleToggleFavorite(e, item.id)}
-            size="sm"
-            variant="floating"
-          />
-        </span>
-
-        {/* Left Photo Thumbnail */}
-        <div className="relative w-24 sm:w-32 h-full rounded-xl overflow-hidden shrink-0 bg-stone-100">
-          <Image
-            src={photoUrl}
-            alt={item.title}
-            sizes={IMAGE_SIZES.compact}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-
-        {/* Right Info Box */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 overflow-hidden">
-          <div className="min-w-0">
-            {/* Category tag */}
-            <div className="pr-7 mb-0.5">
-              <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-primary truncate">
-                {item.categoryLabel || 'Mode & Accessoires'}
-              </span>
-            </div>
-
-            {/* Title */}
-            <h3
-              title={item.title}
-              className="text-xs sm:text-[13px] font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug pr-7"
-            >
-              {item.title}
-            </h3>
+        <Link
+          to={`/annonce/${item.id}`}
+          className="flex items-stretch gap-3 sm:gap-3.5 p-1 sm:p-1.5 rounded-xl hover:bg-stone-50/90 transition-colors duration-normal w-full h-full overflow-hidden box-border"
+        >
+          {/* Left Photo Thumbnail */}
+          <div className="relative w-24 sm:w-32 h-full rounded-xl overflow-hidden shrink-0 bg-stone-100">
+            <Image
+              src={photoUrl}
+              alt={item.title}
+              sizes={IMAGE_SIZES.compact}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
           </div>
 
-          <div className="min-w-0">
-            {/* Price line with strikethrough if original price */}
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs sm:text-sm font-extrabold text-stone-900">
-                {formatPrice(item.price)}
-              </span>
-              {item.originalPrice && item.originalPrice > item.price && (
-                <span className="text-[10px] sm:text-xs text-stone-500 line-through font-normal">
-                  {formatPrice(item.originalPrice)}
+          {/* Right Info Box */}
+          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 overflow-hidden">
+            <div className="min-w-0">
+              {/* Category tag */}
+              <div className="pr-8 mb-0.5">
+                <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-primary truncate">
+                  {item.categoryLabel || 'Mode & Accessoires'}
                 </span>
-              )}
+              </div>
+
+              {/* Title */}
+              <h3
+                title={item.title}
+                className="text-xs sm:text-[13px] font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug pr-8"
+              >
+                {item.title}
+              </h3>
             </div>
 
-            {/* Location & Delivery */}
-            <div className="flex items-center gap-2.5 mt-0.5 text-[10px] sm:text-[11px] text-stone-500 flex-wrap">
-              <span className="flex items-center gap-1 font-medium truncate">
-                <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
-                {item.city || 'Lyon 2e'}
-              </span>
-              {item.deliveryOptions?.some((o) => o.available && o.type !== 'hand_delivery') && (
-                <span className="inline-flex items-center gap-1 font-medium text-stone-500">
-                  <Truck className="w-3 h-3 text-stone-400" />
-                  Livraison
+            <div className="min-w-0">
+              {/* Price line with strikethrough if original price */}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xs sm:text-sm font-extrabold text-stone-900">
+                  {formatPrice(item.price)}
                 </span>
-              )}
+                {item.originalPrice && item.originalPrice > item.price && (
+                  <span className="text-[10px] sm:text-xs text-stone-500 line-through font-normal">
+                    {formatPrice(item.originalPrice)}
+                  </span>
+                )}
+              </div>
+
+              {/* Location & Delivery */}
+              <div className="flex items-center gap-2.5 mt-0.5 text-[10px] sm:text-[11px] text-stone-500 flex-wrap">
+                <span className="flex items-center gap-1 font-medium truncate">
+                  <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
+                  {item.city || 'Lyon 2e'}
+                </span>
+                {item.deliveryOptions?.some((o) => o.available && o.type !== 'hand_delivery') && (
+                  <span className="inline-flex items-center gap-1 font-medium text-stone-500">
+                    <Truck className="w-3 h-3 text-stone-400" />
+                    Livraison
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+
+        <FavoriteButton
+          isFavorite={isFav}
+          onToggle={(e) => handleToggleFavorite(e, item.id)}
+          size="sm"
+          variant="floating"
+          className="absolute top-1.5 right-1.5 z-10"
+        />
+      </div>
     );
   }
 };

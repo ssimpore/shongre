@@ -95,7 +95,8 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       {/* Attached Photo Preview Bubble */}
       {attachedPhoto && (
         <div className="flex items-center gap-2 p-2 bg-stone-50 border border-border-base rounded-xl w-fit">
-          <Image src={attachedPhoto} alt="Aperçu pièce jointe" className="w-12 h-12 object-cover rounded-lg" />
+          <Image src={attachedPhoto} alt="Aperçu pièce jointe" sizes="48px"
+  className="w-12 h-12 object-cover rounded-lg" />
           <div className="text-xs">
             <span className="font-bold text-stone-800 block">Photo prête à être envoyée</span>
             <span className="text-micro text-stone-500">Sera transmise avec votre message</span>
@@ -135,7 +136,8 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                 }}
                 className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border-base bg-white hover:border-primary hover:shadow-2xs transition-all text-center"
               >
-                <Image src={s.url} alt={s.label} className="w-10 h-10 object-cover rounded" />
+                <Image src={s.url} alt={s.label} sizes="40px"
+  className="w-10 h-10 object-cover rounded" />
                 <span className="text-micro font-semibold text-stone-700 truncate w-full">
                   {s.label}
                 </span>
@@ -185,7 +187,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             placeholder="Écrivez votre message... (Entrée pour envoyer)"
-            className="w-full min-h-[42px] max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:outline-none transition-all placeholder:text-stone-400 resize-none"
+            className="w-full min-h-[42px] max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400 resize-none"
           />
         </div>
 

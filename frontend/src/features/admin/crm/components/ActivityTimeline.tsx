@@ -78,7 +78,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             onChange={(e) => setNewNote(e.target.value)}
             placeholder="Ajouter une note commerciale, compte-rendu d'appel ou remarque..."
             rows={2}
-            className="w-full text-xs p-2.5 bg-white border border-stone-200 rounded-xl placeholder:text-stone-500 focus:outline-none focus:border-primary transition-colors"
+            className="w-full text-xs p-2.5 bg-white border border-stone-200 rounded-xl placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
           />
           <div className="flex justify-end">
             <Button

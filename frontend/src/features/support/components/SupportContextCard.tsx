@@ -19,6 +19,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
             <Image
               src={context.listingPhotoUrl}
               alt={context.listingTitle}
+              sizes="44px"
               className="w-11 h-11 object-cover rounded-xl border border-border-base bg-white shrink-0"
             />
           ) : (

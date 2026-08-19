@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Heart,
@@ -148,6 +148,53 @@ export const ListingDetailPage: React.FC = () => {
       transactionCapabilities: transactionCaps,
     });
   }, [listing, currentUser, seller, transactionCaps]);
+
+  /**
+   * Publishes the action bar's real height so the layout can reserve room below
+   * the footer for it.
+   *
+   * A fixed bar cannot be cleared with padding on this page — the footer is not
+   * inside it. Measuring rather than hard-coding matters because the height is a
+   * function of state: 61px in one row from `sm`, 83px for a status notice, 91px
+   * for one or two actions, 135px for a wrapped four-action grid.
+   */
+  const actionBarRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const node = actionBarRef.current;
+    const root = document.documentElement;
+    if (!node) {
+      root.style.removeProperty('--page-bottom-inset');
+      return;
+    }
+    const publish = () => {
+      // The bar is `lg:hidden`, so above `lg` it measures 0 and reserves nothing.
+      const height = node.getBoundingClientRect().height;
+      root.style.setProperty('--page-bottom-inset', height > 0 ? `${Math.ceil(height)}px` : '0px');
+    };
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty('--page-bottom-inset');
+    };
+  });
+
+  /**
+   * How many controls the mobile action bar will paint.
+   *
+   * The bar lays them out in one row from `sm` and in a two-column grid below
+   * it, so a single action must not be left sitting in a half-width column.
+   */
+  const mobileActionCount = useMemo(() => {
+    if (actions.isOwner || actions.statusNotice) return 1;
+    return [
+      actions.canMakeOffer,
+      actions.canReserve,
+      actions.canContact,
+      actions.canDirectPurchase,
+    ].filter(Boolean).length;
+  }, [actions]);
 
   // 4. Characteristics & Summary derivation
   const summaryAttributes = useMemo(() => {
@@ -524,6 +571,7 @@ export const ListingDetailPage: React.FC = () => {
                   <Image
                     src={seller.avatarUrl}
                     alt=""
+                    sizes="44px"
                     className="w-11 h-11 rounded-full object-cover border border-stone-200"
                   />
                   {seller.isVerified && (
@@ -875,9 +923,22 @@ export const ListingDetailPage: React.FC = () => {
           still holding the tab bar's 57px offset, so it floated with a strip of
           page showing underneath it. It sits flush once there is nothing left to
           clear. */}
-      <div className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider mb-0.5">
+      {/* Mobile action bar.
+          The action row used to be `shrink-0` beside a `min-w-0` price, on one
+          line. With four actions resolved — offer, reserve, message, buy — that
+          row measured 452px against a 393px viewport: the "Acheter" button hung
+          59px off-screen and the price column was squeezed to 0px wide, so the
+          primary purchase control and the amount were both unreachable.
+
+          Below `sm` the two zones now stack and the actions share a two-column
+          grid, which holds from 320px up for every combination the resolver can
+          produce. From `sm` there is room for a single row again. */}
+      <div
+        ref={actionBarRef}
+        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        {/* One line on phones so the bar stays short; stacked once there is room. */}
+        <div className="flex items-baseline gap-2 min-w-0 sm:block sm:shrink-0">
+          <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
             {showsBuyerFee ? 'Total à payer' : 'Prix'}
           </div>
           <div className="text-lg font-black text-stone-900 truncate tabular-nums leading-none">
@@ -887,18 +948,23 @@ export const ListingDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div
+          className={`grid gap-2 ${
+            mobileActionCount > 1 ? 'grid-cols-2' : 'grid-cols-1'
+          } sm:flex sm:items-center sm:justify-end sm:shrink-0`}
+        >
           {actions.isOwner ? (
             <Button
               to={`/deposer?edit=${listing.id}`}
               variant="primary"
               size="sm"
+              className="w-full sm:w-auto"
               leftIcon={<Edit3 className="w-3.5 h-3.5" />}
             >
               Modifier
             </Button>
           ) : actions.statusNotice ? (
-            <span className="text-xs font-bold text-warning bg-warning-surface px-3 py-1.5 rounded-lg">
+            <span className="text-xs font-bold text-warning bg-warning-surface px-3 py-1.5 rounded-lg text-center">
               {actions.statusNotice.title}
             </span>
           ) : (
@@ -907,6 +973,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setIsOfferModalOpen(true)}
                   leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 >
@@ -917,6 +984,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant={actions.canDirectPurchase ? 'outline' : 'primary'}
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setIsReservationModalOpen(true)}
                   leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
                 >
@@ -927,6 +995,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setIsContactModalOpen(true)}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
                 >
@@ -937,6 +1006,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setIsDirectPurchaseModalOpen(true)}
                   leftIcon={<ShoppingBag className="w-3.5 h-3.5" />}
                 >

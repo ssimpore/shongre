@@ -330,6 +330,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                       <Image
                         src={item.coverImageUrl || item.photos[0]?.url}
                         alt=""
+                        sizes="56px"
                         className="w-14 h-14 rounded-lg object-cover border border-border-base shrink-0"
                         referrerPolicy="no-referrer"
                       />
@@ -379,6 +380,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               <Image
                 src={activeListing.coverImageUrl || activeListing.photos[0]?.url}
                 alt={activeListing.title}
+                sizes="96px"
                 className="w-24 h-24 rounded-xl object-cover border border-border-base shrink-0"
                 referrerPolicy="no-referrer"
               />

@@ -54,6 +54,14 @@
   --color-warning-surface: #FFFBEB;
   --color-warning-border: #FDE68A;
   --color-danger: #B91C1C;
+  /* `danger` was the one filled variant with no interaction states: the Button
+     primitive asked for `bg-danger-hover` / `bg-danger-active`, Tailwind found
+     no such theme keys, and generated nothing — so every destructive button in
+     the product was inert on hover and on press. These are the next two steps
+     of the same red ramp the surface and border already come from, and both
+     hold white text well clear of AA (8.35:1 and 10.1:1). */
+  --color-danger-hover: #991B1B;
+  --color-danger-active: #7F1D1D;
   --color-danger-surface: #FEF2F2;
   --color-danger-border: #FECACA;
   --color-info: #0369A1;
@@ -142,7 +150,12 @@
      it as `--spacing-*`, and this is a layout constant, not a step on the
      spacing scale. */
   :root {
-    --mobile-nav-h: 3.5rem; /* 56px — matches the h-14 grid in MobileBottomNav */
+    /* Must equal the grid height in MobileBottomNav, which consumes this same
+       variable so the two cannot drift again. They did: this read 3.5rem while
+       the bar rendered at 3.75rem, so everything pinned above it — the toast
+       stack and the listing-detail buy bar — sat 4px low and overlapped the
+       navigation it was supposed to clear. */
+    --mobile-nav-h: 3.75rem; /* 60px */
     /* +1px for the nav's own `border-t`, which is part of its painted height. */
     --mobile-nav-total-h: calc(var(--mobile-nav-h) + 1px + env(safe-area-inset-bottom));
   }

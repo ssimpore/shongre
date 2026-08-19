@@ -142,7 +142,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 placeholder="votre.email@exemple.fr"
                 required
                 autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -172,7 +172,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Collez le token reçu par email"
                 required
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -201,7 +201,7 @@ export const ForgotPasswordPage: React.FC = () => {
               placeholder="••••••••••••"
               required
               autoComplete="new-password"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 

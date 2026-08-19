@@ -61,7 +61,7 @@ export const ProDirectoryPage: React.FC = () => {
             aria-label="Rechercher une boutique professionnelle"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary"
+            className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
         <span className="text-xs text-stone-500 font-semibold">

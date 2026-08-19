@@ -294,6 +294,7 @@ export const MyListingsPage: React.FC = () => {
                       <Image
                         src={getPhotoUrl(listing.coverImageUrl || listing.photos?.[0])}
                         alt=""
+                        sizes="48px"
                         className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
                       />
                       <div className="min-w-0">

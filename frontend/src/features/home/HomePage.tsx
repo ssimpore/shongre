@@ -39,7 +39,7 @@ import { Listing, UserProfile } from '../../types';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { SellerCard } from '../../design-system/primitives/SellerCard';
 import { Button } from '../../design-system/primitives/Button';
-import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
 import { HomeTrustStrip } from './components/HomeTrustStrip';
@@ -50,6 +50,18 @@ import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { usePublishCta } from '../../security/usePublishCta';
 import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/ViewModeToggle';
 import { plural } from '../../utilities/formatters';
+
+/**
+ * How many cards each homepage rail shows.
+ *
+ * The two inventory rails were the thinnest sections on a page whose two
+ * navigation sections were the most generous — 8 recent and 4 deals against
+ * ~800px of category and collection tiles. Discovery surfaces should be the
+ * dense ones.
+ */
+const RECENT_COUNT = 12;
+const DEALS_COUNT = 8;
+const PRO_SELLER_COUNT = 3;
 
 /**
  * Hero quick-search chips. Each carries a glyph so the row reads as a set of
@@ -70,28 +82,44 @@ const POPULAR_SEARCHES = [
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const publishCta = usePublishCta();
-  const { location: userLocation, openLocationModal } = useMarketLocation();
+  const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [proSellers, setProSellers] = useState<UserProfile[]>([]);
   const [listingsViewMode, setListingsViewMode] = useState<ListingViewMode>('grid');
 
+  /**
+   * Every listing rail here is scoped to the active market, and the effect
+   * re-runs when that market changes.
+   *
+   * Neither was true before: the homepage asked for listings with no
+   * `marketCode` and a `[]` dependency list, while the search page has always
+   * filtered by market. A visitor on the Belgian market therefore saw a full
+   * homepage of French listings, clicked through, and landed on "0 annonce" —
+   * the homepage promised inventory the rest of the product could not show.
+   *
+   * `getDealsListings()` is not used for the deals rail for the same reason:
+   * it takes no filters and caps itself at 6. `getListings` already supports
+   * `onlyDeals`, so both rails now go through one market-aware query.
+   */
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
 
+    const marketCode = activeMarket.code;
+
     Promise.all([
-      listingRepository.getListings({ limit: 12, sortBy: 'date_desc' }),
-      listingRepository.getDealsListings(),
+      listingRepository.getListings({ marketCode, limit: RECENT_COUNT, sortBy: 'date_desc' }),
+      listingRepository.getListings({ marketCode, onlyDeals: true, limit: DEALS_COUNT, sortBy: 'date_desc' }),
       userRepository.getAllProSellers(),
     ])
-      .then(([listingsRes, deals, sellers]) => {
+      .then(([listingsRes, dealsRes, sellers]) => {
         if (!isMounted) return;
-        setRecentListings(listingsRes.listings.slice(0, 8));
-        setDealsListings(deals.slice(0, 4));
+        setRecentListings(listingsRes.listings);
+        setDealsListings(dealsRes.listings);
         if (Array.isArray(sellers)) {
-          setProSellers(sellers);
+          setProSellers(sellers.slice(0, PRO_SELLER_COUNT));
         }
       })
       .catch((err) => {
@@ -104,12 +132,12 @@ export const HomePage: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [activeMarket.code]);
 
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-16">
-      {/* 1. Hero Section - Two Columns Balanced & Compact */}
+      {/* 1. Hero — pitch, search and the promoted rail */}
       <section className="relative bg-[#FAF8F5] pt-4 sm:pt-6 pb-6 sm:pb-8 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center w-full">
@@ -193,27 +221,21 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Column 2: Boosted & Promoted Listings Auto-Scrolling */}
-            <div className="lg:col-span-5 relative w-full flex flex-col justify-center min-w-0">
-              <div className="w-full h-full flex flex-col">
-                <HeroBoostedScroll />
-              </div>
+            {/* Column 2: Boosted & Promoted Listings Auto-Scrolling.
+                `empty:hidden` so the column stops reserving half the hero grid
+                when the rail collapses on a market with no listings. */}
+            <div className="lg:col-span-5 relative w-full flex flex-col justify-center min-w-0 empty:hidden">
+              <HeroBoostedScroll />
             </div>
           </div>
 
         </div>
       </section>
 
-      {/* 2. Trust Reassurance Bar */}
-      <HomeTrustStrip />
-
-      {/* 3. Upgraded Category Explorer */}
+      {/* 2. Category explorer — the main browse route, straight after the hero */}
       <HomeCategoryExplorer />
 
-      {/* 4. Curated Thematic Collections */}
-      <HomeCollectionsSection />
-
-      {/* 5. Fresh Listings */}
+      {/* 3. Fresh listings — the first browsable inventory */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
         <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
@@ -246,7 +268,7 @@ export const HomePage: React.FC = () => {
         {isLoading ? (
           listingsViewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {Array.from({ length: 8 }).map((_, idx) => (
+              {Array.from({ length: RECENT_COUNT }).map((_, idx) => (
                 <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
                   <Skeleton className="h-44 w-full rounded-xl" />
                   <Skeleton className="h-4 w-3/4" />
@@ -257,7 +279,7 @@ export const HomePage: React.FC = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {Array.from({ length: 4 }).map((_, idx) => (
+              {Array.from({ length: 6 }).map((_, idx) => (
                 <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base flex gap-3">
                   <Skeleton className="h-32 w-32 rounded-xl shrink-0" />
                   <div className="flex-1 space-y-2 py-2">
@@ -269,6 +291,21 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
           )
+        ) : recentListings.length === 0 ? (
+          /* Scoping the rails to the active market means a market with no
+             inventory yet now renders nothing rather than another market's
+             listings — so it has to say so. Publishing is the honest call to
+             action here: the market is empty because nobody has listed in it. */
+          <EmptyState
+            icon={<ScanSearch className="w-8 h-8 text-stone-400" />}
+            title={`Aucune annonce sur le marché ${activeMarket.name} pour l'instant`}
+            description="Ce marché vient d'ouvrir. Publiez la première annonce, ou changez de marché depuis l'en-tête pour explorer les autres pays."
+            action={
+              <Button to={publishCta.to} variant="primary" size="md" leftIcon={<PlusCircle className="w-4 h-4" />}>
+                {publishCta.label}
+              </Button>
+            }
+          />
         ) : listingsViewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {recentListings.map((listing) => (
@@ -284,7 +321,10 @@ export const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* 6. Deals & Price Drops Showcase */}
+      {/* 4. Trust reassurance — after the visitor has seen real goods */}
+      <HomeTrustStrip />
+
+      {/* 5. Deals & price drops */}
       {dealsListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-br from-warning-surface/70 via-stone-50/50 to-white rounded-3xl border border-warning-border p-4 sm:p-8 shadow-xs">
@@ -316,7 +356,46 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* 7. Pro Banner CTA */}
+      {/* 6. Curated thematic collections — editorial browse */}
+      <HomeCollectionsSection />
+
+      {/* 7. Pro storefronts — supply-side discovery.
+             `getAllProSellers()` was already called on every homepage load and
+             the result dropped on the floor: `proSellers` was set and never
+             read, and `SellerCard` was imported and never used. The platform
+             has storefronts, a pro directory and verified badges, none of which
+             the homepage surfaced. */}
+      {proSellers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
+                Boutiques Pro
+              </h2>
+              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
+                Des professionnels vérifiés, avec catalogue et garanties
+              </p>
+            </div>
+
+            <Link
+              to="/professionnels"
+              className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
+            >
+              <span className="hidden sm:inline">Tous les professionnels</span>
+              <span className="sm:hidden">Voir tout</span>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {proSellers.map((seller) => (
+              <SellerCard key={seller.id} user={seller} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 8. Pro banner CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-bg-base border border-border-base rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">

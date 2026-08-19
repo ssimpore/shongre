@@ -66,7 +66,7 @@ export const DROPDOWN_HEADER_CLASSES = 'px-3.5 pb-2 mb-1 border-b border-border-
 export const DROPDOWN_HEADER_TITLE_CLASSES =
   'text-micro font-bold text-stone-500 uppercase tracking-wider mb-1.5 flex items-center justify-between';
 export const DROPDOWN_SEARCH_INPUT_CLASSES =
-  'w-full h-8 px-2.5 bg-bg-base border border-border-base rounded-lg text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-primary focus:bg-white transition-colors';
+  'w-full h-8 px-2.5 bg-bg-base border border-border-base rounded-lg text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors';
 
 export function DropdownMenu<T extends string | number = string>({
   id,

@@ -22,7 +22,9 @@ export const MobileBottomNav: React.FC = () => {
       aria-label="Navigation mobile"
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-stone-200/80 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.08)]"
     >
-      <div className="grid grid-cols-5 h-[3.75rem] items-center px-1">
+      {/* Height comes from `--mobile-nav-h` so the bar and everything pinned
+          above it (toasts, the listing-detail buy bar) cannot disagree. */}
+      <div className="grid grid-cols-5 h-[var(--mobile-nav-h)] items-center px-1">
         {/* Home */}
         <NavLink
           to={routes.home()}

@@ -121,6 +121,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                     <Image
                       src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80"
                       alt="Fauteuil"
+                      sizes="(max-width: 640px) 45vw, 240px"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -133,6 +134,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                     <Image
                       src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80"
                       alt="Vélo"
+                      sizes="(max-width: 640px) 45vw, 240px"
                       className="w-full h-full object-cover"
                     />
                   </div>

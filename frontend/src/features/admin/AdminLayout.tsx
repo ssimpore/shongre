@@ -192,6 +192,7 @@ export const AdminLayout: React.FC = () => {
               <Image
                 src={currentUser?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}
                 alt={currentUser?.name || 'Staff'}
+                sizes="28px"
                 className="w-7 h-7 rounded-full object-cover border border-stone-700 shrink-0"
               />
               <div className="hidden lg:flex flex-col text-right">

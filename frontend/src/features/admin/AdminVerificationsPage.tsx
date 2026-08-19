@@ -183,6 +183,7 @@ export const AdminVerificationsPage: React.FC = () => {
                         <Image
                           src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
                           alt={u.name}
+                          sizes="44px"
                           className="w-11 h-11 rounded-full object-cover border border-stone-200 shrink-0"
                         />
                         <div className="space-y-1">

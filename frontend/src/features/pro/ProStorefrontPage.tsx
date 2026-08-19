@@ -187,7 +187,7 @@ export const ProStorefrontPage: React.FC = () => {
               placeholder="Rechercher dans cette boutique..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-9 pr-3 text-xs bg-white rounded-xl border border-border-base focus:outline-none focus:border-primary"
+              className="w-full h-10 pl-9 pr-3 text-xs bg-white rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </div>

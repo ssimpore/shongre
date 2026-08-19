@@ -519,7 +519,7 @@ export const PublishWizard: React.FC = () => {
                 placeholder="ex: Canapé d'angle, iPhone 15, Voitures, Vélos..."
                 value={categorySearchQuery}
                 onChange={(e) => setCategorySearchQuery(e.target.value)}
-                className="w-full h-10 pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary font-medium"
+                className="w-full h-10 pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
               />
             </div>
 
@@ -660,7 +660,7 @@ export const PublishWizard: React.FC = () => {
                         <select
                           value={value}
                           onChange={(e) => updateAttribute(attr.code, e.target.value)}
-                          className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
+                          className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
                         >
                           <option value="">Sélectionner une option...</option>
                           {attr.options?.map((opt) => (
@@ -745,16 +745,33 @@ export const PublishWizard: React.FC = () => {
                 key={photo.id}
                 className="group relative aspect-square rounded-xl overflow-hidden border-2 border-border-base bg-bg-base"
               >
-                <Image src={photo.url} alt={photo.alt} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+                <Image
+                  src={photo.url}
+                  alt={photo.alt}
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="w-full h-full object-cover"
+                />
+
+                {/* The scrim stays a hover/focus affordance — it is what tells a
+                    mouse user the tile is interactive — but it must not be the
+                    thing that reveals the controls. Gating both on `:hover` meant
+                    a phone, which has no hover, could neither delete a photo nor
+                    choose a cover: the only controls for either action were
+                    permanently at `opacity-0`. Keyboard users had the mirror
+                    problem — Tab moved focus onto buttons they could not see. */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-fast pointer-events-none"
+                />
+                <div className="absolute inset-0 flex flex-col justify-between p-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100 transition-opacity duration-fast">
                   <div className="flex justify-end">
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(photo.id)}
                       aria-label={`Supprimer la photo ${index + 1}`}
-                      className="p-1 bg-danger text-white rounded-md hover:bg-danger cursor-pointer"
+                      className="w-7 h-7 inline-flex items-center justify-center bg-danger text-white rounded-md shadow-xs hover:bg-danger-hover active:bg-danger-active transition-colors duration-fast cursor-pointer"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                   <div>
@@ -762,7 +779,7 @@ export const PublishWizard: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleSetCoverPhoto(photo.id)}
-                        className="w-full py-1 bg-white/90 text-stone-900 text-micro font-bold rounded hover:bg-white cursor-pointer"
+                        className="w-full min-h-6 py-1.5 bg-white/95 text-stone-900 text-micro font-bold rounded shadow-xs hover:bg-white active:bg-bg-subtle transition-colors duration-fast cursor-pointer"
                       >
                         Mettre en couverture
                       </button>

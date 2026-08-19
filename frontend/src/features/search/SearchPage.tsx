@@ -530,7 +530,7 @@ export const SearchPage: React.FC = () => {
                         name="sellerType"
                         checked={sellerType === s.value}
                         onChange={() => updateFilter('sellerType', s.value)}
-                        className="text-primary focus:ring-primary"
+                        className="w-4 h-4 shrink-0 text-primary focus:ring-primary"
                       />
                       <span>{s.label}</span>
                     </label>

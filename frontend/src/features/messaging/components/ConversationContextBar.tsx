@@ -44,6 +44,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             <Image
               src={listingContext.listingPhotoUrl}
               alt={listingContext.listingTitle}
+              sizes="40px"
               className="w-10 h-10 object-cover rounded-lg border border-border-base shrink-0 bg-white"
             />
           ) : (

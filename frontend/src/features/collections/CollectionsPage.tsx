@@ -260,7 +260,7 @@ export const CollectionsPage: React.FC = () => {
                   value={collectionSearch}
                   onChange={(e) => setCollectionSearch(e.target.value)}
                   placeholder="Chercher une thématique..."
-                  className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:outline-none transition-all"
+                  className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -449,7 +449,7 @@ export const CollectionsPage: React.FC = () => {
                     value={inCollectionSearch}
                     onChange={(e) => setInCollectionSearch(e.target.value)}
                     placeholder="Filtrer dans la sélection..."
-                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:outline-none transition-all"
+                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>

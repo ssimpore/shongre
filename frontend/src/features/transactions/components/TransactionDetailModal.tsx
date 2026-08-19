@@ -297,6 +297,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <Image
               src={tx.listingPhotoUrl || tx.listingCoverImageUrl}
               alt={tx.listingTitle}
+              sizes="64px"
               className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
             />
             <div className="min-w-0 flex-1">
@@ -409,7 +410,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     placeholder="ex: 849201"
                     value={sellerInputPin}
                     onChange={(e) => setSellerInputPin(e.target.value)}
-                    className="flex-1 h-control-touch px-3.5 bg-stone-800 text-white font-mono text-lg font-bold tracking-widest rounded-xl border border-stone-700 focus:outline-none focus:border-primary"
+                    className="flex-1 h-control-touch px-3.5 bg-stone-800 text-white font-mono text-lg font-bold tracking-widest rounded-xl border border-stone-700 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   <Button
                     type="button"

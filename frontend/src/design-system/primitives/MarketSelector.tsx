@@ -271,7 +271,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             <select
               value={draftLocale}
               onChange={(e) => setDraftLocale(e.target.value)}
-              className="w-full h-control-touch px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
+              className="w-full h-control-touch px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
             >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -290,7 +290,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             <select
               value={draftCurrency}
               onChange={(e) => setDraftCurrency(e.target.value)}
-              className="w-full h-control-touch px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none"
+              className="w-full h-control-touch px-3.5 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
             >
               {SUPPORTED_CURRENCIES.map((curr) => (
                 <option key={curr.code} value={curr.code}>

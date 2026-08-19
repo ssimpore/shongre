@@ -120,7 +120,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Ex: Atelier Ébénisterie Dupont"
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -135,7 +135,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 onChange={(e) => setSirenSiret(e.target.value)}
                 placeholder={currentMarket.businessIdentifierFormatPlaceholder}
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -146,7 +146,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               <select
                 value={legalForm}
                 onChange={(e) => setLegalForm(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
                 {currentMarket.supportedLegalForms.map((f) => (
                   <option key={f} value={f}>
@@ -167,7 +167,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 value={vatNumber}
                 onChange={(e) => setVatNumber(e.target.value)}
                 placeholder={currentMarket.vatNumberFormatPlaceholder}
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -180,7 +180,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="01 23 45 67 89"
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -195,7 +195,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(e) => setBusinessAddress(e.target.value)}
               placeholder="12 rue du Commerce, 75011 Paris"
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 

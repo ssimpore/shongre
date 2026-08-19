@@ -170,7 +170,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary"
+                  className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 >
                   {Object.values(SUPPORTED_MARKETS).map((m) => (
                     <option key={m.code} value={m.code}>
@@ -184,7 +184,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={currentMarket.phonePlaceholder}
                   required
-                  className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary"
+                  className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -213,7 +213,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                 placeholder="123456"
                 autoFocus
                 required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:bg-white"
+                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
               />
             </div>
 

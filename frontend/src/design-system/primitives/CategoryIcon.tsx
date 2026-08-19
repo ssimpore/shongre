@@ -106,14 +106,14 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
 // Fallback mapping by category slug or code
 export const CATEGORY_SLUG_ICON_MAP: Record<string, { icon: LucideIcon; color: string }> = {
   // 1. Véhicules
-  vehicules: { icon: Car, color: '#D9532F' },
-  vehicles: { icon: Car, color: '#D9532F' },
-  'vehicles.cars': { icon: Car, color: '#D9532F' },
-  'vehicles.motorcycles': { icon: Bike, color: '#D9532F' },
-  'vehicles.utility': { icon: Truck, color: '#D9532F' },
-  'vehicles.caravaning': { icon: Compass, color: '#D9532F' },
-  'vehicles.nautism': { icon: Anchor, color: '#D9532F' },
-  'vehicles.parts': { icon: Wrench, color: '#D9532F' },
+  vehicules: { icon: Car, color: '#C4431F' },
+  vehicles: { icon: Car, color: '#C4431F' },
+  'vehicles.cars': { icon: Car, color: '#C4431F' },
+  'vehicles.motorcycles': { icon: Bike, color: '#C4431F' },
+  'vehicles.utility': { icon: Truck, color: '#C4431F' },
+  'vehicles.caravaning': { icon: Compass, color: '#C4431F' },
+  'vehicles.nautism': { icon: Anchor, color: '#C4431F' },
+  'vehicles.parts': { icon: Wrench, color: '#C4431F' },
 
   // 2. Immobilier
   immobilier: { icon: Building2, color: '#0284C7' },
@@ -238,7 +238,9 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
 }) => {
   // 1. Resolve Icon Component
   let IconComponent: LucideIcon = Tag;
-  let defaultColor = '#D9532F';
+  // The brand terracotta, matching `--color-primary` in index.css. Every
+  // unmapped category falls back to it, so it must not drift from the ramp.
+  let defaultColor = '#C4431F';
 
   // Check explicit iconName first
   const resolvedIconName =

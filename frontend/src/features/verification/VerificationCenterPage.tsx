@@ -227,6 +227,17 @@ export const VerificationCenterPage: React.FC = () => {
       {/* Tab 1: Dimensional Checklist */}
       {activeTab === 'overview' && (
         <div className="space-y-4">
+          {/* The sibling tabs each open with an h2 and a lead line; this one went
+              straight from the page h1 into the cards' h3, skipping a level and
+              leaving the only unlabelled panel of the three. */}
+          <div className="space-y-1">
+            <h2 className="text-lg font-black text-stone-900">Checklist des vérifications</h2>
+            <p className="text-xs text-stone-600">
+              Complétez chaque dimension pour renforcer la confiance des acheteurs et lever
+              les limites de votre compte.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(Object.keys(dimensions) as VerificationDimensionId[]).map((dimKey) => {
               const dim = dimensions[dimKey];

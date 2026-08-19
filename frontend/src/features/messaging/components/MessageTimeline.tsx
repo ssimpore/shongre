@@ -139,7 +139,8 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                           <Image
                             src={msg.attachment.url}
                             alt="Photo partagée"
-                            className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
+                            sizes="(max-width: 640px) 75vw, 320px"
+                  className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
                             onClick={() => onOpenImage(msg.attachment!.url)}
                           />
                           <button

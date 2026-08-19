@@ -27,6 +27,7 @@ import { readdirSync, readFileSync } from 'fs';
 import { join, relative } from 'path';
 
 const ROOT = 'src';
+const THEME_SOURCE = 'src/index.css';
 
 /** Utility+shade combinations that have an exact semantic token equivalent. */
 const BANNED = [
@@ -39,6 +40,56 @@ const BANNED = [
   { re: /\b(?:[a-z-]+:)*border-(red|rose)-(?:400|500)\b/, hint: 'border-danger' },
 ];
 
+/* ---------------------------------------------------------------------------
+   Guard 2: utility classes that name a token which does not exist.
+
+   Tailwind generates nothing for a class whose theme key is undeclared — no
+   warning, no error, just a class that does nothing. `danger` shipped that way:
+   the Button primitive asked for `bg-danger-hover` / `bg-danger-active`, only
+   `--color-danger` was declared, and so every destructive button in the product
+   was inert on hover and on press until someone noticed by eye.
+
+   Only the five project-owned colour families are checked. Tailwind ships no
+   `primary` / `danger` / `success` / `warning` / `info` palette of its own, so a
+   class in one of those families can only resolve through `@theme` — which
+   makes the check exact, with no built-in palette to produce false positives.
+   --------------------------------------------------------------------------- */
+const OWNED_FAMILIES = ['primary', 'danger', 'success', 'warning', 'info'];
+
+/** Colour utilities whose value resolves from the `--color-*` namespace. */
+const COLOR_UTILITIES =
+  'bg|text|border|ring|outline|divide|fill|stroke|shadow|accent|caret|decoration|placeholder|from|via|to';
+
+function declaredColorTokens() {
+  const css = readFileSync(THEME_SOURCE, 'utf8');
+  const start = css.indexOf('@theme {');
+  if (start === -1) throw new Error(`${THEME_SOURCE} declares no @theme block`);
+  let depth = 0;
+  let end = css.length;
+  for (let i = css.indexOf('{', start); i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}' && --depth === 0) { end = i; break; }
+  }
+  const block = css.slice(start, end);
+  return new Set(Array.from(block.matchAll(/--color-([a-z0-9-]+)\s*:/gi), (m) => m[1]));
+}
+
+const declared = declaredColorTokens();
+
+// e.g. `hover:bg-danger-hover`, `md:border-t-primary-border`, `shadow-primary/20`
+const OWNED_CLASS = new RegExp(
+  `(?:^|[\\s"'\`{])(?:[a-z0-9-]+:)*(?:${COLOR_UTILITIES})(?:-[trblxyse])?-((?:${OWNED_FAMILIES.join('|')})(?:-[a-z0-9-]+)?)(?:/[^\\s"'\`]+)?(?=$|[\\s"'\`}])`,
+  'g',
+);
+
+function findUndeclaredTokens(line) {
+  const found = [];
+  for (const m of line.matchAll(OWNED_CLASS)) {
+    if (!declared.has(m[1])) found.push(m[1]);
+  }
+  return found;
+}
+
 function walk(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
@@ -49,6 +100,7 @@ function walk(dir, out = []) {
 }
 
 const violations = [];
+const undeclared = [];
 for (const file of walk(ROOT)) {
   const lines = readFileSync(file, 'utf8').split('\n');
   lines.forEach((line, i) => {
@@ -56,13 +108,29 @@ for (const file of walk(ROOT)) {
       const m = line.match(re);
       if (m) violations.push({ file: relative('.', file), line: i + 1, found: m[0], hint });
     }
+    for (const token of findUndeclaredTokens(line)) {
+      undeclared.push({ file: relative('.', file), line: i + 1, token });
+    }
   });
 }
 
-if (violations.length === 0) {
-  console.log('✔ design tokens: no raw status palettes in src/**/*.tsx');
+if (undeclared.length > 0) {
+  console.error(`\n✘ design tokens: ${undeclared.length} class(es) name an undeclared token.\n`);
+  console.error(`  Tailwind emits no CSS for these, so they are silently inert.`);
+  console.error(`  Declare the token in ${THEME_SOURCE} (and mirror it in tokens/theme.ts), or use one that exists.\n`);
+  for (const u of undeclared.slice(0, 40)) {
+    console.error(`  ${u.file}:${u.line}\n      --color-${u.token} is not declared`);
+  }
+  if (undeclared.length > 40) console.error(`\n  …and ${undeclared.length - 40} more.`);
+  console.error('');
+}
+
+if (violations.length === 0 && undeclared.length === 0) {
+  console.log('✔ design tokens: no raw status palettes, no undeclared tokens in src/**/*.tsx');
   process.exit(0);
 }
+
+if (violations.length === 0) process.exit(1);
 
 console.error(`\n✘ design tokens: ${violations.length} raw status palette usage(s).\n`);
 console.error('  These have exact semantic equivalents — see the ramp comments in src/index.css.\n');

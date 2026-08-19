@@ -10,11 +10,19 @@ import { AppScrollRestoration } from '../router/AppScrollRestoration';
 
 export const MainLayout: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-bg-base text-stone-900">
+    /* `--page-bottom-inset` is how a page declares that it pins something over
+       the bottom of the viewport (the listing detail action bar is the only one
+       today). Reserving it here rather than on `<main>` is deliberate: the
+       footer is a sibling of `<main>`, so page-level padding cannot clear it —
+       four footer legal links sat underneath the action bar at full scroll. */
+    <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-[var(--page-bottom-inset,0px)]">
       <AppScrollRestoration />
       <DemoRoleSwitcher />
       <Header />
-      <main className="flex-1 pb-20 md:pb-0">
+      {/* Clearance for the fixed tab bar comes from the same token the bar
+          is built from, so it tracks the bar (and the iOS home indicator,
+          which the old flat 80px ignored) instead of guessing at it. */}
+      <main className="flex-1 pb-[var(--mobile-nav-total-h)] md:pb-0">
         <Outlet />
       </main>
       <Footer />

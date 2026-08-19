@@ -210,6 +210,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
+              sizes="64px"
               className="w-16 h-16 rounded-xl object-cover shrink-0 border border-stone-200"
             />
             <div className="min-w-0">

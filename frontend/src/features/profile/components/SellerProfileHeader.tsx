@@ -123,7 +123,8 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             <Image
               src={seller.storeBannerUrl}
               alt={`Bannière de ${displayName}`}
-              className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+              sizes="100vw"
+                className="w-full h-full object-cover opacity-80 mix-blend-overlay"
               referrerPolicy="no-referrer"
             />
           ) : (
