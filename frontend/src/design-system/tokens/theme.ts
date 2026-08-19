@@ -51,7 +51,9 @@ export const themeColors = {
 
 /**
  * Radius scale. Semantics, not decoration:
- * `xl` is the control radius, `2xl` the card radius, `3xl` the overlay radius.
+ * `xl` is the control radius. `card` and `overlay` are the two outer-shell
+ * radii — they are named rather than numbered because the shell is a role, and
+ * neither 20px nor 28px sits on the numbered scale.
  */
 export const themeRadii = {
   xs: '0.125rem',
@@ -61,6 +63,8 @@ export const themeRadii = {
   xl: '0.625rem',
   '2xl': '0.875rem',
   '3xl': '1.125rem',
+  card: '1.25rem',
+  overlay: '1.75rem',
   pill: '9999px',
 } as const;
 

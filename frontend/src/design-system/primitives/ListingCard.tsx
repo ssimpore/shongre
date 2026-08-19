@@ -8,6 +8,7 @@ import { formatRelativeDate, formatRelativeTimestamp } from '../../utilities/for
 import { PriceDisplay } from './UIComponents';
 import { Badge } from './Badge';
 import { Image } from './Image';
+import { IMAGE_SIZES } from './responsiveImage';
 import { useFavorites } from '../../app/providers/FavoritesProvider';
 
 export interface ListingCardProps {
@@ -65,6 +66,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
+              sizes={IMAGE_SIZES.compact}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
             />
           </Link>
@@ -101,7 +103,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   if (variant === 'list') {
     return (
       <article
-        className={`group bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-normal overflow-hidden flex flex-col sm:flex-row p-3 ${
+        className={`group bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-normal overflow-hidden flex flex-col sm:flex-row p-3 ${
           listing.isBoosted ? 'ring-2 ring-primary/20' : ''
         } ${className}`}
       >
@@ -109,6 +111,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
+            sizes={IMAGE_SIZES.thumbnail}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
           />
           {listing.photos.length > 1 && (
@@ -226,7 +229,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
        footer to the bottom edge — so the footers line up across the row too,
        not just the outlines. */
     <article
-      className={`group h-full bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-xl transition-all duration-normal overflow-hidden flex flex-col p-2 ${
+      className={`group h-full bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-xl transition-all duration-normal overflow-hidden flex flex-col p-2 ${
         listing.isBoosted ? 'ring-2 ring-primary/20' : ''
       } ${className}`}
     >
@@ -235,6 +238,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
+            sizes={IMAGE_SIZES.card}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
           />
         </Link>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, ShieldCheck, Sparkles, Zap, Tag } from 'lucide-react';
 import { Image } from './Image';
+import { AVATAR_SIZES } from './responsiveImage';
 
 export interface BadgeProps {
   children: React.ReactNode;
@@ -112,7 +113,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         className={`${sizeStyles[size]} rounded-full overflow-hidden flex items-center justify-center font-semibold bg-bg-subtle text-stone-700 border border-border-base`}
       >
         {src ? (
-          <Image src={src} alt={name} className="w-full h-full object-cover" fallbackIconClassName="w-4 h-4" />
+          <Image src={src} alt={name} sizes={AVATAR_SIZES[size]} className="w-full h-full object-cover" fallbackIconClassName="w-4 h-4" />
         ) : (
           <span>{getInitials(name)}</span>
         )}

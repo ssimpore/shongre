@@ -64,8 +64,19 @@
      Tuned so the shared classes already in use land on the right semantics:
        rounded-lg  (8px)  → chips, inline tags, small surfaces
        rounded-xl  (10px) → buttons, inputs, icon buttons  (control radius)
-       rounded-2xl (14px) → cards, panels                  (card radius)
-       rounded-3xl (18px) → modals, drawers, hero surfaces (overlay radius)
+       rounded-2xl (14px) → inner panels, media wells
+       rounded-3xl (18px) → large inner surfaces
+
+     `card` and `overlay` are the two outer-shell radii. They are named rather
+     than numbered because the shell is a semantic role: listing cards and the
+     home category tiles are one shape (20px), modals and sheets another (28px).
+     Both were previously written as `rounded-[20px]`/`rounded-[28px]` at five
+     call sites, which is exactly the drift the scale exists to prevent — and
+     neither value existed on the numbered scale, so there was nothing to reach
+     for. The numbered steps are deliberately left alone: `rounded-2xl` is on
+     283 elements, so redefining it to match the shell would have re-rounded
+     most of the product.
+
      Keeping the scale here means radius is harmonised platform-wide instead of
      component by component. */
   --radius-xs: 0.125rem;  /* 2px  */
@@ -74,7 +85,9 @@
   --radius-lg: 0.5rem;    /* 8px  */
   --radius-xl: 0.625rem;  /* 10px — control */
   --radius-2xl: 0.875rem; /* 14px — card    */
-  --radius-3xl: 1.125rem; /* 18px — overlay */
+  --radius-3xl: 1.125rem; /* 18px */
+  --radius-card: 1.25rem;    /* 20px — listing/category card shell */
+  --radius-overlay: 1.75rem; /* 28px — modal and sheet shell       */
   --radius-pill: 9999px;
 
   /* --- Typography ---------------------------------------------------------
@@ -83,6 +96,15 @@
      that needs to be read in a sentence starts at `xs`. */
   --text-micro: 0.6875rem; /* 11px */
   --text-micro--line-height: 1.35;
+
+  /* The editorial display face, used for the marketing headline only. The app
+     ships no webfont, so this is the platform serif stack: `ui-serif` resolves
+     to New York on Apple platforms and the named fallbacks cover the rest. It
+     buys the headline a different voice from the UI sans at zero request cost.
+     Swap in a loaded display face here if one is ever added — every call site
+     goes through `font-display`. */
+  --font-display: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    Georgia, 'Times New Roman', serif;
 
   /* --- Control metrics ----------------------------------------------------
      Shared heights for buttons, inputs, selects and icon buttons so a form row

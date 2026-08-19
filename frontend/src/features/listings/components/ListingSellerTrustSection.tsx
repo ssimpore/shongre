@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck, Star, Clock, MapPin, CheckCircle2, ChevronRight, Store } from 'lucide-react';
 import { UserProfile, ReviewItem } from '../../../types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';
-import { isProSeller } from '../../../domains/user/user.domain';
+import { isProSeller, showsVerifiedBadge } from '../../../domains/user/user.domain';
 
 export interface ListingSellerTrustSectionProps {
   seller: UserProfile;
@@ -57,7 +57,7 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
               {seller.companyName || seller.name}
             </Link>
             {isPro && <Badge variant="pro" size="sm">Vendeur Pro</Badge>}
-            {seller.isVerified && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
+            {showsVerifiedBadge(seller) && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-stone-600 flex-wrap">

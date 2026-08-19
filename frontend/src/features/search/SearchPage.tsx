@@ -245,9 +245,15 @@ export const SearchPage: React.FC = () => {
         {/* The visible result count lives in the results toolbar, next to the
             controls that change it. Printing it here too cost a line of mobile
             fold for no new information — but the live region still has to
-            announce it, so it stays for assistive tech and shows from sm up. */}
+            announce it, so it stays for assistive tech.
+
+            It was previously revealed again from `sm` up, which put the count
+            on screen twice on every tablet and desktop ("17 annonces
+            correspondent à votre recherche" here, "17 annonces" in the
+            toolbar). Staying `sr-only` at every width is what the surrounding
+            note already described: one visible count, announced once. */}
         <p
-          className="text-sm text-stone-500 mt-1 sr-only sm:not-sr-only"
+          className="text-sm text-stone-500 mt-1 sr-only"
           aria-live="polite"
           aria-atomic="true"
         >

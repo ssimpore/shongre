@@ -592,7 +592,6 @@ export const INITIAL_LISTINGS: Listing[] = [
     region: 'Nouvelle-Aquitaine',
     photos: [
       { id: 'p1', url: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=800&q=80', isCover: true, alt: 'Fauteuil lounge scandinave' },
-      { id: 'p2', url: 'https://images.unsplash.com/photo-1580481077195-c3a9927b74b7?auto=format&fit=crop&w=800&q=80', isCover: false, alt: 'Détail bois chêne' },
       { id: 'p3', url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80', isCover: false, alt: 'Vue ambiance salon' },
     ],
     coverImageUrl: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=800&q=80',
@@ -1307,9 +1306,9 @@ export const INITIAL_LISTINGS: Listing[] = [
     department: '69 - Rhône',
     region: 'Auvergne-Rhône-Alpes',
     photos: [
-      { id: 'p1', url: 'https://images.unsplash.com/photo-1520523839898-50712825e617?auto=format&fit=crop&w=800&q=80', isCover: true, alt: 'Piano à queue' },
+      { id: 'p1', url: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800&q=80', isCover: true, alt: 'Piano' },
     ],
-    coverImageUrl: 'https://images.unsplash.com/photo-1520523839898-50712825e617?auto=format&fit=crop&w=800&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=800&q=80',
     deliveryOptions: [
       { type: 'hand_delivery', available: true, price: 0 },
     ],
@@ -1349,9 +1348,9 @@ export const INITIAL_LISTINGS: Listing[] = [
     department: '33 - Gironde',
     region: 'Nouvelle-Aquitaine',
     photos: [
-      { id: 'p1', url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80', isCover: true, alt: 'Atelier de menuiserie' },
+      { id: 'p1', url: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80', isCover: true, alt: 'Perceuse et outillage' },
     ],
-    coverImageUrl: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80',
     deliveryOptions: [
       { type: 'hand_delivery', available: true, price: 0 },
     ],

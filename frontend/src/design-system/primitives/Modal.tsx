@@ -47,7 +47,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-[28px] shadow-xl border border-stone-200/60 overflow-hidden animate-in zoom-in-95 ${className}`}
+        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-overlay shadow-xl border border-stone-200/60 overflow-hidden animate-in zoom-in-95 ${className}`}
       >
         <div className="flex items-start justify-between gap-3 p-5 sm:p-6 border-b border-stone-100 shrink-0">
           <div className="min-w-0">
@@ -102,7 +102,7 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full max-w-lg bg-white rounded-t-[28px] sm:rounded-[28px] shadow-2xl border border-stone-200/60 max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
+        className={`w-full max-w-lg bg-white rounded-t-overlay sm:rounded-overlay shadow-2xl border border-stone-200/60 max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
       >
         <div className="flex items-center justify-between p-5 border-b border-stone-100 shrink-0">
           {title ? (

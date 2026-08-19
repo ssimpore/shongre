@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Image } from '../../../design-system/primitives/Image';
+import { IMAGE_SIZES, buildSrcSet } from '../../../design-system/primitives/responsiveImage';
 import { Camera, ChevronLeft, ChevronRight, Maximize2, X, Image as ImageIcon } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { ListingPhoto } from '../../../types';
@@ -112,14 +113,19 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             source fails. */}
         <img
           src={currentUrl!}
+          srcSet={buildSrcSet(currentUrl!)}
+          sizes={IMAGE_SIZES.gallery}
           alt=""
           aria-hidden="true"
+          decoding="async"
           referrerPolicy="no-referrer"
           className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-45 pointer-events-none"
         />
         <Image
           src={currentUrl!}
           alt={`${title} - Photo ${activeIndex + 1}`}
+          sizes={IMAGE_SIZES.gallery}
+          priority
           onClick={() => setIsLightboxOpen(true)}
           className="relative w-full h-full object-contain cursor-zoom-in transition-transform duration-normal hover:scale-[1.02]"
           referrerPolicy="no-referrer"
@@ -203,7 +209,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   : 'border-transparent opacity-60 hover:opacity-100'
               }`}
             >
-              <Image src={imgUrl} alt="" className="w-full h-full object-cover" fallbackIconClassName="w-4 h-4" />
+              <Image src={imgUrl} alt="" sizes={IMAGE_SIZES.thumb} className="w-full h-full object-cover" fallbackIconClassName="w-4 h-4" />
             </button>
           ))}
         </div>
@@ -239,6 +245,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             <Image
               src={currentUrl!}
               alt={`${title} - Grand format`}
+              sizes={IMAGE_SIZES.gallery}
               className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
               referrerPolicy="no-referrer"
             />
@@ -277,7 +284,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                     activeIndex === idx ? 'border-primary ring-2 ring-primary/40' : 'border-transparent opacity-50 hover:opacity-90'
                   }`}
                 >
-                  <Image src={imgUrl} alt="" className="w-full h-full object-cover" fallbackIconClassName="w-4 h-4" />
+                  <Image src={imgUrl} alt="" sizes={IMAGE_SIZES.thumb} className="w-full h-full object-cover" fallbackIconClassName="w-4 h-4" />
                 </button>
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { isProSeller } from '../../domains/user/user.domain';
+import { isProSeller, showsVerifiedBadge } from '../../domains/user/user.domain';
 import React from 'react';
 import { ShieldCheck, Star, MapPin, Clock, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -44,7 +44,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
               {user.companyName || user.name}
             </Link>
             {isPro && <Badge variant="pro" size="sm">Pro</Badge>}
-            {user.isVerified && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
+            {showsVerifiedBadge(user) && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
           </div>
 
           <div className="flex items-center gap-2 mt-1 text-xs text-stone-600">

@@ -45,6 +45,9 @@ import { DROPDOWN_PANEL_CLASSES } from '../../design-system/primitives/DropdownM
 export const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  /* The results page renders its own, richer search bar — see the desktop
+     search slot below. */
+  const isSearchRoute = location.pathname === '/recherche';
   const { currentUser, isAuthenticated, role, logout } = useAuth();
   const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
 
@@ -147,14 +150,24 @@ export const Header: React.FC = () => {
               The single search surface on desktop: sticky, so it is reachable
               from any scroll position, including the homepage. The homepage hero
               used to carry a second copy with the same placeholder — one search
-              per screen, and this is it. */}
+              per screen, and this is it.
+
+              `/recherche` is the one route that owns a better search surface
+              than this one: its page-level bar carries the same fields plus the
+              radius control, and it edits the URL in place instead of
+              navigating. Rendering both put two inputs with the identical
+              accessible name — and two category dropdowns — on one screen. The
+              wrapper stays mounted so the header keeps its three-part flex
+              rhythm and the actions do not slide inward. */}
           <div className="flex-1 min-w-0 max-w-xl xl:max-w-2xl hidden md:block">
-            <GlobalSearchBar
-              variant="header"
-              idPrefix="header-desktop"
-              showCategory={true}
-              showLocation={true}
-            />
+            {!isSearchRoute && (
+              <GlobalSearchBar
+                variant="header"
+                idPrefix="header-desktop"
+                showCategory={true}
+                showLocation={true}
+              />
+            )}
           </div>
 
           {/* Header Action Items.

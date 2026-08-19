@@ -90,9 +90,11 @@ export const ProStorefrontPage: React.FC = () => {
           
           {/* Cover Header */}
           <div className="h-44 sm:h-60 bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 p-6 flex items-end relative">
+            {/* "Vendeur Professionnel Agréé" already states the account passed
+                SIRET/KBIS checks — a second "SIRET Vérifié" badge beside it said
+                the same thing twice. */}
             <div className="absolute top-4 right-4 flex gap-2">
               <Badge variant="pro" size="md">Vendeur Professionnel Agréé</Badge>
-              <Badge variant="verified" size="md" icon>SIRET Vérifié</Badge>
             </div>
           </div>
 

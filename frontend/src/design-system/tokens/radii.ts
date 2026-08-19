@@ -14,15 +14,17 @@ export const radii = {
   md: '0.375rem',   // 6px  - chips, inline tags
   lg: '0.5rem',     // 8px  - small surfaces
   xl: '0.625rem',   // 10px - buttons, inputs, icon buttons
-  '2xl': '0.875rem', // 14px - cards, panels
-  '3xl': '1.125rem', // 18px - modals, drawers
+  '2xl': '0.875rem', // 14px - inner panels, media wells
+  '3xl': '1.125rem', // 18px - large inner surfaces
   full: '9999px',   // Pill tags, avatar circles
 
-  // Semantic mappings — aliases onto the scale above, never new values.
+  // Semantic mappings. `button`/`input` alias numbered steps; `card` and
+  // `modal` are the two outer-shell radii and carry their own values, because
+  // 20px and 28px are not steps on the numbered scale.
   button: '0.625rem', // = xl
   input: '0.625rem',  // = xl
-  card: '0.875rem',   // = 2xl
-  modal: '1.125rem',  // = 3xl
+  card: '1.25rem',    // = card shell
+  modal: '1.75rem',   // = overlay shell
   badge: '9999px',    // pill
   avatar: '9999px',
 } as const;

@@ -97,25 +97,25 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             had typed. Two rows give the field the column's full width. */}
         <div className="flex flex-col gap-2 max-w-sm">
           <div className="relative">
-            <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Votre adresse email"
+              placeholder="votre@email.com"
               aria-label="Votre adresse email"
               autoComplete="email"
               disabled={isSubmitting}
-              className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-800 border border-stone-700 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary transition-colors"
+              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary-on-dark transition-colors"
             />
           </div>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="h-control-md w-full px-3.5 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="relative h-control-touch w-full px-4 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center disabled:opacity-50 cursor-pointer shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <span>{isSubmitting ? 'Inscription…' : 'S\'inscrire'}</span>
-            {!isSubmitting && <ArrowRight className="w-3.5 h-3.5" />}
+            {!isSubmitting && <ArrowRight className="w-4 h-4 absolute right-4" />}
           </button>
         </div>
         {errorMessage && (

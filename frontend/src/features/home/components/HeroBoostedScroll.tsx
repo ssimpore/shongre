@@ -1,17 +1,18 @@
 import { isProSeller } from '../../../domains/user/user.domain';
+import { routes } from '../../../configuration/routes';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles,
+  Sparkle,
+  ChevronRight,
   MapPin,
   Truck,
   Heart,
   Play,
   Pause,
-  ArrowUpRight,
   TrendingUp,
   ShieldCheck,
-  Zap,
   ChevronDown,
   Filter,
   Star,
@@ -24,14 +25,20 @@ import { taxonomyService, getTaxonomyLabel } from '../../../domains/taxonomy/tax
 import { PriceDisplay } from '../../../design-system/primitives/UIComponents';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { Image } from '../../../design-system/primitives/Image';
+import { IMAGE_SIZES } from '../../../design-system/primitives/responsiveImage';
 import { CategoryIcon } from '../../../design-system/primitives/CategoryIcon';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
-import { usePublishCta } from '../../../security/usePublishCta';
 
 /* Rail geometry. The viewport height, the step distance and the card's own
    height are all derived from these, so a card can never end up half-visible. */
 const RAIL_CARD_H = 132;  // px — calibrated height filling container without overflow
-const RAIL_GAP = 10;      // px — matches gap-2.5
+const RAIL_GAP = 14;      // px — matches gap-3.5
+/* The horizontal mobile marquee needs a taller row than the desktop rail: the
+   favourite control is 44px there rather than 32 (WCAG 2.5.5 on coarse
+   pointers), and that difference alone pushed the location/delivery line past
+   the row's `overflow-hidden` edge. Only the vertical rail's step maths depends
+   on RAIL_CARD_H, so the mobile height is free to differ. */
+const RAIL_CARD_MOBILE_H = 168;
 const VISIBLE = 2;        // exactly 2 listings on screen at once to automatically fill the container
 
 interface HeroBoostedScrollProps {
@@ -45,7 +52,6 @@ function getListingPhotoUrl(photo: any): string {
 }
 
 export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
-  const publishCta = usePublishCta();
   const [isPaused, setIsPaused] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
@@ -190,33 +196,30 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
 
   return (
     <section
-      className={`relative w-full max-w-full rounded-2xl bg-white/90 backdrop-blur-md border border-border-base p-3 sm:p-3.5 shadow-xl shadow-stone-200/50 flex flex-col justify-between overflow-hidden hover-pause ${
+      className={`relative w-full max-w-full rounded-card bg-bg-surface border border-border-base p-3.5 sm:p-4 shadow-xl shadow-stone-300/30 flex flex-col justify-between overflow-hidden hover-pause ${
         isPaused ? 'pause-animation' : ''
       }`}
       aria-labelledby="hero-boosted-heading"
     >
       {/* Top Header with integrated Category Dropdown & Controls */}
       <div className="shrink-0">
-        <div className="flex items-center justify-between gap-1.5 sm:gap-2 pb-2 mb-1 border-b border-border-subtle">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary-light border border-primary-border text-primary shrink-0">
-              <Zap className="w-3.5 h-3.5 fill-primary" />
-              <h2
-                id="hero-boosted-heading"
-                className="text-xs font-black tracking-tight text-stone-900"
-              >
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mb-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-primary-light border border-primary-border shrink-0">
+              <Sparkle className="w-3.5 h-3.5 fill-primary text-primary" />
+              <h2 id="hero-boosted-heading" className="text-micro sm:text-xs font-bold text-primary">
                 Vedettes
               </h2>
             </div>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success-surface text-success border border-success-border text-micro font-bold shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-success-surface text-success border border-success-border text-micro sm:text-xs font-bold shrink-0">
+              <ShieldCheck className="w-3.5 h-3.5" />
               Direct
             </span>
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
             {/* Category Filter Dropdown (Harmonized with Header styling) */}
-            <div className="relative" ref={categoryMenuRef}>
+            <div className="relative hidden sm:block" ref={categoryMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
@@ -226,7 +229,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
                 className={`relative p-1.5 rounded-lg border transition-all inline-flex items-center gap-1 cursor-pointer select-none ${
                   activeCategory !== 'all'
                     ? 'bg-primary-light text-primary border-primary-border shadow-xs'
-                    : 'bg-bg-subtle text-stone-600 border-border-base hover:text-stone-900 hover:bg-bg-muted'
+                    : 'border-transparent text-stone-400 hover:text-stone-900 hover:bg-bg-subtle'
                 } ${isCategoryMenuOpen ? 'ring-1 ring-primary/40 border-primary text-primary' : ''}`}
                 title={
                   activeCategory !== 'all'
@@ -307,12 +310,20 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
 
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="p-1 rounded-lg hover:bg-bg-subtle text-stone-500 hover:text-stone-900 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center pointer-coarse:min-w-control-touch pointer-coarse:min-h-control-touch"
+              className="p-1 rounded-lg hover:bg-bg-subtle text-stone-400 hover:text-stone-900 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center pointer-coarse:min-w-control-touch pointer-coarse:min-h-control-touch"
               title={isPaused ? 'Reprendre le défilement' : 'Mettre en pause'}
               aria-label={isPaused ? 'Reprendre le défilement' : 'Mettre en pause'}
             >
               {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
             </button>
+
+            <Link
+              to={routes.search()}
+              className="inline-flex items-center gap-0.5 h-control-sm pl-2.5 sm:pl-3 pr-1.5 sm:pr-2 rounded-full border border-border-base bg-bg-surface hover:bg-bg-subtle hover:border-border-hover text-micro sm:text-xs font-semibold text-stone-700 hover:text-stone-900 transition-colors shrink-0"
+            >
+              Voir plus
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+            </Link>
           </div>
         </div>
       </div>
@@ -327,10 +338,11 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
           full 274px — 64px of dead space inside every card on a phone, with the
           title and the price pushed apart to opposite ends of it. */}
       <div
-        className="relative my-1.5 overflow-hidden w-full max-w-full sm:h-(--rail-viewport) min-h-(--rail-card-h) sm:min-h-(--rail-viewport) shrink-0"
+        className="relative mb-3 overflow-hidden w-full max-w-full sm:h-(--rail-viewport) min-h-(--rail-card-mobile-h) sm:min-h-(--rail-viewport) shrink-0"
         style={
           {
             '--rail-card-h': `${RAIL_CARD_H}px`,
+            '--rail-card-mobile-h': `${RAIL_CARD_MOBILE_H}px`,
             '--rail-gap': `${RAIL_GAP}px`,
             '--rail-viewport': `${VISIBLE * RAIL_CARD_H + (VISIBLE - 1) * RAIL_GAP}px`,
           } as React.CSSProperties
@@ -346,25 +358,28 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
             {loopItems.map((item, index) => renderItemCard(item, `vert-${item.id}-${index}`))}
           </div>
         ) : (
-          <div className="flex gap-2.5 animate-marquee-horizontal w-max">
+          <div className="flex gap-3.5 animate-marquee-horizontal w-max">
             {scrollSequence.map((item, index) => renderItemCard(item, `horiz-${item.id}-${index}`))}
           </div>
         )}
       </div>
 
-      {/* Bottom Sub-footer Link */}
-      <div className="shrink-0 pt-2 border-t border-border-subtle flex items-center justify-between text-micro font-medium text-stone-500">
-        <span className="flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-success" />
-          Annonces contrôlées
-        </span>
-        <Link
-          to={publishCta.to}
-          className="text-primary hover:text-primary-hover font-bold flex items-center gap-0.5 hover:underline"
-        >
-          Booster la vôtre
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </Link>
+      {/* Reassurance strip. Copy only — the catalogue link moved up to the
+          header, so nothing here competes with the listings above it. */}
+      <div className="shrink-0 relative overflow-hidden rounded-2xl bg-bg-subtle border border-border-subtle px-3.5 py-2.5">
+        <div className="relative z-10">
+          <p className="flex items-center gap-2 text-xs font-bold text-stone-900">
+            <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+            Annonces contrôlées
+          </p>
+          <p className="text-micro text-stone-500 mt-0.5 ml-6">
+            Sécurité, fiabilité et qualité assurées.
+          </p>
+        </div>
+        <ShieldCheck
+          aria-hidden="true"
+          className="absolute -right-3 -bottom-4 w-20 h-20 text-primary/10 pointer-events-none"
+        />
       </div>
     </section>
   );
@@ -378,12 +393,29 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       <Link
         key={key}
         to={`/annonce/${item.id}`}
-        className="group relative flex items-stretch gap-3 p-2.5 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-subtle hover:border-primary/40 shadow-xs hover:shadow-md transition-all duration-normal w-[260px] sm:w-full max-w-full shrink-0 h-(--rail-card-h) overflow-hidden box-border"
+        /* No border or fill of its own: the rows sit directly on the card, so
+           the only chrome between two listings is the gap. Hover tints the row
+           instead, which keeps the surface count down. */
+        className="group relative flex items-stretch gap-3 sm:gap-4 p-2.5 sm:p-2 sm:-mx-2 rounded-2xl border border-border-subtle bg-bg-surface sm:border-transparent sm:bg-transparent hover:bg-bg-subtle transition-colors duration-normal w-[320px] sm:w-full max-w-full shrink-0 h-(--rail-card-mobile-h) sm:h-(--rail-card-h) overflow-hidden box-border"
       >
-        <div className="relative w-28 sm:w-32 h-full rounded-lg overflow-hidden shrink-0 bg-bg-muted border border-border-subtle">
+        {/* Wrapped rather than positioned directly: FavoriteButton sets
+            `relative` on its own root, and Tailwind emits `.relative` after
+            `.absolute`, so an `absolute` passed through `className` loses on
+            source order no matter where it sits in the attribute. */}
+        <span className="absolute top-2.5 right-2.5 sm:top-2 sm:right-2 z-10">
+          <FavoriteButton
+            isFavorite={isFav}
+            onToggle={(e) => handleToggleFavorite(e, item.id)}
+            size="md"
+            variant="floating"
+          />
+        </span>
+
+        <div className="relative w-28 sm:w-40 h-full rounded-2xl overflow-hidden shrink-0 bg-bg-muted">
           <Image
             src={photoUrl}
             alt={item.title}
+            sizes={IMAGE_SIZES.compact}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
           {item.isBoosted && (
@@ -396,52 +428,46 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
           )}
         </div>
 
-        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 overflow-hidden">
-          <div>
-            <div className="flex items-center justify-between gap-1.5 mb-0.5">
-              <span className="text-micro font-bold uppercase tracking-wider text-primary truncate">
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-1 overflow-hidden">
+          <div className="min-w-0">
+            {/* The gutter is on the wrapper, not on the truncating span:
+                `overflow: hidden` clips at the padding box, so a long category
+                label would render straight through its own `pr-*` and under the
+                favourite control. Constraining the width is what actually holds
+                it. The wrapped title below is fine with padding — wrapping
+                respects the content box. */}
+            <div className="pr-11 sm:pr-8 mb-0.5">
+              <span className="block text-micro font-bold uppercase tracking-wider text-primary truncate">
                 {item.categoryLabel}
               </span>
-              <FavoriteButton
-                isFavorite={isFav}
-                onToggle={(e) => handleToggleFavorite(e, item.id)}
-                size="sm"
-              />
             </div>
 
             <h3
               title={item.title}
-              className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug"
+              className="text-sm font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug pr-11 sm:pr-8"
             >
               {item.title}
             </h3>
           </div>
 
-          <div className="pt-0.5">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs sm:text-sm font-black text-stone-900">
-                <PriceDisplay price={item.price} />
-              </span>
-              {item.originalPrice && item.originalPrice > item.price && (
-                <span className="text-micro text-stone-400 line-through">
-                  <PriceDisplay price={item.originalPrice} />
-                </span>
-              )}
-            </div>
+          <div className="min-w-0">
+            {/* One price component rather than a hand-rolled pair: it already
+                renders the struck-through original at the right weight. */}
+            <PriceDisplay price={item.price} originalPrice={item.originalPrice} size="lg" />
 
-            <div className="flex items-center gap-2 mt-1 text-micro text-stone-500 flex-wrap">
-              <span className="flex items-center gap-0.5 truncate font-medium">
-                <MapPin className="w-2.5 h-2.5 shrink-0 text-stone-400" />
+            <div className="flex items-center gap-3 mt-1.5 text-micro text-stone-500 flex-wrap">
+              <span className="flex items-center gap-1 truncate font-medium">
+                <MapPin className="w-3.5 h-3.5 shrink-0 text-stone-400" />
                 {item.city}
               </span>
               {isPro && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-stone-100 text-stone-800 font-bold text-micro">
+                <span className="inline-flex items-center px-1.5 rounded bg-stone-100 text-stone-800 font-bold text-micro">
                   PRO
                 </span>
               )}
               {item.deliveryOptions?.some((o) => o.available && o.type !== 'hand_delivery') && (
-                <span className="inline-flex items-center gap-0.5 text-stone-500 font-medium">
-                  <Truck className="w-2.5 h-2.5 text-stone-400" />
+                <span className="inline-flex items-center gap-1 text-stone-500 font-medium">
+                  <Truck className="w-3.5 h-3.5 text-stone-400" />
                   Livraison
                 </span>
               )}

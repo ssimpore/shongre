@@ -1,4 +1,4 @@
-import { isProSeller } from '../../../domains/user/user.domain';
+import { isProSeller, showsVerifiedBadge } from '../../../domains/user/user.domain';
 import React, { useState } from 'react';
 
 import {
@@ -137,11 +137,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             <Badge variant="pro" size="md">
               Boutique Professionnelle
             </Badge>
-            {seller.isVerified && (
-              <Badge variant="verified" size="md" icon>
-                SIRET Vérifié
-              </Badge>
-            )}
           </div>
         </div>
       ) : (
@@ -194,7 +189,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     Particulier
                   </span>
                 )}
-                {seller.isVerified && (
+                {showsVerifiedBadge(seller) && (
                   <Badge variant="verified" size="sm" icon>
                     Vérifié
                   </Badge>

@@ -297,13 +297,18 @@ export const MyListingsPage: React.FC = () => {
                         className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
                       />
                       <div className="min-w-0">
+                        {/* `line-clamp-2` sets `display: -webkit-box`; the `block`
+                            that used to follow it overrode that back to `block`,
+                            which silently disabled the clamp entirely. The title
+                            attribute keeps the full text reachable on hover. */}
                         <Link
                           to={`/annonce/${listing.id}`}
-                          className="font-bold text-sm text-stone-900 hover:text-primary line-clamp-2 block"
+                          title={listing.title}
+                          className="font-bold text-sm text-stone-900 hover:text-primary line-clamp-2"
                         >
                           {listing.title}
                         </Link>
-                        <span className="text-xs text-stone-500">{listing.categoryLabel}</span>
+                        <span className="text-xs text-stone-500 block truncate">{listing.categoryLabel}</span>
                       </div>
                     </div>
                   ),

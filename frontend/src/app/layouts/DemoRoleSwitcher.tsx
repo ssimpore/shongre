@@ -56,7 +56,15 @@ export const DemoRoleSwitcher: React.FC = () => {
     roles.find((r) => normalizePlatformRole(r.role) === platformRole) || roles[0];
 
   return (
-    <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-40">
+    /* `z-45` follows the same tier as the mobile drawer: above page chrome
+       (the sticky header is `z-40`), below modals and toasts (`z-50`).
+
+       It was `z-40`. Because this element is positioned, that created a
+       stacking context, which trapped the dropdown's own `z-50` inside it — so
+       the menu competed with the header as a `z-40` sibling and lost on DOM
+       order, since the header comes later. The role list rendered underneath
+       the header and its first entry was unreadable. */
+    <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-45">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded tracking-wider uppercase">

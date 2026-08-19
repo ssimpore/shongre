@@ -17,12 +17,17 @@ import {
   Smartphone,
   Shirt,
   Bike,
+  Armchair,
+  Gamepad2,
+  Gift,
+  Lamp,
+  ScanSearch,
+  Sparkle,
   Wrench,
   Briefcase,
   Layers,
   ChevronRight,
   PlusCircle,
-  Compass,
   X,
   ChevronDown,
 } from 'lucide-react';
@@ -42,6 +47,22 @@ import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { NewsletterSignup } from '../newsletter/components/NewsletterSignup';
 import { usePublishCta } from '../../security/usePublishCta';
 import { plural } from '../../utilities/formatters';
+
+/**
+ * Hero quick-search chips. Each carries a glyph so the row reads as a set of
+ * things rather than a wall of words — the terms span vehicles, electronics,
+ * furniture and giveaways, and the icon is what tells them apart at a glance.
+ */
+const POPULAR_SEARCHES = [
+  { term: 'Vélo gravel', Icon: Bike },
+  { term: 'iPhone 15 Pro', Icon: Smartphone },
+  { term: 'Peugeot 208', Icon: Car },
+  { term: 'Fauteuil vintage', Icon: Armchair },
+  { term: 'PS5', Icon: Gamepad2 },
+  { term: 'Sézane', Icon: Shirt },
+  { term: 'Table teck', Icon: Lamp },
+  { term: 'Don gratuit', Icon: Gift },
+] as const;
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -81,77 +102,95 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
-  const popularSearches = [
-    'Vélo gravel',
-    'iPhone 15 Pro',
-    'Peugeot 208',
-    'Fauteuil vintage',
-    'PS5',
-    'Sézane',
-    'Table teck',
-    'Don gratuit',
-  ];
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-16">
       {/* 1. Hero Section - Two Columns Balanced */}
-      <section className="relative bg-gradient-to-b from-[#FAF8F5] via-[#FFF3EF]/50 to-[#FAF8F5] pt-8 sm:pt-16 pb-10 sm:pb-20 overflow-hidden">
+      {/* Flat warm ground, not the former top-to-bottom gradient: that tinted
+          the whole band pink and left the listing card sitting in a stripe of
+          it. The headline and the card carry the section on their own. */}
+      <section className="relative bg-bg-base pt-5 sm:pt-10 pb-10 sm:pb-14 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
             {/* Column 1: Hero Pitch, Search & CTAs */}
-            <div className="lg:col-span-7 space-y-6 lg:space-y-8 text-left flex flex-col justify-center w-full">
+            <div className="lg:col-span-7 space-y-5 lg:space-y-6 text-left flex flex-col justify-center w-full">
               <div className="space-y-4">
-                <h1 className="text-[32px] sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-[-0.02em] leading-[1.1]">
+                <p className="inline-flex items-center gap-2 h-control-sm pl-3 pr-4 rounded-full border border-border-base bg-bg-surface text-xs font-semibold text-stone-700 shadow-2xs">
+                  <Sparkle className="w-3.5 h-3.5 text-primary fill-primary shrink-0" />
+                  Le marché local français de confiance
+                </p>
+
+                <h1 className="font-display text-[38px] sm:text-5xl lg:text-6xl font-bold text-stone-900 tracking-[-0.02em] leading-[1.05]">
                   Trouvez la perle rare, <br className="hidden sm:inline" />
                   <span className="text-primary relative inline-block">
                     sans tracas.
-                    <svg className="absolute w-full h-3 -bottom-1 left-0 text-primary/30" viewBox="0 0 100 10" preserveAspectRatio="none">
-                      <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="transparent"/>
+                    {/* Two offset strokes rather than one: a single curve at this
+                        weight reads as a rule, and the second pass is what makes
+                        it look drawn by hand. `stroke-linecap` keeps the ends
+                        tapered instead of chopped. */}
+                    <svg
+                      aria-hidden="true"
+                      className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-3 sm:h-4 text-primary/45 overflow-visible"
+                      viewBox="0 0 200 14"
+                      preserveAspectRatio="none"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                    >
+                      <path d="M3 8.5C48 3.4 128 2.6 197 6.2" />
+                      <path d="M12 12.6C61 9 121 8.6 186 11.4" strokeWidth="2" opacity="0.55" />
                     </svg>
                   </span>
                 </h1>
 
-                <p className="text-sm sm:text-lg text-stone-600 max-w-lg leading-relaxed font-medium">
-                  Le marché local français qui protège votre argent. Séquestre, livraison intégrée et vendeurs vérifiés.
+                <p className="text-sm sm:text-lg text-stone-600 max-w-xl leading-relaxed">
+                  Achetez et vendez en toute sérénité : paiements sécurisés,
+                  livraison intégrée et vendeurs vérifiés.
                 </p>
               </div>
 
-              {/* Quick search suggestions. */}
-              <div className="flex items-center gap-2 flex-wrap text-sm w-full">
-                <span className="text-stone-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shrink-0 mr-1">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  Populaire :
-                </span>
-                {popularSearches.map((term) => (
-                  <button
-                    key={term}
-                    type="button"
-                    onClick={() => navigate(routes.search(term))}
-                    className="px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 hover:border-stone-300 transition-all cursor-pointer font-semibold text-xs shadow-2xs shrink-0 active:scale-95"
-                  >
-                    {term}
-                  </button>
-                ))}
+              {/* Quick search suggestions. The label sits on its own line so the
+                  chips wrap as one even block instead of flowing around it. */}
+              <div className="w-full">
+                <p className="flex items-center gap-2 text-xs font-semibold text-stone-500 mb-2.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-primary shrink-0" />
+                  Recherches populaires
+                </p>
+                <ul className="flex items-center gap-2 flex-wrap">
+                  {POPULAR_SEARCHES.map(({ term, Icon }) => (
+                    <li key={term}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(routes.search(term))}
+                        className="group inline-flex items-center gap-2 h-control-md px-3.5 rounded-full bg-bg-surface hover:bg-bg-subtle border border-border-base text-stone-700 hover:text-stone-900 hover:border-border-hover transition-all cursor-pointer font-semibold text-xs shadow-2xs active:scale-95"
+                      >
+                        <Icon className="w-4 h-4 shrink-0 text-stone-400 group-hover:text-primary transition-colors" />
+                        {term}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               {/* Hero Secondary Actions. */}
-              <div className="pt-2 sm:pt-4 w-full">
+              <div className="pt-1 sm:pt-2 w-full">
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-fit">
                   <button
                     type="button"
                     onClick={() => navigate(publishCta.to)}
-                    className="h-control-md px-6 sm:px-8 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-bold text-sm sm:text-base shadow-lg shadow-stone-900/10 hover:shadow-xl hover:shadow-stone-900/10 transition-all flex items-center justify-center gap-2.5 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap"
+                    className="h-control-touch px-5 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white font-bold text-sm sm:text-base shadow-lg shadow-stone-900/10 hover:shadow-xl hover:shadow-stone-900/10 transition-all inline-flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap"
                   >
-                    <PlusCircle className="w-5 h-5 text-primary" />
+                    <PlusCircle className="w-5 h-5 text-primary shrink-0" />
                     <span>{publishCta.label}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => navigate(routes.search())}
-                    className="h-control-md px-6 sm:px-8 rounded-xl bg-white hover:bg-stone-50 border-2 border-stone-200 text-stone-800 font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-sm hover:shadow active:scale-95 w-full sm:w-auto whitespace-nowrap"
+                    className="h-control-touch px-5 rounded-xl bg-bg-surface hover:bg-bg-subtle border border-border-base hover:border-border-hover text-stone-800 font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs hover:shadow-sm active:scale-95 w-full sm:w-auto whitespace-nowrap"
                   >
-                    <Compass className="w-5 h-5 text-stone-400" />
+                    <ScanSearch className="w-5 h-5 text-stone-400 shrink-0" />
                     <span>Explorer le catalogue</span>
                   </button>
                 </div>
@@ -201,7 +240,7 @@ export const HomePage: React.FC = () => {
               <Link
                 key={cat.id}
                 to={`/categorie/${cat.slug}`}
-                className="group w-[104px] shrink-0 snap-start sm:w-auto bg-white rounded-[20px] border border-stone-200 hover:border-stone-300 hover:shadow-lg p-3 sm:p-5 flex flex-col items-center text-center transition-all duration-normal active:scale-95"
+                className="group w-[104px] shrink-0 snap-start sm:w-auto bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-lg p-3 sm:p-5 flex flex-col items-center text-center transition-all duration-normal active:scale-95"
               >
                 <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#FAF8F5] group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors shrink-0">
                   <CategoryIcon category={cat} size="lg" className="w-6 h-6 sm:w-8 sm:h-8 text-stone-700 group-hover:text-primary transition-colors" />

@@ -20,6 +20,7 @@ import {
   Sliders,
   TrendingUp,
   Sparkles,
+  Star,
 } from 'lucide-react';
 import { routes } from '../../configuration/routes';
 import { listingRepository } from '../../repositories/listing.repository';
@@ -32,7 +33,7 @@ import { transactionCapabilitiesService } from '../../domains/transaction/transa
 import { fulfillmentResolver } from '../../domains/fulfillment/fulfillment.resolver';
 import { listingDisplayResolver } from '../../domains/listing/listing.display';
 import { listingActionsResolver } from '../../domains/listing/listing.actions';
-import { formatPrice, formatRelativeDate, calculateBuyerFee } from '../../utilities/formatters';
+import { formatPrice, formatRelativeDate, calculateBuyerFee, plural } from '../../utilities/formatters';
 import { Breadcrumbs, PriceDisplay, Notice } from '../../design-system/primitives/UIComponents';
 import { Button } from '../../design-system/primitives/Button';
 import { StatePanel } from '../../design-system/primitives/StatePanel';
@@ -40,6 +41,7 @@ import { Badge } from '../../design-system/primitives/Badge';
 import { Modal } from '../../design-system/primitives/Modal';
 import { Input, Textarea, FormField } from '../../design-system/primitives/FormField';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
+import { Image } from '../../design-system/primitives/Image';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { storageService } from '../../services/storage.service';
@@ -481,10 +483,15 @@ export const ListingDetailPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-6 shadow-md sticky top-24">
             
-            {/* Price Box.
-                The headline figure is the *item* price, so it must not be labelled
-                "Prix total" — when buyer protection applies, the amount actually
-                payable is larger and is emphasised in the breakdown below. */}
+            {/* Price Box — the item price only.
+                The fee breakdown that used to sit here was removed for two
+                reasons. It quoted `calculateBuyerFee` (4% + 0.70 €), while
+                checkout actually charges via `fulfillmentResolver` (4% + 0.99 €,
+                and waived entirely for hand delivery) — so the panel advertised
+                a total the buyer would never be charged. And the real total
+                depends on the delivery method, which is not chosen yet at this
+                point. The fee is disclosed, itemised, in the checkout and
+                reservation flows where the amount is actually known. */}
             <div className="space-y-1">
               <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
                 Prix de l'article
@@ -496,29 +503,69 @@ export const ListingDetailPage: React.FC = () => {
                 isFreeDonation={listing.isFreeDonation}
                 size="xl"
               />
+              {listing.isOnlinePaymentAvailable && listing.price > 0 && (
+                <p className="flex items-center gap-1.5 text-xs text-stone-500 pt-1.5">
+                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+                  Protection Acheteur incluse, calculée au paiement
+                </p>
+              )}
             </div>
 
-            {/* Buyer fee breakdown (Only if online purchase active) */}
-            {listing.isOnlinePaymentAvailable && listing.price > 0 && (
-              <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-2.5 text-sm">
-                <div className="flex items-center justify-between text-stone-600">
-                  <span>Prix de l'article</span>
-                  <span className="font-semibold">{formatPrice(listing.price)}</span>
+            {/* Seller identity.
+                Who you are buying from belongs next to the price and the buy
+                button, not only further down the page — it is part of the same
+                decision. */}
+            {seller && (
+              <Link
+                to={isProSeller(seller) ? `/boutique/${seller.storeSlug || seller.slug || seller.id}` : `/profil/${seller.slug || seller.id}`}
+                className="group flex items-start gap-3 p-4 rounded-2xl border border-stone-200/60 bg-stone-50/60 hover:bg-stone-50 hover:border-stone-300 transition-colors"
+              >
+                <div className="relative shrink-0">
+                  <Image
+                    src={seller.avatarUrl}
+                    alt=""
+                    className="w-11 h-11 rounded-full object-cover border border-stone-200"
+                  />
+                  {seller.isVerified && (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-success text-white flex items-center justify-center border-2 border-white"
+                      aria-hidden="true"
+                    >
+                      <CheckCircle2 className="w-2.5 h-2.5" />
+                    </span>
+                  )}
                 </div>
-                <div className="flex items-center justify-between text-stone-600">
-                  <span className="flex items-center gap-1.5">
-                    Protection Acheteur
-                    <ShieldCheck className="w-4 h-4 text-success" />
-                  </span>
-                  <span className="font-semibold">{formatPrice(buyerFee)}</span>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-sm text-stone-900 truncate group-hover:text-primary transition-colors">
+                      {seller.name}
+                    </span>
+                    {isProSeller(seller) && <Badge variant="pro" size="sm">Pro</Badge>}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1 flex-wrap">
+                    {seller.rating > 0 && (
+                      <span className="flex items-center gap-1 font-semibold text-stone-700">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        {seller.rating.toFixed(1)}
+                        <span className="font-normal text-stone-500">
+                          ({plural(seller.reviewCount || 0, 'avis', 'avis')})
+                        </span>
+                      </span>
+                    )}
+                    {seller.rating > 0 && seller.city && <span aria-hidden="true">·</span>}
+                    {seller.city && (
+                      <span className="flex items-center gap-1 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                        {seller.city}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="pt-3 mt-1 border-t border-stone-200 flex items-baseline justify-between">
-                  <span className="font-black text-stone-900 text-base">Total à payer</span>
-                  <span className="text-primary font-black text-xl tabular-nums">
-                    {formatPrice(listing.price + buyerFee)}
-                  </span>
-                </div>
-              </div>
+
+                <ChevronRight className="w-4 h-4 text-stone-400 shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              </Link>
             )}
 
             {/* ===================================================================== */}
@@ -575,6 +622,15 @@ export const ListingDetailPage: React.FC = () => {
               </div>
             ) : (
               /* Active Listing Buyer Actions */
+              /* Every action in this panel shares one geometry — same height,
+                 same full width. Emphasis is carried by `variant` (colour), not
+                 by size, so the stack reads as one set of choices.
+
+                 It previously mixed `size="lg"` plus a `py-3.5` override (48px)
+                 with `size="md"` (44px), and put the last two in a fixed
+                 two-column row — so a listing that allowed contact but not an
+                 offer rendered a single half-width "Message" button stranded
+                 beside an empty cell. */
               <div className="space-y-3">
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
@@ -584,7 +640,7 @@ export const ListingDetailPage: React.FC = () => {
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
                     leftIcon={<ShieldCheck className="w-5 h-5" />}
-                    className="shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 py-3.5"
+                    className="shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
                   >
                     Acheter maintenant
                   </Button>
@@ -594,7 +650,7 @@ export const ListingDetailPage: React.FC = () => {
                 {actions.canReserve && (
                   <Button
                     variant={actions.primaryAction === 'reservation' ? 'primary' : 'outline'}
-                    size={actions.primaryAction === 'reservation' ? 'lg' : 'md'}
+                    size="lg"
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
                     leftIcon={<Clock className="w-5 h-5 text-warning" />}
@@ -603,12 +659,16 @@ export const ListingDetailPage: React.FC = () => {
                   </Button>
                 )}
 
-                <div className="grid grid-cols-2 gap-3 pt-1">
+                <div
+                  className={`grid gap-3 pt-1 ${
+                    actions.canMakeOffer && actions.canContact ? 'grid-cols-2' : 'grid-cols-1'
+                  }`}
+                >
                   {/* 3. Price Negotiation Offer */}
                   {actions.canMakeOffer && (
                     <Button
                       variant="outline"
-                      size="md"
+                      size="lg"
                       fullWidth
                       onClick={() => setIsOfferModalOpen(true)}
                       leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
@@ -621,7 +681,7 @@ export const ListingDetailPage: React.FC = () => {
                   {actions.canContact && (
                     <Button
                       variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
-                      size="md"
+                      size="lg"
                       fullWidth
                       onClick={() => setIsContactModalOpen(true)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}

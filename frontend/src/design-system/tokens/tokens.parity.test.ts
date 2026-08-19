@@ -84,12 +84,14 @@ describe('design tokens ↔ index.css parity', () => {
 
 describe('radius scale is coherent', () => {
   it('maps semantic aliases onto the shared scale', () => {
-    // These are the three radii the product actually reasons about. Keeping them
-    // pinned to scale steps is what stops components inventing their own corners.
+    // These are the four radii the product actually reasons about. Pinning them
+    // to named tokens is what stops components inventing their own corners —
+    // `card` and `modal` map to the shell radii rather than to numbered steps,
+    // because the 20px/28px shells are not steps on the numbered scale.
     expect(radii.button).toBe(themeRadii.xl);
     expect(radii.input).toBe(themeRadii.xl);
-    expect(radii.card).toBe(themeRadii['2xl']);
-    expect(radii.modal).toBe(themeRadii['3xl']);
+    expect(radii.card).toBe(themeRadii.card);
+    expect(radii.modal).toBe(themeRadii.overlay);
   });
 
   it('increases monotonically', () => {

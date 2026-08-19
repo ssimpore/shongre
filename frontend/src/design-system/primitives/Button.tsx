@@ -84,7 +84,12 @@ const sizeStyles = {
 
 const variantStyles = {
   primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:shadow-md hover:shadow-primary/20',
-  secondary: 'bg-stone-50 text-stone-900 hover:bg-stone-100 active:bg-stone-200 shadow-2xs',
+  /* The only filled variant that had no edge. On a white card that left it with
+     no boundary at all — the "Message" action on a listing read as flat text
+     rather than a control, sitting next to two bordered neighbours. A 1px border
+     gives it definition while staying visibly lighter than `outline`'s 2px, so
+     the two stay distinguishable when they appear side by side. */
+  secondary: 'bg-bg-base text-stone-900 border border-border-hover hover:bg-bg-subtle hover:border-stone-400 active:bg-bg-muted shadow-2xs',
   outline: 'border-2 border-stone-200 bg-white text-stone-800 hover:bg-stone-50 hover:border-stone-300 active:bg-stone-100 shadow-2xs',
   ghost: 'bg-transparent text-stone-700 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200',
   danger: 'bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm',

@@ -19,6 +19,7 @@ import { getListingCoordinates, FRENCH_MAJOR_CITIES, FRANCE_CENTER } from '../..
 import { Badge } from '../../design-system/primitives/Badge';
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
+import { showsVerifiedBadge } from '../../domains/user/user.domain';
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -77,6 +78,18 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  /* Toggling the listing panel changes the map container's width, and Leaflet
+     only recomputes its tile grid when told to. Without this, hiding the panel
+     widened the container from 520px to 904px while the tiles still covered the
+     old 520 — leaving a ~220px grey band down the right-hand side until the next
+     pan or zoom. `invalidateSize` runs after the layout has settled. */
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const id = requestAnimationFrame(() => map.invalidateSize({ animate: false }));
+    return () => cancelAnimationFrame(id);
+  }, [isSidebarOpen]);
 
   // Switch Map Style
   useEffect(() => {
@@ -276,77 +289,14 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       {/* Main Map Stage & Floating Sidepanel */}
       <div className="relative flex-1 w-full h-full min-h-0 overflow-hidden flex">
-        {/* Leaflet Container */}
-        <div ref={mapContainerRef} className="w-full h-full z-10" />
-
-        {/* Floating Active Listing Preview Card */}
-        {activeListing && (
-          <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:w-96 z-30 bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-normal">
-            <button
-              type="button"
-              onClick={() => setActiveListing(null)}
-              className="absolute top-2.5 right-2.5 p-1 rounded-full text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
-              aria-label="Fermer la prévisualisation"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex gap-3">
-              <Image
-                src={activeListing.coverImageUrl || activeListing.photos[0]?.url}
-                alt={activeListing.title}
-                className="w-24 h-24 rounded-xl object-cover border border-border-base shrink-0"
-                referrerPolicy="no-referrer"
-              />
-
-              <div className="flex-1 min-w-0 pr-4">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs font-semibold text-stone-500 truncate">
-                    {activeListing.categoryLabel}
-                  </span>
-                  {activeListing.sellerIsVerified && (
-                    <Badge variant="verified" size="sm" icon>
-                      Vérifié
-                    </Badge>
-                  )}
-                </div>
-
-                <h4 className="text-sm font-bold text-stone-900 line-clamp-1 leading-snug">
-                  {activeListing.title}
-                </h4>
-
-                <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
-                  <span className="flex items-center gap-0.5 font-medium text-stone-700">
-                    <MapPin className="w-3 h-3 text-primary" />
-                    {activeListing.city} ({activeListing.postalCode})
-                  </span>
-                </div>
-
-                <div className="flex items-baseline justify-between mt-2 pt-1 border-t border-border-subtle">
-                  <span className="text-base font-black text-primary">
-                    {formatPrice(activeListing.price)}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate(routes.listing.detail(activeListing.id))}
-                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    Voir l'annonce
-                    <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Collapsible Right Sidebar with matching listings */}
+        {/* Collapsible left sidebar with matching listings.
+            Placed before the map in the DOM as well as visually, so tab order
+            follows what is on screen rather than jumping the map first. */}
         {isSidebarOpen && (
-          <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-white/95 backdrop-blur-md border-l border-border-base z-20 shrink-0">
+          <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-white/95 backdrop-blur-md border-r border-border-base z-20 shrink-0">
             <div className="p-3 border-b border-border-base flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-800">
-                {listings.length} annonce{listings.length > 1 ? 's' : ''} sur la carte
+              <span className="text-xs font-bold text-stone-800 truncate">
+                {plural(listings.length, 'annonce')} sur la carte
               </span>
               <span className="text-xs text-stone-500">Cliquez pour centrer</span>
             </div>
@@ -409,10 +359,76 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             </div>
           </div>
         )}
+
+        {/* Leaflet Container */}
+        <div ref={mapContainerRef} className="w-full h-full z-10" />
+
+        {/* Floating Active Listing Preview Card */}
+        {activeListing && (
+          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:w-96 z-30 bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-normal">
+            <button
+              type="button"
+              onClick={() => setActiveListing(null)}
+              className="absolute top-2.5 right-2.5 p-1 rounded-full text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+              aria-label="Fermer la prévisualisation"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex gap-3">
+              <Image
+                src={activeListing.coverImageUrl || activeListing.photos[0]?.url}
+                alt={activeListing.title}
+                className="w-24 h-24 rounded-xl object-cover border border-border-base shrink-0"
+                referrerPolicy="no-referrer"
+              />
+
+              <div className="flex-1 min-w-0 pr-4">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-xs font-semibold text-stone-500 truncate">
+                    {activeListing.categoryLabel}
+                  </span>
+                  {showsVerifiedBadge(activeListing) && (
+                    <Badge variant="verified" size="sm" icon>
+                      Vérifié
+                    </Badge>
+                  )}
+                </div>
+
+                <h4 className="text-sm font-bold text-stone-900 line-clamp-1 leading-snug">
+                  {activeListing.title}
+                </h4>
+
+                <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
+                  <span className="flex items-center gap-0.5 font-medium text-stone-700">
+                    <MapPin className="w-3 h-3 text-primary" />
+                    {activeListing.city} ({activeListing.postalCode})
+                  </span>
+                </div>
+
+                <div className="flex items-baseline justify-between mt-2 pt-1 border-t border-border-subtle">
+                  <span className="text-base font-black text-primary">
+                    {formatPrice(activeListing.price)}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(routes.listing.detail(activeListing.id))}
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    Voir l'annonce
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Floating Status Count badge */}
-      <div className="absolute top-14 left-4 z-20 pointer-events-none">
+      {/* Floating status count. Anchored right: the listing panel now occupies
+          the left edge, and this badge belongs over the map. */}
+      <div className="absolute top-14 right-4 z-20 pointer-events-none">
         <div className="bg-stone-900/85 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
           <Navigation className="w-3.5 h-3.5 text-primary" />
           <span>{plural(listings.length, 'annonce géolocalisée', 'annonces géolocalisées')}</span>
