@@ -1,5 +1,6 @@
 import { routes } from '../../configuration/routes';
 import { isProSeller } from '../../domains/user/user.domain';
+import { usePageMeta } from '../../hooks/usePageMeta';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
@@ -73,11 +74,6 @@ export const SellerPublicPage: React.FC = () => {
         if (foundSeller) {
           setSeller(foundSeller);
           
-          // Set dynamic page title
-          const displayName = foundSeller.companyName || foundSeller.name;
-          const roleLabel = isProSeller(foundSeller) ? 'Boutique Pro' : 'Vendeur particulier';
-          document.title = `${displayName} (${roleLabel}) - Annonces et avis | Shongre`;
-
           // Load seller's listings via repository
           const sellerListings = await listingRepository.getListingsBySeller(foundSeller.id);
           setListings(sellerListings || []);
@@ -87,7 +83,6 @@ export const SellerPublicPage: React.FC = () => {
           setReviews(userReviews || []);
         } else {
           setSeller(null);
-          document.title = 'Profil introuvable | Shongre';
         }
       } catch {
         setSeller(null);
@@ -105,6 +100,45 @@ export const SellerPublicPage: React.FC = () => {
   };
 
   // 1. Loading Skeleton
+  /* Declared above the loading and not-found returns, because hooks cannot run
+     after a conditional return — and because the not-found case needs metadata
+     of its own rather than whatever the previous route left in the tab. */
+  const sellerIsPro = seller ? isProSeller(seller) : false;
+  const sellerDisplayName = seller ? (seller.companyName || seller.name) : '';
+  usePageMeta(
+    seller
+      ? {
+          title: `${sellerDisplayName} (${sellerIsPro ? 'Boutique Pro' : 'Vendeur particulier'}) - Annonces et avis`,
+          description:
+            `Découvrez les annonces de ${sellerDisplayName}` +
+            `${seller.city ? ` à ${seller.city}` : ''} sur Shongre : ` +
+            `${listings.filter((l) => l.status === 'active').length} annonce(s) en ligne` +
+            `${reviews.length ? ` et ${reviews.length} avis vérifiés` : ''}.`,
+          canonicalPath: `/${sellerIsPro ? 'boutique' : 'profil'}/${seller.slug || seller.id}`,
+          image: seller.avatarUrl,
+          type: 'profile',
+          structuredData: [
+            {
+              '@context': 'https://schema.org',
+              '@type': sellerIsPro ? 'LocalBusiness' : 'Person',
+              name: sellerDisplayName,
+              ...(seller.city ? { address: { '@type': 'PostalAddress', addressLocality: seller.city } } : {}),
+              ...(seller.avatarUrl ? { image: seller.avatarUrl } : {}),
+              ...(seller.rating && seller.reviewCount
+                ? {
+                    aggregateRating: {
+                      '@type': 'AggregateRating',
+                      ratingValue: seller.rating,
+                      reviewCount: seller.reviewCount,
+                    },
+                  }
+                : {}),
+            },
+          ],
+        }
+      : { title: isLoading ? 'Chargement du profil' : 'Profil introuvable', noIndex: true },
+  );
+
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-pulse">

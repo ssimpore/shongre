@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import {
   Search,
   SlidersHorizontal,
@@ -23,6 +23,7 @@ import { listingRepository } from '../../repositories/listing.repository';
 import { Listing, SearchFilters, ListingCondition } from '../../types';
 import { TAXONOMY, CONDITION_OPTIONS } from '../../domains/taxonomy/taxonomy.data';
 import { taxonomyService, getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
+import { usePageMeta } from '../../hooks/usePageMeta';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Button } from '../../design-system/primitives/Button';
 import { Input, Checkbox } from '../../design-system/primitives/FormField';
@@ -58,6 +59,34 @@ export const SearchPage: React.FC = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  /* `/categorie/:categorySlug` is the pretty, linkable form of a category
+     search. The route was registered but nothing ever read its parameter, so
+     every category landing page rendered the entire unfiltered catalogue under
+     the heading "Toutes les annonces" — the primary organic entry point for a
+     classifieds site, showing the wrong results. It went unnoticed because the
+     in-app category navigation all links to `/recherche?category=`, so nothing
+     in the UI reached the broken route.
+
+     The slug is seeded into the query string once per category rather than read
+     as a second source of truth: every filter control already reads and writes
+     `?category=`, and clearing the category deletes the key. A route parameter
+     consulted as a fallback would silently reinstate the category the user just
+     cleared. Seeding once means the existing filter logic keeps working
+     untouched, and the pretty URL still selects the right category on arrival. */
+  const { categorySlug: categoryRouteSlug } = useParams<{ categorySlug?: string }>();
+  const seededCategoryFor = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!categoryRouteSlug) return;
+    if (seededCategoryFor.current === categoryRouteSlug) return;
+    seededCategoryFor.current = categoryRouteSlug;
+    if (searchParams.get('category') === categoryRouteSlug) return;
+
+    const next = new URLSearchParams(searchParams);
+    next.set('category', categoryRouteSlug);
+    setSearchParams(next, { replace: true });
+  }, [categoryRouteSlug, searchParams, setSearchParams]);
 
   // Extract filter params from URL
   const query = searchParams.get('query') || '';
@@ -233,6 +262,46 @@ export const SearchPage: React.FC = () => {
     if (activeCategory) return activeCategory.name;
     return 'Toutes les annonces';
   }, [query, activeSubCat, activeCategory]);
+
+  /* Search metadata follows the same subject the heading does, so the tab, the
+     shared link and the crawler all describe the results actually on screen.
+
+     The canonical deliberately collapses to the category path (or to the bare
+     search route): filters, sort, view mode and pagination all live in the query
+     string, so every combination would otherwise present itself as a separate
+     indexable page competing with the one that should rank. A free-text query is
+     noindexed for the same reason — arbitrary user queries generate unbounded
+     thin pages, which is the classic classifieds index-bloat trap. */
+  const searchMeta = useMemo(() => {
+    const place = city ? ` à ${city}` : '';
+    if (query) {
+      return {
+        title: `Recherche : ${query}${place}`,
+        description: `Annonces correspondant à « ${query} »${place} sur Shongre.`,
+        canonicalPath: '/recherche',
+        noIndex: true,
+      };
+    }
+    const subject = activeSubCat?.name || activeCategory?.name;
+    if (subject) {
+      return {
+        title: `${subject}${place} - Annonces d'occasion`,
+        description:
+          `Toutes les annonces ${subject.toLowerCase()}${place} sur Shongre : ` +
+          'particuliers et professionnels, paiement sécurisé et livraison disponible.',
+        canonicalPath: activeCategory ? `/categorie/${activeCategory.slug}` : '/recherche',
+      };
+    }
+    return {
+      title: `Toutes les annonces${place}`,
+      description:
+        'Parcourez toutes les annonces Shongre : véhicules, immobilier, mode, maison, ' +
+        'multimédia et loisirs, partout en France.',
+      canonicalPath: '/recherche',
+    };
+  }, [query, city, activeSubCat, activeCategory]);
+
+  usePageMeta(searchMeta);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

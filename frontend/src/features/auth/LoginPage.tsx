@@ -7,6 +7,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { PasswordField } from './components/PasswordField';
 import { AuthLayout } from './components/AuthLayout';
 import { routes } from '../../configuration/routes';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 // Safe redirect sanitization to prevent open redirect vulnerabilities
 function getSafeRedirectUrl(target: string | null): string {
@@ -20,6 +21,13 @@ function getSafeRedirectUrl(target: string | null): string {
 }
 
 export const LoginPage: React.FC = () => {
+  usePageMeta({
+    title: "Connexion",
+    description:
+      "Connectez-vous à votre compte Shongre pour gérer vos annonces, vos favoris et vos messages.",
+    canonicalPath: "/connexion",
+  });
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, loginWithMFA, switchDemoUser } = useAuth();

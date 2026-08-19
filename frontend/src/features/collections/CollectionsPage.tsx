@@ -29,6 +29,7 @@ import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { Image } from '../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../design-system/primitives/responsiveImage';
 import { ScrollRail } from '../../design-system/primitives/ScrollRail';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 const BADGE_STYLES: Record<string, string> = {
   terracotta: 'bg-primary-light text-primary border-primary-border',
@@ -72,6 +73,28 @@ export const CollectionsPage: React.FC = () => {
   const [inCollectionSearch, setInCollectionSearch] = useState('');
 
   const pillars = useMemo(() => collectionService.getPillars(), []);
+
+  /* The landing page and each collection are distinct indexable pages, so they
+     describe themselves separately. An unknown slug is noindexed rather than
+     silently inheriting the landing page's metadata. */
+  usePageMeta(
+    selectedCollection
+      ? {
+          title: selectedCollection.title,
+          description: selectedCollection.subtitle || selectedCollection.description,
+          canonicalPath: `/collections/${selectedCollection.slug}`,
+          image: selectedCollection.coverImageUrl,
+        }
+      : slug
+        ? { title: 'Collection introuvable', noIndex: true }
+        : {
+            title: 'Collections & sélections',
+            description:
+              'Les sélections Shongre : rentrée, maison, mobilité, seconde main, ' +
+              'bonnes affaires et matériel professionnel, mises à jour au fil des saisons.',
+            canonicalPath: '/collections',
+          },
+  );
 
   // Fetch base listings
   useEffect(() => {

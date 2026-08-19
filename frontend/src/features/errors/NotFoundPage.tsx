@@ -3,8 +3,16 @@ import React from 'react';
 
 import { AlertCircle, Home, Search } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NotFoundPage: React.FC = () => {
+  usePageMeta({
+    title: "Page introuvable",
+    description:
+      "Cette page n'existe pas ou plus. Retrouvez toutes les annonces Shongre depuis l'accueil ou la recherche.",
+    noIndex: true,
+  });
+
   return (
     <div className="max-w-md mx-auto px-4 py-20 text-center space-y-6">
       <div className="w-16 h-16 rounded-2xl bg-primary-light text-primary flex items-center justify-center mx-auto shadow-xs">

@@ -44,6 +44,9 @@ import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Image } from '../../design-system/primitives/Image';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useFavorites } from '../../app/providers/FavoritesProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
+import { buildBreadcrumbSchema, StructuredData } from '../../services/seo.service';
 import { storageService } from '../../services/storage.service';
 import { isProSeller } from '../../domains/user/user.domain';
 import { DirectPurchaseCheckoutModal } from '../transactions/DirectPurchaseCheckoutModal';
@@ -60,11 +63,11 @@ export const ListingDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, isAuthenticated } = useAuth();
   const toast = useToast();
+  const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [seller, setSeller] = useState<UserProfile | null>(null);
   const [similarListings, setSimilarListings] = useState<Listing[]>([]);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,7 +91,12 @@ export const ListingDetailPage: React.FC = () => {
     listingRepository.getListingById(id).then((item) => {
       if (item) {
         setListing(item);
-        setIsFavorite(storageService.getFavorites().includes(item.id));
+
+        /* Viewing a listing is what makes it recently viewed. The storage layer
+           has always known how to record this — deduplicating, newest first,
+           capped at ten — but nothing ever called it, so the history it handed
+           back was the seeded fixture and never the visitor's own browsing. */
+        storageService.addRecentlyViewed(item.id);
 
         userRepository.getUserById(item.sellerId).then((sellerUser) => {
           if (sellerUser) setSeller(sellerUser);
@@ -207,34 +215,65 @@ export const ListingDetailPage: React.FC = () => {
     return listingDisplayResolver.resolveGroupedCharacteristics(listing, taxonomyNode);
   }, [listing, taxonomyNode]);
 
-  // 5. SEO metadata injection
-  useEffect(() => {
-    if (!listing) return;
-    const meta = listingDisplayResolver.generateListingSeoMeta(listing, taxonomyNode, effectiveMarket);
-    document.title = meta.title;
+  // 5. SEO metadata
+  //
+  // The resolver already produced a description and a canonical URL that this
+  // page computed and then discarded, publishing only the title and the JSON-LD.
+  // Everything it returns now reaches the document, through the same hook every
+  // other route uses, plus the breadcrumb trail the page already renders.
+  const pageMeta = useMemo(() => {
+    if (!listing) return { title: undefined, noIndex: true };
 
-    // Inject Schema.org JSON-LD structured data
-    let scriptTag = document.getElementById('listing-jsonld') as HTMLScriptElement;
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.id = 'listing-jsonld';
-      scriptTag.type = 'application/ld+json';
-      document.head.appendChild(scriptTag);
-    }
-    scriptTag.text = JSON.stringify(meta.jsonLd);
+    const meta = listingDisplayResolver.generateListingSeoMeta(
+      listing,
+      taxonomyNode,
+      effectiveMarket,
+    );
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const trail = [
+      { name: 'Accueil', path: '/' },
+      ...(listing.categoryLabel
+        ? [{ name: listing.categoryLabel, path: `/categorie/${listing.categorySlug}` }]
+        : []),
+      { name: listing.title },
+    ];
 
-    return () => {
-      const el = document.getElementById('listing-jsonld');
-      if (el) el.remove();
+    return {
+      title: meta.title,
+      description: meta.description,
+      canonicalPath: `/annonce/${listing.id}`,
+      image: listing.coverImageUrl,
+      type: 'product' as const,
+      // A sold or expired listing should stop competing in search results.
+      noIndex: listing.status !== 'active',
+      structuredData: [
+        meta.jsonLd as unknown as StructuredData,
+        buildBreadcrumbSchema(trail, origin),
+      ],
     };
   }, [listing, taxonomyNode, effectiveMarket]);
 
+  usePageMeta(pageMeta);
+
   // Handlers
-  const handleFavoriteToggle = () => {
+  /**
+   * Saving goes through the shared favourites store, not straight to storage.
+   *
+   * Writing to storage directly left this page as a second source of truth for
+   * the same fact: the write landed, but the header count and every card
+   * elsewhere kept the old value until an unrelated re-render corrected them —
+   * which is the exact desync FavoritesProvider was introduced to end.
+   */
+  const handleFavoriteToggle = async () => {
     if (!listing) return;
-    const next = storageService.toggleFavorite(listing.id);
-    setIsFavorite(next);
-    toast.info(next ? 'Annonce ajoutée à vos favoris' : 'Annonce retirée de vos favoris');
+    try {
+      const next = await toggleFavorite(listing.id);
+      toast.info(next ? 'Annonce ajoutée à vos favoris' : 'Annonce retirée de vos favoris');
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Impossible de mettre à jour vos favoris.',
+      );
+    }
   };
 
   const handleShare = () => {
@@ -422,10 +461,10 @@ export const ListingDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleFavoriteToggle}
-                aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                aria-label={isListingFavorite(listing.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                 className="p-3.5 rounded-2xl bg-white hover:bg-primary/5 text-stone-400 hover:text-primary transition-all duration-fast cursor-pointer shrink-0 border border-stone-200 shadow-xs hover:shadow-sm hover:-translate-y-0.5 group"
               >
-                <Heart className={`w-6 h-6 transition-all duration-fast ${isFavorite ? 'fill-primary text-primary scale-110' : 'group-hover:scale-110'}`} />
+                <Heart className={`w-6 h-6 transition-all duration-fast ${isListingFavorite(listing.id) ? 'fill-primary text-primary scale-110' : 'group-hover:scale-110'}`} />
               </button>
             </div>
 

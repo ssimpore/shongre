@@ -7,8 +7,16 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { AuthLayout } from './components/AuthLayout';
 import { routes } from '../../configuration/routes';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const VerifyEmailPage: React.FC = () => {
+  usePageMeta({
+    title: "Vérification de l'adresse e-mail",
+    description:
+      "Confirmez votre adresse e-mail pour activer votre compte Shongre.",
+    noIndex: true,
+  });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();

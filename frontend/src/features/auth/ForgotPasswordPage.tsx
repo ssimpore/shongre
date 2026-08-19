@@ -7,8 +7,16 @@ import { Button } from '../../design-system/primitives/Button';
 import { PasswordField } from './components/PasswordField';
 import { AuthLayout } from './components/AuthLayout';
 import { routes } from '../../configuration/routes';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const ForgotPasswordPage: React.FC = () => {
+  usePageMeta({
+    title: "Mot de passe oublié",
+    description:
+      "Réinitialisez le mot de passe de votre compte Shongre.",
+    noIndex: true,
+  });
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const toast = useToast();

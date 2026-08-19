@@ -1,5 +1,7 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { services } from '../../api/client/service-registry';
+import { storageService } from '../../services/storage.service';
+import { useAuth } from './AuthProvider';
 
 interface FavoritesContextValue {
   /** Ids of every listing the current user has saved. */
@@ -29,9 +31,32 @@ const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefi
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentUser } = useAuth();
+  const identity = currentUser?.id ?? null;
+  const previousIdentity = useRef<string | null | undefined>(undefined);
 
+  /**
+   * The set is reloaded whenever the signed-in account changes, not just on
+   * mount. Saved listings are per-account, so a set fetched once outlived the
+   * user it belonged to: switching persona left the previous account's saves on
+   * screen — in the cards, in the header count and on the favourites page —
+   * until something unrelated forced a reload.
+   *
+   * Signing in also folds in anything saved while signed out, so a visitor who
+   * saves a listing and *then* creates an account still has it afterwards.
+   */
   useEffect(() => {
     let cancelled = false;
+    // Only an observed signed-out -> signed-in transition merges. Merging on
+    // mount instead would hand whoever is already signed in on a shared device
+    // the saves left behind by the last signed-out visitor.
+    const signingIn =
+      previousIdentity.current !== undefined && !previousIdentity.current && Boolean(identity);
+    previousIdentity.current = identity;
+
+    if (signingIn) storageService.mergeGuestFavorites();
+
+    setIsLoading(true);
     services.listings
       .getFavorites()
       .then((ids) => {
@@ -43,7 +68,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [identity]);
 
   const isFavorite = useCallback(
     (listingId: string) => favoriteIds.includes(listingId),

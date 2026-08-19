@@ -30,8 +30,16 @@ import {
   validateBusinessIdentifier,
   formatBusinessIdentifier,
 } from '../../configuration/market.config';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const RegisterChoicePage: React.FC = () => {
+  usePageMeta({
+    title: "Créer un compte",
+    description:
+      "Créez un compte Shongre en une minute : particulier pour vendre ponctuellement, professionnel pour une vitrine et des outils dédiés.",
+    canonicalPath: "/inscription",
+  });
+
   const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState<'individual' | 'professional'>('individual');
 
@@ -107,6 +115,13 @@ export const RegisterChoicePage: React.FC = () => {
 };
 
 export const RegisterIndividualPage: React.FC = () => {
+  usePageMeta({
+    title: "Créer un compte particulier",
+    description:
+      "Ouvrez un compte particulier Shongre pour publier vos annonces gratuitement et acheter en toute sécurité.",
+    canonicalPath: "/inscription/particulier",
+  });
+
   const navigate = useNavigate();
   const { registerIndividual } = useAuth();
   const toast = useToast();
@@ -331,6 +346,13 @@ export const RegisterIndividualPage: React.FC = () => {
 };
 
 export const RegisterProPage: React.FC = () => {
+  usePageMeta({
+    title: "Créer un compte professionnel",
+    description:
+      "Ouvrez un compte professionnel Shongre : vitrine personnalisée, quotas d'annonces étendus, statistiques et facturation.",
+    canonicalPath: "/inscription/professionnel",
+  });
+
   const navigate = useNavigate();
   const { registerProfessional } = useAuth();
   const toast = useToast();

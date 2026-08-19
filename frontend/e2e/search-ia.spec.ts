@@ -77,3 +77,45 @@ test.describe('search page information architecture', () => {
     expect(headerFields, 'the homepage relies on the header search').toBeGreaterThan(0);
   });
 });
+
+/**
+ * `/categorie/:slug` is the pretty form of a category search, and the primary
+ * organic landing page for a classifieds site.
+ *
+ * The route was registered but its parameter was never read, so every category
+ * page rendered the whole unfiltered catalogue under "Toutes les annonces".
+ * Nothing in the UI links to it — category navigation all goes through
+ * `/recherche?category=` — so no click path exercised it and no suite covered it.
+ */
+test.describe('category landing pages', () => {
+  test('filters to the category named in the path', async ({ page }) => {
+    await usePersona(page, 'guest');
+    await page.goto('/recherche', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+    const unfiltered = await page.locator('article').count();
+
+    await page.goto('/categorie/vehicules', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    await expect(page.locator('h1')).toHaveText(/véhicules/i);
+    const filtered = await page.locator('article').count();
+    expect(filtered, 'the category page must not show the entire catalogue').toBeLessThan(
+      unfiltered,
+    );
+    expect(filtered, 'the category page should still show its listings').toBeGreaterThan(0);
+  });
+
+  // The filter controls delete the category key to clear it, so a route
+  // parameter read as a live fallback would reinstate what the user just removed.
+  test('lets the category be cleared without the path putting it back', async ({ page }) => {
+    await usePersona(page, 'guest');
+    await page.goto('/categorie/vehicules', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    await page.getByRole('button', { name: /retirer le filtre/i }).first().click();
+    await waitForStableLayout(page);
+
+    await expect(page.locator('h1')).toHaveText(/toutes les annonces/i);
+    expect(new URL(page.url()).searchParams.get('category')).toBeNull();
+  });
+});

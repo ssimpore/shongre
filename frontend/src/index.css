@@ -156,8 +156,23 @@
        stack and the listing-detail buy bar — sat 4px low and overlapped the
        navigation it was supposed to clear. */
     --mobile-nav-h: 3.75rem; /* 60px */
-    /* +1px for the nav's own `border-t`, which is part of its painted height. */
-    --mobile-nav-total-h: calc(var(--mobile-nav-h) + 1px + env(safe-area-inset-bottom));
+    /* The publish button is raised clear of the bar, so it paints *outside* the
+       bar's own box: a 52px disc whose top edge sits this far above `--mobile-nav-h`.
+       MobileBottomNav offsets it from this same variable so the two cannot drift.
+
+       It has to be part of the clearance because the disc is opaque and sits in
+       the app's top layer, so it both hides and swallows taps on whatever the
+       page put there. It did: at 375px the "Choisir l'offre" plan buttons, the
+       help-centre accordion and the storefront-editor fields all landed in this
+       band, where a tap opened the publish flow instead of the control under the
+       finger — and on listing detail the disc covered the bottom of "Réserver"
+       and "Message", the two primary buyer actions. */
+    --mobile-nav-fab-rise: 1.25rem; /* 20px */
+    /* What anything pinned above the bar — or laid out before it — must clear:
+       the bar, its `border-t`, the raised publish button and the home indicator. */
+    --mobile-nav-total-h: calc(
+      var(--mobile-nav-h) + var(--mobile-nav-fab-rise) + 1px + env(safe-area-inset-bottom)
+    );
   }
 
   html, body {

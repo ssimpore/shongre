@@ -4,8 +4,16 @@ import { PRO_PLANS, LISTING_BOOSTS } from '../../configuration/plans.config';
 import { formatPrice } from '../../utilities/formatters';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const ProPlansPage: React.FC = () => {
+  usePageMeta({
+    title: "Offres et forfaits professionnels",
+    description:
+      "Comparez les forfaits professionnels Shongre : quotas d'annonces, vitrine personnalisée, statistiques et options de mise en avant. Sans engagement.",
+    canonicalPath: "/solutions-pro",
+  });
+
   return (
     <div className="space-y-12 pb-16">
       
@@ -31,6 +39,12 @@ export const ProPlansPage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {PRO_PLANS.map((plan) => {
           const isPopular = plan.isPopular;
+          /* The free tier is the individual account, not a professional one, so
+             it signs up through the individual flow. Every card used to point at
+             the professional route, which met someone choosing "Particulier"
+             with a SIREN and VAT form they have no way to complete. */
+          const signupPath =
+            plan.id === 'free' ? '/inscription/particulier' : '/inscription/professionnel';
           return (
             <div
               key={plan.id}
@@ -75,11 +89,13 @@ export const ProPlansPage: React.FC = () => {
 
               <div className="pt-6">
                 <Button
-                  to="/inscription/professionnel" variant={isPopular ? 'primary' : 'outline'}
-                                      size="lg"
-                                      fullWidth className="font-bold shadow-xs"
+                  to={signupPath}
+                  variant={isPopular ? 'primary' : 'outline'}
+                  size="lg"
+                  fullWidth
+                  className="font-bold shadow-xs"
                 >
-                    Choisir l'offre {plan.name}
+                  Choisir l'offre {plan.name}
                 </Button>
               </div>
             </div>

@@ -47,9 +47,11 @@ import { HomeCollectionsSection } from './components/HomeCollectionsSection';
 import { HomeCategoryExplorer } from './components/HomeCategoryExplorer';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { ScrollRail } from '../../design-system/primitives/ScrollRail';
+import { storageService } from '../../services/storage.service';
 import { usePublishCta } from '../../security/usePublishCta';
 import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/ViewModeToggle';
 import { plural } from '../../utilities/formatters';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 /**
  * How many cards each homepage rail shows.
@@ -62,6 +64,8 @@ import { plural } from '../../utilities/formatters';
 const RECENT_COUNT = 12;
 const DEALS_COUNT = 8;
 const PRO_SELLER_COUNT = 3;
+/** Enough to be a useful shortcut, short enough to stay one row on desktop. */
+const RECENTLY_VIEWED_COUNT = 6;
 
 /**
  * Hero quick-search chips. Each carries a glyph so the row reads as a set of
@@ -80,6 +84,13 @@ const POPULAR_SEARCHES = [
 ] as const;
 
 export const HomePage: React.FC = () => {
+  usePageMeta({
+    description:
+      "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.",
+    canonicalPath: "/",
+    type: 'website',
+  });
+
   const navigate = useNavigate();
   const publishCta = usePublishCta();
   const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
@@ -87,6 +98,7 @@ export const HomePage: React.FC = () => {
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [proSellers, setProSellers] = useState<UserProfile[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<Listing[]>([]);
   const [listingsViewMode, setListingsViewMode] = useState<ListingViewMode>('grid');
 
   /**
@@ -113,14 +125,33 @@ export const HomePage: React.FC = () => {
       listingRepository.getListings({ marketCode, limit: RECENT_COUNT, sortBy: 'date_desc' }),
       listingRepository.getListings({ marketCode, onlyDeals: true, limit: DEALS_COUNT, sortBy: 'date_desc' }),
       userRepository.getAllProSellers(),
+      /* Resolve the viewing history against the catalogue rather than trusting
+         the stored ids: a listing may since have been sold, withdrawn or moved
+         to another market, and a "continue where you left off" rail that opens
+         onto a dead listing is worse than no rail. Order follows the history,
+         not the query, because recency is the entire point of the section. */
+      Promise.all(
+        storageService
+          .getRecentlyViewed()
+          .slice(0, RECENTLY_VIEWED_COUNT)
+          .map((listingId) => listingRepository.getListingById(listingId)),
+      ).then((items) =>
+        items.filter(
+          (item): item is Listing =>
+            Boolean(item) &&
+            item!.status === 'active' &&
+            (item!.marketCodes ?? [item!.marketCode]).includes(marketCode),
+        ),
+      ),
     ])
-      .then(([listingsRes, dealsRes, sellers]) => {
+      .then(([listingsRes, dealsRes, sellers, viewed]) => {
         if (!isMounted) return;
         setRecentListings(listingsRes.listings);
         setDealsListings(dealsRes.listings);
         if (Array.isArray(sellers)) {
           setProSellers(sellers.slice(0, PRO_SELLER_COUNT));
         }
+        setRecentlyViewed(viewed);
       })
       .catch((err) => {
         console.warn('Failed to load homepage data', err);
@@ -320,6 +351,31 @@ export const HomePage: React.FC = () => {
           </div>
         )}
       </section>
+
+      {/* 3b. Resume where you left off.
+             Rendered only when the visitor actually has a history — an empty
+             "Vus récemment" rail is worse than no rail, and the section list
+             above is deliberately free of placeholders. */}
+      {recentlyViewed.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
+                Reprendre où vous en étiez
+              </h2>
+              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
+                Les annonces que vous avez consultées récemment
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 auto-rows-fr gap-3 sm:gap-4">
+            {recentlyViewed.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 4. Trust reassurance — after the visitor has seen real goods */}
       <HomeTrustStrip />

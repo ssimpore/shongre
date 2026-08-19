@@ -15,6 +15,7 @@ import {
   Headphones,
 } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 interface HelpArticle {
   id: string;
@@ -85,6 +86,13 @@ const FAQ_ARTICLES: HelpArticle[] = [
 ];
 
 export const HelpCenterPage: React.FC = () => {
+  usePageMeta({
+    title: "Centre d'aide",
+    description:
+      "Réponses aux questions les plus fréquentes sur la publication d'annonces, les paiements, la livraison et la sécurité sur Shongre.",
+    canonicalPath: "/aide",
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);

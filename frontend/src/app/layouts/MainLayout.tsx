@@ -6,6 +6,7 @@ import { MobileBottomNav } from './MobileBottomNav';
 import { DemoRoleSwitcher } from './DemoRoleSwitcher';
 import { LocationPickerModal } from './LocationPickerModal';
 import { PreferencesModal } from './PreferencesModal';
+import { CookieConsent } from './CookieConsent';
 import { AppScrollRestoration } from '../router/AppScrollRestoration';
 
 export const MainLayout: React.FC = () => {
@@ -29,6 +30,7 @@ export const MainLayout: React.FC = () => {
       <MobileBottomNav />
       <LocationPickerModal />
       <PreferencesModal />
+      <CookieConsent />
     </div>
   );
 };

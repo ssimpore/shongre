@@ -5,6 +5,7 @@ import { MarketLocationProvider } from './MarketLocationProvider';
 import { ToastProvider } from './ToastProvider';
 import { NotificationProvider } from './NotificationProvider';
 import { FavoritesProvider } from './FavoritesProvider';
+import { ConsentProvider } from './ConsentProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 
 const queryClient = new QueryClient({
@@ -22,13 +23,15 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <MarketLocationProvider>
-            <ToastProvider>
-              <NotificationProvider>
-                <FavoritesProvider>{children}</FavoritesProvider>
-              </NotificationProvider>
-            </ToastProvider>
-          </MarketLocationProvider>
+          <ConsentProvider>
+            <MarketLocationProvider>
+              <ToastProvider>
+                <NotificationProvider>
+                  <FavoritesProvider>{children}</FavoritesProvider>
+                </NotificationProvider>
+              </ToastProvider>
+            </MarketLocationProvider>
+          </ConsentProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>

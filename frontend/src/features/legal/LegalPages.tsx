@@ -3,8 +3,16 @@ import { ShieldCheck, Lock, AlertTriangle, HelpCircle, Check, Sparkles, Tag } fr
 import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
 import { storageService } from '../../services/storage.service';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const TermsPage: React.FC = () => {
+  usePageMeta({
+    title: "Conditions Générales d'Utilisation",
+    description:
+      "Les conditions d'utilisation de la place de marché Shongre : rôle de la plateforme, séquestre et protection acheteur, engagements des vendeurs professionnels.",
+    canonicalPath: "/conditions-utilisation",
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: "Conditions Générales d'Utilisation" }]} />
@@ -29,6 +37,13 @@ export const TermsPage: React.FC = () => {
 };
 
 export const PrivacyPage: React.FC = () => {
+  usePageMeta({
+    title: "Politique de confidentialité & RGPD",
+    description:
+      "Comment Shongre collecte, utilise et protège vos données personnelles, conformément au RGPD et à la loi Informatique et Libertés.",
+    canonicalPath: "/confidentialite",
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: 'Politique de Confidentialité' }]} />
@@ -44,6 +59,13 @@ export const PrivacyPage: React.FC = () => {
 };
 
 export const LegalNoticesPage: React.FC = () => {
+  usePageMeta({
+    title: "Mentions légales",
+    description:
+      "Éditeur, hébergeur et informations légales de la place de marché Shongre.",
+    canonicalPath: "/mentions-legales",
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: 'Mentions Légales' }]} />
@@ -59,6 +81,13 @@ export const LegalNoticesPage: React.FC = () => {
 };
 
 export const AccessibilityPage: React.FC = () => {
+  usePageMeta({
+    title: "Accessibilité",
+    description:
+      "Notre démarche d'accessibilité numérique : niveau de conformité visé, aménagements en place et moyen de nous signaler un obstacle.",
+    canonicalPath: "/accessibilite",
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: 'Déclaration d\'Accessibilité' }]} />
@@ -76,6 +105,13 @@ export const AccessibilityPage: React.FC = () => {
 };
 
 export const HelpSafetyPage: React.FC = () => {
+  usePageMeta({
+    title: "Sécurité & prévention des fraudes",
+    description:
+      "Reconnaître une arnaque, sécuriser un paiement et acheter ou vendre sereinement sur Shongre.",
+    canonicalPath: "/securite",
+  });
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: 'Centre d\'Aide & Sécurité' }]} />
@@ -97,6 +133,13 @@ export const HelpSafetyPage: React.FC = () => {
 };
 
 export const DealsPage: React.FC = () => {
+  usePageMeta({
+    title: "Bons plans & baisses de prix",
+    description:
+      "Les annonces dont le prix vient de baisser et les meilleures affaires du moment sur Shongre.",
+    canonicalPath: "/bons-plans",
+  });
+
   const deals = storageService.getListings().filter((l) => l.originalPrice && l.originalPrice > l.price);
 
   return (

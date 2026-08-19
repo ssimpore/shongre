@@ -14,6 +14,7 @@ import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { Category, SubCategory } from '../../types';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 interface CategoryMeta {
   itemCountLabel: string;
@@ -136,6 +137,13 @@ const BADGE_PILL_STYLES: Record<string, string> = {
 };
 
 export const CategoriesPage: React.FC = () => {
+  usePageMeta({
+    title: "Toutes les catégories d'annonces",
+    description:
+      "Parcourez toutes les catégories d'annonces Shongre : véhicules, immobilier, mode, maison, multimédia, loisirs, emploi et services.",
+    canonicalPath: "/categories",
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCategories = useMemo(() => {

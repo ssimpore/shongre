@@ -1806,6 +1806,44 @@ market
 
 Avoid enormous sitemap-style footers unless clearly justified.
 
+## "Gestion des cookies" must change something
+
+The footer entry opens the real preference panel (`useConsent().openPreferences`),
+not a policy page. It used to link to `/cookies`, which rendered the privacy
+policy — a page that explains the cookies without letting anyone change them.
+Withdrawing consent has to be as easy as giving it.
+
+---
+
+# 61b. Cookie consent
+
+Consent lives in `src/domains/consent/`, is exposed by `ConsentProvider`, and is
+rendered once by `CookieConsent` in the app shell.
+
+Non-negotiable properties, each of them a legal requirement rather than a design
+preference:
+
+* **Opt-in.** Optional categories default to `false`. "Not asked yet" and
+  "refused" must be indistinguishable downstream, or the gap between them becomes
+  a tracking window.
+* **Refusing is a first-layer button** with the same weight as accepting. An
+  "Accept / Settings" pair is the pattern the CNIL sanctions.
+* **No dismiss affordance** — no cross, no Escape, no click-away. Dismissing
+  without choosing would have to be read as consent, and silence is not consent.
+* **Reopening never re-consents.** The panel opens pre-filled with what is
+  currently permitted.
+* **Consent expires** (`CONSENT_LIFETIME_DAYS`) and a `CONSENT_VERSION` bump
+  re-prompts everyone, because consent is given for a stated purpose.
+
+The banner is a `role="region"` landmark, not a `role="dialog"`: it has no focus
+trap and no Escape handler, and the dialog role would promise assistive
+technology both.
+
+Nothing in the product reads a tracker today, and the gate is deliberately built
+first. `hasConsent(category)` is what any future analytics or advertising
+integration has to pass — wiring it afterwards ships a period where data is
+collected without a legal basis.
+
 ---
 
 # 62. Mobile navigation
@@ -1832,6 +1870,28 @@ Ensure mobile bottom navigation does not cover:
 * modal content
 
 Respect safe areas.
+
+## Clearance is measured from the raised publish button, not the bar
+
+The publish control is offset above the bar, so the navigation paints roughly
+20px outside the `<nav>` box. Anything that reserves space for the navigation —
+page padding, pinned action bars, the toast stack — must clear that overhang too,
+or it reserves a band the navigation still covers.
+
+Three tokens carry it:
+
+```text
+--mobile-nav-h          the bar itself
+--mobile-nav-fab-rise   how far the publish button sits above the bar
+--mobile-nav-total-h    what anything pinned above or laid out before must clear
+```
+
+`MobileBottomNav` offsets the button from `--mobile-nav-fab-rise` rather than a
+literal value, so the button and the clearance cannot drift apart.
+
+This is invisible to the overflow and axe suites — nothing overflows and nothing
+is hidden, the disc simply paints over what is beneath it and swallows the tap.
+`e2e/bottom-nav-clearance.spec.ts` measures it instead.
 
 ---
 
@@ -1971,6 +2031,20 @@ rollback
 
 Do not leave dead favorite actions for unauthenticated users.
 
+## Favorites belong to an account
+
+Store them per user, never in one shared list. A single shared list is not
+visibly broken — the count is consistent and the page renders — it simply shows
+one account the other's saved listings, and makes seeded demo state drift as soon
+as anyone taps a heart.
+
+A signed-out visitor saves into a `guest` bucket, and signing in merges that
+bucket into the account (union, then clear the guest bucket — leaving it hands
+the next signed-out visitor on the device the previous one's saves).
+
+Anything holding the set in React state must reload it when the signed-in account
+changes, not only on mount, or it outlives the user it belongs to.
+
 ---
 
 # 69. Messaging
@@ -2075,6 +2149,31 @@ sitemap architecture
 ```
 
 Avoid duplicate canonical or metadata tags.
+
+## One hook owns the document head
+
+Pages declare metadata with `usePageMeta({ title, description, canonicalPath, … })`
+from `src/hooks/usePageMeta.ts`. `src/services/seo.service.ts` applies it.
+
+It **updates** the tags `index.html` already ships rather than appending its own.
+That is the whole point: a page that adds a second `<meta name="description">`
+next to the static one leaves the document with two, and which one a crawler
+believes is not up to us. Never write `document.title` or inject a `<script
+type="application/ld+json">` from a component — two pages did, so the parts that
+existed at all existed twice, in two shapes, while the other ~25 public routes
+described themselves as the site root.
+
+## Canonicals collapse the query string
+
+Search, filters, sort, view mode and pagination all live in the query string, so
+every permutation would declare itself a distinct canonical page — thousands of
+near-duplicates competing with the URL that should rank. `resolveCanonical`
+drops the query by default; a route that genuinely needs a parameter passes it
+in `canonicalPath` explicitly.
+
+Free-text search results are `noIndex`: arbitrary queries generate unbounded thin
+pages, which is the classic classifieds index-bloat trap. Category pages are the
+indexable form, and `/categorie/:slug` is their canonical URL.
 
 ---
 

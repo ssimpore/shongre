@@ -7,8 +7,16 @@ import { SellerCard } from '../../design-system/primitives/SellerCard';
 import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
 import { Button } from '../../design-system/primitives/Button';
 import { NoResultsFound } from '../../design-system/primitives/NoResultsFound';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const ProDirectoryPage: React.FC = () => {
+  usePageMeta({
+    title: "Annuaire des vendeurs professionnels",
+    description:
+      "Trouvez un vendeur professionnel vérifié sur Shongre : boutiques, spécialités et avis clients, partout en France.",
+    canonicalPath: "/professionnels",
+  });
+
   const [proSellers, setProSellers] = useState<UserProfile[]>([]);
   const [search, setSearch] = useState('');
 

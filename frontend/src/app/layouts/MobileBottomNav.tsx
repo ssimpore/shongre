@@ -69,7 +69,9 @@ export const MobileBottomNav: React.FC = () => {
           to={publishCta.to}
           className="relative flex flex-col items-center justify-center group w-full h-full"
         >
-          <div className="absolute -top-5 flex flex-col items-center">
+          {/* Raised by the same token the layout reserves clearance from, so the
+              disc can never protrude into space the page believes is free. */}
+          <div className="absolute -top-(--mobile-nav-fab-rise) flex flex-col items-center">
             <div className="w-[3.25rem] h-[3.25rem] rounded-full bg-stone-900 text-white flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border-[3px] border-white">
               <PlusCircle className="w-6 h-6 text-primary" />
             </div>

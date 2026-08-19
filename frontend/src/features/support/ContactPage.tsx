@@ -36,6 +36,7 @@ import { supportService } from '../../domains/support/support.service';
 import { supportRepository } from '../../repositories/support.repository';
 import { storageService } from '../../services/storage.service';
 import { SupportContextCard } from './components/SupportContextCard';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   User: <User className="w-5 h-5" />,
@@ -50,6 +51,13 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export const ContactPage: React.FC = () => {
+  usePageMeta({
+    title: "Contacter Shongre",
+    description:
+      "Une question, un problème sur une annonce ou une transaction ? Contactez l'équipe Shongre et suivez votre demande.",
+    canonicalPath: "/contact",
+  });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { currentUser, isAuthenticated } = useAuth();

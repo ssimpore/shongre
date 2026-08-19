@@ -2,8 +2,16 @@ import React from 'react';
 import { Mail, Sparkles, Tag, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import { NewsletterSignup } from './components/NewsletterSignup';
 import { newsletterTopicsService } from '../../domains/newsletter/newsletter.topics';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NewsletterLandingPage: React.FC = () => {
+  usePageMeta({
+    title: "Newsletter Shongre",
+    description:
+      "Recevez les meilleures annonces, les baisses de prix et les nouveautés Shongre dans votre boîte mail. Désinscription en un clic.",
+    canonicalPath: "/newsletter",
+  });
+
   const topics = newsletterTopicsService.getAllTopics();
 
   return (

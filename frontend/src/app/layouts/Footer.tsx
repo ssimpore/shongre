@@ -23,6 +23,7 @@ import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { MARKET_CONFIG } from '../../configuration/market.config';
 import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
 import { NewsletterSignup } from '../../features/newsletter/components/NewsletterSignup';
+import { useConsent } from '../providers/ConsentProvider';
 
 /* -----------------------------------------------------------------------------
    Shared surface recipes.
@@ -141,7 +142,6 @@ const SOCIAL_LINKS: { id: string; label: string; Icon: typeof Facebook; url: str
 const LEGAL_LINKS = [
   { to: '/conditions-utilisation', label: 'Conditions générales d’utilisation' },
   { to: '/confidentialite', label: 'Politique de confidentialité' },
-  { to: '/cookies', label: 'Gestion des cookies' },
   { to: '/mentions-legales', label: 'Mentions légales' },
   { to: '/accessibilite', label: 'Accessibilité (WCAG 2.2 AA)' },
 ] as const;
@@ -216,6 +216,7 @@ const FooterColumn: React.FC<{
 };
 
 export const Footer: React.FC = () => {
+  const { openPreferences } = useConsent();
   // All accordion sections folded by default on mobile
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     categories: false,
@@ -505,6 +506,21 @@ export const Footer: React.FC = () => {
                   </Link>
                 </li>
               ))}
+
+              {/* Withdrawing consent has to be as reachable as giving it, so this
+                  reopens the actual preference panel. It used to be a link to
+                  `/cookies`, which rendered the privacy policy — a page that
+                  explains the cookies without letting anyone change them. */}
+              <li className="flex items-center">
+                <span aria-hidden="true" className="w-px h-3 bg-stone-800 mx-4" />
+                <button
+                  type="button"
+                  onClick={openPreferences}
+                  className="py-1 hover:text-white transition-colors cursor-pointer"
+                >
+                  Gestion des cookies
+                </button>
+              </li>
             </ul>
           </nav>
         </div>

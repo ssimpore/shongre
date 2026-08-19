@@ -3,6 +3,9 @@ import { INITIAL_LISTINGS, INITIAL_CONVERSATIONS, INITIAL_MESSAGES, INITIAL_TRAN
 import { Market } from '../domains/market/market.types';
 import { INITIAL_MARKETS } from '../domains/market/market.defaults';
 
+/** The user key a signed-out visitor is stored under. */
+const GUEST_USER_KEY = 'guest';
+
 const KEYS = {
   USERS: 'shongre_users_v1',
   LISTINGS: 'shongre_listings_v1',
@@ -11,7 +14,8 @@ const KEYS = {
   MESSAGES: 'shongre_messages_v1',
   TRANSACTIONS: 'shongre_transactions_v1',
   NOTIFICATIONS: 'shongre_notifications_v1',
-  FAVORITES: 'shongre_favorites_v1',
+  // v2: per-user map. v1 was a single shared array — see getFavorites below.
+  FAVORITES: 'shongre_favorites_v2',
   FOLLOWED_SELLERS: 'shongre_followed_sellers_v1',
   BLOCKED_USERS: 'shongre_blocked_users_v1',
   USER_REPORTS: 'shongre_user_reports_v1',
@@ -131,16 +135,59 @@ class StorageService {
   }
 
   // Favorites
-  getFavorites(): string[] {
-    return this.get<string[]>(KEYS.FAVORITES, ['list-101', 'list-105']);
+  //
+  // Saved listings belong to an account, so they are stored per user rather than
+  // in one shared list. They were shared: signing in as the pro seller showed
+  // the buyer's saved listings back as "Mes annonces favorites", and every demo
+  // persona inherited whatever the previous one had saved — which also made the
+  // seeded demo state non-deterministic once anyone clicked a heart.
+  //
+  // The guest bucket is real storage, not a throwaway: someone can save listings
+  // before they have an account, and `mergeGuestFavorites` carries those saves
+  // into the account they sign in to.
+
+  private getFavoritesByUser(): Record<string, string[]> {
+    return this.get<Record<string, string[]>>(KEYS.FAVORITES, {
+      // The seeded demo buyer keeps the two listings the fixtures assume.
+      buyer_thomas: ['list-101', 'list-105'],
+    });
   }
 
-  toggleFavorite(listingId: string): boolean {
-    const favs = this.getFavorites();
-    const exists = favs.includes(listingId);
-    const updated = exists ? favs.filter((id) => id !== listingId) : [...favs, listingId];
-    this.set(KEYS.FAVORITES, updated);
+  getFavorites(userKey: string = this.getCurrentUserKey()): string[] {
+    return this.getFavoritesByUser()[userKey] ?? [];
+  }
+
+  toggleFavorite(listingId: string, userKey: string = this.getCurrentUserKey()): boolean {
+    const byUser = this.getFavoritesByUser();
+    const current = byUser[userKey] ?? [];
+    const exists = current.includes(listingId);
+    const updated = exists
+      ? current.filter((id) => id !== listingId)
+      : [...current, listingId];
+    this.set(KEYS.FAVORITES, { ...byUser, [userKey]: updated });
     return !exists;
+  }
+
+  /**
+   * Moves anything saved while signed out into the account just signed in to.
+   *
+   * Union rather than replace, so an account's existing saves survive, and the
+   * guest bucket is emptied afterwards — leaving it would hand the next signed-out
+   * visitor on this device the previous one's saved listings.
+   *
+   * The target defaults to the same accessor the reads use rather than to a
+   * caller-supplied account id, because `setCurrentRole` remaps the stored key
+   * onto a demo persona right after login: merging into `user.id` would fill a
+   * bucket that `getFavorites` never looks in.
+   */
+  mergeGuestFavorites(userKey: string = this.getCurrentUserKey()): void {
+    if (userKey === GUEST_USER_KEY) return;
+    const byUser = this.getFavoritesByUser();
+    const guestSaved = byUser[GUEST_USER_KEY] ?? [];
+    if (guestSaved.length === 0) return;
+
+    const merged = Array.from(new Set([...(byUser[userKey] ?? []), ...guestSaved]));
+    this.set(KEYS.FAVORITES, { ...byUser, [userKey]: merged, [GUEST_USER_KEY]: [] });
   }
 
   // Role & Current User Selection
@@ -160,7 +207,7 @@ class StorageService {
     this.set(KEYS.CURRENT_USER_ROLE, role);
     // Find matching demo user key if possible
     if (role === 'guest') {
-      this.setCurrentUserKey('guest');
+      this.setCurrentUserKey(GUEST_USER_KEY);
     } else if (role === 'buyer' || role === 'individual_buyer') {
       this.setCurrentUserKey('buyer_thomas');
     } else if (role === 'seller' || role === 'individual_seller') {
@@ -190,7 +237,7 @@ class StorageService {
 
   getCurrentUser(overrideKeyOrRole?: string): UserProfile | null {
     const key = overrideKeyOrRole || this.getCurrentUserKey();
-    if (key === 'guest') return null;
+    if (key === GUEST_USER_KEY) return null;
 
     const users = this.getUsers();
     // 1. Direct key match (e.g. buyer_thomas, pro_pending_sophie)
