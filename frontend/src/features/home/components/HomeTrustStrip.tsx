@@ -1,33 +1,21 @@
 import React from 'react';
 import { ShieldCheck, Truck, Lock } from 'lucide-react';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { MessageKey } from '../../../i18n/messages.fr';
 
 interface TrustPillar {
   id: string;
   icon: React.FC<{ className?: string }>;
-  title: string;
-  description: string;
+  titleKey: MessageKey;
+  bodyKey: MessageKey;
 }
 
+/* Message keys, not literals: this strip is chrome and has to follow the
+   interface language like the rest of the shell. */
 const TRUST_PILLARS: TrustPillar[] = [
-  {
-    id: 'escrow',
-    icon: Lock,
-    title: 'Paiement 100% sécurisé',
-    description: 'Fonds sous séquestre jusqu’à la validation de votre achat.',
-  },
-  {
-    id: 'delivery',
-    icon: Truck,
-    title: 'Livraison intégrée & suivie',
-    description: 'Envois Mondial Relay, Colissimo ou remise en main propre.',
-  },
-  {
-    id: 'verified',
-    icon: ShieldCheck,
-    title: 'Vendeurs & SIRET vérifiés',
-    description: 'Profils certifiés, vérification d’identité et modération active.',
-  },
+  { id: 'escrow', icon: Lock, titleKey: 'home.trust.escrowTitle', bodyKey: 'home.trust.escrowBody' },
+  { id: 'delivery', icon: Truck, titleKey: 'home.trust.deliveryTitle', bodyKey: 'home.trust.deliveryBody' },
+  { id: 'verified', icon: ShieldCheck, titleKey: 'home.trust.verifiedTitle', bodyKey: 'home.trust.verifiedBody' },
 ];
 
 export const HomeTrustStrip: React.FC = () => {
@@ -39,7 +27,7 @@ export const HomeTrustStrip: React.FC = () => {
     >
       <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-2xs">
         <ul className="grid grid-cols-1 md:grid-cols-3 gap-3.5 md:gap-6 divide-y md:divide-y-0 md:divide-x divide-stone-100">
-          {TRUST_PILLARS.map(({ id, icon: Icon, title, description }) => (
+          {TRUST_PILLARS.map(({ id, icon: Icon, titleKey, bodyKey }) => (
             <li
               key={id}
               className="flex items-center gap-3.5 pt-3 first:pt-0 md:pt-0 md:px-4 md:first:pl-0 md:last:pr-0"
@@ -49,10 +37,10 @@ export const HomeTrustStrip: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs sm:text-sm font-bold text-stone-900 leading-snug">
-                  {title}
+                  {t(titleKey)}
                 </h3>
                 <p className="text-[11px] sm:text-xs text-stone-500 font-normal leading-tight mt-0.5">
-                  {description}
+                  {t(bodyKey)}
                 </p>
               </div>
             </li>

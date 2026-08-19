@@ -89,9 +89,9 @@ export const CrmTasksPage: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === 'pending') return t.status === 'pending';
-    if (filter === 'completed') return t.status === 'completed';
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === 'pending') return task.status === 'pending';
+    if (filter === 'completed') return task.status === 'completed';
     return true;
   });
 
@@ -100,12 +100,8 @@ export const CrmTasksPage: React.FC = () => {
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-            Tâches & Relances Commerciales
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Suivi des actions, appels, démos et signatures à finaliser.
-          </p>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('admin.crmTasksPage.tachesRelancesCommerciales')}</h1>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('admin.crmTasksPage.suiviDesActionsAppelsDemos')}</p>
         </div>
 
         <Button
@@ -128,7 +124,7 @@ export const CrmTasksPage: React.FC = () => {
             filter === 'pending' ? 'bg-stone-900 text-white shadow-xs' : 'text-stone-600 hover:bg-stone-100'
           }`}
         >
-          À faire ({tasks.filter((t) => t.status === 'pending').length})
+          À faire ({tasks.filter((task) => task.status === 'pending').length})
         </button>
         <button
           type="button"
@@ -137,7 +133,7 @@ export const CrmTasksPage: React.FC = () => {
             filter === 'completed' ? 'bg-stone-900 text-white shadow-xs' : 'text-stone-600 hover:bg-stone-100'
           }`}
         >
-          Terminées ({tasks.filter((t) => t.status === 'completed').length})
+          Terminées ({tasks.filter((task) => task.status === 'completed').length})
         </button>
         <button
           type="button"
@@ -166,36 +162,32 @@ export const CrmTasksPage: React.FC = () => {
             className="border-0 shadow-none"
             action={
               filter === 'all' ? (
-                <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
-                  Créer une tâche
-                </Button>
+                <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('admin.crmTasksPage.creerUneTache2')}</Button>
               ) : (
-                <Button variant="outline" size="sm" onClick={() => setFilter('all')}>
-                  Voir toutes les tâches
-                </Button>
+                <Button variant="outline" size="sm" onClick={() => setFilter('all')}>{t('admin.crmTasksPage.voirToutesLesTaches')}</Button>
               )
             }
           />
         ) : (
           <div className="divide-y divide-border-subtle">
-            {filteredTasks.map((t) => {
-              const isCompleted = t.status === 'completed';
+            {filteredTasks.map((task) => {
+              const isCompleted = task.status === 'completed';
 
               return (
                 <div
-                  key={t.id}
+                  key={task.id}
                   className="py-4 flex items-center justify-between gap-4 hover:bg-stone-50 -mx-4 px-4 rounded-xl transition-colors"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <button
                       type="button"
-                      onClick={() => handleToggleStatus(t.id)}
+                      onClick={() => handleToggleStatus(task.id)}
                       role="checkbox"
                       aria-checked={isCompleted}
                       aria-label={
                         isCompleted
-                          ? `Marquer « ${t.title} » comme à faire`
-                          : `Marquer « ${t.title} » comme terminée`
+                          ? `Marquer « ${task.title} » comme à faire`
+                          : `Marquer « ${task.title} » comme terminée`
                       }
                       className="text-stone-500 hover:text-stone-800 cursor-pointer shrink-0"
                     >
@@ -212,17 +204,16 @@ export const CrmTasksPage: React.FC = () => {
                           isCompleted ? 'text-stone-500 line-through' : 'text-stone-900'
                         }`}
                       >
-                        {t.title}
+                        {task.title}
                       </span>
-                      <span className="text-micro text-stone-500 block truncate">
-                        Lié à : <strong>{t.relatedTitle}</strong> • Échéance : {t.dueDate}
+                      <span className="text-micro text-stone-500 block truncate">{t('admin.crmTasksPage.lieA')}<strong>{task.relatedTitle}</strong> • Échéance : {task.dueDate}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <Badge variant={t.priority === 'high' || t.priority === 'urgent' ? 'urgent' : 'neutral'} size="sm">
-                      {t.priority}
+                    <Badge variant={task.priority === 'high' || task.priority === 'urgent' ? 'urgent' : 'neutral'} size="sm">
+                      {task.priority}
                     </Badge>
                   </div>
                 </div>

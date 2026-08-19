@@ -29,9 +29,7 @@ export const TaxonomyAuditTab: React.FC = () => {
             <History className="w-5 h-5 text-primary" />
             <span>{t('admin.taxonomyAuditTab.journalDAuditTracabiliteDes')}</span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
-            Historique chronologique de toutes les créations, modifications, déplacements et dépréciations de rubriques.
-          </p>
+          <p className="text-xs text-stone-500 mt-1">{t('admin.taxonomyAuditTab.historiqueChronologiqueDeToutesLes')}</p>
         </div>
 
         <div className="relative w-full sm:w-72">
@@ -62,9 +60,7 @@ export const TaxonomyAuditTab: React.FC = () => {
             <tbody className="divide-y divide-border-subtle">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-xs text-stone-500">
-                    Aucun événement d'audit trouvé.
-                  </td>
+                  <td colSpan={5} className="py-8 text-center text-xs text-stone-500">{t('admin.taxonomyAuditTab.aucunEvenementDAuditTrouve')}</td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (

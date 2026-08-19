@@ -119,9 +119,7 @@ export const LoginPage: React.FC = () => {
       {requiresMfa ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
-              Code de sécurité 2FA ou Code de secours
-            </label>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.loginPage.codeDeSecurite2faOu')}</label>
             <input
               type="text"
               value={mfaCode}
@@ -131,8 +129,7 @@ export const LoginPage: React.FC = () => {
               required
               className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
             />
-            <p className="mt-1.5 text-micro text-stone-500 text-center">
-              Pour le test : vous pouvez utiliser le code <code>123456</code>.
+            <p className="mt-1.5 text-micro text-stone-500 text-center">{t('auth.loginPage.pourLeTestVousPouvez')}<code>123456</code>.
             </p>
           </div>
 
@@ -143,9 +140,7 @@ export const LoginPage: React.FC = () => {
             className="w-full"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
-          >
-            Valider et continuer
-          </Button>
+          >{t('auth.loginPage.validerEtContinuer')}</Button>
 
           <button
             type="button"
@@ -154,9 +149,7 @@ export const LoginPage: React.FC = () => {
               setTempMfaToken(null);
             }}
             className="w-full text-center text-xs font-semibold text-stone-500 hover:text-stone-900 py-1"
-          >
-            ← Retour à l'écran de connexion
-          </button>
+          >{t('auth.loginPage.retourALEcranDe')}</button>
         </form>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -181,15 +174,12 @@ export const LoginPage: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label htmlFor="login-password" className="block text-xs font-bold text-stone-800">
-                Mot de passe <span className="text-primary">*</span>
+              <label htmlFor="login-password" className="block text-xs font-bold text-stone-800">{t('auth.loginPage.motDePasse')}<span className="text-primary">*</span>
               </label>
               <Link
                 to="/mot-de-passe-oublie"
                 className="text-xs font-bold text-primary hover:underline"
-              >
-                Mot de passe oublié ?
-              </Link>
+              >{t('auth.loginPage.motDePasseOublie')}</Link>
             </div>
             <PasswordField
               id="login-password"
@@ -231,12 +221,8 @@ export const LoginPage: React.FC = () => {
       {/* Quick Demo Credentials Panel for Testers */}
       <div className="mt-7 pt-5 border-t border-stone-100">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-micro font-bold text-stone-600 uppercase tracking-wider">
-            Connexion rapide Démo
-          </span>
-          <span className="text-micro font-medium text-stone-600">
-            1-clic sans mot de passe
-          </span>
+          <span className="text-micro font-bold text-stone-600 uppercase tracking-wider">{t('auth.loginPage.connexionRapideDemo')}</span>
+          <span className="text-micro font-medium text-stone-600">{t('auth.loginPage.1ClicSansMotDe')}</span>
         </div>
 
         <div className="grid grid-cols-2 gap-1.5 text-xs">

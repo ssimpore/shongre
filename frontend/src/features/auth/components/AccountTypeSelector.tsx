@@ -50,9 +50,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
         <span className="font-extrabold text-base text-stone-950 mb-1">
           Particulier
         </span>
-        <p className="text-xs text-stone-600 leading-relaxed mb-3">
-          Pour acheter en toute sécurité et vendre vos objets du quotidien sans frais d'inscription.
-        </p>
+        <p className="text-xs text-stone-600 leading-relaxed mb-3">{t('auth.accountTypeSelector.pourAcheterEnTouteSecurite')}</p>
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
@@ -110,9 +108,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
         <span className="font-extrabold text-base text-stone-950 mb-1 flex items-center gap-1.5">
           Professionnel
         </span>
-        <p className="text-xs text-stone-600 leading-relaxed mb-3">
-          Pour les entreprises, artisans, boutiques et commerçants immatriculés.
-        </p>
+        <p className="text-xs text-stone-600 leading-relaxed mb-3">{t('auth.accountTypeSelector.pourLesEntreprisesArtisansBoutiques')}</p>
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">

@@ -48,12 +48,8 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-info" />
-            Matrice de Couverture Multi-Marchés & Héritage France
-          </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            La France (🇫🇷) est le marché de référence. Les autres pays héritent automatiquement de la configuration sauf surcharge explicite.
-          </p>
+            <Globe className="w-4 h-4 text-info" />{t('admin.providerMarketMatrix.matriceDeCouvertureMultiMarches')}</h3>
+          <p className="text-xs text-stone-500 mt-0.5">{t('admin.providerMarketMatrix.laFranceEstLeMarche')}</p>
         </div>
 
         {/* Category filter */}
@@ -114,9 +110,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                         <span className="text-base">{m.flag}</span>
                         <span>{m.name}</span>
                         {m.isDefault && (
-                          <span className="text-micro bg-primary text-white px-1.5 py-0.2 rounded-sm font-bold">
-                            RÉF
-                          </span>
+                          <span className="text-micro bg-primary text-white px-1.5 py-0.2 rounded-sm font-bold">{t('admin.providerMarketMatrix.ref')}</span>
                         )}
                       </div>
                     </th>
@@ -168,23 +162,17 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                                 <span className="font-bold text-micro truncate max-w-[120px]">
                                   {cell.activeProviderName}
                                 </span>
-                                <span className="text-micro text-success font-medium">
-                                  Référence active
-                                </span>
+                                <span className="text-micro text-success font-medium">{t('admin.providerMarketMatrix.referenceActive')}</span>
                               </Link>
                             ) : (
-                              <span className="inline-block text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-1 rounded">
-                                Non configuré
-                              </span>
+                              <span className="inline-block text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-1 rounded">{t('admin.providerMarketMatrix.nonConfigure')}</span>
                             )
                           ) : isInherited ? (
                             <div className="inline-flex flex-col items-center p-1.5 rounded-lg bg-stone-100 text-stone-600 border border-stone-200/80 max-w-[130px]">
                               <span className="font-semibold text-micro truncate max-w-[120px]">
                                 {cell.activeProviderName}
                               </span>
-                              <span className="text-micro text-stone-500 font-normal">
-                                ↳ Hérité de FR
-                              </span>
+                              <span className="text-micro text-stone-500 font-normal">{t('admin.providerMarketMatrix.heriteDeFr')}</span>
                             </div>
                           ) : isCustomized ? (
                             <Link
@@ -194,14 +182,10 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                               <span className="font-bold text-micro truncate max-w-[120px]">
                                 {cell.activeProviderName}
                               </span>
-                              <span className="text-micro text-info font-bold">
-                                ★ Personnalisé
-                              </span>
+                              <span className="text-micro text-info font-bold">{t('admin.providerMarketMatrix.personnalise')}</span>
                             </Link>
                           ) : (
-                            <span className="inline-block text-micro font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded">
-                              Désactivé
-                            </span>
+                            <span className="inline-block text-micro font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded">{t('admin.providerMarketMatrix.desactive')}</span>
                           )}
                         </td>
                       );

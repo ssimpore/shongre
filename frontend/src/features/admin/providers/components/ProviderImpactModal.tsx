@@ -12,6 +12,7 @@ import { Provider } from '../../../../domains/providers/provider.types';
 import { providerService } from '../../../../domains/providers/provider.service';
 import { Modal } from '../../../../design-system/primitives/Modal';
 import { Button } from '../../../../design-system/primitives/Button';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderImpactModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
   provider,
   customMessage,
 }) => {
+  const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   const impact = useMemo(() => {
@@ -48,7 +50,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Analyse d'Impact Opérationnel"
+      title={t('admin.providerImpactModal.analyseDImpactOperationnel')}
       maxWidth="lg"
     >
       <div className="space-y-5 p-1">
@@ -59,9 +61,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
             <p className="font-bold text-warning">
               {customMessage || `Vous vous apprêtez à modifier la configuration de ${provider.name}.`}
             </p>
-            <p className="text-warning">
-              Veuillez examiner attentivement les répercussions sur les marchés territoriaux et les fonctionnalités en ligne.
-            </p>
+            <p className="text-warning">{t('admin.providerImpactModal.veuillezExaminerAttentivementLesRepercussions')}</p>
           </div>
         </div>
 
@@ -70,9 +70,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           {/* Affected Markets */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
             <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
-              <Globe className="w-3.5 h-3.5 text-info" />
-              Marchés Territoriaux Affectés
-            </span>
+              <Globe className="w-3.5 h-3.5 text-info" />{t('admin.providerImpactModal.marchesTerritoriauxAffectes')}</span>
             <div className="flex flex-wrap gap-1.5">
               {impact.directlyAffectedMarkets.map((m) => (
                 <span key={m} className="px-2 py-0.5 rounded bg-info-surface text-info font-bold border border-info-border">
@@ -86,18 +84,14 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
               ))}
             </div>
             {impact.inheritedMarketsAffected.length > 0 && (
-              <p className="text-micro text-stone-500 italic">
-                Ces marchés héritent actuellement de la France et adopteront automatiquement ce changement.
-              </p>
+              <p className="text-micro text-stone-500 italic">{t('admin.providerImpactModal.cesMarchesHeritentActuellementDe')}</p>
             )}
           </div>
 
           {/* Impacted Features */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
             <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
-              <Layers className="w-3.5 h-3.5 text-primary" />
-              Fonctionnalités de la Marketplace Concernées
-            </span>
+              <Layers className="w-3.5 h-3.5 text-primary" />{t('admin.providerImpactModal.fonctionnalitesDeLaMarketplaceConcernees')}</span>
             <div className="flex flex-wrap gap-1.5">
               {impact.impactedPlatformFeatures.map((f) => (
                 <span key={f} className="px-2 py-0.5 rounded bg-stone-100 text-stone-700 font-medium border border-stone-200">
@@ -110,9 +104,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           {/* Fallback Availability */}
           <div className="p-3.5 rounded-lg border flex items-center justify-between bg-stone-50 border-stone-200">
             <div>
-              <span className="font-bold text-stone-900 block">
-                Disponibilité d'un prestataire de secours (Fallback)
-              </span>
+              <span className="font-bold text-stone-900 block">{t('admin.providerImpactModal.disponibiliteDUnPrestataireDe')}</span>
               <span className="text-micro text-stone-500">
                 {impact.hasAlternativeFallback
                   ? 'Un prestataire secondaire prendra automatiquement le relais sans coupure de service.'
@@ -120,13 +112,9 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
               </span>
             </div>
             {impact.hasAlternativeFallback ? (
-              <span className="text-success bg-success-surface font-bold text-xs px-2 py-1 rounded">
-                Secours Prêt
-              </span>
+              <span className="text-success bg-success-surface font-bold text-xs px-2 py-1 rounded">{t('admin.providerImpactModal.secoursPret')}</span>
             ) : (
-              <span className="text-danger bg-danger-surface font-bold text-xs px-2 py-1 rounded">
-                Sans Secours
-              </span>
+              <span className="text-danger bg-danger-surface font-bold text-xs px-2 py-1 rounded">{t('admin.providerImpactModal.sansSecours')}</span>
             )}
           </div>
         </div>
@@ -149,9 +137,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
             isLoading={isProcessing}
             onClick={handleConfirm}
             className="font-bold"
-          >
-            Confirmer la modification
-          </Button>
+          >{t('admin.providerImpactModal.confirmerLaModification')}</Button>
         </div>
       </div>
     </Modal>

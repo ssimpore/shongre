@@ -110,18 +110,12 @@ export const AdminVerificationsPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">
-            Conformité & LCB-FT
-          </span>
+          <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">{t('admin.adminVerificationsPage.conformiteLcbFt')}</span>
           <span className="text-stone-300">•</span>
           <span className="text-xs text-stone-500 font-bold">{t('admin.adminVerificationsPage.fileDeModerationKycKyb')}</span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-          Pôle de Vérification & Sécurité
-        </h1>
-        <p className="text-xs text-stone-600 mt-1">
-          Examinez les pièces d'identité, extraits KBIS, et comptes bancaires soumis par les membres et boutiques professionnelles.
-        </p>
+        <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminVerificationsPage.poleDeVerificationSecurite')}</h1>
+        <p className="text-xs text-stone-600 mt-1">{t('admin.adminVerificationsPage.examinezLesPiecesDIdentite')}</p>
       </div>
 
       {/* Navigation Tabs */}
@@ -169,9 +163,7 @@ export const AdminVerificationsPage: React.FC = () => {
             </div>
 
             {pendingKycUsers.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500 font-semibold">
-                Aucun dossier KYC en attente de vérification.
-              </div>
+              <div className="p-8 text-center text-xs text-stone-500 font-semibold">{t('admin.adminVerificationsPage.aucunDossierKycEnAttente')}</div>
             ) : (
               <div className="divide-y divide-stone-100">
                 {pendingKycUsers.map((u) => {
@@ -231,9 +223,7 @@ export const AdminVerificationsPage: React.FC = () => {
                           size="sm"
                           onClick={() => handleApproveIdentity(u)}
                           leftIcon={<Check className="w-3.5 h-3.5" />}
-                        >
-                          Valider l'identité
-                        </Button>
+                        >{t('admin.adminVerificationsPage.validerLIdentite')}</Button>
                       </div>
                     </div>
                   );
@@ -252,9 +242,7 @@ export const AdminVerificationsPage: React.FC = () => {
             </div>
 
             {pendingKybUsers.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500 font-semibold">
-                Aucun dossier KYB en attente de vérification.
-              </div>
+              <div className="p-8 text-center text-xs text-stone-500 font-semibold">{t('admin.adminVerificationsPage.aucunDossierKybEnAttente')}</div>
             ) : (
               <div className="divide-y divide-stone-100">
                 {pendingKybUsers.map((u) => {
@@ -348,9 +336,7 @@ export const AdminVerificationsPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">
-                      Vérifié pour virements
-                    </span>
+                    <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">{t('admin.adminVerificationsPage.verifiePourVirements')}</span>
                   </div>
                 );
               })}

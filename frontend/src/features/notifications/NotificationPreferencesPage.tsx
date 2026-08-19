@@ -164,12 +164,8 @@ export const NotificationPreferencesPage: React.FC = () => {
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>{t('notifications.notificationPreferencesPage.retourAuCentreDeNotifications')}</span>
           </Link>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-            Préférences de notifications
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Choisissez précisément les alertes que vous souhaitez recevoir sur chaque canal.
-          </p>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('notifications.notificationPreferencesPage.preferencesDeNotifications')}</h1>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('notifications.notificationPreferencesPage.choisissezPrecisementLesAlertesQue')}</p>
         </div>
 
         <Button

@@ -378,19 +378,14 @@ export const MessagingPage: React.FC = () => {
           </div>
           <div className="space-y-1.5">
             <p className="text-base font-black text-stone-800">{t('messaging.messagingPage.aucunMessagePourLeMoment')}</p>
-            <p className="text-xs text-stone-500 max-w-sm leading-relaxed">
-              Vos échanges avec les acheteurs et les vendeurs apparaîtront ici, avec le paiement
-              sécurisé et le suivi de commande.
-            </p>
+            <p className="text-xs text-stone-500 max-w-sm leading-relaxed">{t('messaging.messagingPage.vosEchangesAvecLesAcheteurs')}</p>
           </div>
           <Button
             to={routes.search()}
             variant="primary"
             size="md"
             leftIcon={<Search className="w-4 h-4" />}
-          >
-            Parcourir les annonces
-          </Button>
+          >{t('messaging.messagingPage.parcourirLesAnnonces')}</Button>
         </div>
       ) : (
       <>
@@ -470,9 +465,7 @@ export const MessagingPage: React.FC = () => {
             </div>
             <div>
               <p className="text-base font-black text-stone-800">{t('messaging.messagingPage.selectionnezUneConversation')}</p>
-              <p className="text-xs text-stone-500 mt-1 max-w-sm">
-                Choisissez une conversation dans la liste de gauche pour échanger avec vos acheteurs et vendeurs en toute sécurité.
-              </p>
+              <p className="text-xs text-stone-500 mt-1 max-w-sm">{t('messaging.messagingPage.choisissezUneConversationDansLa')}</p>
             </div>
           </div>
         )}
@@ -525,16 +518,12 @@ export const MessagingPage: React.FC = () => {
           description={t('messaging.messagingPage.cetUtilisateurNePourraPlus')}
         >
           <div className="space-y-4 text-xs">
-            <p className="text-stone-600 leading-relaxed font-medium">
-              Êtes-vous sûr de vouloir bloquer cet utilisateur ? Vous pourrez le débloquer à tout moment depuis les options de la conversation.
-            </p>
+            <p className="text-stone-600 leading-relaxed font-medium">{t('messaging.messagingPage.etesVousSurDeVouloir')}</p>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" fullWidth onClick={() => setBlockModalTarget(null)}>
                 Annuler
               </Button>
-              <Button variant="danger" fullWidth onClick={confirmBlock}>
-                Confirmer le blocage
-              </Button>
+              <Button variant="danger" fullWidth onClick={confirmBlock}>{t('messaging.messagingPage.confirmerLeBlocage')}</Button>
             </div>
           </div>
         </Modal>
@@ -549,9 +538,7 @@ export const MessagingPage: React.FC = () => {
           description={t('messaging.messagingPage.aidezLEquipeDeModeration')}
         >
           <div className="space-y-4 text-xs">
-            <p className="text-stone-600 leading-relaxed">
-              Votre signalement sera examiné en priorité par notre équipe de modération. En cas d'urgence ou de tentative d'escroquerie, nous prendrons des mesures immédiates.
-            </p>
+            <p className="text-stone-600 leading-relaxed">{t('messaging.messagingPage.votreSignalementSeraExamineEn')}</p>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" fullWidth onClick={() => setReportModalTarget(null)}>
                 Annuler
@@ -563,9 +550,7 @@ export const MessagingPage: React.FC = () => {
                   setReportModalTarget(null);
                   toast.success('Votre signalement a été transmis à la modération.');
                 }}
-              >
-                Envoyer le signalement
-              </Button>
+              >{t('messaging.messagingPage.envoyerLeSignalement')}</Button>
             </div>
           </div>
         </Modal>
@@ -582,9 +567,7 @@ export const MessagingPage: React.FC = () => {
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setLightboxImageUrl(null)}
         >
-          <h2 id={lightboxTitleId} className="sr-only">
-            Pièce jointe en plein écran
-          </h2>
+          <h2 id={lightboxTitleId} className="sr-only">{t('messaging.messagingPage.pieceJointeEnPleinEcran')}</h2>
           <button
             type="button"
             onClick={() => setLightboxImageUrl(null)}

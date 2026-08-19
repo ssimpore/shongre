@@ -145,9 +145,7 @@ export const CrmContactDetailPage: React.FC = () => {
         title="Contact introuvable"
         description={t('admin.crmContactDetailPage.ceContactNExistePlus')}
         action={
-          <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/contacts')}>
-            Retour aux contacts
-          </Button>
+          <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/contacts')}>{t('admin.crmContactDetailPage.retourAuxContacts')}</Button>
         }
       />
     );
@@ -300,9 +298,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 <Clock className="w-4 h-4 text-stone-700" />
                 <h3 className="text-sm font-black text-stone-900">{t('admin.crmContactDetailPage.tachesAssociees')}</h3>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setIsTaskModalOpen(true)}>
-                + Tâche
-              </Button>
+              <Button variant="outline" size="sm" onClick={() => setIsTaskModalOpen(true)}>{t('admin.crmContactDetailPage.tache')}</Button>
             </div>
 
             {tasks.length === 0 ? (

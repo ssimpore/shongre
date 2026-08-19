@@ -4,8 +4,10 @@ import { CheckCircle2, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NewsletterConfirmPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -30,9 +32,7 @@ export const NewsletterConfirmPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">
-            Abonnement confirmé !
-          </h1>
+          <h1 className="text-2xl font-black text-stone-900">{t('newsletter.newsletterConfirmPage.abonnementConfirme')}</h1>
           <p className="text-xs sm:text-sm text-stone-600">
             L'adresse <strong className="text-stone-900 font-mono">{emailParam}</strong> est désormais inscrite à la newsletter Shongre.
           </p>
@@ -40,24 +40,18 @@ export const NewsletterConfirmPage: React.FC = () => {
 
         <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-xs text-stone-500 text-left flex items-start gap-3">
           <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-          <span>
-            Vous recevrez chaque semaine les meilleures pépites et bons plans. Vous pouvez modifier vos préférences ou vous désabonner à tout moment.
-          </span>
+          <span>{t('newsletter.newsletterConfirmPage.vousRecevrezChaqueSemaineLes')}</span>
         </div>
 
         <div className="space-y-2 pt-2">
-          <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">
-            Explorer les annonces
-          </Button>
+          <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">{t('newsletter.newsletterConfirmPage.explorerLesAnnonces')}</Button>
           <Button
             to="/compte/newsletter"
             variant="outline"
             fullWidth
             size="sm"
             className="font-semibold"
-          >
-            Gérer mes thématiques
-          </Button>
+          >{t('newsletter.newsletterConfirmPage.gererMesThematiques')}</Button>
         </div>
       </div>
     </div>

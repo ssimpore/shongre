@@ -152,9 +152,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <Lock className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-black text-stone-900 mb-2">Authentification requise</h1>
-        <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">
-          Vous devez être connecté pour accéder à cette section.
-        </p>
+        <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">{t('security.requirePermission.vousDevezEtreConnectePour')}</p>
         <div className="flex items-center justify-center gap-3">
           <Button
             to={`/connexion?redirect=${redirectParam}`}
@@ -167,9 +165,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
             to="/inscription"
             variant="outline"
             size="md"
-          >
-            Créer un compte
-          </Button>
+          >{t('security.requirePermission.creerUnCompte')}</Button>
         </div>
       </div>
       </GuardShell>
@@ -194,9 +190,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           to="/aide"
           variant="outline"
           size="md"
-        >
-          Contacter le support de sécurité
-        </Button>
+        >{t('security.requirePermission.contacterLeSupportDeSecurite')}</Button>
       </div>
       </GuardShell>
     );
@@ -226,17 +220,13 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
               to="/solutions-pro"
               variant="primary"
               size="md"
-            >
-              Découvrir les offres Pro
-            </Button>
+            >{t('security.requirePermission.decouvrirLesOffresPro')}</Button>
             <Button
               to="/compte"
               variant="outline"
               size="md"
               leftIcon={<ArrowLeft className="w-4 h-4" />}
-            >
-              Retour à mon compte
-            </Button>
+            >{t('security.requirePermission.retourAMonCompte')}</Button>
           </div>
         </div>
         </GuardShell>
@@ -265,9 +255,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
             variant="outline"
             size="md"
             leftIcon={<ArrowLeft className="w-4 h-4" />}
-          >
-            Retour à l'accueil
-          </Button>
+          >{t('security.requirePermission.retourALAccueil')}</Button>
           <Button
             to={forward.to}
             variant="primary"

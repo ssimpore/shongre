@@ -78,12 +78,8 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div>
             <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-success" />
-              État de Santé & Disponibilité en Temps Réel
-            </h4>
-            <p className="text-xs text-stone-500">
-              Contrôlez l'état de santé simulé pour tester la résilience et la bascule vers les prestataires de secours.
-            </p>
+              <Activity className="w-4 h-4 text-success" />{t('admin.providerHealthSimulator.etatDeSanteDisponibiliteEn')}</h4>
+            <p className="text-xs text-stone-500">{t('admin.providerHealthSimulator.controlezLEtatDeSante')}</p>
           </div>
 
           <span
@@ -156,15 +152,11 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
       {/* 2. Deterministic Testing Tool */}
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
         <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2 flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-stone-700" />
-          Simulateur de Tests Déterministes & Diagnostic API
-        </h4>
+          <Terminal className="w-4 h-4 text-stone-700" />{t('admin.providerHealthSimulator.simulateurDeTestsDeterministesDiagnostic')}</h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">
-              Scénario de test à exécuter :
-            </label>
+            <label className="block text-xs font-bold text-stone-700 mb-1">{t('admin.providerHealthSimulator.scenarioDeTestAExecuter')}</label>
             <select
               value={selectedScenario}
               onChange={(e) => setSelectedScenario(e.target.value as any)}
@@ -186,9 +178,7 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
               onClick={handleRunTest}
               leftIcon={<Play className="w-3.5 h-3.5" />}
               className="w-full text-xs font-bold"
-            >
-              Exécuter le test de diagnostic
-            </Button>
+            >{t('admin.providerHealthSimulator.executerLeTestDeDiagnostic')}</Button>
           </div>
         </div>
 

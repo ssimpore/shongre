@@ -91,6 +91,14 @@ for (const file of walk(ROOT)) {
   const source = readFileSync(file, 'utf8');
   const hits = [];
 
+  /* Records that carry their own per-locale maps are already translated: the
+     flat `name` / `label` beside `labels: { 'fr-FR': …, 'en-US': … }` is the
+     French *source*, not a missing translation. Counting it reported the
+     taxonomy as 65 untranslated strings while every English label was sitting
+     in the same object, unread. Data localised this way is resolved through
+     `getTaxonomyLabel` / `localize`, so only the JSX in such a file is copy. */
+  const carriesLocaleMaps = /'en-US'\s*:/.test(source);
+
   for (const [, , value] of source.matchAll(VISIBLE_PROPS)) {
     if (looksFrench(value)) hits.push(value.trim());
   }
@@ -102,8 +110,10 @@ for (const file of walk(ROOT)) {
     if (looksFrench(collapsed)) hits.push(collapsed);
   }
   // Groups: [full, identifier, quote, text] — read the text, not the quote.
-  for (const [, , , value] of source.matchAll(COPY_IDENTIFIERS)) {
-    if (looksFrench(value)) hits.push(value.trim());
+  if (!carriesLocaleMaps) {
+    for (const [, , , value] of source.matchAll(COPY_IDENTIFIERS)) {
+      if (looksFrench(value)) hits.push(value.trim());
+    }
   }
 
   if (hits.length) {

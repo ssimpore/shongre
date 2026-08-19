@@ -136,9 +136,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
-              Intégrations Répertoriées
-            </span>
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">{t('admin.providerOverviewDashboard.integrationsRepertoriees')}</span>
             <span className="p-2 rounded-lg bg-stone-100 text-stone-700 shrink-0">
               <Cpu className="w-4 h-4" />
             </span>
@@ -153,9 +151,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
 
         <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
-              Santé Opérationnelle
-            </span>
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">{t('admin.providerOverviewDashboard.santeOperationnelle')}</span>
             <span
               className={`p-2 rounded-lg shrink-0 ${
                 metrics.degraded === 0 ? 'bg-success-surface text-success' : 'bg-warning-surface text-warning'
@@ -189,9 +185,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
           </div>
           <div className="mt-3">
             <span className="text-2xl font-black text-stone-900">{metrics.overrides}</span>
-            <span className="ml-2 text-xs font-medium text-stone-500">
-              Héritage France actif
-            </span>
+            <span className="ml-2 text-xs font-medium text-stone-500">{t('admin.providerOverviewDashboard.heritageFranceActif')}</span>
           </div>
         </div>
 
@@ -228,12 +222,8 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-success" />
-              État des Fonctions Critiques de la Plateforme (France • Référence)
-            </h2>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Résolution en direct du prestataire primaire et de l'état de fonctionnement effectif.
-            </p>
+              <ShieldCheck className="w-4 h-4 text-success" />{t('admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe')}</h2>
+            <p className="text-xs text-stone-500 mt-0.5">{t('admin.providerOverviewDashboard.resolutionEnDirectDuPrestataire')}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -243,9 +233,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
               onClick={() => onNavigateToTab('matrix')}
               rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
               className="text-xs h-8"
-            >
-              Matrice multi-marchés
-            </Button>
+            >{t('admin.providerOverviewDashboard.matriceMultiMarches')}</Button>
           </div>
         </div>
 
@@ -274,9 +262,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
                     )}
                     {isDegraded && (
                       <span className="flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-1.5 py-0.5 rounded-sm">
-                        <AlertTriangle className="w-3 h-3" />
-                        Dégradé
-                      </span>
+                        <AlertTriangle className="w-3 h-3" />{t('admin.providerOverviewDashboard.degrade')}</span>
                     )}
                     {isUnavailable && (
                       <span className="flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface px-1.5 py-0.5 rounded-sm">
@@ -309,9 +295,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
         <div className="lg:col-span-2 bg-white rounded-xl border border-stone-200 shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              Répartition par Domaine & Catégorie
-            </h2>
+              <Layers className="w-4 h-4 text-primary" />{t('admin.providerOverviewDashboard.repartitionParDomaineCategorie')}</h2>
             <span className="text-xs text-stone-500 font-mono">
               {Object.keys(PROVIDER_CATEGORIES).length} catégories
             </span>
@@ -352,9 +336,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
         <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-stone-600" />
-              Changements Récents
-            </h2>
+              <Clock className="w-4 h-4 text-stone-600" />{t('admin.providerOverviewDashboard.changementsRecents')}</h2>
           </div>
 
           {recentAudit.length === 0 ? (

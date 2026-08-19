@@ -267,14 +267,9 @@ export const CollectionsPage: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
               <div className="max-w-3xl space-y-3">
-                <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
-                  Toutes nos collections
-                </h1>
+                <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">{t('collections.collectionsPage.toutesNosCollections')}</h1>
 
-                <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">
-                  Découvrez des univers thématiques pensés pour vous inspirer : bons plans, mobilier vintage,
-                  tech reconditionnée, mobilité douce, rentrée et créateurs de nos régions.
-                </p>
+                <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">{t('collections.collectionsPage.decouvrezDesUniversThematiquesPenses')}</p>
               </div>
 
               {/* Search collections bar */}
@@ -422,9 +417,7 @@ export const CollectionsPage: React.FC = () => {
                     setActivePillar('all');
                   }}
                   className="h-9 px-4 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-                >
-                  Voir toutes les collections
-                </button>
+                >{t('collections.collectionsPage.voirToutesLesCollections')}</button>
               </div>
             )}
           </div>
@@ -514,9 +507,7 @@ export const CollectionsPage: React.FC = () => {
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-base font-bold text-stone-900">{t('collections.collectionsPage.aucuneAnnonceTrouvee')}</h4>
-                    <p className="text-xs text-stone-500">
-                      Aucune annonce ne correspond aux filtres actifs dans cette collection.
-                    </p>
+                    <p className="text-xs text-stone-500">{t('collections.collectionsPage.aucuneAnnonceNeCorrespondAux')}</p>
                   </div>
                   <button
                     type="button"
@@ -525,9 +516,7 @@ export const CollectionsPage: React.FC = () => {
                       setInCollectionSearch('');
                     }}
                     className="h-9 px-4 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-                  >
-                    Réinitialiser les filtres
-                  </button>
+                  >{t('collections.collectionsPage.reinitialiserLesFiltres')}</button>
                 </div>
               )}
             </div>

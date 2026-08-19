@@ -41,9 +41,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
             <ShieldCheck className="w-5 h-5 text-primary" />
             <span>{t('admin.taxonomyValidationTab.moteurDAuditValidationD')}</span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
-            Contrôle automatique de structure, unicité des IDs et slugs, cohérence des capacités et attributs.
-          </p>
+          <p className="text-xs text-stone-500 mt-1">{t('admin.taxonomyValidationTab.controleAutomatiqueDeStructureUnicite')}</p>
         </div>
 
         <Button

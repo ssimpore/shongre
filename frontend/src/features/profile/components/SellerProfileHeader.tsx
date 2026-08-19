@@ -193,9 +193,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   </span>
                 )}
                 {showsVerifiedBadge(seller) && (
-                  <Badge variant="verified" size="sm" icon>
-                    Vérifié
-                  </Badge>
+                  <Badge variant="verified" size="sm" icon>{t('profile.sellerProfileHeader.verifie')}</Badge>
                 )}
               </div>
 
@@ -255,20 +253,30 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   fullWidth
                   leftIcon={<List className="w-4 h-4" />}
                   className="flex-1 sm:flex-initial"
-                >
-                  Gérer mes annonces
-                </Button>
+                >{t('profile.sellerProfileHeader.gererMesAnnonces')}</Button>
               </div>
             ) : (
               <div className="flex items-center gap-2 w-full sm:w-auto">
+                {/* `min-w-0` is what makes `flex-1` able to shrink: a flex item
+                    defaults to `min-width: auto`, so this button held its full
+                    label width and pushed the share and overflow controls past
+                    the row's right edge at 375px. The label truncates rather
+                    than the row spilling. */}
                 <Button
                   variant="primary"
                   size="md"
                   onClick={onContactClick}
                   leftIcon={<MessageSquare className="w-4 h-4" />}
-                  className="flex-1 sm:flex-initial"
+                  className="flex-1 sm:flex-initial min-w-0"
                 >
-                  {isPro ? 'Contacter la boutique' : 'Contacter le vendeur'}
+                  {/* Short label on phones, full label from `sm`. Truncation
+                      alone produced "Contacter la bo…", which reads as a broken
+                      string rather than a shorter one — the row is too narrow
+                      for the full label beside the share and overflow controls. */}
+                  <span className="sm:hidden">Contacter</span>
+                  <span className="hidden sm:inline truncate">
+                    {isPro ? 'Contacter la boutique' : 'Contacter le vendeur'}
+                  </span>
                 </Button>
 
                 <Button
@@ -320,9 +328,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         onClick={handleShare}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
                       >
-                        <Share2 className="w-4 h-4 text-stone-400" />
-                        Partager ce profil
-                      </button>
+                        <Share2 className="w-4 h-4 text-stone-400" />{t('profile.sellerProfileHeader.partagerCeProfil2')}</button>
                       <div className="border-t border-stone-100 my-1" />
                       <button
                         type="button"
@@ -332,9 +338,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-warning hover:bg-warning-surface text-left"
                       >
-                        <Flag className="w-4 h-4 text-warning" />
-                        Signaler ce profil
-                      </button>
+                        <Flag className="w-4 h-4 text-warning" />{t('profile.sellerProfileHeader.signalerCeProfil')}</button>
                       <button
                         type="button"
                         onClick={handleBlockToggle}

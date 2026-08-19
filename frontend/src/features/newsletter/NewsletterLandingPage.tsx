@@ -25,13 +25,9 @@ export const NewsletterLandingPage: React.FC = () => {
           <span>{t('newsletter.newsletterLandingPage.laNewsletterShongre')}</span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 tracking-tight leading-tight">
-          Ne manquez plus aucune pépite ni bonne affaire
-        </h1>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 tracking-tight leading-tight">{t('newsletter.newsletterLandingPage.neManquezPlusAucunePepite')}</h1>
 
-        <p className="text-xs sm:text-base text-stone-600 leading-relaxed">
-          Chaque semaine, recevez dans votre boîte mail une sélection d'articles uniques, les baisses de prix vérifiées et des conseils pour acheter et vendre en toute confiance.
-        </p>
+        <p className="text-xs sm:text-base text-stone-600 leading-relaxed">{t('newsletter.newsletterLandingPage.chaqueSemaineRecevezDansVotre')}</p>
       </div>
 
       {/* 2. Embedded Main Signup Band */}
@@ -42,12 +38,8 @@ export const NewsletterLandingPage: React.FC = () => {
       {/* 3. Topics Grid */}
       <div className="space-y-6 pt-6">
         <div className="text-center max-w-xl mx-auto space-y-1">
-          <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-            Ce que vous trouverez dans nos éditions
-          </h2>
-          <p className="text-xs sm:text-sm text-stone-500">
-            Vous gardez le contrôle total sur vos préférences et pouvez vous désabonner en 1 clic.
-          </p>
+          <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('newsletter.newsletterLandingPage.ceQueVousTrouverezDans')}</h2>
+          <p className="text-xs sm:text-sm text-stone-500">{t('newsletter.newsletterLandingPage.vousGardezLeControleTotal')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

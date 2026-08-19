@@ -97,12 +97,8 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
           <Briefcase className="w-6 h-6" />
         </div>
 
-        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">
-          Passer en compte Professionnel
-        </h3>
-        <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-          Conservez toutes vos annonces, avis et messages existants tout en débloquant la vitrine personnalisée, le badge Pro Vérifié et les fonctionnalités de facturation.
-        </p>
+        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">{t('auth.upgradeToProModal.passerEnCompteProfessionnel')}</h3>
+        <p className="text-xs text-stone-600 mb-5 leading-relaxed">{t('auth.upgradeToProModal.conservezToutesVosAnnoncesAvis')}</p>
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
@@ -161,9 +157,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                Numéro de TVA Intracommunautaire
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.upgradeToProModal.numeroDeTvaIntracommunautaire')}</label>
               <input
                 type="text"
                 value={vatNumber}
@@ -174,9 +168,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                Téléphone professionnel
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.upgradeToProModal.telephoneProfessionnel')}</label>
               <input
                 type="tel"
                 value={phone}
@@ -188,8 +180,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
-              Adresse du siège social / boutique <span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.upgradeToProModal.adresseDuSiegeSocialBoutique')}<span className="text-primary">*</span>
             </label>
             <input
               type="text"
@@ -218,9 +209,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               size="md"
               isLoading={isLoading}
               rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Confirmer la mise à niveau
-            </Button>
+            >{t('auth.upgradeToProModal.confirmerLaMiseANiveau')}</Button>
           </div>
         </form>
       </div>

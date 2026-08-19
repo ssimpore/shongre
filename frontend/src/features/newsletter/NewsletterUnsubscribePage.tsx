@@ -63,21 +63,15 @@ export const NewsletterUnsubscribePage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">
-            Désabonnement Newsletter
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500">
-            Vous pouvez vous désabonner en 1 clic de l'ensemble de nos sélections et bons plans.
-          </p>
+          <h1 className="text-2xl font-black text-stone-900">{t('newsletter.newsletterUnsubscribePage.desabonnementNewsletter')}</h1>
+          <p className="text-xs sm:text-sm text-stone-500">{t('newsletter.newsletterUnsubscribePage.vousPouvezVousDesabonnerEn')}</p>
         </div>
 
         {isUnsubscribed ? (
           <div className="space-y-5 animate-fadeIn">
             <div className="p-4 bg-success-surface border border-success-border rounded-2xl text-success text-xs space-y-1 text-left">
               <span className="font-bold block flex items-center gap-1.5 text-success">
-                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                Désabonnement pris en compte
-              </span>
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />{t('newsletter.newsletterUnsubscribePage.desabonnementPrisEnCompte')}</span>
               <p className="text-success leading-relaxed">
                 L'adresse <strong>{email}</strong> ne recevra plus nos communications promotionnelles.
               </p>
@@ -85,18 +79,12 @@ export const NewsletterUnsubscribePage: React.FC = () => {
 
             <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-micro text-stone-500 text-left flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-              <span>
-                Vous continuerez à recevoir les notifications nécessaires relatives à la sécurité de votre compte et à vos transactions en cours.
-              </span>
+              <span>{t('newsletter.newsletterUnsubscribePage.vousContinuerezARecevoirLes')}</span>
             </div>
 
             <div className="space-y-2 pt-2">
-              <Button variant="outline" size="sm" fullWidth onClick={handleResubscribe} disabled={isSubmitting}>
-                Je me suis trompé, me réabonner
-              </Button>
-              <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">
-                Retour à l'accueil
-              </Button>
+              <Button variant="outline" size="sm" fullWidth onClick={handleResubscribe} disabled={isSubmitting}>{t('newsletter.newsletterUnsubscribePage.jeMeSuisTrompeMe')}</Button>
+              <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">{t('newsletter.newsletterUnsubscribePage.retourALAccueil')}</Button>
             </div>
           </div>
         ) : (

@@ -414,9 +414,7 @@ export const SearchPage: React.FC = () => {
             )}
 
             {delivery && (
-              <FilterChip tone="success" onRemove={() => updateFilter('delivery', undefined)}>
-                Livraison disponible
-              </FilterChip>
+              <FilterChip tone="success" onRemove={() => updateFilter('delivery', undefined)}>{t('search.searchPage.livraisonDisponible2')}</FilterChip>
             )}
 
             {onlyDeals && (
@@ -429,9 +427,7 @@ export const SearchPage: React.FC = () => {
               type="button"
               onClick={clearAllFilters}
               className="text-xs text-stone-500 hover:text-danger font-semibold underline ml-2 cursor-pointer"
-            >
-              Effacer tout
-            </button>
+            >{t('search.searchPage.effacerTout')}</button>
           </div>
         )}
       </div>
@@ -510,9 +506,7 @@ export const SearchPage: React.FC = () => {
                 <label
                   htmlFor="desktop-category-select"
                   className="text-xs font-bold text-stone-900 uppercase tracking-wider block mb-2"
-                >
-                  Catégories
-                </label>
+                >{t('search.searchPage.categories2')}</label>
                 <div className="space-y-2.5">
                   <DropdownMenu
                     id="desktop-category-select"
@@ -549,9 +543,7 @@ export const SearchPage: React.FC = () => {
                       <label
                         htmlFor="desktop-subcategory-select"
                         className="text-[11px] font-semibold text-stone-600 block mb-1.5"
-                      >
-                        Sous-catégorie
-                      </label>
+                      >{t('search.searchPage.sousCategorie')}</label>
                       <DropdownMenu
                         id="desktop-subcategory-select"
                         ariaLabel="Filtrer par sous-catégorie"
@@ -586,9 +578,7 @@ export const SearchPage: React.FC = () => {
 
               {/* Seller Type */}
               <div className="pt-4 border-t border-border-subtle">
-                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
-                  Type de vendeur
-                </h2>
+                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">{t('search.searchPage.typeDeVendeur')}</h2>
                 <div className="space-y-2">
                   {[
                     { value: 'all', label: 'Tous les vendeurs' },
@@ -643,9 +633,7 @@ export const SearchPage: React.FC = () => {
               {dynamicFacets.length > 0 && (
                 <div className="pt-4 border-t border-border-subtle space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                      Filtres spécifiques
-                    </h2>
+                    <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider">{t('search.searchPage.filtresSpecifiques')}</h2>
                     <span className="text-micro bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">
                       {dynamicFacets.length}
                     </span>
@@ -778,7 +766,7 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className={`lg:hidden flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                   activeFilterCount > 0
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-bg-base text-stone-800 border border-border-base hover:bg-bg-subtle'
@@ -795,10 +783,13 @@ export const SearchPage: React.FC = () => {
               </button>
 
               {/* View Mode Toggle */}
+              {/* `sm` is the toolbar size: 32px, the same control height as the
+                  filter button and the sort control either side of it. */}
               <ViewModeToggle
                 viewMode={viewMode}
                 onChange={(mode) => setViewMode(mode)}
                 showMap={true}
+                size="sm"
               />
 
               {/* Sort selector at extreme right */}
@@ -889,9 +880,7 @@ export const SearchPage: React.FC = () => {
         <div className="space-y-6">
           {/* Category */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              Catégorie
-            </label>
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">{t('search.searchPage.categorie')}</label>
             <DropdownMenu
               id="mobile-category-select"
               ariaLabel="Filtrer par catégorie"
@@ -912,9 +901,7 @@ export const SearchPage: React.FC = () => {
             {/* Subcategory dropdown if active category has children */}
             {subcategoryDropdownOptions.length > 0 && (
               <div className="pt-3">
-                <label className="text-[11px] font-semibold text-stone-600 block mb-1.5">
-                  Sous-catégorie
-                </label>
+                <label className="text-[11px] font-semibold text-stone-600 block mb-1.5">{t('search.searchPage.sousCategorie')}</label>
                 <DropdownMenu
                   id="mobile-subcategory-select"
                   ariaLabel="Filtrer par sous-catégorie"
@@ -937,9 +924,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Seller type */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              Type de vendeur
-            </label>
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">{t('search.searchPage.typeDeVendeur')}</label>
             <div className="grid grid-cols-3 gap-1.5">
               {[
                 { value: 'all', label: 'Tous' },
@@ -993,9 +978,7 @@ export const SearchPage: React.FC = () => {
           {/* Dynamic Facets in Drawer */}
           {dynamicFacets.length > 0 && (
             <div className="pt-2 border-t border-border-subtle space-y-3">
-              <span className="text-xs font-bold text-stone-900 uppercase tracking-wider block">
-                Critères spécifiques
-              </span>
+              <span className="text-xs font-bold text-stone-900 uppercase tracking-wider block">{t('search.searchPage.criteresSpecifiques')}</span>
               {dynamicFacets.map((facet) => {
                 const attr = facet.attribute;
                 const currentValue = searchParams.get(`attr_${attr.code}`) || '';
@@ -1067,9 +1050,7 @@ export const SearchPage: React.FC = () => {
                 clearAllFilters();
                 setIsFilterDrawerOpen(false);
               }}
-            >
-              Effacer tout
-            </Button>
+            >{t('search.searchPage.effacerTout')}</Button>
             <Button
               variant="primary"
               fullWidth

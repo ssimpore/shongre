@@ -7,6 +7,8 @@ import { TaxonomyNode } from './taxonomy.types';
 import { Category, SubCategory, CategoryAttributeSchema, AttributeInputType } from '../../types';
 import { ATTRIBUTE_REGISTRY } from './attribute.registry';
 import { CONDITION_SCHEMES } from './condition.schemes';
+import { getTaxonomyLabel } from './taxonomy.labels';
+import { activeDataLocale } from '../../i18n/localized';
 
 export { ATTRIBUTE_REGISTRY } from './attribute.registry';
 export { CONDITION_SCHEMES } from './condition.schemes';
@@ -1335,7 +1337,20 @@ const buildLegacyAttributes = (attrIds: string[] = [], summaryIds: string[] = []
 /**
  * Maps canonical TaxonomyNode tree to Category/SubCategory interfaces
  */
-export const TAXONOMY: Category[] = CANONICAL_TAXONOMY.map((root) => {
+/**
+ * The legacy `Category[]` projection of the canonical tree.
+ *
+ * Most of the product reads this rather than `taxonomyService`, so it has to
+ * speak the visitor's language too. It takes its labels from the same
+ * `labels` / `shortLabels` maps the canonical nodes already carry — nothing is
+ * copied into a second catalogue, and French remains the source entry.
+ *
+ * `refreshTaxonomyProjection` rebuilds it **in place** on a language change:
+ * every consumer holds a reference to this array, so replacing the binding
+ * would leave them all pointing at the previous language.
+ */
+function buildTaxonomyProjection(locale: string): Category[] {
+  return CANONICAL_TAXONOMY.map((root) => {
   const rootAttrIds = root.attributeIds || [];
   const rootSummaryIds = root.summaryAttributeIds || [];
 
@@ -1347,9 +1362,9 @@ export const TAXONOMY: Category[] = CANONICAL_TAXONOMY.map((root) => {
     return {
       id: sub.id,
       slug: sub.slug,
-      name: sub.name,
-      label: sub.label || sub.name,
-      shortLabel: sub.shortLabel,
+      name: getTaxonomyLabel(sub, { locale }) || sub.name,
+      label: getTaxonomyLabel(sub, { locale }) || sub.label || sub.name,
+      shortLabel: getTaxonomyLabel(sub, { locale, compact: true }) || sub.shortLabel,
       parentSlug: root.slug,
       iconName: sub.iconName || root.iconName || 'Tag',
       accentColor: sub.accentColor || root.accentColor || '#D9532F',
@@ -1360,15 +1375,23 @@ export const TAXONOMY: Category[] = CANONICAL_TAXONOMY.map((root) => {
   return {
     id: root.id,
     slug: root.slug,
-    name: root.name,
-    label: root.label || root.name,
-    shortLabel: root.shortLabel,
+    name: getTaxonomyLabel(root, { locale }) || root.name,
+    label: getTaxonomyLabel(root, { locale }) || root.label || root.name,
+    shortLabel: getTaxonomyLabel(root, { locale, compact: true }) || root.shortLabel,
     iconName: root.iconName || 'Tag',
     description: root.description || `${root.name} sur Shongre`,
     accentColor: root.accentColor || '#D9532F',
     subCategories: subCats,
-  };
-});
+    };
+  });
+}
+
+export const TAXONOMY: Category[] = buildTaxonomyProjection(activeDataLocale());
+
+/** Re-projects in place so existing references pick up the new language. */
+export function refreshTaxonomyProjection(locale: string): void {
+  TAXONOMY.splice(0, TAXONOMY.length, ...buildTaxonomyProjection(locale));
+}
 
 export const getCategoryBySlug = (slug: string): Category | undefined => {
   return TAXONOMY.find((c) => c.slug === slug || c.id === slug);

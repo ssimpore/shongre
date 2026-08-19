@@ -48,9 +48,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
 
         {/* Reasons & Signals */}
         <div className="space-y-2">
-          <h4 className="font-black text-stone-900 text-xs uppercase tracking-wider">
-            Pourquoi cette entreprise correspond
-          </h4>
+          <h4 className="font-black text-stone-900 text-xs uppercase tracking-wider">{t('admin.evidenceDrawer.pourquoiCetteEntrepriseCorrespond')}</h4>
           <div className="space-y-2">
             {candidate.fit.reasons.map((reason, idx) => (
               <div key={idx} className="flex items-start gap-2 p-2.5 bg-stone-50 rounded-xl">
@@ -118,9 +116,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
         {/* Transparency Notice */}
         <div className="p-3.5 bg-stone-100 rounded-xl flex items-start gap-2.5 text-micro text-stone-500">
           <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-          <span>
-            Ces informations sont issues exclusivement de sources professionnelles publiques. Elles sont soumises à la validation d'un opérateur avant toute prise de contact.
-          </span>
+          <span>{t('admin.evidenceDrawer.cesInformationsSontIssuesExclusivement')}</span>
         </div>
       </div>
     </Drawer>

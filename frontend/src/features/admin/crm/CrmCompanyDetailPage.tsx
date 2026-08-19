@@ -158,9 +158,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         title="Entreprise introuvable"
         description={t('admin.crmCompanyDetailPage.cetteEntrepriseNExistePlus')}
         action={
-          <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/entreprises')}>
-            Retour aux entreprises
-          </Button>
+          <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/entreprises')}>{t('admin.crmCompanyDetailPage.retourAuxEntreprises')}</Button>
         }
       />
     );
@@ -196,9 +194,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   {lifecycleInfo.label}
                 </Badge>
                 {company.linkedSellerId && (
-                  <Badge variant="pro" size="sm">
-                    Vendeur Pro Actif
-                  </Badge>
+                  <Badge variant="pro" size="sm">{t('admin.crmCompanyDetailPage.vendeurProActif')}</Badge>
                 )}
                 {company.aiFitScore && (
                   <span className="text-micro px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold flex items-center gap-1">

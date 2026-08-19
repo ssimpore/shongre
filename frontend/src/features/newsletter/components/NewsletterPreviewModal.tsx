@@ -91,9 +91,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                 </div>
                 <span className="text-base font-extrabold">Shongre</span>
               </div>
-              <span className="text-micro uppercase tracking-wider text-stone-500 font-bold">
-                La sélection de la semaine
-              </span>
+              <span className="text-micro uppercase tracking-wider text-stone-500 font-bold">{t('newsletter.newsletterPreviewModal.laSelectionDeLaSemaine')}</span>
             </div>
 
             {/* Email Hero */}
@@ -175,9 +173,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Fermer l'aperçu
-          </Button>
+          <Button variant="outline" size="sm" onClick={onClose}>{t('newsletter.newsletterPreviewModal.fermerLApercu')}</Button>
         </div>
       </div>
     </Modal>

@@ -123,9 +123,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               <Bell className="w-5 h-5" />
             </div>
             <p className="text-xs font-bold text-stone-800">{t('notifications.notificationPanel.aucuneNotificationPourLeMoment')}</p>
-            <p className="text-micro text-stone-500">
-              Vos alertes, messages et transactions apparaîtront ici.
-            </p>
+            <p className="text-micro text-stone-500">{t('notifications.notificationPanel.vosAlertesMessagesEtTransactions')}</p>
           </div>
         ) : (
           notifications.slice(0, 6).map((notif) => (

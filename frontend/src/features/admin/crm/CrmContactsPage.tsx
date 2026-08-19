@@ -113,9 +113,7 @@ export const CrmContactsPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Contacts & Interlocuteurs
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Base unifiée des acheteurs, vendeurs Pro et prospects commerciaux Shongre.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('admin.crmContactsPage.baseUnifieeDesAcheteursVendeurs')}</p>
         </div>
 
         <Button
@@ -180,9 +178,7 @@ export const CrmContactsPage: React.FC = () => {
                   setSearch('');
                   setLifecycleFilter('all');
                 }}
-              >
-                Réinitialiser les filtres
-              </Button>
+              >{t('admin.crmContactsPage.reinitialiserLesFiltres')}</Button>
             }
             className="border-0 shadow-none"
           />
@@ -209,9 +205,7 @@ export const CrmContactsPage: React.FC = () => {
                           {c.identity.firstName} {c.identity.lastName}
                         </span>
                         {c.linkedUserId && (
-                          <Badge variant="verified" size="sm">
-                            Compte Shongre lié
-                          </Badge>
+                          <Badge variant="verified" size="sm">{t('admin.crmContactsPage.compteShongreLie')}</Badge>
                         )}
                         {c.doNotContact && (
                           <Badge variant="urgent" size="sm">

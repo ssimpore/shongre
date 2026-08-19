@@ -303,9 +303,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
-                Article réservé
-              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block mb-0.5">{t('transactions.transactionDetailModal.articleReserve')}</span>
               <h4 className="font-black text-stone-900 truncate">{tx.listingTitle}</h4>
               <p className="text-primary font-black text-base mt-0.5">{formatPrice(tx.amount)}</p>
             </div>
@@ -345,9 +343,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 className="border-danger-border text-danger hover:bg-danger-surface"
                 disabled={actionLoading}
                 onClick={() => setIsRejectConfirmOpen(true)}
-              >
-                Refuser et rembourser
-              </Button>
+              >{t('transactions.transactionDetailModal.refuserEtRembourser')}</Button>
               <Button
                 variant="primary"
                 size="sm"
@@ -369,16 +365,13 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 <KeyRound className="w-4 h-4 text-primary" />
                 <span className="font-bold text-stone-100">{t('transactions.transactionDetailModal.codeSecretDeConfirmation')}</span>
               </div>
-              <span className="text-micro bg-success/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">
-                Sécurité main propre
-              </span>
+              <span className="text-micro bg-success/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">{t('transactions.transactionDetailModal.securiteMainPropre')}</span>
             </div>
 
             {/* If user is Buyer: display the code to give to seller */}
             {isBuyer && (
               <div className="space-y-2">
-                <p className="text-micro text-stone-300">
-                  Donnez ce code secret à 6 chiffres au vendeur lors du rendez-vous, <strong>{t('transactions.transactionDetailModal.uniquementApresAvoirVerifieLa')}</strong> :
+                <p className="text-micro text-stone-300">{t('transactions.transactionDetailModal.donnezCeCodeSecretA')}<strong>{t('transactions.transactionDetailModal.uniquementApresAvoirVerifieLa')}</strong> :
                 </p>
                 <div className="flex items-center justify-between bg-stone-800 p-3 rounded-xl border border-stone-700">
                   {/* The 6-digit handover code sits on a stone-800 panel, where the
@@ -402,9 +395,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             {/* If user is Seller: input code given by buyer */}
             {isSeller && (
               <div className="space-y-2.5">
-                <p className="text-micro text-stone-300">
-                  Demandez à l'acheteur son code de confirmation à 6 chiffres lors de la remise pour débloquer immédiatement vos fonds :
-                </p>
+                <p className="text-micro text-stone-300">{t('transactions.transactionDetailModal.demandezALAcheteurSon')}</p>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -420,9 +411,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     size="md"
                     disabled={actionLoading || sellerInputPin.length < 6}
                     onClick={handleVerifyPin}
-                  >
-                    Valider la remise
-                  </Button>
+                  >{t('transactions.transactionDetailModal.validerLaRemise')}</Button>
                 </div>
               </div>
             )}
@@ -447,9 +436,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             {/* Seller inputs tracking number */}
             {isSeller && (tx.status === 'seller_confirmed' || tx.status === 'pending_seller_confirmation') && (
               <div className="space-y-2 pt-1">
-                <label className="font-semibold text-stone-700 block">
-                  Renseigner le numéro de suivi du colis :
-                </label>
+                <label className="font-semibold text-stone-700 block">{t('transactions.transactionDetailModal.renseignerLeNumeroDeSuivi')}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -475,9 +462,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             {isBuyer && (tx.status === 'shipped' || tx.status === 'delivered') && (
               <div className="p-3 bg-success-surface border border-success-border rounded-xl space-y-2">
                 <p className="font-bold text-success">{t('transactions.transactionDetailModal.avezVousBienRecuL')}</p>
-                <p className="text-micro text-success leading-relaxed">
-                  Si le colis est arrivé et que l'objet est conforme à la description, validez la réception pour débloquer les fonds au vendeur.
-                </p>
+                <p className="text-micro text-success leading-relaxed">{t('transactions.transactionDetailModal.siLeColisEstArrive')}</p>
                 <Button
                   type="button"
                   variant="primary"
@@ -485,9 +470,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   fullWidth
                   disabled={actionLoading}
                   onClick={() => setIsReceiptConfirmOpen(true)}
-                >
-                  J'ai bien reçu l'article conforme
-                </Button>
+                >{t('transactions.transactionDetailModal.jAiBienRecuL')}</Button>
               </div>
             )}
           </div>
@@ -566,9 +549,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   fullWidth
                   disabled={actionLoading}
                   onClick={handleSaveMeeting}
-                >
-                  Enregistrer le rendez-vous
-                </Button>
+                >{t('transactions.transactionDetailModal.enregistrerLeRendezVous')}</Button>
               </div>
             )}
           </div>
@@ -630,9 +611,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               onClick={() => setIsCancelConfirmOpen(true)}
               disabled={actionLoading}
               className="text-micro font-bold text-stone-500 hover:text-danger transition-colors"
-            >
-              Annuler ma réservation
-            </button>
+            >{t('transactions.transactionDetailModal.annulerMaReservation')}</button>
           )}
 
           {/* Leave Review Button on Completed Transaction */}
@@ -643,9 +622,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               size="sm"
               onClick={() => setIsReviewModalOpen(true)}
               leftIcon={<Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />}
-            >
-              Laisser une évaluation
-            </Button>
+            >{t('transactions.transactionDetailModal.laisserUneEvaluation')}</Button>
           )}
 
           {/* Open Dispute Button */}

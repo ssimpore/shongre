@@ -149,9 +149,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                     </span>
                   )}
                   {attr.searchable && (
-                    <span className="bg-success-surface text-success px-1.5 py-0.5 rounded font-semibold">
-                      Moteur recherche
-                    </span>
+                    <span className="bg-success-surface text-success px-1.5 py-0.5 rounded font-semibold">{t('admin.taxonomyAttributeRegistryTab.moteurRecherche')}</span>
                   )}
                   {attr.options && (
                     <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-semibold">
@@ -163,8 +161,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
 
               {/* Card Footer: Usage & Edit */}
               <div className="flex items-center justify-between pt-3 border-t border-border-subtle text-xs">
-                <span className="text-micro text-stone-500 font-medium">
-                  Utilisé par <strong>{consumersCount}</strong> rubrique{consumersCount > 1 ? 's' : ''}
+                <span className="text-micro text-stone-500 font-medium">{t('admin.taxonomyAttributeRegistryTab.utilisePar')}<strong>{consumersCount}</strong> rubrique{consumersCount > 1 ? 's' : ''}
                 </span>
 
                 <Button
@@ -172,9 +169,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                   size="sm"
                   onClick={() => handleOpenEdit(attr)}
                   leftIcon={<Edit2 className="w-3 h-3" />}
-                >
-                  Éditer
-                </Button>
+                >{t('admin.taxonomyAttributeRegistryTab.editer')}</Button>
               </div>
             </div>
           );

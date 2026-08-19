@@ -43,12 +43,8 @@ export const ProDirectoryPage: React.FC = () => {
 
       <div className="bg-gradient-to-r from-stone-900 to-stone-800 rounded-2xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <h1 className="text-2xl sm:text-3xl font-black text-white">
-            Trouvez des commerçants et artisans de confiance
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-300">
-            Toutes les entreprises référencées possèdent un numéro SIRET vérifié et proposent des garanties professionnelles.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">{t('pro.proDirectoryPage.trouvezDesCommercantsEtArtisans')}</h1>
+          <p className="text-xs sm:text-sm text-stone-300">{t('pro.proDirectoryPage.toutesLesEntreprisesReferenceesPossedent')}</p>
         </div>
 
         <Button

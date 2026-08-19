@@ -103,9 +103,7 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                 size="sm"
                 onClick={() => setIsDiscardModalOpen(true)}
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-              >
-                Annuler les modifications
-              </Button>
+              >{t('admin.taxonomyDraftPublishTab.annulerLesModifications')}</Button>
             )}
 
             <Button
@@ -114,9 +112,7 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
               onClick={() => setIsPublishModalOpen(true)}
               disabled={draftChanges.length === 0 || hasBlockingErrors}
               leftIcon={<Send className="w-3.5 h-3.5" />}
-            >
-              Publier les modifications
-            </Button>
+            >{t('admin.taxonomyDraftPublishTab.publierLesModifications')}</Button>
           </div>
         </div>
 
@@ -124,8 +120,7 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
         {hasBlockingErrors && draftChanges.length > 0 && (
           <div className="p-3.5 bg-danger-surface border border-danger-border rounded-xl text-xs text-danger flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-danger shrink-0" />
-            <span>
-              Publication bloquée : des anomalies critiques ont été détectées. Veuillez consulter l'onglet <strong>Validation</strong>.
+            <span>{t('admin.taxonomyDraftPublishTab.publicationBloqueeDesAnomaliesCritiques')}<strong>Validation</strong>.
             </span>
           </div>
         )}

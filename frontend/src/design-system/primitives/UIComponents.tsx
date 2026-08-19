@@ -2,6 +2,7 @@ import React from 'react';
 import { Star, AlertCircle, CheckCircle, Info, ChevronRight, Inbox } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../../utilities/formatters';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 // Price Display
 export interface PriceDisplayProps {
@@ -21,6 +22,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   size = 'md',
   className = '',
 }) => {
+  const { t } = useTranslation();
   const sizeClasses = {
     sm: 'text-sm font-bold',
     md: 'text-base font-bold',
@@ -41,9 +43,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
         </span>
       )}
       {isNegotiable && !isFreeDonation && (
-        <span className="text-micro font-semibold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200">
-          Négociable
-        </span>
+        <span className="text-micro font-semibold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200">{t('ui.uIComponents.negociable')}</span>
       )}
     </div>
   );

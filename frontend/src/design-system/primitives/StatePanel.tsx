@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, SearchX, Lock, ServerCrash } from 'lucide-react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export type StatePanelVariant = 'error' | 'notFound' | 'restricted' | 'offline';
 
@@ -50,6 +51,7 @@ export const StatePanel: React.FC<StatePanelProps> = ({
   technicalDetail,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const { Icon, tone } = VARIANT_META[variant];
 
   return (
@@ -75,9 +77,7 @@ export const StatePanel: React.FC<StatePanelProps> = ({
 
       {technicalDetail && (
         <details className="mt-6 w-full max-w-md text-left">
-          <summary className="text-micro font-semibold text-stone-500 cursor-pointer hover:text-stone-700">
-            Détails techniques
-          </summary>
+          <summary className="text-micro font-semibold text-stone-500 cursor-pointer hover:text-stone-700">{t('ui.statePanel.detailsTechniques')}</summary>
           <p className="mt-2 p-3 rounded-xl bg-bg-subtle border border-border-base text-micro font-mono text-stone-600 break-words">
             {technicalDetail}
           </p>

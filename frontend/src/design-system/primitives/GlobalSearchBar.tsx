@@ -654,9 +654,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                         type="button"
                         onClick={() => handleCategorySelect(undefined)}
                         className="w-full px-3 py-1.5 text-xs text-left font-bold hover:bg-bg-subtle text-stone-800"
-                      >
-                        Toutes les catégories
-                      </button>
+                      >{t('ui.globalSearchBar.toutesLesCategories2')}</button>
                       {TAXONOMY.map((cat) => (
                         <button
                           key={cat.id}

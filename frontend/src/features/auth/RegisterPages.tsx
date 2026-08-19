@@ -64,19 +64,13 @@ export const RegisterChoicePage: React.FC = () => {
             <span>Inscription gratuite</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            Créer votre compte Shongre
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
-            Rejoignez la communauté de commerce circulaire sécurisé en France et en Europe.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('auth.registerPages.creerVotreCompteShongre')}</h1>
+          <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">{t('auth.registerPages.rejoignezLaCommunauteDeCommerce')}</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xl shadow-stone-200/40 p-6 sm:p-8 space-y-6">
           <div>
-            <label className="block text-xs font-extrabold text-stone-900 uppercase tracking-wider mb-3">
-              1. Sélectionnez votre profil d'activité
-            </label>
+            <label className="block text-xs font-extrabold text-stone-900 uppercase tracking-wider mb-3">{t('auth.registerPages.1SelectionnezVotreProfilD')}</label>
             <AccountTypeSelector
               selectedType={selectedType}
               onChange={(type) => setSelectedType(type as any)}
@@ -202,8 +196,7 @@ export const RegisterIndividualPage: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="reg-name" className="block text-xs font-bold text-stone-800 mb-1.5">
-            Nom et prénom ou pseudonyme <span className="text-primary">*</span>
+          <label htmlFor="reg-name" className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.nomEtPrenomOuPseudonyme')}<span className="text-primary">*</span>
           </label>
           <div className="relative">
             <input
@@ -309,13 +302,9 @@ export const RegisterIndividualPage: React.FC = () => {
             />
             <span>
               J'ai lu et j'accepte les{' '}
-              <Link to="/conditions-utilisation" target="_blank" className="font-bold text-primary hover:underline">
-                Conditions Générales d'Utilisation
-              </Link>{' '}
+              <Link to="/conditions-utilisation" target="_blank" className="font-bold text-primary hover:underline">{t('auth.registerPages.conditionsGeneralesDUtilisation')}</Link>{' '}
               et la{' '}
-              <Link to="/confidentialite" target="_blank" className="font-bold text-primary hover:underline">
-                Politique de Confidentialité
-              </Link>{' '}
+              <Link to="/confidentialite" target="_blank" className="font-bold text-primary hover:underline">{t('auth.registerPages.politiqueDeConfidentialite')}</Link>{' '}
               de Shongre. <span className="text-primary">*</span>
             </span>
           </label>
@@ -327,9 +316,7 @@ export const RegisterIndividualPage: React.FC = () => {
               onChange={(e) => setMarketingConsent(e.target.checked)}
               className="w-4 h-4 mt-0.5 rounded border-stone-300 text-primary focus:ring-primary shrink-0"
             />
-            <span>
-              Je souhaite recevoir par email les bons plans, offres exclusives et actualités de la communauté (facultatif).
-            </span>
+            <span>{t('auth.registerPages.jeSouhaiteRecevoirParEmail')}</span>
           </label>
         </div>
 
@@ -340,9 +327,7 @@ export const RegisterIndividualPage: React.FC = () => {
           className="w-full mt-2"
           isLoading={isLoading}
           rightIcon={<ArrowRight className="w-4 h-4" />}
-        >
-          Créer mon compte Particulier
-        </Button>
+        >{t('auth.registerPages.creerMonCompteParticulier')}</Button>
       </form>
     </AuthLayout>
   );
@@ -462,12 +447,8 @@ export const RegisterProPage: React.FC = () => {
             <span>{t('auth.registerPages.vendeurProfessionnel')}</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            Ouvrir un compte Professionnel
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
-            Accédez à la vitrine officielle, au badge Pro Vérifié et à la facturation TVA automatisée.
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('auth.registerPages.ouvrirUnCompteProfessionnel')}</h1>
+          <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">{t('auth.registerPages.accedezALaVitrineOfficielle')}</p>
         </div>
 
         {/* Step progress bar */}
@@ -498,8 +479,7 @@ export const RegisterProPage: React.FC = () => {
           {step === 1 ? (
             <form onSubmit={handleNextStep} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                  Nom et prénom du responsable / contact <span className="text-primary">*</span>
+                <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.nomEtPrenomDuResponsable')}<span className="text-primary">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -532,9 +512,7 @@ export const RegisterProPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                  Téléphone commercial
-                </label>
+                <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.telephoneCommercial')}</label>
                 <div className="relative">
                   <input
                     type="tel"
@@ -565,9 +543,7 @@ export const RegisterProPage: React.FC = () => {
                   size="lg"
                   className="w-full"
                   rightIcon={<ArrowRight className="w-4 h-4" />}
-                >
-                  Continuer vers les informations entreprise
-                </Button>
+                >{t('auth.registerPages.continuerVersLesInformationsEntreprise')}</Button>
               </div>
             </form>
           ) : (
@@ -655,8 +631,7 @@ export const RegisterProPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                  Adresse du siège social / magasin <span className="text-primary">*</span>
+                <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.adresseDuSiegeSocialMagasin')}<span className="text-primary">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -713,9 +688,7 @@ export const RegisterProPage: React.FC = () => {
                   />
                   <span>
                     Je certifie sur l'honneur l'exactitude des informations d'immatriculation de mon entreprise et j'accepte les{' '}
-                    <Link to="/conditions-utilisation" target="_blank" className="font-bold text-primary hover:underline">
-                      Conditions Générales de Vente Professionnelles
-                    </Link>{' '}
+                    <Link to="/conditions-utilisation" target="_blank" className="font-bold text-primary hover:underline">{t('auth.registerPages.conditionsGeneralesDeVenteProfessionnelles')}</Link>{' '}
                     Shongre. <span className="text-primary">*</span>
                   </span>
                 </label>

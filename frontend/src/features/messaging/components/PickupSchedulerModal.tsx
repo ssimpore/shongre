@@ -88,9 +88,7 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
             type="submit"
             isLoading={isSubmitting}
             leftIcon={<Calendar className="w-4 h-4" />}
-          >
-            Confirmer le rendez-vous
-          </Button>
+          >{t('messaging.pickupSchedulerModal.confirmerLeRendezVous')}</Button>
         </div>
       </form>
     </Modal>

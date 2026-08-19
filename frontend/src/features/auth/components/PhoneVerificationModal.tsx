@@ -4,6 +4,7 @@ import { useDialogBehavior } from '../../../design-system/primitives/useDialogBe
 import { authService } from '../../../domains/auth/auth.service';
 import { Button } from '../../../design-system/primitives/Button';
 import { SUPPORTED_MARKETS } from '../../../configuration/market.config';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface PhoneVerificationModalProps {
   userId: string;
@@ -20,6 +21,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<'input' | 'otp'>('input');
   const [phone, setPhone] = useState(initialPhone);
   const [selectedCountry, setSelectedCountry] = useState('FR');
@@ -132,12 +134,8 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
           <Smartphone className="w-6 h-6" />
         </div>
 
-        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">
-          Vérification du numéro de téléphone
-        </h3>
-        <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-          La vérification téléphonique protège les acheteurs et vendeurs lors des remises en main propre et renforce la confiance.
-        </p>
+        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">{t('auth.phoneVerificationModal.verificationDuNumeroDeTelephone')}</h3>
+        <p className="text-xs text-stone-600 mb-5 leading-relaxed">{t('auth.phoneVerificationModal.laVerificationTelephoniqueProtegeLes')}</p>
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
@@ -163,9 +161,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         {step === 'input' ? (
           <form onSubmit={handleSendCode} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                Pays et indicatif
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.phoneVerificationModal.paysEtIndicatif')}</label>
               <div className="grid grid-cols-3 gap-2">
                 <select
                   value={selectedCountry}
@@ -195,16 +191,12 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               size="md"
               className="w-full"
               isLoading={isLoading}
-            >
-              Recevoir mon code par SMS
-            </Button>
+            >{t('auth.phoneVerificationModal.recevoirMonCodeParSms')}</Button>
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                Saisissez le code reçu par SMS (6 chiffres)
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.phoneVerificationModal.saisissezLeCodeRecuPar')}</label>
               <input
                 type="text"
                 maxLength={6}
@@ -223,18 +215,14 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               size="md"
               className="w-full"
               isLoading={isLoading}
-            >
-              Confirmer le numéro
-            </Button>
+            >{t('auth.phoneVerificationModal.confirmerLeNumero')}</Button>
 
             <div className="flex items-center justify-between text-xs pt-2">
               <button
                 type="button"
                 onClick={() => setStep('input')}
                 className="text-stone-500 hover:text-stone-900 font-semibold"
-              >
-                Changer de numéro
-              </button>
+              >{t('auth.phoneVerificationModal.changerDeNumero')}</button>
               <button
                 type="button"
                 onClick={handleResend}

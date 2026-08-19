@@ -368,14 +368,10 @@ export const ListingDetailPage: React.FC = () => {
           title={t('listings.listingDetailPage.annonceIntrouvableOuSupprimee')}
           description={t('listings.listingDetailPage.cetteAnnonceNEstPlus')}
           action={
-            <Button variant="primary" onClick={() => navigate(routes.search())}>
-              Explorer les annonces similaires
-            </Button>
+            <Button variant="primary" onClick={() => navigate(routes.search())}>{t('listings.listingDetailPage.explorerLesAnnoncesSimilaires')}</Button>
           }
           secondaryAction={
-            <Button variant="outline" onClick={() => navigate('/')}>
-              Retour à l'accueil
-            </Button>
+            <Button variant="outline" onClick={() => navigate('/')}>{t('listings.listingDetailPage.retourALAccueil')}</Button>
           }
         />
       </div>
@@ -447,9 +443,7 @@ export const ListingDetailPage: React.FC = () => {
                   {isProSeller(listing) && <Badge variant="pro" size="md">{t('listings.listingDetailPage.vendeurPro')}</Badge>}
                   {listing.isBoosted && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
-                      <Sparkles className="w-3.5 h-3.5 text-warning" />
-                      À la une
-                    </span>
+                      <Sparkles className="w-3.5 h-3.5 text-warning" />{t('listings.listingDetailPage.aLaUne')}</span>
                   )}
                 </div>
 
@@ -558,9 +552,7 @@ export const ListingDetailPage: React.FC = () => {
             <Link
               to={`/contact?context=listing&listingId=${listing.id}`}
               className="text-primary hover:underline font-bold inline-flex items-center gap-1"
-            >
-              Signaler ou demander de l'aide sur cette annonce
-            </Link>
+            >{t('listings.listingDetailPage.signalerOuDemanderDeL')}</Link>
             <span>Dernière mise à jour : {formatRelativeDate(listing.updatedAt || listing.createdAt)}</span>
           </div>
         </div>
@@ -581,9 +573,7 @@ export const ListingDetailPage: React.FC = () => {
                 point. The fee is disclosed, itemised, in the checkout and
                 reservation flows where the amount is actually known. */}
             <div className="space-y-1">
-              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
-                Prix de l'article
-              </span>
+              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">{t('listings.listingDetailPage.prixDeLArticle')}</span>
               <PriceDisplay
                 price={listing.price}
                 originalPrice={listing.originalPrice}
@@ -593,9 +583,7 @@ export const ListingDetailPage: React.FC = () => {
               />
               {listing.isOnlinePaymentAvailable && listing.price > 0 && (
                 <p className="flex items-center gap-1.5 text-xs text-stone-500 pt-1.5">
-                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />
-                  Protection Acheteur incluse, calculée au paiement
-                </p>
+                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />{t('listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu')}</p>
               )}
             </div>
 
@@ -673,18 +661,14 @@ export const ListingDetailPage: React.FC = () => {
                     size="lg"
                     fullWidth
                     leftIcon={<Edit3 className="w-4 h-4" />}
-                  >
-                    Modifier mon annonce
-                  </Button>
+                  >{t('listings.listingDetailPage.modifierMonAnnonce')}</Button>
                   <Button
                     to="/compte/annonces"
                     variant="outline"
                     size="md"
                     fullWidth
                     leftIcon={<Sliders className="w-4 h-4" />}
-                  >
-                    Gérer mes annonces & stats
-                  </Button>
+                  >{t('listings.listingDetailPage.gererMesAnnoncesStats')}</Button>
                 </div>
               </div>
             ) : actions.statusNotice ? (
@@ -743,9 +727,7 @@ export const ListingDetailPage: React.FC = () => {
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
                     leftIcon={<Clock className="w-5 h-5 text-warning" />}
-                  >
-                    Réserver l'article
-                  </Button>
+                  >{t('listings.listingDetailPage.reserverLArticle')}</Button>
                 )}
 
                 <div
@@ -762,7 +744,16 @@ export const ListingDetailPage: React.FC = () => {
                       onClick={() => setIsOfferModalOpen(true)}
                       leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
                     >
-                      Offre de prix
+                      {/* Two buttons share this row on a phone, and the full
+                          label plus its icon does not fit the 137px cell — it
+                          rendered clipped mid-word. The pinned buy bar already
+                          uses the short form, so they now agree. */}
+                      <span className="sm:hidden">
+                        {t('listings.listingDetailPage.offreDePrixCourt')}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {t('listings.listingDetailPage.offreDePrix')}
+                      </span>
                     </Button>
                   )}
 
@@ -774,9 +765,7 @@ export const ListingDetailPage: React.FC = () => {
                       fullWidth
                       onClick={() => setIsContactModalOpen(true)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
-                    >
-                      Message
-                    </Button>
+                    >{t('listings.listingDetailPage.message')}</Button>
                   )}
                 </div>
               </div>
@@ -795,9 +784,7 @@ export const ListingDetailPage: React.FC = () => {
               <h2 className="text-lg sm:text-xl font-black text-stone-900">
                 Annonces similaires dans {listing.categoryLabel}
               </h2>
-              <p className="text-xs text-stone-500">
-                Sélection d'articles recommandés selon vos critères
-              </p>
+              <p className="text-xs text-stone-500">{t('listings.listingDetailPage.selectionDArticlesRecommandesSelon')}</p>
             </div>
 
             <Link
@@ -868,9 +855,7 @@ export const ListingDetailPage: React.FC = () => {
             <Button variant="outline" fullWidth onClick={() => setIsContactModalOpen(false)}>
               Annuler
             </Button>
-            <Button variant="primary" fullWidth onClick={handleSendMessage} leftIcon={<Send className="w-4 h-4" />}>
-              Envoyer le message
-            </Button>
+            <Button variant="primary" fullWidth onClick={handleSendMessage} leftIcon={<Send className="w-4 h-4" />}>{t('listings.listingDetailPage.envoyerLeMessage')}</Button>
           </div>
         </div>
       </Modal>
@@ -949,9 +934,7 @@ export const ListingDetailPage: React.FC = () => {
                 setIsReportModalOpen(false);
                 toast.success('Votre signalement a été transmis avec succès.');
               }}
-            >
-              Envoyer le signalement
-            </Button>
+            >{t('listings.listingDetailPage.envoyerLeSignalement')}</Button>
           </div>
         </div>
       </Modal>
@@ -1028,9 +1011,7 @@ export const ListingDetailPage: React.FC = () => {
                   className="w-full sm:w-auto"
                   onClick={() => setIsReservationModalOpen(true)}
                   leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
-                >
-                  Réserver
-                </Button>
+                >{t('listings.listingDetailPage.reserver')}</Button>
               )}
               {actions.canContact && (
                 <Button
@@ -1039,9 +1020,7 @@ export const ListingDetailPage: React.FC = () => {
                   className="w-full sm:w-auto"
                   onClick={() => setIsContactModalOpen(true)}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
-                >
-                  Message
-                </Button>
+                >{t('listings.listingDetailPage.message')}</Button>
               )}
               {actions.canDirectPurchase && (
                 <Button

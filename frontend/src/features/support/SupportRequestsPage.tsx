@@ -17,8 +17,10 @@ import { supportService } from '../../domains/support/support.service';
 import { supportRepository } from '../../repositories/support.repository';
 import { formatDate } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const SupportRequestsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,9 +56,7 @@ export const SupportRequestsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">Aide & Assistance</h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Suivez l'état de vos dossiers et échangez directement avec le service client Shongre.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('support.supportRequestsPage.suivezLEtatDeVos')}</p>
         </div>
 
         <Button
@@ -105,18 +105,14 @@ export const SupportRequestsPage: React.FC = () => {
           </div>
           <div className="space-y-1">
             <h2 className="text-base font-black text-stone-900">Aucune demande en cours</h2>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              Si vous rencontrez une difficulté avec une transaction, une annonce ou votre compte, notre équipe est à votre disposition.
-            </p>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">{t('support.supportRequestsPage.siVousRencontrezUneDifficulte')}</p>
           </div>
           <Button
             to="/contact"
             variant="outline"
             size="sm"
             className="font-bold"
-          >
-            Contacter le support
-          </Button>
+          >{t('support.supportRequestsPage.contacterLeSupport')}</Button>
         </div>
       ) : (
         <section aria-labelledby="support-requests-heading" className="space-y-3">

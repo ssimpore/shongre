@@ -81,13 +81,9 @@ export const HomeCategoryExplorer: React.FC = () => {
       {/* Section Header */}
       <div className="flex items-end justify-between gap-3 mb-5 sm:mb-8">
         <div className="min-w-0 space-y-1">
-          <h2 id="home-category-explorer-title" className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            Explorer par catégorie
-          </h2>
+          <h2 id="home-category-explorer-title" className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('home.homeCategoryExplorer.explorerParCategorie')}</h2>
 
-          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium hidden sm:block">
-            Des millions d’annonces vérifiées classées avec précision selon vos projets et vos envies.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium hidden sm:block">{t('home.homeCategoryExplorer.desMillionsDAnnoncesVerifiees')}</p>
         </div>
 
         <Link

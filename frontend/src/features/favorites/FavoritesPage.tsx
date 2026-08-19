@@ -53,15 +53,11 @@ export const FavoritesPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Mes annonces favorites ({favoriteListings.length})
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Retrouvez les annonces que vous avez sauvegardées
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('favorites.favoritesPage.retrouvezLesAnnoncesQueVous')}</p>
         </div>
 
         {favoriteListings.length > 0 && (
-          <Button variant="outline" size="sm" onClick={handleClearAll} leftIcon={<Trash2 className="w-3.5 h-3.5" />}>
-            Vider les favoris
-          </Button>
+          <Button variant="outline" size="sm" onClick={handleClearAll} leftIcon={<Trash2 className="w-3.5 h-3.5" />}>{t('favorites.favoritesPage.viderLesFavoris')}</Button>
         )}
       </div>
 
@@ -75,9 +71,7 @@ export const FavoritesPage: React.FC = () => {
         // Card titles are h3, so the grid gets its own section heading instead of
         // jumping from the page h1.
         <section aria-labelledby="favorites-grid-heading">
-          <h2 id="favorites-grid-heading" className="sr-only">
-            Annonces sauvegardées
-          </h2>
+          <h2 id="favorites-grid-heading" className="sr-only">{t('favorites.favoritesPage.annoncesSauvegardees')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {favoriteListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
@@ -94,9 +88,7 @@ export const FavoritesPage: React.FC = () => {
               to={routes.search()}
               variant="primary"
               rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Explorer les annonces
-            </Button>
+            >{t('favorites.favoritesPage.explorerLesAnnonces')}</Button>
           }
         />
       )}

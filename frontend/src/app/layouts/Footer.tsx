@@ -87,7 +87,7 @@ const GooglePlayMark: React.FC<{ className?: string }> = ({ className }) => (
 const APP_DOWNLOADS = [
   {
     id: 'ios',
-    Mark: () => <AppleMark className="w-6 h-7 shrink-0 text-white" />,
+    Mark: () => <AppleMark className="w-6 h-6 shrink-0 text-white" />,
     eyebrow: 'Télécharger sur',
     store: 'l\u2019App Store',
     url: null as string | null,
@@ -421,16 +421,29 @@ export const Footer: React.FC = () => {
                   </div>
                 </div>
 
-                <ul className="flex flex-wrap items-center gap-4">
+                {/* A grid, so the badges are always the same width as each other
+                    rather than each sizing to its own wording — "Télécharger sur
+                    / l'App Store" is longer than "DISPONIBLE SUR / Google Play",
+                    and an inline-flex row rendered them visibly mismatched.
+                    Height already comes from `h-control-lg`.
+
+                    One column until `lg`: two-up, the cells came out at 92px on a
+                    phone and 151px at 768px, which ellipsised the store name and
+                    then the eyebrow — equal width bought at the price of the one
+                    thing the badge exists to say. Stacked, they stay identical to
+                    each other *and* readable; they pair up once there is room. */}
+                <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-md">
                   {APP_DOWNLOADS.map(({ id, Mark, eyebrow, store, url }) => {
                     const content = (
                       <>
                         <Mark />
-                        <span className="text-left leading-tight">
-                          <span className="block text-micro tracking-wide text-stone-400">
+                        <span className="text-left leading-tight min-w-0">
+                          <span className="block text-micro tracking-wide text-stone-400 truncate">
                             {eyebrow}
                           </span>
-                          <span className="block text-sm font-bold text-white">{store}</span>
+                          <span className="block text-sm font-bold text-white truncate">
+                            {store}
+                          </span>
                         </span>
                       </>
                     );
@@ -445,14 +458,14 @@ export const Footer: React.FC = () => {
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-3 h-control-lg px-5 rounded-xl border border-stone-800 bg-stone-950 hover:border-stone-700 hover:bg-black transition-colors"
+                            className="w-full inline-flex items-center gap-2.5 h-control-lg px-3 sm:px-4 rounded-xl border border-stone-800 bg-stone-950 hover:border-stone-700 hover:bg-black transition-colors"
                           >
                             {content}
                           </a>
                         ) : (
                           <span
                             title={t('footer.comingSoon', { name: store })}
-                            className="inline-flex items-center gap-3 h-control-lg px-5 rounded-xl border border-stone-800 bg-stone-950 cursor-default select-none"
+                            className="w-full inline-flex items-center gap-2.5 h-control-lg px-3 sm:px-4 rounded-xl border border-stone-800 bg-stone-950 cursor-default select-none"
                           >
                             {content}
                             <span className="sr-only">{t('footer.comingSoon', { name: store })}</span>

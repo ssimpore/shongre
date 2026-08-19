@@ -192,17 +192,13 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             variant="primary"
             size="md"
             leftIcon={<PlusCircle className="w-4 h-4" />}
-          >
-            Publier une première annonce
-          </Button>
+          >{t('profile.sellerCatalog.publierUnePremiereAnnonce')}</Button>
         ) : (
           <Button
             to={routes.search()}
             variant="outline"
             size="md"
-          >
-            Explorer les annonces du marché
-          </Button>
+          >{t('profile.sellerCatalog.explorerLesAnnoncesDuMarche')}</Button>
         )}
       </div>
     );
@@ -314,9 +310,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                   setMaxPrice('');
                 }}
                 className="text-xs text-stone-500 hover:text-primary font-semibold underline"
-              >
-                Effacer les prix
-              </button>
+              >{t('profile.sellerCatalog.effacerLesPrix')}</button>
             )}
           </div>
         )}
@@ -361,9 +355,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         {/* Subcategory Facets */}
         {subCategoryFacets.length > 0 && (
           <div className="mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider shrink-0 mr-1">
-              Sous-catégories :
-            </span>
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider shrink-0 mr-1">{t('profile.sellerCatalog.sousCategories')}</span>
             <button
               type="button"
               onClick={() => setSelectedSubCategory('all')}
@@ -407,9 +399,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             onClick={handleResetFilters}
             className="flex items-center gap-1 text-primary font-bold hover:underline"
           >
-            <X className="w-3.5 h-3.5" />
-            Réinitialiser les filtres
-          </button>
+            <X className="w-3.5 h-3.5" />{t('profile.sellerCatalog.reinitialiserLesFiltres2')}</button>
         )}
       </div>
 

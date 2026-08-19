@@ -66,9 +66,7 @@ export const AdminProviderDetailPage: React.FC = () => {
             variant="primary"
             size="sm"
             leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
-          >
-            Retour aux intégrations
-          </Button>
+          >{t('admin.adminProviderDetailPage.retourAuxIntegrations')}</Button>
         }
       />
     );
@@ -150,9 +148,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                 Actif (Priorité {configuration.priority})
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">
-                Désactivé
-              </span>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">{t('admin.adminProviderDetailPage.desactive')}</span>
             )}
 
             <span
@@ -284,9 +280,7 @@ export const AdminProviderDetailPage: React.FC = () => {
 
       {activeTab === 'dependencies' && (
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-          <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">
-            Fonctionnalités Shongre Dépendantes de ce Prestataire
-          </h4>
+          <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe')}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {provider.capabilities.map((cap) => {
               const meta = getCapabilityMetadata(cap);
@@ -298,9 +292,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                   </div>
                   <p className="text-xs text-stone-500">{meta.description}</p>
                   <div className="pt-2 border-t border-stone-200/60">
-                    <span className="text-micro font-semibold text-stone-600 block mb-1">
-                      Fonctionnalités directes :
-                    </span>
+                    <span className="text-micro font-semibold text-stone-600 block mb-1">{t('admin.adminProviderDetailPage.fonctionnalitesDirectes')}</span>
                     <div className="flex flex-wrap gap-1">
                       {meta.usedByFeatures.map((f) => (
                         <span key={f} className="text-micro bg-stone-200/70 text-stone-800 px-1.5 py-0.5 rounded font-medium">

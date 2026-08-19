@@ -64,12 +64,8 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
           <Button variant="outline" size="sm" onClick={onClose}>
             Annuler
           </Button>
-          <Button variant="outline" size="sm" onClick={onCreateSeparate}>
-            Créer quand même séparé
-          </Button>
-          <Button variant="primary" size="sm" onClick={onAssociate} className="font-bold">
-            Associer la recherche à l'existant
-          </Button>
+          <Button variant="outline" size="sm" onClick={onCreateSeparate}>{t('admin.duplicateConflictModal.creerQuandMemeSepare')}</Button>
+          <Button variant="primary" size="sm" onClick={onAssociate} className="font-bold">{t('admin.duplicateConflictModal.associerLaRechercheAL')}</Button>
         </div>
       </div>
     </Modal>

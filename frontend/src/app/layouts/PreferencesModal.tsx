@@ -148,9 +148,7 @@ export const PreferencesModal: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
-          <Button variant="primary" size="sm" onClick={closePreferencesModal}>
-            Valider les préférences
-          </Button>
+          <Button variant="primary" size="sm" onClick={closePreferencesModal}>{t('shell.preferencesModal.validerLesPreferences')}</Button>
         </div>
       </div>
     </Modal>

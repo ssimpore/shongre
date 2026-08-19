@@ -221,15 +221,11 @@ export const ContactPage: React.FC = () => {
 
           <div className="space-y-2">
             <h1 className="text-2xl font-black text-stone-900">Demande d'assistance transmise</h1>
-            <p className="text-xs sm:text-sm text-stone-600">
-              Votre demande a bien été enregistrée par notre équipe de support client Shongre.
-            </p>
+            <p className="text-xs sm:text-sm text-stone-600">{t('support.contactPage.votreDemandeABienEte')}</p>
           </div>
 
           <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl max-w-sm mx-auto">
-            <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
-              Numéro de dossier
-            </span>
+            <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block mb-0.5">{t('support.contactPage.numeroDeDossier')}</span>
             <span className="text-xl font-black text-stone-900 font-mono tracking-wider">
               {submittedReference}
             </span>
@@ -252,9 +248,7 @@ export const ContactPage: React.FC = () => {
                 Suivre mes demandes
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => navigate('/')} className="font-bold">
-                Retour à l'accueil
-              </Button>
+              <Button variant="primary" onClick={() => navigate('/')} className="font-bold">{t('support.contactPage.retourALAccueil')}</Button>
             )}
             <Button
               variant="outline"
@@ -265,9 +259,7 @@ export const ContactPage: React.FC = () => {
                 setDescription('');
                 setAttachments([]);
               }}
-            >
-              Envoyer une autre demande
-            </Button>
+            >{t('support.contactPage.envoyerUneAutreDemande')}</Button>
           </div>
         </div>
       </div>
@@ -278,18 +270,13 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
       {/* 1. Page Header */}
       <div className="text-center max-w-xl mx-auto space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-          Contacter le support Shongre
-        </h1>
-        <p className="text-xs sm:text-sm text-stone-500">
-          Sélectionnez le motif de votre demande pour être orienté vers le service compétent.
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('support.contactPage.contacterLeSupportShongre')}</h1>
+        <p className="text-xs sm:text-sm text-stone-500">{t('support.contactPage.selectionnezLeMotifDeVotre')}</p>
       </div>
 
       {/* 2. Step 1: Category Selector */}
       <div className="space-y-3">
-        <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
-          1. Quel est le sujet de votre demande ? <span className="text-danger">*</span>
+        <label className="block text-xs font-black uppercase tracking-wider text-stone-700">{t('support.contactPage.1QuelEstLeSujet')}<span className="text-danger">*</span>
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -336,8 +323,7 @@ export const ContactPage: React.FC = () => {
       {/* 3. Step 2: Reason Selector & Handoffs */}
       {currentCategoryDef && (
         <div className="space-y-4 pt-2 animate-fadeIn">
-          <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
-            2. Précisez votre situation <span className="text-danger">*</span>
+          <label className="block text-xs font-black uppercase tracking-wider text-stone-700">{t('support.contactPage.2PrecisezVotreSituation')}<span className="text-danger">*</span>
           </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -374,20 +360,14 @@ export const ContactPage: React.FC = () => {
             <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-3 text-warning text-xs">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-bold text-warning">
-                  Besoin d'ouvrir un litige sur une commande en cours ?
-                </p>
-                <p className="leading-relaxed">
-                  Pour geler les fonds sous séquestre et être remboursé en cas de non-réception ou de colis non conforme, vous devez ouvrir un dossier de litige officiel directement depuis la transaction.
-                </p>
+                <p className="font-bold text-warning">{t('support.contactPage.besoinDOuvrirUnLitige')}</p>
+                <p className="leading-relaxed">{t('support.contactPage.pourGelerLesFondsSous')}</p>
                 <Button
                   to="/compte/achats"
                   variant="primary"
                   size="sm"
                   className="font-bold mt-1"
-                >
-                  Accéder à mes achats pour ouvrir le litige
-                </Button>
+                >{t('support.contactPage.accederAMesAchatsPour')}</Button>
               </div>
             </div>
           )}
@@ -397,17 +377,13 @@ export const ContactPage: React.FC = () => {
               <MessageSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-2">
                 <p className="font-bold text-stone-900">{t('support.contactPage.echangeDirectAvecLeVendeur')}</p>
-                <p className="leading-relaxed">
-                  Le support Shongre n'intervient pas pour les questions sur l'article (disponibilité, négociations de prix). Contactez directement le vendeur via la messagerie sécurisée.
-                </p>
+                <p className="leading-relaxed">{t('support.contactPage.leSupportShongreNIntervient')}</p>
                 <Button
                   to="/compte/messages"
                   variant="outline"
                   size="sm"
                   className="font-bold mt-1"
-                >
-                  Ouvrir la messagerie
-                </Button>
+                >{t('support.contactPage.ouvrirLaMessagerie')}</Button>
               </div>
             </div>
           )}
@@ -484,9 +460,7 @@ export const ContactPage: React.FC = () => {
 
           {/* Attachment Picker */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-stone-700">
-              Pièces jointes ou captures d'écran (facultatif)
-            </label>
+            <label className="block text-xs font-bold text-stone-700">{t('support.contactPage.piecesJointesOuCapturesD')}</label>
 
             {attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
@@ -514,9 +488,7 @@ export const ContactPage: React.FC = () => {
               className="w-full p-4 border border-dashed border-border-base rounded-2xl bg-stone-50 hover:bg-stone-100 transition-colors flex flex-col items-center justify-center text-center cursor-pointer"
             >
               <UploadCloud className="w-5 h-5 text-stone-400 mb-1" />
-              <span className="text-xs font-bold text-stone-800">
-                Ajouter une capture ou un justificatif (Simulation démo)
-              </span>
+              <span className="text-xs font-bold text-stone-800">{t('support.contactPage.ajouterUneCaptureOuUn')}</span>
               <span className="text-micro text-stone-500">{t('support.contactPage.jpgPngOuPdfMax')}</span>
             </button>
           </div>

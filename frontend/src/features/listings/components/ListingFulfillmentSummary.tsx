@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Package, Truck, Store, ShieldCheck } from 'lucide-react';
 import { Listing } from '../../../types';
 import { fulfillmentResolver } from '../../../domains/fulfillment/fulfillment.resolver';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface ListingFulfillmentSummaryProps {
   listing: Listing;
@@ -12,6 +13,7 @@ export const ListingFulfillmentSummary: React.FC<ListingFulfillmentSummaryProps>
   listing,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const caps = fulfillmentResolver.resolveCapabilities({
     taxonomyNodeId: listing.subCategorySlug || listing.categorySlug,
     sellerType: listing.sellerType,
@@ -32,12 +34,8 @@ export const ListingFulfillmentSummary: React.FC<ListingFulfillmentSummaryProps>
   return (
     <div className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}>
       <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-black text-stone-900">
-          Remise & Expédition
-        </h2>
-        <span className="text-xs text-stone-500 font-medium bg-stone-50 px-2 py-1 rounded-md">
-          Choix définitif à la commande
-        </span>
+        <h2 className="text-base font-black text-stone-900">{t('listings.listingFulfillmentSummary.remiseExpedition')}</h2>
+        <span className="text-xs text-stone-500 font-medium bg-stone-50 px-2 py-1 rounded-md">{t('listings.listingFulfillmentSummary.choixDefinitifALaCommande')}</span>
       </div>
 
       <div className="space-y-3">
@@ -71,17 +69,11 @@ export const ListingFulfillmentSummary: React.FC<ListingFulfillmentSummaryProps>
                 <Package className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold text-stone-900">
-                  Livraison en colis avec suivi
-                </div>
-                <div className="text-micro text-stone-500">
-                  Mondial Relay (Point relais & Locker) ou Colissimo Domicile
-                </div>
+                <div className="text-xs sm:text-sm font-bold text-stone-900">{t('listings.listingFulfillmentSummary.livraisonEnColisAvecSuivi')}</div>
+                <div className="text-micro text-stone-500">{t('listings.listingFulfillmentSummary.mondialRelayPointRelaisLocker')}</div>
               </div>
             </div>
-            <div className="text-xs sm:text-sm font-bold text-stone-900">
-              À partir de 3,99 €
-            </div>
+            <div className="text-xs sm:text-sm font-bold text-stone-900">{t('listings.listingFulfillmentSummary.aPartirDe399')}</div>
           </div>
         )}
 
@@ -93,17 +85,11 @@ export const ListingFulfillmentSummary: React.FC<ListingFulfillmentSummaryProps>
                 <Truck className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold text-stone-900">
-                  Transport de meubles & Gros colis
-                </div>
-                <div className="text-micro text-stone-500">
-                  Livraison par transporteur spécialisé Cocolis
-                </div>
+                <div className="text-xs sm:text-sm font-bold text-stone-900">{t('listings.listingFulfillmentSummary.transportDeMeublesGrosColis')}</div>
+                <div className="text-micro text-stone-500">{t('listings.listingFulfillmentSummary.livraisonParTransporteurSpecialiseCocolis')}</div>
               </div>
             </div>
-            <div className="text-xs sm:text-sm font-bold text-stone-900">
-              Sur devis transport
-            </div>
+            <div className="text-xs sm:text-sm font-bold text-stone-900">{t('listings.listingFulfillmentSummary.surDevisTransport')}</div>
           </div>
         )}
 
@@ -118,9 +104,7 @@ export const ListingFulfillmentSummary: React.FC<ListingFulfillmentSummaryProps>
                 <div className="text-xs sm:text-sm font-bold text-stone-900">
                   Retrait en boutique
                 </div>
-                <div className="text-micro text-stone-500">
-                  Retrait direct dans le magasin du vendeur Pro
-                </div>
+                <div className="text-micro text-stone-500">{t('listings.listingFulfillmentSummary.retraitDirectDansLeMagasin')}</div>
               </div>
             </div>
             <div className="text-xs sm:text-sm font-bold text-success">

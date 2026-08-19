@@ -11,6 +11,7 @@ import { ATTRIBUTE_REGISTRY } from '../taxonomy/attribute.registry';
 import { CONDITION_SCHEMES } from '../taxonomy/condition.schemes';
 import { CONDITION_OPTIONS } from '../../configuration/market.config';
 import { MarketConfiguration } from '../market/market.types';
+import { activeDataLocale } from '../../i18n/localized';
 
 export interface FormattedCharacteristicItem {
   code: string;
@@ -214,14 +215,21 @@ export class ListingDisplayResolver {
    * Resolves human-readable condition label based on node's scheme or global options.
    */
   resolveConditionLabel(conditionValue: string, node?: TaxonomyNode | null): string {
+    /* Condition tiers already ship `labels: { 'fr-FR', 'en-US' }`; only the flat
+       `label` was ever read, so the English strings sat in the data unused.
+       Preferring the map costs nothing and duplicates nothing. */
+    const locale = activeDataLocale();
+    const localized = (option: { label: string; labels?: Record<string, string> }): string =>
+      option.labels?.[locale]?.trim() || option.label;
+
     const schemeKey = node?.conditionScheme;
     if (schemeKey && CONDITION_SCHEMES[schemeKey]) {
       const found = CONDITION_SCHEMES[schemeKey].find((c) => c.value === conditionValue);
-      if (found) return found.label;
+      if (found) return localized(found);
     }
 
     const globalFound = CONDITION_OPTIONS.find((c) => c.value === conditionValue);
-    if (globalFound) return globalFound.label;
+    if (globalFound) return localized(globalFound);
 
     // Fallback dictionary
     const fallbackLabels: Record<string, string> = {

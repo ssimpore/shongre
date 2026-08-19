@@ -206,7 +206,14 @@ test.describe('admin console', () => {
 });
 
 test.describe('honest product surfaces', () => {
-  test('unavailable languages cannot be selected', async ({ page }) => {
+  /**
+   * The picker offers working languages only.
+   *
+   * It used to list all six and disable five behind a "Bientôt" tag, which is a
+   * menu that is mostly not choices. Absence is the stronger version of the same
+   * promise: nothing in the control claims to do something it cannot.
+   */
+  test('only languages the interface actually ships are offered', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
@@ -215,9 +222,14 @@ test.describe('honest product surfaces', () => {
     const menu = page.getByRole('menu').first();
     await expect(menu).toBeVisible();
 
-    const english = menu.getByRole('menuitem', { name: /english/i });
-    await expect(english).toBeDisabled();
-    await expect(english).toContainText(/bientôt/i);
+    await expect(menu.getByRole('menuitem', { name: /français/i })).toBeEnabled();
+    await expect(menu.getByRole('menuitem', { name: /english/i })).toBeEnabled();
+
+    // Locales with no catalogue are absent, not present-and-disabled.
+    for (const absent of [/deutsch/i, /español/i, /nederlands/i, /italiano/i]) {
+      await expect(menu.getByRole('menuitem', { name: absent })).toHaveCount(0);
+    }
+    await expect(menu).not.toContainText(/bientôt/i);
   });
 
   test('the document language reflects the active locale', async ({ page }) => {

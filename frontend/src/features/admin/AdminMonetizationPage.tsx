@@ -86,18 +86,12 @@ export const AdminMonetizationPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-primary">
-            Revenus & Monétisation
-          </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminMonetizationPage.revenusMonetisation')}</span>
           <span className="text-stone-300">•</span>
           <span className="text-xs text-stone-500 font-medium">{t('admin.adminMonetizationPage.gestionDesFormulesDAbonnement')}</span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-          Formules Pro, Quotas & Options de Mise en Avant
-        </h1>
-        <p className="text-xs text-stone-600 mt-1">
-          Configurez les quotas d'annonces actives, les commissions et les droits d'accès aux fonctionnalités exclusives pour les vendeurs professionnels.
-        </p>
+        <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminMonetizationPage.formulesProQuotasOptionsDe')}</h1>
+        <p className="text-xs text-stone-600 mt-1">{t('admin.adminMonetizationPage.configurezLesQuotasDAnnonces')}</p>
 
         {saveSuccess && (
           <div className="mt-4 p-3 bg-success-surface border border-success-border text-success text-xs font-semibold rounded-lg flex items-center gap-2">
@@ -137,9 +131,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   <label
                     htmlFor={`plan-${plan.id}-quota`}
                     className="block text-xs font-bold text-stone-600 mb-1"
-                  >
-                    Quota max d'annonces actives
-                  </label>
+                  >{t('admin.adminMonetizationPage.quotaMaxDAnnoncesActives')}</label>
                   <input
                     id={`plan-${plan.id}-quota`}
                     type="number"
@@ -157,9 +149,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   <label
                     htmlFor={`plan-${plan.id}-commission`}
                     className="block text-xs font-bold text-stone-600 mb-1"
-                  >
-                    Commission sur vente (%)
-                  </label>
+                  >{t('admin.adminMonetizationPage.commissionSurVente')}</label>
                   <input
                     id={`plan-${plan.id}-commission`}
                     type="number"
@@ -226,9 +216,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 size="sm"
                 onClick={handleSave}
                 className="w-full text-xs bg-stone-900 hover:bg-stone-800 text-white"
-              >
-                Mettre à jour
-              </Button>
+              >{t('admin.adminMonetizationPage.mettreAJour')}</Button>
             </div>
           </div>
         ))}

@@ -28,9 +28,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
       <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
         <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-subtle">
           <Building2 className="w-5 h-5 text-primary" />
-          <h3 className="text-base font-black text-stone-900">
-            Mentions légales & Informations entreprise
-          </h3>
+          <h3 className="text-base font-black text-stone-900">{t('profile.proBusinessInfo.mentionsLegalesInformationsEntreprise')}</h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
@@ -113,17 +111,13 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
               </p>
             </div>
           ) : (
-            <p className="text-xs text-stone-500">
-              Vente exclusive en ligne avec expédition sécurisée.
-            </p>
+            <p className="text-xs text-stone-500">{t('profile.proBusinessInfo.venteExclusiveEnLigneAvec')}</p>
           )}
 
           {/* Delivery zones */}
           <div className="mt-4 pt-3 border-t border-border-subtle">
             <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5 mb-2">
-              <Truck className="w-3.5 h-3.5 text-stone-500" />
-              Zones de livraison couvertes :
-            </span>
+              <Truck className="w-3.5 h-3.5 text-stone-500" />{t('profile.proBusinessInfo.zonesDeLivraisonCouvertes')}</span>
             <div className="flex flex-wrap gap-1.5">
               {(seller.deliveryZones && seller.deliveryZones.length > 0
                 ? seller.deliveryZones
@@ -164,9 +158,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
             {/* Custom Services */}
             {seller.services && seller.services.length > 0 ? (
               <div className="space-y-1.5 pt-1">
-                <span className="text-stone-500 font-semibold block text-xs">
-                  Services inclus par ce vendeur pro :
-                </span>
+                <span className="text-stone-500 font-semibold block text-xs">{t('profile.proBusinessInfo.servicesInclusParCeVendeur')}</span>
                 {seller.services.map((srv, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-stone-800">
                     <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />

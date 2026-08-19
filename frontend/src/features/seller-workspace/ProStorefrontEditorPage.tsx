@@ -42,16 +42,12 @@ export const ProStorefrontEditorPage: React.FC = () => {
         <h1 className="text-xl sm:text-2xl font-black text-stone-900">
           Personnaliser ma vitrine professionnelle
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-          Ces informations sont affichées sur votre page boutique officielle et sur chacune de vos annonces.
-        </p>
+        <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('sellerworkspace.proStorefrontEditorPage.cesInformationsSontAfficheesSur')}</p>
       </div>
 
       {/* Banner & Logo simulation */}
       <div className="space-y-3">
-        <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
-          Bannière & Logo de la boutique
-        </label>
+        <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">{t('sellerworkspace.proStorefrontEditorPage.banniereLogoDeLaBoutique')}</label>
         <div className="relative h-32 rounded-xl bg-gradient-to-r from-stone-800 to-stone-900 flex items-end p-4 border border-border-base">
           <div className="flex items-center gap-3">
             <Avatar
@@ -157,9 +153,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           size="lg"
           leftIcon={<Check className="w-4 h-4" />}
           className="w-full sm:w-auto"
-        >
-          Enregistrer les modifications
-        </Button>
+        >{t('sellerworkspace.proStorefrontEditorPage.enregistrerLesModifications')}</Button>
       </div>
     </form>
   );

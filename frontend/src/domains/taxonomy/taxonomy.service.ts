@@ -11,8 +11,12 @@ import {
   TaxonomyLabelOptions,
 } from './taxonomy.types';
 import { CANONICAL_TAXONOMY } from './taxonomy.data';
+import { getTaxonomyLabel } from './taxonomy.labels';
+// Re-exported so the many existing `from './taxonomy.service'` imports keep working.
+export { getTaxonomyLabel } from './taxonomy.labels';
 import { ATTRIBUTE_REGISTRY } from './attribute.registry';
 import { CONDITION_SCHEMES } from './condition.schemes';
+import { activeDataLocale } from '../../i18n/localized';
 
 export type { TaxonomyLabelMode, TaxonomyLabelOptions };
 
@@ -26,51 +30,7 @@ export type { TaxonomyLabelMode, TaxonomyLabelOptions };
  * - Uses nullish coalescing (??), not OR (||).
  * - shortLabel is strictly a presentation alias and must never be used as an identifier.
  */
-export function getTaxonomyLabel(
-  node?: {
-    label?: string;
-    name?: string;
-    shortLabel?: string;
-    labels?: Record<string, string>;
-    shortLabels?: Record<string, string>;
-  } | null,
-  modeOrOptions: TaxonomyLabelMode | TaxonomyLabelOptions = 'full'
-): string {
-  if (!node) return '';
 
-  const isCompact =
-    typeof modeOrOptions === 'string'
-      ? modeOrOptions === 'compact'
-      : Boolean(modeOrOptions.compact);
-
-  const locale =
-    typeof modeOrOptions === 'object' && modeOrOptions.locale
-      ? modeOrOptions.locale
-      : 'fr-FR';
-
-  if (isCompact) {
-    // 1. Localized shortLabel if available
-    if (node.shortLabels && node.shortLabels[locale]) {
-      const locShort = node.shortLabels[locale].trim();
-      if (locShort.length > 0) return locShort;
-    }
-    // 2. Direct shortLabel
-    if (node.shortLabel && typeof node.shortLabel === 'string') {
-      const directShort = node.shortLabel.trim();
-      if (directShort.length > 0) return directShort;
-    }
-  }
-
-  // Fallback to localized canonical label
-  if (node.labels && node.labels[locale]) {
-    const locFull = node.labels[locale].trim();
-    if (locFull.length > 0) return locFull;
-  }
-
-  // Fallback to canonical label / name
-  const canonical = (node.label ?? node.name ?? '').trim();
-  return canonical;
-}
 
 class TaxonomyService {
   private nodesMap: Map<string, TaxonomyNode> = new Map();
@@ -82,14 +42,31 @@ class TaxonomyService {
   }
 
   private buildIndex(nodes: TaxonomyNode[]) {
+    const dataLocale = activeDataLocale();
     this.nodesMap.clear();
     this.slugMap.clear();
     this.rootNodes = [];
 
     const traverse = (node: TaxonomyNode, parent?: TaxonomyNode, ancestors: string[] = []) => {
       const fullAncestors = parent ? [...ancestors, parent.id] : ancestors;
+      /* `name`, `label` and `shortLabel` are the flat mirrors of
+         `labels['fr-FR']` / `shortLabels['fr-FR']`, and most call sites read the
+         flat field rather than going through `getTaxonomyLabel`. That made the
+         French copy the de-facto source and left the `en-US` entries — already
+         present in the data — unreachable outside the few callers that asked
+         for a locale explicitly.
+
+         Resolving them here keeps one source of truth (the `labels` map) and
+         removes the duplication instead of adding a second catalogue: whatever
+         a consumer reads, it now reads in the active language. */
+      const localizedLabel = getTaxonomyLabel(node, { locale: dataLocale });
+      const localizedShort = getTaxonomyLabel(node, { locale: dataLocale, compact: true });
+
       const indexedNode: TaxonomyNode = {
         ...node,
+        name: localizedLabel || node.name,
+        label: localizedLabel || node.label,
+        shortLabel: localizedShort || node.shortLabel,
         parentId: parent ? parent.id : node.parentId,
         ancestorIds: fullAncestors,
       };

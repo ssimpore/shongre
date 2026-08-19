@@ -75,9 +75,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-900 mb-2">
-            Motif principal du signalement :
-          </label>
+          <label className="block text-xs font-bold text-stone-900 mb-2">{t('profile.sellerReportModal.motifPrincipalDuSignalement')}</label>
           <div className="space-y-1.5">
             {REPORT_REASONS.map((r) => (
               <label
@@ -103,9 +101,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-900 mb-1">
-            Détails complémentaires (facultatif mais recommandé) :
-          </label>
+          <label className="block text-xs font-bold text-stone-900 mb-1">{t('profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande')}</label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
@@ -125,9 +121,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
             type="submit"
             isLoading={isSubmitting}
             leftIcon={<Flag className="w-3.5 h-3.5" />}
-          >
-            Envoyer le signalement
-          </Button>
+          >{t('profile.sellerReportModal.envoyerLeSignalement')}</Button>
         </div>
       </form>
     </Modal>

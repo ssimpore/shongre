@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 /**
  * The scale is a list of stops, not a linear span.
@@ -58,6 +59,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   currencySymbol = '€',
   className = '',
 }) => {
+  const { t } = useTranslation();
   /**
    * The handles are driven by local state and only reported upward on release.
    *
@@ -141,9 +143,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
             type="button"
             onClick={() => commit(0, LAST)}
             className="text-micro font-semibold text-stone-500 hover:text-primary transition-colors cursor-pointer shrink-0"
-          >
-            Réinitialiser
-          </button>
+          >{t('ui.priceRangeSlider.reinitialiser')}</button>
         )}
       </div>
 

@@ -88,12 +88,8 @@ export const VerifyEmailPage: React.FC = () => {
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <h2 className="text-lg font-black text-stone-900">
-            Email validé avec succès !
-          </h2>
-          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
-            Votre compte est désormais sécurisé et votre badge "Email Vérifié" est actif sur votre profil.
-          </p>
+          <h2 className="text-lg font-black text-stone-900">{t('auth.verifyEmailPage.emailValideAvecSucces')}</h2>
+          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">{t('auth.verifyEmailPage.votreCompteEstDesormaisSecurise')}</p>
 
           <div className="pt-3">
             <Button
@@ -103,9 +99,7 @@ export const VerifyEmailPage: React.FC = () => {
               className="w-full"
               onClick={() => navigate('/compte')}
               rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Accéder à mon espace
-            </Button>
+            >{t('auth.verifyEmailPage.accederAMonEspace')}</Button>
           </div>
         </div>
       ) : (
@@ -124,8 +118,7 @@ export const VerifyEmailPage: React.FC = () => {
                 <span>{resendStatus}</span>
               </div>
               {demoCodeHint && (
-                <p className="text-micro text-success">
-                  Token démo : <code className="bg-success-surface px-1 py-0.5 rounded font-bold">{demoCodeHint}</code>
+                <p className="text-micro text-success">{t('auth.verifyEmailPage.tokenDemo')}<code className="bg-success-surface px-1 py-0.5 rounded font-bold">{demoCodeHint}</code>
                 </p>
               )}
             </div>
@@ -147,9 +140,7 @@ export const VerifyEmailPage: React.FC = () => {
             className="space-y-3 pt-2"
           >
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                Jeton de validation ou Code de vérification
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.verifyEmailPage.jetonDeValidationOuCode')}</label>
               <input
                 type="text"
                 value={tokenInput}

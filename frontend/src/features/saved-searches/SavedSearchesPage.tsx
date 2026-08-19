@@ -35,9 +35,7 @@ export const SavedSearchesPage: React.FC = () => {
         <h1 className="text-xl sm:text-2xl font-black text-stone-900">
           Mes recherches sauvegardées ({searches.length})
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-          Recevez des alertes instantanées dès qu'une nouvelle annonce correspond à vos critères
-        </p>
+        <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('savedsearches.savedSearchesPage.recevezDesAlertesInstantaneesDes')}</p>
       </div>
 
       {searches.length > 0 ? (
@@ -84,9 +82,7 @@ export const SavedSearchesPage: React.FC = () => {
                     navigate(`/recherche?${q}`);
                   }}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                >
-                  Voir les annonces
-                </Button>
+                >{t('savedsearches.savedSearchesPage.voirLesAnnonces')}</Button>
 
                 <Button
                   size="sm"
@@ -110,9 +106,7 @@ export const SavedSearchesPage: React.FC = () => {
             <Button
               to={routes.search()}
               variant="primary"
-            >
-              Lancer une recherche
-            </Button>
+            >{t('savedsearches.savedSearchesPage.lancerUneRecherche')}</Button>
           }
         />
       )}

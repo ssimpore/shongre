@@ -144,9 +144,7 @@ export const AccountOverviewPage: React.FC = () => {
             {isProSeller(currentUser) && <Badge variant="pro" size="sm">{t('sellerworkspace.accountOverviewPage.comptePro')}</Badge>}
             {currentUser?.isVerified && <Badge variant="verified" size="sm" icon>{t('sellerworkspace.accountOverviewPage.verifie')}</Badge>}
           </div>
-          <p className="text-xs text-stone-300">
-            Gérez vos annonces, vos ventes, vos messages et vos favoris en toute simplicité.
-          </p>
+          <p className="text-xs text-stone-300">{t('sellerworkspace.accountOverviewPage.gerezVosAnnoncesVosVentes')}</p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -166,9 +164,7 @@ export const AccountOverviewPage: React.FC = () => {
             to={publishCta.to}
             className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shrink-0 shadow-xs"
           >
-            <PlusCircle className="w-4 h-4" />
-            Déposer une annonce
-          </Link>
+            <PlusCircle className="w-4 h-4" />{t('sellerworkspace.accountOverviewPage.deposerUneAnnonce')}</Link>
         </div>
       </div>
 
@@ -177,16 +173,12 @@ export const AccountOverviewPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-success" />
-            <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
-              Niveaux de sécurité & Vérifications du compte
-            </h2>
+            <h2 className="font-extrabold text-sm sm:text-base text-stone-900">{t('sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu')}</h2>
           </div>
           <Link
             to="/compte/verification"
             className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
-          >
-            Centre de Vérification (KYC / KYB / IBAN) →
-          </Link>
+          >{t('sellerworkspace.accountOverviewPage.centreDeVerificationKycKyb')}</Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
@@ -240,9 +232,7 @@ export const AccountOverviewPage: React.FC = () => {
                     <CheckCircle2 className="w-3 h-3" /> Vérifié SMS
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
-                    Non vérifié
-                  </span>
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">{t('sellerworkspace.accountOverviewPage.nonVerifie')}</span>
                 )}
               </div>
               <h3 className="text-xs font-bold text-stone-900">{t('sellerworkspace.accountOverviewPage.numeroDeTelephone')}</h3>
@@ -273,15 +263,11 @@ export const AccountOverviewPage: React.FC = () => {
                     <CheckCircle2 className="w-3 h-3" /> 2FA Actif
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
-                    Désactivé
-                  </span>
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">{t('sellerworkspace.accountOverviewPage.desactive')}</span>
                 )}
               </div>
               <h3 className="text-xs font-bold text-stone-900">Double Authentification</h3>
-              <p className="text-micro text-stone-600 mt-0.5">
-                Protection renforcée Google/Microsoft Auth
-              </p>
+              <p className="text-micro text-stone-600 mt-0.5">{t('sellerworkspace.accountOverviewPage.protectionRenforceeGoogleMicrosoftAuth')}</p>
             </div>
             <div className="mt-3 pt-2 border-t border-stone-200/60">
               <button
@@ -357,12 +343,8 @@ export const AccountOverviewPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-stone-900">
-              Coordonnées & Informations du profil
-            </h2>
-            <p className="text-xs text-stone-500">
-              Visibles sur vos annonces et lors des remises en main propre
-            </p>
+            <h2 className="text-sm sm:text-base font-bold text-stone-900">{t('sellerworkspace.accountOverviewPage.coordonneesInformationsDuProfil')}</h2>
+            <p className="text-xs text-stone-500">{t('sellerworkspace.accountOverviewPage.visiblesSurVosAnnoncesEt')}</p>
           </div>
           <button
             type="button"
@@ -378,9 +360,7 @@ export const AccountOverviewPage: React.FC = () => {
           <form onSubmit={handleSaveProfile} className="space-y-4 pt-2 border-t border-stone-100">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  Nom et prénom / Pseudonyme
-                </label>
+                <label className="block text-xs font-bold text-stone-800 mb-1">{t('sellerworkspace.accountOverviewPage.nomEtPrenomPseudonyme')}</label>
                 <input
                   type="text"
                   value={name}
@@ -391,9 +371,7 @@ export const AccountOverviewPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  Numéro de téléphone
-                </label>
+                <label className="block text-xs font-bold text-stone-800 mb-1">{t('sellerworkspace.accountOverviewPage.numeroDeTelephone2')}</label>
                 <input
                   type="tel"
                   value={phone}
@@ -433,9 +411,7 @@ export const AccountOverviewPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">
-                Biographie / Présentation
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1">{t('sellerworkspace.accountOverviewPage.biographiePresentation')}</label>
               <textarea
                 rows={2}
                 value={bio}
@@ -459,9 +435,7 @@ export const AccountOverviewPage: React.FC = () => {
                 variant="primary"
                 size="sm"
                 isLoading={isSaving}
-              >
-                Enregistrer les modifications
-              </Button>
+              >{t('sellerworkspace.accountOverviewPage.enregistrerLesModifications')}</Button>
             </div>
           </form>
         ) : (
@@ -498,9 +472,7 @@ export const AccountOverviewPage: React.FC = () => {
           <Link
             to="/compte/annonces"
             className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
-          >
-            Toutes mes annonces →
-          </Link>
+          >{t('sellerworkspace.accountOverviewPage.toutesMesAnnonces')}</Link>
         </div>
 
         {myListings.length > 0 ? (
@@ -544,9 +516,7 @@ export const AccountOverviewPage: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-stone-500 text-xs">
-            Vous n'avez pas encore publié d'annonce.
-          </div>
+          <div className="text-center py-8 text-stone-500 text-xs">{t('sellerworkspace.accountOverviewPage.vousNAvezPasEncore')}</div>
         )}
       </div>
 
@@ -555,24 +525,16 @@ export const AccountOverviewPage: React.FC = () => {
         <div className="bg-primary-light border border-primary-border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
-              <Sparkles className="w-4 h-4" />
-              Passez à la vitesse supérieure
-            </div>
-            <h2 className="font-black text-stone-900 text-sm sm:text-base">
-              Vous vendez régulièrement en tant que professionnel ?
-            </h2>
-            <p className="text-xs text-stone-600">
-              Profitez d'une boutique dédiée avec votre logo, du badge Pro vérifié et de remises sur les boosts.
-            </p>
+              <Sparkles className="w-4 h-4" />{t('sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure')}</div>
+            <h2 className="font-black text-stone-900 text-sm sm:text-base">{t('sellerworkspace.accountOverviewPage.vousVendezRegulierementEnTant')}</h2>
+            <p className="text-xs text-stone-600">{t('sellerworkspace.accountOverviewPage.profitezDUneBoutiqueDediee')}</p>
           </div>
           <button
             type="button"
             onClick={() => setShowProModal(true)}
             className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors shrink-0 shadow-xs cursor-pointer inline-flex items-center gap-1.5"
           >
-            <Briefcase className="w-3.5 h-3.5" />
-            Passer en Compte Pro
-          </button>
+            <Briefcase className="w-3.5 h-3.5" />{t('sellerworkspace.accountOverviewPage.passerEnComptePro')}</button>
         </div>
       )}
 

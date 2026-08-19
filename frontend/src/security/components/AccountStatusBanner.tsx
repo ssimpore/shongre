@@ -24,9 +24,7 @@ export const AccountStatusBanner: React.FC = () => {
           <Link
             to="/aide"
             className="inline-flex items-center gap-1 font-bold underline hover:text-red-100 shrink-0 text-xs"
-          >
-            Consulter le centre d'aide & recours →
-          </Link>
+          >{t('security.accountStatusBanner.consulterLeCentreDAide')}</Link>
         </div>
       </div>
     );

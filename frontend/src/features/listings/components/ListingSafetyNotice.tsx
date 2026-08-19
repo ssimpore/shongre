@@ -27,13 +27,9 @@ export const ListingSafetyNotice: React.FC<ListingSafetyNoticeProps> = ({
 
       <div className="flex items-center gap-4 text-micro font-semibold text-success pt-1">
         <span className="flex items-center gap-1">
-          <CheckCircle2 className="w-3 h-3" />
-          Séquestre garanti
-        </span>
+          <CheckCircle2 className="w-3 h-3" />{t('listings.listingSafetyNotice.sequestreGaranti')}</span>
         <span className="flex items-center gap-1">
-          <Lock className="w-3 h-3" />
-          Paiement chiffré 3D-Secure
-        </span>
+          <Lock className="w-3 h-3" />{t('listings.listingSafetyNotice.paiementChiffre3dSecure')}</span>
       </div>
     </div>
   );

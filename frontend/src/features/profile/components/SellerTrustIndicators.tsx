@@ -33,9 +33,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-success" />
-          <h2 className="text-sm font-black text-stone-900 uppercase tracking-wider">
-            Garanties & Signaux de confiance
-          </h2>
+          <h2 className="text-sm font-black text-stone-900 uppercase tracking-wider">{t('profile.sellerTrustIndicators.garantiesSignauxDeConfiance')}</h2>
         </div>
         <div className="flex items-center gap-1.5 text-xs font-bold text-success bg-success-surface px-3 py-1 rounded-full border border-success/20 w-fit">
           <Sparkles className="w-3.5 h-3.5" />
@@ -83,9 +81,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
           </div>
           <div>
             <span className="font-bold text-stone-900 block mb-0.5">{t('profile.sellerTrustIndicators.livraisonRetrait')}</span>
-            <span className="text-stone-500 text-xs leading-relaxed">
-              Remise en main propre ou envoi avec numéro de suivi
-            </span>
+            <span className="text-stone-500 text-xs leading-relaxed">{t('profile.sellerTrustIndicators.remiseEnMainPropreOu')}</span>
           </div>
         </div>
 

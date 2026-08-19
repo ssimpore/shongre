@@ -80,9 +80,7 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
               <Download className="w-5 h-5 text-primary" />
               <span>{t('admin.taxonomyImportExportTab.exporterLaTaxonomieCanoniqueJson')}</span>
             </h3>
-            <p className="text-xs text-stone-500 mt-1">
-              Générez un export complet et structuré comprenant l'arborescence, les attributs, les surcharges de marchés et les capacités.
-            </p>
+            <p className="text-xs text-stone-500 mt-1">{t('admin.taxonomyImportExportTab.generezUnExportCompletEt')}</p>
           </div>
 
           <Button
@@ -90,9 +88,7 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
             size="sm"
             onClick={handleExport}
             leftIcon={<Download className="w-4 h-4" />}
-          >
-            Télécharger l'export JSON
-          </Button>
+          >{t('admin.taxonomyImportExportTab.telechargerLExportJson')}</Button>
         </div>
       </div>
 
@@ -103,9 +99,7 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
             <Upload className="w-5 h-5 text-primary" />
             <span>{t('admin.taxonomyImportExportTab.importerUneArborescenceExterne')}</span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
-            Collez le schéma JSON à importer. Le moteur effectue une validation syntaxique et structurelle avant d'appliquer les changements.
-          </p>
+          <p className="text-xs text-stone-500 mt-1">{t('admin.taxonomyImportExportTab.collezLeSchemaJsonA')}</p>
         </div>
 
         <FormField label={t('admin.taxonomyImportExportTab.contenuJsonDeTaxonomie')}>
@@ -150,9 +144,7 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
             size="sm"
             onClick={() => setIsResetModalOpen(true)}
             leftIcon={<RotateCcw className="w-3.5 h-3.5 text-stone-500" />}
-          >
-            Réinitialiser sur le baseline canonique
-          </Button>
+          >{t('admin.taxonomyImportExportTab.reinitialiserSurLeBaselineCanonique')}</Button>
 
           <Button
             variant="primary"

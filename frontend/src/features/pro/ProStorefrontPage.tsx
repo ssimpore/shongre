@@ -51,17 +51,13 @@ export const ProStorefrontPage: React.FC = () => {
             <Button
               to="/professionnels"
               variant="primary"
-            >
-              Voir l'annuaire des professionnels
-            </Button>
+            >{t('pro.proStorefrontPage.voirLAnnuaireDesProfessionnels')}</Button>
           }
           secondaryAction={
             <Button
               to="/"
               variant="outline"
-            >
-              Retour à l'accueil
-            </Button>
+            >{t('pro.proStorefrontPage.retourALAccueil')}</Button>
           }
         />
       </div>
@@ -136,9 +132,7 @@ export const ProStorefrontPage: React.FC = () => {
                   to={`/compte/messages`}
                   variant="primary"
                   leftIcon={<MessageSquare className="w-4 h-4" />}
-                >
-                  Contacter la boutique
-                </Button>
+                >{t('pro.proStorefrontPage.contacterLaBoutique')}</Button>
               </div>
             </div>
 
@@ -201,9 +195,7 @@ export const ProStorefrontPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-stone-500 text-xs bg-white rounded-2xl border border-border-base">
-            Aucun article correspondant dans cette boutique.
-          </div>
+          <div className="text-center py-12 text-stone-500 text-xs bg-white rounded-2xl border border-border-base">{t('pro.proStorefrontPage.aucunArticleCorrespondantDansCette')}</div>
         )}
       </div>
 

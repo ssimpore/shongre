@@ -60,9 +60,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           onClick={onAddRootCategory}
           leftIcon={<Plus className="w-3.5 h-3.5" />}
           className="shrink-0"
-        >
-          Ajouter une catégorie
-        </Button>
+        >{t('admin.taxonomyTreeToolbar.ajouterUneCategorie')}</Button>
       </div>
 
       {/* Filter Chips & Expand Controls */}
@@ -104,16 +102,12 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             type="button"
             onClick={onExpandAll}
             className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
-          >
-            Déplier tout
-          </button>
+          >{t('admin.taxonomyTreeToolbar.deplierTout')}</button>
           <button
             type="button"
             onClick={onCollapseAll}
             className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
-          >
-            Replier tout
-          </button>
+          >{t('admin.taxonomyTreeToolbar.replierTout')}</button>
         </div>
       </div>
     </div>

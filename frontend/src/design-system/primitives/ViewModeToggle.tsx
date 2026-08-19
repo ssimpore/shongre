@@ -24,7 +24,13 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
     <div
       role="group"
       aria-label="Mode d'affichage des annonces"
-      className={`inline-flex items-center bg-stone-100/90 border border-stone-200/90 rounded-xl p-0.5 shadow-2xs shrink-0 select-none ${className}`}
+      /* Pinned to the shared control heights rather than sized by its own
+         padding. It rendered 28px while the filter button and the sort control
+         beside it were 32px, so the toolbar had one item sitting 2px inset from
+         its neighbours — visible as a stagger on every listing surface. */
+      className={`inline-flex items-center ${
+        isSm ? 'h-control-sm' : 'h-control-md'
+      } bg-stone-100/90 border border-stone-200/90 rounded-xl p-0.5 shadow-2xs shrink-0 select-none ${className}`}
     >
       <button
         type="button"
@@ -32,7 +38,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         aria-pressed={viewMode === 'grid'}
         onClick={() => onChange('grid')}
         className={`${
-          isSm ? 'p-1 sm:px-2 sm:py-1 text-[11px]' : 'p-1.5 sm:px-2.5 sm:py-1 text-xs'
+          isSm ? 'h-full px-1.5 sm:px-2 text-[11px]' : 'h-full px-2 sm:px-2.5 text-xs'
         } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
           viewMode === 'grid'
             ? 'bg-primary text-white shadow-xs'
@@ -49,7 +55,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         aria-pressed={viewMode === 'list'}
         onClick={() => onChange('list')}
         className={`${
-          isSm ? 'p-1 sm:px-2 sm:py-1 text-[11px]' : 'p-1.5 sm:px-2.5 sm:py-1 text-xs'
+          isSm ? 'h-full px-1.5 sm:px-2 text-[11px]' : 'h-full px-2 sm:px-2.5 text-xs'
         } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
           viewMode === 'list'
             ? 'bg-primary text-white shadow-xs'
@@ -67,7 +73,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           aria-pressed={viewMode === 'map'}
           onClick={() => onChange('map')}
           className={`${
-            isSm ? 'p-1 sm:px-2 sm:py-1 text-[11px]' : 'p-1.5 sm:px-2.5 sm:py-1 text-xs'
+            isSm ? 'h-full px-1.5 sm:px-2 text-[11px]' : 'h-full px-2 sm:px-2.5 text-xs'
           } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
             viewMode === 'map'
               ? 'bg-primary text-white shadow-xs'

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface DropdownOption<T = string> {
   value: T;
@@ -90,6 +91,7 @@ export function DropdownMenu<T extends string | number = string>({
   size = 'md',
   mobileIcon,
 }: DropdownMenuProps<T>) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -214,9 +216,7 @@ export function DropdownMenu<T extends string | number = string>({
                 <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
                   <span>{headerTitle}</span>
                   {selectedOption && (
-                    <span className="text-primary lowercase font-medium text-micro">
-                      sélectionné
-                    </span>
+                    <span className="text-primary lowercase font-medium text-micro">{t('ui.dropdownMenu.selectionne')}</span>
                   )}
                 </div>
               )}
@@ -246,9 +246,7 @@ export function DropdownMenu<T extends string | number = string>({
 
           <div className="py-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-3.5 py-3 text-xs text-stone-500 text-center font-medium">
-                Aucun résultat trouvé
-              </div>
+              <div className="px-3.5 py-3 text-xs text-stone-500 text-center font-medium">{t('ui.dropdownMenu.aucunResultatTrouve')}</div>
             ) : (
               filteredOptions.map((option) => {
                 const isSelected = option.value === value;

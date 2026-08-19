@@ -75,9 +75,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
         <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-500 space-y-2">
           <Info className="w-8 h-8 text-stone-300" />
           <p className="text-xs font-bold text-stone-600">{t('messaging.messageTimeline.debutDeLaConversation')}</p>
-          <p className="text-micro text-stone-500 max-w-xs">
-            Posez vos questions au vendeur ou convenez d'un point de rencontre.
-          </p>
+          <p className="text-micro text-stone-500 max-w-xs">{t('messaging.messageTimeline.posezVosQuestionsAuVendeur')}</p>
         </div>
       ) : (
         groups.map((group, groupIdx) => (
@@ -216,9 +214,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                                     type="button"
                                     onClick={() => onRetryMessage(msg)}
                                     className="underline ml-0.5 hover:text-white"
-                                  >
-                                    Réessayer
-                                  </button>
+                                  >{t('messaging.messageTimeline.reessayer')}</button>
                                 )}
                               </span>
                             )}

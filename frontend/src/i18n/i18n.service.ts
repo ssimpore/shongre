@@ -1,7 +1,8 @@
 import { CatalogueKey, MessageCatalogue, MessageKey, messagesFr } from './messages.fr';
 import { messagesEn } from './messages.en';
+import { DEFAULT_LOCALE } from './locale';
 
-export const DEFAULT_LOCALE = 'fr-FR';
+export { DEFAULT_LOCALE } from './locale';
 
 /** Values substituted into `{placeholder}` slots. */
 export type TranslationValues = Record<string, string | number>;

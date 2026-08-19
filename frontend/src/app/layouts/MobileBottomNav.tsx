@@ -77,7 +77,7 @@ export const MobileBottomNav: React.FC = () => {
             <div className="w-[3.25rem] h-[3.25rem] rounded-full bg-stone-900 text-white flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border-[3px] border-white">
               <PlusCircle className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-[10px] font-bold text-stone-900 mt-1 whitespace-nowrap">{publishCta.shortLabel}</span>
+            <span className="text-[10px] font-bold text-stone-900 mt-1 whitespace-nowrap">{t(publishCta.shortLabelKey)}</span>
           </div>
         </NavLink>
 

@@ -177,9 +177,7 @@ Merci de votre confiance sur Shongre !
                       <span className="font-bold text-xs sm:text-sm text-stone-900 font-mono">
                         {inv.invoiceNumber}
                       </span>
-                      <Badge variant="verified" size="sm">
-                        Payée
-                      </Badge>
+                      <Badge variant="verified" size="sm">{t('sellerworkspace.billingHistoryModal.payee')}</Badge>
                     </div>
                     <div className="text-xs text-stone-700 font-medium mt-0.5">
                       {inv.description}
@@ -207,16 +205,12 @@ Merci de votre confiance sur Shongre !
                     size="sm"
                     onClick={() => handleDownloadPdf(inv)}
                     leftIcon={<Download className="w-3.5 h-3.5" />}
-                  >
-                    Reçu
-                  </Button>
+                  >{t('sellerworkspace.billingHistoryModal.recu')}</Button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-8 text-center text-stone-500 text-xs">
-              Aucune facture ne correspond à ce filtre.
-            </div>
+            <div className="p-8 text-center text-stone-500 text-xs">{t('sellerworkspace.billingHistoryModal.aucuneFactureNeCorrespondA')}</div>
           )}
         </div>
 

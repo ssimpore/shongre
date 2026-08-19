@@ -94,9 +94,7 @@ export const NotificationsPage: React.FC = () => {
             <Bell className="w-6 h-6 text-primary" />
             <span>{t('notifications.notificationsPage.centreDeNotifications')}</span>
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Mises à jour en direct concernant vos annonces, messages, commandes et sécurité.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('notifications.notificationsPage.misesAJourEnDirect')}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
@@ -107,9 +105,7 @@ export const NotificationsPage: React.FC = () => {
               onClick={handleMarkAllRead}
               leftIcon={<Check className="w-3.5 h-3.5" />}
               className="text-xs"
-            >
-              Tout marquer comme lu
-            </Button>
+            >{t('notifications.notificationsPage.toutMarquerCommeLu')}</Button>
           )}
 
           <Button
@@ -117,9 +113,7 @@ export const NotificationsPage: React.FC = () => {
                           size="sm"
                           leftIcon={<Settings className="w-3.5 h-3.5" />}
                           className="text-xs"
-          >
-              Préférences
-          </Button>
+          >{t('notifications.notificationsPage.preferences')}</Button>
         </div>
       </div>
 
@@ -180,9 +174,7 @@ export const NotificationsPage: React.FC = () => {
                 ? 'Vous êtes à jour ! Aucune notification non lue.'
                 : 'Aucune notification dans cette catégorie.'}
             </p>
-            <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
-              Vos alertes concernant les baisses de prix, rendez-vous et messages s'afficheront ici.
-            </p>
+            <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">{t('notifications.notificationsPage.vosAlertesConcernantLesBaisses')}</p>
           </div>
         </div>
       ) : (

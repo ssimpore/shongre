@@ -51,13 +51,9 @@ export const HomeCollectionsSection: React.FC = () => {
       {/* Section Header */}
       <div className="flex items-end justify-between gap-3 mb-5 sm:mb-6">
         <div className="min-w-0 space-y-1">
-          <h2 id="home-collections-title" className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            Nos collections du moment
-          </h2>
+          <h2 id="home-collections-title" className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('home.homeCollectionsSection.nosCollectionsDuMoment')}</h2>
 
-          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium hidden sm:block">
-            Des sélections thématiques préparées pour dénicher des pépites uniques, durables et vérifiées.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium hidden sm:block">{t('home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour')}</p>
         </div>
 
         <Link
@@ -98,7 +94,14 @@ export const HomeCollectionsSection: React.FC = () => {
       </div>
 
       {/* Collections Grid / Rail */}
-      <ScrollRail label="collections" className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
+      {/* `snap`: the cards already carried `snap-start`, but the track never
+          declared `snap-x`, so half of the contract was missing and a nudge left
+          a card stranded mid-word at the edge. */}
+      <ScrollRail
+        label="collections"
+        snap
+        className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible"
+      >
         <div className="flex gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
           {displayedCollections.map((col) => (
             <Link

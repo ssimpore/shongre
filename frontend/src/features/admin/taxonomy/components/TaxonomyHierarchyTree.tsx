@@ -129,9 +129,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
             )}
             {node.status === 'deprecated' && (
               <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
-                <Archive className="w-2.5 h-2.5" />
-                Déprécié
-              </span>
+                <Archive className="w-2.5 h-2.5" />{t('admin.taxonomyHierarchyTree.deprecie')}</span>
             )}
           </div>
 
@@ -203,9 +201,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
         <div className="p-8 text-center text-xs text-stone-500 border border-dashed rounded-2xl">
           <Layers className="w-8 h-8 text-stone-300 mx-auto mb-2" />
           <p className="font-semibold text-stone-600">{t('admin.taxonomyHierarchyTree.aucuneRubriqueNeCorrespondA')}</p>
-          <p className="text-micro text-stone-500 mt-1">
-            Modifiez votre recherche ou réinitialisez les critères.
-          </p>
+          <p className="text-micro text-stone-500 mt-1">{t('admin.taxonomyHierarchyTree.modifiezVotreRechercheOuReinitialisez')}</p>
         </div>
       ) : (
         filteredRoots.map((root, idx) =>

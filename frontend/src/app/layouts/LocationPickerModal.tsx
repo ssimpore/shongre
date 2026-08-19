@@ -163,9 +163,7 @@ export const LocationPickerModal: React.FC = () => {
           <Button variant="ghost" size="sm" onClick={closeLocationModal}>
             Annuler
           </Button>
-          <Button variant="primary" size="sm" onClick={handleApply}>
-            Appliquer la zone
-          </Button>
+          <Button variant="primary" size="sm" onClick={handleApply}>{t('shell.locationPickerModal.appliquerLaZone')}</Button>
         </div>
       </div>
     </Modal>

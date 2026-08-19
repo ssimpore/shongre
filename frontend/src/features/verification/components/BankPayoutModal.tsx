@@ -136,12 +136,8 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
-            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">
-              Coordonnées bancaires de virement
-            </h3>
-            <p className="text-xs text-stone-500 font-semibold">
-              Séquestre sécurisé & virements de ventes
-            </p>
+            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">{t('verification.bankPayoutModal.coordonneesBancairesDeVirement')}</h3>
+            <p className="text-xs text-stone-500 font-semibold">{t('verification.bankPayoutModal.sequestreSecuriseVirementsDeVentes')}</p>
           </div>
         </div>
 
@@ -154,8 +150,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1">
-              Nom du titulaire du compte <span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.bankPayoutModal.nomDuTitulaireDuCompte')}<span className="text-primary">*</span>
             </label>
             <input
               type="text"
@@ -165,14 +160,11 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
               required
               className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-800"
             />
-            <p className="text-micro text-stone-500 mt-1">
-              Le nom doit correspondre à votre pièce d'identité ou à la raison sociale de votre entreprise.
-            </p>
+            <p className="text-micro text-stone-500 mt-1">{t('verification.bankPayoutModal.leNomDoitCorrespondreA')}</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1">
-              Numéro IBAN (Zone SEPA) <span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.bankPayoutModal.numeroIbanZoneSepa')}<span className="text-primary">*</span>
             </label>
             <input
               type="text"
@@ -198,9 +190,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">
-                Établissement bancaire
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.bankPayoutModal.etablissementBancaire')}</label>
               <input
                 type="text"
                 value={bankName}

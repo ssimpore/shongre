@@ -13,6 +13,7 @@ import {
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { Button } from '../../../design-system/primitives/Button';
 import { VerificationDimensionId } from '../../../domains/verification/verification.types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface VerificationPromptModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
   reason,
   onStartVerification,
 }) => {
+  const { t } = useTranslation();
   const { containerRef, titleId } = useDialogBehavior(isOpen, onClose);
 
   if (!isOpen) return null;
@@ -157,9 +159,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
         </p>
 
         <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 mb-5">
-          <div className="text-micro font-bold text-stone-700 uppercase tracking-wider mb-2">
-            Avantages après vérification :
-          </div>
+          <div className="text-micro font-bold text-stone-700 uppercase tracking-wider mb-2">{t('verification.verificationPromptModal.avantagesApresVerification')}</div>
           <ul className="space-y-1.5 text-xs text-stone-700 font-semibold">
             {config.benefits.map((benefit, idx) => (
               <li key={idx} className="flex items-center gap-2">
@@ -171,9 +171,7 @@ export const VerificationPromptModal: React.FC<VerificationPromptModalProps> = (
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <Button type="button" variant="ghost" size="md" onClick={onClose}>
-            Plus tard
-          </Button>
+          <Button type="button" variant="ghost" size="md" onClick={onClose}>{t('verification.verificationPromptModal.plusTard')}</Button>
           <Button
             type="button"
             variant="primary"

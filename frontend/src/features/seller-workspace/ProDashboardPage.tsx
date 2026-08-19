@@ -63,14 +63,10 @@ export const ProDashboardPage: React.FC = () => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-              Tableau de bord Vendeur Pro
-            </h1>
+            <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('sellerworkspace.proDashboardPage.tableauDeBordVendeurPro')}</h1>
             <Badge variant="pro" size="sm">{t('sellerworkspace.proDashboardPage.siretVerifie')}</Badge>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Suivi des performances de votre catalogue commercial et conversion clients
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -80,9 +76,7 @@ export const ProDashboardPage: React.FC = () => {
             size="sm"
             onClick={() => setIsBillingModalOpen(true)}
             leftIcon={<FileText className="w-4 h-4" />}
-          >
-            Factures & Reçus
-          </Button>
+          >{t('sellerworkspace.proDashboardPage.facturesRecus')}</Button>
 
           <Link
             to={`/boutique/${currentUser?.storeSlug || 'atelier-nordique-sas'}`}
@@ -140,9 +134,7 @@ export const ProDashboardPage: React.FC = () => {
       {/* Analytics Chart Bar Visualizer */}
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm sm:text-base font-bold text-stone-900">
-            Évolution de l'audience (7 derniers jours)
-          </h2>
+          <h2 className="text-sm sm:text-base font-bold text-stone-900">{t('sellerworkspace.proDashboardPage.evolutionDeLAudience7')}</h2>
           <span className="text-xs text-stone-500">Total : 3 320 vues uniques</span>
         </div>
 
@@ -165,9 +157,7 @@ export const ProDashboardPage: React.FC = () => {
 
       {/* Top performing articles */}
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs space-y-4">
-        <h2 className="text-sm sm:text-base font-bold text-stone-900">
-          Articles phares de votre boutique
-        </h2>
+        <h2 className="text-sm sm:text-base font-bold text-stone-900">{t('sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique')}</h2>
 
         <div className="divide-y divide-border-subtle">
           {listings.slice(0, 5).map((l) => (

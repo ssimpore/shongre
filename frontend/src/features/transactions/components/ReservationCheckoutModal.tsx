@@ -147,9 +147,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               }`}>
                 2
               </span>
-              <span className={`font-semibold ${step === 2 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>
-                Détails & Coûts
-              </span>
+              <span className={`font-semibold ${step === 2 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>{t('transactions.reservationCheckoutModal.detailsCouts')}</span>
             </div>
             <div className="w-8 h-px bg-stone-200" />
             <div className="flex items-center gap-2">
@@ -158,9 +156,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               }`}>
                 3
               </span>
-              <span className={`font-semibold ${step === 3 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>
-                Paiement Séquestre
-              </span>
+              <span className={`font-semibold ${step === 3 ? 'text-stone-900 font-bold' : 'text-stone-500'}`}>{t('transactions.reservationCheckoutModal.paiementSequestre')}</span>
             </div>
           </div>
         )}
@@ -221,9 +217,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                           Gratuit
                         </span>
                       </div>
-                      <p className="text-xs font-medium text-stone-500 mt-0.5">
-                        Rendez-vous direct avec validation par code secret à 6 chiffres.
-                      </p>
+                      <p className="text-xs font-medium text-stone-500 mt-0.5">{t('transactions.reservationCheckoutModal.rendezVousDirectAvecValidation')}</p>
                     </div>
                   </div>
                   <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">0,00 €</span>
@@ -273,9 +267,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     </div>
                     <div>
                       <p className="font-bold text-stone-900 text-sm">{t('transactions.reservationCheckoutModal.livraisonEnPointRelaisMondial2')}</p>
-                      <p className="text-xs font-medium text-stone-500 mt-0.5">
-                        Retrait chez un commerçant partenaire avec suivi en temps réel (3-4 jours).
-                      </p>
+                      <p className="text-xs font-medium text-stone-500 mt-0.5">{t('transactions.reservationCheckoutModal.retraitChezUnCommercantPartenaire')}</p>
                     </div>
                   </div>
                   <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">4,90 €</span>
@@ -317,9 +309,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     </div>
                     <div>
                       <p className="font-bold text-stone-900 text-sm">{t('transactions.reservationCheckoutModal.livraisonADomicileColissimo')}</p>
-                      <p className="text-xs font-medium text-stone-500 mt-0.5">
-                        Directement dans votre boîte aux lettres ou avec signature (48h).
-                      </p>
+                      <p className="text-xs font-medium text-stone-500 mt-0.5">{t('transactions.reservationCheckoutModal.directementDansVotreBoiteAux')}</p>
                     </div>
                   </div>
                   <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">6,90 €</span>
@@ -377,8 +367,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               size="md"
               onClick={() => setStep(2)}
               className="mt-4"
-            >
-              Continuer vers le récapitulatif <ArrowRight className="w-4 h-4 ml-1" />
+            >{t('transactions.reservationCheckoutModal.continuerVersLeRecapitulatif')}<ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         )}
@@ -393,9 +382,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">{t('transactions.reservationCheckoutModal.paiement100ProtegeSousSequestre')}</p>
-                <p className="text-micro text-success mt-0.5 leading-relaxed">
-                  L'argent ne sera versé au vendeur qu'après remise de l'article conforme. Si le vendeur décline ou si l'article est non conforme, vous êtes intégralement remboursé.
-                </p>
+                <p className="text-micro text-success mt-0.5 leading-relaxed">{t('transactions.reservationCheckoutModal.lArgentNeSeraVerse')}</p>
               </div>
             </div>
 
@@ -426,8 +413,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               <Button type="button" variant="outline" fullWidth onClick={() => setStep(1)}>
                 Retour
               </Button>
-              <Button type="button" variant="primary" fullWidth onClick={() => setStep(3)}>
-                Passer au paiement sécurisé <ArrowRight className="w-4 h-4 ml-1" />
+              <Button type="button" variant="primary" fullWidth onClick={() => setStep(3)}>{t('transactions.reservationCheckoutModal.passerAuPaiementSecurise')}<ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
@@ -562,8 +548,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               <h4 className="text-lg font-black text-stone-900">
                 Paiement sécurisé de {formatPrice(createdTx.totalAmount)} validé !
               </h4>
-              <p className="text-stone-500 text-xs mt-1">
-                Référence dossier : <strong className="text-stone-800 font-mono">{createdTx.code}</strong>
+              <p className="text-stone-500 text-xs mt-1">{t('transactions.reservationCheckoutModal.referenceDossier')}<strong className="text-stone-800 font-mono">{createdTx.code}</strong>
               </p>
             </div>
 
@@ -606,9 +591,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             )}
 
             <div className="pt-2">
-              <Button type="button" variant="primary" fullWidth onClick={onClose}>
-                Accéder au suivi de ma réservation
-              </Button>
+              <Button type="button" variant="primary" fullWidth onClick={onClose}>{t('transactions.reservationCheckoutModal.accederAuSuiviDeMa')}</Button>
             </div>
           </div>
         )}

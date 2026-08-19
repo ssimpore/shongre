@@ -61,9 +61,7 @@ export const CrmOverviewPage: React.FC = () => {
               <span className="text-stone-300">•</span>
               <span className="text-xs text-stone-500 font-medium">Shongre CRM Intelligence</span>
             </div>
-            <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-              Tableau de Bord CRM & Pipeline
-            </h1>
+            <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.crmOverviewPage.tableauDeBordCrmPipeline')}</h1>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -102,9 +100,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="text-2xl font-black text-stone-900">
             {stats ? stats.activeProspects : '...'}
           </div>
-          <span className="text-micro text-success font-bold">
-            Issus de la prospection IA & Inbound
-          </span>
+          <span className="text-micro text-success font-bold">{t('admin.crmOverviewPage.issusDeLaProspectionIa')}</span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs space-y-1">
@@ -115,9 +111,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="text-2xl font-black text-warning">
             {stats ? stats.openOpportunities : '...'}
           </div>
-          <span className="text-micro text-stone-500">
-            En cours de négociation
-          </span>
+          <span className="text-micro text-stone-500">{t('admin.crmOverviewPage.enCoursDeNegociation')}</span>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs space-y-1">
@@ -141,9 +135,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="text-2xl font-black text-stone-900">
             {stats ? stats.tasksDueToday : '...'}
           </div>
-          <span className="text-micro text-stone-500">
-            Rappels & démos planifiées
-          </span>
+          <span className="text-micro text-stone-500">{t('admin.crmOverviewPage.rappelsDemosPlanifiees')}</span>
         </div>
       </div>
 
@@ -154,9 +146,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="text-base font-black text-stone-900">
-                Opportunités Commerciales Récentes
-              </h2>
+              <h2 className="text-base font-black text-stone-900">{t('admin.crmOverviewPage.opportunitesCommercialesRecentes')}</h2>
             </div>
             <Link
               to="/admin/crm/pipeline"
@@ -203,21 +193,15 @@ export const CrmOverviewPage: React.FC = () => {
               <Sparkles className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-wider">{t('admin.crmOverviewPage.prospectionAssisteeParIa')}</span>
             </div>
-            <h3 className="text-base font-black leading-snug">
-              Trouvez de nouveaux vendeurs professionnels qualifiés
-            </h3>
-            <p className="text-xs text-stone-300 leading-relaxed">
-              Décrivez en langage naturel les entreprises cibles et découvrez automatiquement leur potentiel pour Shongre.
-            </p>
+            <h3 className="text-base font-black leading-snug">{t('admin.crmOverviewPage.trouvezDeNouveauxVendeursProfessionnels')}</h3>
+            <p className="text-xs text-stone-300 leading-relaxed">{t('admin.crmOverviewPage.decrivezEnLangageNaturelLes')}</p>
             <div className="pt-1">
               <Button
                 to="/admin/crm/prospection"
                 variant="primary"
                 size="sm"
                 className="font-bold"
-              >
-                Lancer une recherche IA
-              </Button>
+              >{t('admin.crmOverviewPage.lancerUneRechercheIa')}</Button>
             </div>
           </div>
 
@@ -242,8 +226,7 @@ export const CrmOverviewPage: React.FC = () => {
                   <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <span className="font-bold text-stone-900 block truncate">{task.title}</span>
-                    <span className="text-micro text-stone-500">
-                      Échéance : <strong>{task.dueDate}</strong> • Lié à : {task.relatedTitle}
+                    <span className="text-micro text-stone-500">{t('admin.crmOverviewPage.echeance')}<strong>{task.dueDate}</strong> • Lié à : {task.relatedTitle}
                     </span>
                   </div>
                 </div>

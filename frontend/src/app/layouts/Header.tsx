@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Search,
   MapPin,
   PlusCircle,
   Heart,
@@ -42,6 +41,7 @@ import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar'
 import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
 import { DROPDOWN_PANEL_CLASSES } from '../../design-system/primitives/DropdownMenu';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
 
 export const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -58,7 +58,6 @@ export const Header: React.FC = () => {
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
   // Set when the drawer is opened via the search button rather than the burger,
   // so the field takes focus instead of the user having to tap it again.
-  const [shouldFocusMobileSearch, setShouldFocusMobileSearch] = useState(false);
 
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
@@ -66,12 +65,6 @@ export const Header: React.FC = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
-
-  // Reset the focus intent once the drawer closes, so opening it later via the
-  // burger does not steal focus into the search field.
-  useEffect(() => {
-    if (!isMobileMenuOpen) setShouldFocusMobileSearch(false);
-  }, [isMobileMenuOpen]);
 
   // Close the header dropdowns on route change, Escape, or a click outside.
   useEffect(() => {
@@ -183,13 +176,13 @@ export const Header: React.FC = () => {
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
             <Link
               to={publishCta.to}
-              aria-label={publishCta.label}
+              aria-label={t(publishCta.labelKey)}
               className="hidden md:flex bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95 whitespace-nowrap mr-1 lg:mr-2"
             >
               <PlusCircle className="w-4 h-4 text-primary shrink-0" />
               {/* Tablet keeps the publish action but not its label — it is the
                   one action that must survive the narrower row. */}
-              <span className="hidden lg:inline whitespace-nowrap">{publishCta.label}</span>
+              <span className="hidden lg:inline whitespace-nowrap">{t(publishCta.labelKey)}</span>
             </Link>
 
             {/* Favorites */}
@@ -284,9 +277,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <User className="w-4 h-4 text-stone-400" />
-                      Tableau de bord compte
-                    </Link>
+                      <User className="w-4 h-4 text-stone-400" />{t('shell.header.tableauDeBordCompte')}</Link>
                     <Link
                       to="/compte/annonces"
                       onClick={() => setIsAccountMenuOpen(false)}
@@ -344,34 +335,15 @@ export const Header: React.FC = () => {
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-danger" />
-                      Déconnexion
-                    </button>
+                      <LogOut className="w-4 h-4 text-danger" />{t('shell.header.deconnexion')}</button>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Mobile search entry.
-                The header search bar is desktop-only, so without this the
-                homepage had no visible search affordance at all on a phone —
-                for a marketplace, that is the wrong thing to hide behind a
-                hamburger. Opens the same drawer and focuses its search field. */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsMobileMenuOpen(true);
-                setShouldFocusMobileSearch(true);
-              }}
-              aria-label={t('shell.header.rechercherUneAnnonce')}
-              /* `md:hidden`, unlike the burger next to it: from `md` up the
-                 inline search bar is already on screen, and a second search
-                 entry point in the same header is exactly the duplication the
-                 single-search-surface rule exists to prevent. */
-              className="md:hidden p-2 rounded-xl text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted transition-colors flex items-center justify-center cursor-pointer"
-            >
-              <Search className="w-6 h-6 text-stone-900" />
-            </button>
+            {/* No separate mobile search icon: it opened the very same drawer
+                as the burger beside it, so the header offered two controls for
+                one panel. Search is the first thing inside that drawer. */}
 
             {/* Mobile Hamburger Toggle Button */}
             <button
@@ -416,7 +388,7 @@ export const Header: React.FC = () => {
             aria-modal="true"
             aria-labelledby={drawerTitleId}
             tabIndex={-1}
-            className="relative w-[85vw] max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
+            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
           >
             
             {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
@@ -481,9 +453,7 @@ export const Header: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-2.5">
-                    <div className="text-xs font-medium text-stone-600">
-                      Connectez-vous pour gérer vos annonces et messages
-                    </div>
+                    <div className="text-xs font-medium text-stone-600">{t('shell.header.connectezVousPourGererVos')}</div>
                     <div className="grid grid-cols-2 gap-2">
                       <Link
                         to="/connexion"
@@ -511,21 +481,13 @@ export const Header: React.FC = () => {
                   idPrefix="header-mobile"
                   showCategory={true}
                   showLocation={true}
-                  autoFocus={shouldFocusMobileSearch}
                   onSubmitComplete={() => setIsMobileMenuOpen(false)}
                 />
               </div>
 
               {/* Mobile CTA: Déposer une annonce */}
               <div className="p-4 border-b border-border-base shrink-0">
-                <Link
-                  to={publishCta.to}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-3 px-4 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs hover:bg-primary-hover active:bg-primary-active active:scale-98 transition-all"
-                >
-                  <PlusCircle className="w-5 h-5" />
-                  <span>{publishCta.label}</span>
-                </Link>
+                <PublishCtaButton fullWidth onNavigate={() => setIsMobileMenuOpen(false)} />
               </div>
 
               {/* Navigation Links */}
@@ -538,9 +500,7 @@ export const Header: React.FC = () => {
                   className="flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
-                    <MapIcon className="w-4 h-4 text-primary" />
-                    Explorer sur la carte
-                  </span>
+                    <MapIcon className="w-4 h-4 text-primary" />{t('shell.header.explorerSurLaCarte')}</span>
                   <ChevronRight className="w-4 h-4 text-primary" />
                 </Link>
 
@@ -551,9 +511,7 @@ export const Header: React.FC = () => {
                   className="flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    Bons plans & Prix réduits
-                  </span>
+                    <Sparkles className="w-4 h-4 text-amber-500" />{t('shell.header.bonsPlansPrixReduits')}</span>
                   <ChevronRight className="w-4 h-4 text-amber-400" />
                 </Link>
 
@@ -622,17 +580,13 @@ export const Header: React.FC = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <User className="w-4 h-4 text-stone-500" />
-                      Tableau de bord
-                    </Link>
+                      <User className="w-4 h-4 text-stone-500" />{t('shell.header.tableauDeBord')}</Link>
                     <Link
                       to="/compte/annonces"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <List className="w-4 h-4 text-stone-500" />
-                      Mes annonces
-                    </Link>
+                      <List className="w-4 h-4 text-stone-500" />{t('shell.header.mesAnnonces')}</Link>
                     <Link
                       to="/compte/favoris"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -665,9 +619,7 @@ export const Header: React.FC = () => {
                       }}
                       className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-danger" />
-                      Déconnexion
-                    </button>
+                      <LogOut className="w-4 h-4 text-danger" />{t('shell.header.deconnexion')}</button>
                   </div>
                 )}
 

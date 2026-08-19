@@ -136,18 +136,12 @@ export const AdminModerationPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-primary">
-            Modération & Sécurité
-          </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminModerationPage.moderationSecurite')}</span>
           <span className="text-stone-300">•</span>
           <span className="text-xs text-stone-500 font-medium">{t('admin.adminModerationPage.controleDesContenusEtProfils')}</span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-          File de Modération & Signalements
-        </h1>
-        <p className="text-xs text-stone-600 mt-1">
-          Surveillance en temps réel des signalements utilisateurs, audit anti-fraude assisté par IA Gemini et contrôle des comptes restreints.
-        </p>
+        <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminModerationPage.fileDeModerationSignalements')}</h1>
+        <p className="text-xs text-stone-600 mt-1">{t('admin.adminModerationPage.surveillanceEnTempsReelDes')}</p>
       </div>
 
       {/* Tabs */}
@@ -230,16 +224,12 @@ export const AdminModerationPage: React.FC = () => {
                         variant="outline"
                         onClick={() => handleResolveReport(rep.id)}
                         className="text-xs text-stone-700"
-                      >
-                        Classer sans suite
-                      </Button>
+                      >{t('admin.adminModerationPage.classerSansSuite')}</Button>
                       <Button
                         size="sm"
                         onClick={() => setSuspendUserId(rep.targetUserId)}
                         className="text-xs bg-danger hover:bg-danger text-white"
-                      >
-                        Suspendre le profil
-                      </Button>
+                      >{t('admin.adminModerationPage.suspendreLeProfil')}</Button>
                     </div>
                   </div>
                 ))}
@@ -361,9 +351,7 @@ export const AdminModerationPage: React.FC = () => {
                     onClick={() => handleReactivateUser(u.id)}
                     className="text-xs text-success border-success-border hover:bg-success-surface"
                   >
-                    <Unlock className="w-3.5 h-3.5 mr-1" />
-                    Lever la suspension
-                  </Button>
+                    <Unlock className="w-3.5 h-3.5 mr-1" />{t('admin.adminModerationPage.leverLaSuspension')}</Button>
                 </div>
               ))}
           </div>
@@ -438,9 +426,7 @@ export const AdminModerationPage: React.FC = () => {
                         handleToggleListingStatus(selectedListingForAI.id, selectedListingForAI.status);
                         setSelectedListingForAI(null);
                       }}
-                    >
-                      Masquer l'annonce
-                    </Button>
+                    >{t('admin.adminModerationPage.masquerLAnnonce')}</Button>
                   )}
                 </div>
               </div>

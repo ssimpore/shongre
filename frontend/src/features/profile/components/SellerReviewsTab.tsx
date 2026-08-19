@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { ReviewItem, UserProfile } from '../../../types';
 import { Avatar } from '../../../design-system/primitives/Badge';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface SellerReviewsTabProps {
   seller: UserProfile;
@@ -17,6 +18,7 @@ export interface SellerReviewsTabProps {
 }
 
 export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, reviews }) => {
+  const { t } = useTranslation();
   const [selectedRatingFilter, setSelectedRatingFilter] = useState<number | null>(null);
 
   // Compute breakdown statistics
@@ -103,9 +105,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
             <p className="text-xs sm:text-sm text-stone-600 font-medium">
               Basé sur {stats.total} avis vérifié{stats.total > 1 ? 's' : ''}
             </p>
-            <p className="text-xs text-stone-500 mt-1">
-              Avis certifiés suite à une transaction réalisée sur Shongre.
-            </p>
+            <p className="text-xs text-stone-500 mt-1">{t('profile.sellerReviewsTab.avisCertifiesSuiteAUne')}</p>
           </div>
 
           {/* Breakdown Rating Progress Bars */}
@@ -149,16 +149,13 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
       {/* Review List Filter Notification if Active */}
       {selectedRatingFilter && (
         <div className="flex items-center justify-between bg-warning-surface border border-warning-border px-4 py-2.5 rounded-xl text-xs text-warning">
-          <span>
-            Affichage des avis avec la note de <strong>{selectedRatingFilter} étoile(s)</strong> ({displayedReviews.length})
+          <span>{t('profile.sellerReviewsTab.affichageDesAvisAvecLa')}<strong>{selectedRatingFilter} étoile(s)</strong> ({displayedReviews.length})
           </span>
           <button
             type="button"
             onClick={() => setSelectedRatingFilter(null)}
             className="font-bold underline text-warning hover:text-warning"
-          >
-            Afficher tous les avis
-          </button>
+          >{t('profile.sellerReviewsTab.afficherTousLesAvis')}</button>
         </div>
       )}
 
@@ -184,9 +181,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
                         {rev.authorName}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success-surface px-2 py-1 rounded-full border border-success-border">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Achat vérifié
-                      </span>
+                        <CheckCircle2 className="w-3 h-3" />{t('profile.sellerReviewsTab.achatVerifie')}</span>
                     </div>
 
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-500">

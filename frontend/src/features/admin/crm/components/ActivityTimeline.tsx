@@ -123,25 +123,19 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
           className={`px-2.5 py-1 rounded-lg font-bold text-micro transition-colors cursor-pointer ${
             filter === 'ai' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
           }`}
-        >
-          Événements IA
-        </button>
+        >{t('admin.activityTimeline.evenementsIa')}</button>
         <button
           type="button"
           onClick={() => setFilter('milestones')}
           className={`px-2.5 py-1 rounded-lg font-bold text-micro transition-colors cursor-pointer ${
             filter === 'milestones' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
           }`}
-        >
-          Étapes & Pipeline
-        </button>
+        >{t('admin.activityTimeline.etapesPipeline')}</button>
       </div>
 
       {/* Timeline Stream */}
       {filtered.length === 0 ? (
-        <div className="text-center py-6 text-stone-500">
-          Aucune activité enregistrée pour ce filtre.
-        </div>
+        <div className="text-center py-6 text-stone-500">{t('admin.activityTimeline.aucuneActiviteEnregistreePourCe')}</div>
       ) : (
         <div className="space-y-3 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-200">
           {filtered.map((act) => (
@@ -166,8 +160,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                   </p>
                 )}
 
-                <div className="text-micro text-stone-500 pt-0.5">
-                  Par : <strong className="text-stone-600">{act.authorName}</strong>{' '}
+                <div className="text-micro text-stone-500 pt-0.5">{t('admin.activityTimeline.par')}<strong className="text-stone-600">{act.authorName}</strong>{' '}
                   {act.authorRole && `(${act.authorRole})`}
                 </div>
               </div>

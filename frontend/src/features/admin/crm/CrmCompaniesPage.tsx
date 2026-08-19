@@ -103,9 +103,7 @@ export const CrmCompaniesPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Entreprises & Vendeurs B2B
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Répertoire des boutiques Pro, marques et entreprises partenaires Shongre.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('admin.crmCompaniesPage.repertoireDesBoutiquesProMarques')}</p>
         </div>
 
         <Button
@@ -156,9 +154,7 @@ export const CrmCompaniesPage: React.FC = () => {
             ))}
           </div>
         ) : filteredCompanies.length === 0 ? (
-          <div className="text-center py-12 text-stone-500 text-xs">
-            Aucune entreprise trouvée.
-          </div>
+          <div className="text-center py-12 text-stone-500 text-xs">{t('admin.crmCompaniesPage.aucuneEntrepriseTrouvee')}</div>
         ) : (
           <div className="divide-y divide-border-subtle">
             {filteredCompanies.map((comp) => {
@@ -181,9 +177,7 @@ export const CrmCompaniesPage: React.FC = () => {
                           {comp.name}
                         </span>
                         {comp.linkedSellerId && (
-                          <Badge variant="pro" size="sm">
-                            Vendeur Pro Actif
-                          </Badge>
+                          <Badge variant="pro" size="sm">{t('admin.crmCompaniesPage.vendeurProActif')}</Badge>
                         )}
                         {comp.aiFitScore && (
                           <span className="text-micro px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold flex items-center gap-1">

@@ -120,18 +120,14 @@ export const ForgotPasswordPage: React.FC = () => {
 
           {demoResetToken && (
             <div className="pt-2 border-t border-success-border/80">
-              <p className="text-micro text-success mb-1.5 font-medium">
-                Environnement de démonstration — Cliquez ci-dessous pour procéder immédiatement à la réinitialisation :
-              </p>
+              <p className="text-micro text-success mb-1.5 font-medium">{t('auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi')}</p>
               <Button
                 type="button"
                 variant="primary"
                 size="sm"
                 className="w-full"
                 onClick={() => setStep('reset')}
-              >
-                Accéder au formulaire de nouveau mot de passe
-              </Button>
+              >{t('auth.forgotPasswordPage.accederAuFormulaireDeNouveau')}</Button>
             </div>
           )}
         </div>
@@ -140,8 +136,7 @@ export const ForgotPasswordPage: React.FC = () => {
       {step === 'request' ? (
         <form onSubmit={handleRequestReset} className="space-y-4">
           <div>
-            <label htmlFor="reset-email" className="block text-xs font-bold text-stone-800 mb-1.5">
-              Adresse email de votre compte <span className="text-primary">*</span>
+            <label htmlFor="reset-email" className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.forgotPasswordPage.adresseEmailDeVotreCompte')}<span className="text-primary">*</span>
             </label>
             <div className="relative">
               <input
@@ -165,15 +160,12 @@ export const ForgotPasswordPage: React.FC = () => {
             className="w-full"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
-          >
-            Envoyer le lien de réinitialisation
-          </Button>
+          >{t('auth.forgotPasswordPage.envoyerLeLienDeReinitialisation')}</Button>
         </form>
       ) : (
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
-              Jeton de validation (Token) <span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.forgotPasswordPage.jetonDeValidationToken')}<span className="text-primary">*</span>
             </label>
             <div className="relative">
               <input
@@ -201,8 +193,7 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
-              Confirmer le nouveau mot de passe <span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.forgotPasswordPage.confirmerLeNouveauMotDe')}<span className="text-primary">*</span>
             </label>
             <input
               type="password"
@@ -222,17 +213,13 @@ export const ForgotPasswordPage: React.FC = () => {
             className="w-full mt-2"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
-          >
-            Mettre à jour mon mot de passe
-          </Button>
+          >{t('auth.forgotPasswordPage.mettreAJourMonMot')}</Button>
 
           <button
             type="button"
             onClick={() => setStep('request')}
             className="w-full text-center text-xs font-semibold text-stone-500 hover:text-stone-900 py-1"
-          >
-            ← Renvoyer un nouvel email
-          </button>
+          >{t('auth.forgotPasswordPage.renvoyerUnNouvelEmail')}</button>
         </form>
       )}
     </AuthLayout>

@@ -70,8 +70,7 @@ export const AdminOverviewPage: React.FC = () => {
           <h1 className="text-2xl font-black text-stone-900 tracking-tight">
             Bonjour, {currentUser?.name || 'Collaborateur'}
           </h1>
-          <p className="text-xs text-stone-600 mt-0.5">
-            Vous opérez avec le rôle <strong className="text-stone-900">{roleMeta.title}</strong>{' '}
+          <p className="text-xs text-stone-600 mt-0.5">{t('admin.adminOverviewPage.vousOperezAvecLeRole')}<strong className="text-stone-900">{roleMeta.title}</strong>{' '}
             sur le périmètre territorial{' '}
             <strong className="text-stone-900">{currentUser?.marketScope?.countries.join(', ') || 'FR'}</strong>.
           </p>
@@ -80,9 +79,7 @@ export const AdminOverviewPage: React.FC = () => {
         {/* Wraps rather than shrinks: both labels are long enough to push the
             document past a 320px viewport when forced onto one line. */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button to="/admin/roles" variant="outline" size="sm">
-            Vérifier mes permissions
-          </Button>
+          <Button to="/admin/roles" variant="outline" size="sm">{t('admin.adminOverviewPage.verifierMesPermissions')}</Button>
           {can('moderation.review') && (
             <Button to="/admin/moderation" size="sm">
               Traiter les signalements ({reportsCount})
@@ -121,9 +118,7 @@ export const AdminOverviewPage: React.FC = () => {
             <ShieldAlert className="w-4 h-4 text-primary" />
           </div>
           <div className="text-2xl font-black text-primary">{reportsCount}</div>
-          <div className="text-xs text-stone-500 mt-1">
-            Conformité et sécurité
-          </div>
+          <div className="text-xs text-stone-500 mt-1">{t('admin.adminOverviewPage.conformiteEtSecurite')}</div>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
@@ -132,9 +127,7 @@ export const AdminOverviewPage: React.FC = () => {
             <TrendingUp className="w-4 h-4 text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">{listingsCount}</div>
-          <div className="text-xs text-stone-500 mt-1">
-            Offres actives et archivées
-          </div>
+          <div className="text-xs text-stone-500 mt-1">{t('admin.adminOverviewPage.offresActivesEtArchivees')}</div>
         </div>
       </div>
 
@@ -145,15 +138,12 @@ export const AdminOverviewPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-stone-700" />
-              <h2 className="text-sm font-bold text-stone-900">
-                Dossiers Professionnels à Vérifier
-              </h2>
+              <h2 className="text-sm font-bold text-stone-900">{t('admin.adminOverviewPage.dossiersProfessionnelsAVerifier')}</h2>
             </div>
             <Link
               to="/admin/utilisateurs"
               className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-            >
-              Gérer <ArrowRight className="w-3 h-3" />
+            >{t('admin.adminOverviewPage.gerer')}<ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
@@ -161,9 +151,7 @@ export const AdminOverviewPage: React.FC = () => {
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-stone-50 rounded-lg border border-dashed border-stone-200">
               <CheckCircle2 className="w-8 h-8 text-success mb-2" />
               <div className="text-xs font-bold text-stone-700">Aucun dossier en attente</div>
-              <div className="text-xs text-stone-500">
-                Toutes les immatriculations KBIS soumises ont été vérifiées.
-              </div>
+              <div className="text-xs text-stone-500">{t('admin.adminOverviewPage.toutesLesImmatriculationsKbisSoumises')}</div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -211,9 +199,7 @@ export const AdminOverviewPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-stone-700" />
-              <h2 className="text-sm font-bold text-stone-900">
-                Dernières Actions d'Audit Sécurité
-              </h2>
+              <h2 className="text-sm font-bold text-stone-900">{t('admin.adminOverviewPage.dernieresActionsDAuditSecurite')}</h2>
             </div>
             {can('audit.read') && (
               <Link
@@ -241,8 +227,7 @@ export const AdminOverviewPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-stone-600 line-clamp-1">{log.details}</div>
-                <div className="text-micro text-stone-500">
-                  Par: <strong className="text-stone-700">{log.actorName}</strong> ({roleLabel(log.actorRole)})
+                <div className="text-micro text-stone-500">{t('admin.adminOverviewPage.par')}<strong className="text-stone-700">{log.actorName}</strong> ({roleLabel(log.actorRole)})
                 </div>
               </div>
             ))}

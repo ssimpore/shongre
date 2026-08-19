@@ -57,8 +57,25 @@ export type ButtonProps = (
 
 // `whitespace-nowrap` is load-bearing: the size variants below pin an exact
 // height, so a label allowed to wrap spills out through the bottom edge.
+/** Everything except the display utility, which is applied conditionally below. */
 const baseStyles =
-  'inline-flex items-center justify-center font-medium whitespace-nowrap transition-all duration-fast cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+  'items-center justify-center font-medium whitespace-nowrap transition-all duration-fast cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+
+/**
+ * A display utility supplied by the caller, which must win over the default.
+ *
+ * Tailwind resolves conflicting utilities by stylesheet order, not by the order
+ * they appear in the attribute, and `.inline-flex` is emitted after `.hidden`.
+ * So a caller writing `className="hidden sm:inline-flex"` got a button that was
+ * still `display: flex` on mobile: the seller header's "Suivre" action was meant
+ * to disappear below `sm`, and instead stayed and pushed the action row 140px
+ * past the card it lives in. An ancestor's `overflow-hidden` clipped the result,
+ * which is why the page-level overflow suite never saw it.
+ *
+ * `FavoriteButton` carries the same guard for `position` — same root cause.
+ */
+const DISPLAY_SET_BY_CALLER =
+  /(?:^|\s)(?:hidden|block|inline|inline-block|flex|inline-flex|grid|inline-grid|contents)(?:\s|$)/;
 
 /**
  * Heights come from the shared control scale in `index.css`, not from ad-hoc
@@ -109,7 +126,8 @@ export const Button: React.FC<ButtonProps> = (props) => {
     ...rest
   } = props;
 
-  const classes = `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${
+  const display = DISPLAY_SET_BY_CALLER.test(className) ? '' : 'inline-flex';
+  const classes = `${display} ${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${
     fullWidth ? 'w-full' : ''
   } ${className}`;
 

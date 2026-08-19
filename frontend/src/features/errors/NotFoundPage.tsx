@@ -4,8 +4,10 @@ import React from 'react';
 import { AlertCircle, Home, Search } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NotFoundPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Page introuvable",
     description:
@@ -20,25 +22,19 @@ export const NotFoundPage: React.FC = () => {
       </div>
       <div>
         <h1 className="text-3xl font-black text-stone-900">Page introuvable</h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-2 leading-relaxed">
-          La page que vous recherchez n'existe pas ou a été déplacée.
-        </p>
+        <p className="text-xs sm:text-sm text-stone-500 mt-2 leading-relaxed">{t('errors.notFoundPage.laPageQueVousRecherchez')}</p>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button
           to={routes.home()}
           variant="primary"
           leftIcon={<Home className="w-4 h-4" />}
-        >
-          Retour à l'accueil
-        </Button>
+        >{t('errors.notFoundPage.retourALAccueil')}</Button>
         <Button
           to={routes.search()}
           variant="outline"
           leftIcon={<Search className="w-4 h-4" />}
-        >
-          Rechercher une annonce
-        </Button>
+        >{t('errors.notFoundPage.rechercherUneAnnonce')}</Button>
       </div>
     </div>
   );

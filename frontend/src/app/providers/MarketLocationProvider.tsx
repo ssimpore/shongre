@@ -4,6 +4,8 @@ import { Market, MarketConfiguration, MarketCity } from '../../domains/market/ma
 import { marketService } from '../../domains/market/market.service';
 import { storageService } from '../../services/storage.service';
 import { formatPrice as formatPriceUtil } from '../../utilities/formatters';
+import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
+import { refreshTaxonomyProjection } from '../../domains/taxonomy/taxonomy.data';
 
 interface MarketContextType {
   activeMarket: Market;
@@ -102,6 +104,12 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
   const setLocale = useCallback((locale: string) => {
     setCurrentLocaleState(locale);
     storageService.saveUserLocale(locale);
+    /* Taxonomy labels are resolved into the index when it is built, so the tree
+       has to be rebuilt for a language change to reach category names. Without
+       this, switching language re-rendered the chrome in English and left every
+       category in the language the app happened to boot in. */
+    taxonomyService.reload();
+    refreshTaxonomyProjection(locale);
   }, []);
 
   // Keep the document language in sync with the active locale. Screen readers

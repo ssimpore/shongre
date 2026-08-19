@@ -25,9 +25,7 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
     <div className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-black text-stone-900">
-          À propos du vendeur
-        </h2>
+        <h2 className="text-base font-black text-stone-900">{t('listings.listingSellerTrustSection.aProposDuVendeur')}</h2>
         <Link
           to={profileUrl}
           className="text-sm font-bold text-primary hover:text-primary-hover hover:underline flex items-center gap-1 transition-colors"

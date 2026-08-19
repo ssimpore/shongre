@@ -107,16 +107,12 @@ export const CrmPipelinePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-              Pipeline des Ventes & Forfaits Pro
-            </h1>
+            <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('admin.crmPipelinePage.pipelineDesVentesForfaitsPro')}</h1>
             <span className="text-xs bg-primary-light text-primary font-black px-2.5 py-0.5 rounded-full">
               {crmService.formatCrmMoney({ amountMinor: totalPipelineValue, currency: 'EUR' })}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500">
-            Suivi des négociations, abonnements Pro et acquisitions de comptes clés.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500">{t('admin.crmPipelinePage.suiviDesNegociationsAbonnementsPro')}</p>
         </div>
 
         <Button
@@ -157,9 +153,7 @@ export const CrmPipelinePage: React.FC = () => {
               {/* Cards Stream */}
               <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[70vh]">
                 {stageOpps.length === 0 ? (
-                  <div className="text-center py-8 text-stone-500 text-micro border border-dashed border-stone-200 rounded-2xl">
-                    Aucune opportunité
-                  </div>
+                  <div className="text-center py-8 text-stone-500 text-micro border border-dashed border-stone-200 rounded-2xl">{t('admin.crmPipelinePage.aucuneOpportunite')}</div>
                 ) : (
                   stageOpps.map((opp) => (
                     <div

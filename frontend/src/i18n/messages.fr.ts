@@ -1265,6 +1265,968 @@ export const messagesFr = {
   'admin.taxonomyNodeEditor.exempleTitreSeo': "Ex: Petites annonces {category} d'occasion - Shongre",
   'admin.taxonomyNodeEditor.exempleDescriptionSeo':
     'Ex: Achetez et vendez vos articles {category} en toute sécurité avec paiement séquestre Shongre...',
+
+  // --- shell.demoRoleSwitcher ---
+  'shell.demoRoleSwitcher.modeDemo': "Mode Démo",
+  'shell.demoRoleSwitcher.testerLes6ProfilsEt': "Tester les 6 profils et parcours sans mot de passe :",
+  'shell.demoRoleSwitcher.changerDeRolePourTester': "Changer de rôle pour tester",
+  'shell.demoRoleSwitcher.accesDirectAuxProfilsPublics': "Accès direct aux profils publics",
+  'shell.demoRoleSwitcher.0AnnonceParticulier': "📦 0 annonce (Particulier)",
+  'shell.demoRoleSwitcher.0AnnoncePro': "📦 0 annonce (Pro)",
+  'shell.demoRoleSwitcher.profilSuspenduSecurite': "🚫 Profil Suspendu (Sécurité)",
+
+  // --- shell.header ---
+  'shell.header.tableauDeBordCompte': "Tableau de bord compte",
+  'shell.header.deconnexion': "Déconnexion",
+  'shell.header.connectezVousPourGererVos': "Connectez-vous pour gérer vos annonces et messages",
+  'shell.header.explorerSurLaCarte': "Explorer sur la carte",
+  'shell.header.bonsPlansPrixReduits': "Bons plans & Prix réduits",
+  'shell.header.tableauDeBord': "Tableau de bord",
+  'shell.header.mesAnnonces': "Mes annonces",
+
+  // --- shell.locationPickerModal ---
+  'shell.locationPickerModal.appliquerLaZone': "Appliquer la zone",
+
+  // --- shell.preferencesModal ---
+  'shell.preferencesModal.validerLesPreferences': "Valider les préférences",
+
+  // --- ui.categoryFilterRail ---
+  'ui.categoryFilterRail.sousCategories': "Sous-catégories :",
+
+  // --- ui.dropdownMenu ---
+  'ui.dropdownMenu.selectionne': "sélectionné",
+  'ui.dropdownMenu.aucunResultatTrouve': "Aucun résultat trouvé",
+
+  // --- ui.globalSearchBar ---
+  'ui.globalSearchBar.toutesLesCategories2': "Toutes les catégories",
+
+  // --- ui.listingCard ---
+  'ui.listingCard.livraisonPossible': "Livraison possible",
+  'ui.listingCard.livraisonCourt': "Livraison",
+
+  // --- ui.marketSelector ---
+  'ui.marketSelector.defaut': "Défaut",
+  'ui.marketSelector.bientot': "Bientôt",
+  'ui.marketSelector.enregistrerMesPreferences': "Enregistrer mes préférences",
+
+  // --- ui.priceRangeSlider ---
+  'ui.priceRangeSlider.reinitialiser': "Réinitialiser",
+
+  // --- ui.searchAutocomplete ---
+  'ui.searchAutocomplete.entree': "Entrée ↵",
+  'ui.searchAutocomplete.effacerTout': "Effacer tout",
+
+  // --- ui.statePanel ---
+  'ui.statePanel.detailsTechniques': "Détails techniques",
+
+  // --- ui.uIComponents ---
+  'ui.uIComponents.negociable': "Négociable",
+
+  // --- admin.adminAuditLogsPage ---
+  'admin.adminAuditLogsPage.tracabiliteConformite': "Traçabilité & Conformité",
+  'admin.adminAuditLogsPage.registreDAuditSecurite': "Registre d'Audit Sécurité",
+  'admin.adminAuditLogsPage.enregistrementImmuableDesModificationsDe': "Enregistrement immuable des modifications de permissions, suspensions, modérations et opérations privilégiées.",
+  'admin.adminAuditLogsPage.reinitialiser': "Réinitialiser",
+  'admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre': "Aucun événement d'audit enregistré correspondant.",
+
+  // --- admin.adminMarketsPage ---
+  'admin.adminMarketsPage.valeurCanoniqueFranceDefaut': "⭐ Valeur Canonique France (Défaut)",
+  'admin.adminMarketsPage.heriteDeFrance': "🔄 Hérité de France 🇫🇷",
+  'admin.adminMarketsPage.identiqueAFrance': "(Identique à France)",
+  'admin.adminMarketsPage.reinitialiserSurFrance': "Réinitialiser sur France",
+  'admin.adminMarketsPage.gestionMultiMarchesTerritoires': "Gestion Multi-Marchés & Territoires",
+  'admin.adminMarketsPage.gerezLesPaysActivesDevises': "Gérez les pays activés, devises, passerelles, taxes, quotas et règles de conformité.",
+  'admin.adminMarketsPage.chaqueParametreNonExplicitementConfigure': "Chaque paramètre non explicitement configuré pour la Belgique, l'Espagne ou la Suisse hérite automatiquement et dynamiquement de la configuration de référence française. Réinitialiser un paramètre supprime sa surcharge locale pour rétablir immédiatement la liaison dynamique avec la France.",
+  'admin.adminMarketsPage.referenceCanonique': "Référence Canonique",
+  'admin.adminMarketsPage.toutReinitialiserSurFrance': "Tout réinitialiser sur France",
+  'admin.adminMarketsPage.vousEditezActuellementLa': "Vous éditez actuellement la",
+  'admin.adminMarketsPage.creerAvecHeritageFrance': "Créer avec héritage France",
+  'admin.adminMarketsPage.cetteValeurSeraEnregistreeEn': "Cette valeur sera enregistrée en tant que surcharge exclusive de ce marché. Vous pourrez à tout moment revenir à la valeur dynamique de France en cliquant sur « Réinitialiser ».",
+  'admin.adminMarketsPage.enregistrerLaSurcharge': "Enregistrer la surcharge",
+
+  // --- admin.adminModerationPage ---
+  'admin.adminModerationPage.moderationSecurite': "Modération & Sécurité",
+  'admin.adminModerationPage.fileDeModerationSignalements': "File de Modération & Signalements",
+  'admin.adminModerationPage.surveillanceEnTempsReelDes': "Surveillance en temps réel des signalements utilisateurs, audit anti-fraude assisté par IA Gemini et contrôle des comptes restreints.",
+  'admin.adminModerationPage.classerSansSuite': "Classer sans suite",
+  'admin.adminModerationPage.suspendreLeProfil': "Suspendre le profil",
+  'admin.adminModerationPage.leverLaSuspension': "Lever la suspension",
+  'admin.adminModerationPage.masquerLAnnonce': "Masquer l'annonce",
+
+  // --- admin.adminMonetizationPage ---
+  'admin.adminMonetizationPage.revenusMonetisation': "Revenus & Monétisation",
+  'admin.adminMonetizationPage.formulesProQuotasOptionsDe': "Formules Pro, Quotas & Options de Mise en Avant",
+  'admin.adminMonetizationPage.configurezLesQuotasDAnnonces': "Configurez les quotas d'annonces actives, les commissions et les droits d'accès aux fonctionnalités exclusives pour les vendeurs professionnels.",
+  'admin.adminMonetizationPage.quotaMaxDAnnoncesActives': "Quota max d'annonces actives",
+  'admin.adminMonetizationPage.commissionSurVente': "Commission sur vente (%)",
+  'admin.adminMonetizationPage.mettreAJour': "Mettre à jour",
+
+  // --- admin.adminNewsletterPage ---
+  'admin.adminNewsletterPage.editionDesSelectionsHebdomadairesCiblage': "Édition des sélections hebdomadaires, ciblage d'audience et simulation d'envois.",
+  'admin.adminNewsletterPage.abonnesActifsFr': "Abonnés actifs (FR)",
+  'admin.adminNewsletterPage.84CeMoisCi': "+8.4% ce mois-ci",
+  'admin.adminNewsletterPage.tauxDOuvertureEstime': "Taux d'ouverture estimé",
+  'admin.adminNewsletterPage.moyenneSurLes5Dernieres': "Moyenne sur les 5 dernières éditions",
+  'admin.adminNewsletterPage.campagnesDiffusees': "Campagnes diffusées",
+  'admin.adminNewsletterPage.editionsHebdomadairesEtFlash': "Éditions hebdomadaires et flash",
+
+  // --- admin.adminOverviewPage ---
+  'admin.adminOverviewPage.vousOperezAvecLeRole': "Vous opérez avec le rôle",
+  'admin.adminOverviewPage.verifierMesPermissions': "Vérifier mes permissions",
+  'admin.adminOverviewPage.conformiteEtSecurite': "Conformité et sécurité",
+  'admin.adminOverviewPage.offresActivesEtArchivees': "Offres actives et archivées",
+  'admin.adminOverviewPage.dossiersProfessionnelsAVerifier': "Dossiers Professionnels à Vérifier",
+  'admin.adminOverviewPage.gerer': "Gérer",
+  'admin.adminOverviewPage.toutesLesImmatriculationsKbisSoumises': "Toutes les immatriculations KBIS soumises ont été vérifiées.",
+  'admin.adminOverviewPage.dernieresActionsDAuditSecurite': "Dernières Actions d'Audit Sécurité",
+  'admin.adminOverviewPage.par': "Par:",
+
+  // --- admin.adminRolesMatrixPage ---
+  'admin.adminRolesMatrixPage.matriceInteractiveDesRolesPermissions': "Matrice Interactive des Rôles & Permissions",
+  'admin.adminRolesMatrixPage.cartographieCompleteEtExhaustiveDes': "Cartographie complète et exhaustive des privilèges d'accès pour les 13 rôles de la plateforme Shongre. Chaque action sensible fait l'objet d'une vérification rigoureuse au niveau du repository et des contrôleurs.",
+  'admin.adminRolesMatrixPage.permissionPerimetre': "Permission & Périmètre",
+  'admin.adminRolesMatrixPage.aucunePermissionNeCorrespondA': "Aucune permission ne correspond à vos critères de recherche.",
+
+  // --- admin.adminTaxonomyPage ---
+  'admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie': "Gestion & Administration de la Taxonomie",
+  'admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL': "Référentiel canonique unique pilotant l'arborescence, les formulaires de publication, les facettes de recherche, les capacités de séquestre et le multi-marchés.",
+  'admin.adminTaxonomyPage.selectionnezUneCategorieDansL': "Sélectionnez une catégorie dans l'arbre pour afficher son éditeur.",
+
+  // --- admin.adminUsersPage ---
+  'admin.adminUsersPage.gouvernanceDesIdentites': "Gouvernance des Identités",
+  'admin.adminUsersPage.annuaireDesUtilisateursVerifications': "Annuaire des Utilisateurs & Vérifications",
+  'admin.adminUsersPage.consultezEtAdministrezLEnsemble': "Consultez et administrez l'ensemble des comptes (particuliers, professionnels et collaborateurs internes).",
+
+  // --- admin.adminVerificationsPage ---
+  'admin.adminVerificationsPage.conformiteLcbFt': "Conformité & LCB-FT",
+  'admin.adminVerificationsPage.poleDeVerificationSecurite': "Pôle de Vérification & Sécurité",
+  'admin.adminVerificationsPage.examinezLesPiecesDIdentite': "Examinez les pièces d'identité, extraits KBIS, et comptes bancaires soumis par les membres et boutiques professionnelles.",
+  'admin.adminVerificationsPage.aucunDossierKycEnAttente': "Aucun dossier KYC en attente de vérification.",
+  'admin.adminVerificationsPage.validerLIdentite': "Valider l'identité",
+  'admin.adminVerificationsPage.aucunDossierKybEnAttente': "Aucun dossier KYB en attente de vérification.",
+  'admin.adminVerificationsPage.verifiePourVirements': "Vérifié pour virements",
+
+  // --- admin.crmAiProspectingPage ---
+  'admin.crmAiProspectingPage.decouvrezDeFutursVendeursPro': "Découvrez de futurs vendeurs Pro à partir de sources publiques",
+  'admin.crmAiProspectingPage.recherchezEnLangageNaturelDes': "Recherchez en langage naturel des entreprises, artisans et commerçants ayant un catalogue adapté à Shongre. Toutes les recommandations s'appuient sur des sources web publiques vérifiables.",
+  'admin.crmAiProspectingPage.signauxDetectes': "Signaux détectés :",
+
+  // --- admin.crmCompaniesPage ---
+  'admin.crmCompaniesPage.repertoireDesBoutiquesProMarques': "Répertoire des boutiques Pro, marques et entreprises partenaires Shongre.",
+  'admin.crmCompaniesPage.aucuneEntrepriseTrouvee': "Aucune entreprise trouvée.",
+  'admin.crmCompaniesPage.vendeurProActif': "Vendeur Pro Actif",
+
+  // --- admin.crmCompanyDetailPage ---
+  'admin.crmCompanyDetailPage.retourAuxEntreprises': "Retour aux entreprises",
+  'admin.crmCompanyDetailPage.vendeurProActif': "Vendeur Pro Actif",
+
+  // --- admin.crmContactDetailPage ---
+  'admin.crmContactDetailPage.retourAuxContacts': "Retour aux contacts",
+  'admin.crmContactDetailPage.tache': "+ Tâche",
+
+  // --- admin.crmContactsPage ---
+  'admin.crmContactsPage.baseUnifieeDesAcheteursVendeurs': "Base unifiée des acheteurs, vendeurs Pro et prospects commerciaux Shongre.",
+  'admin.crmContactsPage.reinitialiserLesFiltres': "Réinitialiser les filtres",
+  'admin.crmContactsPage.compteShongreLie': "Compte Shongre lié",
+
+  // --- admin.crmOverviewPage ---
+  'admin.crmOverviewPage.tableauDeBordCrmPipeline': "Tableau de Bord CRM & Pipeline",
+  'admin.crmOverviewPage.issusDeLaProspectionIa': "Issus de la prospection IA & Inbound",
+  'admin.crmOverviewPage.enCoursDeNegociation': "En cours de négociation",
+  'admin.crmOverviewPage.rappelsDemosPlanifiees': "Rappels & démos planifiées",
+  'admin.crmOverviewPage.opportunitesCommercialesRecentes': "Opportunités Commerciales Récentes",
+  'admin.crmOverviewPage.trouvezDeNouveauxVendeursProfessionnels': "Trouvez de nouveaux vendeurs professionnels qualifiés",
+  'admin.crmOverviewPage.decrivezEnLangageNaturelLes': "Décrivez en langage naturel les entreprises cibles et découvrez automatiquement leur potentiel pour Shongre.",
+  'admin.crmOverviewPage.lancerUneRechercheIa': "Lancer une recherche IA",
+  'admin.crmOverviewPage.echeance': "Échéance :",
+
+  // --- admin.crmPipelinePage ---
+  'admin.crmPipelinePage.pipelineDesVentesForfaitsPro': "Pipeline des Ventes & Forfaits Pro",
+  'admin.crmPipelinePage.suiviDesNegociationsAbonnementsPro': "Suivi des négociations, abonnements Pro et acquisitions de comptes clés.",
+  'admin.crmPipelinePage.aucuneOpportunite': "Aucune opportunité",
+
+  // --- admin.crmTasksPage ---
+  'admin.crmTasksPage.tachesRelancesCommerciales': "Tâches & Relances Commerciales",
+  'admin.crmTasksPage.suiviDesActionsAppelsDemos': "Suivi des actions, appels, démos et signatures à finaliser.",
+  'admin.crmTasksPage.creerUneTache2': "Créer une tâche",
+  'admin.crmTasksPage.voirToutesLesTaches': "Voir toutes les tâches",
+  'admin.crmTasksPage.lieA': "Lié à :",
+
+  // --- admin.activityTimeline ---
+  'admin.activityTimeline.evenementsIa': "Événements IA",
+  'admin.activityTimeline.etapesPipeline': "Étapes & Pipeline",
+  'admin.activityTimeline.aucuneActiviteEnregistreePourCe': "Aucune activité enregistrée pour ce filtre.",
+  'admin.activityTimeline.par': "Par :",
+
+  // --- admin.duplicateConflictModal ---
+  'admin.duplicateConflictModal.creerQuandMemeSepare': "Créer quand même séparé",
+  'admin.duplicateConflictModal.associerLaRechercheAL': "Associer la recherche à l'existant",
+
+  // --- admin.evidenceDrawer ---
+  'admin.evidenceDrawer.pourquoiCetteEntrepriseCorrespond': "Pourquoi cette entreprise correspond",
+  'admin.evidenceDrawer.cesInformationsSontIssuesExclusivement': "Ces informations sont issues exclusivement de sources professionnelles publiques. Elles sont soumises à la validation d'un opérateur avant toute prise de contact.",
+
+  // --- admin.adminProviderDetailPage ---
+  'admin.adminProviderDetailPage.retourAuxIntegrations': "Retour aux intégrations",
+  'admin.adminProviderDetailPage.desactive': "Désactivé",
+  'admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe': "Fonctionnalités Shongre Dépendantes de ce Prestataire",
+  'admin.adminProviderDetailPage.fonctionnalitesDirectes': "Fonctionnalités directes :",
+
+  // --- admin.adminProvidersPage ---
+  'admin.adminProvidersPage.administrationSystemeIntegrations': "Administration Système & Intégrations",
+  'admin.adminProvidersPage.fournisseursIntegrationsExternes': "Fournisseurs & Intégrations Externes",
+  'admin.adminProvidersPage.gestionCentraliseeDeToutesLes': "Gestion centralisée de toutes les passerelles tierces (Paiements, Transporteurs, Auth, Emails, IA, Cartes, KYC/KYB) avec héritage France et mécanismes de bascule (failover).",
+  'admin.adminProvidersPage.executezUnTestDeConnectivite': "Exécutez un test de connectivité et de validation des identifiants configurés pour ce prestataire.",
+  'admin.adminProvidersPage.lancerLeTest': "Lancer le test",
+
+  // --- admin.providerAuditLogsTab ---
+  'admin.providerAuditLogsTab.journalDAuditTracabiliteDes': "Journal d'Audit & Traçabilité des Modifications",
+  'admin.providerAuditLogsTab.aucunEvenementDAuditEnregistre': "Aucun événement d'audit enregistré pour cette intégration.",
+
+  // --- admin.providerCatalogTable ---
+  'admin.providerCatalogTable.affichageDe': "Affichage de",
+  'admin.providerCatalogTable.reinitialiserLesFiltres': "Réinitialiser les filtres",
+  'admin.providerCatalogTable.aucunFournisseurNeCorrespondAux': "Aucun fournisseur ne correspond aux critères de recherche.",
+  'admin.providerCatalogTable.desactive2': "Désactivé",
+  'admin.providerCatalogTable.tous': "Tous (*)",
+  'admin.providerCatalogTable.gerer': "Gérer",
+
+  // --- admin.providerConfigurationForm ---
+  'admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement': "Paramètres Généraux d'Activation & Déploiement",
+  'admin.providerConfigurationForm.rendLePrestataireOperationnelPour': "Rend le prestataire opérationnel pour la plateforme",
+  'admin.providerConfigurationForm.contexteDExecution': "Contexte d'exécution",
+  'admin.providerConfigurationForm.parametresTechniquesClesDApi': "Paramètres Techniques & Clés d'API",
+  'admin.providerConfigurationForm.lesClesSecretesSontGerees': "Les clés secrètes sont gérées côté serveur et ne sont jamais renvoyées en clair dans le navigateur.",
+  'admin.providerConfigurationForm.protectionRenforceeLeSecretReel': "Protection renforcée : Le secret réel est injecté de manière confidentielle dans le coffre-fort de clés serveur (Vault / KMS).",
+  'admin.providerConfigurationForm.enregistrerLaConfiguration': "Enregistrer la configuration",
+
+  // --- admin.providerHealthSimulator ---
+  'admin.providerHealthSimulator.etatDeSanteDisponibiliteEn': "État de Santé & Disponibilité en Temps Réel",
+  'admin.providerHealthSimulator.controlezLEtatDeSante': "Contrôlez l'état de santé simulé pour tester la résilience et la bascule vers les prestataires de secours.",
+  'admin.providerHealthSimulator.simulateurDeTestsDeterministesDiagnostic': "Simulateur de Tests Déterministes & Diagnostic API",
+  'admin.providerHealthSimulator.scenarioDeTestAExecuter': "Scénario de test à exécuter :",
+  'admin.providerHealthSimulator.executerLeTestDeDiagnostic': "Exécuter le test de diagnostic",
+
+  // --- admin.providerImpactModal ---
+  'admin.providerImpactModal.analyseDImpactOperationnel': "Analyse d'Impact Opérationnel",
+  'admin.providerImpactModal.veuillezExaminerAttentivementLesRepercussions': "Veuillez examiner attentivement les répercussions sur les marchés territoriaux et les fonctionnalités en ligne.",
+  'admin.providerImpactModal.marchesTerritoriauxAffectes': "Marchés Territoriaux Affectés",
+  'admin.providerImpactModal.cesMarchesHeritentActuellementDe': "Ces marchés héritent actuellement de la France et adopteront automatiquement ce changement.",
+  'admin.providerImpactModal.fonctionnalitesDeLaMarketplaceConcernees': "Fonctionnalités de la Marketplace Concernées",
+  'admin.providerImpactModal.disponibiliteDUnPrestataireDe': "Disponibilité d'un prestataire de secours (Fallback)",
+  'admin.providerImpactModal.secoursPret': "Secours Prêt",
+  'admin.providerImpactModal.sansSecours': "Sans Secours",
+  'admin.providerImpactModal.confirmerLaModification': "Confirmer la modification",
+
+  // --- admin.providerMarketMatrix ---
+  'admin.providerMarketMatrix.matriceDeCouvertureMultiMarches': "Matrice de Couverture Multi-Marchés & Héritage France",
+  'admin.providerMarketMatrix.laFranceEstLeMarche': "La France (🇫🇷) est le marché de référence. Les autres pays héritent automatiquement de la configuration sauf surcharge explicite.",
+  'admin.providerMarketMatrix.ref': "RÉF",
+  'admin.providerMarketMatrix.referenceActive': "Référence active",
+  'admin.providerMarketMatrix.nonConfigure': "Non configuré",
+  'admin.providerMarketMatrix.heriteDeFr': "↳ Hérité de FR",
+  'admin.providerMarketMatrix.personnalise': "★ Personnalisé",
+  'admin.providerMarketMatrix.desactive': "Désactivé",
+
+  // --- admin.providerMarketOverridesTab ---
+  'admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter': "Sélectionnez le marché à inspecter ou surcharger :",
+  'admin.providerMarketOverridesTab.baseDHeritage': "Base d'Héritage",
+  'admin.providerMarketOverridesTab.touteModificationApporteeALa': "Toute modification apportée à la France est immédiatement répercutée sur les marchés sans surcharge.",
+  'admin.providerMarketOverridesTab.configurationPersonnalisee': "★ Configuration Personnalisée",
+  'admin.providerMarketOverridesTab.heriteDeFrance': "↳ Hérité de France",
+  'admin.providerMarketOverridesTab.noteDeConformiteOuMotif': "Note de conformité ou motif de surcharge :",
+  'admin.providerMarketOverridesTab.reinitialiserSurFrance': "Réinitialiser sur France",
+  'admin.providerMarketOverridesTab.appliquerLaSurcharge': "Appliquer la surcharge",
+
+  // --- admin.providerOverviewDashboard ---
+  'admin.providerOverviewDashboard.integrationsRepertoriees': "Intégrations Répertoriées",
+  'admin.providerOverviewDashboard.santeOperationnelle': "Santé Opérationnelle",
+  'admin.providerOverviewDashboard.heritageFranceActif': "Héritage France actif",
+  'admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe': "État des Fonctions Critiques de la Plateforme (France • Référence)",
+  'admin.providerOverviewDashboard.resolutionEnDirectDuPrestataire': "Résolution en direct du prestataire primaire et de l'état de fonctionnement effectif.",
+  'admin.providerOverviewDashboard.matriceMultiMarches': "Matrice multi-marchés",
+  'admin.providerOverviewDashboard.degrade': "Dégradé",
+  'admin.providerOverviewDashboard.repartitionParDomaineCategorie': "Répartition par Domaine & Catégorie",
+  'admin.providerOverviewDashboard.changementsRecents': "Changements Récents",
+
+  // --- admin.providerRoutingManager ---
+  'admin.providerRoutingManager.gestionnaireDeRoutagePrioritesSecours': "Gestionnaire de Routage, Priorités & Secours (Failover)",
+  'admin.providerRoutingManager.configurezLesPrestatairesPrimairesEt': "Configurez les prestataires primaires et leurs mécanismes de bascule automatique en cas d'indisponibilité.",
+
+  // --- admin.taxonomyAttributeRegistryTab ---
+  'admin.taxonomyAttributeRegistryTab.moteurRecherche': "Moteur recherche",
+  'admin.taxonomyAttributeRegistryTab.utilisePar': "Utilisé par",
+  'admin.taxonomyAttributeRegistryTab.editer': "Éditer",
+
+  // --- admin.taxonomyAuditTab ---
+  'admin.taxonomyAuditTab.historiqueChronologiqueDeToutesLes': "Historique chronologique de toutes les créations, modifications, déplacements et dépréciations de rubriques.",
+  'admin.taxonomyAuditTab.aucunEvenementDAuditTrouve': "Aucun événement d'audit trouvé.",
+
+  // --- admin.taxonomyDraftPublishTab ---
+  'admin.taxonomyDraftPublishTab.annulerLesModifications': "Annuler les modifications",
+  'admin.taxonomyDraftPublishTab.publierLesModifications': "Publier les modifications",
+  'admin.taxonomyDraftPublishTab.publicationBloqueeDesAnomaliesCritiques': "Publication bloquée : des anomalies critiques ont été détectées. Veuillez consulter l'onglet",
+
+  // --- admin.taxonomyHierarchyTree ---
+  'admin.taxonomyHierarchyTree.deprecie': "Déprécié",
+  'admin.taxonomyHierarchyTree.modifiezVotreRechercheOuReinitialisez': "Modifiez votre recherche ou réinitialisez les critères.",
+
+  // --- admin.taxonomyImportExportTab ---
+  'admin.taxonomyImportExportTab.generezUnExportCompletEt': "Générez un export complet et structuré comprenant l'arborescence, les attributs, les surcharges de marchés et les capacités.",
+  'admin.taxonomyImportExportTab.telechargerLExportJson': "Télécharger l'export JSON",
+  'admin.taxonomyImportExportTab.collezLeSchemaJsonA': "Collez le schéma JSON à importer. Le moteur effectue une validation syntaxique et structurelle avant d'appliquer les changements.",
+  'admin.taxonomyImportExportTab.reinitialiserSurLeBaselineCanonique': "Réinitialiser sur le baseline canonique",
+
+  // --- admin.taxonomyNodeEditor ---
+  'admin.taxonomyNodeEditor.deplacer': "Déplacer",
+  'admin.taxonomyNodeEditor.deprecier2': "Déprécier",
+  'admin.taxonomyNodeEditor.hierarchie': "Hiérarchie :",
+  'admin.taxonomyNodeEditor.apercuDuRenduVisuel': "Aperçu du rendu visuel :",
+  'admin.taxonomyNodeEditor.iconeVectorielle': "Icône vectorielle :",
+  'admin.taxonomyNodeEditor.amelioreLesResultatsDuMoteur': "Améliore les résultats du moteur de recherche",
+  'admin.taxonomyNodeEditor.cycleDeViePublication': "Cycle de vie & Publication",
+  'admin.taxonomyNodeEditor.zoneDeDanger': "Zone de danger",
+  'admin.taxonomyNodeEditor.laSuppressionEstDefinitiveEt': "La suppression est définitive et affecte toutes les annonces rattachées à cette rubrique. Préférez",
+  'admin.taxonomyNodeEditor.supprimerCeNUd': "Supprimer ce nœud",
+  'admin.taxonomyNodeEditor.reglesAutomatiquesDeLaTaxonomie': "(règles automatiques de la taxonomie)",
+  'admin.taxonomyNodeEditor.aucunAttributHeriteDesCategories': "Aucun attribut hérité des catégories parentes.",
+  'admin.taxonomyNodeEditor.herite': "Hérité",
+  'admin.taxonomyNodeEditor.cesAttributsEnrichissentLeFormulaire': "Ces attributs enrichissent le formulaire de publication spécifiquement pour ce nœud.",
+  'admin.taxonomyNodeEditor.aucunAttributLocalAssigneChoisissez': "Aucun attribut local assigné. Choisissez un attribut dans le registre central ci-dessus.",
+  'admin.taxonomyNodeEditor.facettesDeFiltresDeriveesPour': "Facettes de filtres dérivées pour la page Recherche",
+  'admin.taxonomyNodeEditor.laTaxonomieDefinitL': "La taxonomie définit l'",
+  'admin.taxonomyNodeEditor.modesDeTransactionAutorises': "Modes de Transaction Autorisés",
+  'admin.taxonomyNodeEditor.modesDeLivraisonRemiseEligibles': "Modes de Livraison & Remise Éligibles",
+  'admin.taxonomyNodeEditor.laFrance': "La France (",
+  'admin.taxonomyNodeEditor.apercuGoogleSearch': "Aperçu Google Search :",
+  'admin.taxonomyNodeEditor.rapportDImpactRetrocompatibilite': "Rapport d'Impact & Rétrocompatibilité",
+
+  // --- admin.taxonomyTreeToolbar ---
+  'admin.taxonomyTreeToolbar.ajouterUneCategorie': "Ajouter une catégorie",
+  'admin.taxonomyTreeToolbar.deplierTout': "Déplier tout",
+  'admin.taxonomyTreeToolbar.replierTout': "Replier tout",
+
+  // --- admin.taxonomyValidationTab ---
+  'admin.taxonomyValidationTab.controleAutomatiqueDeStructureUnicite': "Contrôle automatique de structure, unicité des IDs et slugs, cohérence des capacités et attributs.",
+
+  // --- admin.attributeEditModal ---
+  'admin.attributeEditModal.ajouterUneOption': "Ajouter une option",
+  'admin.attributeEditModal.aucuneOptionDefinieCliquezSur': "Aucune option définie. Cliquez sur \"Ajouter une option\".",
+
+  // --- admin.deleteNodeModal ---
+  'admin.deleteNodeModal.pourEviterDInvaliderDes': "Pour éviter d'invalider des annonces ou rompre des chemins SEO, il est fortement recommandé de",
+  'admin.deleteNodeModal.aucuneAnnonceActiveNiSous': "Aucune annonce active ni sous-catégorie dépendante n'a été détectée. L'entité sera retirée du référentiel canonique.",
+  'admin.deleteNodeModal.deprecierALaPlace': "Déprécier à la place",
+
+  // --- admin.moveNodeModal ---
+  'admin.moveNodeModal.lesCapacitesEtAttributsHerites': "Les capacités et attributs hérités seront réévalués selon le nouveau parent.",
+
+  // --- auth.forgotPasswordPage ---
+  'auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi': "Environnement de démonstration — Cliquez ci-dessous pour procéder immédiatement à la réinitialisation :",
+  'auth.forgotPasswordPage.accederAuFormulaireDeNouveau': "Accéder au formulaire de nouveau mot de passe",
+  'auth.forgotPasswordPage.adresseEmailDeVotreCompte': "Adresse email de votre compte",
+  'auth.forgotPasswordPage.envoyerLeLienDeReinitialisation': "Envoyer le lien de réinitialisation",
+  'auth.forgotPasswordPage.jetonDeValidationToken': "Jeton de validation (Token)",
+  'auth.forgotPasswordPage.confirmerLeNouveauMotDe': "Confirmer le nouveau mot de passe",
+  'auth.forgotPasswordPage.mettreAJourMonMot': "Mettre à jour mon mot de passe",
+  'auth.forgotPasswordPage.renvoyerUnNouvelEmail': "← Renvoyer un nouvel email",
+
+  // --- auth.loginPage ---
+  'auth.loginPage.codeDeSecurite2faOu': "Code de sécurité 2FA ou Code de secours",
+  'auth.loginPage.pourLeTestVousPouvez': "Pour le test : vous pouvez utiliser le code",
+  'auth.loginPage.validerEtContinuer': "Valider et continuer",
+  'auth.loginPage.retourALEcranDe': "← Retour à l'écran de connexion",
+  'auth.loginPage.motDePasse': "Mot de passe",
+  'auth.loginPage.motDePasseOublie': "Mot de passe oublié ?",
+  'auth.loginPage.connexionRapideDemo': "Connexion rapide Démo",
+  'auth.loginPage.1ClicSansMotDe': "1-clic sans mot de passe",
+
+  // --- auth.registerPages ---
+  'auth.registerPages.creerVotreCompteShongre': "Créer votre compte Shongre",
+  'auth.registerPages.rejoignezLaCommunauteDeCommerce': "Rejoignez la communauté de commerce circulaire sécurisé en France et en Europe.",
+  'auth.registerPages.1SelectionnezVotreProfilD': "1. Sélectionnez votre profil d'activité",
+  'auth.registerPages.nomEtPrenomOuPseudonyme': "Nom et prénom ou pseudonyme",
+  'auth.registerPages.conditionsGeneralesDUtilisation': "Conditions Générales d'Utilisation",
+  'auth.registerPages.politiqueDeConfidentialite': "Politique de Confidentialité",
+  'auth.registerPages.jeSouhaiteRecevoirParEmail': "Je souhaite recevoir par email les bons plans, offres exclusives et actualités de la communauté (facultatif).",
+  'auth.registerPages.creerMonCompteParticulier': "Créer mon compte Particulier",
+  'auth.registerPages.ouvrirUnCompteProfessionnel': "Ouvrir un compte Professionnel",
+  'auth.registerPages.accedezALaVitrineOfficielle': "Accédez à la vitrine officielle, au badge Pro Vérifié et à la facturation TVA automatisée.",
+  'auth.registerPages.nomEtPrenomDuResponsable': "Nom et prénom du responsable / contact",
+  'auth.registerPages.telephoneCommercial': "Téléphone commercial",
+  'auth.registerPages.continuerVersLesInformationsEntreprise': "Continuer vers les informations entreprise",
+  'auth.registerPages.adresseDuSiegeSocialMagasin': "Adresse du siège social / magasin",
+  'auth.registerPages.conditionsGeneralesDeVenteProfessionnelles': "Conditions Générales de Vente Professionnelles",
+
+  // --- auth.verifyEmailPage ---
+  'auth.verifyEmailPage.emailValideAvecSucces': "Email validé avec succès !",
+  'auth.verifyEmailPage.votreCompteEstDesormaisSecurise': "Votre compte est désormais sécurisé et votre badge \"Email Vérifié\" est actif sur votre profil.",
+  'auth.verifyEmailPage.accederAMonEspace': "Accéder à mon espace",
+  'auth.verifyEmailPage.tokenDemo': "Token démo :",
+  'auth.verifyEmailPage.jetonDeValidationOuCode': "Jeton de validation ou Code de vérification",
+
+  // --- auth.accountTypeSelector ---
+  'auth.accountTypeSelector.pourAcheterEnTouteSecurite': "Pour acheter en toute sécurité et vendre vos objets du quotidien sans frais d'inscription.",
+  'auth.accountTypeSelector.pourLesEntreprisesArtisansBoutiques': "Pour les entreprises, artisans, boutiques et commerçants immatriculés.",
+
+  // --- auth.mFAModal ---
+  'auth.mFAModal.activerLaDoubleAuthentification2fa': "Activer la double authentification (2FA)",
+  'auth.mFAModal.protegezVotreCompteEtVos': "Protégez votre compte et vos transactions avec une application d'authentification standard (Google Authenticator, Microsoft Authenticator, 1Password, etc.).",
+  'auth.mFAModal.1ScannezCeQrCode': "1. Scannez ce QR Code avec votre application d'authentification",
+  'auth.mFAModal.ouSaisissezLaCleManuellement': "Ou saisissez la clé manuellement :",
+  'auth.mFAModal.2CodesDeSecoursA': "2. Codes de secours à usage unique",
+  'auth.mFAModal.conservezCesCodesDansUn': "Conservez ces codes dans un endroit sûr. Ils vous permettront de vous reconnecter si vous perdez l'accès à votre téléphone.",
+  'auth.mFAModal.3EntrezLeCodeA': "3. Entrez le code à 6 chiffres généré par votre application",
+  'auth.mFAModal.verifierEtActiverLe2fa': "Vérifier et activer le 2FA",
+
+  // --- auth.phoneVerificationModal ---
+  'auth.phoneVerificationModal.verificationDuNumeroDeTelephone': "Vérification du numéro de téléphone",
+  'auth.phoneVerificationModal.laVerificationTelephoniqueProtegeLes': "La vérification téléphonique protège les acheteurs et vendeurs lors des remises en main propre et renforce la confiance.",
+  'auth.phoneVerificationModal.paysEtIndicatif': "Pays et indicatif",
+  'auth.phoneVerificationModal.recevoirMonCodeParSms': "Recevoir mon code par SMS",
+  'auth.phoneVerificationModal.saisissezLeCodeRecuPar': "Saisissez le code reçu par SMS (6 chiffres)",
+  'auth.phoneVerificationModal.confirmerLeNumero': "Confirmer le numéro",
+  'auth.phoneVerificationModal.changerDeNumero': "Changer de numéro",
+
+  // --- auth.upgradeToProModal ---
+  'auth.upgradeToProModal.passerEnCompteProfessionnel': "Passer en compte Professionnel",
+  'auth.upgradeToProModal.conservezToutesVosAnnoncesAvis': "Conservez toutes vos annonces, avis et messages existants tout en débloquant la vitrine personnalisée, le badge Pro Vérifié et les fonctionnalités de facturation.",
+  'auth.upgradeToProModal.numeroDeTvaIntracommunautaire': "Numéro de TVA Intracommunautaire",
+  'auth.upgradeToProModal.telephoneProfessionnel': "Téléphone professionnel",
+  'auth.upgradeToProModal.adresseDuSiegeSocialBoutique': "Adresse du siège social / boutique",
+  'auth.upgradeToProModal.confirmerLaMiseANiveau': "Confirmer la mise à niveau",
+
+  // --- categories.categoriesPage ---
+  'categories.categoriesPage.toutesNosCategories': "Toutes nos catégories",
+  'categories.categoriesPage.explorezLEnsembleDesCategories': "Explorez l’ensemble des catégories et sous-catégories de Shongre. Trouvez instantanément les annonces vérifiées près de chez vous ou partout en France.",
+  'categories.categoriesPage.affichageDe': "Affichage de",
+  'categories.categoriesPage.afficherToutesLesCategories': "Afficher toutes les catégories",
+
+  // --- collections.collectionsPage ---
+  'collections.collectionsPage.toutesNosCollections': "Toutes nos collections",
+  'collections.collectionsPage.decouvrezDesUniversThematiquesPenses': "Découvrez des univers thématiques pensés pour vous inspirer : bons plans, mobilier vintage, tech reconditionnée, mobilité douce, rentrée et créateurs de nos régions.",
+  'collections.collectionsPage.voirToutesLesCollections': "Voir toutes les collections",
+  'collections.collectionsPage.aucuneAnnonceNeCorrespondAux': "Aucune annonce ne correspond aux filtres actifs dans cette collection.",
+  'collections.collectionsPage.reinitialiserLesFiltres': "Réinitialiser les filtres",
+
+  // --- errors.notFoundPage ---
+  'errors.notFoundPage.laPageQueVousRecherchez': "La page que vous recherchez n'existe pas ou a été déplacée.",
+  'errors.notFoundPage.retourALAccueil': "Retour à l'accueil",
+  'errors.notFoundPage.rechercherUneAnnonce': "Rechercher une annonce",
+
+  // --- favorites.favoritesPage ---
+  'favorites.favoritesPage.retrouvezLesAnnoncesQueVous': "Retrouvez les annonces que vous avez sauvegardées",
+  'favorites.favoritesPage.viderLesFavoris': "Vider les favoris",
+  'favorites.favoritesPage.annoncesSauvegardees': "Annonces sauvegardées",
+  'favorites.favoritesPage.explorerLesAnnonces': "Explorer les annonces",
+
+  // --- home.homePage ---
+  'home.homePage.trouvezLaPerleRare': "Trouvez la perle rare,",
+  'home.homePage.sansTracas': "sans tracas.",
+  'home.homePage.achetezEtVendezEnToute': "Achetez et vendez en toute sérénité : paiements sécurisés, livraison intégrée et vendeurs vérifiés.",
+  'home.homePage.annoncesRecentes': "Annonces récentes",
+  'home.homePage.lesDernieresOffresPublieesPres': "Les dernières offres publiées près de chez vous",
+  'home.homePage.reprendreOuVousEnEtiez': "Reprendre où vous en étiez",
+  'home.homePage.lesAnnoncesQueVousAvez': "Les annonces que vous avez consultées récemment",
+  'home.homePage.desReductionsJusquA50': "Des réductions jusqu'à -50% sur des articles récents et vérifiés",
+  'home.homePage.desProfessionnelsVerifiesAvecCatalogue': "Des professionnels vérifiés, avec catalogue et garanties",
+  'home.homePage.vousEtesCommercantArtisanOu': "Vous êtes commerçant, artisan ou concessionnaire ?",
+  'home.homePage.ouvrezVotreVitrineOfficielleEn': "Ouvrez votre vitrine officielle en quelques clics, bénéficiez du badge Pro certifié, de statistiques de rentabilité et importez vos catalogues en masse.",
+  'home.homePage.decouvrirLesForfaitsPro': "Découvrir les forfaits Pro",
+  'home.homePage.creerMonComptePro': "Créer mon compte Pro",
+
+  // --- home.heroBoostedScroll ---
+  'home.heroBoostedScroll.voirPlus': "Voir plus",
+  'home.heroBoostedScroll.annoncesControlees': "Annonces contrôlées",
+  'home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees': "Sécurité, fiabilité et qualité assurées.",
+  'home.heroBoostedScroll.livraison': "Livraison",
+
+  // --- home.homeCategoryExplorer ---
+  'home.homeCategoryExplorer.explorerParCategorie': "Explorer par catégorie",
+  'home.homeCategoryExplorer.desMillionsDAnnoncesVerifiees': "Des millions d’annonces vérifiées classées avec précision selon vos projets et vos envies.",
+
+  // --- home.homeCollectionsSection ---
+  'home.homeCollectionsSection.nosCollectionsDuMoment': "Nos collections du moment",
+  'home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour': "Des sélections thématiques préparées pour dénicher des pépites uniques, durables et vérifiées.",
+
+  // --- legal.legalPages ---
+  'legal.legalPages.offresVerifieesAPrixReduits': "Offres vérifiées à prix réduits",
+  'legal.legalPages.articlesDontLePrixA': "Articles dont le prix a été baissé récemment par leur vendeur",
+  'legal.legalPages.annoncesEnPromotion': "Annonces en promotion",
+
+  // --- listings.listingDetailPage ---
+  'listings.listingDetailPage.explorerLesAnnoncesSimilaires': "Explorer les annonces similaires",
+  'listings.listingDetailPage.retourALAccueil': "Retour à l'accueil",
+  'listings.listingDetailPage.aLaUne': "À la une",
+  'listings.listingDetailPage.signalerOuDemanderDeL': "Signaler ou demander de l'aide sur cette annonce",
+  'listings.listingDetailPage.prixDeLArticle': "Prix de l'article",
+  'listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu': "Protection Acheteur incluse, calculée au paiement",
+  'listings.listingDetailPage.modifierMonAnnonce': "Modifier mon annonce",
+  'listings.listingDetailPage.gererMesAnnoncesStats': "Gérer mes annonces & stats",
+  'listings.listingDetailPage.reserverLArticle': "Réserver l'article",
+  'listings.listingDetailPage.offreDePrix': "Offre de prix",
+  'listings.listingDetailPage.offreDePrixCourt': "Offre",
+  'listings.listingDetailPage.message': "Message",
+  'listings.listingDetailPage.selectionDArticlesRecommandesSelon': "Sélection d'articles recommandés selon vos critères",
+  'listings.listingDetailPage.envoyerLeMessage': "Envoyer le message",
+  'listings.listingDetailPage.envoyerLeSignalement': "Envoyer le signalement",
+  'listings.listingDetailPage.reserver': "Réserver",
+
+  // --- listings.listingFulfillmentSummary ---
+  'listings.listingFulfillmentSummary.remiseExpedition': "Remise & Expédition",
+  'listings.listingFulfillmentSummary.choixDefinitifALaCommande': "Choix définitif à la commande",
+  'listings.listingFulfillmentSummary.livraisonEnColisAvecSuivi': "Livraison en colis avec suivi",
+  'listings.listingFulfillmentSummary.mondialRelayPointRelaisLocker': "Mondial Relay (Point relais & Locker) ou Colissimo Domicile",
+  'listings.listingFulfillmentSummary.aPartirDe399': "À partir de 3,99 €",
+  'listings.listingFulfillmentSummary.transportDeMeublesGrosColis': "Transport de meubles & Gros colis",
+  'listings.listingFulfillmentSummary.livraisonParTransporteurSpecialiseCocolis': "Livraison par transporteur spécialisé Cocolis",
+  'listings.listingFulfillmentSummary.surDevisTransport': "Sur devis transport",
+  'listings.listingFulfillmentSummary.retraitDirectDansLeMagasin': "Retrait direct dans le magasin du vendeur Pro",
+
+  // --- listings.listingSafetyNotice ---
+  'listings.listingSafetyNotice.sequestreGaranti': "Séquestre garanti",
+  'listings.listingSafetyNotice.paiementChiffre3dSecure': "Paiement chiffré 3D-Secure",
+
+  // --- listings.listingSellerTrustSection ---
+  'listings.listingSellerTrustSection.aProposDuVendeur': "À propos du vendeur",
+
+  // --- messaging.messagingPage ---
+  'messaging.messagingPage.vosEchangesAvecLesAcheteurs': "Vos échanges avec les acheteurs et les vendeurs apparaîtront ici, avec le paiement sécurisé et le suivi de commande.",
+  'messaging.messagingPage.parcourirLesAnnonces': "Parcourir les annonces",
+  'messaging.messagingPage.choisissezUneConversationDansLa': "Choisissez une conversation dans la liste de gauche pour échanger avec vos acheteurs et vendeurs en toute sécurité.",
+  'messaging.messagingPage.etesVousSurDeVouloir': "Êtes-vous sûr de vouloir bloquer cet utilisateur ? Vous pourrez le débloquer à tout moment depuis les options de la conversation.",
+  'messaging.messagingPage.confirmerLeBlocage': "Confirmer le blocage",
+  'messaging.messagingPage.votreSignalementSeraExamineEn': "Votre signalement sera examiné en priorité par notre équipe de modération. En cas d'urgence ou de tentative d'escroquerie, nous prendrons des mesures immédiates.",
+  'messaging.messagingPage.envoyerLeSignalement': "Envoyer le signalement",
+  'messaging.messagingPage.pieceJointeEnPleinEcran': "Pièce jointe en plein écran",
+
+  // --- messaging.conversationContextBar ---
+  'messaging.conversationContextBar.suiviDeCommande': "Suivi de commande",
+  'messaging.conversationContextBar.faireUneOffre': "Faire une offre",
+  'messaging.conversationContextBar.fixerRendezVous': "Fixer rendez-vous",
+
+  // --- messaging.conversationHeader ---
+  'messaging.conversationHeader.simulerReponse': "Simuler réponse",
+
+  // --- messaging.messageTimeline ---
+  'messaging.messageTimeline.posezVosQuestionsAuVendeur': "Posez vos questions au vendeur ou convenez d'un point de rencontre.",
+  'messaging.messageTimeline.reessayer': "Réessayer",
+
+  // --- messaging.pickupSchedulerModal ---
+  'messaging.pickupSchedulerModal.confirmerLeRendezVous': "Confirmer le rendez-vous",
+
+  // --- newsletter.newsletterConfirmPage ---
+  'newsletter.newsletterConfirmPage.abonnementConfirme': "Abonnement confirmé !",
+  'newsletter.newsletterConfirmPage.vousRecevrezChaqueSemaineLes': "Vous recevrez chaque semaine les meilleures pépites et bons plans. Vous pouvez modifier vos préférences ou vous désabonner à tout moment.",
+  'newsletter.newsletterConfirmPage.explorerLesAnnonces': "Explorer les annonces",
+  'newsletter.newsletterConfirmPage.gererMesThematiques': "Gérer mes thématiques",
+
+  // --- newsletter.newsletterLandingPage ---
+  'newsletter.newsletterLandingPage.neManquezPlusAucunePepite': "Ne manquez plus aucune pépite ni bonne affaire",
+  'newsletter.newsletterLandingPage.chaqueSemaineRecevezDansVotre': "Chaque semaine, recevez dans votre boîte mail une sélection d'articles uniques, les baisses de prix vérifiées et des conseils pour acheter et vendre en toute confiance.",
+  'newsletter.newsletterLandingPage.ceQueVousTrouverezDans': "Ce que vous trouverez dans nos éditions",
+  'newsletter.newsletterLandingPage.vousGardezLeControleTotal': "Vous gardez le contrôle total sur vos préférences et pouvez vous désabonner en 1 clic.",
+
+  // --- newsletter.newsletterPreferencesPage ---
+  'newsletter.newsletterPreferencesPage.newsletterPreferencesMarketing': "Newsletter & Préférences Marketing",
+  'newsletter.newsletterPreferencesPage.gerezVosAbonnementsAuxSelections': "Gérez vos abonnements aux sélections hebdomadaires, bons plans et actualités Shongre.",
+  'newsletter.newsletterPreferencesPage.seDesabonner': "Se désabonner",
+  'newsletter.newsletterPreferencesPage.seReabonner': "Se réabonner",
+  'newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous': "Cochez les thématiques qui vous intéressent pour personnaliser vos prochaines éditions.",
+  'newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService': "Communications obligatoires de service",
+  'newsletter.newsletterPreferencesPage.memeSiVousEtesDesabonne': "Même si vous êtes désabonné de la newsletter, vous continuerez à recevoir les emails essentiels relatifs à la sécurité de votre compte, à vos paiements sous séquestre et au suivi de vos commandes.",
+
+  // --- newsletter.newsletterUnsubscribePage ---
+  'newsletter.newsletterUnsubscribePage.desabonnementNewsletter': "Désabonnement Newsletter",
+  'newsletter.newsletterUnsubscribePage.vousPouvezVousDesabonnerEn': "Vous pouvez vous désabonner en 1 clic de l'ensemble de nos sélections et bons plans.",
+  'newsletter.newsletterUnsubscribePage.desabonnementPrisEnCompte': "Désabonnement pris en compte",
+  'newsletter.newsletterUnsubscribePage.vousContinuerezARecevoirLes': "Vous continuerez à recevoir les notifications nécessaires relatives à la sécurité de votre compte et à vos transactions en cours.",
+  'newsletter.newsletterUnsubscribePage.jeMeSuisTrompeMe': "Je me suis trompé, me réabonner",
+  'newsletter.newsletterUnsubscribePage.retourALAccueil': "Retour à l'accueil",
+
+  // --- newsletter.newsletterPreviewModal ---
+  'newsletter.newsletterPreviewModal.laSelectionDeLaSemaine': "La sélection de la semaine",
+  'newsletter.newsletterPreviewModal.fermerLApercu': "Fermer l'aperçu",
+
+  // --- newsletter.newsletterSignup ---
+  'newsletter.newsletterSignup.vousRecevrezNosSelectionsEt': "Vous recevrez nos sélections et bons plans. Vous pourrez vous désabonner en 1 clic à tout moment.",
+  'newsletter.newsletterSignup.recevezNosMeilleuresPepitesBons': "Recevez nos meilleures pépites & bons plans",
+  'newsletter.newsletterSignup.chaqueSemaineUneSelectionExclusive': "Chaque semaine, une sélection exclusive d'annonces vérifiées, de baisses de prix et de conseils pour vos achats et ventes.",
+  'newsletter.newsletterSignup.jAccepteDeRecevoirLa': "J'accepte de recevoir la newsletter Shongre. Désinscription possible à tout moment en 1 clic.",
+
+  // --- notifications.notificationPreferencesPage ---
+  'notifications.notificationPreferencesPage.preferencesDeNotifications': "Préférences de notifications",
+  'notifications.notificationPreferencesPage.choisissezPrecisementLesAlertesQue': "Choisissez précisément les alertes que vous souhaitez recevoir sur chaque canal.",
+
+  // --- notifications.notificationsPage ---
+  'notifications.notificationsPage.misesAJourEnDirect': "Mises à jour en direct concernant vos annonces, messages, commandes et sécurité.",
+  'notifications.notificationsPage.toutMarquerCommeLu': "Tout marquer comme lu",
+  'notifications.notificationsPage.preferences': "Préférences",
+  'notifications.notificationsPage.vosAlertesConcernantLesBaisses': "Vos alertes concernant les baisses de prix, rendez-vous et messages s'afficheront ici.",
+
+  // --- notifications.notificationDemoToolbar ---
+  'notifications.notificationDemoToolbar.cliquezSurUnScenarioPour': "Cliquez sur un scénario pour injecter instantanément une notification réelle et tester l'affichage, les badges et les liens profonds.",
+
+  // --- notifications.notificationPanel ---
+  'notifications.notificationPanel.vosAlertesMessagesEtTransactions': "Vos alertes, messages et transactions apparaîtront ici.",
+
+  // --- pro.proDirectoryPage ---
+  'pro.proDirectoryPage.trouvezDesCommercantsEtArtisans': "Trouvez des commerçants et artisans de confiance",
+  'pro.proDirectoryPage.toutesLesEntreprisesReferenceesPossedent': "Toutes les entreprises référencées possèdent un numéro SIRET vérifié et proposent des garanties professionnelles.",
+
+  // --- pro.proStorefrontPage ---
+  'pro.proStorefrontPage.voirLAnnuaireDesProfessionnels': "Voir l'annuaire des professionnels",
+  'pro.proStorefrontPage.retourALAccueil': "Retour à l'accueil",
+  'pro.proStorefrontPage.contacterLaBoutique': "Contacter la boutique",
+  'pro.proStorefrontPage.aucunArticleCorrespondantDansCette': "Aucun article correspondant dans cette boutique.",
+
+  // --- profile.sellerPublicPage ---
+  'profile.sellerPublicPage.lUtilisateurOuLaBoutique': "L'utilisateur ou la boutique demandée n'existe pas ou le lien est erroné.",
+  'profile.sellerPublicPage.retourALAccueil': "Retour à l'accueil",
+  'profile.sellerPublicPage.rechercherDesAnnonces': "Rechercher des annonces",
+  'profile.sellerPublicPage.ceCompteVendeurAEte': "Ce compte vendeur a été restreint ou suspendu par nos équipes de modération pour des raisons de conformité et de sécurité. Ses annonces ne sont plus visibles.",
+  'profile.sellerPublicPage.retournerAuxAnnonces': "Retourner aux annonces",
+
+  // --- profile.proBusinessInfo ---
+  'profile.proBusinessInfo.mentionsLegalesInformationsEntreprise': "Mentions légales & Informations entreprise",
+  'profile.proBusinessInfo.venteExclusiveEnLigneAvec': "Vente exclusive en ligne avec expédition sécurisée.",
+  'profile.proBusinessInfo.zonesDeLivraisonCouvertes': "Zones de livraison couvertes :",
+  'profile.proBusinessInfo.servicesInclusParCeVendeur': "Services inclus par ce vendeur pro :",
+
+  // --- profile.sellerCatalog ---
+  'profile.sellerCatalog.publierUnePremiereAnnonce': "Publier une première annonce",
+  'profile.sellerCatalog.explorerLesAnnoncesDuMarche': "Explorer les annonces du marché",
+  'profile.sellerCatalog.effacerLesPrix': "Effacer les prix",
+  'profile.sellerCatalog.sousCategories': "Sous-catégories :",
+  'profile.sellerCatalog.reinitialiserLesFiltres2': "Réinitialiser les filtres",
+
+  // --- profile.sellerProfileHeader ---
+  'profile.sellerProfileHeader.verifie': "Vérifié",
+  'profile.sellerProfileHeader.gererMesAnnonces': "Gérer mes annonces",
+  'profile.sellerProfileHeader.partagerCeProfil2': "Partager ce profil",
+  'profile.sellerProfileHeader.signalerCeProfil': "Signaler ce profil",
+
+  // --- profile.sellerReportModal ---
+  'profile.sellerReportModal.motifPrincipalDuSignalement': "Motif principal du signalement :",
+  'profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande': "Détails complémentaires (facultatif mais recommandé) :",
+  'profile.sellerReportModal.envoyerLeSignalement': "Envoyer le signalement",
+
+  // --- profile.sellerReviewsTab ---
+  'profile.sellerReviewsTab.avisCertifiesSuiteAUne': "Avis certifiés suite à une transaction réalisée sur Shongre.",
+  'profile.sellerReviewsTab.affichageDesAvisAvecLa': "Affichage des avis avec la note de",
+  'profile.sellerReviewsTab.afficherTousLesAvis': "Afficher tous les avis",
+  'profile.sellerReviewsTab.achatVerifie': "Achat vérifié",
+
+  // --- profile.sellerTrustIndicators ---
+  'profile.sellerTrustIndicators.garantiesSignauxDeConfiance': "Garanties & Signaux de confiance",
+  'profile.sellerTrustIndicators.remiseEnMainPropreOu': "Remise en main propre ou envoi avec numéro de suivi",
+
+  // --- publishing.publishWizard ---
+  'publishing.publishWizard.votreAnnonce': "Votre annonce",
+  'publishing.publishWizard.deposerUneAnnonceSurShongre': "Déposer une annonce sur Shongre",
+  'publishing.publishWizard.queSouhaitezVousPublier': "Que souhaitez-vous publier ?",
+  'publishing.publishWizard.selectionnezLIntentionEtLa': "Sélectionnez l'intention et la catégorie exacte dans la taxonomie Shongre.",
+  'publishing.publishWizard.typeDAnnonceIntention': "Type d'annonce (Intention)",
+  'publishing.publishWizard.rechercherUneCategorieOuUn': "Rechercher une catégorie ou un type de bien",
+  'publishing.publishWizard.ouParcourezLesUnivers': "Ou parcourez les univers",
+  'publishing.publishWizard.etatDuBienProduit': "État du bien / produit",
+  'publishing.publishWizard.photosDeVotreAnnonce': "Photos de votre annonce",
+  'publishing.publishWizard.lesAnnoncesAvecAuMoins': "Les annonces avec au moins 3 photos génèrent 5x plus de contacts. La première photo sert de couverture.",
+  'publishing.publishWizard.titreDescriptionDetaillee': "Titre & Description détaillée",
+  'publishing.publishWizard.redigezUnTitreClairOu': "Rédigez un titre clair ou utilisez l'assistant IA Gemini.",
+  'publishing.publishWizard.assistantIaRedactionGemini': "Assistant IA Rédaction Gemini",
+  'publishing.publishWizard.generezUneDescriptionOptimiseePour': "Générez une description optimisée pour le SEO et le taux de conversion",
+  'publishing.publishWizard.genererAvecLIa': "Générer avec l'IA",
+  'publishing.publishWizard.prixDeVenteStock': "Prix de vente & Stock",
+  'publishing.publishWizard.commentSouhaitezVousVendre': "Comment souhaitez-vous vendre ?",
+  'publishing.publishWizard.activezLesOptionsDeTransaction': "Activez les options de transaction autorisées pour cette catégorie.",
+  'publishing.publishWizard.lesAcheteursPeuventVousPoser': "Les acheteurs peuvent vous poser des questions via la messagerie Shongre.",
+  'publishing.publishWizard.sequestreGaranti': "Séquestre Garanti",
+  'publishing.publishWizard.lAcheteurPeutPayerImmediatement': "L'acheteur peut payer immédiatement par carte bancaire. Vos fonds sont sécurisés.",
+  'publishing.publishWizard.permetALAcheteurDe': "Permet à l'acheteur de bloquer l'article pendant le temps de convenir d'un rendez-vous.",
+  'publishing.publishWizard.modesDeRemiseExpedition': "Modes de remise & Expédition",
+  'publishing.publishWizard.determinezCommentLesAcheteursPeuvent': "Déterminez comment les acheteurs peuvent récupérer l'article.",
+  'publishing.publishWizard.gratuitAvecValidationParCode': "Gratuit, avec validation par code secret PIN à 6 chiffres lors du rendez-vous.",
+  'publishing.publishWizard.etiquettePrepayeeGenereeAutomatiquementL': "Étiquette prépayée générée automatiquement. L'acheteur règle les frais de port.",
+  'publishing.publishWizard.gabaritDuColisPoidsEstime': "Gabarit du colis (Poids estimé)",
+  'publishing.publishWizard.idealPourCanapesTablesElectromenager': "Idéal pour canapés, tables, électroménager lourd avec transporteur spécialisé.",
+  'publishing.publishWizard.localisationDuBien': "Localisation du bien",
+  'publishing.publishWizard.parRespectPourVotreVie': "Par respect pour votre vie privée, seule la ville et le code postal sont affichés publiquement.",
+  'publishing.publishWizard.marchesEtPaysDeDiffusion': "Marchés et pays de diffusion",
+  'publishing.publishWizard.diffusezVotreAnnonceSimultanementSur': "Diffusez votre annonce simultanément sur plusieurs marchés Shongre pour maximiser sa visibilité.",
+  'publishing.publishWizard.tousLesMarches': "Tous les marchés",
+  'publishing.publishWizard.marcheDOriginePrincipal': "Marché d'origine (Principal)",
+  'publishing.publishWizard.categorieEligible': "✓ Catégorie éligible",
+  'publishing.publishWizard.categorieRestreinte': "✕ Catégorie restreinte",
+  'publishing.publishWizard.livraison': "Livraison",
+  'publishing.publishWizard.sequestre': "Séquestre",
+  'publishing.publishWizard.toutesLesTransactionsMultiMarches': "Toutes les transactions multi-marchés sont automatiquement couvertes par le séquestre Shongre. Les prix sont convertis en toute transparence et la TVA locale est appliquée en conformité avec la réglementation européenne et suisse.",
+  'publishing.publishWizard.optionsDeVisibiliteBoostFacultatif': "Options de visibilité & Boost (Facultatif)",
+  'publishing.publishWizard.multipliezVosVuesEnPositionnant': "Multipliez vos vues en positionnant votre annonce en tête des résultats sur tous vos marchés sélectionnés.",
+  'publishing.publishWizard.recapitulatifDeVotreAnnonce': "Récapitulatif de votre annonce",
+  'publishing.publishWizard.relisezVotreAnnonceVousPourrez': "Relisez votre annonce. Vous pourrez la modifier à tout moment après publication.",
+  'publishing.publishWizard.apercuDansLesResultatsDe': "Aperçu dans les résultats de recherche",
+  'publishing.publishWizard.precedent': "Précédent",
+  'publishing.publishWizard.publierMonAnnonceMaintenant': "Publier mon annonce maintenant",
+
+  // --- savedsearches.savedSearchesPage ---
+  'savedsearches.savedSearchesPage.recevezDesAlertesInstantaneesDes': "Recevez des alertes instantanées dès qu'une nouvelle annonce correspond à vos critères",
+  'savedsearches.savedSearchesPage.voirLesAnnonces': "Voir les annonces",
+  'savedsearches.savedSearchesPage.lancerUneRecherche': "Lancer une recherche",
+
+  // --- search.exploreMapView ---
+  'search.exploreMapView.touteLaFrance': "Toute la France",
+  'search.exploreMapView.verifie': "Vérifié",
+  'search.exploreMapView.voirLAnnonce': "Voir l'annonce",
+
+  // --- search.searchPage ---
+  'search.searchPage.livraisonDisponible2': "Livraison disponible",
+  'search.searchPage.effacerTout': "Effacer tout",
+  'search.searchPage.categories2': "Catégories",
+  'search.searchPage.sousCategorie': "Sous-catégorie",
+  'search.searchPage.typeDeVendeur': "Type de vendeur",
+  'search.searchPage.filtresSpecifiques': "Filtres spécifiques",
+  'search.searchPage.categorie': "Catégorie",
+  'search.searchPage.criteresSpecifiques': "Critères spécifiques",
+
+  // --- sellerworkspace.accountOverviewPage ---
+  'sellerworkspace.accountOverviewPage.gerezVosAnnoncesVosVentes': "Gérez vos annonces, vos ventes, vos messages et vos favoris en toute simplicité.",
+  'sellerworkspace.accountOverviewPage.deposerUneAnnonce': "Déposer une annonce",
+  'sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu': "Niveaux de sécurité & Vérifications du compte",
+  'sellerworkspace.accountOverviewPage.centreDeVerificationKycKyb': "Centre de Vérification (KYC / KYB / IBAN) →",
+  'sellerworkspace.accountOverviewPage.nonVerifie': "Non vérifié",
+  'sellerworkspace.accountOverviewPage.desactive': "Désactivé",
+  'sellerworkspace.accountOverviewPage.protectionRenforceeGoogleMicrosoftAuth': "Protection renforcée Google/Microsoft Auth",
+  'sellerworkspace.accountOverviewPage.coordonneesInformationsDuProfil': "Coordonnées & Informations du profil",
+  'sellerworkspace.accountOverviewPage.visiblesSurVosAnnoncesEt': "Visibles sur vos annonces et lors des remises en main propre",
+  'sellerworkspace.accountOverviewPage.nomEtPrenomPseudonyme': "Nom et prénom / Pseudonyme",
+  'sellerworkspace.accountOverviewPage.numeroDeTelephone2': "Numéro de téléphone",
+  'sellerworkspace.accountOverviewPage.biographiePresentation': "Biographie / Présentation",
+  'sellerworkspace.accountOverviewPage.enregistrerLesModifications': "Enregistrer les modifications",
+  'sellerworkspace.accountOverviewPage.toutesMesAnnonces': "Toutes mes annonces →",
+  'sellerworkspace.accountOverviewPage.vousNAvezPasEncore': "Vous n'avez pas encore publié d'annonce.",
+  'sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure': "Passez à la vitesse supérieure",
+  'sellerworkspace.accountOverviewPage.vousVendezRegulierementEnTant': "Vous vendez régulièrement en tant que professionnel ?",
+  'sellerworkspace.accountOverviewPage.profitezDUneBoutiqueDediee': "Profitez d'une boutique dédiée avec votre logo, du badge Pro vérifié et de remises sur les boosts.",
+  'sellerworkspace.accountOverviewPage.passerEnComptePro': "Passer en Compte Pro",
+
+  // --- sellerworkspace.myListingsPage ---
+  'sellerworkspace.myListingsPage.gestionDeMesAnnonces': "Gestion de mes annonces",
+  'sellerworkspace.myListingsPage.suivezLesVuesActivezDes': "Suivez les vues, activez des boosts de visibilité et gérez vos stocks",
+  'sellerworkspace.myListingsPage.deposerUneAnnonce': "Déposer une annonce",
+  'sellerworkspace.myListingsPage.choisissezUneOptionDeVisibilite': "Choisissez une option de visibilité pour accélérer votre vente :",
+  'sellerworkspace.myListingsPage.selectionnezLesPaysEuropeensDans': "Sélectionnez les pays européens dans lesquels votre annonce sera visible et achetable :",
+  'sellerworkspace.myListingsPage.enregistrerLesMarches': "Enregistrer les marchés",
+
+  // --- sellerworkspace.proDashboardPage ---
+  'sellerworkspace.proDashboardPage.tableauDeBordVendeurPro': "Tableau de bord Vendeur Pro",
+  'sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre': "Suivi des performances de votre catalogue commercial et conversion clients",
+  'sellerworkspace.proDashboardPage.facturesRecus': "Factures & Reçus",
+  'sellerworkspace.proDashboardPage.evolutionDeLAudience7': "Évolution de l'audience (7 derniers jours)",
+  'sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique': "Articles phares de votre boutique",
+
+  // --- sellerworkspace.proPlansPage ---
+  'sellerworkspace.proPlansPage.developpezVosVentesAvecNos': "Développez vos ventes avec nos forfaits sur mesure",
+  'sellerworkspace.proPlansPage.sansEngagementActivezVotreVitrine': "Sans engagement. Activez votre vitrine personnalisée, importez votre inventaire en masse et bénéficiez de remises exclusives sur les options de visibilité.",
+  'sellerworkspace.proPlansPage.lePlusPopulaire': "Le plus populaire",
+  'sellerworkspace.proPlansPage.optionsDeMiseEnAvant': "Options de mise en avant à la carte",
+  'sellerworkspace.proPlansPage.aActiverSurNImporte': "À activer sur n'importe quelle annonce pour accélérer la vente",
+
+  // --- sellerworkspace.proStorefrontEditorPage ---
+  'sellerworkspace.proStorefrontEditorPage.cesInformationsSontAfficheesSur': "Ces informations sont affichées sur votre page boutique officielle et sur chacune de vos annonces.",
+  'sellerworkspace.proStorefrontEditorPage.banniereLogoDeLaBoutique': "Bannière & Logo de la boutique",
+  'sellerworkspace.proStorefrontEditorPage.enregistrerLesModifications': "Enregistrer les modifications",
+
+  // --- sellerworkspace.billingHistoryModal ---
+  'sellerworkspace.billingHistoryModal.payee': "Payée",
+  'sellerworkspace.billingHistoryModal.recu': "Reçu",
+  'sellerworkspace.billingHistoryModal.aucuneFactureNeCorrespondA': "Aucune facture ne correspond à ce filtre.",
+
+  // --- sellerworkspace.bulkImportModal ---
+  'sellerworkspace.bulkImportModal.modeleCsvVierge': "Modèle CSV vierge",
+  'sellerworkspace.bulkImportModal.chargerUnExemple4Articles': "Charger un exemple (4 articles)",
+  'sellerworkspace.bulkImportModal.parcourirUnFichierCsv': "Parcourir un fichier CSV...",
+  'sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur': "Utilisez notre modèle avec séparateur point-virgule (;) contenant colonnes Titre, Catégorie, Prix, État et Stock.",
+
+  // --- support.contactPage ---
+  'support.contactPage.votreDemandeABienEte': "Votre demande a bien été enregistrée par notre équipe de support client Shongre.",
+  'support.contactPage.numeroDeDossier': "Numéro de dossier",
+  'support.contactPage.retourALAccueil': "Retour à l'accueil",
+  'support.contactPage.envoyerUneAutreDemande': "Envoyer une autre demande",
+  'support.contactPage.contacterLeSupportShongre': "Contacter le support Shongre",
+  'support.contactPage.selectionnezLeMotifDeVotre': "Sélectionnez le motif de votre demande pour être orienté vers le service compétent.",
+  'support.contactPage.1QuelEstLeSujet': "1. Quel est le sujet de votre demande ?",
+  'support.contactPage.2PrecisezVotreSituation': "2. Précisez votre situation",
+  'support.contactPage.besoinDOuvrirUnLitige': "Besoin d'ouvrir un litige sur une commande en cours ?",
+  'support.contactPage.pourGelerLesFondsSous': "Pour geler les fonds sous séquestre et être remboursé en cas de non-réception ou de colis non conforme, vous devez ouvrir un dossier de litige officiel directement depuis la transaction.",
+  'support.contactPage.accederAMesAchatsPour': "Accéder à mes achats pour ouvrir le litige",
+  'support.contactPage.leSupportShongreNIntervient': "Le support Shongre n'intervient pas pour les questions sur l'article (disponibilité, négociations de prix). Contactez directement le vendeur via la messagerie sécurisée.",
+  'support.contactPage.ouvrirLaMessagerie': "Ouvrir la messagerie",
+  'support.contactPage.piecesJointesOuCapturesD': "Pièces jointes ou captures d'écran (facultatif)",
+  'support.contactPage.ajouterUneCaptureOuUn': "Ajouter une capture ou un justificatif (Simulation démo)",
+
+  // --- support.helpCenterPage ---
+  'support.helpCenterPage.commentPouvonsNousVousAider': "Comment pouvons-nous vous aider ?",
+  'support.helpCenterPage.retrouvezLesReponsesAuxQuestions': "Retrouvez les réponses aux questions fréquentes sur le séquestre, la livraison, la publication et votre compte.",
+  'support.helpCenterPage.aucunArticleNeCorrespondA': "Aucun article ne correspond à votre recherche. Vous pouvez contacter notre équipe ci-dessous.",
+  'support.helpCenterPage.notreEquipeDeSupportClient': "Notre équipe de support client basée en France vous assiste 7j/7 pour vos commandes, annonces et questions.",
+
+  // --- support.supportRequestDetailPage ---
+  'support.supportRequestDetailPage.retourAMesDemandes2': "Retour à mes demandes",
+  'support.supportRequestDetailPage.ouvrirUneNouvelleDemande': "ouvrir une nouvelle demande",
+  'support.supportRequestDetailPage.repondreANotreEquipe': "Répondre à notre équipe",
+
+  // --- support.supportRequestsPage ---
+  'support.supportRequestsPage.suivezLEtatDeVos': "Suivez l'état de vos dossiers et échangez directement avec le service client Shongre.",
+  'support.supportRequestsPage.siVousRencontrezUneDifficulte': "Si vous rencontrez une difficulté avec une transaction, une annonce ou votre compte, notre équipe est à votre disposition.",
+  'support.supportRequestsPage.contacterLeSupport': "Contacter le support",
+
+  // --- support.supportContextCard ---
+  'support.supportContextCard.annonceLiee': "Annonce liée",
+  'support.supportContextCard.commandeSequestreLie': "Commande / Séquestre lié",
+
+  // --- transactions.directPurchaseCheckoutModal ---
+  'transactions.directPurchaseCheckoutModal.selectionnezParmiLesOptionsReellement': "Sélectionnez parmi les options réellement disponibles pour cet article.",
+  'transactions.directPurchaseCheckoutModal.fondsConservesSousSequestreBancaire': "Fonds conservés sous séquestre bancaire jusqu'à confirmation de conformité.",
+  'transactions.directPurchaseCheckoutModal.paiementEnLigneTemporairementIndisponible': "Paiement en ligne temporairement indisponible",
+  'transactions.directPurchaseCheckoutModal.leSystemeDeSequestreEn': "Le système de séquestre en ligne est momentanément indisponible sur ce marché. Vous pouvez contacter le vendeur pour organiser une remise en main propre.",
+  'transactions.directPurchaseCheckoutModal.referenceCommande': "Référence commande :",
+  'transactions.directPurchaseCheckoutModal.communiquezCeCodeAuVendeur': "Communiquez ce code au vendeur lors du rendez-vous uniquement après avoir vérifié le produit.",
+
+  // --- transactions.transactionsPage ---
+  'transactions.transactionsPage.transactionsReservationsSequestre': "Transactions, Réservations & Séquestre",
+  'transactions.transactionsPage.gerezVosReservationsVosRemises': "Gérez vos réservations, vos remises en main propre et le déblocage des fonds sécurisés",
+  'transactions.transactionsPage.gererLeDossier': "Gérer le dossier",
+
+  // --- transactions.disputeModal ---
+  'transactions.disputeModal.enOuvrantCeDossierAucun': "En ouvrant ce dossier, aucun versement ne sera exécuté tant que la situation n'est pas clarifiée entre les deux parties ou arbitrée par nos équipes.",
+  'transactions.disputeModal.motifPrincipalDuLitige': "Motif principal du litige",
+  'transactions.disputeModal.descriptionDetailleeDesFaits': "Description détaillée des faits",
+
+  // --- transactions.leaveReviewModal ---
+  'transactions.leaveReviewModal.ceQueVousAvezParticulierement': "Ce que vous avez particulièrement apprécié :",
+  'transactions.leaveReviewModal.commentaireDetailleFacultatif': "Commentaire détaillé (facultatif)",
+
+  // --- transactions.reservationCheckoutModal ---
+  'transactions.reservationCheckoutModal.detailsCouts': "Détails & Coûts",
+  'transactions.reservationCheckoutModal.paiementSequestre': "Paiement Séquestre",
+  'transactions.reservationCheckoutModal.rendezVousDirectAvecValidation': "Rendez-vous direct avec validation par code secret à 6 chiffres.",
+  'transactions.reservationCheckoutModal.retraitChezUnCommercantPartenaire': "Retrait chez un commerçant partenaire avec suivi en temps réel (3-4 jours).",
+  'transactions.reservationCheckoutModal.directementDansVotreBoiteAux': "Directement dans votre boîte aux lettres ou avec signature (48h).",
+  'transactions.reservationCheckoutModal.continuerVersLeRecapitulatif': "Continuer vers le récapitulatif",
+  'transactions.reservationCheckoutModal.lArgentNeSeraVerse': "L'argent ne sera versé au vendeur qu'après remise de l'article conforme. Si le vendeur décline ou si l'article est non conforme, vous êtes intégralement remboursé.",
+  'transactions.reservationCheckoutModal.passerAuPaiementSecurise': "Passer au paiement sécurisé",
+  'transactions.reservationCheckoutModal.referenceDossier': "Référence dossier :",
+  'transactions.reservationCheckoutModal.accederAuSuiviDeMa': "Accéder au suivi de ma réservation",
+
+  // --- transactions.sellerPayoutModal ---
+  'transactions.sellerPayoutModal.toutTransferer': "Tout transférer",
+
+  // --- transactions.transactionDetailModal ---
+  'transactions.transactionDetailModal.articleReserve': "Article réservé",
+  'transactions.transactionDetailModal.refuserEtRembourser': "Refuser et rembourser",
+  'transactions.transactionDetailModal.securiteMainPropre': "Sécurité main propre",
+  'transactions.transactionDetailModal.donnezCeCodeSecretA': "Donnez ce code secret à 6 chiffres au vendeur lors du rendez-vous,",
+  'transactions.transactionDetailModal.demandezALAcheteurSon': "Demandez à l'acheteur son code de confirmation à 6 chiffres lors de la remise pour débloquer immédiatement vos fonds :",
+  'transactions.transactionDetailModal.validerLaRemise': "Valider la remise",
+  'transactions.transactionDetailModal.renseignerLeNumeroDeSuivi': "Renseigner le numéro de suivi du colis :",
+  'transactions.transactionDetailModal.siLeColisEstArrive': "Si le colis est arrivé et que l'objet est conforme à la description, validez la réception pour débloquer les fonds au vendeur.",
+  'transactions.transactionDetailModal.jAiBienRecuL': "J'ai bien reçu l'article conforme",
+  'transactions.transactionDetailModal.enregistrerLeRendezVous': "Enregistrer le rendez-vous",
+  'transactions.transactionDetailModal.annulerMaReservation': "Annuler ma réservation",
+  'transactions.transactionDetailModal.laisserUneEvaluation': "Laisser une évaluation",
+
+  // --- verification.verificationCenterPage ---
+  'verification.verificationCenterPage.verifie': "Vérifié",
+  'verification.verificationCenterPage.refuse': "Refusé",
+  'verification.verificationCenterPage.nonCommence': "Non commencé",
+  'verification.verificationCenterPage.centreDeConfianceSecurite': "Centre de Confiance & Sécurité",
+  'verification.verificationCenterPage.shongreUtiliseUnModeleDe': "Shongre utilise un modèle de confiance progressif. Validez vos étapes au fur et à mesure pour débloquer des plafonds plus élevés et rassurer la communauté.",
+  'verification.verificationCenterPage.indiceDeConfiance': "Indice de Confiance",
+  'verification.verificationCenterPage.modeDemonstrationSimulerUnProfil': "Mode Démonstration : Simuler un profil utilisateur",
+  'verification.verificationCenterPage.checklistDesVerifications2': "Checklist des vérifications",
+  'verification.verificationCenterPage.completezChaqueDimensionPourRenforcer': "Complétez chaque dimension pour renforcer la confiance des acheteurs et lever les limites de votre compte.",
+  'verification.verificationCenterPage.debloquezChaquePalierPourAcceder': "Débloquez chaque palier pour accéder aux plafonds et fonctionnalités réservées.",
+  'verification.verificationCenterPage.debloque': "Débloqué",
+  'verification.verificationCenterPage.verrouille': "Verrouillé",
+  'verification.verificationCenterPage.historiqueInalterableDesChangementsD': "Historique inaltérable des changements d'état et validations de conformité.",
+  'verification.verificationCenterPage.aucuneActionEnregistreePourLe': "Aucune action enregistrée pour le moment.",
+
+  // --- verification.bankPayoutModal ---
+  'verification.bankPayoutModal.coordonneesBancairesDeVirement': "Coordonnées bancaires de virement",
+  'verification.bankPayoutModal.sequestreSecuriseVirementsDeVentes': "Séquestre sécurisé & virements de ventes",
+  'verification.bankPayoutModal.nomDuTitulaireDuCompte': "Nom du titulaire du compte",
+  'verification.bankPayoutModal.leNomDoitCorrespondreA': "Le nom doit correspondre à votre pièce d'identité ou à la raison sociale de votre entreprise.",
+  'verification.bankPayoutModal.numeroIbanZoneSepa': "Numéro IBAN (Zone SEPA)",
+  'verification.bankPayoutModal.etablissementBancaire': "Établissement bancaire",
+
+  // --- verification.businessVerificationModal ---
+  'verification.businessVerificationModal.verificationEntrepriseKybKbis': "Vérification Entreprise (KYB / KBIS)",
+  'verification.businessVerificationModal.verifier': "Vérifier",
+  'verification.businessVerificationModal.saisissezVotreSiretPourRemplir': "Saisissez votre SIRET pour remplir automatiquement les données officielles INSEE / SIRENE.",
+  'verification.businessVerificationModal.adresseDuSiegeSocial': "Adresse du siège social",
+  'verification.businessVerificationModal.representantLegal': "Représentant légal",
+  'verification.businessVerificationModal.indiquezLIdentiteDuMandataire': "Indiquez l'identité du mandataire social ou du dirigeant habilité à engager l'entreprise sur Shongre.",
+  'verification.businessVerificationModal.nomCompletDuRepresentantLegal': "Nom complet du représentant légal",
+  'verification.businessVerificationModal.fonctionQualiteAuSeinDe': "Fonction / Qualité au sein de l'entreprise",
+  'verification.businessVerificationModal.televersezLesDocumentsOfficielsAttestant': "Téléversez les documents officiels attestant de l'existence juridique et des coordonnées de paiement de votre structure.",
+  'verification.businessVerificationModal.declarationDeConformite': "Déclaration de conformité",
+  'verification.businessVerificationModal.declarationDesBeneficiairesEffectifsRbe': "Déclaration des Bénéficiaires Effectifs (RBE / LCB-FT)",
+  'verification.businessVerificationModal.enApplicationDeLaDirective': "En application de la directive européenne anti-blanchiment et du Code Monétaire et Financier, je certifie que les informations d'immatriculation et les bénéficiaires effectifs déclarés sont sincères et conformes à la réalité.",
+  'verification.businessVerificationModal.jeCertifieSurLHonneur': "Je certifie sur l'honneur l'exactitude des pièces fournies et accepte la vérification de conformité Shongre.",
+  'verification.businessVerificationModal.validationInstantaneeParSimulationDu': "Validation instantanée par simulation du registre RCS",
+
+  // --- verification.identityVerificationModal ---
+  'verification.identityVerificationModal.verificationDIdentiteOfficielleKyc': "Vérification d'identité officielle (KYC)",
+  'verification.identityVerificationModal.typeDePieceDIdentite': "Type de pièce d'identité officielle",
+  'verification.identityVerificationModal.prenomS': "Prénom(s)",
+  'verification.identityVerificationModal.nomDeFamille': "Nom de famille",
+  'verification.identityVerificationModal.dateDeNaissance': "Date de naissance",
+  'verification.identityVerificationModal.paysEmetteur': "Pays émetteur",
+  'verification.identityVerificationModal.continuerVersLesDocuments': "Continuer vers les documents",
+  'verification.identityVerificationModal.televersezUnePhotoNetteEt': "Téléversez une photo nette et non tronquée de votre document original. Les 4 coins doivent être visibles sans reflet.",
+  'verification.identityVerificationModal.numeroDuDocumentFacultatifLu': "Numéro du document (facultatif / lu par OCR)",
+  'verification.identityVerificationModal.verificationBiometrique': "Vérification biométrique",
+  'verification.identityVerificationModal.unRapideControleDePresence': "Un rapide contrôle de présence vérifie que vous êtes bien le titulaire légitime de la pièce d'identité fournie.",
+  'verification.identityVerificationModal.regardezLObjectifSansLunettes': "Regardez l'objectif sans lunettes de soleil ni couvre-chef.",
+  'verification.identityVerificationModal.validationInstantaneeParSimulationOcr': "Validation instantanée par simulation OCR / Liveness",
+
+  // --- verification.verificationPromptModal ---
+  'verification.verificationPromptModal.avantagesApresVerification': "Avantages après vérification :",
+  'verification.verificationPromptModal.plusTard': "Plus tard",
+
+  // --- security.accountStatusBanner ---
+  'security.accountStatusBanner.consulterLeCentreDAide': "Consulter le centre d'aide & recours →",
+
+  // --- security.requireAuth ---
+  'security.requireAuth.cettePageEstReserveeAux': "Cette page est réservée aux membres inscrits sur Shongre. Connectez-vous ou créez un compte gratuitement en 1 minute.",
+  'security.requireAuth.creerUnCompte': "Créer un compte",
+
+  // --- security.requirePermission ---
+  'security.requirePermission.vousDevezEtreConnectePour': "Vous devez être connecté pour accéder à cette section.",
+  'security.requirePermission.creerUnCompte': "Créer un compte",
+  'security.requirePermission.contacterLeSupportDeSecurite': "Contacter le support de sécurité",
+  'security.requirePermission.decouvrirLesOffresPro': "Découvrir les offres Pro",
+  'security.requirePermission.retourAMonCompte': "Retour à mon compte",
+  'security.requirePermission.retourALAccueil': "Retour à l'accueil",
+
+  // --- publishCta ---
+  'publishCta.accountSuspended': "Compte suspendu",
+  'publishCta.accountInactive': "Compte inactif",
+  'publishCta.suspendedShort': "Suspendu",
+  'publishCta.inactiveShort': "Inactif",
+  'publishCta.postListing': "Déposer une annonce",
+  'publishCta.postListingShort': "Déposer",
+  'publishCta.becomeSeller': "Devenir vendeur",
+  'publishCta.becomeSellerShort': "Vendre",
+
+  // --- home.trust ---
+  'home.trust.escrowTitle': "Paiement 100% sécurisé",
+  'home.trust.escrowBody': "Fonds sous séquestre jusqu’à la validation de votre achat.",
+  'home.trust.deliveryTitle': "Livraison intégrée & suivie",
+  'home.trust.deliveryBody': "Envois Mondial Relay, Colissimo ou remise en main propre.",
+  'home.trust.verifiedTitle': "Vendeurs & SIRET vérifiés",
+  'home.trust.verifiedBody': "Profils certifiés, vérification d’identité et modération active.",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

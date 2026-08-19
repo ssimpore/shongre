@@ -164,26 +164,20 @@ export const SellerPublicPage: React.FC = () => {
           <AlertCircle className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-black text-stone-900 mb-2">Profil introuvable</h2>
-        <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">
-          L'utilisateur ou la boutique demandée n'existe pas ou le lien est erroné.
-        </p>
+        <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">{t('profile.sellerPublicPage.lUtilisateurOuLaBoutique')}</p>
         <div className="flex items-center justify-center gap-3">
           <Button
             to={routes.home()}
             variant="outline"
             size="md"
             leftIcon={<Home className="w-4 h-4" />}
-          >
-            Retour à l'accueil
-          </Button>
+          >{t('profile.sellerPublicPage.retourALAccueil')}</Button>
           <Button
             to={routes.search()}
             variant="primary"
             size="md"
             leftIcon={<Search className="w-4 h-4" />}
-          >
-            Rechercher des annonces
-          </Button>
+          >{t('profile.sellerPublicPage.rechercherDesAnnonces')}</Button>
         </div>
       </div>
     );
@@ -199,17 +193,13 @@ export const SellerPublicPage: React.FC = () => {
         <h2 className="text-2xl font-black text-stone-900 mb-2">
           Profil temporairement indisponible
         </h2>
-        <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
-          Ce compte vendeur a été restreint ou suspendu par nos équipes de modération pour des raisons de conformité et de sécurité. Ses annonces ne sont plus visibles.
-        </p>
+        <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">{t('profile.sellerPublicPage.ceCompteVendeurAEte')}</p>
         <Button
           to={routes.search()}
           variant="primary"
           size="md"
           leftIcon={<ArrowLeft className="w-4 h-4" />}
-        >
-          Retourner aux annonces
-        </Button>
+        >{t('profile.sellerPublicPage.retournerAuxAnnonces')}</Button>
       </div>
     );
   }

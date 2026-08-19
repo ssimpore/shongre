@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAuthorization } from './useAuthorization';
+import { MessageKey } from '../i18n/messages.fr';
 
 export interface PublishCta {
   /** Where the button should actually take this user. */
@@ -8,6 +9,21 @@ export interface PublishCta {
   label: string;
   /** Short label for tight spots (mobile tab bar). */
   shortLabel: string;
+}
+
+/**
+ * Message keys rather than literals.
+ *
+ * This hook lives in a `.ts` module with no component around it, so it cannot
+ * call `useTranslation` — and because it fed the loudest control in the product
+ * (primary in the header, the raised button in the mobile tab bar) it was the
+ * most visible French string left in an otherwise English interface. It now
+ * returns keys and the consuming component resolves them.
+ */
+export interface PublishCtaKeys {
+  to: string;
+  labelKey: MessageKey;
+  shortLabelKey: MessageKey;
 }
 
 /**
@@ -21,23 +37,23 @@ export interface PublishCta {
  * Rather than hide the CTA — it is a genuine acquisition surface — send people
  * to the step that actually unblocks them, and label it for what it does.
  */
-export function usePublishCta(): PublishCta {
+export function usePublishCta(): PublishCtaKeys {
   const { can, currentUser, isSuspended, isDeactivated } = useAuthorization();
 
   return useMemo(() => {
     if (isSuspended || isDeactivated) {
       return {
         to: '/compte',
-        label: isSuspended ? 'Compte suspendu' : 'Compte inactif',
-        shortLabel: isSuspended ? 'Suspendu' : 'Inactif',
+        labelKey: isSuspended ? 'publishCta.accountSuspended' : 'publishCta.accountInactive',
+        shortLabelKey: isSuspended ? 'publishCta.suspendedShort' : 'publishCta.inactiveShort',
       };
     }
 
     if (can('listing.create')) {
       return {
         to: '/deposer',
-        label: 'Déposer une annonce',
-        shortLabel: 'Déposer',
+        labelKey: 'publishCta.postListing',
+        shortLabelKey: 'publishCta.postListingShort',
       };
     }
 
@@ -45,16 +61,16 @@ export function usePublishCta(): PublishCta {
     if (currentUser) {
       return {
         to: '/inscription/particulier',
-        label: 'Devenir vendeur',
-        shortLabel: 'Vendre',
+        labelKey: 'publishCta.becomeSeller',
+        shortLabelKey: 'publishCta.becomeSellerShort',
       };
     }
 
     // Guest: "Déposer une annonce" leads them to the publish flow where auth/account is created.
     return {
       to: '/deposer',
-      label: 'Déposer une annonce',
-      shortLabel: 'Déposer',
+      labelKey: 'publishCta.postListing',
+      shortLabelKey: 'publishCta.postListingShort',
     };
   }, [can, currentUser, isSuspended, isDeactivated]);
 }

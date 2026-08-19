@@ -53,6 +53,7 @@ import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/
 import { plural } from '../../utilities/formatters';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
 
 /**
  * How many cards each homepage rail shows.
@@ -182,11 +183,8 @@ export const HomePage: React.FC = () => {
                   <span>{t('home.homePage.leMarcheLocalFrancaisDe')}</span>
                 </div>
 
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">
-                  Trouvez la perle rare, <br className="hidden sm:inline" />
-                  <span className="text-primary relative inline-block">
-                    sans tracas.
-                    <svg
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">{t('home.homePage.trouvezLaPerleRare')}<br className="hidden sm:inline" />
+                  <span className="text-primary relative inline-block">{t('home.homePage.sansTracas')}<svg
                       aria-hidden="true"
                       className="absolute left-0 -bottom-1 sm:-bottom-1.5 w-full h-2.5 sm:h-3.5 text-primary/60 overflow-visible pointer-events-none"
                       viewBox="0 0 200 14"
@@ -202,10 +200,7 @@ export const HomePage: React.FC = () => {
                   </span>
                 </h1>
 
-                <p className="text-xs sm:text-sm text-stone-600 max-w-lg leading-relaxed font-normal">
-                  Achetez et vendez en toute sérénité : paiements sécurisés,
-                  livraison intégrée et vendeurs vérifiés.
-                </p>
+                <p className="text-xs sm:text-sm text-stone-600 max-w-lg leading-relaxed font-normal">{t('home.homePage.achetezEtVendezEnToute')}</p>
               </div>
 
               {/* Quick search suggestions */}
@@ -233,14 +228,7 @@ export const HomePage: React.FC = () => {
               {/* Hero Secondary Actions */}
               <div className="pt-0.5 sm:pt-1 w-full">
                 <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-fit">
-                  <button
-                    type="button"
-                    onClick={() => navigate(publishCta.to)}
-                    className="h-10.5 sm:h-11 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-black text-white font-bold text-xs sm:text-sm shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto active:scale-95 whitespace-nowrap transition-all"
-                  >
-                    <PlusCircle className="w-4.5 h-4.5 text-primary shrink-0" />
-                    <span>{publishCta.label}</span>
-                  </button>
+                  <PublishCtaButton />
 
                   <button
                     type="button"
@@ -272,12 +260,8 @@ export const HomePage: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
         <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
-            <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-              Annonces récentes
-            </h2>
-            <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
-              Les dernières offres publiées près de chez vous
-            </p>
+            <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('home.homePage.annoncesRecentes')}</h2>
+            <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.lesDernieresOffresPublieesPres')}</p>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 mb-0.5">
@@ -335,7 +319,7 @@ export const HomePage: React.FC = () => {
             description={t('home.homePage.ceMarcheVientDOuvrir')}
             action={
               <Button to={publishCta.to} variant="primary" size="md" leftIcon={<PlusCircle className="w-4 h-4" />}>
-                {publishCta.label}
+                {t(publishCta.labelKey)}
               </Button>
             }
           />
@@ -362,12 +346,8 @@ export const HomePage: React.FC = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
             <div className="min-w-0">
-              <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                Reprendre où vous en étiez
-              </h2>
-              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
-                Les annonces que vous avez consultées récemment
-              </p>
+              <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('home.homePage.reprendreOuVousEnEtiez')}</h2>
+              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.lesAnnoncesQueVousAvez')}</p>
             </div>
           </div>
 
@@ -391,9 +371,7 @@ export const HomePage: React.FC = () => {
                 <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
                   Meilleures offres
                 </h2>
-                <p className="text-xs sm:text-sm text-stone-600 mt-0.5 hidden sm:block font-medium">
-                  Des réductions jusqu'à -50% sur des articles récents et vérifiés
-                </p>
+                <p className="text-xs sm:text-sm text-stone-600 mt-0.5 hidden sm:block font-medium">{t('home.homePage.desReductionsJusquA50')}</p>
               </div>
               <Link
                 to="/bons-plans"
@@ -430,9 +408,7 @@ export const HomePage: React.FC = () => {
               <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
                 Boutiques Pro
               </h2>
-              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">
-                Des professionnels vérifiés, avec catalogue et garanties
-              </p>
+              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.desProfessionnelsVerifiesAvecCatalogue')}</p>
             </div>
 
             <Link
@@ -457,27 +433,19 @@ export const HomePage: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-bg-base border border-border-base rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
-            <h3 className="text-xl sm:text-2xl font-black text-stone-900">
-              Vous êtes commerçant, artisan ou concessionnaire ?
-            </h3>
-            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-              Ouvrez votre vitrine officielle en quelques clics, bénéficiez du badge Pro certifié, de statistiques de rentabilité et importez vos catalogues en masse.
-            </p>
+            <h3 className="text-xl sm:text-2xl font-black text-stone-900">{t('home.homePage.vousEtesCommercantArtisanOu')}</h3>
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">{t('home.homePage.ouvrezVotreVitrineOfficielleEn')}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
             <Link
               to="/solutions-pro"
               className="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl text-center transition-colors"
-            >
-              Découvrir les forfaits Pro
-            </Link>
+            >{t('home.homePage.decouvrirLesForfaitsPro')}</Link>
             <Link
               to="/inscription/professionnel"
               className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl text-center transition-colors shadow-xs"
-            >
-              Créer mon compte Pro
-            </Link>
+            >{t('home.homePage.creerMonComptePro')}</Link>
           </div>
         </div>
       </section>

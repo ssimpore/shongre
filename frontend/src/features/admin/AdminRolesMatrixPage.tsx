@@ -91,13 +91,8 @@ export const AdminRolesMatrixPage: React.FC = () => {
               <span className="text-stone-300">•</span>
               <span className="text-xs text-stone-500 font-medium">{t('admin.adminRolesMatrixPage.controleDAccesBaseSur')}</span>
             </div>
-            <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-              Matrice Interactive des Rôles & Permissions
-            </h1>
-            <p className="text-xs text-stone-600 mt-1 max-w-3xl">
-              Cartographie complète et exhaustive des privilèges d'accès pour les 13 rôles de la plateforme Shongre. 
-              Chaque action sensible fait l'objet d'une vérification rigoureuse au niveau du repository et des contrôleurs.
-            </p>
+            <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminRolesMatrixPage.matriceInteractiveDesRolesPermissions')}</h1>
+            <p className="text-xs text-stone-600 mt-1 max-w-3xl">{t('admin.adminRolesMatrixPage.cartographieCompleteEtExhaustiveDes')}</p>
           </div>
 
           {/* Quick Role Switcher Banner */}
@@ -217,9 +212,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-stone-900 text-white font-bold border-b border-stone-800">
-                <th className="p-3 min-w-[280px] sticky left-0 bg-stone-900 z-10">
-                  Permission & Périmètre
-                </th>
+                <th className="p-3 min-w-[280px] sticky left-0 bg-stone-900 z-10">{t('admin.adminRolesMatrixPage.permissionPerimetre')}</th>
                 {ALL_PLATFORM_ROLES.map((r) => {
                   const def = ROLE_DEFINITIONS[r];
                   const isCurrent = r === platformRole;
@@ -241,9 +234,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
             <tbody className="divide-y divide-stone-200">
               {filteredGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={ALL_PLATFORM_ROLES.length + 1} className="p-8 text-center text-stone-500">
-                    Aucune permission ne correspond à vos critères de recherche.
-                  </td>
+                  <td colSpan={ALL_PLATFORM_ROLES.length + 1} className="p-8 text-center text-stone-500">{t('admin.adminRolesMatrixPage.aucunePermissionNeCorrespondA')}</td>
                 </tr>
               ) : (
                 filteredGroups.map((group) => {

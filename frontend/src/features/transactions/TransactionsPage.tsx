@@ -131,12 +131,8 @@ export const TransactionsPage: React.FC = () => {
       {/* Header with Title and Wallet Summary */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-            Transactions, Réservations & Séquestre
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Gérez vos réservations, vos remises en main propre et le déblocage des fonds sécurisés
-          </p>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('transactions.transactionsPage.transactionsReservationsSequestre')}</h1>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('transactions.transactionsPage.gerezVosReservationsVosRemises')}</p>
         </div>
 
         {/* Seller Earnings Card */}
@@ -358,9 +354,7 @@ export const TransactionsPage: React.FC = () => {
                         e.stopPropagation();
                         setSelectedTx(tx);
                       }}
-                    >
-                      Gérer le dossier
-                    </Button>
+                    >{t('transactions.transactionsPage.gererLeDossier')}</Button>
                   </div>
                 </div>
 

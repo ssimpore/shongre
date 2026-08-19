@@ -113,9 +113,7 @@ export const SupportRequestDetailPage: React.FC = () => {
     return (
       <div className="bg-white border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
         <h3 className="text-base font-black text-stone-900">Dossier d'assistance introuvable</h3>
-        <Button variant="outline" size="sm" onClick={() => navigate('/compte/support')}>
-          Retour à mes demandes
-        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate('/compte/support')}>{t('support.supportRequestDetailPage.retourAMesDemandes2')}</Button>
       </div>
     );
   }
@@ -253,9 +251,7 @@ export const SupportRequestDetailPage: React.FC = () => {
             type="button"
             onClick={() => navigate('/contact')}
             className="text-primary font-bold hover:underline"
-          >
-            ouvrir une nouvelle demande
-          </button>
+          >{t('support.supportRequestDetailPage.ouvrirUneNouvelleDemande')}</button>
           .
         </div>
       ) : (
@@ -264,9 +260,7 @@ export const SupportRequestDetailPage: React.FC = () => {
           className="bg-white border border-border-base rounded-3xl p-5 shadow-xs space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase tracking-wider text-stone-700">
-              Répondre à notre équipe
-            </h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-stone-700">{t('support.supportRequestDetailPage.repondreANotreEquipe')}</h3>
 
             {/* Demo test button */}
             <button

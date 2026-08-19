@@ -71,9 +71,7 @@ export const VerificationCenterPage: React.FC = () => {
       case 'verified':
         return (
           <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-full">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Vérifié
-          </span>
+            <CheckCircle2 className="w-3.5 h-3.5" />{t('verification.verificationCenterPage.verifie')}</span>
         );
       case 'pending':
         return (
@@ -92,15 +90,11 @@ export const VerificationCenterPage: React.FC = () => {
       case 'rejected':
         return (
           <span className="inline-flex items-center gap-1 text-xs font-bold text-danger bg-danger-surface border border-danger-border px-2.5 py-1 rounded-full">
-            <XCircle className="w-3.5 h-3.5" />
-            Refusé
-          </span>
+            <XCircle className="w-3.5 h-3.5" />{t('verification.verificationCenterPage.refuse')}</span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-stone-600 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">
-            Non commencé
-          </span>
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-stone-600 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">{t('verification.verificationCenterPage.nonCommence')}</span>
         );
     }
   };
@@ -112,24 +106,18 @@ export const VerificationCenterPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2.5 py-0.5 rounded-full border border-success-border">
-                Centre de Confiance & Sécurité
-              </span>
+              <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2.5 py-0.5 rounded-full border border-success-border">{t('verification.verificationCenterPage.centreDeConfianceSecurite')}</span>
               <TrustBadge level={trustLevel} size="md" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
               {trustLevelLabel}
             </h1>
-            <p className="text-sm text-stone-600 max-w-xl leading-relaxed">
-              Shongre utilise un modèle de confiance progressif. Validez vos étapes au fur et à mesure pour débloquer des plafonds plus élevés et rassurer la communauté.
-            </p>
+            <p className="text-sm text-stone-600 max-w-xl leading-relaxed">{t('verification.verificationCenterPage.shongreUtiliseUnModeleDe')}</p>
           </div>
 
           {/* Trust Score Gauge Card */}
           <div className="bg-stone-50 border border-stone-200 rounded-2xl p-5 shrink-0 flex flex-col items-center justify-center min-w-[200px]">
-            <div className="text-micro font-bold uppercase tracking-wider text-stone-500 mb-1">
-              Indice de Confiance
-            </div>
+            <div className="text-micro font-bold uppercase tracking-wider text-stone-500 mb-1">{t('verification.verificationCenterPage.indiceDeConfiance')}</div>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-black text-stone-900">{trustScore}</span>
               <span className="text-sm font-bold text-stone-500">/ 100</span>
@@ -158,9 +146,7 @@ export const VerificationCenterPage: React.FC = () => {
           <div className="mt-6 pt-6 border-t border-stone-200 animate-in fade-in duration-fast">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-warning" />
-              <span className="text-xs font-bold text-stone-900">
-                Mode Démonstration : Simuler un profil utilisateur
-              </span>
+              <span className="text-xs font-bold text-stone-900">{t('verification.verificationCenterPage.modeDemonstrationSimulerUnProfil')}</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               {[
@@ -199,9 +185,7 @@ export const VerificationCenterPage: React.FC = () => {
               ? 'bg-stone-900 text-white'
               : 'text-stone-600 hover:bg-stone-100'
           }`}
-        >
-          Checklist des vérifications
-        </button>
+        >{t('verification.verificationCenterPage.checklistDesVerifications2')}</button>
         <button
           type="button"
           onClick={() => setActiveTab('capabilities')}
@@ -234,10 +218,7 @@ export const VerificationCenterPage: React.FC = () => {
               leaving the only unlabelled panel of the three. */}
           <div className="space-y-1">
             <h2 className="text-lg font-black text-stone-900">{t('verification.verificationCenterPage.checklistDesVerifications')}</h2>
-            <p className="text-xs text-stone-600">
-              Complétez chaque dimension pour renforcer la confiance des acheteurs et lever
-              les limites de votre compte.
-            </p>
+            <p className="text-xs text-stone-600">{t('verification.verificationCenterPage.completezChaqueDimensionPourRenforcer')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -330,9 +311,7 @@ export const VerificationCenterPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-4">
           <div className="space-y-1">
             <h2 className="text-lg font-black text-stone-900">{t('verification.verificationCenterPage.capacitesPermissionsDuCompte')}</h2>
-            <p className="text-xs text-stone-600">
-              Débloquez chaque palier pour accéder aux plafonds et fonctionnalités réservées.
-            </p>
+            <p className="text-xs text-stone-600">{t('verification.verificationCenterPage.debloquezChaquePalierPourAcceder')}</p>
           </div>
 
           <div className="divide-y divide-stone-100">
@@ -406,13 +385,9 @@ export const VerificationCenterPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-stone-900">{item.title}</span>
                     {item.active ? (
-                      <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
-                        Débloqué
-                      </span>
+                      <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">{t('verification.verificationCenterPage.debloque')}</span>
                     ) : (
-                      <span className="text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
-                        Verrouillé
-                      </span>
+                      <span className="text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">{t('verification.verificationCenterPage.verrouille')}</span>
                     )}
                   </div>
                   <p className="text-micro text-stone-500">{item.desc}</p>
@@ -431,15 +406,11 @@ export const VerificationCenterPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-4">
           <div className="space-y-1">
             <h2 className="text-lg font-black text-stone-900">{t('verification.verificationCenterPage.journalDesEvenementsDeConformite')}</h2>
-            <p className="text-xs text-stone-600">
-              Historique inaltérable des changements d'état et validations de conformité.
-            </p>
+            <p className="text-xs text-stone-600">{t('verification.verificationCenterPage.historiqueInalterableDesChangementsD')}</p>
           </div>
 
           {auditLogs.length === 0 ? (
-            <div className="text-center py-8 text-stone-500 text-xs">
-              Aucune action enregistrée pour le moment.
-            </div>
+            <div className="text-center py-8 text-stone-500 text-xs">{t('verification.verificationCenterPage.aucuneActionEnregistreePourLe')}</div>
           ) : (
             <div className="divide-y divide-stone-100">
               {auditLogs.map((log) => (

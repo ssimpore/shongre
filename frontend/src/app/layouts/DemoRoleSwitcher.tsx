@@ -3,8 +3,10 @@ import { UserRole } from '../../types';
 import { useAuth } from '../providers/AuthProvider';
 import { normalizePlatformRole } from '../../security/roles.config';
 import { Shield, Sparkles, User, Briefcase, ChevronDown, Check } from 'lucide-react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const DemoRoleSwitcher: React.FC = () => {
+  const { t } = useTranslation();
   const { platformRole, currentUser, switchRole } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -67,12 +69,8 @@ export const DemoRoleSwitcher: React.FC = () => {
     <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-45">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded tracking-wider uppercase">
-            Mode Démo
-          </span>
-          <span className="hidden sm:inline text-stone-400">
-            Tester les 6 profils et parcours sans mot de passe :
-          </span>
+          <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded tracking-wider uppercase">{t('shell.demoRoleSwitcher.modeDemo')}</span>
+          <span className="hidden sm:inline text-stone-400">{t('shell.demoRoleSwitcher.testerLes6ProfilsEt')}</span>
         </div>
 
         <div className="relative">
@@ -89,9 +87,7 @@ export const DemoRoleSwitcher: React.FC = () => {
 
           {isOpen && (
             <div className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-2xl border border-stone-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-fast">
-              <div className="px-3 py-1.5 border-b border-stone-100 text-xs font-bold text-stone-400 uppercase tracking-wider">
-                Changer de rôle pour tester
-              </div>
+              <div className="px-3 py-1.5 border-b border-stone-100 text-xs font-bold text-stone-400 uppercase tracking-wider">{t('shell.demoRoleSwitcher.changerDeRolePourTester')}</div>
               {roles.map((r) => {
                 const isActive = normalizePlatformRole(r.role) === platformRole;
                 return (
@@ -121,9 +117,7 @@ export const DemoRoleSwitcher: React.FC = () => {
               })}
 
               <div className="border-t border-stone-100 my-1 pt-1">
-                <div className="px-3 py-1 text-micro font-bold text-stone-400 uppercase tracking-wider">
-                  Accès direct aux profils publics
-                </div>
+                <div className="px-3 py-1 text-micro font-bold text-stone-400 uppercase tracking-wider">{t('shell.demoRoleSwitcher.accesDirectAuxProfilsPublics')}</div>
                 <div className="grid grid-cols-2 gap-1 px-2 pb-1 text-xs">
                   <a
                     href="/profil/camille-martin"
@@ -143,16 +137,12 @@ export const DemoRoleSwitcher: React.FC = () => {
                     href="/profil/marion-dupuis"
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
-                  >
-                    📦 0 annonce (Particulier)
-                  </a>
+                  >{t('shell.demoRoleSwitcher.0AnnonceParticulier')}</a>
                   <a
                     href="/boutique/optique-des-arts"
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
-                  >
-                    📦 0 annonce (Pro)
-                  </a>
+                  >{t('shell.demoRoleSwitcher.0AnnoncePro')}</a>
                   <a
                     href="/profil/lucas-bernard"
                     onClick={() => setIsOpen(false)}
@@ -164,9 +154,7 @@ export const DemoRoleSwitcher: React.FC = () => {
                     href="/profil/vendeur-suspendu"
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-danger-surface text-danger truncate"
-                  >
-                    🚫 Profil Suspendu (Sécurité)
-                  </a>
+                  >{t('shell.demoRoleSwitcher.profilSuspenduSecurite')}</a>
                 </div>
               </div>
             </div>

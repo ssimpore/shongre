@@ -209,12 +209,8 @@ export const MyListingsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-            Gestion de mes annonces
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            Suivez les vues, activez des boosts de visibilité et gérez vos stocks
-          </p>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('sellerworkspace.myListingsPage.gestionDeMesAnnonces')}</h1>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('sellerworkspace.myListingsPage.suivezLesVuesActivezDes')}</p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -242,9 +238,7 @@ export const MyListingsPage: React.FC = () => {
             to={publishCta.to}
             className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-xs"
           >
-            <PlusCircle className="w-4 h-4" />
-            Déposer une annonce
-          </Link>
+            <PlusCircle className="w-4 h-4" />{t('sellerworkspace.myListingsPage.deposerUneAnnonce')}</Link>
         </div>
       </div>
 
@@ -280,9 +274,7 @@ export const MyListingsPage: React.FC = () => {
                       to={publishCta.to}
                       className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors"
                     >
-                      <PlusCircle className="w-4 h-4" />
-                      Déposer une annonce
-                    </Link>
+                      <PlusCircle className="w-4 h-4" />{t('sellerworkspace.myListingsPage.deposerUneAnnonce')}</Link>
                   }
                 />
               }
@@ -436,9 +428,7 @@ export const MyListingsPage: React.FC = () => {
           maxWidth="lg"
         >
           <div className="space-y-4">
-            <p className="text-xs sm:text-sm text-stone-600">
-              Choisissez une option de visibilité pour accélérer votre vente :
-            </p>
+            <p className="text-xs sm:text-sm text-stone-600">{t('sellerworkspace.myListingsPage.choisissezUneOptionDeVisibilite')}</p>
 
             {/* Each option is a real <button>: these are paid actions, and as
                 plain clickable <div>s they could not be reached by keyboard or
@@ -476,9 +466,7 @@ export const MyListingsPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4">
-            <p className="text-xs sm:text-sm text-stone-600">
-              Sélectionnez les pays européens dans lesquels votre annonce sera visible et achetable :
-            </p>
+            <p className="text-xs sm:text-sm text-stone-600">{t('sellerworkspace.myListingsPage.selectionnezLesPaysEuropeensDans')}</p>
 
             <div className="space-y-2">
               {marketService.getMarkets().map((m) => {
@@ -528,9 +516,7 @@ export const MyListingsPage: React.FC = () => {
                   setMarketsModalListing(null);
                   await fetchListings();
                 }}
-              >
-                Enregistrer les marchés
-              </Button>
+              >{t('sellerworkspace.myListingsPage.enregistrerLesMarches')}</Button>
             </div>
           </div>
         </Modal>

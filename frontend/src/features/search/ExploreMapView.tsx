@@ -233,9 +233,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             type="button"
             onClick={() => handleFlyToCity('Toute la France')}
             className="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors shrink-0"
-          >
-            Toute la France
-          </button>
+          >{t('search.exploreMapView.touteLaFrance')}</button>
 
           {['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Toulouse', 'Nantes', 'Lille', 'Nice'].map(
             (city) => (
@@ -393,9 +391,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                     {activeListing.categoryLabel}
                   </span>
                   {showsVerifiedBadge(activeListing) && (
-                    <Badge variant="verified" size="sm" icon>
-                      Vérifié
-                    </Badge>
+                    <Badge variant="verified" size="sm" icon>{t('search.exploreMapView.verifie')}</Badge>
                   )}
                 </div>
 
@@ -419,9 +415,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                     type="button"
                     onClick={() => navigate(routes.listing.detail(activeListing.id))}
                     className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    Voir l'annonce
-                    <ExternalLink className="w-3 h-3" />
+                  >{t('search.exploreMapView.voirLAnnonce')}<ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
               </div>

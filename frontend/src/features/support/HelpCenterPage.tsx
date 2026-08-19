@@ -128,12 +128,8 @@ export const HelpCenterPage: React.FC = () => {
           <Headphones className="w-3.5 h-3.5" />
           <span>Centre d'aide Shongre</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-stone-900 tracking-tight">
-          Comment pouvons-nous vous aider ?
-        </h1>
-        <p className="text-xs sm:text-sm text-stone-500">
-          Retrouvez les réponses aux questions fréquentes sur le séquestre, la livraison, la publication et votre compte.
-        </p>
+        <h1 className="text-2xl sm:text-4xl font-black text-stone-900 tracking-tight">{t('support.helpCenterPage.commentPouvonsNousVousAider')}</h1>
+        <p className="text-xs sm:text-sm text-stone-500">{t('support.helpCenterPage.retrouvezLesReponsesAuxQuestions')}</p>
 
         {/* Search Box */}
         <div className="relative max-w-lg mx-auto pt-2">
@@ -176,9 +172,7 @@ export const HelpCenterPage: React.FC = () => {
         <h2 className="text-base font-black text-stone-900 mb-2">{t('support.helpCenterPage.questionsFrequentes')}</h2>
 
         {filteredArticles.length === 0 ? (
-          <div className="text-center py-8 text-stone-500 text-xs">
-            Aucun article ne correspond à votre recherche. Vous pouvez contacter notre équipe ci-dessous.
-          </div>
+          <div className="text-center py-8 text-stone-500 text-xs">{t('support.helpCenterPage.aucunArticleNeCorrespondA')}</div>
         ) : (
           <div className="divide-y divide-border-subtle">
             {filteredArticles.map((art) => {
@@ -225,9 +219,7 @@ export const HelpCenterPage: React.FC = () => {
         <div className="space-y-1 text-center sm:text-left">
           <h3 className="text-lg sm:text-xl font-black">{t('support.helpCenterPage.vousNAvezPasTrouve')}</h3>
           {/* Dark panel: secondary text needs the lighter stone step to stay readable. */}
-          <p className="text-xs sm:text-sm text-stone-400 max-w-md">
-            Notre équipe de support client basée en France vous assiste 7j/7 pour vos commandes, annonces et questions.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-400 max-w-md">{t('support.helpCenterPage.notreEquipeDeSupportClient')}</p>
         </div>
 
         <Button

@@ -146,13 +146,9 @@ export const AdminTaxonomyPage: React.FC = () => {
             <div className="p-2 rounded-xl bg-primary-light text-primary">
               <Layers className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-black text-stone-900 tracking-tight">
-              Gestion & Administration de la Taxonomie
-            </h1>
+            <h1 className="text-xl font-black text-stone-900 tracking-tight">{t('admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie')}</h1>
           </div>
-          <p className="text-xs text-stone-500 mt-1.5 max-w-2xl">
-            Référentiel canonique unique pilotant l'arborescence, les formulaires de publication, les facettes de recherche, les capacités de séquestre et le multi-marchés.
-          </p>
+          <p className="text-xs text-stone-500 mt-1.5 max-w-2xl">{t('admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL')}</p>
         </div>
 
         {/* Global Status Badges & Quick Action */}
@@ -302,9 +298,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onSelectNode={handleSelectNode}
               />
             ) : (
-              <div className="bg-white rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">
-                Sélectionnez une catégorie dans l'arbre pour afficher son éditeur.
-              </div>
+              <div className="bg-white rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">{t('admin.adminTaxonomyPage.selectionnezUneCategorieDansL')}</div>
             )}
           </div>
         </div>

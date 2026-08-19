@@ -127,9 +127,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
 
         {/* Positive Badges */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-stone-700 block">
-            Ce que vous avez particulièrement apprécié :
-          </label>
+          <label className="text-xs font-bold text-stone-700 block">{t('transactions.leaveReviewModal.ceQueVousAvezParticulierement')}</label>
           <div className="flex flex-wrap gap-2">
             {POSITIVE_BADGES.map((badge) => {
               const isSelected = selectedBadges.includes(badge);
@@ -154,9 +152,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
 
         {/* Text Comment */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-stone-700 block">
-            Commentaire détaillé (facultatif)
-          </label>
+          <label className="text-xs font-bold text-stone-700 block">{t('transactions.leaveReviewModal.commentaireDetailleFacultatif')}</label>
           <Textarea
             rows={3}
             placeholder={t('transactions.leaveReviewModal.partagezVotreExperienceAvecCet')}

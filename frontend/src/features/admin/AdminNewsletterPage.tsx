@@ -135,9 +135,7 @@ export const AdminNewsletterPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Campagnes & Newsletters Marketing
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            Édition des sélections hebdomadaires, ciblage d'audience et simulation d'envois.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('admin.adminNewsletterPage.editionDesSelectionsHebdomadairesCiblage')}</p>
         </div>
 
         <Button
@@ -154,35 +152,23 @@ export const AdminNewsletterPage: React.FC = () => {
       {/* 2. Overview Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-border-base rounded-2xl p-5 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-            Abonnés actifs (FR)
-          </span>
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('admin.adminNewsletterPage.abonnesActifsFr')}</span>
           <div className="text-2xl font-black text-stone-900">4 680</div>
-          <span className="text-micro text-success font-bold">
-            +8.4% ce mois-ci
-          </span>
+          <span className="text-micro text-success font-bold">{t('admin.adminNewsletterPage.84CeMoisCi')}</span>
         </div>
 
         <div className="bg-white border border-border-base rounded-2xl p-5 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-            Taux d'ouverture estimé
-          </span>
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('admin.adminNewsletterPage.tauxDOuvertureEstime')}</span>
           <div className="text-2xl font-black text-stone-900">46.2%</div>
-          <span className="text-micro text-stone-500">
-            Moyenne sur les 5 dernières éditions
-          </span>
+          <span className="text-micro text-stone-500">{t('admin.adminNewsletterPage.moyenneSurLes5Dernieres')}</span>
         </div>
 
         <div className="bg-white border border-border-base rounded-2xl p-5 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-            Campagnes diffusées
-          </span>
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('admin.adminNewsletterPage.campagnesDiffusees')}</span>
           <div className="text-2xl font-black text-stone-900">
             {campaigns.filter((c) => c.status === 'sent').length}
           </div>
-          <span className="text-micro text-stone-500">
-            Éditions hebdomadaires et flash
-          </span>
+          <span className="text-micro text-stone-500">{t('admin.adminNewsletterPage.editionsHebdomadairesEtFlash')}</span>
         </div>
       </div>
 

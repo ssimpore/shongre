@@ -202,17 +202,13 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               size="sm"
               onClick={handleDownloadSample}
               leftIcon={<Download className="w-3.5 h-3.5" />}
-            >
-              Modèle CSV vierge
-            </Button>
+            >{t('sellerworkspace.bulkImportModal.modeleCsvVierge')}</Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleLoadSample}
               leftIcon={<Sparkles className="w-3.5 h-3.5 text-primary" />}
-            >
-              Charger un exemple (4 articles)
-            </Button>
+            >{t('sellerworkspace.bulkImportModal.chargerUnExemple4Articles')}</Button>
           </div>
 
           <label className="cursor-pointer">
@@ -223,9 +219,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               className="hidden"
             />
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition-colors shadow-xs">
-              <Upload className="w-3.5 h-3.5" />
-              Parcourir un fichier CSV...
-            </span>
+              <Upload className="w-3.5 h-3.5" />{t('sellerworkspace.bulkImportModal.parcourirUnFichierCsv')}</span>
           </label>
         </div>
 
@@ -272,9 +266,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           <div className="p-8 border-2 border-dashed border-stone-200 rounded-2xl text-center space-y-2 bg-stone-50/50">
             <FileSpreadsheet className="w-10 h-10 mx-auto text-stone-400" />
             <h4 className="font-bold text-stone-800 text-sm">{t('sellerworkspace.bulkImportModal.deposezVotreFichierCsvIci')}</h4>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              Utilisez notre modèle avec séparateur point-virgule (;) contenant colonnes Titre, Catégorie, Prix, État et Stock.
-            </p>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">{t('sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur')}</p>
           </div>
         )}
 

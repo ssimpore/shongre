@@ -387,12 +387,8 @@ export const PublishWizard: React.FC = () => {
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
-          <span className="text-xs font-bold text-primary uppercase tracking-wider block">
-            Votre annonce
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            Déposer une annonce sur Shongre
-          </h1>
+          <span className="text-xs font-bold text-primary uppercase tracking-wider block">{t('publishing.publishWizard.votreAnnonce')}</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('publishing.publishWizard.deposerUneAnnonceSurShongre')}</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -470,19 +466,13 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(1) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Que souhaitez-vous publier ?
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Sélectionnez l'intention et la catégorie exacte dans la taxonomie Shongre.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.queSouhaitezVousPublier')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.selectionnezLIntentionEtLa')}</p>
           </div>
 
           {/* Listing Intent Selector */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              Type d'annonce (Intention)
-            </label>
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">{t('publishing.publishWizard.typeDAnnonceIntention')}</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
                 { value: 'SELL', label: 'Vendre un bien', desc: 'Vente standard' },
@@ -511,9 +501,7 @@ export const PublishWizard: React.FC = () => {
 
           {/* Taxonomy Search */}
           <div className="pt-4 border-t border-border-subtle space-y-3">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
-              Rechercher une catégorie ou un type de bien
-            </label>
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">{t('publishing.publishWizard.rechercherUneCategorieOuUn')}</label>
             <div className="relative">
               <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               <input
@@ -557,9 +545,7 @@ export const PublishWizard: React.FC = () => {
 
           {/* Root Categories Grid */}
           <div className="pt-4 border-t border-border-subtle space-y-3">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
-              Ou parcourez les univers
-            </label>
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">{t('publishing.publishWizard.ouParcourezLesUnivers')}</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-64 overflow-y-auto p-1">
               {taxonomyService.getRootCategories().map((cat) => (
                 <button
@@ -620,9 +606,7 @@ export const PublishWizard: React.FC = () => {
 
           {/* Condition Scheme Selector */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              État du bien / produit
-            </label>
+            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">{t('publishing.publishWizard.etatDuBienProduit')}</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {(schema?.conditionScheme || []).map((c) => (
                 <button
@@ -733,12 +717,8 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(3) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Photos de votre annonce
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Les annonces avec au moins 3 photos génèrent 5x plus de contacts. La première photo sert de couverture.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.photosDeVotreAnnonce')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.lesAnnoncesAvecAuMoins')}</p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -817,12 +797,8 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(4) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Titre & Description détaillée
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Rédigez un titre clair ou utilisez l'assistant IA Gemini.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.titreDescriptionDetaillee')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.redigezUnTitreClairOu')}</p>
           </div>
 
           {/* AI GEMINI ASSISTANT */}
@@ -833,12 +809,8 @@ export const PublishWizard: React.FC = () => {
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider">
-                    Assistant IA Rédaction Gemini
-                  </h3>
-                  <p className="text-micro text-stone-500">
-                    Générez une description optimisée pour le SEO et le taux de conversion
-                  </p>
+                  <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider">{t('publishing.publishWizard.assistantIaRedactionGemini')}</h3>
+                  <p className="text-micro text-stone-500">{t('publishing.publishWizard.generezUneDescriptionOptimiseePour')}</p>
                 </div>
               </div>
 
@@ -848,9 +820,7 @@ export const PublishWizard: React.FC = () => {
                 onClick={handleGenerateWithAI}
                 isLoading={isGeneratingWithAI}
                 leftIcon={<Bot className="w-3.5 h-3.5" />}
-              >
-                Générer avec l'IA
-              </Button>
+              >{t('publishing.publishWizard.genererAvecLIa')}</Button>
             </div>
           </div>
 
@@ -879,9 +849,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(5) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Prix de vente & Stock
-            </h2>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.prixDeVenteStock')}</h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
               Définissez votre tarification en {schema?.currency.symbol || '€'}.
             </p>
@@ -990,12 +958,8 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(6) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Comment souhaitez-vous vendre ?
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Activez les options de transaction autorisées pour cette catégorie.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.commentSouhaitezVousVendre')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.activezLesOptionsDeTransaction')}</p>
           </div>
 
           <div className="space-y-3">
@@ -1007,9 +971,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">Contact direct & Messagerie</div>
-                  <div className="text-micro text-stone-500">
-                    Les acheteurs peuvent vous poser des questions via la messagerie Shongre.
-                  </div>
+                  <div className="text-micro text-stone-500">{t('publishing.publishWizard.lesAcheteursPeuventVousPoser')}</div>
                 </div>
               </div>
               <Checkbox
@@ -1038,13 +1000,9 @@ export const PublishWizard: React.FC = () => {
                 <div>
                   <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
                     <span>{t('publishing.publishWizard.achatEnLigneDirectSans')}</span>
-                    <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.2 rounded">
-                      Séquestre Garanti
-                    </span>
+                    <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.2 rounded">{t('publishing.publishWizard.sequestreGaranti')}</span>
                   </div>
-                  <div className="text-micro text-stone-500">
-                    L'acheteur peut payer immédiatement par carte bancaire. Vos fonds sont sécurisés.
-                  </div>
+                  <div className="text-micro text-stone-500">{t('publishing.publishWizard.lAcheteurPeutPayerImmediatement')}</div>
                 </div>
               </div>
               <Checkbox
@@ -1073,9 +1031,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">{t('publishing.publishWizard.reservationAvecAcompte')}</div>
-                  <div className="text-micro text-stone-500">
-                    Permet à l'acheteur de bloquer l'article pendant le temps de convenir d'un rendez-vous.
-                  </div>
+                  <div className="text-micro text-stone-500">{t('publishing.publishWizard.permetALAcheteurDe')}</div>
                 </div>
               </div>
               <Checkbox
@@ -1098,12 +1054,8 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(7) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Modes de remise & Expédition
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Déterminez comment les acheteurs peuvent récupérer l'article.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.modesDeRemiseExpedition')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.determinezCommentLesAcheteursPeuvent')}</p>
           </div>
 
           <div className="space-y-3">
@@ -1115,9 +1067,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">Remise en main propre</div>
-                  <div className="text-micro text-stone-500">
-                    Gratuit, avec validation par code secret PIN à 6 chiffres lors du rendez-vous.
-                  </div>
+                  <div className="text-micro text-stone-500">{t('publishing.publishWizard.gratuitAvecValidationParCode')}</div>
                 </div>
               </div>
               <Checkbox
@@ -1140,9 +1090,7 @@ export const PublishWizard: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-xs font-bold text-stone-900">{t('publishing.publishWizard.livraisonEnColisMondialRelay')}</div>
-                      <div className="text-micro text-stone-500">
-                        Étiquette prépayée générée automatiquement. L'acheteur règle les frais de port.
-                      </div>
+                      <div className="text-micro text-stone-500">{t('publishing.publishWizard.etiquettePrepayeeGenereeAutomatiquementL')}</div>
                     </div>
                   </div>
                   <Checkbox
@@ -1157,9 +1105,7 @@ export const PublishWizard: React.FC = () => {
 
                 {draft.fulfillment.allowParcelShipping && (
                   <div className="pt-3 border-t border-border-subtle">
-                    <label className="text-xs font-bold text-stone-700 block mb-1.5">
-                      Gabarit du colis (Poids estimé)
-                    </label>
+                    <label className="text-xs font-bold text-stone-700 block mb-1.5">{t('publishing.publishWizard.gabaritDuColisPoidsEstime')}</label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                       {[
                         { id: 'small', label: 'Petit (< 500g)', desc: 'T-shirt, smartphone' },
@@ -1203,9 +1149,7 @@ export const PublishWizard: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-stone-900">{t('publishing.publishWizard.transportDeMeublesGrosColis')}</div>
-                    <div className="text-micro text-stone-500">
-                      Idéal pour canapés, tables, électroménager lourd avec transporteur spécialisé.
-                    </div>
+                    <div className="text-micro text-stone-500">{t('publishing.publishWizard.idealPourCanapesTablesElectromenager')}</div>
                   </div>
                 </div>
                 <Checkbox
@@ -1228,12 +1172,8 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(8) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Localisation du bien
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Par respect pour votre vie privée, seule la ville et le code postal sont affichés publiquement.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.localisationDuBien')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.parRespectPourVotreVie')}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1304,13 +1244,9 @@ export const PublishWizard: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <Globe className="w-5 h-5 text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-                    Marchés et pays de diffusion
-                  </h2>
+                  <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.marchesEtPaysDeDiffusion')}</h2>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  Diffusez votre annonce simultanément sur plusieurs marchés Shongre pour maximiser sa visibilité.
-                </p>
+                <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.diffusezVotreAnnonceSimultanementSur')}</p>
               </div>
 
               {/* Bulk actions */}
@@ -1331,9 +1267,7 @@ export const PublishWizard: React.FC = () => {
                     toast.success('Tous les marchés éligibles ont été sélectionnés.');
                   }}
                   className="text-xs px-3 py-1.5 rounded-xl border border-primary/30 text-primary hover:bg-primary-light/50 font-bold transition-colors cursor-pointer"
-                >
-                  Tous les marchés
-                </button>
+                >{t('publishing.publishWizard.tousLesMarches')}</button>
                 <button
                   type="button"
                   onClick={() => {
@@ -1415,28 +1349,18 @@ export const PublishWizard: React.FC = () => {
                       {/* Market Badges & Rules */}
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {isPrimary && (
-                          <span className="text-micro bg-primary text-white font-bold px-2 py-0.5 rounded-full">
-                            Marché d'origine (Principal)
-                          </span>
+                          <span className="text-micro bg-primary text-white font-bold px-2 py-0.5 rounded-full">{t('publishing.publishWizard.marcheDOriginePrincipal')}</span>
                         )}
                         {isCatEnabled ? (
-                          <span className="text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full">
-                            ✓ Catégorie éligible
-                          </span>
+                          <span className="text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full">{t('publishing.publishWizard.categorieEligible')}</span>
                         ) : (
-                          <span className="text-micro bg-stone-200 text-stone-600 font-semibold px-2 py-0.5 rounded-full">
-                            ✕ Catégorie restreinte
-                          </span>
+                          <span className="text-micro bg-stone-200 text-stone-600 font-semibold px-2 py-0.5 rounded-full">{t('publishing.publishWizard.categorieRestreinte')}</span>
                         )}
                         {effectiveCfg.delivery?.enabled && (
-                          <span className="text-micro bg-info-surface text-info font-medium px-2 py-0.5 rounded-full">
-                            Livraison
-                          </span>
+                          <span className="text-micro bg-info-surface text-info font-medium px-2 py-0.5 rounded-full">{t('publishing.publishWizard.livraison')}</span>
                         )}
                         {effectiveCfg.payments?.enabled && (
-                          <span className="text-micro bg-purple-50 text-purple-700 font-medium px-2 py-0.5 rounded-full">
-                            Séquestre
-                          </span>
+                          <span className="text-micro bg-purple-50 text-purple-700 font-medium px-2 py-0.5 rounded-full">{t('publishing.publishWizard.sequestre')}</span>
                         )}
                       </div>
                     </div>
@@ -1457,9 +1381,7 @@ export const PublishWizard: React.FC = () => {
               <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="text-xs text-stone-700 space-y-1">
                 <span className="font-bold text-stone-900">{t('publishing.publishWizard.garantieSecuriteTransfrontaliere')}</span>
-                <p>
-                  Toutes les transactions multi-marchés sont automatiquement couvertes par le séquestre Shongre. Les prix sont convertis en toute transparence et la TVA locale est appliquée en conformité avec la réglementation européenne et suisse.
-                </p>
+                <p>{t('publishing.publishWizard.toutesLesTransactionsMultiMarches')}</p>
               </div>
             </div>
           </div>
@@ -1467,12 +1389,8 @@ export const PublishWizard: React.FC = () => {
           {/* VISIBILITY BOOST OPTIONS */}
           <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-                Options de visibilité & Boost (Facultatif)
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                Multipliez vos vues en positionnant votre annonce en tête des résultats sur tous vos marchés sélectionnés.
-              </p>
+              <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.optionsDeVisibiliteBoostFacultatif')}</h2>
+              <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.multipliezVosVuesEnPositionnant')}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1513,12 +1431,8 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(REVIEW_PANEL) && (
         <div className="bg-white rounded-2xl border border-primary-border ring-1 ring-primary-border p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              Récapitulatif de votre annonce
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Relisez votre annonce. Vous pourrez la modifier à tout moment après publication.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-900">{t('publishing.publishWizard.recapitulatifDeVotreAnnonce')}</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('publishing.publishWizard.relisezVotreAnnonceVousPourrez')}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -1584,9 +1498,7 @@ export const PublishWizard: React.FC = () => {
 
             {/* Right Live Card Preview */}
             <div className="lg:col-span-5 space-y-2">
-              <div className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                Aperçu dans les résultats de recherche
-              </div>
+              <div className="text-xs font-bold text-stone-700 uppercase tracking-wider">{t('publishing.publishWizard.apercuDansLesResultatsDe')}</div>
               <ListingCard
                 listing={{
                   id: 'preview',
@@ -1651,9 +1563,7 @@ export const PublishWizard: React.FC = () => {
           onClick={handlePrevStep}
           disabled={currentStep === 1 || isPublishing}
           leftIcon={<ArrowLeft className="w-4 h-4" />}
-        >
-          Précédent
-        </Button>
+        >{t('publishing.publishWizard.precedent')}</Button>
 
         <div className="flex items-center gap-2">
           {currentStep < PHASES.length ? (
@@ -1673,9 +1583,7 @@ export const PublishWizard: React.FC = () => {
               onClick={handleFinalPublish}
               isLoading={isPublishing}
               leftIcon={<CheckCircle2 className="w-5 h-5" />}
-            >
-              Publier mon annonce maintenant
-            </Button>
+            >{t('publishing.publishWizard.publierMonAnnonceMaintenant')}</Button>
           )}
         </div>
       </div>

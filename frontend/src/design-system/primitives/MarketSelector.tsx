@@ -172,14 +172,10 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
                         <div className="text-xs font-bold flex items-center gap-1.5">
                           <span>{m.name}</span>
                           {m.isDefault && (
-                            <span className="text-micro bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">
-                              Défaut
-                            </span>
+                            <span className="text-micro bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">{t('ui.marketSelector.defaut')}</span>
                           )}
                           {m.status === 'coming_soon' && (
-                            <span className="text-micro bg-warning-surface text-warning px-1.5 py-0.5 rounded font-bold">
-                              Bientôt
-                            </span>
+                            <span className="text-micro bg-warning-surface text-warning px-1.5 py-0.5 rounded font-bold">{t('ui.marketSelector.bientot')}</span>
                           )}
                         </div>
                         <div className="text-micro text-stone-500 font-medium">
@@ -307,9 +303,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
             <Button variant="ghost" size="sm" onClick={() => setIsPreferencesModalOpen(false)}>
               Annuler
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSavePreferences}>
-              Enregistrer mes préférences
-            </Button>
+            <Button variant="primary" size="sm" onClick={handleSavePreferences}>{t('ui.marketSelector.enregistrerMesPreferences')}</Button>
           </div>
         </div>
       </Modal>

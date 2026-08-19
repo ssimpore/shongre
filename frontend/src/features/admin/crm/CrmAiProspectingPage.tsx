@@ -145,12 +145,8 @@ export const CrmAiProspectingPage: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>{t('admin.crmAiProspectingPage.prospectionB2bAssisteeParIa')}</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
-            Découvrez de futurs vendeurs Pro à partir de sources publiques
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl leading-relaxed mt-1">
-            Recherchez en langage naturel des entreprises, artisans et commerçants ayant un catalogue adapté à Shongre. Toutes les recommandations s'appuient sur des sources web publiques vérifiables.
-          </p>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">{t('admin.crmAiProspectingPage.decouvrezDeFutursVendeursPro')}</h1>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl leading-relaxed mt-1">{t('admin.crmAiProspectingPage.recherchezEnLangageNaturelDes')}</p>
         </div>
 
         {/* Search Prompt Input */}
@@ -299,9 +295,7 @@ export const CrmAiProspectingPage: React.FC = () => {
 
                     {/* Fit Reasons */}
                     <div className="p-3 bg-stone-50 rounded-2xl space-y-1.5 text-xs text-stone-700">
-                      <span className="font-bold text-micro text-stone-900 block">
-                        Signaux détectés :
-                      </span>
+                      <span className="font-bold text-micro text-stone-900 block">{t('admin.crmAiProspectingPage.signauxDetectes')}</span>
                       {cand.fit.reasons.slice(0, 2).map((r, i) => (
                         <div key={i} className="flex items-start gap-1.5 text-micro">
                           <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />

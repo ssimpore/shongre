@@ -53,7 +53,7 @@ export const LOCALE_READY_THRESHOLD = 1;
  * catalogue backs that claim. `npm run check:i18n` counts the hardcoded strings
  * still standing between English and this list.
  */
-export const SHIPPED_LOCALES = ['fr-FR'] as const;
+export const SHIPPED_LOCALES = ['fr-FR', 'en-US'] as const;
 
 const LANGUAGES: Omit<LanguageOption, 'isAvailable'>[] = [
   { code: 'fr-FR', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
@@ -71,6 +71,15 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map((language) =>
     catalogueCoverage(language.code) >= LOCALE_READY_THRESHOLD,
 }));
 
+/**
+ * What the picker actually offers.
+ *
+ * The menu used to list all six languages and disable five of them behind a
+ * "Bientôt" tag. That is a menu whose contents are mostly not choices: it makes
+ * the list five times taller than the decision it supports, and on a phone that
+ * turned a one-item picker into a scrolling panel. A language appears when it
+ * works, and not before — the roadmap does not belong in a control.
+ */
 export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter((lang) => lang.isAvailable);
 
 export interface LanguageSelectorProps {
@@ -89,6 +98,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 }) => {
   const { currentLocale, setLocale, activeMarket, currentCurrency, openPreferencesModal } = useMarketLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
@@ -97,6 +107,30 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     SUPPORTED_LANGUAGES.find(
       (lang) => lang.code === currentLocale || lang.code.startsWith(currentLocale) || currentLocale.startsWith(lang.code.slice(0, 2))
     ) || SUPPORTED_LANGUAGES[0];
+
+  /**
+   * Opens the panel inward when there is not room to open it outward.
+   *
+   * The panel is 240px and was always anchored to the trigger's left edge. In
+   * the footer the trigger sits well right of centre, so on a phone the panel
+   * ran past the right edge — far enough to widen the document, which is the one
+   * thing the responsive suite is built to catch and could not, because nothing
+   * in it opens a dropdown.
+   *
+   * Measured on open rather than guessed from a breakpoint: the trigger's
+   * position depends on the copyright text beside it, which changes length with
+   * the locale.
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+    const trigger = dropdownRef.current;
+    if (!trigger) return;
+
+    const { left } = trigger.getBoundingClientRect();
+    const PANEL_WIDTH = 240;
+    const MARGIN = 12;
+    setAlignRight(left + PANEL_WIDTH > window.innerWidth - MARGIN);
+  }, [isOpen]);
 
   // Close on Escape or click outside
   useEffect(() => {
@@ -143,10 +177,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           isOpen ? 'bg-bg-subtle border-border-base text-stone-950' : ''
         }`;
 
+  const horizontal = alignRight ? 'right-0' : 'left-0';
   const dropdownPlacement =
     variant === 'footer'
-      ? 'bottom-full left-0 mb-2'
-      : 'top-full left-0 mt-1.5';
+      ? `bottom-full ${horizontal} mb-2`
+      : `top-full ${horizontal} mt-1.5`;
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -177,7 +212,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           role="menu"
           aria-orientation="vertical"
           aria-labelledby={`${idPrefix}-button`}
-          className={`absolute ${dropdownPlacement} w-60 ${DROPDOWN_PANEL_CLASSES}`}
+          className={`absolute ${dropdownPlacement} w-60 max-w-[calc(100vw-1.5rem)] ${DROPDOWN_PANEL_CLASSES}`}
         >
           <div className={DROPDOWN_HEADER_CLASSES}>
             <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
@@ -186,39 +221,28 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           </div>
 
           <div className="py-1">
-            {SUPPORTED_LANGUAGES.map((lang) => {
+            {/* Every entry here is selectable — the unavailable ones are filtered
+                out upstream, so there is no disabled state left to render. */}
+            {AVAILABLE_LANGUAGES.map((lang) => {
               const isSelected = activeLanguage.code === lang.code;
               return (
                 <button
                   key={lang.code}
                   role="menuitem"
                   type="button"
-                  disabled={!lang.isAvailable}
-                  aria-disabled={!lang.isAvailable}
                   onClick={() => handleSelectLanguage(lang)}
                   className={`${DROPDOWN_ITEM_CLASSES.base} ${
-                    !lang.isAvailable
-                      ? DROPDOWN_ITEM_CLASSES.disabled
-                      : isSelected
-                      ? DROPDOWN_ITEM_CLASSES.selected
-                      : DROPDOWN_ITEM_CLASSES.unselected
+                    isSelected ? DROPDOWN_ITEM_CLASSES.selected : DROPDOWN_ITEM_CLASSES.unselected
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={`text-base leading-none ${lang.isAvailable ? '' : 'grayscale opacity-60'}`}>
-                      {lang.flag}
-                    </span>
+                    <span className="text-base leading-none">{lang.flag}</span>
                     <div className="flex flex-col">
                       <span className="leading-tight">{lang.nativeName}</span>
                       <span className="text-micro text-stone-500 font-normal">{lang.name}</span>
                     </div>
                   </div>
-                  {isSelected && lang.isAvailable && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
-                  {!lang.isAvailable && (
-                    <span className="text-micro font-bold uppercase tracking-wider text-stone-400 shrink-0">
-                      {t('language.comingSoon')}
-                    </span>
-                  )}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                 </button>
               );
             })}

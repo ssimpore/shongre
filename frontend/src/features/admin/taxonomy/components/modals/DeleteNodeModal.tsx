@@ -73,16 +73,13 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
                 <li key={idx}>{reason}</li>
               ))}
             </ul>
-            <p className="pt-1 text-stone-600">
-              Pour éviter d'invalider des annonces ou rompre des chemins SEO, il est fortement recommandé de <strong>{t('admin.deleteNodeModal.deprecier')}</strong> cette catégorie plutôt que de la supprimer.
+            <p className="pt-1 text-stone-600">{t('admin.deleteNodeModal.pourEviterDInvaliderDes')}<strong>{t('admin.deleteNodeModal.deprecier')}</strong> cette catégorie plutôt que de la supprimer.
             </p>
           </div>
         ) : (
           <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-700">
             <p className="font-semibold text-stone-900">{t('admin.deleteNodeModal.ceNUdEstEligible')}</p>
-            <p className="text-stone-500 mt-1">
-              Aucune annonce active ni sous-catégorie dépendante n'a été détectée. L'entité sera retirée du référentiel canonique.
-            </p>
+            <p className="text-stone-500 mt-1">{t('admin.deleteNodeModal.aucuneAnnonceActiveNiSous')}</p>
           </div>
         )}
 
@@ -97,9 +94,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
                   onSwitchToDeprecate();
                 }}
                 leftIcon={<Archive className="w-4 h-4 text-warning" />}
-              >
-                Déprécier à la place
-              </Button>
+              >{t('admin.deleteNodeModal.deprecierALaPlace')}</Button>
             )}
           </div>
           <div className="flex items-center gap-2">

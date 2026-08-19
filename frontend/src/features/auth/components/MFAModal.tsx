@@ -92,12 +92,8 @@ export const MFAModal: React.FC<MFAModalProps> = ({
           <ShieldCheck className="w-6 h-6" />
         </div>
 
-        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">
-          Activer la double authentification (2FA)
-        </h3>
-        <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-          Protégez votre compte et vos transactions avec une application d'authentification standard (Google Authenticator, Microsoft Authenticator, 1Password, etc.).
-        </p>
+        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">{t('auth.mFAModal.activerLaDoubleAuthentification2fa')}</h3>
+        <p className="text-xs text-stone-600 mb-5 leading-relaxed">{t('auth.mFAModal.protegezVotreCompteEtVos')}</p>
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
@@ -109,9 +105,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
         <div className="space-y-5">
           {/* Step 1: QR Code */}
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
-            <span className="text-xs font-bold text-stone-900 block mb-2">
-              1. Scannez ce QR Code avec votre application d'authentification
-            </span>
+            <span className="text-xs font-bold text-stone-900 block mb-2">{t('auth.mFAModal.1ScannezCeQrCode')}</span>
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Image
                 src={setupData.qrCodeUrl}
@@ -120,9 +114,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                 className="w-32 h-32 rounded-lg border border-stone-300 bg-white p-1"
               />
               <div className="flex-1 min-w-0">
-                <span className="text-micro text-stone-500 font-semibold block mb-1">
-                  Ou saisissez la clé manuellement :
-                </span>
+                <span className="text-micro text-stone-500 font-semibold block mb-1">{t('auth.mFAModal.ouSaisissezLaCleManuellement')}</span>
                 <div className="flex items-center gap-2">
                   <code className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-xs font-mono font-bold text-stone-900 select-all">
                     {setupData.secret}
@@ -143,9 +135,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
           {/* Step 2: Backup recovery codes */}
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-stone-900">
-                2. Codes de secours à usage unique
-              </span>
+              <span className="text-xs font-bold text-stone-900">{t('auth.mFAModal.2CodesDeSecoursA')}</span>
               <button
                 type="button"
                 onClick={handleCopyBackupCodes}
@@ -156,9 +146,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                 {copiedBackup ? 'Copiés' : 'Copier les 8 codes'}
               </button>
             </div>
-            <p className="text-micro text-stone-500 mb-2.5">
-              Conservez ces codes dans un endroit sûr. Ils vous permettront de vous reconnecter si vous perdez l'accès à votre téléphone.
-            </p>
+            <p className="text-micro text-stone-500 mb-2.5">{t('auth.mFAModal.conservezCesCodesDansUn')}</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               {setupData.backupCodes.map((code) => (
                 <div
@@ -174,9 +162,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
           {/* Step 3: Verification form */}
           <form onSubmit={handleVerify} className="space-y-4 pt-2">
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                3. Entrez le code à 6 chiffres généré par votre application
-              </label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.mFAModal.3EntrezLeCodeA')}</label>
               <input
                 type="text"
                 maxLength={6}
@@ -194,9 +180,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
               size="md"
               className="w-full"
               isLoading={isLoading}
-            >
-              Vérifier et activer le 2FA
-            </Button>
+            >{t('auth.mFAModal.verifierEtActiverLe2fa')}</Button>
           </form>
         </div>
       </div>

@@ -5,8 +5,10 @@ import { formatPrice } from '../../utilities/formatters';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ProPlansPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Offres et forfaits professionnels",
     description:
@@ -23,12 +25,8 @@ export const ProPlansPage: React.FC = () => {
           <Sparkles className="w-3.5 h-3.5" />
           Offres & Forfaits Professionnels Shongre
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight">
-          Développez vos ventes avec nos forfaits sur mesure
-        </h1>
-        <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
-          Sans engagement. Activez votre vitrine personnalisée, importez votre inventaire en masse et bénéficiez de remises exclusives sur les options de visibilité.
-        </p>
+        <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight">{t('sellerworkspace.proPlansPage.developpezVosVentesAvecNos')}</h1>
+        <p className="text-sm sm:text-base text-stone-600 leading-relaxed">{t('sellerworkspace.proPlansPage.sansEngagementActivezVotreVitrine')}</p>
       </div>
 
       {/* Subscription Plans Grid */}
@@ -55,9 +53,7 @@ export const ProPlansPage: React.FC = () => {
               }`}
             >
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                  Le plus populaire
-                </div>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">{t('sellerworkspace.proPlansPage.lePlusPopulaire')}</div>
               )}
 
               <div>
@@ -106,12 +102,8 @@ export const ProPlansPage: React.FC = () => {
       {/* Visibility Boost Options Grid */}
       <div className="max-w-6xl mx-auto space-y-6 pt-6">
         <div className="text-center">
-          <h2 className="text-2xl font-black text-stone-900">
-            Options de mise en avant à la carte
-          </h2>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
-            À activer sur n'importe quelle annonce pour accélérer la vente
-          </p>
+          <h2 className="text-2xl font-black text-stone-900">{t('sellerworkspace.proPlansPage.optionsDeMiseEnAvant')}</h2>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('sellerworkspace.proPlansPage.aActiverSurNImporte')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

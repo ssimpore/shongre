@@ -31,9 +31,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
           )}
 
           <div className="min-w-0">
-            <span className="text-micro font-bold uppercase tracking-wider text-primary block">
-              Annonce liée
-            </span>
+            <span className="text-micro font-bold uppercase tracking-wider text-primary block">{t('support.supportContextCard.annonceLiee')}</span>
             <span className="text-xs font-black text-stone-900 truncate block">
               {context.listingTitle || `Annonce #${context.listingId}`}
             </span>
@@ -78,9 +76,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
           </div>
 
           <div className="min-w-0">
-            <span className="text-micro font-bold uppercase tracking-wider text-success block">
-              Commande / Séquestre lié
-            </span>
+            <span className="text-micro font-bold uppercase tracking-wider text-success block">{t('support.supportContextCard.commandeSequestreLie')}</span>
             <span className="text-xs font-black text-stone-900 truncate block">
               {context.listingTitle || `Transaction #${context.transactionId}`}
             </span>

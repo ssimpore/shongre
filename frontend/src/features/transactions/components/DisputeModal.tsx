@@ -65,9 +65,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
           <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-warning">{t('transactions.disputeModal.protectionAcheteurVendeurActive')}</p>
-            <p className="text-xs text-warning mt-1 font-medium">
-              En ouvrant ce dossier, aucun versement ne sera exécuté tant que la situation n'est pas clarifiée entre les deux parties ou arbitrée par nos équipes.
-            </p>
+            <p className="text-xs text-warning mt-1 font-medium">{t('transactions.disputeModal.enOuvrantCeDossierAucun')}</p>
           </div>
         </div>
 
@@ -78,8 +76,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         )}
 
         <div>
-          <label className="block font-bold text-stone-700 mb-2">
-            Motif principal du litige <span className="text-danger">*</span>
+          <label className="block font-bold text-stone-700 mb-2">{t('transactions.disputeModal.motifPrincipalDuLitige')}<span className="text-danger">*</span>
           </label>
           <select
             value={reason}
@@ -95,8 +92,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         </div>
 
         <div>
-          <label className="block font-bold text-stone-700 mb-2">
-            Description détaillée des faits <span className="text-danger">*</span>
+          <label className="block font-bold text-stone-700 mb-2">{t('transactions.disputeModal.descriptionDetailleeDesFaits')}<span className="text-danger">*</span>
           </label>
           <textarea
             rows={4}

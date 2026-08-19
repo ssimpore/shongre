@@ -263,9 +263,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                 <Truck className="w-4 h-4 text-primary" />
                 <span>{t('transactions.directPurchaseCheckoutModal.1ChoisissezVotreModeDe')}</span>
               </h3>
-              <p className="text-xs text-stone-500">
-                Sélectionnez parmi les options réellement disponibles pour cet article.
-              </p>
+              <p className="text-xs text-stone-500">{t('transactions.directPurchaseCheckoutModal.selectionnezParmiLesOptionsReellement')}</p>
             </div>
 
             <div className="space-y-3">
@@ -409,21 +407,15 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                 <CreditCard className="w-4 h-4 text-primary" />
                 <span>{t('transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise')}</span>
               </h3>
-              <p className="text-xs text-stone-500">
-                Fonds conservés sous séquestre bancaire jusqu'à confirmation de conformité.
-              </p>
+              <p className="text-xs text-stone-500">{t('transactions.directPurchaseCheckoutModal.fondsConservesSousSequestreBancaire')}</p>
             </div>
 
             {/* Payment Method Selector */}
             {!isOnlinePaymentAvailable ? (
               <div className="p-4 rounded-xl bg-warning-surface border border-warning-border text-warning text-xs space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-warning" />
-                  Paiement en ligne temporairement indisponible
-                </p>
-                <p className="text-warning">
-                  Le système de séquestre en ligne est momentanément indisponible sur ce marché. Vous pouvez contacter le vendeur pour organiser une remise en main propre.
-                </p>
+                  <AlertCircle className="w-4 h-4 text-warning" />{t('transactions.directPurchaseCheckoutModal.paiementEnLigneTemporairementIndisponible')}</p>
+                <p className="text-warning">{t('transactions.directPurchaseCheckoutModal.leSystemeDeSequestreEn')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
@@ -537,8 +529,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
 
             <div>
               <h3 className="text-2xl font-black text-stone-900">{t('transactions.directPurchaseCheckoutModal.achatDirectConfirme')}</h3>
-              <p className="text-sm font-medium text-stone-500 mt-2">
-                Référence commande : <span className="font-mono font-bold text-stone-800">{completedOrderId}</span>
+              <p className="text-sm font-medium text-stone-500 mt-2">{t('transactions.directPurchaseCheckoutModal.referenceCommande')}<span className="font-mono font-bold text-stone-800">{completedOrderId}</span>
               </p>
             </div>
 
@@ -551,9 +542,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                 <div className="text-3xl font-black font-mono text-center tracking-widest text-stone-900 py-3 bg-white rounded-2xl border border-stone-200/60 shadow-inner">
                   {pinCode}
                 </div>
-                <p className="text-xs font-medium text-stone-600 leading-relaxed text-center">
-                  Communiquez ce code au vendeur lors du rendez-vous uniquement après avoir vérifié le produit.
-                </p>
+                <p className="text-xs font-medium text-stone-600 leading-relaxed text-center">{t('transactions.directPurchaseCheckoutModal.communiquezCeCodeAuVendeur')}</p>
               </div>
             ) : (
               <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-3xl max-w-sm mx-auto text-sm text-stone-600 text-left shadow-inner font-medium">

@@ -253,9 +253,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                   Rechercher « <span className="underline">{trimmedQuery}</span> »
                 </span>
               </div>
-              <span className="text-micro font-semibold uppercase tracking-wider text-stone-500">
-                Entrée ↵
-              </span>
+              <span className="text-micro font-semibold uppercase tracking-wider text-stone-500">{t('ui.searchAutocomplete.entree')}</span>
             </div>
           </div>
         </div>
@@ -280,9 +278,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       onClearAllRecentSearches(e);
                     }}
                     className="text-micro font-semibold text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
-                  >
-                    Effacer tout
-                  </button>
+                  >{t('ui.searchAutocomplete.effacerTout')}</button>
                 )}
               </div>
               <div className="space-y-0.5 mt-1">

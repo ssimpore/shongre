@@ -83,19 +83,13 @@ export const AdminProvidersPage: React.FC = () => {
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              Administration Système & Intégrations
-            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminProvidersPage.administrationSystemeIntegrations')}</span>
             <span className="text-stone-300">•</span>
             <span className="text-xs font-medium text-stone-500">Architecture v2.4</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight flex items-center gap-2.5">
-            <Cpu className="w-6 h-6 text-primary" />
-            Fournisseurs & Intégrations Externes
-          </h1>
-          <p className="text-xs text-stone-600 mt-1 max-w-2xl">
-            Gestion centralisée de toutes les passerelles tierces (Paiements, Transporteurs, Auth, Emails, IA, Cartes, KYC/KYB) avec héritage France et mécanismes de bascule (failover).
-          </p>
+            <Cpu className="w-6 h-6 text-primary" />{t('admin.adminProvidersPage.fournisseursIntegrationsExternes')}</h1>
+          <p className="text-xs text-stone-600 mt-1 max-w-2xl">{t('admin.adminProvidersPage.gestionCentraliseeDeToutesLes')}</p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -215,9 +209,7 @@ export const AdminProvidersPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4 p-1">
-            <p className="text-xs text-stone-600">
-              Exécutez un test de connectivité et de validation des identifiants configurés pour ce prestataire.
-            </p>
+            <p className="text-xs text-stone-600">{t('admin.adminProvidersPage.executezUnTestDeConnectivite')}</p>
 
             <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 text-xs space-y-1">
               <div>
@@ -259,9 +251,7 @@ export const AdminProvidersPage: React.FC = () => {
                 isLoading={isTesting}
                 onClick={handleExecuteQuickTest}
                 className="font-bold"
-              >
-                Lancer le test
-              </Button>
+              >{t('admin.adminProvidersPage.lancerLeTest')}</Button>
             </div>
           </div>
         </Modal>

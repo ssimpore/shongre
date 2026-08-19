@@ -237,9 +237,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
       {/* Secondary Subcategories Quick Rail (shown when a category with subcategories is active) */}
       {showSubCategories && selectedCategorySlug && subCategories.length > 0 && (
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5 pl-1">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500 shrink-0 mr-1">
-            Sous-catégories :
-          </span>
+          <span className="text-micro font-bold uppercase tracking-wider text-stone-500 shrink-0 mr-1">{t('ui.categoryFilterRail.sousCategories')}</span>
 
           <button
             type="button"

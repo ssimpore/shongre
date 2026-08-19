@@ -103,119 +103,101 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   }
 
   if (variant === 'list') {
+    /* The compact horizontal row, matching the hero rail's card.
+     *
+     * It used to carry the seller name, the rating chip, a "Bon plan" badge, the
+     * attribute snippets and a bordered metadata footer — a stack tall enough
+     * that three rows filled a phone screen, which is the opposite of what a
+     * list view is for. The struck-through original price still marks a deal,
+     * and the seller is one tap away on the listing itself.
+     *
+     * The favourite control is a sibling of the links rather than inside one:
+     * `<a>` may not contain interactive content, and nesting it gives screen
+     * readers two overlapping controls for one card.
+     */
     return (
       <article
-        className={`group bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-lg transition-all duration-normal overflow-hidden flex flex-col sm:flex-row p-3 ${
+        /* On a phone the row is as tall as a grid card is wide: the list holds
+           one card per row where the grid holds two, so `aspect-[2/1]` on the
+           full-width row resolves to half the row — the same measurement the
+           grid gives each of its columns, give or take the 12px gutter it does
+           not have to pay. From `sm` the grid moves to three and four columns
+           and that relationship stops meaning anything, so the row goes back to
+           sizing from its content. */
+        className={`group relative bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-row gap-3 p-2 aspect-[2/1] sm:aspect-auto ${
           listing.isBoosted ? 'ring-2 ring-primary/20' : ''
         } ${className}`}
       >
-        <Link to={`/annonce/${listing.id}`} className="relative w-full sm:w-[220px] h-48 sm:h-full min-h-[160px] rounded-xl overflow-hidden shrink-0 bg-stone-100 block mr-0 sm:mr-4 mb-3 sm:mb-0">
+        <Link
+          to={`/annonce/${listing.id}`}
+          className="relative h-full w-auto aspect-square sm:h-auto sm:w-32 rounded-xl overflow-hidden shrink-0 bg-stone-100 block"
+        >
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
-            sizes={IMAGE_SIZES.thumbnail}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
+            sizes={IMAGE_SIZES.compact}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
           />
-          {listing.photos.length > 1 && (
-            <span className="absolute bottom-2 left-2 bg-stone-900/70 text-white text-xs px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1">
-              <Camera className="w-3 h-3" />
-              {listing.photos.length}
-            </span>
-          )}
           {listing.isBoosted && (
-            <Badge variant="featured" size="sm" icon className="absolute top-2 left-2">
-              Vedette
+            <Badge variant="featured" size="sm" icon className="absolute top-1.5 left-1.5 px-1.5">
+              <span className="sr-only">{t('ui.listingCard.annonceALaUne')}</span>
             </Badge>
           )}
         </Link>
 
-        <div className="flex-1 flex flex-col justify-between min-w-0 py-1">
-          <div>
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs font-semibold text-stone-500">{listing.categoryLabel}</span>
-                <Link
-                  to={isProSeller(listing) ? `/boutique/${listing.sellerId}` : `/profil/${listing.sellerId}`}
-                  className="inline-flex items-center hover:opacity-80 transition-opacity"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {isProSeller(listing) ? (
-                    <Badge variant="pro" size="sm">Pro • {listing.sellerName}</Badge>
-                  ) : (
-                    <span className="text-xs font-semibold text-stone-600 hover:text-primary hover:underline">
-                      {listing.sellerName}
-                    </span>
-                  )}
-                </Link>
-
-                {/* Rating & Review Count */}
-                {listing.sellerRating > 0 && (
-                  <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-stone-700 bg-bg-base px-2 py-1 rounded border border-border-base">
-                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                    <span>{listing.sellerRating.toFixed(1)}</span>
-                    {listing.sellerReviewCount > 0 && (
-                      <span className="text-stone-500 font-normal">({listing.sellerReviewCount})</span>
-                    )}
-                  </span>
-                )}
-
-                {listing.originalPrice && listing.originalPrice > listing.price && (
-                  <Badge variant="deal" size="sm">Bon plan</Badge>
-                )}
-              </div>
-              <FavoriteButton
-                isFavorite={isFavorite}
-                onToggle={handleFavoriteClick}
-                size="lg"
-              />
-            </div>
-
+        {/* Centred, not spread. `justify-between` pushed the title to the top
+            edge and the price to the bottom of a 172px row, leaving a void down
+            the middle — fine when the row was 115px, wrong once it matches a
+            grid card's width. */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5 py-0.5">
+          <div className="min-w-0">
+            {/* `pr-8` keeps both lines clear of the favourite control above. */}
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-primary truncate pr-8 mb-0.5">
+              {listing.categoryLabel}
+            </span>
             <Link to={`/annonce/${listing.id}`} className="block">
-              <h3 title={listing.title} className="text-base font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors">
+              <h3
+                title={listing.title}
+                className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2 leading-snug pr-8 group-hover:text-primary transition-colors"
+              >
                 {listing.title}
               </h3>
             </Link>
-
-            {summarySnippets.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
-                {summarySnippets.map((snippet, idx) => (
-                  <span
-                    key={idx}
-                    className="text-micro font-semibold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md"
-                  >
-                    {snippet}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-2">
-              <PriceDisplay
-                price={listing.price}
-                originalPrice={listing.originalPrice}
-                isNegotiable={listing.isNegotiable}
-                isFreeDonation={listing.isFreeDonation}
-                size="md"
-              />
-            </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-stone-500 pt-3 border-t border-border-subtle mt-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                {listing.city} ({listing.postalCode.slice(0, 2)})
+          <div className="min-w-0 mt-1">
+            <PriceDisplay
+              price={listing.price}
+              originalPrice={listing.originalPrice}
+              isNegotiable={listing.isNegotiable}
+              isFreeDonation={listing.isFreeDonation}
+              size="sm"
+            />
+            {/* Short delivery wording, and the row wraps. "Livraison possible"
+                is wide enough that the city — the more useful of the two — was
+                crushed to "Ly…" and "N…" beside it. */}
+            <div className="flex items-center gap-x-2.5 gap-y-0.5 flex-wrap mt-0.5 text-[11px] text-stone-500 min-w-0">
+              <span className="flex items-center gap-1 font-medium min-w-0">
+                <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
+                <span className="truncate">{listing.city}</span>
               </span>
               {hasDelivery && (
-                <span className="flex items-center gap-1 text-success font-medium">
-                  <Truck className="w-3.5 h-3.5" />
-                  Livraison possible
+                <span className="inline-flex items-center gap-1 font-medium shrink-0">
+                  <Truck className="w-3 h-3 text-stone-400" />
+                  {t('ui.listingCard.livraisonCourt')}
                 </span>
               )}
             </div>
-            <span>{formatRelativeDate(listing.createdAt)}</span>
           </div>
         </div>
+
+        <FavoriteButton
+          isFavorite={isFavorite}
+          onToggle={handleFavoriteClick}
+          size="md"
+          variant="floating"
+          className="absolute top-2.5 right-2.5 z-10"
+        />
       </article>
     );
   }

@@ -118,12 +118,8 @@ export const NewsletterPreferencesPage: React.FC = () => {
     <div className="space-y-6">
       {/* 1. Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-          Newsletter & Préférences Marketing
-        </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-1">
-          Gérez vos abonnements aux sélections hebdomadaires, bons plans et actualités Shongre.
-        </p>
+        <h1 className="text-xl sm:text-2xl font-black text-stone-900">{t('newsletter.newsletterPreferencesPage.newsletterPreferencesMarketing')}</h1>
+        <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('newsletter.newsletterPreferencesPage.gerezVosAbonnementsAuxSelections')}</p>
       </div>
 
       {/* 2. Subscription Status Banner */}
@@ -159,9 +155,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             onClick={handleUnsubscribe}
             disabled={isSaving}
             className="text-stone-600 hover:text-stone-900 shrink-0 font-bold"
-          >
-            Se désabonner
-          </Button>
+          >{t('newsletter.newsletterPreferencesPage.seDesabonner')}</Button>
         ) : (
           <Button
             variant="primary"
@@ -169,9 +163,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             onClick={handleResubscribe}
             disabled={isSaving}
             className="shrink-0 font-bold"
-          >
-            Se réabonner
-          </Button>
+          >{t('newsletter.newsletterPreferencesPage.seReabonner')}</Button>
         )}
       </div>
 
@@ -179,9 +171,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
       <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
         <div>
           <h2 className="text-base font-black text-stone-900">{t('newsletter.newsletterPreferencesPage.vosThematiquesFavorites')}</h2>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Cochez les thématiques qui vous intéressent pour personnaliser vos prochaines éditions.
-          </p>
+          <p className="text-xs text-stone-500 mt-0.5">{t('newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous')}</p>
         </div>
 
         <NewsletterTopicSelector
@@ -209,12 +199,8 @@ export const NewsletterPreferencesPage: React.FC = () => {
       <div className="p-4 bg-stone-50 border border-border-base rounded-2xl flex items-start gap-3 text-xs text-stone-600">
         <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <span className="font-bold text-stone-900 block">
-            Communications obligatoires de service
-          </span>
-          <p className="leading-relaxed">
-            Même si vous êtes désabonné de la newsletter, vous continuerez à recevoir les emails essentiels relatifs à la sécurité de votre compte, à vos paiements sous séquestre et au suivi de vos commandes.
-          </p>
+          <span className="font-bold text-stone-900 block">{t('newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService')}</span>
+          <p className="leading-relaxed">{t('newsletter.newsletterPreferencesPage.memeSiVousEtesDesabonne')}</p>
         </div>
       </div>
     </div>

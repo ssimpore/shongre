@@ -91,17 +91,13 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. General Operational Controls */}
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-        <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">
-          Paramètres Généraux d'Activation & Déploiement
-        </h4>
+        <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement')}</h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable Toggle */}
           <div className="flex flex-col justify-between p-3 rounded-lg border border-stone-200 bg-stone-50/60">
             <span className="text-xs font-bold text-stone-900">{t('admin.providerConfigurationForm.etatDActivation')}</span>
-            <p className="text-micro text-stone-500 mb-2">
-              Rend le prestataire opérationnel pour la plateforme
-            </p>
+            <p className="text-micro text-stone-500 mb-2">{t('admin.providerConfigurationForm.rendLePrestataireOperationnelPour')}</p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -119,9 +115,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
           {/* Environment selector */}
           <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
             <span className="text-xs font-bold text-stone-900">Environnement</span>
-            <p className="text-micro text-stone-500 mb-2">
-              Contexte d'exécution
-            </p>
+            <p className="text-micro text-stone-500 mb-2">{t('admin.providerConfigurationForm.contexteDExecution')}</p>
             <select
               value={environment}
               onChange={(e) => setEnvironment(e.target.value as any)}
@@ -155,12 +149,8 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div>
-            <h4 className="text-sm font-bold text-stone-900">
-              Paramètres Techniques & Clés d'API
-            </h4>
-            <p className="text-xs text-stone-500">
-              Les clés secrètes sont gérées côté serveur et ne sont jamais renvoyées en clair dans le navigateur.
-            </p>
+            <h4 className="text-sm font-bold text-stone-900">{t('admin.providerConfigurationForm.parametresTechniquesClesDApi')}</h4>
+            <p className="text-xs text-stone-500">{t('admin.providerConfigurationForm.lesClesSecretesSontGerees')}</p>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
@@ -224,9 +214,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                           Remplacer
                         </Button>
                       </div>
-                      <p className="text-micro text-stone-500">
-                        Protection renforcée : Le secret réel est injecté de manière confidentielle dans le coffre-fort de clés serveur (Vault / KMS).
-                      </p>
+                      <p className="text-micro text-stone-500">{t('admin.providerConfigurationForm.protectionRenforceeLeSecretReel')}</p>
                     </div>
                   ) : field.type === 'boolean' ? (
                     <label className="flex items-center gap-2 cursor-pointer pt-1">
@@ -280,9 +268,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
           isLoading={isSaving}
           leftIcon={<Save className="w-4 h-4" />}
           className="text-xs font-bold"
-        >
-          Enregistrer la configuration
-        </Button>
+        >{t('admin.providerConfigurationForm.enregistrerLaConfiguration')}</Button>
       </div>
     </form>
   );

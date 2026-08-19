@@ -2275,6 +2275,34 @@ themselves, served by the backend — a data-model change, not a `t()` call.
 distinction in mind when reading the number: the `.tsx` figure is UI migration
 work, the `.ts` figure is a backend content question.
 
+## Data translates through its own record, never through the catalogue
+
+Some records already carry per-locale maps:
+
+```ts
+labels:      { 'fr-FR': 'Véhicules', 'en-US': 'Vehicles' }
+shortLabels: { 'fr-FR': 'Véhicules', 'en-US': 'Vehicles' }
+name: 'Véhicules'   // flat mirror of labels['fr-FR']
+```
+
+Read them through `getTaxonomyLabel` / `localize`, never by reaching for the flat
+field. The flat `name` / `label` / `shortLabel` are French mirrors kept for
+compatibility, and for a long time they were the *only* thing anything read —
+`getTaxonomyLabel` even defaulted its locale to a hard-coded `'fr-FR'`. Every
+English label in the taxonomy existed and was unreachable. The service now
+resolves the flat fields from the maps when it builds its index, so whichever
+field a consumer reads is already in the right language.
+
+For records with no locale map, add one with `LocaleOverlay` in `i18n/localized.ts`
+— an overlay keyed by record id, holding only the fields a translation changes.
+Do **not** copy admin-managed content into `messages.*.ts`: that duplicates it
+and freezes it into the bundle, which §54 forbids.
+
+**Keep `i18n/localized.ts` off the catalogues.** It imports locale identity from
+the `i18n/locale.ts` leaf for a reason: importing `i18n.service` instead pulled
+both message catalogues into the taxonomy chunk, taking it from 62 kB to 377 kB
+— eagerly loaded by the header, and enough to time the responsive suite out.
+
 # 76. Locale formatting
 
 Centralize:

@@ -68,12 +68,8 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-primary" />
-            Gestionnaire de Routage, Priorités & Secours (Failover)
-          </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Configurez les prestataires primaires et leurs mécanismes de bascule automatique en cas d'indisponibilité.
-          </p>
+            <Sliders className="w-4 h-4 text-primary" />{t('admin.providerRoutingManager.gestionnaireDeRoutagePrioritesSecours')}</h3>
+          <p className="text-xs text-stone-500 mt-0.5">{t('admin.providerRoutingManager.configurezLesPrestatairesPrimairesEt')}</p>
         </div>
 
         <div className="flex items-center gap-2">

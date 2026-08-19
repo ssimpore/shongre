@@ -204,9 +204,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             <Building2 className="w-5 h-5" />
           </div>
           <div>
-            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">
-              Vérification Entreprise (KYB / KBIS)
-            </h3>
+            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">{t('verification.businessVerificationModal.verificationEntrepriseKybKbis')}</h3>
             <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
               <span>Étape {step} sur 4</span>
               <span>•</span>
@@ -253,13 +251,9 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   onClick={handleSiretLookup}
                   isLoading={isLookingUp}
                   leftIcon={<Search className="w-4 h-4" />}
-                >
-                  Vérifier
-                </Button>
+                >{t('verification.businessVerificationModal.verifier')}</Button>
               </div>
-              <p className="text-micro text-stone-500 mt-1">
-                Saisissez votre SIRET pour remplir automatiquement les données officielles INSEE / SIRENE.
-              </p>
+              <p className="text-micro text-stone-500 mt-1">{t('verification.businessVerificationModal.saisissezVotreSiretPourRemplir')}</p>
             </div>
 
             {lookupFound && (
@@ -315,8 +309,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">
-                Adresse du siège social <span className="text-primary">*</span>
+              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.businessVerificationModal.adresseDuSiegeSocial')}<span className="text-primary">*</span>
               </label>
               <input
                 type="text"
@@ -361,9 +354,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 variant="primary"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                Représentant légal
-              </Button>
+              >{t('verification.businessVerificationModal.representantLegal')}</Button>
             </div>
           </form>
         )}
@@ -371,13 +362,10 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         {/* Step 2: Legal Representative */}
         {step === 2 && (
           <form onSubmit={handleStep2Submit} className="space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed">
-              Indiquez l'identité du mandataire social ou du dirigeant habilité à engager l'entreprise sur Shongre.
-            </p>
+            <p className="text-xs text-stone-600 leading-relaxed">{t('verification.businessVerificationModal.indiquezLIdentiteDuMandataire')}</p>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">
-                Nom complet du représentant légal <span className="text-primary">*</span>
+              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.businessVerificationModal.nomCompletDuRepresentantLegal')}<span className="text-primary">*</span>
               </label>
               <input
                 type="text"
@@ -390,8 +378,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">
-                Fonction / Qualité au sein de l'entreprise <span className="text-primary">*</span>
+              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.businessVerificationModal.fonctionQualiteAuSeinDe')}<span className="text-primary">*</span>
               </label>
               <select
                 value={legalRepRole}
@@ -436,9 +423,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         {/* Step 3: Document Upload (KBIS + RIB) */}
         {step === 3 && (
           <form onSubmit={handleStep3Submit} className="space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed">
-              Téléversez les documents officiels attestant de l'existence juridique et des coordonnées de paiement de votre structure.
-            </p>
+            <p className="text-xs text-stone-600 leading-relaxed">{t('verification.businessVerificationModal.televersezLesDocumentsOfficielsAttestant')}</p>
 
             {/* KBIS Upload */}
             <button
@@ -515,9 +500,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 variant="primary"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                Déclaration de conformité
-              </Button>
+              >{t('verification.businessVerificationModal.declarationDeConformite')}</Button>
             </div>
           </form>
         )}
@@ -527,12 +510,8 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
           <form onSubmit={handleFinalSubmit} className="space-y-4">
             <div className="p-4 rounded-xl bg-warning-surface/70 border border-warning-border/80 text-xs text-warning space-y-2">
               <div className="font-bold flex items-center gap-1.5">
-                <FileCheck className="w-4 h-4 text-warning" />
-                Déclaration des Bénéficiaires Effectifs (RBE / LCB-FT)
-              </div>
-              <p className="text-micro leading-relaxed text-warning">
-                En application de la directive européenne anti-blanchiment et du Code Monétaire et Financier, je certifie que les informations d'immatriculation et les bénéficiaires effectifs déclarés sont sincères et conformes à la réalité.
-              </p>
+                <FileCheck className="w-4 h-4 text-warning" />{t('verification.businessVerificationModal.declarationDesBeneficiairesEffectifsRbe')}</div>
+              <p className="text-micro leading-relaxed text-warning">{t('verification.businessVerificationModal.enApplicationDeLaDirective')}</p>
             </div>
 
             <label className="flex items-start gap-2.5 p-3 rounded-xl border border-stone-200 bg-stone-50 cursor-pointer hover:bg-stone-100 transition-colors">
@@ -542,9 +521,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 onChange={(e) => setUboAccepted(e.target.checked)}
                 className="mt-0.5 rounded text-warning focus:ring-amber-800"
               />
-              <span className="text-xs font-semibold text-stone-800 leading-snug">
-                Je certifie sur l'honneur l'exactitude des pièces fournies et accepte la vérification de conformité Shongre.
-              </span>
+              <span className="text-xs font-semibold text-stone-800 leading-snug">{t('verification.businessVerificationModal.jeCertifieSurLHonneur')}</span>
             </label>
 
             {/* Demo simulation toggle */}
@@ -553,9 +530,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
                   <div className="font-bold">{t('verification.businessVerificationModal.modeDemonstrationShongre')}</div>
-                  <div className="text-micro text-stone-600">
-                    Validation instantanée par simulation du registre RCS
-                  </div>
+                  <div className="text-micro text-stone-600">{t('verification.businessVerificationModal.validationInstantaneeParSimulationDu')}</div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">

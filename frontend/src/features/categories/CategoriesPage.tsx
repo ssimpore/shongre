@@ -187,14 +187,9 @@ export const CategoriesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="max-w-3xl space-y-3">
-              <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
-                Toutes nos catégories
-              </h1>
+              <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">{t('categories.categoriesPage.toutesNosCategories')}</h1>
 
-              <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">
-                Explorez l’ensemble des catégories et sous-catégories de Shongre. Trouvez instantanément
-                les annonces vérifiées près de chez vous ou partout en France.
-              </p>
+              <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">{t('categories.categoriesPage.explorezLEnsembleDesCategories')}</p>
             </div>
 
             {/* In-page Category Search */}
@@ -215,8 +210,7 @@ export const CategoriesPage: React.FC = () => {
       {/* 3. Categories Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
         <div className="flex items-center justify-between gap-4 mb-6">
-          <span className="text-xs sm:text-sm text-stone-500 font-medium">
-            Affichage de <strong>{filteredCategories.length} univers</strong>
+          <span className="text-xs sm:text-sm text-stone-500 font-medium">{t('categories.categoriesPage.affichageDe')}<strong>{filteredCategories.length} univers</strong>
             {searchQuery && ` pour "${searchQuery}"`}
           </span>
 
@@ -325,9 +319,7 @@ export const CategoriesPage: React.FC = () => {
               type="button"
               onClick={() => setSearchQuery('')}
               className="h-9 px-4 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-            >
-              Afficher toutes les catégories
-            </button>
+            >{t('categories.categoriesPage.afficherToutesLesCategories')}</button>
           </div>
         )}
       </div>

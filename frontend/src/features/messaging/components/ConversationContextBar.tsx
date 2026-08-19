@@ -87,9 +87,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             onClick={onViewTransaction}
             leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-success" />}
             className="text-xs"
-          >
-            Suivi de commande
-          </Button>
+          >{t('messaging.conversationContextBar.suiviDeCommande')}</Button>
         ) : (
           <>
             {onMakeOffer && (
@@ -99,9 +97,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 onClick={onMakeOffer}
                 leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 className="text-xs"
-              >
-                Faire une offre
-              </Button>
+              >{t('messaging.conversationContextBar.faireUneOffre')}</Button>
             )}
             {onSchedulePickup && (
               <Button
@@ -110,9 +106,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 onClick={onSchedulePickup}
                 leftIcon={<Calendar className="w-3.5 h-3.5 text-primary" />}
                 className="text-xs"
-              >
-                Fixer rendez-vous
-              </Button>
+              >{t('messaging.conversationContextBar.fixerRendezVous')}</Button>
             )}
           </>
         )}

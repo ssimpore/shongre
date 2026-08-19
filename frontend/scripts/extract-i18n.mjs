@@ -118,6 +118,22 @@ output = output.replace(/>([^<>{}\n]{3,})</g, (whole, value) => {
   return `>${leading}{t('${key}')}${trailing}<`;
 });
 
+/* 2b. JSX text wrapped across lines -----------------------------------------
+   The single-line pattern misses copy the formatter has broken over several
+   lines, which is most long-form sentences in this codebase. Still refuses
+   anything containing an expression. */
+output = output.replace(/>(\s*\n\s*[^<>{}]{4,}?)\s*</g, (whole, value) => {
+  const collapsed = value.replace(/\s+/g, ' ').trim();
+  // A JSX comment's interior contains no braces once its `{/*` is out of range,
+  // so the pattern happily matched the middle of one and replaced the code
+  // around it. Anything carrying comment or template syntax is not copy.
+  if (/[*`]|\/\//.test(collapsed)) return whole;
+  if (!looksFrench(collapsed)) return whole;
+  const key = mintKey(collapsed);
+  minted.set(key, collapsed);
+  return `>{t('${key}')}<`;
+});
+
 /* 3. Report the shapes deliberately left alone ----------------------------- */
 for (const [, value] of source.matchAll(/>([^<>]*[àâäçéèêëîïôöùûüÿ][^<>]*)</g)) {
   if (/[{}]/.test(value) && looksFrench(value.replace(/\{[^}]*\}/g, ''))) {

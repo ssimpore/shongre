@@ -172,17 +172,14 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
 
         {/* Active filter counter & reset */}
         <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-xs text-stone-500">
-          <span>
-            Affichage de <strong>{filteredProviders.length}</strong> intégration(s) sur {providers.length}
+          <span>{t('admin.providerCatalogTable.affichageDe')}<strong>{filteredProviders.length}</strong> intégration(s) sur {providers.length}
           </span>
           {(searchQuery || selectedCategory !== 'ALL' || statusFilter !== 'all' || envFilter !== 'all' || healthFilter !== 'all') && (
             <button
               onClick={resetFilters}
               className="flex items-center gap-1 text-primary hover:underline font-medium text-xs"
             >
-              <RotateCcw className="w-3 h-3" />
-              Réinitialiser les filtres
-            </button>
+              <RotateCcw className="w-3 h-3" />{t('admin.providerCatalogTable.reinitialiserLesFiltres')}</button>
           )}
         </div>
       </div>
@@ -204,9 +201,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
             <tbody className="divide-y divide-stone-100 font-medium">
               {filteredProviders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-stone-500">
-                    Aucun fournisseur ne correspond aux critères de recherche.
-                  </td>
+                  <td colSpan={6} className="py-10 text-center text-stone-500">{t('admin.providerCatalogTable.aucunFournisseurNeCorrespondAux')}</td>
                 </tr>
               ) : (
                 filteredProviders.map((p) => {
@@ -269,9 +264,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-full">
-                              <X className="w-3 h-3" />
-                              Désactivé
-                            </span>
+                              <X className="w-3 h-3" />{t('admin.providerCatalogTable.desactive2')}</span>
                           )}
 
                           {isEnabled && health === 'healthy' && (
@@ -290,9 +283,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-1">
                           {p.supportedMarkets.includes('*') ? (
-                            <span className="text-micro font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
-                              Tous (*)
-                            </span>
+                            <span className="text-micro font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded">{t('admin.providerCatalogTable.tous')}</span>
                           ) : (
                             p.supportedMarkets.map((m) => (
                               <span
@@ -333,9 +324,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                                                           size="sm"
                                                           rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
                                                           className="h-control-sm text-xs px-2.5 font-bold"
-                          >
-                              Gérer
-                          </Button>
+                          >{t('admin.providerCatalogTable.gerer')}</Button>
                         </div>
                       </td>
                     </tr>

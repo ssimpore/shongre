@@ -21,8 +21,15 @@ if (files.length === 0) {
   process.exit(1);
 }
 
-/** Component declarations this can safely open. */
-const COMPONENT = /(?:export\s+)?const\s+([A-Z]\w*)\s*(?::\s*React\.FC[^=]*)?=\s*\([^)]*\)\s*=>\s*\{\n/g;
+/**
+ * Component declarations this can safely open.
+ *
+ * Both shapes the codebase uses: the arrow-assigned `React.FC`, and the plain
+ * `function` declaration that generic components need (`DropdownMenu<T>` cannot
+ * be written as a typed arrow without losing inference).
+ */
+const COMPONENT =
+  /(?:(?:export\s+)?const\s+([A-Z]\w*)\s*(?::\s*React\.FC[^=]*)?=\s*\([\s\S]*?\)\s*=>\s*\{\n)|(?:(?:export\s+)?function\s+([A-Z]\w*)\s*(?:<[^>]*>)?\s*\([\s\S]*?\)\s*(?::[^{]*)?\{\n)/g;
 
 for (const file of files) {
   const source = readFileSync(file, 'utf8');
@@ -37,7 +44,7 @@ for (const file of files) {
 
   // Body of component i runs from its opening brace to the start of component i+1.
   const bounds = matches.map((match, i) => ({
-    name: match[1],
+    name: match[1] || match[2],
     bodyStart: match.index + match[0].length,
     bodyEnd: i + 1 < matches.length ? matches[i + 1].index : source.length,
   }));

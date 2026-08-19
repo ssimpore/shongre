@@ -262,16 +262,12 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
                 type="button"
                 onClick={handleAddOption}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
-              >
-                Ajouter une option
-              </Button>
+              >{t('admin.attributeEditModal.ajouterUneOption')}</Button>
             </div>
 
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {options.length === 0 ? (
-                <div className="p-3 text-center text-xs text-stone-500 border border-dashed rounded-xl">
-                  Aucune option définie. Cliquez sur "Ajouter une option".
-                </div>
+                <div className="p-3 text-center text-xs text-stone-500 border border-dashed rounded-xl">{t('admin.attributeEditModal.aucuneOptionDefinieCliquezSur')}</div>
               ) : (
                 options.map((opt, idx) => (
                   <div key={idx} className="flex items-center gap-2">

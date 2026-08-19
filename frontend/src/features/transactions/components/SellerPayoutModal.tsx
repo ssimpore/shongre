@@ -88,9 +88,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
             type="button"
             onClick={() => setAmountStr(availableBalance.toFixed(2))}
             className="text-xs font-bold text-primary bg-primary/20 hover:bg-primary/30 px-3 py-2 rounded-xl transition-colors cursor-pointer"
-          >
-            Tout transférer
-          </button>
+          >{t('transactions.sellerPayoutModal.toutTransferer')}</button>
         </div>
 
         {error && (

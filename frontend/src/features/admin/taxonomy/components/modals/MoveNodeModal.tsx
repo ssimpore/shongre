@@ -97,9 +97,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
             <li>
               <strong>~{impact.activeListingsCount}</strong> annonces actives conserveront leur liaison d'ID stable sans rupture.
             </li>
-            <li>
-              Les capacités et attributs hérités seront réévalués selon le nouveau parent.
-            </li>
+            <li>{t('admin.moveNodeModal.lesCapacitesEtAttributsHerites')}</li>
           </ul>
         </div>
 

@@ -112,18 +112,12 @@ export const AdminUsersPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-primary">
-            Gouvernance des Identités
-          </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminUsersPage.gouvernanceDesIdentites')}</span>
           <span className="text-stone-300">•</span>
           <span className="text-xs text-stone-500 font-medium">{t('admin.adminUsersPage.gestionDesComptesVerificationsKbis')}</span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-          Annuaire des Utilisateurs & Vérifications
-        </h1>
-        <p className="text-xs text-stone-600 mt-1">
-          Consultez et administrez l'ensemble des comptes (particuliers, professionnels et collaborateurs internes).
-        </p>
+        <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminUsersPage.annuaireDesUtilisateursVerifications')}</h1>
+        <p className="text-xs text-stone-600 mt-1">{t('admin.adminUsersPage.consultezEtAdministrezLEnsemble')}</p>
       </div>
 
       {/* Filters Bar */}

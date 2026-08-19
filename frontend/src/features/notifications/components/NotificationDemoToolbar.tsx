@@ -118,9 +118,7 @@ export const NotificationDemoToolbar: React.FC = () => {
 
       {isExpanded && (
         <div className="pt-2 border-t border-stone-800 space-y-2">
-          <p className="text-micro text-stone-500">
-            Cliquez sur un scénario pour injecter instantanément une notification réelle et tester l'affichage, les badges et les liens profonds.
-          </p>
+          <p className="text-micro text-stone-500">{t('notifications.notificationDemoToolbar.cliquezSurUnScenarioPour')}</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {scenarios.map((sc, idx) => (

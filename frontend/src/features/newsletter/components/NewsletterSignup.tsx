@@ -82,9 +82,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           <CheckCircle2 className="w-5 h-5" />
         </div>
         <h4 className="text-sm font-black text-success">{t('newsletter.newsletterSignup.vousEtesBienInscrit')}</h4>
-        <p className="text-xs text-success max-w-sm mx-auto">
-          Vous recevrez nos sélections et bons plans. Vous pourrez vous désabonner en 1 clic à tout moment.
-        </p>
+        <p className="text-xs text-success max-w-sm mx-auto">{t('newsletter.newsletterSignup.vousRecevrezNosSelectionsEt')}</p>
       </div>
     );
   }
@@ -141,13 +139,9 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             <span>{t('newsletter.newsletterSignup.laSelectionShongre')}</span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">
-            Recevez nos meilleures pépites & bons plans
-          </h2>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">{t('newsletter.newsletterSignup.recevezNosMeilleuresPepitesBons')}</h2>
 
-          <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
-            Chaque semaine, une sélection exclusive d'annonces vérifiées, de baisses de prix et de conseils pour vos achats et ventes.
-          </p>
+          <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">{t('newsletter.newsletterSignup.chaqueSemaineUneSelectionExclusive')}</p>
         </div>
 
         <div className="lg:col-span-6">
@@ -187,9 +181,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   onChange={(e) => setConsent(e.target.checked)}
                   className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
                 />
-                <span>
-                  J'accepte de recevoir la newsletter Shongre. Désinscription possible à tout moment en 1 clic.
-                </span>
+                <span>{t('newsletter.newsletterSignup.jAccepteDeRecevoirLa')}</span>
               </label>
             )}
 

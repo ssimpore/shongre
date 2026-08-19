@@ -101,9 +101,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             onClick={onSimulateReply}
             leftIcon={<Sparkles className="w-3.5 h-3.5 text-amber-500" />}
             className="hidden sm:inline-flex text-xs"
-          >
-            Simuler réponse
-          </Button>
+          >{t('messaging.conversationHeader.simulerReponse')}</Button>
         )}
 
         {/* Dropdown Menu */}

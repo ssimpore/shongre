@@ -139,6 +139,7 @@ export const HelpSafetyPage: React.FC = () => {
 };
 
 export const DealsPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Bons plans & baisses de prix",
     description:
@@ -153,23 +154,17 @@ export const DealsPage: React.FC = () => {
       <Breadcrumbs items={[{ label: 'Accueil', href: '/' }, { label: 'Bons plans & Réductions' }]} />
       <div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning-surface border border-warning-border text-warning text-xs font-bold mb-2">
-          <Tag className="w-3.5 h-3.5 text-warning" />
-          Offres vérifiées à prix réduits
-        </div>
+          <Tag className="w-3.5 h-3.5 text-warning" />{t('legal.legalPages.offresVerifieesAPrixReduits')}</div>
         <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
           Les meilleures réductions du moment ({deals.length})
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-1">
-          Articles dont le prix a été baissé récemment par leur vendeur
-        </p>
+        <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('legal.legalPages.articlesDontLePrixA')}</p>
       </div>
 
       {/* The card titles are h3, so the results grid needs its own section
           heading rather than jumping straight from the page h1. */}
       <section aria-labelledby="deals-results-heading">
-        <h2 id="deals-results-heading" className="sr-only">
-          Annonces en promotion
-        </h2>
+        <h2 id="deals-results-heading" className="sr-only">{t('legal.legalPages.annoncesEnPromotion')}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {deals.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />

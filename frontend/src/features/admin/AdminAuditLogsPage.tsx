@@ -83,18 +83,12 @@ export const AdminAuditLogsPage: React.FC = () => {
       <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              Traçabilité & Conformité
-            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminAuditLogsPage.tracabiliteConformite')}</span>
             <span className="text-stone-300">•</span>
             <span className="text-xs text-stone-500 font-medium">{t('admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme')}</span>
           </div>
-          <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-            Registre d'Audit Sécurité
-          </h1>
-          <p className="text-xs text-stone-600 mt-1">
-            Enregistrement immuable des modifications de permissions, suspensions, modérations et opérations privilégiées.
-          </p>
+          <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminAuditLogsPage.registreDAuditSecurite')}</h1>
+          <p className="text-xs text-stone-600 mt-1">{t('admin.adminAuditLogsPage.enregistrementImmuableDesModificationsDe')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -113,9 +107,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             onClick={() => setIsClearModalOpen(true)}
             className="text-xs text-danger hover:bg-danger-surface"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1" />
-            Réinitialiser
-          </Button>
+            <Trash2 className="w-3.5 h-3.5 mr-1" />{t('admin.adminAuditLogsPage.reinitialiser')}</Button>
         </div>
       </div>
 
@@ -165,9 +157,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             <tbody className="divide-y divide-stone-200">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-stone-500">
-                    Aucun événement d'audit enregistré correspondant.
-                  </td>
+                  <td colSpan={6} className="p-8 text-center text-stone-500">{t('admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre')}</td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (

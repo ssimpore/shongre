@@ -97,9 +97,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
     <div className="space-y-6">
       {/* 1. Country Selection Bar */}
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs">
-        <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
-          Sélectionnez le marché à inspecter ou surcharger :
-        </label>
+        <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">{t('admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter')}</label>
         <div className="flex flex-wrap gap-2">
           {nonFranceMarkets.map((m) => {
             const hasOverride = Boolean(configuration.marketOverrides?.[m.code]);
@@ -140,9 +138,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
             <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
               <span>🇫🇷</span> France (Référence Canonique)
             </span>
-            <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
-              Base d'Héritage
-            </span>
+            <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">{t('admin.providerMarketOverridesTab.baseDHeritage')}</span>
           </div>
 
           <div className="space-y-2 text-xs">
@@ -165,9 +161,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
               </span>
             </div>
           </div>
-          <p className="text-micro text-stone-500 italic pt-2">
-            Toute modification apportée à la France est immédiatement répercutée sur les marchés sans surcharge.
-          </p>
+          <p className="text-micro text-stone-500 italic pt-2">{t('admin.providerMarketOverridesTab.touteModificationApporteeALa')}</p>
         </div>
 
         {/* Target Market Override Card */}
@@ -185,13 +179,9 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
             </span>
 
             {isOverridden ? (
-              <span className="text-micro font-bold bg-info-surface text-info border border-info-border px-2 py-0.5 rounded">
-                ★ Configuration Personnalisée
-              </span>
+              <span className="text-micro font-bold bg-info-surface text-info border border-info-border px-2 py-0.5 rounded">{t('admin.providerMarketOverridesTab.configurationPersonnalisee')}</span>
             ) : (
-              <span className="text-micro font-semibold bg-stone-100 text-stone-600 px-2 py-0.5 rounded">
-                ↳ Hérité de France
-              </span>
+              <span className="text-micro font-semibold bg-stone-100 text-stone-600 px-2 py-0.5 rounded">{t('admin.providerMarketOverridesTab.heriteDeFrance')}</span>
             )}
           </div>
 
@@ -228,9 +218,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
 
             {/* Custom Notes */}
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
-                Note de conformité ou motif de surcharge :
-              </label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">{t('admin.providerMarketOverridesTab.noteDeConformiteOuMotif')}</label>
               <input
                 type="text"
                 value={customNotes}
@@ -250,9 +238,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
                 onClick={handleResetOverride}
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
                 className="text-xs text-danger hover:bg-danger-surface"
-              >
-                Réinitialiser sur France
-              </Button>
+              >{t('admin.providerMarketOverridesTab.reinitialiserSurFrance')}</Button>
             ) : (
               <span className="text-xs text-stone-500 italic">{t('admin.providerMarketOverridesTab.aucuneSurchargeDefinie')}</span>
             )}
@@ -262,9 +248,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
               size="sm"
               onClick={handleSaveOverride}
               className="text-xs font-bold"
-            >
-              Appliquer la surcharge
-            </Button>
+            >{t('admin.providerMarketOverridesTab.appliquerLaSurcharge')}</Button>
           </div>
         </div>
       </div>
