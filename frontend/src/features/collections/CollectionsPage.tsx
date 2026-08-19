@@ -238,11 +238,6 @@ export const CollectionsPage: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
               <div className="max-w-3xl space-y-3">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-stone-200/90 text-stone-700 text-xs font-semibold shadow-2xs w-fit">
-                  <Sparkle className="w-3.5 h-3.5 text-primary fill-primary shrink-0" />
-                  <span>Inspirations, Thématiques & Tendances</span>
-                </div>
-
                 <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
                   Toutes nos collections
                 </h1>

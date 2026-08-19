@@ -42,12 +42,13 @@ import { Button } from '../../design-system/primitives/Button';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
+import { HomeTrustStrip } from './components/HomeTrustStrip';
 import { HomeCollectionsSection } from './components/HomeCollectionsSection';
 import { HomeCategoryExplorer } from './components/HomeCategoryExplorer';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { ScrollRail } from '../../design-system/primitives/ScrollRail';
-import { NewsletterSignup } from '../newsletter/components/NewsletterSignup';
 import { usePublishCta } from '../../security/usePublishCta';
+import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/ViewModeToggle';
 import { plural } from '../../utilities/formatters';
 
 /**
@@ -74,6 +75,7 @@ export const HomePage: React.FC = () => {
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [proSellers, setProSellers] = useState<UserProfile[]>([]);
+  const [listingsViewMode, setListingsViewMode] = useState<ListingViewMode>('grid');
 
   useEffect(() => {
     let isMounted = true;
@@ -202,15 +204,18 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. Upgraded Category Explorer */}
+      {/* 2. Trust Reassurance Bar */}
+      <HomeTrustStrip />
+
+      {/* 3. Upgraded Category Explorer */}
       <HomeCategoryExplorer />
 
-      {/* 3. Curated Thematic Collections */}
+      {/* 4. Curated Thematic Collections */}
       <HomeCollectionsSection />
 
-      {/* 4. Fresh Listings */}
+      {/* 5. Fresh Listings */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
-        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-8">
+        <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
             <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
               Annonces récentes
@@ -219,72 +224,89 @@ export const HomePage: React.FC = () => {
               Les dernières offres publiées près de chez vous
             </p>
           </div>
-          <Link
-            to="/recherche?sortBy=date_desc"
-            className="text-sm font-bold text-stone-900 bg-white border border-stone-200 hover:border-stone-300 hover:bg-stone-50 px-4 py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5"
-          >
-            <span className="hidden sm:inline">Toutes les nouveautés</span>
-            <span className="sm:hidden">Voir tout</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 mb-0.5">
+            <ViewModeToggle
+              viewMode={listingsViewMode}
+              onChange={(mode) => setListingsViewMode(mode)}
+              size="sm"
+            />
+
+            <Link
+              to="/recherche?sortBy=date_desc"
+              className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap"
+            >
+              <span className="hidden sm:inline">Toutes les nouveautés</span>
+              <span className="sm:hidden">Voir tout</span>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
+            </Link>
+          </div>
         </div>
 
         {isLoading ? (
+          listingsViewMode === 'grid' ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
+                  <Skeleton className="h-44 w-full rounded-xl" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-5 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base flex gap-3">
+                  <Skeleton className="h-32 w-32 rounded-xl shrink-0" />
+                  <div className="flex-1 space-y-2 py-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : listingsViewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
-                <Skeleton className="h-44 w-full rounded-xl" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-5 w-1/3" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
+            {recentListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} variant="grid" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {recentListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard key={listing.id} listing={listing} variant="list" />
             ))}
           </div>
         )}
       </section>
 
-      {/* 4. Deals & Price Drops Banner */}
+      {/* 6. Deals & Price Drops Showcase */}
       {dealsListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-amber-900 to-stone-900 rounded-2xl p-4 sm:p-8 text-white">
-            <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
-              <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold mb-1">
-                  <Tag className="w-3 h-3" />
-                  Bonnes affaires
-                </div>
-                <h2 className="text-lg sm:text-3xl font-extrabold text-white truncate sm:whitespace-normal">
+          <div className="bg-gradient-to-br from-amber-50/70 via-stone-50/50 to-white rounded-3xl border border-amber-200/80 p-4 sm:p-8 shadow-xs">
+            <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
+              <div className="min-w-0 space-y-1">
+                <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
                   Meilleures offres
                 </h2>
-                <p className="text-xs sm:text-sm text-amber-200/80 mt-0.5 hidden sm:block">
+                <p className="text-xs sm:text-sm text-stone-600 mt-0.5 hidden sm:block font-medium">
                   Des réductions jusqu'à -50% sur des articles récents et vérifiés
                 </p>
               </div>
               <Link
                 to="/bons-plans"
-                className="text-xs sm:text-sm font-bold text-stone-950 bg-amber-400 hover:bg-amber-300 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl transition-colors shrink-0 flex items-center gap-1 whitespace-nowrap shadow-xs"
+                className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-amber-300/80 hover:bg-amber-100/60 hover:border-amber-400 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shrink-0 flex items-center gap-1.5 whitespace-nowrap shadow-2xs active:scale-95 w-fit mb-0.5"
               >
-                <span>Tout voir</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Toutes les offres</span>
+                <span className="sm:hidden">Voir tout</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
               </Link>
             </div>
 
-            {/* The cards are the grid items themselves. They used to be wrapped
-                in a white `rounded-2xl` box, which duplicated the card's own
-                surface and corner at a different radius, and — because the
-                wrapper was what the grid stretched — left the card inside it
-                free to collapse to its content height. */}
-            {/* `auto-rows-fr` because this showcase wraps to two rows on a
-                phone, and a grid otherwise sizes each row to its own tallest
-                card — leaving the two rows 22px apart at 320px. Four items is a
-                small enough set for one uniform card height to be the right
-                call. */}
             <div className="grid grid-cols-2 sm:grid-cols-4 auto-rows-fr gap-3 sm:gap-4">
               {dealsListings.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} />
@@ -294,19 +316,10 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* 5. Newsletter Signup Band */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <NewsletterSignup variant="band" source="homepage" />
-      </section>
-
-      {/* 6. Pro Banner CTA */}
+      {/* 7. Pro Banner CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-bg-base border border-border-base rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary-light text-primary text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5" />
-              Espace Professionnels Shongre
-            </div>
             <h3 className="text-xl sm:text-2xl font-black text-stone-900">
               Vous êtes commerçant, artisan ou concessionnaire ?
             </h3>

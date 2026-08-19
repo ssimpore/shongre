@@ -43,28 +43,24 @@ export const HomeCollectionsSection: React.FC = () => {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16" aria-labelledby="home-collections-title">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5 sm:mb-6">
-        <div className="min-w-0 space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-stone-200/90 text-stone-700 text-xs font-semibold shadow-2xs w-fit">
-            <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>Inspirations & Sélections</span>
-          </div>
-
+      <div className="flex items-end justify-between gap-3 mb-5 sm:mb-6">
+        <div className="min-w-0 space-y-1">
           <h2 id="home-collections-title" className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
             Nos collections du moment
           </h2>
 
-          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium">
+          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium hidden sm:block">
             Des sélections thématiques préparées pour dénicher des pépites uniques, durables et vérifiées.
           </p>
         </div>
 
         <Link
           to="/collections"
-          className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-4 py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0"
+          className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
         >
-          <span>Toutes les collections</span>
-          <ArrowRight className="w-4 h-4 text-stone-600" />
+          <span className="hidden sm:inline">Toutes les collections</span>
+          <span className="sm:hidden">Voir tout</span>
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
         </Link>
       </div>
 

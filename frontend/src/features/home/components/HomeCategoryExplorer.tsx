@@ -2,9 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  Layers,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 import { TAXONOMY } from '../../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../../domains/taxonomy/taxonomy.service';
@@ -73,30 +71,26 @@ export const HomeCategoryExplorer: React.FC = () => {
   const topFiveCategories = TAXONOMY.slice(0, 5);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-14" aria-labelledby="home-category-explorer-title">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12" aria-labelledby="home-category-explorer-title">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
-        <div className="min-w-0 space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-stone-200/90 text-stone-700 text-xs font-semibold shadow-2xs w-fit">
-            <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>Univers Thématiques</span>
-          </div>
-
+      <div className="flex items-end justify-between gap-3 mb-5 sm:mb-8">
+        <div className="min-w-0 space-y-1">
           <h2 id="home-category-explorer-title" className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
             Explorer par catégorie
           </h2>
 
-          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium">
+          <p className="text-xs sm:text-sm text-stone-500 max-w-2xl font-medium hidden sm:block">
             Des millions d’annonces vérifiées classées avec précision selon vos projets et vos envies.
           </p>
         </div>
 
         <Link
           to="/categories"
-          className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-4 py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0"
+          className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
         >
-          <span>Toutes les catégories</span>
-          <ArrowRight className="w-4 h-4 text-stone-600" />
+          <span className="hidden sm:inline">Toutes les catégories</span>
+          <span className="sm:hidden">Voir tout</span>
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
         </Link>
       </div>
 
@@ -111,7 +105,7 @@ export const HomeCategoryExplorer: React.FC = () => {
               hoverBorder: 'hover:border-primary',
             };
 
-            const subCategoriesToShow = cat.subCategories ? cat.subCategories.slice(0, 3) : [];
+            const subCategoriesToShow = cat.subCategories ? cat.subCategories.slice(0, 2) : [];
 
             return (
               <div

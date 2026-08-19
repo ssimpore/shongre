@@ -42,6 +42,11 @@ export interface DropdownMenuProps<T = string> {
    */
   ariaLabel: string;
   size?: 'sm' | 'md' | 'lg' | 'touch';
+  /**
+   * Optional icon to show on mobile viewports (< sm) instead of the text label,
+   * keeping compact toolbars from wrapping or overflowing.
+   */
+  mobileIcon?: React.ReactNode;
 }
 
 /**
@@ -83,6 +88,7 @@ export function DropdownMenu<T extends string | number = string>({
   renderOption,
   ariaLabel,
   size = 'md',
+  mobileIcon,
 }: DropdownMenuProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -170,9 +176,23 @@ export function DropdownMenu<T extends string | number = string>({
             isOpen ? 'border-primary ring-2 ring-primary/20 bg-white' : ''
           } ${sizeClasses} ${triggerClassName}`}
         >
-          <div className="flex items-center gap-2 min-w-0 truncate">
-            {selectedOption?.icon}
-            <span className="truncate">{selectedOption?.label || placeholder}</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 truncate">
+            {mobileIcon ? (
+              <>
+                <span className="sm:hidden flex items-center justify-center shrink-0">
+                  {mobileIcon}
+                </span>
+                {selectedOption?.icon && (
+                  <span className="hidden sm:inline-flex shrink-0">{selectedOption.icon}</span>
+                )}
+                <span className="hidden sm:inline truncate">{selectedOption?.label || placeholder}</span>
+              </>
+            ) : (
+              <>
+                {selectedOption?.icon}
+                <span className="truncate">{selectedOption?.label || placeholder}</span>
+              </>
+            )}
           </div>
           <ChevronDown
             className={`w-3.5 h-3.5 text-stone-500 shrink-0 transition-transform duration-normal ${

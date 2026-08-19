@@ -173,11 +173,6 @@ export const CategoriesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="max-w-3xl space-y-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-stone-200/90 text-stone-700 text-xs font-semibold shadow-2xs w-fit">
-                <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span>16 Univers Thématiques</span>
-              </div>
-
               <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">
                 Toutes nos catégories
               </h1>
@@ -213,9 +208,10 @@ export const CategoriesPage: React.FC = () => {
 
           <Link
             to="/recherche"
-            className="text-xs sm:text-sm font-bold text-primary hover:underline flex items-center gap-1"
+            className="text-xs sm:text-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap"
           >
-            <span>Voir toutes les annonces</span>
+            <span className="hidden sm:inline">Voir toutes les annonces</span>
+            <span className="sm:hidden">Voir tout</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

@@ -90,7 +90,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
   const isDesktopRail = useMediaQuery('(min-width: 640px)');
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const STEP_MS = 3800;
+  const STEP_MS = 4500;
   const [step, setStep] = useState(0);
   const [animate, setAnimate] = useState(true);
 
@@ -134,6 +134,8 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       aria-labelledby="hero-boosted-heading"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
     >
       {/* 1. Header with Vedettes, Direct, and Voir plus > */}
       <div className="shrink-0 mb-2.5 sm:mb-3">
@@ -183,7 +185,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
             {loopItems.map((item, index) => renderItemCard(item, `vert-${item.id}-${index}`))}
           </div>
         ) : (
-          <div className="flex gap-2.5 animate-marquee-horizontal w-max">
+          <div className="flex gap-2.5 overflow-x-auto overscroll-x-contain pb-1 snap-x snap-mandatory scrollbar-none">
             {scrollSequence.map((item, index) => renderItemCard(item, `horiz-${item.id}-${index}`))}
           </div>
         )}
@@ -219,7 +221,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
       <Link
         key={key}
         to={`/annonce/${item.id}`}
-        className="group relative flex items-stretch gap-3 sm:gap-3.5 p-1 sm:p-1.5 rounded-xl hover:bg-stone-50/90 transition-colors duration-normal w-[290px] sm:w-full max-w-full shrink-0 h-(--rail-card-mobile-h) sm:h-(--rail-card-h) overflow-hidden box-border"
+        className="group relative flex items-stretch gap-3 sm:gap-3.5 p-1 sm:p-1.5 rounded-xl hover:bg-stone-50/90 transition-colors duration-normal w-[290px] sm:w-full max-w-full shrink-0 h-(--rail-card-mobile-h) sm:h-(--rail-card-h) overflow-hidden box-border snap-start"
       >
         {/* Floating favorite button */}
         <span className="absolute top-1.5 right-1.5 z-10">

@@ -20,6 +20,7 @@ import { Button } from '../../../design-system/primitives/Button';
 import { NoResultsFound } from '../../../design-system/primitives/NoResultsFound';
 import { usePublishCta } from '../../../security/usePublishCta';
 import { DropdownMenu, DropdownOption } from '../../../design-system/primitives/DropdownMenu';
+import { ViewModeToggle } from '../../../design-system/primitives/ViewModeToggle';
 
 export interface SellerCatalogProps {
   listings: Listing[];
@@ -233,26 +234,8 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             )}
           </div>
 
-          {/* Controls: Sort, Filter Toggle, View Toggle */}
+          {/* Controls: Filter Toggle, View Toggle, Sort */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Sort Selector */}
-            <DropdownMenu<SortOption>
-              id="seller-catalog-sort"
-              ariaLabel="Trier le catalogue"
-              size="sm"
-              placement="bottom-right"
-              panelWidth="w-48"
-              headerTitle="Trier par"
-              options={[
-                { value: 'recent', label: 'Plus récentes' },
-                { value: 'price_asc', label: 'Prix croissant' },
-                { value: 'price_desc', label: 'Prix décroissant' },
-                { value: 'popular', label: 'Popularité' },
-              ]}
-              value={sortBy}
-              onChange={(val) => setSortBy(val)}
-            />
-
             {/* Price filter drawer button */}
             <button
               type="button"
@@ -271,28 +254,30 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             </button>
 
             {/* Grid / List switch */}
-            <div className="hidden sm:flex items-center bg-bg-base border border-border-base rounded-xl p-0.5">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                aria-label="Affichage en grille"
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-white text-stone-950 shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                <Grid className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                aria-label="Affichage en liste"
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                  viewMode === 'list' ? 'bg-white text-stone-950 shadow-xs' : 'text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                <ListIcon className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <ViewModeToggle
+              viewMode={viewMode}
+              onChange={(mode) => setViewMode(mode as 'grid' | 'list')}
+              size="sm"
+            />
+
+            {/* Sort Selector at extreme right */}
+            <DropdownMenu<SortOption>
+              id="seller-catalog-sort"
+              ariaLabel="Trier le catalogue"
+              size="sm"
+              placement="bottom-right"
+              panelWidth="w-48"
+              mobileIcon={<ArrowUpDown className="w-3.5 h-3.5 text-stone-700" />}
+              headerTitle="Trier par"
+              options={[
+                { value: 'recent', label: 'Plus récentes' },
+                { value: 'price_asc', label: 'Prix croissant' },
+                { value: 'price_desc', label: 'Prix décroissant' },
+                { value: 'popular', label: 'Popularité' },
+              ]}
+              value={sortBy}
+              onChange={(val) => setSortBy(val)}
+            />
           </div>
         </div>
 

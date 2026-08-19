@@ -33,10 +33,6 @@ export const ProDirectoryPage: React.FC = () => {
 
       <div className="bg-gradient-to-r from-stone-900 to-stone-800 rounded-2xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold">
-            <Building2 className="w-3.5 h-3.5" />
-            Vendeurs Professionnels Agréés
-          </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white">
             Trouvez des commerçants et artisans de confiance
           </h1>

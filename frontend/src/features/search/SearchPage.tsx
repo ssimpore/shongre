@@ -41,6 +41,7 @@ import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { DropdownMenu, DropdownOption } from '../../design-system/primitives/DropdownMenu';
 import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
+import { ViewModeToggle } from '../../design-system/primitives/ViewModeToggle';
 
 export const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -686,11 +687,12 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSaveSearch}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border border-border-base bg-bg-base text-stone-700 hover:bg-bg-subtle hover:text-primary transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 sm:py-1 rounded-lg border border-border-base bg-bg-base text-stone-700 hover:bg-bg-subtle hover:text-primary transition-colors cursor-pointer"
                 title="Sauvegarder cette recherche"
+                aria-label="Sauvegarder cette recherche"
               >
                 <Bookmark className="w-3.5 h-3.5 text-stone-500" />
-                <span>Sauvegarder</span>
+                <span className="hidden sm:inline">Sauvegarder</span>
               </button>
             </div>
 
@@ -705,7 +707,7 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className={`lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                className={`lg:hidden flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                   activeFilterCount > 0
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-bg-base text-stone-800 border border-border-base hover:bg-bg-subtle'
@@ -713,7 +715,7 @@ export const SearchPage: React.FC = () => {
                 aria-label={`Ouvrir les filtres de recherche (${activeFilterCount} actifs)`}
               >
                 <SlidersHorizontal className={`w-3.5 h-3.5 ${activeFilterCount > 0 ? 'text-white' : 'text-primary'}`} />
-                <span>Filtres</span>
+                <span className="hidden sm:inline">Filtres</span>
                 {activeFilterCount > 0 && (
                   <span className="min-w-4 h-4 px-1 rounded-full bg-white text-primary text-micro font-black flex items-center justify-center">
                     {activeFilterCount}
@@ -721,8 +723,15 @@ export const SearchPage: React.FC = () => {
                 )}
               </button>
 
-              {/* Sort selector */}
-              <div className="flex items-center gap-1.5 text-xs min-w-0 flex-1 lg:flex-none">
+              {/* View Mode Toggle */}
+              <ViewModeToggle
+                viewMode={viewMode}
+                onChange={(mode) => setViewMode(mode)}
+                showMap={true}
+              />
+
+              {/* Sort selector at extreme right */}
+              <div className="flex items-center gap-1.5 text-xs min-w-0 shrink-0">
                 <span className="text-stone-500 hidden sm:inline shrink-0 font-medium">Trier par :</span>
                 <DropdownMenu
                   id="sort-select"
@@ -730,8 +739,9 @@ export const SearchPage: React.FC = () => {
                   size="sm"
                   placement="bottom-right"
                   panelWidth="w-48"
-                  className="flex-1 lg:flex-none min-w-0"
-                  triggerClassName="w-full lg:w-auto"
+                  className="shrink-0"
+                  triggerClassName="w-auto"
+                  mobileIcon={<ArrowUpDown className="w-3.5 h-3.5 text-stone-700" />}
                   headerTitle={
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                       <ArrowUpDown className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -742,49 +752,6 @@ export const SearchPage: React.FC = () => {
                   value={sortBy}
                   onChange={(val) => updateFilter('sortBy', val)}
                 />
-              </div>
-
-              {/* View Mode Toggle */}
-              <div className="flex items-center bg-stone-100/90 border border-border-base rounded-lg p-0.5 shadow-xs shrink-0">
-                <button
-                  type="button"
-                  aria-label="Affichage grille"
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
-                    viewMode === 'grid'
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
-                  }`}
-                >
-                  <Grid className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Grille</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Affichage liste"
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
-                    viewMode === 'list'
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
-                  }`}
-                >
-                  <ListIcon className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Liste</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Affichage carte"
-                  onClick={() => setViewMode('map')}
-                  className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
-                    viewMode === 'map'
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
-                  }`}
-                >
-                  <MapIcon className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Carte</span>
-                </button>
               </div>
             </div>
           </div>
