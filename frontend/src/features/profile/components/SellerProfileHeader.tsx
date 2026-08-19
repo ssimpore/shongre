@@ -26,6 +26,7 @@ import { useAuth } from '../../../app/providers/AuthProvider';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { userRepository } from '../../../repositories/user.repository';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface SellerProfileHeaderProps {
   seller: UserProfile;
@@ -46,6 +47,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   onContactClick,
   onOpenReportModal,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, isAuthenticated } = useAuth();
   const toast = useToast();
 
@@ -282,9 +284,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 <button
                   type="button"
                   onClick={handleShare}
-                  aria-label="Partager ce profil"
+                  aria-label={t('profile.sellerProfileHeader.partagerCeProfil')}
                   className="p-3 rounded-2xl border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer shadow-2xs hover:shadow-sm"
-                  title="Partager ce profil"
+                  title={t('profile.sellerProfileHeader.partagerCeProfil')}
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
@@ -294,7 +296,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Options supplémentaires"
+                    aria-label={t('profile.sellerProfileHeader.optionsSupplementaires')}
                     className="p-3 rounded-2xl border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer shadow-2xs hover:shadow-sm"
                   >
                     <MoreVertical className="w-5 h-5" />
@@ -367,14 +369,14 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
             <span className="font-black block text-stone-900 text-lg mb-0.5">{seller.responseRatePercent}%</span>
-            <span className="text-xs">Taux de réponse</span>
+            <span className="text-xs">{t('profile.sellerProfileHeader.tauxDeReponse')}</span>
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
             <span className="font-black block text-stone-900 text-lg truncate mb-0.5">
               {seller.responseTimeText || 'Rapide'}
             </span>
-            <span className="text-xs">Délai moyen</span>
+            <span className="text-xs">{t('profile.sellerProfileHeader.delaiMoyen')}</span>
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">

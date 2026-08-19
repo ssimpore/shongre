@@ -19,8 +19,10 @@ import { CrmContact, ContactLifecycle } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmContactsPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [contacts, setContacts] = useState<CrmContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,14 +137,14 @@ export const CrmContactsPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, email, entreprise..."
+            placeholder={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
             className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
         <div className="flex items-center gap-2">
           <Select
-            aria-label="Filtrer les contacts par cycle de vie"
+            aria-label={t('admin.crmContactsPage.filtrerLesContactsParCycle')}
             value={lifecycleFilter}
             onChange={(e) => setLifecycleFilter(e.target.value)}
             options={[
@@ -168,8 +170,8 @@ export const CrmContactsPage: React.FC = () => {
         ) : filteredContacts.length === 0 ? (
           <EmptyState
             icon={<User className="w-8 h-8 text-stone-500" />}
-            title="Aucun contact ne correspond aux filtres"
-            description="Élargissez la recherche ou réinitialisez les filtres pour retrouver l'ensemble du portefeuille."
+            title={t('admin.crmContactsPage.aucunContactNeCorrespondAux')}
+            description={t('admin.crmContactsPage.elargissezLaRechercheOuReinitialisez')}
             action={
               <Button
                 variant="outline"
@@ -255,16 +257,16 @@ export const CrmContactsPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Créer un contact CRM"
-        description="Ajoutez un interlocuteur ou prospect à la base commerciale."
+        title={t('admin.crmContactsPage.creerUnContactCrm')}
+        description={t('admin.crmContactsPage.ajoutezUnInterlocuteurOuProspect')}
       >
         <form onSubmit={handleCreateContact} className="space-y-3.5 text-xs">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Prénom" required>
+            <FormField label={t('admin.crmContactsPage.prenom')} required>
               <Input
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Prénom"
+                placeholder={t('admin.crmContactsPage.prenom')}
               />
             </FormField>
             <FormField label="Nom">
@@ -286,7 +288,7 @@ export const CrmContactsPage: React.FC = () => {
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Téléphone">
+            <FormField label={t('admin.crmContactsPage.telephone')}>
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -297,7 +299,7 @@ export const CrmContactsPage: React.FC = () => {
               <Input
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="ex: Gérant"
+                placeholder={t('admin.crmContactsPage.exGerant')}
               />
             </FormField>
           </div>
@@ -306,7 +308,7 @@ export const CrmContactsPage: React.FC = () => {
             <Input
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="ex: Maison Déco Paris"
+              placeholder={t('admin.crmContactsPage.exMaisonDecoParis')}
             />
           </FormField>
 

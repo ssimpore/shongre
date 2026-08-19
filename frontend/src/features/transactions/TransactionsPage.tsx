@@ -29,11 +29,13 @@ import { Button } from '../../design-system/primitives/Button';
 import { EmptyState } from '../../design-system/primitives/UIComponents';
 import { TransactionDetailModal } from './components/TransactionDetailModal';
 import { SellerPayoutModal } from './components/SellerPayoutModal';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 type TabMode = 'purchases' | 'sales';
 type StatusFilter = 'all' | 'pending' | 'in_progress' | 'completed' | 'disputed';
 
 export const TransactionsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<TabMode>('purchases');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -90,7 +92,7 @@ export const TransactionsPage: React.FC = () => {
   const getStatusBadge = (status: TransactionStatus, deliveryMethod?: string) => {
     switch (status) {
       case 'pending_seller_confirmation':
-        return <Badge variant="warning">En attente confirmation vendeur</Badge>;
+        return <Badge variant="warning">{t('transactions.transactionsPage.enAttenteConfirmationVendeur')}</Badge>;
       case 'seller_confirmed':
       case 'ready_for_pickup':
       case 'pickup_scheduled':
@@ -100,12 +102,12 @@ export const TransactionsPage: React.FC = () => {
           </Badge>
         );
       case 'shipped':
-        return <Badge variant="primary">Colis expédié</Badge>;
+        return <Badge variant="primary">{t('transactions.transactionsPage.colisExpedie')}</Badge>;
       case 'delivered':
       case 'handover_confirmed':
-        return <Badge variant="warning">Livré - En attente validation</Badge>;
+        return <Badge variant="warning">{t('transactions.transactionsPage.livreEnAttenteValidation')}</Badge>;
       case 'completed':
-        return <Badge variant="verified">Finalisée & Payée</Badge>;
+        return <Badge variant="verified">{t('transactions.transactionsPage.finaliseePayee')}</Badge>;
       case 'disputed':
         return <Badge variant="urgent">Litige en cours</Badge>;
       case 'seller_rejected':
@@ -113,7 +115,7 @@ export const TransactionsPage: React.FC = () => {
       case 'cancelled_by_seller':
       case 'refunded':
       case 'expired':
-        return <Badge variant="neutral">Annulée & Remboursée</Badge>;
+        return <Badge variant="neutral">{t('transactions.transactionsPage.annuleeRemboursee')}</Badge>;
       default:
         return <Badge variant="neutral">En cours</Badge>;
     }
@@ -170,7 +172,7 @@ export const TransactionsPage: React.FC = () => {
         <div className="flex items-start sm:items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-success shrink-0" />
           <span className="leading-relaxed">
-            <strong>Garantie Séquestre Shongre :</strong> Vos fonds restent protégés par un tiers de confiance agréé ACPR. Les paiements ne sont débloqués qu'après validation conforme de la remise.
+            <strong>{t('transactions.transactionsPage.garantieSequestreShongre')}</strong> Vos fonds restent protégés par un tiers de confiance agréé ACPR. Les paiements ne sont débloqués qu'après validation conforme de la remise.
           </span>
         </div>
         {earningsSummary.escrowHeldBalance > 0 && (
@@ -366,7 +368,7 @@ export const TransactionsPage: React.FC = () => {
                 <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-3 text-xs font-medium text-stone-600 overflow-x-auto no-scrollbar shadow-inner">
                   <div className="flex items-center gap-1 font-semibold text-success shrink-0">
                     <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-                    <span className="whitespace-nowrap">Paiement sous séquestre</span>
+                    <span className="whitespace-nowrap">{t('transactions.transactionsPage.paiementSousSequestre')}</span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
@@ -377,7 +379,7 @@ export const TransactionsPage: React.FC = () => {
                     ) : (
                       <Clock className="w-3.5 h-3.5 text-warning shrink-0 animate-pulse" />
                     )}
-                    <span>Validation vendeur</span>
+                    <span>{t('transactions.transactionsPage.validationVendeur')}</span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
@@ -393,7 +395,7 @@ export const TransactionsPage: React.FC = () => {
                     tx.status === 'completed' ? 'text-success font-bold' : 'text-stone-500'
                   }`}>
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>Fonds versés</span>
+                    <span>{t('transactions.transactionsPage.fondsVerses')}</span>
                   </div>
                 </div>
               </div>

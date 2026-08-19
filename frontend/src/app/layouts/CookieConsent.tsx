@@ -6,6 +6,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { useConsent } from '../providers/ConsentProvider';
 import { CONSENT_CATEGORIES } from '../../domains/consent/consent.service';
 import { ConsentCategories } from '../../domains/consent/consent.types';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 /**
  * First-layer consent banner.
@@ -29,6 +30,7 @@ import { ConsentCategories } from '../../domains/consent/consent.types';
  */
 const CookieBanner: React.FC = () => {
   const { needsDecision, acceptAll, rejectOptional, openPreferences } = useConsent();
+  const { t } = useTranslation();
 
   if (!needsDecision) return null;
 
@@ -51,17 +53,15 @@ const CookieBanner: React.FC = () => {
           <div className="min-w-0 space-y-3">
             <div className="space-y-1">
               <h2 id="cookie-banner-title" className="text-sm font-bold text-stone-900">
-                Vos préférences de confidentialité
+                {t('consent.title')}
               </h2>
               <p className="text-xs text-stone-600 leading-relaxed">
-                Nous utilisons des cookies strictement nécessaires au fonctionnement du site.
-                Avec votre accord, nous y ajoutons la mesure d’audience et la personnalisation.
-                Vous pouvez changer d’avis à tout moment depuis « Gestion des cookies ».{' '}
+                {t('consent.body')}{' '}
                 <Link
                   to="/confidentialite"
                   className="font-semibold text-primary hover:underline"
                 >
-                  En savoir plus
+                  {t('consent.learnMore')}
                 </Link>
                 .
               </p>
@@ -70,13 +70,13 @@ const CookieBanner: React.FC = () => {
             {/* Accept and refuse share a row and a visual weight on purpose. */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Button variant="primary" size="sm" onClick={acceptAll} className="font-bold">
-                Tout accepter
+                {t('consent.acceptAll')}
               </Button>
               <Button variant="outline" size="sm" onClick={rejectOptional} className="font-bold">
-                Tout refuser
+                {t('consent.rejectAll')}
               </Button>
               <Button variant="ghost" size="sm" onClick={openPreferences}>
-                Personnaliser
+                {t('consent.customise')}
               </Button>
             </div>
           </div>
@@ -97,6 +97,7 @@ const CookieBanner: React.FC = () => {
 const CookiePreferencesModal: React.FC = () => {
   const { isPreferencesOpen, closePreferences, categories, savePreferences, acceptAll } =
     useConsent();
+  const { t } = useTranslation();
   const [draft, setDraft] = useState<ConsentCategories>(categories);
 
   // Re-sync each time it opens; the stored decision may have changed since.
@@ -108,8 +109,8 @@ const CookiePreferencesModal: React.FC = () => {
     <Modal
       isOpen={isPreferencesOpen}
       onClose={closePreferences}
-      title="Gestion des cookies"
-      description="Choisissez finalité par finalité. Votre choix est conservé 6 mois."
+      title={t('consent.panelTitle')}
+      description={t('consent.panelDescription')}
       maxWidth="lg"
     >
       <div className="p-5 sm:p-6 space-y-4">
@@ -125,14 +126,14 @@ const CookiePreferencesModal: React.FC = () => {
                   htmlFor={`consent-${category.id}`}
                   className="text-sm font-bold text-stone-900"
                 >
-                  {category.label}
+                  {t(category.labelKey)}
                 </label>
                 <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                  {category.description}
+                  {t(category.descriptionKey)}
                 </p>
                 {category.required && (
                   <p className="text-xs text-stone-500 mt-1 font-semibold">
-                    Toujours actifs — indispensables au service.
+                    {t('consent.alwaysOn')}
                   </p>
                 )}
               </div>
@@ -150,7 +151,7 @@ const CookiePreferencesModal: React.FC = () => {
                 className="mt-1 shrink-0 w-5 h-5 rounded accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               />
               <span id={`consent-${category.id}-description`} className="sr-only">
-                {category.description}
+                {t(category.descriptionKey)}
               </span>
             </div>
           );
@@ -159,10 +160,10 @@ const CookiePreferencesModal: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row sm:justify-end gap-2 p-5 sm:p-6 border-t border-border-subtle">
         <Button variant="outline" size="sm" onClick={() => savePreferences(draft)}>
-          Enregistrer mes choix
+          {t('consent.saveChoices')}
         </Button>
         <Button variant="primary" size="sm" onClick={acceptAll} className="font-bold">
-          Tout accepter
+          {t('consent.acceptAll')}
         </Button>
       </div>
     </Modal>

@@ -7,6 +7,7 @@ import { Input, FormField, Textarea, Checkbox } from '../../../../../design-syst
 import { CategoryIcon } from '../../../../../design-system/primitives/CategoryIcon';
 import { useToast } from '../../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../../app/providers/AuthProvider';
+import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export interface AddNodeModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
   parentNode,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
 
@@ -120,7 +122,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
           ? `Ajouter une sous-rubrique sous "${parentNode.name}"`
           : 'Créer une nouvelle catégorie racine'
       }
-      description="Cette opération ajoute un nouveau nœud dans le référentiel canonique en mode brouillon."
+      description={t('admin.addNodeModal.cetteOperationAjouteUnNouveau')}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -141,14 +143,14 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
         </div>
 
         <FormField
-          label="Nom complet canonique (Français)"
+          label={t('admin.addNodeModal.nomCompletCanoniqueFrancais')}
           required
           hint="Nom complet faisant autorité (ex: Voitures d'occasion, Matériel Professionnel & BTP)"
         >
           <Input
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
-            placeholder="Ex: Équipements de protection individuelle"
+            placeholder={t('admin.addNodeModal.exEquipementsDeProtectionIndividuelle')}
             autoFocus
           />
         </FormField>
@@ -160,15 +162,15 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
           <Input
             value={shortLabel}
             onChange={(e) => setShortLabel(e.target.value)}
-            placeholder="Ex: Équipements Pro"
+            placeholder={t('admin.addNodeModal.exEquipementsPro')}
           />
         </FormField>
 
         {/* Live UI Rendering Preview */}
         <div className="p-3 bg-bg-base rounded-xl border border-border-base text-xs space-y-1">
-          <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">Aperçu du rendu UI :</div>
+          <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">{t('admin.addNodeModal.apercuDuRenduUi')}</div>
           <div className="flex items-center justify-between">
-            <span className="text-stone-500">Rendu standard (détaillé/SEO) :</span>
+            <span className="text-stone-500">{t('admin.addNodeModal.renduStandardDetailleSeo')}</span>
             <span className="font-bold text-stone-900">{name || 'Nom complet'}</span>
           </div>
           <div className="flex items-center justify-between">
@@ -194,7 +196,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Description interne ou SEO pour cette catégorie..."
+            placeholder={t('admin.addNodeModal.descriptionInterneOuSeoPour')}
           />
         </FormField>
 
@@ -210,14 +212,14 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             </select>
           </FormField>
 
-          <FormField label="Schéma d'état">
+          <FormField label={t('admin.addNodeModal.schemaDEtat')}>
             <select
               value={conditionScheme}
               onChange={(e) => setConditionScheme(e.target.value as any)}
               className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
             >
               <option value="consumer_product">Produit standard</option>
-              <option value="vehicle">Véhicule</option>
+              <option value="vehicle">{t('admin.addNodeModal.vehicule')}</option>
               <option value="real_estate">Immobilier</option>
               <option value="professional">Professionnel</option>
               <option value="job">Emploi</option>
@@ -232,7 +234,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
               checked={publishable}
               onChange={(e) => setPublishable(e.target.checked)}
             />
-            <span>Nœud publiable (autorise la création directe d'annonces)</span>
+            <span>{t('admin.addNodeModal.nUdPubliableAutoriseLa')}</span>
           </label>
         </div>
 

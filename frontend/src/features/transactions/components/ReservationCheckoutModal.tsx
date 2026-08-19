@@ -23,6 +23,7 @@ import { formatPrice } from '../../../utilities/formatters';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { DEMO_USERS } from '../../../mocks/initialDemoData';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface ReservationCheckoutModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
   currentUser,
   onReservationComplete,
 }) => {
+  const { t } = useTranslation();
   const { currentUser: authUser } = useAuth();
   const buyerUser: UserProfile = currentUser || authUser || DEMO_USERS.buyer_thomas;
 
@@ -175,7 +177,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             <div className="flex-1 min-w-0">
               <h4 className="font-black text-sm text-stone-900 truncate mb-1">{listing.title}</h4>
               <p className="text-stone-500 text-xs font-medium flex items-center gap-2 mb-1">
-                <span>Vendeur : <strong className="text-stone-900">{listing.sellerName}</strong></span>
+                <span>{t('transactions.reservationCheckoutModal.vendeur')} <strong className="text-stone-900">{listing.sellerName}</strong></span>
                 <span>•</span>
                 <span>{listing.city} ({listing.postalCode})</span>
               </p>
@@ -193,14 +195,14 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
         {/* STEP 1: DELIVERY CHOICE */}
         {step === 1 && (
           <div className="space-y-3">
-            <h5 className="font-bold text-stone-800">Choisissez votre mode d'obtention :</h5>
+            <h5 className="font-bold text-stone-800">{t('transactions.reservationCheckoutModal.choisissezVotreModeDObtention')}</h5>
 
             <div className="space-y-2">
               {/* Hand delivery */}
               <SelectableCard
                 selected={deliveryMethod === 'hand_delivery'}
                 onSelect={() => setDeliveryMethod('hand_delivery')}
-                aria-label="Remise en main propre sécurisée, gratuit"
+                aria-label={t('transactions.reservationCheckoutModal.remiseEnMainPropreSecurisee')}
                 className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'hand_delivery'
                     ? 'border-primary bg-primary-light ring-1 ring-primary/50'
@@ -214,7 +216,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-stone-900 text-sm">Remise en main propre sécurisée</p>
+                        <p className="font-bold text-stone-900 text-sm">{t('transactions.reservationCheckoutModal.remiseEnMainPropreSecurisee2')}</p>
                         <span className="text-xs font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
                           Gratuit
                         </span>
@@ -230,7 +232,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                 {deliveryMethod === 'hand_delivery' && (
                   <div className="mt-4 pt-4 border-t border-stone-200 space-y-3 text-sm">
                     <div>
-                      <label className="font-bold text-stone-700 block mb-1.5">Votre numéro de téléphone (pour fixer le RDV) :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">{t('transactions.reservationCheckoutModal.votreNumeroDeTelephonePour')}</label>
                       <input
                         type="text"
                         value={buyerPhone}
@@ -240,12 +242,12 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       />
                     </div>
                     <div>
-                      <label className="font-bold text-stone-700 block mb-1.5">Disponibilités ou lieu souhaité :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">{t('transactions.reservationCheckoutModal.disponibilitesOuLieuSouhaite')}</label>
                       <input
                         type="text"
                         value={meetingNotes}
                         onChange={(e) => setMeetingNotes(e.target.value)}
-                        placeholder="ex: En centre-ville, samedi après-midi"
+                        placeholder={t('transactions.reservationCheckoutModal.exEnCentreVilleSamedi')}
                         className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
@@ -257,7 +259,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               <SelectableCard
                 selected={deliveryMethod === 'relay_point'}
                 onSelect={() => setDeliveryMethod('relay_point')}
-                aria-label="Livraison en Point Relais Mondial Relay, 4,90 €"
+                aria-label={t('transactions.reservationCheckoutModal.livraisonEnPointRelaisMondial')}
                 className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'relay_point'
                     ? 'border-primary bg-primary-light ring-1 ring-primary/50'
@@ -270,7 +272,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       <Truck className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-bold text-stone-900 text-sm">Livraison en Point Relais (Mondial Relay)</p>
+                      <p className="font-bold text-stone-900 text-sm">{t('transactions.reservationCheckoutModal.livraisonEnPointRelaisMondial2')}</p>
                       <p className="text-xs font-medium text-stone-500 mt-0.5">
                         Retrait chez un commerçant partenaire avec suivi en temps réel (3-4 jours).
                       </p>
@@ -282,15 +284,15 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                 {deliveryMethod === 'relay_point' && (
                   <div className="mt-4 pt-4 border-t border-stone-200 space-y-3 text-sm">
                     <div>
-                      <label className="font-bold text-stone-700 block mb-1.5">Point Relais sélectionné :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">{t('transactions.reservationCheckoutModal.pointRelaisSelectionne')}</label>
                       <select
                         value={relayPoint}
                         onChange={(e) => setRelayPoint(e.target.value)}
                         className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       >
-                        <option value="Tabac Presse des Halles (MR-13001)">Tabac Presse des Halles (15 rue République, 13001 Marseille)</option>
+                        <option value="Tabac Presse des Halles (MR-13001)">{t('transactions.reservationCheckoutModal.tabacPresseDesHalles15')}</option>
                         <option value="Relais Colis City Express (MR-13002)">Relais Colis City Express (8 bd Longchamp, 13001 Marseille)</option>
-                        <option value="Épicerie Bio du Vieux-Port (MR-13003)">Épicerie Bio du Vieux-Port (4 quai des Belges, 13001 Marseille)</option>
+                        <option value="Épicerie Bio du Vieux-Port (MR-13003)">{t('transactions.reservationCheckoutModal.epicerieBioDuVieuxPort')}</option>
                       </select>
                     </div>
                   </div>
@@ -301,7 +303,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               <SelectableCard
                 selected={deliveryMethod === 'home_delivery'}
                 onSelect={() => setDeliveryMethod('home_delivery')}
-                aria-label="Livraison à domicile Colissimo, 6,90 €"
+                aria-label={t('transactions.reservationCheckoutModal.livraisonADomicileColissimo6')}
                 className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                   deliveryMethod === 'home_delivery'
                     ? 'border-primary bg-primary-light ring-1 ring-primary/50'
@@ -314,7 +316,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       <Truck className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-bold text-stone-900 text-sm">Livraison à domicile (Colissimo)</p>
+                      <p className="font-bold text-stone-900 text-sm">{t('transactions.reservationCheckoutModal.livraisonADomicileColissimo')}</p>
                       <p className="text-xs font-medium text-stone-500 mt-0.5">
                         Directement dans votre boîte aux lettres ou avec signature (48h).
                       </p>
@@ -326,12 +328,12 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                 {deliveryMethod === 'home_delivery' && (
                   <div className="mt-4 pt-4 border-t border-stone-200 grid grid-cols-2 gap-3 text-sm">
                     <div className="col-span-2">
-                      <label className="font-bold text-stone-700 block mb-1.5">Nom du destinataire :</label>
+                      <label className="font-bold text-stone-700 block mb-1.5">{t('transactions.reservationCheckoutModal.nomDuDestinataire')}</label>
                       <input
                         type="text"
                         value={recipientName}
                         onChange={(e) => setRecipientName(e.target.value)}
-                        placeholder="Nom et prénom"
+                        placeholder={t('transactions.reservationCheckoutModal.nomEtPrenom')}
                         className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
@@ -341,7 +343,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         type="text"
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
-                        placeholder="N° et nom de rue"
+                        placeholder={t('transactions.reservationCheckoutModal.nEtNomDeRue')}
                         className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
                       />
                     </div>
@@ -384,13 +386,13 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
         {/* STEP 2: SUMMARY & BREAKDOWN */}
         {step === 2 && (
           <div className="space-y-4">
-            <h5 className="font-bold text-stone-800">Détail des coûts et garanties :</h5>
+            <h5 className="font-bold text-stone-800">{t('transactions.reservationCheckoutModal.detailDesCoutsEtGaranties')}</h5>
 
             {/* Escrow guarantee explanation */}
             <div className="p-3 bg-success-surface border border-success-border rounded-xl text-success flex items-start gap-2.5">
               <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold">Paiement 100% protégé sous séquestre</p>
+                <p className="font-bold">{t('transactions.reservationCheckoutModal.paiement100ProtegeSousSequestre')}</p>
                 <p className="text-micro text-success mt-0.5 leading-relaxed">
                   L'argent ne sera versé au vendeur qu'après remise de l'article conforme. Si le vendeur décline ou si l'article est non conforme, vous êtes intégralement remboursé.
                 </p>
@@ -400,7 +402,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             {/* Breakdown table */}
             <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-2xl space-y-3 text-sm font-medium shadow-inner">
               <div className="flex justify-between text-stone-600">
-                <span>Prix de l'article :</span>
+                <span>{t('transactions.reservationCheckoutModal.prixDeLArticle')}</span>
                 <span className="font-black text-stone-900">{formatPrice(breakdown.itemPrice)}</span>
               </div>
               <div className="flex justify-between text-stone-600 items-center">
@@ -415,7 +417,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                 <span className="font-black text-stone-900">{formatPrice(breakdown.shippingFee)}</span>
               </div>
               <div className="border-t border-stone-200 pt-3 flex justify-between font-black text-stone-900 text-base">
-                <span>Total à régler :</span>
+                <span>{t('transactions.reservationCheckoutModal.totalARegler')}</span>
                 <span className="text-primary text-lg">{formatPrice(breakdown.totalAmount)}</span>
               </div>
             </div>
@@ -434,7 +436,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
         {/* STEP 3: PAYMENT INTERFACE */}
         {step === 3 && (
           <div className="space-y-4">
-            <h5 className="font-bold text-stone-800">Choisissez votre moyen de paiement :</h5>
+            <h5 className="font-bold text-stone-800">{t('transactions.reservationCheckoutModal.choisissezVotreMoyenDePaiement')}</h5>
 
             {/* Payment method tabs */}
             <div className="grid grid-cols-3 gap-3">
@@ -480,7 +482,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
             {paymentMethod === 'card' && (
               <div className="space-y-4 p-5 bg-stone-50 border border-stone-200/60 rounded-2xl shadow-inner text-sm">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1.5">Titulaire de la carte</label>
+                  <label className="font-bold text-stone-700 block mb-1.5">{t('transactions.reservationCheckoutModal.titulaireDeLaCarte')}</label>
                   <input
                     type="text"
                     value={cardHolder}
@@ -489,7 +491,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1.5">Numéro de carte</label>
+                  <label className="font-bold text-stone-700 block mb-1.5">{t('transactions.reservationCheckoutModal.numeroDeCarte')}</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -529,7 +531,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
 
             <div className="flex items-center gap-2 text-micro text-stone-500">
               <Lock className="w-3.5 h-3.5 text-success shrink-0" />
-              <span>Chiffrement SSL 256 bits et authentification 3D Secure 2.0.</span>
+              <span>{t('transactions.reservationCheckoutModal.chiffrementSsl256BitsEt')}</span>
             </div>
 
             <div className="flex gap-2.5 pt-2">
@@ -570,7 +572,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
               <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-left space-y-2">
                 <div className="flex items-center gap-2 text-warning font-bold">
                   <KeyRound className="w-4 h-4 text-warning" />
-                  <span>Votre code secret de confirmation de remise</span>
+                  <span>{t('transactions.reservationCheckoutModal.votreCodeSecretDeConfirmation')}</span>
                 </div>
                 <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-warning-border">
                   <span className="text-2xl font-black font-mono tracking-widest text-warning">
@@ -586,7 +588,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                   </button>
                 </div>
                 <p className="text-micro text-warning leading-relaxed">
-                  ⚠️ <strong>Règle de sécurité :</strong> Ne transmettez ce code à 6 chiffres au vendeur qu'une fois sur place après avoir inspecté et validé la conformité de l'article.
+                  ⚠️ <strong>{t('transactions.reservationCheckoutModal.regleDeSecurite')}</strong> Ne transmettez ce code à 6 chiffres au vendeur qu'une fois sur place après avoir inspecté et validé la conformité de l'article.
                 </p>
               </div>
             )}

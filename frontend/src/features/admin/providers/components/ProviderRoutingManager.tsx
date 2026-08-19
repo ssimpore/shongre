@@ -21,6 +21,7 @@ import {
 import { Button } from '../../../../design-system/primitives/Button';
 import { Badge } from '../../../../design-system/primitives/Badge';
 import { useToast } from '../../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderRoutingManagerProps {
   providers: Provider[];
@@ -33,6 +34,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
   configurations,
   onRefresh,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [selectedMarket, setSelectedMarket] = useState<string>('FR');
 
@@ -75,13 +77,13 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-stone-600">Marché cible :</label>
+          <label className="text-xs font-semibold text-stone-600">{t('admin.providerRoutingManager.marcheCible')}</label>
           <select
             value={selectedMarket}
             onChange={(e) => setSelectedMarket(e.target.value)}
             className="py-1 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-800 font-bold"
           >
-            <option value="FR">🇫🇷 France (Référence)</option>
+            <option value="FR">{t('admin.providerRoutingManager.franceReference')}</option>
             <option value="BE">🇧🇪 Belgique</option>
             <option value="CH">🇨🇭 Suisse</option>
             <option value="ES">🇪🇸 Espagne</option>
@@ -131,7 +133,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                       >
                         {primary.name}
                       </Link>
-                      <span className="w-2 h-2 rounded-full bg-success" title="Opérationnel" />
+                      <span className="w-2 h-2 rounded-full bg-success" title={t('admin.providerRoutingManager.operationnel')} />
                     </div>
                   ) : (
                     <span className="text-xs font-medium text-stone-500 italic">Aucun</span>
@@ -160,10 +162,10 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                       >
                         {fallback.name}
                       </Link>
-                      <span className="w-2 h-2 rounded-full bg-info" title="Prêt pour bascule" />
+                      <span className="w-2 h-2 rounded-full bg-info" title={t('admin.providerRoutingManager.pretPourBascule')} />
                     </div>
                   ) : (
-                    <span className="text-xs text-stone-500 italic">Aucun secours défini</span>
+                    <span className="text-xs text-stone-500 italic">{t('admin.providerRoutingManager.aucunSecoursDefini')}</span>
                   )}
                 </div>
               </div>

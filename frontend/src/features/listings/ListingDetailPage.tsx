@@ -57,8 +57,10 @@ import { DropdownMenu } from '../../design-system/primitives/DropdownMenu';
 import { ListingFulfillmentSummary } from './components/ListingFulfillmentSummary';
 import { ListingSellerTrustSection } from './components/ListingSellerTrustSection';
 import { ListingSafetyNotice } from './components/ListingSafetyNotice';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ListingDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentUser, isAuthenticated } = useAuth();
@@ -360,11 +362,11 @@ export const ListingDetailPage: React.FC = () => {
   if (!listing) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="sr-only">Annonce introuvable</h1>
+        <h1 className="sr-only">{t('listings.listingDetailPage.annonceIntrouvable')}</h1>
         <StatePanel
           variant="notFound"
-          title="Annonce introuvable ou supprimée"
-          description="Cette annonce n'est plus accessible ou a été retirée par son vendeur. Des articles similaires sont peut-être disponibles."
+          title={t('listings.listingDetailPage.annonceIntrouvableOuSupprimee')}
+          description={t('listings.listingDetailPage.cetteAnnonceNEstPlus')}
           action={
             <Button variant="primary" onClick={() => navigate(routes.search())}>
               Explorer les annonces similaires
@@ -403,7 +405,7 @@ export const ListingDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={handleShare}
-            aria-label="Partager l'annonce"
+            aria-label={t('listings.listingDetailPage.partagerLAnnonce')}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -412,7 +414,7 @@ export const ListingDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsReportModalOpen(true)}
-            aria-label="Signaler cette annonce"
+            aria-label={t('listings.listingDetailPage.signalerCetteAnnonce')}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-danger bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Flag className="w-3.5 h-3.5" />
@@ -442,7 +444,7 @@ export const ListingDetailPage: React.FC = () => {
                 {/* Badges strip: Category, Pro, Boosted */}
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <Badge variant="primary" size="md">{listing.categoryLabel}</Badge>
-                  {isProSeller(listing) && <Badge variant="pro" size="md">Vendeur Pro</Badge>}
+                  {isProSeller(listing) && <Badge variant="pro" size="md">{t('listings.listingDetailPage.vendeurPro')}</Badge>}
                   {listing.isBoosted && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
                       <Sparkles className="w-3.5 h-3.5 text-warning" />
@@ -552,7 +554,7 @@ export const ListingDetailPage: React.FC = () => {
 
           {/* 8. LISTING BOTTOM METADATA */}
           <div className="p-4 rounded-xl bg-bg-base/60 text-micro text-stone-500 flex items-center justify-between flex-wrap gap-2 border border-border-subtle">
-            <span>Référence annonce : <strong className="font-mono text-stone-700">{listing.id}</strong></span>
+            <span>{t('listings.listingDetailPage.referenceAnnonce')} <strong className="font-mono text-stone-700">{listing.id}</strong></span>
             <Link
               to={`/contact?context=listing&listingId=${listing.id}`}
               className="text-primary hover:underline font-bold inline-flex items-center gap-1"
@@ -662,7 +664,7 @@ export const ListingDetailPage: React.FC = () => {
               <div className="p-5 bg-primary/5 border border-primary/20 rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <Edit3 className="w-4 h-4" />
-                  <span>Vous êtes l'auteur de cette annonce</span>
+                  <span>{t('listings.listingDetailPage.vousEtesLAuteurDe')}</span>
                 </div>
                 <div className="space-y-2">
                   <Button
@@ -802,7 +804,7 @@ export const ListingDetailPage: React.FC = () => {
               to={`/categorie/${listing.categorySlug}`}
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
-              <span>Voir tout</span>
+              <span>{t('listings.listingDetailPage.voirTout')}</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -853,10 +855,10 @@ export const ListingDetailPage: React.FC = () => {
         description={`À propos de "${listing.title}" (${formatPrice(listing.price)})`}
       >
         <div className="space-y-4 text-xs">
-          <FormField label="Votre message" required>
+          <FormField label={t('listings.listingDetailPage.votreMessage')} required>
             <Textarea
               rows={4}
-              placeholder="Bonjour, votre article m'intéresse beaucoup. Est-il toujours disponible ?..."
+              placeholder={t('listings.listingDetailPage.bonjourVotreArticleMInteresse')}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
             />
@@ -877,11 +879,11 @@ export const ListingDetailPage: React.FC = () => {
       <Modal
         isOpen={isOfferModalOpen}
         onClose={() => setIsOfferModalOpen(false)}
-        title="Faire une offre de prix"
+        title={t('listings.listingDetailPage.faireUneOffreDePrix')}
         description={`Prix actuel : ${formatPrice(listing.price)}`}
       >
         <div className="space-y-4 text-xs">
-          <FormField label="Montant de votre offre (€)" required>
+          <FormField label={t('listings.listingDetailPage.montantDeVotreOffre')} required>
             <Input
               type="number"
               placeholder="ex: 120"
@@ -905,11 +907,11 @@ export const ListingDetailPage: React.FC = () => {
       <Modal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
-        title="Signaler cette annonce"
-        description="Aidez l'équipe de modération à préserver la sécurité sur Shongre"
+        title={t('listings.listingDetailPage.signalerCetteAnnonce')}
+        description={t('listings.listingDetailPage.aidezLEquipeDeModeration')}
       >
         <div className="space-y-4 text-xs">
-          <FormField label="Motif du signalement">
+          <FormField label={t('listings.listingDetailPage.motifDuSignalement')}>
             <DropdownMenu
               id="report-reason-select"
               ariaLabel="Motif du signalement"
@@ -927,10 +929,10 @@ export const ListingDetailPage: React.FC = () => {
             />
           </FormField>
 
-          <FormField label="Précisions complémentaires">
+          <FormField label={t('listings.listingDetailPage.precisionsComplementaires')}>
             <Textarea
               rows={3}
-              placeholder="Expliquez ce qui vous semble anormal..."
+              placeholder={t('listings.listingDetailPage.expliquezCeQuiVousSemble')}
               value={reportDetails}
               onChange={(e) => setReportDetails(e.target.value)}
             />

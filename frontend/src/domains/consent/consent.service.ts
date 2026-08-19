@@ -21,26 +21,20 @@ export const CONSENT_LIFETIME_DAYS = 182;
 export const CONSENT_CATEGORIES: ConsentCategoryDescriptor[] = [
   {
     id: 'necessary',
-    label: 'Strictement nécessaires',
-    description:
-      "Session, sécurité et mémorisation de vos préférences (marché, langue, localisation). " +
-      'Sans eux, le site ne peut pas fonctionner.',
+    labelKey: 'consent.category.necessary',
+    descriptionKey: 'consent.category.necessaryDescription',
     required: true,
   },
   {
     id: 'analytics',
-    label: "Mesure d'audience",
-    description:
-      "Statistiques de fréquentation anonymisées pour comprendre quelles pages sont utiles " +
-      'et corriger ce qui ne l’est pas.',
+    labelKey: 'consent.category.analytics',
+    descriptionKey: 'consent.category.analyticsDescription',
     required: false,
   },
   {
     id: 'marketing',
-    label: 'Personnalisation & publicité',
-    description:
-      'Recommandations d’annonces et mesure des campagnes. Refuser ne réduit pas ' +
-      'le nombre d’annonces affichées, seulement leur personnalisation.',
+    labelKey: 'consent.category.marketing',
+    descriptionKey: 'consent.category.marketingDescription',
     required: false,
   },
 ];

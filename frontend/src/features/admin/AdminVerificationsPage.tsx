@@ -23,8 +23,10 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { Image } from '../../design-system/primitives/Image';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminVerificationsPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [activeTab, setActiveTab] = useState<'kyc' | 'kyb' | 'bank' | 'audit'>('kyc');
@@ -112,7 +114,7 @@ export const AdminVerificationsPage: React.FC = () => {
             Conformité & LCB-FT
           </span>
           <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-bold">File de modération KYC / KYB</span>
+          <span className="text-xs text-stone-500 font-bold">{t('admin.adminVerificationsPage.fileDeModerationKycKyb')}</span>
         </div>
         <h1 className="text-2xl font-black text-stone-900 tracking-tight">
           Pôle de Vérification & Sécurité
@@ -125,7 +127,7 @@ export const AdminVerificationsPage: React.FC = () => {
       {/* Navigation Tabs */}
       <Tabs
         variant="segmented"
-        label="Files d'attente de vérification"
+        label={t('admin.adminVerificationsPage.filesDAttenteDeVerification')}
         idPrefix="admin-verifications"
         activeTab={activeTab}
         onChange={(tab) => setActiveTab(tab as typeof activeTab)}
@@ -162,7 +164,7 @@ export const AdminVerificationsPage: React.FC = () => {
         {activeTab === 'kyc' && (
           <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
             <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">Dossiers d'identité en file d'attente</h2>
+              <h2 className="text-xs font-bold text-stone-900">{t('admin.adminVerificationsPage.dossiersDIdentiteEnFile')}</h2>
               <span className="text-micro text-stone-500">{pendingKycUsers.length} dossier(s)</span>
             </div>
 
@@ -203,7 +205,7 @@ export const AdminVerificationsPage: React.FC = () => {
                             </span>
                           </div>
                           <div className="text-xs text-stone-600">
-                            <strong>Pièce :</strong> {kyc?.documentType?.toUpperCase() || 'CNI'} • <strong>Pays :</strong> {kyc?.issuingCountry || 'FR'} • <strong>Date naiss. :</strong> {kyc?.birthDate || 'Non spécifiée'}
+                            <strong>{t('admin.adminVerificationsPage.piece')}</strong> {kyc?.documentType?.toUpperCase() || 'CNI'} • <strong>Pays :</strong> {kyc?.issuingCountry || 'FR'} • <strong>Date naiss. :</strong> {kyc?.birthDate || 'Non spécifiée'}
                           </div>
                           {kyc?.notes && (
                             <div className="text-micro text-stone-500 bg-stone-50 p-2 rounded-lg border border-stone-200">
@@ -324,7 +326,7 @@ export const AdminVerificationsPage: React.FC = () => {
         {activeTab === 'bank' && (
           <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
             <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">Comptes bancaires de séquestre enregistrés</h2>
+              <h2 className="text-xs font-bold text-stone-900">{t('admin.adminVerificationsPage.comptesBancairesDeSequestreEnregistres')}</h2>
               <span className="text-micro text-stone-500">{pendingBankUsers.length} compte(s)</span>
             </div>
 
@@ -360,7 +362,7 @@ export const AdminVerificationsPage: React.FC = () => {
         {activeTab === 'audit' && (
           <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
             <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">Journal d'audit inaltérable des vérifications</h2>
+              <h2 className="text-xs font-bold text-stone-900">{t('admin.adminVerificationsPage.journalDAuditInalterableDes')}</h2>
               <span className="text-micro text-stone-500">{auditLogs.length} événement(s)</span>
             </div>
 
@@ -394,10 +396,10 @@ export const AdminVerificationsPage: React.FC = () => {
         isOpen={Boolean(rejectModal)}
         onClose={() => setRejectModal(null)}
         onSubmit={handleConfirmReject}
-        title="Motif du refus de vérification"
-        label="Indiquez la raison précise du refus"
+        title={t('admin.adminVerificationsPage.motifDuRefusDeVerification')}
+        label={t('admin.adminVerificationsPage.indiquezLaRaisonPreciseDu')}
         hint="L'utilisateur recevra cette notification pour corriger ses justificatifs."
-        placeholder="Ex: Document flou, date de validité expirée, SIRET radié..."
+        placeholder={t('admin.adminVerificationsPage.exDocumentFlouDateDe')}
         confirmText="Confirmer le refus"
         multiline
       />

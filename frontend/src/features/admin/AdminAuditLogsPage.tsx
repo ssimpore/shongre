@@ -19,8 +19,10 @@ import { auditService } from '../../security/audit.service';
 import { SecurityAuditLog, auditActionLabel } from '../../types';
 import { roleLabel } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminAuditLogsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [logs, setLogs] = useState<SecurityAuditLog[]>([]);
@@ -85,7 +87,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               Traçabilité & Conformité
             </span>
             <span className="text-stone-300">•</span>
-            <span className="text-xs text-stone-500 font-medium">Conformité RGPD & Sécurité plateforme</span>
+            <span className="text-xs text-stone-500 font-medium">{t('admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme')}</span>
           </div>
           <h1 className="text-2xl font-black text-stone-900 tracking-tight">
             Registre d'Audit Sécurité
@@ -125,14 +127,14 @@ export const AdminAuditLogsPage: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher par acteur, action, cible, détails..."
-            aria-label="Rechercher dans le registre d'audit"
+            placeholder={t('admin.adminAuditLogsPage.rechercherParActeurActionCible')}
+            aria-label={t('admin.adminAuditLogsPage.rechercherDansLeRegistreD')}
             className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 
         <select
-          aria-label="Filtrer le journal par type d'action"
+          aria-label={t('admin.adminAuditLogsPage.filtrerLeJournalParType')}
           value={selectedAction}
           onChange={(e) => setSelectedAction(e.target.value)}
           className="py-2 px-3 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-white"
@@ -154,10 +156,10 @@ export const AdminAuditLogsPage: React.FC = () => {
               <tr>
                 <th className="p-3">Horodatage (UTC)</th>
                 <th className="p-3">Acteur (Initiateur)</th>
-                <th className="p-3">Action Système</th>
+                <th className="p-3">{t('admin.adminAuditLogsPage.actionSysteme')}</th>
                 <th className="p-3">Cible / Ressource</th>
-                <th className="p-3">Détails & Motif</th>
-                <th className="p-3 text-right">Détail</th>
+                <th className="p-3">{t('admin.adminAuditLogsPage.detailsMotif')}</th>
+                <th className="p-3 text-right">{t('admin.adminAuditLogsPage.detail')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
@@ -193,7 +195,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       <button
                         onClick={() => setSelectedLog(log)}
                         className="text-stone-500 hover:text-stone-900 p-1 rounded-sm"
-                        title="Voir le payload complet"
+                        title={t('admin.adminAuditLogsPage.voirLePayloadComplet')}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -222,18 +224,18 @@ export const AdminAuditLogsPage: React.FC = () => {
                 <strong className="text-stone-700">Acteur :</strong> {selectedLog.actorName} (ID: {selectedLog.actorId})
               </div>
               <div>
-                <strong className="text-stone-700">Rôle :</strong> {roleLabel(selectedLog.actorRole)}
+                <strong className="text-stone-700">{t('admin.adminAuditLogsPage.role')}</strong> {roleLabel(selectedLog.actorRole)}
               </div>
               <div>
                 <strong className="text-stone-700">Action :</strong> {selectedLog.action}
               </div>
               <div>
-                <strong className="text-stone-700">Détails :</strong> {selectedLog.details}
+                <strong className="text-stone-700">{t('admin.adminAuditLogsPage.details')}</strong> {selectedLog.details}
               </div>
 
               {selectedLog.previousValue && (
                 <div>
-                  <strong className="text-stone-700">État précédent :</strong>
+                  <strong className="text-stone-700">{t('admin.adminAuditLogsPage.etatPrecedent')}</strong>
                   <pre className="mt-1 p-2 bg-stone-100 rounded-sm font-mono text-micro overflow-x-auto">
                     {JSON.stringify(selectedLog.previousValue, null, 2)}
                   </pre>
@@ -242,7 +244,7 @@ export const AdminAuditLogsPage: React.FC = () => {
 
               {selectedLog.newValue && (
                 <div>
-                  <strong className="text-stone-700">Nouvel état :</strong>
+                  <strong className="text-stone-700">{t('admin.adminAuditLogsPage.nouvelEtat')}</strong>
                   <pre className="mt-1 p-2 bg-stone-100 rounded-sm font-mono text-micro overflow-x-auto">
                     {JSON.stringify(selectedLog.newValue, null, 2)}
                   </pre>
@@ -263,7 +265,7 @@ export const AdminAuditLogsPage: React.FC = () => {
         isOpen={isClearModalOpen}
         onClose={() => setIsClearModalOpen(false)}
         onConfirm={handleConfirmClear}
-        title="Réinitialiser le registre d'audit ?"
+        title={t('admin.adminAuditLogsPage.reinitialiserLeRegistreDAudit')}
         message="Cette action effacera l'historique des journaux d'audit enregistrés pour cette session démo."
         confirmText="Réinitialiser les logs"
         variant="warning"

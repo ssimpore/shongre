@@ -22,6 +22,7 @@ import {
 } from '../../configuration/search.config';
 import { SearchAutocomplete, AutocompleteSelection } from './SearchAutocomplete';
 import { storageService } from '../../services/storage.service';
+import { useTranslation } from '../../i18n/I18nProvider';
 import {
   DropdownMenu,
   DropdownOption,
@@ -86,6 +87,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   navigateOnSubmit = true,
   onSubmitComplete,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
 
@@ -395,7 +397,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       <div className="relative w-full min-w-0" ref={searchContainerRef}>
         <form
           role="search"
-          aria-label="Recherche globale"
+          aria-label={t('ui.globalSearchBar.rechercheGlobale')}
           onSubmit={handleSubmit}
           className={`flex items-stretch h-10 w-full min-w-0 bg-bg-base border border-border-base rounded-xl overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-white focus-within:shadow-xs transition-all ${className}`}
         >
@@ -413,7 +415,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
                 aria-expanded={isCategoryMenuOpen}
                 aria-haspopup="menu"
-                aria-label="Sélectionner une catégorie"
+                aria-label={t('ui.globalSearchBar.selectionnerUneCategorie')}
                 className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-bold transition-colors cursor-pointer rounded-l-[11px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset min-w-0 w-full ${
                   selectedCategorySlug
                     ? 'bg-primary-light text-primary hover:bg-primary-light/80'
@@ -442,11 +444,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 >
                   <div className={DROPDOWN_HEADER_CLASSES}>
                     <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
-                      <span>Filtrer par catégorie</span>
+                      <span>{t('ui.globalSearchBar.filtrerParCategorie')}</span>
                     </div>
                     <input
                       type="text"
-                      placeholder="Rechercher une catégorie…"
+                      placeholder={t('ui.globalSearchBar.rechercherUneCategorie')}
                       value={categoryFilterText}
                       onChange={(e) => setCategoryFilterText(e.target.value)}
                       className={DROPDOWN_SEARCH_INPUT_CLASSES}
@@ -465,7 +467,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <Layers className="w-3.5 h-3.5 text-stone-500" />
-                      <span>Toutes les catégories</span>
+                      <span>{t('ui.globalSearchBar.toutesLesCategories')}</span>
                     </div>
                     {!selectedCategorySlug && <Check className="w-3.5 h-3.5 text-primary" />}
                   </button>
@@ -502,7 +504,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               ref={searchInputRef}
               id={`${idPrefix}-header-query-input`}
               type="search"
-              aria-label="Rechercher une annonce"
+              aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
@@ -523,7 +525,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={handleClearQuery}
-                aria-label="Effacer le texte"
+                aria-label={t('ui.globalSearchBar.effacerLeTexte')}
                 className="inline-flex items-center justify-center w-6 h-6 mr-1.5 text-stone-500 hover:text-stone-700 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-3.5 h-3.5" />
@@ -549,7 +551,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           <button
             id={`${idPrefix}-header-submit-button`}
             type="submit"
-            aria-label="Lancer la recherche"
+            aria-label={t('ui.globalSearchBar.lancerLaRecherche')}
             /* Negative margins pull the button over the form's 1px border so it
                reaches the outer edge — otherwise a pale 1px rim traced the top,
                right and bottom of the orange block and read as a seam. The radius
@@ -588,7 +590,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       <div className="relative" ref={searchContainerRef}>
         <form
           role="search"
-          aria-label="Recherche mobile"
+          aria-label={t('ui.globalSearchBar.rechercheMobile')}
           onSubmit={handleSubmit}
           className={`space-y-2.5 ${className}`}
         >
@@ -601,7 +603,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
               aria-controls={`${idPrefix}-autocomplete-dropdown`}
-              aria-label="Rechercher une annonce"
+              aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
               placeholder={resolvedPlaceholder}
               value={query}
               onChange={(e) => {
@@ -619,7 +621,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={handleClearQuery}
-                aria-label="Effacer le texte"
+                aria-label={t('ui.globalSearchBar.effacerLeTexte')}
                 className="absolute right-2.5 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
@@ -728,7 +730,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       <div className="relative" ref={searchContainerRef}>
         <form
           role="search"
-          aria-label="Recherche et filtres"
+          aria-label={t('ui.globalSearchBar.rechercheEtFiltres')}
           onSubmit={handleSubmit}
           className={`flex flex-row flex-wrap sm:flex-nowrap gap-2 ${className}`}
         >
@@ -776,12 +778,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
                       <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                         <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Catégories</span>
+                        <span>{t('ui.globalSearchBar.categories')}</span>
                       </div>
                     </div>
                     <input
                       type="text"
-                      placeholder="Filtrer les catégories…"
+                      placeholder={t('ui.globalSearchBar.filtrerLesCategories')}
                       value={categoryFilterText}
                       onChange={(e) => setCategoryFilterText(e.target.value)}
                       className={DROPDOWN_SEARCH_INPUT_CLASSES}
@@ -800,7 +802,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <Layers className="w-3.5 h-3.5 text-stone-500" />
-                      <span>Toutes les catégories</span>
+                      <span>{t('ui.globalSearchBar.toutesLesCategories')}</span>
                     </div>
                     {!selectedCategorySlug && <Check className="w-3.5 h-3.5 text-primary" />}
                   </button>
@@ -837,7 +839,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               ref={searchInputRef}
               id={`${idPrefix}-page-query-input`}
               type="search"
-              aria-label="Rechercher une annonce"
+              aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
@@ -857,7 +859,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={handleClearQuery}
-                aria-label="Effacer le texte"
+                aria-label={t('ui.globalSearchBar.effacerLeTexte')}
                 className="absolute right-3 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
@@ -910,7 +912,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               id={`${idPrefix}-page-submit-button`}
               type="submit"
               className="h-control-touch px-3.5 sm:px-5 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer shrink-0"
-              aria-label="Lancer la recherche"
+              aria-label={t('ui.globalSearchBar.lancerLaRecherche')}
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Filtrer</span>
@@ -948,7 +950,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     >
       <form
         role="search"
-        aria-label="Recherche principale de petites annonces"
+        aria-label={t('ui.globalSearchBar.recherchePrincipaleDePetitesAnnonces')}
         onSubmit={handleSubmit}
         className="flex flex-col md:flex-row items-stretch md:items-center gap-2"
       >
@@ -961,7 +963,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
               aria-expanded={isCategoryMenuOpen}
               aria-haspopup="menu"
-              aria-label="Filtrer par catégorie"
+              aria-label={t('ui.globalSearchBar.filtrerParCategorie')}
               className={`w-full md:w-auto h-11 px-3.5 rounded-xl border text-xs font-bold flex items-center justify-between md:justify-start gap-2 transition-all cursor-pointer ${
                 selectedCategorySlug
                   ? 'bg-primary-light border-primary-border text-primary'
@@ -994,12 +996,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                       <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span>Catégories</span>
+                      <span>{t('ui.globalSearchBar.categories')}</span>
                     </div>
                   </div>
                   <input
                     type="text"
-                    placeholder="Chercher une catégorie…"
+                    placeholder={t('ui.globalSearchBar.chercherUneCategorie')}
                     value={categoryFilterText}
                     onChange={(e) => setCategoryFilterText(e.target.value)}
                     className={DROPDOWN_SEARCH_INPUT_CLASSES}
@@ -1018,7 +1020,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 >
                   <div className="flex items-center gap-2.5">
                     <Layers className="w-4 h-4 text-stone-500" />
-                    <span>Toutes les catégories</span>
+                    <span>{t('ui.globalSearchBar.toutesLesCategories')}</span>
                   </div>
                   {!selectedCategorySlug && <Check className="w-4 h-4 text-primary" />}
                 </button>
@@ -1060,7 +1062,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             ref={searchInputRef}
             id={`${idPrefix}-hero-query-input`}
             type="search"
-            aria-label="Rechercher une annonce"
+            aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
             role="combobox"
             aria-expanded={isAutocompleteOpen}
             aria-autocomplete="list"
@@ -1081,7 +1083,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <button
               type="button"
               onClick={handleClearQuery}
-              aria-label="Effacer la recherche"
+              aria-label={t('ui.globalSearchBar.effacerLaRecherche')}
               className="p-1 hover:bg-stone-200/70 rounded-full text-stone-500 hover:text-stone-700 transition-colors cursor-pointer shrink-0"
             >
               <X className="w-3.5 h-3.5" />
@@ -1110,7 +1112,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         <button
           id={`${idPrefix}-hero-submit-button`}
           type="submit"
-          aria-label="Lancer la recherche de petites annonces"
+          aria-label={t('ui.globalSearchBar.lancerLaRechercheDePetites')}
           className="h-control-touch px-5 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
         >
           <Search className="w-4 h-4 shrink-0" />

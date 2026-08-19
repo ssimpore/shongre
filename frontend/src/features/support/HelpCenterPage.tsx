@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 interface HelpArticle {
   id: string;
@@ -86,6 +87,7 @@ const FAQ_ARTICLES: HelpArticle[] = [
 ];
 
 export const HelpCenterPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Centre d'aide",
     description:
@@ -138,8 +140,8 @@ export const HelpCenterPage: React.FC = () => {
           <Search className="w-5 h-5 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 mt-1" />
           <input
             type="text"
-            placeholder="Rechercher une question (ex: séquestre, virement, litige...)"
-            aria-label="Rechercher une question dans l'aide"
+            placeholder={t('support.helpCenterPage.rechercherUneQuestionExSequestre')}
+            aria-label={t('support.helpCenterPage.rechercherUneQuestionDansL')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-12 pr-4 text-xs sm:text-sm font-semibold bg-white border border-border-base rounded-2xl shadow-xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400"
@@ -171,7 +173,7 @@ export const HelpCenterPage: React.FC = () => {
 
       {/* 3. FAQ Accordion Section */}
       <div className="bg-white rounded-3xl border border-border-base p-6 sm:p-8 shadow-xs space-y-4">
-        <h2 className="text-base font-black text-stone-900 mb-2">Questions fréquentes</h2>
+        <h2 className="text-base font-black text-stone-900 mb-2">{t('support.helpCenterPage.questionsFrequentes')}</h2>
 
         {filteredArticles.length === 0 ? (
           <div className="text-center py-8 text-stone-500 text-xs">
@@ -221,7 +223,7 @@ export const HelpCenterPage: React.FC = () => {
       {/* 4. Bottom Contact Support Callout */}
       <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
         <div className="space-y-1 text-center sm:text-left">
-          <h3 className="text-lg sm:text-xl font-black">Vous n'avez pas trouvé votre réponse ?</h3>
+          <h3 className="text-lg sm:text-xl font-black">{t('support.helpCenterPage.vousNAvezPasTrouve')}</h3>
           {/* Dark panel: secondary text needs the lighter stone step to stay readable. */}
           <p className="text-xs sm:text-sm text-stone-400 max-w-md">
             Notre équipe de support client basée en France vous assiste 7j/7 pour vos commandes, annonces et questions.

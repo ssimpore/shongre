@@ -19,6 +19,7 @@ import { useVerification } from '../../../domains/verification/useVerification';
 import { verificationService } from '../../../domains/verification/verification.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { SUPPORTED_MARKETS, validateBusinessIdentifier } from '../../../configuration/market.config';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface BusinessVerificationModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, submitKyb } = useVerification();
   const toast = useToast();
 
@@ -263,7 +265,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             {lookupFound && (
               <div className="p-3 rounded-xl bg-success-surface border border-success-border text-xs text-success flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                <span>Entreprise identifiée dans le répertoire officiel SIRENE.</span>
+                <span>{t('verification.businessVerificationModal.entrepriseIdentifieeDansLeRepertoire')}</span>
               </div>
             )}
 
@@ -320,7 +322,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 type="text"
                 value={businessAddress}
                 onChange={(e) => setBusinessAddress(e.target.value)}
-                placeholder="14 rue de l'Artisanat"
+                placeholder={t('verification.businessVerificationModal.14RueDeLArtisanat')}
                 required
                 className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-600"
               />
@@ -396,9 +398,9 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 onChange={(e) => setLegalRepRole(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-amber-600"
               >
-                <option value="Gérant / Président">Président / Directeur Général / Gérant</option>
+                <option value="Gérant / Président">{t('verification.businessVerificationModal.presidentDirecteurGeneralGerant')}</option>
                 <option value="Entrepreneur individuel">Entrepreneur individuel / Auto-entrepreneur</option>
-                <option value="Mandataire habilité">Mandataire expressément habilité (délégation de pouvoir)</option>
+                <option value="Mandataire habilité">{t('verification.businessVerificationModal.mandataireExpressementHabiliteDelegationDe')}</option>
               </select>
             </div>
 
@@ -460,7 +462,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   <div className="text-xs font-bold">
                     {kbisUploaded ? 'Extrait KBIS / Avis SIRENE chargé' : 'Extrait KBIS de moins de 3 mois (PDF/JPG)'}
                   </div>
-                  <div className="text-micro text-stone-500">Document obligatoire délivré par le Greffe du Tribunal</div>
+                  <div className="text-micro text-stone-500">{t('verification.businessVerificationModal.documentObligatoireDelivreParLe')}</div>
                 </div>
               </div>
               <span className="text-xs font-bold text-warning">
@@ -490,7 +492,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   <div className="text-xs font-bold">
                     {ribUploaded ? 'Relevé RIB professionnel chargé' : 'RIB bancaire professionnel (Optionnel)'}
                   </div>
-                  <div className="text-micro text-stone-500">Pour accélérer la validation des virements de séquestre</div>
+                  <div className="text-micro text-stone-500">{t('verification.businessVerificationModal.pourAccelererLaValidationDes')}</div>
                 </div>
               </div>
               <span className="text-xs font-bold text-warning">
@@ -550,7 +552,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
-                  <div className="font-bold">Mode Démonstration Shongre</div>
+                  <div className="font-bold">{t('verification.businessVerificationModal.modeDemonstrationShongre')}</div>
                   <div className="text-micro text-stone-600">
                     Validation instantanée par simulation du registre RCS
                   </div>

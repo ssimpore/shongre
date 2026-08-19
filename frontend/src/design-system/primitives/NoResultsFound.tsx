@@ -1,6 +1,7 @@
 import React from 'react';
 import { SearchX, RotateCcw, Lightbulb, BookmarkPlus } from 'lucide-react';
 import { Button } from './Button';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface NoResultsFoundProps {
   /** Main heading */
@@ -57,6 +58,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
   className = '',
   id = 'no-results-found-state',
 }) => {
+  const { t } = useTranslation();
   const displayTitle = title || (query ? `Aucun résultat pour « ${query} »` : 'Aucune annonce trouvée');
   const displayDescription =
     description ||
@@ -102,7 +104,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
         >
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 mb-2">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span>Conseils pour trouver votre bonheur :</span>
+            <span>{t('ui.noResultsFound.conseilsPourTrouverVotreBonheur')}</span>
           </div>
           <ul className="space-y-1.5 text-xs text-stone-600">
             {suggestions.map((tip, idx) => (

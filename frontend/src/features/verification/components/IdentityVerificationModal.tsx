@@ -17,6 +17,7 @@ import { Button } from '../../../design-system/primitives/Button';
 import { KycDocumentType } from '../../../domains/verification/verification.types';
 import { useVerification } from '../../../domains/verification/useVerification';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface IdentityVerificationModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, submitKyc } = useVerification();
   const toast = useToast();
 
@@ -300,7 +302,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   <div className="text-xs font-bold">
                     {frontUploaded ? 'Recto du document chargé' : 'Téléverser le recto (face photo)'}
                   </div>
-                  <div className="text-micro text-stone-500">Formats acceptés : JPG, PNG, PDF (max 8 Mo)</div>
+                  <div className="text-micro text-stone-500">{t('verification.identityVerificationModal.formatsAcceptesJpgPngPdf')}</div>
                 </div>
               </div>
               <span className="text-xs font-bold text-success">
@@ -331,7 +333,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                     <div className="text-xs font-bold">
                       {backUploaded ? 'Verso du document chargé' : 'Téléverser le verso (bande MRZ)'}
                     </div>
-                    <div className="text-micro text-stone-500">Requis pour la validation optique</div>
+                    <div className="text-micro text-stone-500">{t('verification.identityVerificationModal.requisPourLaValidationOptique')}</div>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-success">
@@ -414,7 +416,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
-                  <div className="font-bold">Mode Démonstration Shongre</div>
+                  <div className="font-bold">{t('verification.identityVerificationModal.modeDemonstrationShongre')}</div>
                   <div className="text-micro text-warning">
                     Validation instantanée par simulation OCR / Liveness
                   </div>

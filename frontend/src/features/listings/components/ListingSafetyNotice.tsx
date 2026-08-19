@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface ListingSafetyNoticeProps {
   isOnlinePaymentAvailable?: boolean;
@@ -10,11 +11,12 @@ export const ListingSafetyNotice: React.FC<ListingSafetyNoticeProps> = ({
   isOnlinePaymentAvailable = true,
   className = '',
 }) => {
+  const { t } = useTranslation();
   return (
     <div className={`p-4 rounded-2xl bg-success-surface/70 border border-success-border/80 text-xs space-y-2 text-success ${className}`}>
       <div className="flex items-center gap-2 font-bold text-success">
         <ShieldCheck className="w-4 h-4 text-success shrink-0" />
-        <span>Garantie & Sécurité Shongre</span>
+        <span>{t('listings.listingSafetyNotice.garantieSecuriteShongre')}</span>
       </div>
 
       <p className="text-micro text-success leading-relaxed">

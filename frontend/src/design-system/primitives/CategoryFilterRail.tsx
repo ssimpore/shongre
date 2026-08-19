@@ -4,6 +4,7 @@ import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from './CategoryIcon';
 import { Category } from '../../types';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface CategoryFilterRailProps {
   /** Currently selected top-level category slug, or undefined for "all" */
@@ -41,6 +42,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
   className = '',
   idPrefix = 'category-rail',
 }) => {
+  const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -138,7 +140,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
           <button
             type="button"
             onClick={() => handleScroll('left')}
-            aria-label="Faire défiler les catégories vers la gauche"
+            aria-label={t('ui.categoryFilterRail.faireDefilerLesCategoriesVers')}
             className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -ml-2"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -149,7 +151,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
         <div
           ref={scrollContainerRef}
           role="region"
-          aria-label="Filtres par catégorie"
+          aria-label={t('ui.categoryFilterRail.filtresParCategorie')}
           className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5"
         >
           {/* "All" Option Chip */}
@@ -165,7 +167,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 }
               }}
               aria-pressed={!selectedCategorySlug}
-              title="Afficher toutes les annonces actives"
+              title={t('ui.categoryFilterRail.afficherToutesLesAnnoncesActives')}
               className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.98] ${
                 !selectedCategorySlug
                   ? 'bg-stone-900 text-white border-stone-900 shadow-xs'
@@ -173,7 +175,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               }`}
             >
               <LayoutGrid className={`w-3.5 h-3.5 pointer-events-none ${!selectedCategorySlug ? 'text-primary' : 'text-stone-500'}`} />
-              <span className="pointer-events-none">Toutes les annonces</span>
+              <span className="pointer-events-none">{t('ui.categoryFilterRail.toutesLesAnnonces')}</span>
             </button>
           )}
 
@@ -224,7 +226,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
           <button
             type="button"
             onClick={() => handleScroll('right')}
-            aria-label="Faire défiler les catégories vers la droite"
+            aria-label={t('ui.categoryFilterRail.faireDefilerLesCategoriesVers2')}
             className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -mr-2"
           >
             <ChevronRight className="w-4 h-4" />

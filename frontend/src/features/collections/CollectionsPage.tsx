@@ -30,6 +30,7 @@ import { Image } from '../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../design-system/primitives/responsiveImage';
 import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 const BADGE_STYLES: Record<string, string> = {
   terracotta: 'bg-primary-light text-primary border-primary-border',
@@ -57,6 +58,7 @@ const PILLAR_ICONS: Record<string, React.FC<{ className?: string }>> = {
 };
 
 export const CollectionsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
 
@@ -210,7 +212,7 @@ export const CollectionsPage: React.FC = () => {
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors mb-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Toutes les collections</span>
+                  <span>{t('collections.collectionsPage.toutesLesCollections')}</span>
                 </Link>
 
                 <div className="flex items-center gap-2 flex-wrap">
@@ -239,7 +241,7 @@ export const CollectionsPage: React.FC = () => {
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-start gap-3 max-w-xl">
                   <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <div className="text-xs text-stone-300 space-y-0.5">
-                    <p className="font-bold text-white">Le mot de la rédaction</p>
+                    <p className="font-bold text-white">{t('collections.collectionsPage.leMotDeLaRedaction')}</p>
                     <p>{selectedCollection.curatorNote}</p>
                   </div>
                 </div>
@@ -282,7 +284,7 @@ export const CollectionsPage: React.FC = () => {
                   type="text"
                   value={collectionSearch}
                   onChange={(e) => setCollectionSearch(e.target.value)}
-                  placeholder="Chercher une thématique..."
+                  placeholder={t('collections.collectionsPage.chercherUneThematique')}
                   className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                 />
               </div>
@@ -409,7 +411,7 @@ export const CollectionsPage: React.FC = () => {
                 <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
                   <Search className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-stone-900">Aucune collection trouvée</h3>
+                <h3 className="text-base font-bold text-stone-900">{t('collections.collectionsPage.aucuneCollectionTrouvee')}</h3>
                 <p className="text-xs text-stone-500">
                   Aucune collection ne correspond à votre recherche "{collectionSearch}".
                 </p>
@@ -471,7 +473,7 @@ export const CollectionsPage: React.FC = () => {
                     type="text"
                     value={inCollectionSearch}
                     onChange={(e) => setInCollectionSearch(e.target.value)}
-                    placeholder="Filtrer dans la sélection..."
+                    placeholder={t('collections.collectionsPage.filtrerDansLaSelection')}
                     className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                   />
                 </div>
@@ -511,7 +513,7 @@ export const CollectionsPage: React.FC = () => {
                     <Filter className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-base font-bold text-stone-900">Aucune annonce trouvée</h4>
+                    <h4 className="text-base font-bold text-stone-900">{t('collections.collectionsPage.aucuneAnnonceTrouvee')}</h4>
                     <p className="text-xs text-stone-500">
                       Aucune annonce ne correspond aux filtres actifs dans cette collection.
                     </p>
@@ -533,7 +535,7 @@ export const CollectionsPage: React.FC = () => {
             {/* Other Collections Rail */}
             <div className="pt-10 border-t border-border-base space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-stone-900">Découvrir d’autres collections</h3>
+                <h3 className="text-lg font-bold text-stone-900">{t('collections.collectionsPage.decouvrirDAutresCollections')}</h3>
                 <Link to="/collections" className="text-xs font-bold text-primary hover:underline">
                   Voir tout ({collectionService.getCollections('all').length})
                 </Link>

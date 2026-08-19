@@ -27,8 +27,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { useAuthorization } from '../../security/useAuthorization';
 import { Image } from '../../design-system/primitives/Image';
 import { AppScrollRestoration } from '../../app/router/AppScrollRestoration';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminLayout: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, role: platformRole } = useAuth();
   const { can } = useAuthorization();
   const navigate = useNavigate();
@@ -219,11 +221,11 @@ export const AdminLayout: React.FC = () => {
                 Collapses to an icon on phones so the staff bar fits 320px. */}
             <Link
               to={routes.home()}
-              aria-label="Retour à la place de marché"
+              aria-label={t('admin.adminLayout.retourALaPlaceDe')}
               className="shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-xl text-xs font-bold bg-stone-800 text-stone-200 border border-stone-700 hover:bg-stone-700 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Place de marché</span>
+              <span className="hidden md:inline">{t('admin.adminLayout.placeDeMarche')}</span>
             </Link>
           </div>
         </div>
@@ -272,7 +274,7 @@ export const AdminLayout: React.FC = () => {
             <div
               id="admin-section-menu"
               role="menu"
-              aria-label="Sections de la console"
+              aria-label={t('admin.adminLayout.sectionsDeLaConsole')}
               className="absolute top-full left-0 right-0 mt-1.5 z-30 bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top"
             >
               {visibleNavItems.map((item) => {
@@ -334,10 +336,10 @@ export const AdminLayout: React.FC = () => {
             </nav>
 
             <div className="mt-6 pt-4 border-t border-stone-100 px-3">
-              <div className="text-xs text-stone-500 mb-2">Statut de session</div>
+              <div className="text-xs text-stone-500 mb-2">{t('admin.adminLayout.statutDeSession')}</div>
               <div className="flex items-center gap-2 text-xs text-success font-semibold bg-success-surface px-2.5 py-1.5 rounded-md border border-success-border">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                <span>Session authentifiée RBAC</span>
+                <span>{t('admin.adminLayout.sessionAuthentifieeRbac')}</span>
               </div>
             </div>
           </div>

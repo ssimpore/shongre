@@ -19,10 +19,12 @@ import { ProviderAuditLogsTab } from './components/ProviderAuditLogsTab';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 type MainTab = 'overview' | 'catalog' | 'matrix' | 'routing' | 'audit';
 
 export const AdminProvidersPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<MainTab>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -144,7 +146,7 @@ export const AdminProvidersPage: React.FC = () => {
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Matrice Multi-Marchés</span>
+          <span>{t('admin.adminProvidersPage.matriceMultiMarches')}</span>
         </button>
 
         <button
@@ -223,7 +225,7 @@ export const AdminProvidersPage: React.FC = () => {
                 <strong className="font-mono text-stone-800">{activeTestProvider.code}</strong>
               </div>
               <div>
-                <span className="text-stone-500">Capacités testées : </span>
+                <span className="text-stone-500">{t('admin.adminProvidersPage.capacitesTestees')} </span>
                 <strong className="text-stone-800">{activeTestProvider.capabilities.join(', ')}</strong>
               </div>
             </div>

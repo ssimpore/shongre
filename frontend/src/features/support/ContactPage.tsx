@@ -37,6 +37,7 @@ import { supportRepository } from '../../repositories/support.repository';
 import { storageService } from '../../services/storage.service';
 import { SupportContextCard } from './components/SupportContextCard';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   User: <User className="w-5 h-5" />,
@@ -51,6 +52,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export const ContactPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Contacter Shongre",
     description:
@@ -394,7 +396,7 @@ export const ContactPage: React.FC = () => {
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3 text-stone-800 text-xs">
               <MessageSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-bold text-stone-900">Échange direct avec le vendeur</p>
+                <p className="font-bold text-stone-900">{t('support.contactPage.echangeDirectAvecLeVendeur')}</p>
                 <p className="leading-relaxed">
                   Le support Shongre n'intervient pas pour les questions sur l'article (disponibilité, négociations de prix). Contactez directement le vendeur via la messagerie sécurisée.
                 </p>
@@ -427,7 +429,7 @@ export const ContactPage: React.FC = () => {
           onSubmit={handleSubmit}
           className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-fadeIn"
         >
-          <h2 className="text-base font-black text-stone-900">3. Rédigez votre message</h2>
+          <h2 className="text-base font-black text-stone-900">{t('support.contactPage.3RedigezVotreMessage')}</h2>
 
           {/* Context Card Preview if linked */}
           {context && (
@@ -437,7 +439,7 @@ export const ContactPage: React.FC = () => {
           {/* Guest Identity Fields (only when unauthenticated) */}
           {!isAuthenticated && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField label="Votre nom complet" required error={errors.requesterName}>
+              <FormField label={t('support.contactPage.votreNomComplet')} required error={errors.requesterName}>
                 <Input
                   value={requesterName}
                   onChange={(e) => setRequesterName(e.target.value)}
@@ -445,7 +447,7 @@ export const ContactPage: React.FC = () => {
                 />
               </FormField>
 
-              <FormField label="Votre adresse email" required error={errors.requesterEmail}>
+              <FormField label={t('support.contactPage.votreAdresseEmail')} required error={errors.requesterEmail}>
                 <Input
                   type="email"
                   value={requesterEmail}
@@ -457,17 +459,17 @@ export const ContactPage: React.FC = () => {
           )}
 
           {/* Subject Field */}
-          <FormField label="Objet de la demande" required error={errors.subject}>
+          <FormField label={t('support.contactPage.objetDeLaDemande')} required error={errors.subject}>
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Objet de votre demande"
+              placeholder={t('support.contactPage.objetDeVotreDemande')}
             />
           </FormField>
 
           {/* Description Textarea */}
           <FormField
-            label="Détaillez votre situation"
+            label={t('support.contactPage.detaillezVotreSituation')}
             required
             hint="Expliquez ce qui s'est passé avec un maximum de précision."
             error={errors.description}
@@ -476,7 +478,7 @@ export const ContactPage: React.FC = () => {
               rows={5}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez votre problème, les démarches déjà entreprises ou vos questions..."
+              placeholder={t('support.contactPage.decrivezVotreProblemeLesDemarches')}
             />
           </FormField>
 
@@ -515,7 +517,7 @@ export const ContactPage: React.FC = () => {
               <span className="text-xs font-bold text-stone-800">
                 Ajouter une capture ou un justificatif (Simulation démo)
               </span>
-              <span className="text-micro text-stone-500">JPG, PNG ou PDF (max 10 Mo)</span>
+              <span className="text-micro text-stone-500">{t('support.contactPage.jpgPngOuPdfMax')}</span>
             </button>
           </div>
 

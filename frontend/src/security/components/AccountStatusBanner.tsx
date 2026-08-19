@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldAlert, Clock, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuthorization } from '../useAuthorization';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AccountStatusBanner: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, isSuspended, isLimited, isPro } = useAuthorization();
 
   if (!currentUser) return null;
@@ -16,7 +18,7 @@ export const AccountStatusBanner: React.FC = () => {
           <div className="flex items-center gap-2 font-medium text-center sm:text-left">
             <ShieldAlert className="w-4 h-4 shrink-0 text-red-200" />
             <span>
-              <strong>Compte restreint :</strong> Votre profil est temporairement suspendu par la modération. La publication d'annonces et la messagerie sont bloquées.
+              <strong>{t('security.accountStatusBanner.compteRestreint')}</strong> Votre profil est temporairement suspendu par la modération. La publication d'annonces et la messagerie sont bloquées.
             </span>
           </div>
           <Link
@@ -38,7 +40,7 @@ export const AccountStatusBanner: React.FC = () => {
           <div className="flex items-center gap-2 font-medium text-center sm:text-left">
             <Clock className="w-4 h-4 shrink-0 text-warning" />
             <span>
-              <strong>Vérification Pro en cours d'examen :</strong> Votre dossier Kbis/SIRET est en cours d'analyse par nos équipes (délai moyen : 24h).
+              <strong>{t('security.accountStatusBanner.verificationProEnCoursD')}</strong> Votre dossier Kbis/SIRET est en cours d'analyse par nos équipes (délai moyen : 24h).
             </span>
           </div>
           <span className="text-xs font-bold bg-amber-600/30 px-2 py-1 rounded-md">
@@ -56,7 +58,7 @@ export const AccountStatusBanner: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
-            <span>Votre compte a atteint sa limite d'annonces actives pour le mois en cours.</span>
+            <span>{t('security.accountStatusBanner.votreCompteAAtteintSa')}</span>
           </div>
           <Link to="/solutions-pro" className="font-bold text-primary hover:underline">
             Augmenter mes quotas →

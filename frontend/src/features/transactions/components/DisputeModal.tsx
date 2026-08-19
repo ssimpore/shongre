@@ -5,6 +5,7 @@ import { TRANSACTION_CONFIG } from '../../../configuration/transaction.config';
 import { transactionService } from '../../../domains/transaction/transaction.service';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface DisputeModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
   currentUser,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const [reason, setReason] = useState(TRANSACTION_CONFIG.disputeReasons[0].id);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,14 +57,14 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Signaler un problème / Ouvrir un litige"
-      description="Les fonds sous séquestre resteront gelés jusqu'à résolution par le service client Shongre."
+      title={t('transactions.disputeModal.signalerUnProblemeOuvrirUn')}
+      description={t('transactions.disputeModal.lesFondsSousSequestreResteront')}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-sm font-medium">
         <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-warning flex items-start gap-3 shadow-2xs">
           <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-warning">Protection Acheteur & Vendeur active</p>
+            <p className="font-bold text-warning">{t('transactions.disputeModal.protectionAcheteurVendeurActive')}</p>
             <p className="text-xs text-warning mt-1 font-medium">
               En ouvrant ce dossier, aucun versement ne sera exécuté tant que la situation n'est pas clarifiée entre les deux parties ou arbitrée par nos équipes.
             </p>
@@ -100,15 +102,15 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Expliquez ce qui s'est passé (état du colis, non-conformité, échange avec l'autre partie...)"
+            placeholder={t('transactions.disputeModal.expliquezCeQuiSEst')}
             className="w-full p-4 bg-white text-stone-900 rounded-2xl border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none font-medium transition-colors"
           />
         </div>
 
         <div className="p-5 border-2 border-dashed border-stone-200/60 rounded-2xl bg-stone-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-stone-100 hover:border-stone-300 transition-colors shadow-2xs">
           <UploadCloud className="w-8 h-8 text-stone-400 mb-2" />
-          <span className="font-bold text-stone-700">Ajouter des photos ou justificatifs</span>
-          <span className="text-xs text-stone-500 mt-1 font-medium">JPG, PNG ou PDF (max 10 Mo)</span>
+          <span className="font-bold text-stone-700">{t('transactions.disputeModal.ajouterDesPhotosOuJustificatifs')}</span>
+          <span className="text-xs text-stone-500 mt-1 font-medium">{t('transactions.disputeModal.jpgPngOuPdfMax')}</span>
         </div>
 
         <div className="flex gap-3 pt-4">

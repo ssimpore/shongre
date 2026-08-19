@@ -43,8 +43,10 @@ import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar'
 import { DropdownMenu, DropdownOption } from '../../design-system/primitives/DropdownMenu';
 import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
 import { ViewModeToggle } from '../../design-system/primitives/ViewModeToggle';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const SearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { location: userLocation, openLocationModal, resetLocation } = useMarketLocation();
@@ -496,7 +498,7 @@ export const SearchPage: React.FC = () => {
                   type="button"
                   onClick={() => setShowDesktopFilters(false)}
                   className="text-xs font-semibold text-stone-500 hover:text-stone-700 flex items-center gap-1 transition-colors cursor-pointer px-2 py-1 rounded-md hover:bg-stone-100"
-                  title="Masquer le panneau de filtres"
+                  title={t('search.searchPage.masquerLePanneauDeFiltres')}
                 >
                   <PanelLeftClose className="w-3.5 h-3.5" />
                   <span>Masquer</span>
@@ -521,7 +523,7 @@ export const SearchPage: React.FC = () => {
                     headerTitle={
                       <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                         <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>Catégories</span>
+                        <span>{t('search.searchPage.categories')}</span>
                       </div>
                     }
                     options={categoryDropdownOptions}
@@ -559,7 +561,7 @@ export const SearchPage: React.FC = () => {
                         headerTitle={
                           <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                             <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
-                            <span>Sous-catégories</span>
+                            <span>{t('search.searchPage.sousCategories')}</span>
                           </div>
                         }
                         options={subcategoryDropdownOptions}
@@ -620,13 +622,13 @@ export const SearchPage: React.FC = () => {
               {/* Delivery & Payment Toggles */}
               <div className="pt-4 border-t border-border-subtle space-y-2.5">
                 <Checkbox
-                  label="Livraison disponible"
+                  label={t('search.searchPage.livraisonDisponible')}
                   description="Mondial Relay, Colissimo"
                   checked={delivery}
                   onChange={(e) => updateFilter('delivery', e.target.checked ? 'true' : undefined)}
                 />
                 <Checkbox
-                  label="Paiement sécurisé en ligne"
+                  label={t('search.searchPage.paiementSecuriseEnLigne')}
                   checked={onlinePayment}
                   onChange={(e) => updateFilter('onlinePayment', e.target.checked ? 'true' : undefined)}
                 />
@@ -757,8 +759,8 @@ export const SearchPage: React.FC = () => {
                 type="button"
                 onClick={handleSaveSearch}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 sm:py-1 rounded-lg border border-border-base bg-bg-base text-stone-700 hover:bg-bg-subtle hover:text-primary transition-colors cursor-pointer"
-                title="Sauvegarder cette recherche"
-                aria-label="Sauvegarder cette recherche"
+                title={t('search.searchPage.sauvegarderCetteRecherche')}
+                aria-label={t('search.searchPage.sauvegarderCetteRecherche')}
               >
                 <Bookmark className="w-3.5 h-3.5 text-stone-500" />
                 <span className="hidden sm:inline">Sauvegarder</span>
@@ -801,7 +803,7 @@ export const SearchPage: React.FC = () => {
 
               {/* Sort selector at extreme right */}
               <div className="flex items-center gap-1.5 text-xs min-w-0 shrink-0">
-                <span className="text-stone-500 hidden sm:inline shrink-0 font-medium">Trier par :</span>
+                <span className="text-stone-500 hidden sm:inline shrink-0 font-medium">{t('search.searchPage.trierPar')}</span>
                 <DropdownMenu
                   id="sort-select"
                   ariaLabel="Trier les résultats"
@@ -814,7 +816,7 @@ export const SearchPage: React.FC = () => {
                   headerTitle={
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                       <ArrowUpDown className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span>Trier par</span>
+                      <span>{t('search.searchPage.trierPar2')}</span>
                     </div>
                   }
                   options={sortDropdownOptions}
@@ -869,9 +871,9 @@ export const SearchPage: React.FC = () => {
               id="search-no-results"
               query={query}
               onClearFilters={clearAllFilters}
-              clearFiltersLabel="Effacer tous les filtres"
+              clearFiltersLabel={t('search.searchPage.effacerTousLesFiltres')}
               onSaveSearch={handleSaveSearch}
-              saveSearchLabel="Sauvegarder cette recherche"
+              saveSearchLabel={t('search.searchPage.sauvegarderCetteRecherche')}
             />
           )}
 
@@ -882,7 +884,7 @@ export const SearchPage: React.FC = () => {
       <Drawer
         isOpen={isFilterDrawerOpen}
         onClose={() => setIsFilterDrawerOpen(false)}
-        title="Filtres de recherche"
+        title={t('search.searchPage.filtresDeRecherche')}
       >
         <div className="space-y-6">
           {/* Category */}
@@ -899,7 +901,7 @@ export const SearchPage: React.FC = () => {
               headerTitle={
                 <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                   <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>Catégories</span>
+                  <span>{t('search.searchPage.categories')}</span>
                 </div>
               }
               options={categoryDropdownOptions}
@@ -922,7 +924,7 @@ export const SearchPage: React.FC = () => {
                   headerTitle={
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                       <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span>Sous-catégories</span>
+                      <span>{t('search.searchPage.sousCategories')}</span>
                     </div>
                   }
                   options={subcategoryDropdownOptions}
@@ -971,13 +973,13 @@ export const SearchPage: React.FC = () => {
           {/* Delivery & Security Checkboxes */}
           <div className="pt-2 border-t border-border-subtle space-y-2.5">
             <Checkbox
-              label="Livraison disponible"
+              label={t('search.searchPage.livraisonDisponible')}
               description="Mondial Relay, Colissimo, transporteur"
               checked={delivery}
               onChange={(e) => updateFilter('delivery', e.target.checked ? 'true' : undefined)}
             />
             <Checkbox
-              label="Paiement sécurisé en ligne"
+              label={t('search.searchPage.paiementSecuriseEnLigne')}
               checked={onlinePayment}
               onChange={(e) => updateFilter('onlinePayment', e.target.checked ? 'true' : undefined)}
             />

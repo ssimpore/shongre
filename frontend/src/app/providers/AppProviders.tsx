@@ -6,6 +6,7 @@ import { ToastProvider } from './ToastProvider';
 import { NotificationProvider } from './NotificationProvider';
 import { FavoritesProvider } from './FavoritesProvider';
 import { ConsentProvider } from './ConsentProvider';
+import { I18nProvider } from '../../i18n/I18nProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 
 const queryClient = new QueryClient({
@@ -25,11 +26,13 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
         <AuthProvider>
           <ConsentProvider>
             <MarketLocationProvider>
-              <ToastProvider>
-                <NotificationProvider>
-                  <FavoritesProvider>{children}</FavoritesProvider>
-                </NotificationProvider>
-              </ToastProvider>
+              <I18nProvider>
+                <ToastProvider>
+                  <NotificationProvider>
+                    <FavoritesProvider>{children}</FavoritesProvider>
+                  </NotificationProvider>
+                </ToastProvider>
+              </I18nProvider>
             </MarketLocationProvider>
           </ConsentProvider>
         </AuthProvider>

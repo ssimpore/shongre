@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 /**
  * Card frame for the authentication screens.
@@ -31,6 +32,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
   footerLink,
 }) => {
+  const { t } = useTranslation();
   return (
     // 3.5rem is the FocusedLayout header, so the card centres in the space
     // actually left to it rather than sitting slightly low.
@@ -81,12 +83,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
-            <span>Conformité RGPD France & UE</span>
+            <span>{t('auth.authLayout.conformiteRgpdFranceUe')}</span>
           </div>
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success" />
-            <span>Protection Acheteur & Vendeur</span>
+            <span>{t('auth.authLayout.protectionAcheteurVendeur')}</span>
           </div>
         </div>
       </div>

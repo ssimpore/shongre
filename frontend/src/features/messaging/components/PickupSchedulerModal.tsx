@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, CheckCircle2 } from 'lucide-react';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { FormField, Input } from '../../../design-system/primitives/FormField';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface PickupSchedulerModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
   onConfirm,
   defaultAddress = '',
 }) => {
+  const { t } = useTranslation();
   const [date, setDate] = useState('2026-08-20');
   const [timeSlot, setTimeSlot] = useState('14h00 - 15h00');
   const [address, setAddress] = useState(defaultAddress || 'Place de la Comédie, 34000 Montpellier');
@@ -39,11 +41,11 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Planifier la remise en main propre"
-      description="Convenez d'un créneau et d'un lieu sécurisé pour échanger l'article en toute confiance."
+      title={t('messaging.pickupSchedulerModal.planifierLaRemiseEnMain')}
+      description={t('messaging.pickupSchedulerModal.convenezDUnCreneauEt')}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-        <FormField label="Date du rendez-vous" required>
+        <FormField label={t('messaging.pickupSchedulerModal.dateDuRendezVous')} required>
           <Input
             type="date"
             value={date}
@@ -52,24 +54,24 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
           />
         </FormField>
 
-        <FormField label="Créneau horaire" required>
+        <FormField label={t('messaging.pickupSchedulerModal.creneauHoraire')} required>
           <select
             value={timeSlot}
             onChange={(e) => setTimeSlot(e.target.value)}
             className="w-full h-10 px-3 border border-border-base rounded-xl bg-white text-xs font-semibold"
           >
-            <option value="10h00 - 12h00">Matinée (10h00 - 12h00)</option>
+            <option value="10h00 - 12h00">{t('messaging.pickupSchedulerModal.matinee10h0012h00')}</option>
             <option value="12h00 - 14h00">Pause midi (12h00 - 14h00)</option>
-            <option value="14h00 - 16h00">Après-midi (14h00 - 16h00)</option>
-            <option value="16h00 - 18h00">Fin d'après-midi (16h00 - 18h00)</option>
-            <option value="18h00 - 20h00">Soirée (18h00 - 20h00)</option>
+            <option value="14h00 - 16h00">{t('messaging.pickupSchedulerModal.apresMidi14h0016h00')}</option>
+            <option value="16h00 - 18h00">{t('messaging.pickupSchedulerModal.finDApresMidi16h00')}</option>
+            <option value="18h00 - 20h00">{t('messaging.pickupSchedulerModal.soiree18h0020h00')}</option>
           </select>
         </FormField>
 
-        <FormField label="Lieu de rendez-vous (espace public recommandé)" required>
+        <FormField label={t('messaging.pickupSchedulerModal.lieuDeRendezVousEspace')} required>
           <Input
             type="text"
-            placeholder="ex: Devant le métro, place publique..."
+            placeholder={t('messaging.pickupSchedulerModal.exDevantLeMetroPlace')}
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             required

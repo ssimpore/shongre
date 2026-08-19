@@ -25,8 +25,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminUsersPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, can, switchDemoUser } = useAuth();
   const toast = useToast();
 
@@ -114,7 +116,7 @@ export const AdminUsersPage: React.FC = () => {
             Gouvernance des Identités
           </span>
           <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">Gestion des comptes & vérifications KBIS</span>
+          <span className="text-xs text-stone-500 font-medium">{t('admin.adminUsersPage.gestionDesComptesVerificationsKbis')}</span>
         </div>
         <h1 className="text-2xl font-black text-stone-900 tracking-tight">
           Annuaire des Utilisateurs & Vérifications
@@ -133,26 +135,26 @@ export const AdminUsersPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher un nom, email, entreprise, SIRET..."
-              aria-label="Rechercher un utilisateur"
+              placeholder={t('admin.adminUsersPage.rechercherUnNomEmailEntreprise')}
+              aria-label={t('admin.adminUsersPage.rechercherUnUtilisateur')}
               className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
             />
           </div>
 
           <select
-            aria-label="Filtrer par type de compte"
+            aria-label={t('admin.adminUsersPage.filtrerParTypeDeCompte')}
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
             className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
           >
-            <option value="all">Tous les types de compte</option>
+            <option value="all">{t('admin.adminUsersPage.tousLesTypesDeCompte')}</option>
             <option value="individual">Particulier</option>
             <option value="professional">Professionnel (Pro)</option>
             <option value="internal_staff">Personnel Interne (Staff)</option>
           </select>
 
           <select
-            aria-label="Filtrer par rôle plateforme"
+            aria-label={t('admin.adminUsersPage.filtrerParRolePlateforme')}
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
             className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
@@ -178,9 +180,9 @@ export const AdminUsersPage: React.FC = () => {
             <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
               <tr>
                 <th className="p-3.5">Utilisateur</th>
-                <th className="p-3.5">Type & Rôle</th>
-                <th className="p-3.5">Statut & Vérification</th>
-                <th className="p-3.5">Marché / Ville</th>
+                <th className="p-3.5">{t('admin.adminUsersPage.typeRole')}</th>
+                <th className="p-3.5">{t('admin.adminUsersPage.statutVerification')}</th>
+                <th className="p-3.5">{t('admin.adminUsersPage.marcheVille')}</th>
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
@@ -304,7 +306,7 @@ export const AdminUsersPage: React.FC = () => {
                             toast.info(`Basculé sur l'identité : ${u.name}`);
                           }}
                           className="text-xs text-stone-700"
-                          title="Se connecter en tant que cet utilisateur"
+                          title={t('admin.adminUsersPage.seConnecterEnTantQue')}
                         >
                           Tester
                         </Button>
@@ -324,7 +326,7 @@ export const AdminUsersPage: React.FC = () => {
         onClose={() => setKbisModalUser(null)}
         onSubmit={handleConfirmVerifyPro}
         title="Validation KBIS Entreprise"
-        label="Note interne de vérification des registres"
+        label={t('admin.adminUsersPage.noteInterneDeVerificationDes')}
         initialValue="Justificatif KBIS / SIRET vérifié conforme auprès des registres officiels."
         confirmText="Valider le badge Pro"
         required
@@ -335,9 +337,9 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={Boolean(suspendModalUser)}
         onClose={() => setSuspendModalUser(null)}
         onSubmit={handleConfirmSuspend}
-        title="Suspendre un compte utilisateur"
-        label="Motif légal de la mesure conservatoire"
-        placeholder="ex: Infraction aux règles de sécurité ou tentative d'escroquerie..."
+        title={t('admin.adminUsersPage.suspendreUnCompteUtilisateur')}
+        label={t('admin.adminUsersPage.motifLegalDeLaMesure')}
+        placeholder={t('admin.adminUsersPage.exInfractionAuxReglesDe')}
         confirmText="Confirmer la suspension"
         required
       />
@@ -347,7 +349,7 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={Boolean(reactivateModalUser)}
         onClose={() => setReactivateModalUser(null)}
         onConfirm={handleConfirmReactivate}
-        title="Réactiver le compte ?"
+        title={t('admin.adminUsersPage.reactiverLeCompte')}
         message={`Confirmez-vous la levée de la suspension pour l'utilisateur ${reactivateModalUser?.name} ?`}
         confirmText="Réactiver le compte"
         variant="success"

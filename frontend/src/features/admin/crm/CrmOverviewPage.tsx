@@ -20,8 +20,10 @@ import { CrmOpportunity, CrmTask } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { CrmUniversalSearch } from './components/CrmUniversalSearch';
 import { formatDate } from '../../../utilities/formatters';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmOverviewPage: React.FC = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<CrmOverviewStats | null>(null);
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
   const [tasks, setTasks] = useState<CrmTask[]>([]);
@@ -81,7 +83,7 @@ export const CrmOverviewPage: React.FC = () => {
               className="font-bold"
             >
               <TrendingUp className="w-4 h-4" />
-              <span>Voir le Pipeline</span>
+              <span>{t('admin.crmOverviewPage.voirLePipeline')}</span>
             </Button>
           </div>
         </div>
@@ -107,7 +109,7 @@ export const CrmOverviewPage: React.FC = () => {
 
         <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-stone-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Opportunités</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{t('admin.crmOverviewPage.opportunites')}</span>
             <TrendingUp className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl font-black text-warning">
@@ -120,7 +122,7 @@ export const CrmOverviewPage: React.FC = () => {
 
         <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-stone-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Valeur du Pipeline</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{t('admin.crmOverviewPage.valeurDuPipeline')}</span>
             <Briefcase className="w-4 h-4 text-primary" />
           </div>
           <div className="text-2xl font-black text-primary">
@@ -133,7 +135,7 @@ export const CrmOverviewPage: React.FC = () => {
 
         <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-stone-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Tâches à traiter</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{t('admin.crmOverviewPage.tachesATraiter')}</span>
             <Clock className="w-4 h-4 text-indigo-500" />
           </div>
           <div className="text-2xl font-black text-stone-900">
@@ -199,7 +201,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="p-6 rounded-3xl bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 text-white space-y-3 shadow-md">
             <div className="flex items-center gap-2 text-primary">
               <Sparkles className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">Prospection Assistée par IA</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{t('admin.crmOverviewPage.prospectionAssisteeParIa')}</span>
             </div>
             <h3 className="text-base font-black leading-snug">
               Trouvez de nouveaux vendeurs professionnels qualifiés
@@ -224,7 +226,7 @@ export const CrmOverviewPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-stone-700" />
-                <h2 className="text-base font-black text-stone-900">Tâches à faire</h2>
+                <h2 className="text-base font-black text-stone-900">{t('admin.crmOverviewPage.tachesAFaire')}</h2>
               </div>
               <Link to="/admin/crm/taches" className="text-xs font-bold text-primary hover:underline">
                 Toutes ({tasks.length})

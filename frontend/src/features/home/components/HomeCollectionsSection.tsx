@@ -16,6 +16,7 @@ import { Image } from '../../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../../design-system/primitives/responsiveImage';
 import { collectionService } from '../../../domains/collection/collection.service';
 import { CollectionPillarId } from '../../../domains/collection/collection.types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 const BADGE_STYLES: Record<string, string> = {
   terracotta: 'bg-primary-light text-primary border-primary-border',
@@ -40,6 +41,7 @@ const HOME_PILLARS: { id: CollectionPillarId; label: string; icon: React.FC<{ cl
 ];
 
 export const HomeCollectionsSection: React.FC = () => {
+  const { t } = useTranslation();
   const [activePillar, setActivePillar] = useState<CollectionPillarId>('editorial');
 
   const displayedCollections = collectionService.getCollections(activePillar).slice(0, 4);
@@ -62,15 +64,15 @@ export const HomeCollectionsSection: React.FC = () => {
           to="/collections"
           className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
         >
-          <span className="hidden sm:inline">Toutes les collections</span>
-          <span className="sm:hidden">Voir tout</span>
+          <span className="hidden sm:inline">{t('home.homeCollectionsSection.toutesLesCollections')}</span>
+          <span className="sm:hidden">{t('home.homeCollectionsSection.voirTout')}</span>
           <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
         </Link>
       </div>
 
       {/* Quick Theme Switcher Pills */}
       <div className="mb-6">
-        <ScrollRail label="thématiques collections" className="-mx-4 px-4 sm:mx-0 sm:px-0">
+        <ScrollRail label={t('home.homeCollectionsSection.thematiquesCollections')} className="-mx-4 px-4 sm:mx-0 sm:px-0">
           <div className="flex gap-2 min-w-max">
             {HOME_PILLARS.map((p) => {
               const isSelected = activePillar === p.id;

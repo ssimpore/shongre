@@ -17,8 +17,10 @@ import { CrmCompany, CompanyLifecycle } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton } from '../../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmCompaniesPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [companies, setCompanies] = useState<CrmCompany[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,13 +127,13 @@ export const CrmCompaniesPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher une entreprise, domaine, secteur..."
+            placeholder={t('admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur')}
             className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
         <Select
-          aria-label="Filtrer les entreprises par cycle de vie"
+          aria-label={t('admin.crmCompaniesPage.filtrerLesEntreprisesParCycle')}
           value={lifecycleFilter}
           onChange={(e) => setLifecycleFilter(e.target.value)}
           options={[
@@ -230,11 +232,11 @@ export const CrmCompaniesPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Ajouter une entreprise"
-        description="Enregistrez une nouvelle entreprise ou boutique Pro dans le CRM."
+        title={t('admin.crmCompaniesPage.ajouterUneEntreprise')}
+        description={t('admin.crmCompaniesPage.enregistrezUneNouvelleEntrepriseOu')}
       >
         <form onSubmit={handleCreateCompany} className="space-y-3.5 text-xs">
-          <FormField label="Nom commercial de l'entreprise" required>
+          <FormField label={t('admin.crmCompaniesPage.nomCommercialDeLEntreprise')} required>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -252,14 +254,14 @@ export const CrmCompaniesPage: React.FC = () => {
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Secteur d'activité">
+            <FormField label={t('admin.crmCompaniesPage.secteurDActivite')}>
               <Input
                 value={industry}
                 onChange={(e) => setIndustry(e.target.value)}
-                placeholder="ex: Mobilier & Décoration"
+                placeholder={t('admin.crmCompaniesPage.exMobilierDecoration')}
               />
             </FormField>
-            <FormField label="Ville / Région">
+            <FormField label={t('admin.crmCompaniesPage.villeRegion')}>
               <Input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}

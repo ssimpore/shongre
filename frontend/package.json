@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs",
+    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/check-i18n-coverage.mjs",
     "test": "vitest run",
     "check": "node ./bin/shongre.js check",
     "cli": "node ./bin/shongre.js",
@@ -19,7 +19,8 @@
     "test:e2e": "playwright test",
     "test:e2e:responsive": "playwright test responsive.spec.ts --project=chromium",
     "test:e2e:a11y": "playwright test accessibility.spec.ts --project=chromium",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "check:i18n": "node scripts/check-i18n-coverage.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",

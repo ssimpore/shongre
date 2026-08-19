@@ -12,8 +12,10 @@ import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { NewsletterTopicSelector } from './components/NewsletterTopicSelector';
 import { formatDate } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NewsletterPreferencesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
 
@@ -176,7 +178,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
       {/* 3. Topics Customization */}
       <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
         <div>
-          <h2 className="text-base font-black text-stone-900">Vos thématiques favorites</h2>
+          <h2 className="text-base font-black text-stone-900">{t('newsletter.newsletterPreferencesPage.vosThematiquesFavorites')}</h2>
           <p className="text-xs text-stone-500 mt-0.5">
             Cochez les thématiques qui vous intéressent pour personnaliser vos prochaines éditions.
           </p>

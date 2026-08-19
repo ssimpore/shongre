@@ -23,6 +23,7 @@ import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { formatPrice } from '../../../utilities/formatters';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface MessageTimelineProps {
   items: TimelineItem[];
@@ -41,6 +42,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
   onRetryMessage,
   onRespondOffer,
 }) => {
+  const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,12 +69,12 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
       className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/50"
       tabIndex={0}
       role="log"
-      aria-label="Historique de la conversation"
+      aria-label={t('messaging.messageTimeline.historiqueDeLaConversation')}
     >
       {groups.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-500 space-y-2">
           <Info className="w-8 h-8 text-stone-300" />
-          <p className="text-xs font-bold text-stone-600">Début de la conversation</p>
+          <p className="text-xs font-bold text-stone-600">{t('messaging.messageTimeline.debutDeLaConversation')}</p>
           <p className="text-micro text-stone-500 max-w-xs">
             Posez vos questions au vendeur ou convenez d'un point de rencontre.
           </p>
@@ -138,7 +140,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                         <div className="mb-2 relative group/img cursor-pointer overflow-hidden rounded-xl">
                           <Image
                             src={msg.attachment.url}
-                            alt="Photo partagée"
+                            alt={t('messaging.messageTimeline.photoPartagee')}
                             sizes="(max-width: 640px) 75vw, 320px"
                   className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
                             onClick={() => onOpenImage(msg.attachment!.url)}
@@ -208,7 +210,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                             {msg.status === 'failed' && (
                               <span className="flex items-center gap-1 text-red-200 font-bold">
                                 <AlertCircle className="w-3 h-3" />
-                                <span>Échec</span>
+                                <span>{t('messaging.messageTimeline.echec')}</span>
                                 {onRetryMessage && (
                                   <button
                                     type="button"

@@ -15,6 +15,7 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { Market } from '../../domains/market/market.types';
 import { Modal } from './Modal';
 import { Button } from './Button';
+import { useTranslation } from '../../i18n/I18nProvider';
 import {
   DROPDOWN_PANEL_CLASSES,
   DROPDOWN_HEADER_CLASSES,
@@ -48,6 +49,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
   variant = 'header',
   className = '',
 }) => {
+  const { t } = useTranslation();
   const {
     activeMarket,
     availableMarkets,
@@ -117,7 +119,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
               ? 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700 hover:border-stone-600'
               : 'bg-stone-100 hover:bg-stone-200/80 text-stone-700 border-border-base'
           }`}
-          aria-label="Changer de pays / marché"
+          aria-label={t('ui.marketSelector.changerDePaysMarche')}
         >
           <span className="text-base leading-none">{activeMarket.flag}</span>
           <span className={`tracking-tight ${isFooter ? 'text-white' : 'text-stone-900'}`}>
@@ -141,7 +143,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
               <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
                 <div className="flex items-center gap-1.5 text-stone-800 normal-case font-bold">
                   <Globe className="w-3.5 h-3.5 text-primary" />
-                  <span>Marché & Territoire</span>
+                  <span>{t('ui.marketSelector.marcheTerritoire')}</span>
                 </div>
                 <span className="text-micro font-semibold text-stone-500 uppercase tracking-wider">
                   {availableMarkets.length} pays
@@ -204,7 +206,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
               >
                 <span className="flex items-center gap-2">
                   <Sliders className="w-3.5 h-3.5 text-primary group-hover:rotate-45 transition-transform" />
-                  <span>Préférences (Langue, Devise...)</span>
+                  <span>{t('ui.marketSelector.preferencesLangueDevise')}</span>
                 </span>
                 <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
               </button>
@@ -217,8 +219,8 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
       <Modal
         isOpen={isPreferencesModalOpen}
         onClose={() => setIsPreferencesModalOpen(false)}
-        title="Préférences régionales & d'affichage"
-        description="Personnalisez votre pays, votre langue d'affichage et votre devise préférée sur Shongre."
+        title={t('ui.marketSelector.preferencesRegionalesDAffichage')}
+        description={t('ui.marketSelector.personnalisezVotrePaysVotreLangue')}
         maxWidth="md"
       >
         <div className="space-y-5">
@@ -226,7 +228,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-primary" />
-              <span>Marché / Territoire Actif</span>
+              <span>{t('ui.marketSelector.marcheTerritoireActif')}</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {availableMarkets.map((m) => {
@@ -285,7 +287,7 @@ export const MarketSelector: React.FC<MarketSelectorProps> = ({
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
               <Coins className="w-3.5 h-3.5 text-primary" />
-              <span>Devise d'affichage des prix</span>
+              <span>{t('ui.marketSelector.deviseDAffichageDesPrix')}</span>
             </label>
             <select
               value={draftCurrency}

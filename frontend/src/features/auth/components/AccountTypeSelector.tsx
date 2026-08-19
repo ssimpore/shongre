@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, Briefcase, CheckCircle2, ShieldCheck, Zap, Store, ArrowRight } from 'lucide-react';
 import { AccountType } from '../../../types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface AccountTypeSelectorProps {
   selectedType: AccountType;
@@ -11,6 +12,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
   selectedType,
   onChange,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Individual Option */}
@@ -55,15 +57,15 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-            <span>Dépôt d'annonces gratuit et instantané</span>
+            <span>{t('auth.accountTypeSelector.depotDAnnoncesGratuitEt')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-            <span>Paiement sécurisé avec séquestre</span>
+            <span>{t('auth.accountTypeSelector.paiementSecuriseAvecSequestre')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-            <span>Messagerie instantanée directe</span>
+            <span>{t('auth.accountTypeSelector.messagerieInstantaneeDirecte')}</span>
           </div>
         </div>
       </button>
@@ -115,15 +117,15 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>Badge officiel Vendeur Pro Vérifié</span>
+            <span>{t('auth.accountTypeSelector.badgeOfficielVendeurProVerifie')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Store className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>Vitrine de boutique personnalisable</span>
+            <span>{t('auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>Facturation automatique avec TVA</span>
+            <span>{t('auth.accountTypeSelector.facturationAutomatiqueAvecTva')}</span>
           </div>
         </div>
       </button>

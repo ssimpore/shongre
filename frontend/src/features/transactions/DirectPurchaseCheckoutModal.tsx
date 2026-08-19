@@ -38,6 +38,7 @@ import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import confetti from 'canvas-confetti';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface DirectPurchaseCheckoutModalProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
   listing,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
 
@@ -229,7 +231,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
           {/* Quantity Selector (when stock > 1) */}
           {maxStock > 1 && (
             <div className="shrink-0 space-y-1 text-right">
-              <span className="text-micro font-bold text-stone-500 block">Quantité :</span>
+              <span className="text-micro font-bold text-stone-500 block">{t('transactions.directPurchaseCheckoutModal.quantite')}</span>
               <div className="inline-flex items-center gap-1.5 bg-white border border-stone-200 rounded-xl p-1 shadow-xs">
                 <button
                   type="button"
@@ -259,7 +261,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
             <div>
               <h3 className="text-sm font-black text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Truck className="w-4 h-4 text-primary" />
-                <span>1. Choisissez votre mode de réception</span>
+                <span>{t('transactions.directPurchaseCheckoutModal.1ChoisissezVotreModeDe')}</span>
               </h3>
               <p className="text-xs text-stone-500">
                 Sélectionnez parmi les options réellement disponibles pour cet article.
@@ -316,17 +318,17 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
               <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
                 <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-primary" />
-                  <span>Adresse de livraison</span>
+                  <span>{t('transactions.directPurchaseCheckoutModal.adresseDeLivraison')}</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <FormField label="Nom & Prénom">
+                  <FormField label={t('transactions.directPurchaseCheckoutModal.nomPrenom')}>
                     <Input
                       value={shippingAddress.fullName}
                       onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
                     />
                   </FormField>
-                  <FormField label="Téléphone">
+                  <FormField label={t('transactions.directPurchaseCheckoutModal.telephone')}>
                     <Input
                       value={shippingAddress.phone}
                       onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
@@ -372,13 +374,13 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                 <div className="flex justify-between text-stone-600">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-success" />
-                    <span>Protection acheteur & Séquestre</span>
+                    <span>{t('transactions.directPurchaseCheckoutModal.protectionAcheteurSequestre')}</span>
                   </span>
                   <span className="font-bold text-stone-900">{formatPrice(pricing.buyerServiceFee)}</span>
                 </div>
               )}
               <div className="pt-3 border-t border-stone-200 flex justify-between text-base font-black text-stone-900">
-                <span>Total à régler</span>
+                <span>{t('transactions.directPurchaseCheckoutModal.totalARegler')}</span>
                 <span className="text-primary text-lg">{formatPrice(pricing.buyerTotal)}</span>
               </div>
             </div>
@@ -405,7 +407,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
             <div>
               <h3 className="text-sm font-black text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-primary" />
-                <span>2. Moyen de paiement sécurisé</span>
+                <span>{t('transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise')}</span>
               </h3>
               <p className="text-xs text-stone-500">
                 Fonds conservés sous séquestre bancaire jusqu'à confirmation de conformité.
@@ -474,7 +476,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
 
             {isOnlinePaymentAvailable && selectedPaymentMethod === 'card' && (
               <div className="p-5 rounded-2xl border border-stone-200/60 bg-stone-50 space-y-4 shadow-inner">
-                <FormField label="Numéro de carte">
+                <FormField label={t('transactions.directPurchaseCheckoutModal.numeroDeCarte')}>
                   <Input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
                 </FormField>
 
@@ -489,7 +491,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
 
                 <div className="flex items-center gap-2 text-xs font-medium text-stone-500 pt-2">
                   <Lock className="w-4 h-4 text-success" />
-                  <span>Connexion chiffrée SSL 256 bits conforme PCI-DSS</span>
+                  <span>{t('transactions.directPurchaseCheckoutModal.connexionChiffreeSsl256Bits')}</span>
                 </div>
               </div>
             )}
@@ -534,7 +536,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
             </div>
 
             <div>
-              <h3 className="text-2xl font-black text-stone-900">Achat direct confirmé !</h3>
+              <h3 className="text-2xl font-black text-stone-900">{t('transactions.directPurchaseCheckoutModal.achatDirectConfirme')}</h3>
               <p className="text-sm font-medium text-stone-500 mt-2">
                 Référence commande : <span className="font-mono font-bold text-stone-800">{completedOrderId}</span>
               </p>
@@ -544,7 +546,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
               <div className="p-5 bg-primary/5 border border-primary/20 rounded-3xl max-w-sm mx-auto text-left space-y-3 shadow-2xs">
                 <div className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 mb-1">
                   <QrCode className="w-4 h-4" />
-                  <span>Code secret de remise en main propre</span>
+                  <span>{t('transactions.directPurchaseCheckoutModal.codeSecretDeRemiseEn')}</span>
                 </div>
                 <div className="text-3xl font-black font-mono text-center tracking-widest text-stone-900 py-3 bg-white rounded-2xl border border-stone-200/60 shadow-inner">
                   {pinCode}
@@ -555,7 +557,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
               </div>
             ) : (
               <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-3xl max-w-sm mx-auto text-sm text-stone-600 text-left shadow-inner font-medium">
-                <span className="font-bold text-stone-900 block mb-1">Expédition en cours</span>
+                <span className="font-bold text-stone-900 block mb-1">{t('transactions.directPurchaseCheckoutModal.expeditionEnCours')}</span>
                 Le vendeur a été notifié et dispose de 72h pour déposer votre colis auprès du transporteur ({selectedQuote?.title}).
               </div>
             )}

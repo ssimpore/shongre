@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
 import { Search, History, Clock, User, FileSpreadsheet } from 'lucide-react';
 import { roleLabel } from '../../../../security/roles.config';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export const TaxonomyAuditTab: React.FC = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const logs = taxonomyAdminRepository.getAuditHistory();
 
@@ -25,7 +27,7 @@ export const TaxonomyAuditTab: React.FC = () => {
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <History className="w-5 h-5 text-primary" />
-            <span>Journal d'Audit & Traçabilité des Opérations</span>
+            <span>{t('admin.taxonomyAuditTab.journalDAuditTracabiliteDes')}</span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
             Historique chronologique de toutes les créations, modifications, déplacements et dépréciations de rubriques.
@@ -36,7 +38,7 @@ export const TaxonomyAuditTab: React.FC = () => {
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Filtrer les logs d'audit..."
+            placeholder={t('admin.taxonomyAuditTab.filtrerLesLogsDAudit')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -53,8 +55,8 @@ export const TaxonomyAuditTab: React.FC = () => {
                 <th className="py-3 px-4">Date & Heure</th>
                 <th className="py-3 px-4">Rubrique Cible</th>
                 <th className="py-3 px-4">Action</th>
-                <th className="py-3 px-4">Opérateur</th>
-                <th className="py-3 px-4">Détails</th>
+                <th className="py-3 px-4">{t('admin.taxonomyAuditTab.operateur')}</th>
+                <th className="py-3 px-4">{t('admin.taxonomyAuditTab.details')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">

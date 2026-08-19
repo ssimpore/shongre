@@ -21,8 +21,10 @@ import { PlatformRole, Permission } from '../../types';
 import { Button } from '../../design-system/primitives/Button';
 import { plural } from '../../utilities/formatters';
 import { roleLabel } from '../../security/roles.config';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminRolesMatrixPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, platformRole, switchDemoUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -87,7 +89,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 Gouvernance RBAC
               </span>
               <span className="text-stone-300">•</span>
-              <span className="text-xs text-stone-500 font-medium">Contrôle d'accès basé sur les rôles</span>
+              <span className="text-xs text-stone-500 font-medium">{t('admin.adminRolesMatrixPage.controleDAccesBaseSur')}</span>
             </div>
             <h1 className="text-2xl font-black text-stone-900 tracking-tight">
               Matrice Interactive des Rôles & Permissions
@@ -100,7 +102,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
 
           {/* Quick Role Switcher Banner */}
           <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs flex flex-col gap-1.5 shrink-0">
-            <span className="text-stone-500 font-medium">Votre identité active :</span>
+            <span className="text-stone-500 font-medium">{t('admin.adminRolesMatrixPage.votreIdentiteActive')}</span>
             <div className="flex items-center gap-2">
               <strong className="text-stone-900 font-bold">{currentUser?.name}</strong>
               <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded-full">
@@ -166,26 +168,26 @@ export const AdminRolesMatrixPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filtrer une permission (ex: listing.create, user.suspend)..."
+              placeholder={t('admin.adminRolesMatrixPage.filtrerUnePermissionExListing')}
               className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
             />
           </div>
 
           {/* Category Selector */}
           <select
-            aria-label="Filtrer les permissions par catégorie"
+            aria-label={t('admin.adminRolesMatrixPage.filtrerLesPermissionsParCategorie')}
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="py-2 px-3 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-white"
           >
-            <option value="all">Toutes les catégories</option>
-            <option value="listing">Annonces & Catalogues</option>
+            <option value="all">{t('admin.adminRolesMatrixPage.toutesLesCategories')}</option>
+            <option value="listing">{t('admin.adminRolesMatrixPage.annoncesCatalogues')}</option>
             <option value="transaction">Commandes & Transactions</option>
             <option value="profile">Profils & Boutiques</option>
-            <option value="moderation">Modération & Signalements</option>
-            <option value="administration">Administration Système</option>
-            <option value="security">Sécurité & Audit</option>
-            <option value="market">Marchés & Territoires</option>
+            <option value="moderation">{t('admin.adminRolesMatrixPage.moderationSignalements')}</option>
+            <option value="administration">{t('admin.adminRolesMatrixPage.administrationSysteme')}</option>
+            <option value="security">{t('admin.adminRolesMatrixPage.securiteAudit')}</option>
+            <option value="market">{t('admin.adminRolesMatrixPage.marchesTerritoires')}</option>
           </select>
         </div>
 
@@ -210,7 +212,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
           className="overflow-x-auto"
           tabIndex={0}
           role="region"
-          aria-label="Matrice des permissions par rôle"
+          aria-label={t('admin.adminRolesMatrixPage.matriceDesPermissionsParRole')}
         >
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -292,7 +294,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                   {row.permission.isSensitive && (
                                     <span
                                       className="shrink-0 text-micro bg-danger-surface text-danger font-bold px-2 py-1 rounded-sm border border-danger-border"
-                                      title="Permission sensible ou irréversible"
+                                      title={t('admin.adminRolesMatrixPage.permissionSensibleOuIrreversible')}
                                     >
                                       SENSIBLE
                                     </span>

@@ -17,8 +17,10 @@ import { crmRepository } from '../../../repositories/crm.repository';
 import { CrmTask, TaskPriority } from '../../../domains/crm/crm.types';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmTasksPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [tasks, setTasks] = useState<CrmTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,7 @@ export const CrmTasksPage: React.FC = () => {
           className="font-bold flex items-center gap-1.5 shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Nouvelle tâche</span>
+          <span>{t('admin.crmTasksPage.nouvelleTache')}</span>
         </Button>
       </div>
 
@@ -159,8 +161,8 @@ export const CrmTasksPage: React.FC = () => {
         ) : filteredTasks.length === 0 ? (
           <EmptyState
             icon={<CheckSquare className="w-8 h-8 text-stone-500" />}
-            title="Aucune tâche dans cette vue"
-            description="Les relances planifiées apparaîtront ici. Changez de filtre pour consulter les autres échéances."
+            title={t('admin.crmTasksPage.aucuneTacheDansCetteVue')}
+            description={t('admin.crmTasksPage.lesRelancesPlanifieesApparaitrontIci')}
             className="border-0 shadow-none"
             action={
               filter === 'all' ? (
@@ -234,19 +236,19 @@ export const CrmTasksPage: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Créer une tâche"
-        description="Ajoutez un rappel ou une action commerciale."
+        title={t('admin.crmTasksPage.creerUneTache')}
+        description={t('admin.crmTasksPage.ajoutezUnRappelOuUne')}
       >
         <form onSubmit={handleCreateTask} className="space-y-3.5 text-xs">
-          <FormField label="Titre de la tâche" required>
+          <FormField label={t('admin.crmTasksPage.titreDeLaTache')} required>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="ex: Relancer Marc pour signature"
+              placeholder={t('admin.crmTasksPage.exRelancerMarcPourSignature')}
             />
           </FormField>
 
-          <FormField label="Compte ou contact associé">
+          <FormField label={t('admin.crmTasksPage.compteOuContactAssocie')}>
             <Input
               value={relatedTitle}
               onChange={(e) => setRelatedTitle(e.target.value)}
@@ -255,7 +257,7 @@ export const CrmTasksPage: React.FC = () => {
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Date d'échéance">
+            <FormField label={t('admin.crmTasksPage.dateDEcheance')}>
               <Input
                 type="date"
                 value={dueDate}
@@ -263,9 +265,9 @@ export const CrmTasksPage: React.FC = () => {
               />
             </FormField>
 
-            <FormField label="Priorité">
+            <FormField label={t('admin.crmTasksPage.priorite')}>
               <Select
-                aria-label="Priorité de la tâche"
+                aria-label={t('admin.crmTasksPage.prioriteDeLaTache')}
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 options={[

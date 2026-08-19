@@ -18,8 +18,10 @@ import { crmRepository } from '../../../repositories/crm.repository';
 import { CrmOpportunity, OpportunityStage, OpportunityType } from '../../../domains/crm/crm.types';
 import { crmService, PIPELINE_STAGES } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmPipelinePage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +126,7 @@ export const CrmPipelinePage: React.FC = () => {
           className="font-bold flex items-center gap-1.5 shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Nouvelle opportunité</span>
+          <span>{t('admin.crmPipelinePage.nouvelleOpportunite')}</span>
         </Button>
       </div>
 
@@ -190,7 +192,7 @@ export const CrmPipelinePage: React.FC = () => {
                           disabled={stageIndex === 0}
                           onClick={() => handleStageChange(opp.id, PIPELINE_STAGES[stageIndex - 1].id)}
                           className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
-                          title="Étape précédente"
+                          title={t('admin.crmPipelinePage.etapePrecedente')}
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
@@ -202,7 +204,7 @@ export const CrmPipelinePage: React.FC = () => {
                           disabled={stageIndex === PIPELINE_STAGES.length - 1}
                           onClick={() => handleStageChange(opp.id, PIPELINE_STAGES[stageIndex + 1].id)}
                           className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
-                          title="Étape suivante"
+                          title={t('admin.crmPipelinePage.etapeSuivante')}
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
@@ -220,20 +222,20 @@ export const CrmPipelinePage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Créer une opportunité commerciale"
-        description="Ajoutez un deal au pipeline de vente."
+        title={t('admin.crmPipelinePage.creerUneOpportuniteCommerciale')}
+        description={t('admin.crmPipelinePage.ajoutezUnDealAuPipeline')}
       >
         <form onSubmit={handleCreateOpportunity} className="space-y-3.5 text-xs">
-          <FormField label="Titre de l'opportunité" required>
+          <FormField label={t('admin.crmPipelinePage.titreDeLOpportunite')} required>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="ex: Adhésion Forfait Pro Business"
+              placeholder={t('admin.crmPipelinePage.exAdhesionForfaitProBusiness')}
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Entreprise concernée">
+            <FormField label={t('admin.crmPipelinePage.entrepriseConcernee')}>
               <Input
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
@@ -251,9 +253,9 @@ export const CrmPipelinePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Type d'opportunité">
+            <FormField label={t('admin.crmPipelinePage.typeDOpportunite')}>
               <Select
-                aria-label="Type d'opportunité"
+                aria-label={t('admin.crmPipelinePage.typeDOpportunite')}
                 value={oppType}
                 onChange={(e) => setOppType(e.target.value as OpportunityType)}
                 options={[
@@ -266,7 +268,7 @@ export const CrmPipelinePage: React.FC = () => {
               />
             </FormField>
 
-            <FormField label="Valeur estimée (€)">
+            <FormField label={t('admin.crmPipelinePage.valeurEstimee')}>
               <Input
                 type="number"
                 value={amountEuros}

@@ -13,6 +13,7 @@ import { useDialogBehavior } from '../../../design-system/primitives/useDialogBe
 import { Button } from '../../../design-system/primitives/Button';
 import { useVerification } from '../../../domains/verification/useVerification';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface BankPayoutModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, submitBankPayout } = useVerification();
   const toast = useToast();
 
@@ -159,7 +161,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
               type="text"
               value={accountHolder}
               onChange={(e) => setAccountHolder(e.target.value)}
-              placeholder="Ex: Jean Dupont ou SARL Boutique"
+              placeholder={t('verification.bankPayoutModal.exJeanDupontOuSarl')}
               required
               className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-800"
             />

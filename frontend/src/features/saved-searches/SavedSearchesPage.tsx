@@ -8,8 +8,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { EmptyState } from '../../design-system/primitives/UIComponents';
 import { formatRelativeDate, plural } from '../../utilities/formatters';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const SavedSearchesPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
   const [searches, setSearches] = useState<SavedSearch[]>(() => storageService.getSavedSearches());
@@ -102,8 +104,8 @@ export const SavedSearchesPage: React.FC = () => {
       ) : (
         <EmptyState
           icon={<Search className="w-10 h-10 text-stone-400" />}
-          title="Aucune recherche sauvegardée"
-          description="Lancez une recherche puis cliquez sur 'Sauvegarder la recherche' pour être prévenu des nouvelles annonces."
+          title={t('savedsearches.savedSearchesPage.aucuneRechercheSauvegardee')}
+          description={t('savedsearches.savedSearchesPage.lancezUneRecherchePuisCliquez')}
           action={
             <Button
               to={routes.search()}

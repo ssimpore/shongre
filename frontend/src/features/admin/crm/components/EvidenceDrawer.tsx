@@ -4,6 +4,7 @@ import { Drawer } from '../../../../design-system/primitives/Modal';
 import { Button } from '../../../../design-system/primitives/Button';
 import { Badge } from '../../../../design-system/primitives/Badge';
 import { ProspectResearchCandidate } from '../../../../domains/crm/crm.types';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface EvidenceDrawerProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
   onClose,
   candidate,
 }) => {
+  const { t } = useTranslation();
   if (!candidate) return null;
 
   return (
@@ -30,7 +32,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
         {/* Fit Score Header */}
         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-stone-900 text-xs">Fit Shongre estimé</span>
+            <span className="font-bold text-stone-900 text-xs">{t('admin.evidenceDrawer.fitShongreEstime')}</span>
             <span className="text-base font-black text-primary">
               {candidate.fit.score} / 100
             </span>
@@ -92,7 +94,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
                     rel="noopener noreferrer"
                     className="text-primary hover:underline flex items-center gap-1 font-bold text-micro"
                   >
-                    <span>Consulter la source</span>
+                    <span>{t('admin.evidenceDrawer.consulterLaSource')}</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>

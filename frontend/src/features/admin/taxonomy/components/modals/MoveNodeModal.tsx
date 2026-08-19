@@ -8,6 +8,7 @@ import { CategoryIcon } from '../../../../../design-system/primitives/CategoryIc
 import { useToast } from '../../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../../app/providers/AuthProvider';
 import { FolderTree, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export interface MoveNodeModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
   allNodes,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const [selectedParentId, setSelectedParentId] = useState<string>(node.parentId || 'root');
@@ -62,7 +64,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Déplacer la branche "${node.name}"`}
-      description="Réorganisez la hiérarchie en déplaçant ce nœud et l'ensemble de ses sous-catégories."
+      description={t('admin.moveNodeModal.reorganisezLaHierarchieEnDeplacant')}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -86,7 +88,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
         <div className="p-3.5 bg-warning-surface border border-warning-border rounded-xl space-y-1.5 text-xs text-warning">
           <div className="flex items-center gap-1.5 font-bold text-warning">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>Impact structurel du déplacement :</span>
+            <span>{t('admin.moveNodeModal.impactStructurelDuDeplacement')}</span>
           </div>
           <ul className="list-disc list-inside space-y-0.5 pl-1 text-warning/90">
             <li>
@@ -101,13 +103,13 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
           </ul>
         </div>
 
-        <FormField label="Choisir le nouveau parent de destination" required>
+        <FormField label={t('admin.moveNodeModal.choisirLeNouveauParentDe')} required>
           <select
             value={selectedParentId}
             onChange={(e) => setSelectedParentId(e.target.value)}
             className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
           >
-            <option value="root">📂 Racine principale (Niveau Catégorie Racine)</option>
+            <option value="root">{t('admin.moveNodeModal.racinePrincipaleNiveauCategorieRacine')}</option>
             {validParents.map((p) => {
               const depth = p.ancestorIds ? p.ancestorIds.length : 0;
               const indent = '—'.repeat(depth) + (depth > 0 ? ' ' : '');

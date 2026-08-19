@@ -34,8 +34,10 @@ import { EnrichmentDiffModal } from './components/EnrichmentDiffModal';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { formatDate } from '../../../utilities/formatters';
 import { Skeleton } from '../../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmCompanyDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -154,7 +156,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
       <StatePanel
         variant="notFound"
         title="Entreprise introuvable"
-        description="Cette entreprise n'existe plus dans le CRM, ou a été fusionné avec une autre fiche."
+        description={t('admin.crmCompanyDetailPage.cetteEntrepriseNExistePlus')}
         action={
           <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/entreprises')}>
             Retour aux entreprises
@@ -175,7 +177,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           className="text-xs font-bold text-stone-500 hover:text-stone-900 flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Toutes les entreprises</span>
+          <span>{t('admin.crmCompanyDetailPage.toutesLesEntreprises')}</span>
         </Link>
       </div>
 
@@ -249,9 +251,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
         {/* Lifecycle Switcher */}
         <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-stone-500">Changer de statut :</span>
+            <span className="font-bold text-stone-500">{t('admin.crmCompanyDetailPage.changerDeStatut')}</span>
             <Select
-              aria-label="Cycle de vie de l'entreprise"
+              aria-label={t('admin.crmCompanyDetailPage.cycleDeVieDeL')}
               value={company.lifecycle}
               onChange={(e) => handleUpdateLifecycle(e.target.value as CompanyLifecycle)}
               options={[
@@ -275,7 +277,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         <div className="bg-purple-50/70 border border-purple-200 rounded-3xl p-5 shadow-xs flex items-start gap-3.5 text-xs text-purple-950">
           <Sparkles className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold block">Synthèse commerciale IA</span>
+            <span className="font-bold block">{t('admin.crmCompanyDetailPage.syntheseCommercialeIa')}</span>
             <p className="text-purple-900 leading-relaxed text-micro">
               {company.aiSummary}
             </p>
@@ -291,7 +293,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                <h2 className="text-base font-black text-stone-900">Opportunités associées</h2>
+                <h2 className="text-base font-black text-stone-900">{t('admin.crmCompanyDetailPage.opportunitesAssociees')}</h2>
               </div>
               <Link to="/admin/crm/pipeline" className="text-xs font-bold text-primary hover:underline">
                 Pipeline
@@ -299,7 +301,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </div>
 
             {opportunities.length === 0 ? (
-              <p className="text-xs text-stone-500 py-4 text-center">Aucune opportunité ouverte.</p>
+              <p className="text-xs text-stone-500 py-4 text-center">{t('admin.crmCompanyDetailPage.aucuneOpportuniteOuverte')}</p>
             ) : (
               <div className="divide-y divide-border-subtle">
                 {opportunities.map((opp) => (
@@ -340,7 +342,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </div>
 
             {contacts.length === 0 ? (
-              <p className="text-xs text-stone-500 text-center py-4">Aucun contact rattaché.</p>
+              <p className="text-xs text-stone-500 text-center py-4">{t('admin.crmCompanyDetailPage.aucunContactRattache')}</p>
             ) : (
               <div className="space-y-2.5">
                 {contacts.map((c) => (

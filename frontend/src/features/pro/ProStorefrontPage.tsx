@@ -20,8 +20,10 @@ import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Button } from '../../design-system/primitives/Button';
 import { StatePanel } from '../../design-system/primitives/StatePanel';
 import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ProStorefrontPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const [seller, setSeller] = useState<UserProfile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -44,7 +46,7 @@ export const ProStorefrontPage: React.FC = () => {
         <StatePanel
           variant="notFound"
           title="Boutique introuvable"
-          description="Cette boutique n'existe plus ou son adresse a changé. Parcourez l'annuaire pour trouver un professionnel équivalent."
+          description={t('pro.proStorefrontPage.cetteBoutiqueNExistePlus')}
           action={
             <Button
               to="/professionnels"
@@ -94,7 +96,7 @@ export const ProStorefrontPage: React.FC = () => {
                 SIRET/KBIS checks — a second "SIRET Vérifié" badge beside it said
                 the same thing twice. */}
             <div className="absolute top-4 right-4 flex gap-2">
-              <Badge variant="pro" size="md">Vendeur Professionnel Agréé</Badge>
+              <Badge variant="pro" size="md">{t('pro.proStorefrontPage.vendeurProfessionnelAgree')}</Badge>
             </div>
           </div>
 
@@ -156,11 +158,11 @@ export const ProStorefrontPage: React.FC = () => {
                 </div>
               )}
               <div>
-                <span className="font-bold block text-stone-700">Taux de réponse</span>
+                <span className="font-bold block text-stone-700">{t('pro.proStorefrontPage.tauxDeReponse')}</span>
                 <span>{seller.responseRatePercent}%</span>
               </div>
               <div>
-                <span className="font-bold block text-stone-700">Délai moyen</span>
+                <span className="font-bold block text-stone-700">{t('pro.proStorefrontPage.delaiMoyen')}</span>
                 <span>{seller.responseTimeText}</span>
               </div>
               <div>
@@ -184,7 +186,7 @@ export const ProStorefrontPage: React.FC = () => {
             <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Rechercher dans cette boutique..."
+              placeholder={t('pro.proStorefrontPage.rechercherDansCetteBoutique')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-10 pl-9 pr-3 text-xs bg-white rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"

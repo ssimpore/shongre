@@ -8,8 +8,10 @@ import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
 import { Button } from '../../design-system/primitives/Button';
 import { NoResultsFound } from '../../design-system/primitives/NoResultsFound';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ProDirectoryPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Annuaire des vendeurs professionnels",
     description:
@@ -65,8 +67,8 @@ export const ProDirectoryPage: React.FC = () => {
           <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Rechercher par nom de boutique ou par ville..."
-            aria-label="Rechercher une boutique professionnelle"
+            placeholder={t('proDirectory.rechercherParNomDeBoutique')}
+            aria-label={t('proDirectory.rechercherUneBoutiqueProfessionnelle')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -88,10 +90,10 @@ export const ProDirectoryPage: React.FC = () => {
         <NoResultsFound
           id="pro-directory-no-results"
           query={search}
-          title="Aucune boutique professionnelle trouvée"
-          description="Aucun commerçant ou artisan ne correspond à votre recherche par nom ou par ville."
+          title={t('proDirectory.aucuneBoutiqueProfessionnelleTrouvee')}
+          description={t('proDirectory.aucunCommercantOuArtisanNe')}
           onClearFilters={() => setSearch('')}
-          clearFiltersLabel="Effacer la recherche"
+          clearFiltersLabel={t('proDirectory.effacerLaRecherche')}
         />
       )}
     </div>

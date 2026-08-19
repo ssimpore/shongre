@@ -24,6 +24,7 @@ import { MARKET_CONFIG } from '../../configuration/market.config';
 import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
 import { NewsletterSignup } from '../../features/newsletter/components/NewsletterSignup';
 import { useConsent } from '../providers/ConsentProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 /* -----------------------------------------------------------------------------
    Shared surface recipes.
@@ -42,35 +43,13 @@ const INNER_PANEL = 'rounded-2xl border border-stone-800/70 bg-stone-950/40';
 const ICON_TILE =
   'rounded-2xl bg-primary/10 border border-primary/25 text-primary-on-dark flex items-center justify-center shrink-0';
 
+/* Copy lives as message keys because this strip renders inside the translated
+   shell; the component resolves them at render time. */
 const TRUST_HIGHLIGHTS = [
-  {
-    id: 'escrow',
-    Icon: ShieldCheck,
-    title: 'Paiement 100% sécurisé',
-    description:
-      'Vos paiements sont protégés jusqu’à la bonne réception de votre commande.',
-  },
-  {
-    id: 'delivery',
-    Icon: Truck,
-    title: 'Livraison intégrée',
-    description:
-      'Envoi en point relais Mondial Relay, Colissimo ou remise en main propre sécurisée.',
-  },
-  {
-    id: 'verified',
-    Icon: IdCard,
-    title: 'Vendeurs & SIRET vérifiés',
-    description:
-      'Identités contrôlées et entreprises enregistrées au registre du commerce français.',
-  },
-  {
-    id: 'support',
-    Icon: Headphones,
-    title: 'Support client 7j/7',
-    description:
-      'Une équipe dédiée basée en France pour vous assister et modérer les annonces.',
-  },
+  { id: 'escrow', Icon: ShieldCheck, titleKey: 'footer.trust.escrowTitle', bodyKey: 'footer.trust.escrowBody' },
+  { id: 'delivery', Icon: Truck, titleKey: 'footer.trust.deliveryTitle', bodyKey: 'footer.trust.deliveryBody' },
+  { id: 'verified', Icon: IdCard, titleKey: 'footer.trust.verifiedTitle', bodyKey: 'footer.trust.verifiedBody' },
+  { id: 'support', Icon: Headphones, titleKey: 'footer.trust.supportTitle', bodyKey: 'footer.trust.supportBody' },
 ] as const;
 
 /**
@@ -140,10 +119,10 @@ const SOCIAL_LINKS: { id: string; label: string; Icon: typeof Facebook; url: str
 ];
 
 const LEGAL_LINKS = [
-  { to: '/conditions-utilisation', label: 'Conditions générales d’utilisation' },
-  { to: '/confidentialite', label: 'Politique de confidentialité' },
-  { to: '/mentions-legales', label: 'Mentions légales' },
-  { to: '/accessibilite', label: 'Accessibilité (WCAG 2.2 AA)' },
+  { to: '/conditions-utilisation', labelKey: 'footer.terms' },
+  { to: '/confidentialite', labelKey: 'footer.privacy' },
+  { to: '/mentions-legales', labelKey: 'footer.legalNotices' },
+  { to: '/accessibilite', labelKey: 'footer.accessibility' },
 ] as const;
 
 /**
@@ -217,6 +196,7 @@ const FooterColumn: React.FC<{
 
 export const Footer: React.FC = () => {
   const { openPreferences } = useConsent();
+  const { t } = useTranslation();
   // All accordion sections folded by default on mobile
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     categories: false,
@@ -251,7 +231,7 @@ export const Footer: React.FC = () => {
             the app. */}
         <section aria-label="Garanties Shongre" className={`${PANEL} p-6 sm:p-8`}>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
-            {TRUST_HIGHLIGHTS.map(({ id, Icon, title, description }) => (
+            {TRUST_HIGHLIGHTS.map(({ id, Icon, titleKey, bodyKey }) => (
               <li
                 key={id}
                 className="flex items-start gap-4 lg:px-5 lg:border-l lg:border-stone-800/60 lg:first:border-l-0 lg:first:pl-0"
@@ -260,8 +240,8 @@ export const Footer: React.FC = () => {
                   <Icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm mb-1.5">{title}</p>
-                  <p className="text-stone-400 text-xs leading-relaxed">{description}</p>
+                  <p className="font-bold text-white text-sm mb-1.5">{t(titleKey)}</p>
+                  <p className="text-stone-400 text-xs leading-relaxed">{t(bodyKey)}</p>
                 </div>
               </li>
             ))}
@@ -278,7 +258,7 @@ export const Footer: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-0 divide-y divide-stone-800 md:divide-y-0">
                 <FooterColumn
                   id="categories"
-                  title="Catégories phares"
+                  title={t('footer.sectionCategories')}
                   Icon={LayoutGrid}
                   isOpen={openSections.categories}
                   onToggle={toggleSection}
@@ -292,7 +272,7 @@ export const Footer: React.FC = () => {
 
                 <FooterColumn
                   id="cities"
-                  title="Villes & Régions"
+                  title={t('footer.sectionCities')}
                   Icon={MapPin}
                   isOpen={openSections.cities}
                   onToggle={toggleSection}
@@ -315,9 +295,9 @@ export const Footer: React.FC = () => {
                   onToggle={toggleSection}
                 >
                   <FooterLink to="/solutions-pro">Solutions &amp; Tarifs Pro</FooterLink>
-                  <FooterLink to="/inscription/professionnel">Créer un compte Pro</FooterLink>
-                  <FooterLink to="/professionnels">Annuaire des boutiques</FooterLink>
-                  <FooterLink to="/tarifs">Grille des options &amp; boosts</FooterLink>
+                  <FooterLink to="/inscription/professionnel">{t('footer.createProAccount')}</FooterLink>
+                  <FooterLink to="/professionnels">{t('footer.storeDirectory')}</FooterLink>
+                  <FooterLink to="/tarifs">{t('footer.boostGrid')}</FooterLink>
                 </FooterColumn>
 
                 <FooterColumn
@@ -328,8 +308,8 @@ export const Footer: React.FC = () => {
                   onToggle={toggleSection}
                 >
                   <FooterLink to="/aide">Centre d’aide &amp; FAQ</FooterLink>
-                  <FooterLink to="/securite">Conseils de sécurité</FooterLink>
-                  <FooterLink to="/contact">Contacter le support</FooterLink>
+                  <FooterLink to="/securite">{t('footer.safetyTips')}</FooterLink>
+                  <FooterLink to="/contact">{t('footer.contactSupport')}</FooterLink>
                   <FooterLink to="/newsletter">Newsletter &amp; Bons plans</FooterLink>
                   <li>
                     <Link
@@ -340,7 +320,7 @@ export const Footer: React.FC = () => {
                           it squeeze the label: at the column's width "Bons plans
                           du moment" and the pill do not share a line. */}
                       <span className="flex items-center flex-wrap gap-x-2 gap-y-1">
-                        <span className="whitespace-nowrap">Bons plans du moment</span>
+                        <span className="whitespace-nowrap">{t('footer.currentDeals')}</span>
                         <span className="px-1.5 py-0.5 rounded-md bg-stone-800 border border-stone-700 text-micro font-bold uppercase tracking-wider text-stone-300">
                           Nouveau
                         </span>
@@ -370,7 +350,7 @@ export const Footer: React.FC = () => {
               </div>
 
               <p className="text-stone-400 text-xs leading-relaxed mb-4">
-                Recevez notre sélection hebdomadaire d’annonces et réductions vérifiées.
+                {t('footer.newsletterPitch')}
               </p>
 
               <NewsletterSignup variant="footer" source="footer" />
@@ -391,11 +371,11 @@ export const Footer: React.FC = () => {
                       </a>
                     ) : (
                       <span
-                        title={`${label} — bientôt disponible`}
+                        title={t('footer.comingSoon', { name: label })}
                         className={`${ICON_TILE} w-control-touch h-control-touch opacity-80 cursor-default select-none`}
                       >
                         <Icon className="w-5 h-5" />
-                        <span className="sr-only">{label} — bientôt disponible</span>
+                        <span className="sr-only">{t('footer.comingSoon', { name: label })}</span>
                       </span>
                     )}
                   </li>
@@ -408,7 +388,7 @@ export const Footer: React.FC = () => {
                     🇫🇷
                   </span>
                   <span className="text-micro text-stone-400 leading-tight">
-                    Hébergé
+                    {t('footer.hosted')}
                     <br />
                     en France
                   </span>
@@ -436,7 +416,7 @@ export const Footer: React.FC = () => {
                   <div className="min-w-0">
                     <h2 className="text-sm font-bold text-white">L’application Shongre</h2>
                     <p className="text-stone-400 text-xs mt-0.5">
-                      Emportez Shongre partout avec vous.
+                      {t('footer.appPitch')}
                     </p>
                   </div>
                 </div>
@@ -471,11 +451,11 @@ export const Footer: React.FC = () => {
                           </a>
                         ) : (
                           <span
-                            title={`${store} — bientôt disponible`}
+                            title={t('footer.comingSoon', { name: store })}
                             className="inline-flex items-center gap-3 h-control-lg px-5 rounded-xl border border-stone-800 bg-stone-950 cursor-default select-none"
                           >
                             {content}
-                            <span className="sr-only">— bientôt disponible</span>
+                            <span className="sr-only">{t('footer.comingSoon', { name: store })}</span>
                           </span>
                         )}
                       </li>
@@ -490,19 +470,19 @@ export const Footer: React.FC = () => {
             ground — it closes the document rather than belonging to any block. */}
         <div className="pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-stone-400">
           <div className="flex items-center gap-4 flex-wrap">
-            <span>© {new Date().getFullYear()} Shongre SAS. Tous droits réservés.</span>
+            <span>{t('footer.copyright', { year: new Date().getFullYear() })}</span>
             <LanguageSelector variant="footer" idPrefix="footer-lang" />
           </div>
 
-          <nav aria-label="Informations légales">
+          <nav aria-label={t('footer.legalHeading')}>
             <ul className="flex flex-wrap items-center gap-y-1">
-              {LEGAL_LINKS.map(({ to, label }, index) => (
+              {LEGAL_LINKS.map(({ to, labelKey }, index) => (
                 <li key={to} className="flex items-center">
                   {index > 0 && (
                     <span aria-hidden="true" className="w-px h-3 bg-stone-800 mx-4" />
                   )}
                   <Link to={to} className="py-1 hover:text-white transition-colors">
-                    {label}
+                    {t(labelKey)}
                   </Link>
                 </li>
               ))}
@@ -518,7 +498,7 @@ export const Footer: React.FC = () => {
                   onClick={openPreferences}
                   className="py-1 hover:text-white transition-colors cursor-pointer"
                 >
-                  Gestion des cookies
+                  {t('footer.cookies')}
                 </button>
               </li>
             </ul>

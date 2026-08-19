@@ -3,6 +3,7 @@ import { Search, MessageSquare, ShoppingBag, Tag, CheckCheck, Clock, X } from 'l
 import { ConversationPreview, InboxFilterTab } from '../../../domains/messaging/messaging.types';
 import { formatRelativeDate, formatPrice } from '../../../utilities/formatters';
 import { Badge, Avatar } from '../../../design-system/primitives/Badge';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
@@ -25,6 +26,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   onSearchChange,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const unreadTotal = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
 
   const tabs: { id: InboxFilterTab; label: string; count?: number }[] = [
@@ -56,7 +58,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Rechercher par nom ou annonce..."
+            placeholder={t('messaging.conversationList.rechercherParNomOuAnnonce')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400"
@@ -66,7 +68,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               type="button"
               onClick={() => onSearchChange('')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-0.5"
-              aria-label="Effacer la recherche"
+              aria-label={t('messaging.conversationList.effacerLaRecherche')}
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -127,7 +129,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm font-bold text-stone-800">Aucune conversation trouvée</p>
+              <p className="text-sm font-bold text-stone-800">{t('messaging.conversationList.aucuneConversationTrouvee')}</p>
               <p className="text-xs text-stone-500 mt-1">
                 {searchQuery
                   ? 'Aucun résultat ne correspond à votre recherche.'

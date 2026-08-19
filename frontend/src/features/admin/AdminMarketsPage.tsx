@@ -38,6 +38,7 @@ import { formatPrice, plural } from '../../utilities/formatters';
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 type AdminTab = 'overview' | 'editor' | 'matrix';
 type DomainTab =
@@ -54,6 +55,7 @@ type DomainTab =
   | 'features';
 
 export const AdminMarketsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { can, currentUser } = useAuth();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -226,13 +228,13 @@ export const AdminMarketsPage: React.FC = () => {
       case 'active':
         return <Badge variant="success">Actif</Badge>;
       case 'coming_soon':
-        return <Badge variant="warning">Bientôt disponible</Badge>;
+        return <Badge variant="warning">{t('admin.adminMarketsPage.bientotDisponible')}</Badge>;
       case 'draft':
         return <Badge variant="neutral">Brouillon</Badge>;
       case 'paused':
         return <Badge variant="urgent">En pause</Badge>;
       case 'archived':
-        return <Badge variant="neutral">Archivé</Badge>;
+        return <Badge variant="neutral">{t('admin.adminMarketsPage.archive')}</Badge>;
       default:
         return <Badge variant="neutral">{status}</Badge>;
     }
@@ -322,7 +324,7 @@ export const AdminMarketsPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 className="text-micro h-control-sm px-2 text-stone-500 hover:text-danger hover:bg-danger-surface"
-                title="Supprimer la surcharge et réactiver l'héritage dynamique de France"
+                title={t('admin.adminMarketsPage.supprimerLaSurchargeEtReactiver')}
                 onClick={() => handleResetOverride(path)}
               >
                 <RefreshCw className="w-3 h-3 text-stone-400 mr-1" />
@@ -350,7 +352,7 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
             Gérez les pays activés, devises, passerelles, taxes, quotas et règles de conformité.
-            <strong> France (`FR`) est le marché de référence canonique</strong> dont héritent automatiquement toutes les valeurs non surchargées.
+            <strong> {t('admin.adminMarketsPage.franceFrEstLeMarche')}</strong> dont héritent automatiquement toutes les valeurs non surchargées.
           </p>
         </div>
 
@@ -362,7 +364,7 @@ export const AdminMarketsPage: React.FC = () => {
               onClick={() => setIsAddMarketModalOpen(true)}
             >
               <Plus className="w-4 h-4" />
-              <span>Ajouter un marché</span>
+              <span>{t('admin.adminMarketsPage.ajouterUnMarche')}</span>
             </Button>
           )}
         </div>
@@ -412,7 +414,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="p-4 rounded-2xl bg-warning-surface/80 border border-warning-border/80 flex items-start gap-3">
             <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="text-xs text-warning space-y-1">
-              <span className="font-bold">Moteur d'héritage hiérarchique en cascade :</span>
+              <span className="font-bold">{t('admin.adminMarketsPage.moteurDHeritageHierarchiqueEn')}</span>
               <p>
                 Chaque paramètre non explicitement configuré pour la Belgique, l'Espagne ou la Suisse hérite automatiquement et dynamiquement de la configuration de référence française.
                 Réinitialiser un paramètre supprime sa surcharge locale pour rétablir immédiatement la liaison dynamique avec la France.
@@ -456,7 +458,7 @@ export const AdminMarketsPage: React.FC = () => {
                     <div className="space-y-1 pt-2 border-t border-border-subtle">
                       <div className="flex justify-between text-micro font-bold">
                         {isDefault ? (
-                          <span className="text-primary">Marché Source Canonique (100%)</span>
+                          <span className="text-primary">{t('admin.adminMarketsPage.marcheSourceCanonique100')}</span>
                         ) : (
                           <>
                             <span className="text-success">
@@ -511,10 +513,10 @@ export const AdminMarketsPage: React.FC = () => {
                         className="text-micro bg-bg-base border border-border-base rounded-lg px-2 py-1 font-semibold text-stone-700 focus:outline-none"
                       >
                         <option value="active">Actif</option>
-                        <option value="coming_soon">Bientôt</option>
+                        <option value="coming_soon">{t('admin.adminMarketsPage.bientot')}</option>
                         <option value="paused">En pause</option>
                         <option value="draft">Brouillon</option>
-                        <option value="archived">Archivé</option>
+                        <option value="archived">{t('admin.adminMarketsPage.archive')}</option>
                       </select>
                     )}
                   </div>
@@ -553,7 +555,7 @@ export const AdminMarketsPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-stone-500">Sélectionner un marché :</span>
+              <span className="text-xs font-semibold text-stone-500">{t('admin.adminMarketsPage.selectionnerUnMarche')}</span>
               <select
                 value={selectedMarketCode}
                 onChange={(e) => setSelectedMarketCode(e.target.value)}
@@ -653,7 +655,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <div className="p-4 bg-warning-surface/70 border border-warning-border rounded-2xl flex items-start gap-3">
                   <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                   <div className="text-xs text-warning space-y-1">
-                    <span className="font-bold">Gestion des catégories par marché :</span>
+                    <span className="font-bold">{t('admin.adminMarketsPage.gestionDesCategoriesParMarche')}</span>
                     <p>
                       Par défaut, tous les marchés héritent des catégories de la France. Vous pouvez activer ou désactiver spécifiquement des catégories ou sous-catégories pour {selectedMarket.name} ({selectedMarket.code}).
                     </p>
@@ -873,7 +875,7 @@ export const AdminMarketsPage: React.FC = () => {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border-base bg-stone-50">
-                  <th className="p-3 font-bold text-stone-900">Paramètre / Règle</th>
+                  <th className="p-3 font-bold text-stone-900">{t('admin.adminMarketsPage.parametreRegle')}</th>
                   {markets.map((m) => (
                     <th key={m.code} className="p-3 font-bold text-stone-900 min-w-[160px]">
                       <div className="flex items-center gap-1.5">
@@ -891,7 +893,7 @@ export const AdminMarketsPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">Statut du marché</td>
+                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.statutDuMarche')}</td>
                   {markets.map((m) => (
                     <td key={m.code} className="p-3">
                       {renderStatusBadge(m.status)}
@@ -909,14 +911,14 @@ export const AdminMarketsPage: React.FC = () => {
                           {cfg.localization.defaultCurrency} ({cfg.localization.currencySymbol})
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">Taux de TVA Standard</td>
+                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.tauxDeTvaStandard')}</td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
                     const res = marketService.resolveSetting(m.code, 'taxes.vatRateStandard');
@@ -926,14 +928,14 @@ export const AdminMarketsPage: React.FC = () => {
                           {(cfg.taxes.vatRateStandard * 100).toFixed(1)} %
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">Frais Protection Acheteur</td>
+                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.fraisProtectionAcheteur')}</td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
                     const res = marketService.resolveSetting(m.code, 'payments.buyerProtectionFixedFee');
@@ -943,7 +945,7 @@ export const AdminMarketsPage: React.FC = () => {
                           {cfg.payments.buyerProtectionFixedFee.toFixed(2)} {cfg.localization.currencySymbol} + {(cfg.payments.buyerProtectionFeePercent * 100).toFixed(1)}%
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
                         )}
                       </td>
                     );
@@ -960,14 +962,14 @@ export const AdminMarketsPage: React.FC = () => {
                           {cfg.pro.businessIdentifierLabel}
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">✏️ Surchargé</span>
+                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">Réservation avec Séquestre</td>
+                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.reservationAvecSequestre')}</td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
                     const res = marketService.resolveSetting(m.code, 'reservation.enabled');
@@ -993,8 +995,8 @@ export const AdminMarketsPage: React.FC = () => {
       <Modal
         isOpen={isAddMarketModalOpen}
         onClose={() => setIsAddMarketModalOpen(false)}
-        title="Ajouter un nouveau Marché / Pays"
-        description="Créez un nouveau pays qui héritera automatiquement de 100% de la configuration française de référence."
+        title={t('admin.adminMarketsPage.ajouterUnNouveauMarchePays')}
+        description={t('admin.adminMarketsPage.creezUnNouveauPaysQui')}
         maxWidth="md"
       >
         <form onSubmit={handleCreateMarket} className="space-y-4">
@@ -1005,7 +1007,7 @@ export const AdminMarketsPage: React.FC = () => {
                 type="text"
                 required
                 maxLength={2}
-                placeholder="ex: IT, PT, DE, UK"
+                placeholder={t('admin.adminMarketsPage.exItPtDeUk')}
                 value={newMarketCode}
                 onChange={(e) => setNewMarketCode(e.target.value.toUpperCase())}
                 className="w-full h-10 px-3 text-xs uppercase font-mono font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
@@ -1025,7 +1027,7 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">Nom du Marché</label>
+            <label className="text-xs font-bold text-stone-700 uppercase">{t('admin.adminMarketsPage.nomDuMarche')}</label>
             <input
               type="text"
               required
@@ -1038,11 +1040,11 @@ export const AdminMarketsPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">Locale par Défaut</label>
+              <label className="text-xs font-bold text-stone-700 uppercase">{t('admin.adminMarketsPage.localeParDefaut')}</label>
               <input
                 type="text"
                 required
-                placeholder="ex: it-IT, pt-PT, de-DE"
+                placeholder={t('admin.adminMarketsPage.exItItPtPt')}
                 value={newMarketLocale}
                 onChange={(e) => setNewMarketLocale(e.target.value)}
                 className="w-full h-10 px-3 text-xs font-mono bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
@@ -1069,8 +1071,8 @@ export const AdminMarketsPage: React.FC = () => {
               className="w-full h-10 px-3 text-xs bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none font-semibold"
             >
               <option value="draft">Brouillon (Non visible)</option>
-              <option value="coming_soon">Bientôt disponible (Vitrine)</option>
-              <option value="active">Actif (Opérationnel)</option>
+              <option value="coming_soon">{t('admin.adminMarketsPage.bientotDisponibleVitrine')}</option>
+              <option value="active">{t('admin.adminMarketsPage.actifOperationnel')}</option>
               <option value="paused">En pause</option>
             </select>
           </div>
@@ -1106,8 +1108,8 @@ export const AdminMarketsPage: React.FC = () => {
                 onChange={(e) => setEditingValueInput(e.target.value)}
                 className="w-full h-10 px-3 text-xs font-bold bg-bg-base border border-border-base rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               >
-                <option value="true">Activé (true)</option>
-                <option value="false">Désactivé (false)</option>
+                <option value="true">{t('admin.adminMarketsPage.activeTrue')}</option>
+                <option value="false">{t('admin.adminMarketsPage.desactiveFalse')}</option>
               </select>
             ) : (
               <input
@@ -1121,7 +1123,7 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-micro text-stone-600 space-y-1">
-            <div className="font-bold text-stone-800">Règle de persistance :</div>
+            <div className="font-bold text-stone-800">{t('admin.adminMarketsPage.regleDePersistance')}</div>
             <p>
               Cette valeur sera enregistrée en tant que surcharge exclusive de ce marché. Vous pourrez à tout moment revenir à la valeur dynamique de France en cliquant sur « Réinitialiser ».
             </p>

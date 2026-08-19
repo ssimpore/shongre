@@ -19,6 +19,7 @@ import {
 import { providerService } from '../../../../domains/providers/provider.service';
 import { Button } from '../../../../design-system/primitives/Button';
 import { useToast } from '../../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderHealthSimulatorProps {
   provider: Provider;
@@ -31,6 +32,7 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
   configuration,
   onUpdated,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [isRunningTest, setIsRunningTest] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<
@@ -112,8 +114,8 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
           >
             <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
             <div>
-              <span className="font-bold text-xs text-stone-900 block">Opérationnel (Healthy)</span>
-              <span className="text-micro text-stone-500">Toutes les requêtes aboutissent</span>
+              <span className="font-bold text-xs text-stone-900 block">{t('admin.providerHealthSimulator.operationnelHealthy')}</span>
+              <span className="text-micro text-stone-500">{t('admin.providerHealthSimulator.toutesLesRequetesAboutissent')}</span>
             </div>
           </button>
 
@@ -128,8 +130,8 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
           >
             <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
             <div>
-              <span className="font-bold text-xs text-stone-900 block">Dégradé (Degraded)</span>
-              <span className="text-micro text-stone-500">Ralentissements ou échecs partiels</span>
+              <span className="font-bold text-xs text-stone-900 block">{t('admin.providerHealthSimulator.degradeDegraded')}</span>
+              <span className="text-micro text-stone-500">{t('admin.providerHealthSimulator.ralentissementsOuEchecsPartiels')}</span>
             </div>
           </button>
 
@@ -145,7 +147,7 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
             <XCircle className="w-5 h-5 text-danger shrink-0" />
             <div>
               <span className="font-bold text-xs text-stone-900 block">Indisponible (Unavailable)</span>
-              <span className="text-micro text-stone-500">Bascule immédiate sur le secours</span>
+              <span className="text-micro text-stone-500">{t('admin.providerHealthSimulator.basculeImmediateSurLeSecours')}</span>
             </div>
           </button>
         </div>
@@ -168,10 +170,10 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
               onChange={(e) => setSelectedScenario(e.target.value as any)}
               className="w-full py-2 px-3 text-xs rounded-lg border border-stone-200 bg-stone-50 text-stone-800 font-medium"
             >
-              <option value="healthy">✓ Succès nominal (Réponse valide HTTPS 200)</option>
-              <option value="missing_credentials">⚠ Identifiants ou clé secrète non configurés</option>
-              <option value="timeout">⌛ Dépassement de délai (Timeout HTTP 504)</option>
-              <option value="invalid_config">✗ Paramètres rejetés par le partenaire (400)</option>
+              <option value="healthy">{t('admin.providerHealthSimulator.succesNominalReponseValideHttps')}</option>
+              <option value="missing_credentials">{t('admin.providerHealthSimulator.identifiantsOuCleSecreteNon')}</option>
+              <option value="timeout">{t('admin.providerHealthSimulator.depassementDeDelaiTimeoutHttp')}</option>
+              <option value="invalid_config">{t('admin.providerHealthSimulator.parametresRejetesParLePartenaire')}</option>
             </select>
           </div>
 

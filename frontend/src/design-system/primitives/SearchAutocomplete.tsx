@@ -15,6 +15,7 @@ import {
   PopularSearchKeyword,
 } from '../../configuration/search.config';
 import { Category } from '../../types';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface AutocompleteSelection {
   query?: string;
@@ -79,6 +80,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   idPrefix = 'search-autocomplete',
   className = '',
 }) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen) return null;
@@ -104,7 +106,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
       ref={containerRef}
       id={`${idPrefix}-dropdown`}
       role="listbox"
-      aria-label="Suggestions de recherche"
+      aria-label={t('ui.searchAutocomplete.suggestionsDeRecherche')}
       className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-border-base overflow-hidden z-50 animate-in fade-in zoom-in-95 max-h-[440px] overflow-y-auto ${className}`}
     >
       {/* ----------------------------------------------------------------- */}
@@ -117,7 +119,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             <div className="py-1.5 px-2">
               <div className="flex items-center gap-1.5 px-3 py-1 text-micro font-bold text-stone-500 uppercase tracking-wider">
                 <Layers className="w-3 h-3 text-stone-400" />
-                <span>Catégories & Rayons</span>
+                <span>{t('ui.searchAutocomplete.categoriesRayons')}</span>
               </div>
               <div className="space-y-0.5 mt-1">
                 {categories.map((catSuggestion) => {
@@ -177,7 +179,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             <div className="py-1.5 px-2">
               <div className="flex items-center gap-1.5 px-3 py-1 text-micro font-bold text-stone-500 uppercase tracking-wider">
                 <Search className="w-3 h-3 text-stone-400" />
-                <span>Suggestions de recherche</span>
+                <span>{t('ui.searchAutocomplete.suggestionsDeRecherche')}</span>
               </div>
               <div className="space-y-0.5 mt-1">
                 {keywords.map((kw) => {
@@ -268,7 +270,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
               <div className="flex items-center justify-between px-3 py-1">
                 <div className="flex items-center gap-1.5 text-micro font-bold text-stone-500 uppercase tracking-wider">
                   <Clock className="w-3 h-3 text-stone-400" />
-                  <span>Recherches récentes</span>
+                  <span>{t('ui.searchAutocomplete.recherchesRecentes')}</span>
                 </div>
                 {onClearAllRecentSearches && (
                   <button
@@ -338,7 +340,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             <div className="py-2 px-3">
               <div className="flex items-center gap-1.5 py-1 text-micro font-bold text-stone-500 uppercase tracking-wider mb-2">
                 <Sparkles className="w-3 h-3 text-amber-500" />
-                <span>Recherches les plus populaires</span>
+                <span>{t('ui.searchAutocomplete.recherchesLesPlusPopulaires')}</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {trending.map((trend) => (

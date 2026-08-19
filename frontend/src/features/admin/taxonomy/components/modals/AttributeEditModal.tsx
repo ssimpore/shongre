@@ -11,6 +11,7 @@ import { Input, FormField, Checkbox } from '../../../../../design-system/primiti
 import { useToast } from '../../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../../app/providers/AuthProvider';
 import { Plus, Trash2, Tag } from 'lucide-react';
+import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export interface AttributeEditModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
   attribute,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const isEditing = Boolean(attribute);
@@ -151,16 +153,16 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? `Éditer l'attribut "${attribute?.label}"` : 'Créer un nouvel attribut dans le Registre'}
-      description="Les attributs canoniques sont définis de manière centralisée et réutilisés dans les différentes catégories."
+      description={t('admin.attributeEditModal.lesAttributsCanoniquesSontDefinis')}
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField label="Libellé de l'attribut (Français)" required>
+          <FormField label={t('admin.attributeEditModal.libelleDeLAttributFrancais')} required>
             <Input
               value={label}
               onChange={(e) => handleLabelChange(e.target.value)}
-              placeholder="Ex: Capacité de stockage"
+              placeholder={t('admin.attributeEditModal.exCapaciteDeStockage')}
               autoFocus
             />
           </FormField>
@@ -180,23 +182,23 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <FormField label="Type de donnée" required>
+          <FormField label={t('admin.attributeEditModal.typeDeDonnee')} required>
             <select
               value={dataType}
               onChange={(e) => setDataType(e.target.value as AttributeDataType)}
               className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
             >
               <option value="text">Texte libre (String)</option>
-              <option value="number">Nombre (Numérique)</option>
-              <option value="select">Menu déroulant (Select unique)</option>
+              <option value="number">{t('admin.attributeEditModal.nombreNumerique')}</option>
+              <option value="select">{t('admin.attributeEditModal.menuDeroulantSelectUnique')}</option>
               <option value="multi_select">Choix multiples (Multi-select)</option>
-              <option value="boolean">Booléen (Oui / Non)</option>
+              <option value="boolean">{t('admin.attributeEditModal.booleenOuiNon')}</option>
               <option value="range">Plage / Intervalle</option>
-              <option value="year">Année (Millésime)</option>
+              <option value="year">{t('admin.attributeEditModal.anneeMillesime')}</option>
             </select>
           </FormField>
 
-          <FormField label="Unité de mesure (optionnelle)" hint="Ex: km, m², kWh, kg, ch, €">
+          <FormField label={t('admin.attributeEditModal.uniteDeMesureOptionnelle')} hint="Ex: km, m², kWh, kg, ch, €">
             <Input
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
@@ -204,26 +206,26 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
             />
           </FormField>
 
-          <FormField label="Groupe de publication">
+          <FormField label={t('admin.attributeEditModal.groupeDePublication')}>
             <select
               value={publicationGroup}
               onChange={(e) => setPublicationGroup(e.target.value as any)}
               className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
             >
-              <option value="general">Général</option>
-              <option value="specifications">Spécifications techniques</option>
+              <option value="general">{t('admin.attributeEditModal.general')}</option>
+              <option value="specifications">{t('admin.attributeEditModal.specificationsTechniques')}</option>
               <option value="dimensions">Dimensions / Surface</option>
               <option value="performance">Performance / Motorisation</option>
-              <option value="legal">Mentions légales & Normes</option>
+              <option value="legal">{t('admin.attributeEditModal.mentionsLegalesNormes')}</option>
             </select>
           </FormField>
         </div>
 
-        <FormField label="Texte d'aide ou placeholder (vendeur)">
+        <FormField label={t('admin.attributeEditModal.texteDAideOuPlaceholder')}>
           <Input
             value={helpText}
             onChange={(e) => setHelpText(e.target.value)}
-            placeholder="Ex: Indiquez la capacité réelle de la batterie en kWh"
+            placeholder={t('admin.attributeEditModal.exIndiquezLaCapaciteReelle')}
           />
         </FormField>
 
@@ -280,13 +282,13 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
                       className="w-1/3"
                     />
                     <Input
-                      placeholder="Libellé affiché (Français)"
+                      placeholder={t('admin.attributeEditModal.libelleAfficheFrancais')}
                       value={opt.label}
                       onChange={(e) => handleUpdateOption(idx, 'label', e.target.value)}
                       className="flex-1"
                     />
                     <Button
-                      aria-label="Retirer cette option"
+                      aria-label={t('admin.attributeEditModal.retirerCetteOption')}
                       variant="ghost"
                       size="sm"
                       type="button"

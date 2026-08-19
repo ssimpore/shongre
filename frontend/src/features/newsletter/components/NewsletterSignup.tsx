@@ -6,6 +6,7 @@ import { Button } from '../../../design-system/primitives/Button';
 import { newsletterService } from '../../../domains/newsletter/newsletter.service';
 import { newsletterRepository } from '../../../repositories/newsletter.repository';
 import { NewsletterSubscriptionSource } from '../../../domains/newsletter/newsletter.types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface NewsletterSignupProps {
   variant?: 'band' | 'footer' | 'inline';
@@ -20,6 +21,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   className = '',
   source = 'homepage',
 }) => {
+  const { t } = useTranslation();
   const { currentUser, isAuthenticated } = useAuth();
   const toast = useToast();
 
@@ -69,7 +71,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
       return (
         <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold py-1">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>Inscription confirmée !</span>
+          <span>{t('newsletter.newsletterSignup.inscriptionConfirmee')}</span>
         </div>
       );
     }
@@ -79,7 +81,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
         <div className="w-10 h-10 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-5 h-5" />
         </div>
-        <h4 className="text-sm font-black text-success">Vous êtes bien inscrit !</h4>
+        <h4 className="text-sm font-black text-success">{t('newsletter.newsletterSignup.vousEtesBienInscrit')}</h4>
         <p className="text-xs text-success max-w-sm mx-auto">
           Vous recevrez nos sélections et bons plans. Vous pourrez vous désabonner en 1 clic à tout moment.
         </p>
@@ -102,8 +104,8 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="votre@email.com"
-              aria-label="Votre adresse email"
+              placeholder={t('newsletter.newsletterSignup.votreEmailCom')}
+              aria-label={t('newsletter.newsletterSignup.votreAdresseEmail')}
               autoComplete="email"
               disabled={isSubmitting}
               className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20-on-dark transition-colors"
@@ -136,7 +138,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               so this uses the inverse-surface brand variant. */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary-on-dark text-xs font-bold">
             <Mail className="w-3.5 h-3.5" />
-            <span>La sélection Shongre</span>
+            <span>{t('newsletter.newsletterSignup.laSelectionShongre')}</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight">
@@ -157,8 +159,8 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Saisissez votre adresse email"
-                  aria-label="Votre adresse email"
+                  placeholder={t('newsletter.newsletterSignup.saisissezVotreAdresseEmail')}
+                  aria-label={t('newsletter.newsletterSignup.votreAdresseEmail')}
                   autoComplete="email"
                   disabled={isSubmitting}
                   className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"

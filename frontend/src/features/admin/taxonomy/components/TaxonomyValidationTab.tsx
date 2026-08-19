@@ -3,6 +3,7 @@ import { TaxonomyNode, TaxonomyValidationIssue, ValidationSeverity } from '../..
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
 import { Button } from '../../../../design-system/primitives/Button';
 import { AlertOctagon, AlertTriangle, Info, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyValidationTabProps {
   onNavigateToNode: (node: TaxonomyNode) => void;
@@ -11,6 +12,7 @@ export interface TaxonomyValidationTabProps {
 export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
   onNavigateToNode,
 }) => {
+  const { t } = useTranslation();
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [lastCheckTime, setLastCheckTime] = useState<string>(new Date().toLocaleTimeString());
 
@@ -37,7 +39,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-primary" />
-            <span>Moteur d'Audit & Validation d'Intégrité</span>
+            <span>{t('admin.taxonomyValidationTab.moteurDAuditValidationD')}</span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
             Contrôle automatique de structure, unicité des IDs et slugs, cohérence des capacités et attributs.
@@ -58,7 +60,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
-            <span>État global</span>
+            <span>{t('admin.taxonomyValidationTab.etatGlobal')}</span>
             {errors.length === 0 ? (
               <CheckCircle2 className="w-4 h-4 text-success" />
             ) : (
@@ -148,8 +150,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         {filteredIssues.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-2xl border border-border-base text-xs text-stone-500 space-y-2">
             <CheckCircle2 className="w-8 h-8 text-success mx-auto" />
-            <p className="font-bold text-stone-900 text-sm">Aucune anomalie détectée dans ce filtre.</p>
-            <p className="text-stone-500">La taxonomie respecte toutes les règles de cohérence structurelle.</p>
+            <p className="font-bold text-stone-900 text-sm">{t('admin.taxonomyValidationTab.aucuneAnomalieDetecteeDansCe')}</p>
+            <p className="text-stone-500">{t('admin.taxonomyValidationTab.laTaxonomieRespecteToutesLes')}</p>
           </div>
         ) : (
           filteredIssues.map((issue) => {

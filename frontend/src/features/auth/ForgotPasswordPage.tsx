@@ -8,8 +8,10 @@ import { PasswordField } from './components/PasswordField';
 import { AuthLayout } from './components/AuthLayout';
 import { routes } from '../../configuration/routes';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ForgotPasswordPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Mot de passe oublié",
     description:
@@ -147,7 +149,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre.email@exemple.fr"
+                placeholder={t('auth.forgotPasswordPage.votreEmailExempleFr')}
                 required
                 autoComplete="email"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -178,7 +180,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 type="text"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                placeholder="Collez le token reçu par email"
+                placeholder={t('auth.forgotPasswordPage.collezLeTokenRecuPar')}
                 required
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
@@ -191,7 +193,7 @@ export const ForgotPasswordPage: React.FC = () => {
               id="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              label="Nouveau mot de passe"
+              label={t('auth.forgotPasswordPage.nouveauMotDePasse')}
               showStrength
               required
               autoComplete="new-password"

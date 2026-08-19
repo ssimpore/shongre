@@ -13,8 +13,10 @@ import {
 } from 'lucide-react';
 import { NotificationType } from '../../../domains/notifications/notification.types';
 import { useNotifications } from '../../../app/providers/NotificationProvider';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const NotificationDemoToolbar: React.FC = () => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const { simulateNotification } = useNotifications();
 
@@ -109,7 +111,7 @@ export const NotificationDemoToolbar: React.FC = () => {
       >
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Simulateur d'événements temps-réel (Mode Démo)</span>
+          <span>{t('notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel')}</span>
         </div>
         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
       </button>

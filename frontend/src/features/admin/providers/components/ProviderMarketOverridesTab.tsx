@@ -17,6 +17,7 @@ import {
 import { providerService } from '../../../../domains/providers/provider.service';
 import { Button } from '../../../../design-system/primitives/Button';
 import { useToast } from '../../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderMarketOverridesTabProps {
   provider: Provider;
@@ -29,6 +30,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
   configuration,
   onUpdated,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [selectedMarket, setSelectedMarket] = useState<string>('BE');
 
@@ -151,7 +153,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
               </span>
             </div>
             <div className="flex justify-between py-1 border-b border-stone-200/50">
-              <span className="text-stone-500">Priorité de routage :</span>
+              <span className="text-stone-500">{t('admin.providerMarketOverridesTab.prioriteDeRoutage')}</span>
               <span className="font-bold text-stone-900 font-mono">
                 P{configuration.priority}
               </span>
@@ -202,7 +204,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
           <div className="space-y-3">
             {/* Custom Enable Toggle */}
             <div className="flex items-center justify-between p-2.5 rounded-lg border border-stone-200 bg-white">
-              <span className="text-xs font-bold text-stone-800">Activé dans ce pays</span>
+              <span className="text-xs font-bold text-stone-800">{t('admin.providerMarketOverridesTab.activeDansCePays')}</span>
               <input
                 type="checkbox"
                 checked={overrideEnabled}
@@ -213,7 +215,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
 
             {/* Custom Priority */}
             <div className="flex items-center justify-between p-2.5 rounded-lg border border-stone-200 bg-white">
-              <span className="text-xs font-bold text-stone-800">Priorité locale</span>
+              <span className="text-xs font-bold text-stone-800">{t('admin.providerMarketOverridesTab.prioriteLocale')}</span>
               <input
                 type="number"
                 min={1}
@@ -232,7 +234,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
               <input
                 type="text"
                 value={customNotes}
-                placeholder="Ex: Transporteur dédié zone frontalière..."
+                placeholder={t('admin.providerMarketOverridesTab.exTransporteurDedieZoneFrontaliere')}
                 onChange={(e) => setCustomNotes(e.target.value)}
                 className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-white"
               />
@@ -252,7 +254,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
                 Réinitialiser sur France
               </Button>
             ) : (
-              <span className="text-xs text-stone-500 italic">Aucune surcharge définie.</span>
+              <span className="text-xs text-stone-500 italic">{t('admin.providerMarketOverridesTab.aucuneSurchargeDefinie')}</span>
             )}
 
             <Button

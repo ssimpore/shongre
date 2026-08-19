@@ -6,6 +6,7 @@ import { Button } from '../../../../../design-system/primitives/Button';
 import { useToast } from '../../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../../app/providers/AuthProvider';
 import { Trash2, AlertOctagon, Archive } from 'lucide-react';
+import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export interface DeleteNodeModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
   onSuccess,
   onSwitchToDeprecate,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +58,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Supprimer définitivement "${node.name}" ?`}
-      description="La suppression permanente est strictement protégée pour préserver l'intégrité de la marketplace."
+      description={t('admin.deleteNodeModal.laSuppressionPermanenteEstStrictement')}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -64,7 +66,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
           <div className="p-4 bg-danger-surface border border-danger-border rounded-xl space-y-3 text-xs text-danger">
             <div className="flex items-center gap-2 font-bold text-danger">
               <AlertOctagon className="w-5 h-5 shrink-0" />
-              <span>Suppression bloquée par les règles de sécurité :</span>
+              <span>{t('admin.deleteNodeModal.suppressionBloqueeParLesRegles')}</span>
             </div>
             <ul className="list-disc list-inside space-y-1 text-danger">
               {impact.blockingReasons.map((reason, idx) => (
@@ -72,12 +74,12 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
               ))}
             </ul>
             <p className="pt-1 text-stone-600">
-              Pour éviter d'invalider des annonces ou rompre des chemins SEO, il est fortement recommandé de <strong>déprécier</strong> cette catégorie plutôt que de la supprimer.
+              Pour éviter d'invalider des annonces ou rompre des chemins SEO, il est fortement recommandé de <strong>{t('admin.deleteNodeModal.deprecier')}</strong> cette catégorie plutôt que de la supprimer.
             </p>
           </div>
         ) : (
           <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-700">
-            <p className="font-semibold text-stone-900">Ce nœud est éligible à la suppression :</p>
+            <p className="font-semibold text-stone-900">{t('admin.deleteNodeModal.ceNUdEstEligible')}</p>
             <p className="text-stone-500 mt-1">
               Aucune annonce active ni sous-catégorie dépendante n'a été détectée. L'entité sera retirée du référentiel canonique.
             </p>

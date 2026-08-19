@@ -40,6 +40,7 @@ import {
 import { Modal } from '../../../../../design-system/primitives/Modal';
 import { Button } from '../../../../../design-system/primitives/Button';
 import { Input } from '../../../../../design-system/primitives/FormField';
+import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export const AVAILABLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Car,
@@ -93,6 +94,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   selectedIcon,
   onSelectIcon,
 }) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const filteredIcons = Object.keys(AVAILABLE_ICONS).filter((name) =>
@@ -103,13 +105,13 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Sélectionner une icône canonique"
-      description="Choisissez parmi le registre des icônes vectorielles standardisées Shongre."
+      title={t('admin.iconPickerModal.selectionnerUneIconeCanonique')}
+      description={t('admin.iconPickerModal.choisissezParmiLeRegistreDes')}
       maxWidth="md"
     >
       <div className="space-y-4">
         <Input
-          placeholder="Rechercher une icône (ex: Car, Home, Phone...)"
+          placeholder={t('admin.iconPickerModal.rechercherUneIconeExCar')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

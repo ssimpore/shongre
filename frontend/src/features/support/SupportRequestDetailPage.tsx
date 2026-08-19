@@ -22,8 +22,10 @@ import { supportRepository } from '../../repositories/support.repository';
 import { formatDate } from '../../utilities/formatters';
 import { SupportContextCard } from './components/SupportContextCard';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const SupportRequestDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -131,7 +133,7 @@ export const SupportRequestDetailPage: React.FC = () => {
           className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-stone-950 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Retour à mes demandes</span>
+          <span>{t('support.supportRequestDetailPage.retourAMesDemandes')}</span>
         </button>
 
         {!isClosedOrResolved && (
@@ -142,7 +144,7 @@ export const SupportRequestDetailPage: React.FC = () => {
             className="font-bold flex items-center gap-1.5 text-success hover:text-success"
           >
             <CheckCircle2 className="w-4 h-4 text-success" />
-            <span>Marquer comme résolu</span>
+            <span>{t('support.supportRequestDetailPage.marquerCommeResolu')}</span>
           </Button>
         )}
       </div>
@@ -273,7 +275,7 @@ export const SupportRequestDetailPage: React.FC = () => {
               className="text-micro font-bold text-warning bg-warning-surface hover:bg-warning-surface border border-warning-border px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
             >
               <Sparkles className="w-3 h-3 text-warning" />
-              <span>Simuler réponse conseiller (Démo)</span>
+              <span>{t('support.supportRequestDetailPage.simulerReponseConseillerDemo')}</span>
             </button>
           </div>
 
@@ -281,7 +283,7 @@ export const SupportRequestDetailPage: React.FC = () => {
             rows={4}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Écrivez votre message ou vos précisions ici..."
+            placeholder={t('support.supportRequestDetailPage.ecrivezVotreMessageOuVos')}
           />
 
           <div className="flex justify-end gap-3 pt-2">

@@ -4,6 +4,7 @@ import { useDialogBehavior } from '../../../design-system/primitives/useDialogBe
 import { authService } from '../../../domains/auth/auth.service';
 import { Button } from '../../../design-system/primitives/Button';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface MFAModalProps {
   userId: string;
@@ -18,6 +19,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const [setupData] = useState(() => authService.generateMFASetup(userId));
   const [code, setCode] = useState('');
   const [copiedSecret, setCopiedSecret] = useState(false);
@@ -129,7 +131,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                     type="button"
                     onClick={handleCopySecret}
                     className="p-1.5 rounded-lg border border-stone-300 hover:bg-stone-100 text-stone-700 transition-colors cursor-pointer"
-                    title="Copier la clé secrète"
+                    title={t('auth.mFAModal.copierLaCleSecrete')}
                   >
                     {copiedSecret ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                   </button>
@@ -147,7 +149,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyBackupCodes}
-                aria-label="Copier les codes de secours"
+                aria-label={t('auth.mFAModal.copierLesCodesDeSecours')}
                 className="text-micro font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
               >
                 {copiedBackup ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}

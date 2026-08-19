@@ -6,8 +6,10 @@ import { FormField, Input } from '../../design-system/primitives/FormField';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { newsletterService } from '../../domains/newsletter/newsletter.service';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NewsletterUnsubscribePage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -99,12 +101,12 @@ export const NewsletterUnsubscribePage: React.FC = () => {
           </div>
         ) : (
           <form onSubmit={handleUnsubscribe} className="space-y-4 text-left">
-            <FormField label="Votre adresse email" required error={error || undefined}>
+            <FormField label={t('newsletter.newsletterUnsubscribePage.votreAdresseEmail')} required error={error || undefined}>
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre.email@exemple.fr"
+                placeholder={t('newsletter.newsletterUnsubscribePage.votreEmailExempleFr')}
               />
             </FormField>
 

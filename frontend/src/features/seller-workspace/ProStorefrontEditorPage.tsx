@@ -5,8 +5,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { Input, Textarea, FormField } from '../../design-system/primitives/FormField';
 import { Avatar } from '../../design-system/primitives/Badge';
 import { Check, Camera, Building2, MapPin, Globe, Phone, Mail } from 'lucide-react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ProStorefrontEditorPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, updateProfile } = useAuth();
   const toast = useToast();
 
@@ -77,7 +79,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           />
         </FormField>
 
-        <FormField label="Numéro SIRET (14 chiffres)" required hint="Vérifié au répertoire SIRENE INSEE">
+        <FormField label={t('sellerworkspace.proStorefrontEditorPage.numeroSiret14Chiffres')} required hint="Vérifié au répertoire SIRENE INSEE">
           <Input
             value={siret}
             onChange={(e) => setSiret(e.target.value)}
@@ -85,7 +87,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
         </FormField>
       </div>
 
-      <FormField label="Présentation de l'entreprise & Savoir-faire" required hint="Décrivez vos garanties, vos conditions de retour, votre expertise.">
+      <FormField label={t('sellerworkspace.proStorefrontEditorPage.presentationDeLEntrepriseSavoir')} required hint="Décrivez vos garanties, vos conditions de retour, votre expertise.">
         <Textarea
           rows={4}
           value={bio}
@@ -118,7 +120,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField label="Téléphone commercial">
+        <FormField label={t('sellerworkspace.proStorefrontEditorPage.telephoneCommercial')}>
           <Input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -143,7 +145,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           className="text-xs font-bold text-primary hover:underline flex items-center gap-1.5"
         >
           <Globe className="w-4 h-4" />
-          <span>Voir ma vitrine en direct sur le site</span>
+          <span>{t('sellerworkspace.proStorefrontEditorPage.voirMaVitrineEnDirect')}</span>
         </a>
 
         {/* `size="lg"` + a nowrap label is 286px wide, which alone overflows a

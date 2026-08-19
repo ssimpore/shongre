@@ -7,6 +7,7 @@ import { useToast } from '../../../app/providers/ToastProvider';
 import { listingRepository } from '../../../repositories/listing.repository';
 import { formatPrice } from '../../../utilities/formatters';
 import { UserProfile } from '../../../types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
   currentUser,
   onImportCompleted,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [csvContent, setCsvContent] = useState<string>('');
   const [parsedItems, setParsedItems] = useState<ParsedListingItem[]>([]);
@@ -187,8 +189,8 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Import massif de catalogue (CSV / Excel)"
-      description="Importez simultanément des dizaines d'annonces professionnelles avec prix, stocks et photos"
+      title={t('sellerworkspace.bulkImportModal.importMassifDeCatalogueCsv')}
+      description={t('sellerworkspace.bulkImportModal.importezSimultanementDesDizainesD')}
       maxWidth="lg"
     >
       <div className="space-y-5">
@@ -269,7 +271,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         ) : (
           <div className="p-8 border-2 border-dashed border-stone-200 rounded-2xl text-center space-y-2 bg-stone-50/50">
             <FileSpreadsheet className="w-10 h-10 mx-auto text-stone-400" />
-            <h4 className="font-bold text-stone-800 text-sm">Déposez votre fichier CSV ici</h4>
+            <h4 className="font-bold text-stone-800 text-sm">{t('sellerworkspace.bulkImportModal.deposezVotreFichierCsvIci')}</h4>
             <p className="text-xs text-stone-500 max-w-sm mx-auto">
               Utilisez notre modèle avec séparateur point-virgule (;) contenant colonnes Titre, Catégorie, Prix, État et Stock.
             </p>

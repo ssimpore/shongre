@@ -13,6 +13,7 @@ import {
 import { TaxonomyNode } from '../../../../domains/taxonomy/taxonomy.types';
 import { CategoryIcon } from '../../../../design-system/primitives/CategoryIcon';
 import { getTaxonomyLabel } from '../../../../domains/taxonomy/taxonomy.service';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyHierarchyTreeProps {
   nodes: TaxonomyNode[];
@@ -39,6 +40,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
   levelFilter = 'all',
   statusFilter = 'all',
 }) => {
+  const { t } = useTranslation();
   const matchesFilter = (node: TaxonomyNode): boolean => {
     // 1. Level filter
     if (levelFilter !== 'all' && node.level !== levelFilter) return false;
@@ -144,7 +146,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onReorderNode(node.id, 'up', e)}
                 className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
-                title="Monter d'un rang"
+                title={t('admin.taxonomyHierarchyTree.monterDUnRang')}
               >
                 <ArrowUp className="w-3 h-3" />
               </button>
@@ -154,7 +156,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onReorderNode(node.id, 'down', e)}
                 className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
-                title="Descendre d'un rang"
+                title={t('admin.taxonomyHierarchyTree.descendreDUnRang')}
               >
                 <ArrowDown className="w-3 h-3" />
               </button>
@@ -166,7 +168,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onAddChild(node, e)}
                 className="p-1 rounded text-stone-500 hover:text-primary hover:bg-primary-light min-w-6 min-h-6 inline-flex items-center justify-center"
-                title="Ajouter une sous-rubrique"
+                title={t('admin.taxonomyHierarchyTree.ajouterUneSousRubrique')}
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -200,7 +202,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
       {filteredRoots.length === 0 ? (
         <div className="p-8 text-center text-xs text-stone-500 border border-dashed rounded-2xl">
           <Layers className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-          <p className="font-semibold text-stone-600">Aucune rubrique ne correspond à vos filtres.</p>
+          <p className="font-semibold text-stone-600">{t('admin.taxonomyHierarchyTree.aucuneRubriqueNeCorrespondA')}</p>
           <p className="text-micro text-stone-500 mt-1">
             Modifiez votre recherche ou réinitialisez les critères.
           </p>

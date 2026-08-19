@@ -5,12 +5,14 @@ import { Home, Search, PlusCircle, MessageSquare, User } from 'lucide-react';
 import { storageService } from '../../services/storage.service';
 import { useAuth } from '../providers/AuthProvider';
 import { usePublishCta } from '../../security/usePublishCta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
   const { currentUser } = useAuth();
   const unreadMessagesCount = storageService.getUnreadMessageCount(currentUser?.id);
   const publishCta = usePublishCta();
+  const { t } = useTranslation();
 
   // Hide bottom bar on fullscreen wizards / creation tunnels for maximum screen ergonomics
   if (location.pathname.startsWith('/deposer')) {
@@ -19,7 +21,7 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <nav
-      aria-label="Navigation mobile"
+      aria-label={t('nav.mobileLabel')}
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-stone-200/80 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.08)]"
     >
       {/* Height comes from `--mobile-nav-h` so the bar and everything pinned
@@ -40,7 +42,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <Home className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>Accueil</span>
+              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.home')}</span>
             </>
           )}
         </NavLink>
@@ -59,7 +61,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <Search className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>Recherche</span>
+              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.search')}</span>
             </>
           )}
         </NavLink>
@@ -95,11 +97,14 @@ export const MobileBottomNav: React.FC = () => {
                 {unreadMessagesCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center shadow-xs border-[1.5px] border-white">
                     {unreadMessagesCount}
-                    <span className="sr-only"> messages non lus</span>
+                    <span className="sr-only">
+                      {' '}
+                      {t('nav.unreadMessages', { count: unreadMessagesCount })}
+                    </span>
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>Messages</span>
+              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.messages')}</span>
             </>
           )}
         </NavLink>
@@ -118,7 +123,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <User className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>Compte</span>
+              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.account')}</span>
             </>
           )}
         </NavLink>

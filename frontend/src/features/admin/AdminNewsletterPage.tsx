@@ -23,8 +23,10 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { formatDate } from '../../utilities/formatters';
 import { NewsletterPreviewModal } from '../newsletter/components/NewsletterPreviewModal';
 import { Skeleton, EmptyState } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminNewsletterPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,11 +115,11 @@ export const AdminNewsletterPage: React.FC = () => {
   const getStatusBadge = (status: NewsletterCampaign['status']) => {
     switch (status) {
       case 'sent':
-        return <Badge variant="success" size="sm">Envoyée</Badge>;
+        return <Badge variant="success" size="sm">{t('admin.adminNewsletterPage.envoyee')}</Badge>;
       case 'scheduled':
-        return <Badge variant="warning" size="sm">Programmée</Badge>;
+        return <Badge variant="warning" size="sm">{t('admin.adminNewsletterPage.programmee')}</Badge>;
       case 'ready':
-        return <Badge variant="primary" size="sm">Prête</Badge>;
+        return <Badge variant="primary" size="sm">{t('admin.adminNewsletterPage.prete')}</Badge>;
       case 'draft':
         return <Badge variant="neutral" size="sm">Brouillon</Badge>;
       default:
@@ -186,7 +188,7 @@ export const AdminNewsletterPage: React.FC = () => {
 
       {/* 3. Campaigns List */}
       <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-        <h2 className="text-base font-black text-stone-900">Historique des campagnes</h2>
+        <h2 className="text-base font-black text-stone-900">{t('admin.adminNewsletterPage.historiqueDesCampagnes')}</h2>
 
         {loading ? (
           <div className="space-y-3">
@@ -197,8 +199,8 @@ export const AdminNewsletterPage: React.FC = () => {
         ) : campaigns.length === 0 ? (
           <EmptyState
             icon={<Mail className="w-8 h-8 text-stone-500" />}
-            title="Aucune campagne créée"
-            description="Créez une première campagne pour envoyer une sélection d'annonces aux abonnés de la newsletter."
+            title={t('admin.adminNewsletterPage.aucuneCampagneCreee')}
+            description={t('admin.adminNewsletterPage.creezUnePremiereCampagnePour')}
             className="border-0 shadow-none"
             action={
               <Button
@@ -255,7 +257,7 @@ export const AdminNewsletterPage: React.FC = () => {
                     className="font-bold flex items-center gap-1.5"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Aperçu</span>
+                    <span>{t('admin.adminNewsletterPage.apercu')}</span>
                   </Button>
 
                   {camp.status !== 'sent' && (
@@ -289,38 +291,38 @@ export const AdminNewsletterPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Créer une campagne newsletter"
-        description="Rédigez et ciblez une nouvelle édition de la sélection Shongre."
+        title={t('admin.adminNewsletterPage.creerUneCampagneNewsletter')}
+        description={t('admin.adminNewsletterPage.redigezEtCiblezUneNouvelle')}
       >
         <form onSubmit={handleCreateCampaign} className="space-y-4 text-xs">
-          <FormField label="Nom interne de la campagne" required>
+          <FormField label={t('admin.adminNewsletterPage.nomInterneDeLaCampagne')} required>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="ex: Sélection Vélos & Vintage Semaine 34"
+              placeholder={t('admin.adminNewsletterPage.exSelectionVelosVintageSemaine')}
             />
           </FormField>
 
-          <FormField label="Objet de l'email" required>
+          <FormField label={t('admin.adminNewsletterPage.objetDeLEmail')} required>
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="ex: 🚲 Les meilleures affaires vélo de la semaine"
+              placeholder={t('admin.adminNewsletterPage.exLesMeilleuresAffairesVelo')}
             />
           </FormField>
 
-          <FormField label="Texte d'aperçu (Préheader)">
+          <FormField label={t('admin.adminNewsletterPage.texteDApercuPreheader')}>
             <Input
               value={previewText}
               onChange={(e) => setPreviewText(e.target.value)}
-              placeholder="ex: Jusqu'à -40% sur des vélos gravel vérifiés."
+              placeholder={t('admin.adminNewsletterPage.exJusquA40Sur')}
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Audience ciblée">
+            <FormField label={t('admin.adminNewsletterPage.audienceCiblee')}>
               <Select
-                aria-label="Audience ciblée par l'envoi"
+                aria-label={t('admin.adminNewsletterPage.audienceCibleeParLEnvoi')}
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value as any)}
                 options={[
@@ -331,9 +333,9 @@ export const AdminNewsletterPage: React.FC = () => {
               />
             </FormField>
 
-            <FormField label="Thématique">
+            <FormField label={t('admin.adminNewsletterPage.thematique')}>
               <Select
-                aria-label="Thématique ciblée par l'envoi"
+                aria-label={t('admin.adminNewsletterPage.thematiqueCibleeParLEnvoi')}
                 value={targetTopic}
                 onChange={(e) => setTargetTopic(e.target.value as any)}
                 options={newsletterTopicsService.getAllTopics().map((t) => ({
@@ -348,16 +350,16 @@ export const AdminNewsletterPage: React.FC = () => {
             <Input
               value={heroTitle}
               onChange={(e) => setHeroTitle(e.target.value)}
-              placeholder="Titre d'accroche dans l'email"
+              placeholder={t('admin.adminNewsletterPage.titreDAccrocheDansL')}
             />
           </FormField>
 
-          <FormField label="Texte d'introduction éditorial">
+          <FormField label={t('admin.adminNewsletterPage.texteDIntroductionEditorial')}>
             <Textarea
               rows={3}
               value={introText}
               onChange={(e) => setIntroText(e.target.value)}
-              placeholder="Quelques phrases pour contextualiser la sélection..."
+              placeholder={t('admin.adminNewsletterPage.quelquesPhrasesPourContextualiserLa')}
             />
           </FormField>
 

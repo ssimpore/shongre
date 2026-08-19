@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
-import { LanguageSelector, SUPPORTED_LANGUAGES } from './LanguageSelector';
+import { LanguageSelector, SUPPORTED_LANGUAGES, SHIPPED_LOCALES } from './LanguageSelector';
 
 describe('LanguageSelector Primitive', () => {
   it('instantiates correctly as a React component element', () => {
@@ -32,5 +32,39 @@ describe('LanguageSelector Primitive', () => {
     const spanish = SUPPORTED_LANGUAGES.find((l) => l.code === 'es-ES');
     expect(spanish).toBeDefined();
     expect(spanish?.flag).toBe('🇪🇸');
+  });
+});
+
+/**
+ * A language is offered only when its messages exist.
+ *
+ * The list is presentational; availability is measured from the catalogues, so
+ * nobody can enable a language ahead of its translations — which is exactly how
+ * this selector originally shipped six languages that all rendered French.
+ */
+describe('language availability is measured, not declared', () => {
+  it('offers exactly the locales declared shipped', () => {
+    const availableCodes = SUPPORTED_LANGUAGES.filter((l) => l.isAvailable).map((l) => l.code);
+    expect(availableCodes).toEqual([...SHIPPED_LOCALES]);
+  });
+
+  it('does not offer a language with no catalogue', () => {
+    for (const code of ['de-DE', 'es-ES', 'nl-NL', 'it-IT']) {
+      const language = SUPPORTED_LANGUAGES.find((l) => l.code === code);
+      expect(language?.isAvailable, `${code} must stay unselectable`).toBe(false);
+    }
+  });
+
+  /**
+   * A complete catalogue is necessary but not sufficient.
+   *
+   * English was briefly selectable on catalogue coverage alone, while every page
+   * body was still hardcoded French. It ships now because both conditions hold:
+   * `npm run check:i18n` reports no hardcoded copy left, and the catalogue is
+   * complete. If either regresses, this pairing is what catches it.
+   */
+  it('does not offer a translated catalogue the interface has not caught up with', () => {
+    const english = SUPPORTED_LANGUAGES.find((l) => l.code === 'en-US');
+    expect(english?.isAvailable).toBe(false);
   });
 });

@@ -12,12 +12,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { UserProfile } from '../../../types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface ProBusinessInfoProps {
   seller: UserProfile;
 }
 
 export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
+  const { t } = useTranslation();
   if (seller.sellerType !== 'pro') return null;
 
   return (
@@ -47,7 +49,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
           </div>
 
           <div className="bg-bg-base p-3 rounded-xl border border-border-base">
-            <span className="text-stone-500 font-medium block text-xs">Numéro SIRET</span>
+            <span className="text-stone-500 font-medium block text-xs">{t('profile.proBusinessInfo.numeroSiret')}</span>
             <span className="font-bold font-mono text-stone-900 text-xs sm:text-sm">
               {seller.siret || seller.sirenSiret || 'Non renseigné'}
             </span>
@@ -64,7 +66,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
 
           {seller.businessAddress && (
             <div className="bg-bg-base p-3 rounded-xl border border-border-base sm:col-span-2">
-              <span className="text-stone-500 font-medium block text-xs">Adresse du siège / boutique</span>
+              <span className="text-stone-500 font-medium block text-xs">{t('profile.proBusinessInfo.adresseDuSiegeBoutique')}</span>
               <span className="font-bold text-stone-900 text-xs sm:text-sm flex items-center gap-1.5 mt-0.5">
                 <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                 {seller.businessAddress}
@@ -152,7 +154,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
             <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-success-surface/50 border border-success-border">
               <RotateCcw className="w-4 h-4 text-success shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold text-success block">Droit de rétractation</span>
+                <span className="font-bold text-success block">{t('profile.proBusinessInfo.droitDeRetractation')}</span>
                 <span className="text-success text-xs">
                   {seller.returnPolicy || '14 jours francs pour retourner l\'article conformément au Code de la consommation.'}
                 </span>
@@ -176,15 +178,15 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center gap-2 text-stone-800">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>Facture avec TVA sur demande</span>
+                  <span>{t('profile.proBusinessInfo.factureAvecTvaSurDemande')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-stone-800">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>Garantie légale de conformité (2 ans)</span>
+                  <span>{t('profile.proBusinessInfo.garantieLegaleDeConformite2')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-stone-800">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>Emballage professionnel renforcé</span>
+                  <span>{t('profile.proBusinessInfo.emballageProfessionnelRenforce')}</span>
                 </div>
               </div>
             )}

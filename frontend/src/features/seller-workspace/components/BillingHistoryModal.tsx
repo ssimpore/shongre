@@ -5,6 +5,7 @@ import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { formatPrice, formatRelativeDate } from '../../../utilities/formatters';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface BillingHistoryModalProps {
   isOpen: boolean;
@@ -81,6 +82,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
   onClose,
   userType = 'individual',
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [filterType, setFilterType] = useState<'all' | 'subscription' | 'boost' | 'escrow_fee'>('all');
 
@@ -130,8 +132,8 @@ Merci de votre confiance sur Shongre !
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Historique de facturation & Reçus"
-      description="Consultez et téléchargez vos factures, abonnements et options de visibilité"
+      title={t('sellerworkspace.billingHistoryModal.historiqueDeFacturationRecus')}
+      description={t('sellerworkspace.billingHistoryModal.consultezEtTelechargezVosFactures')}
       maxWidth="lg"
     >
       <div className="space-y-5">
@@ -220,7 +222,7 @@ Merci de votre confiance sur Shongre !
 
         {/* Footer info & close */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-stone-500">
-          <span>Toutes les factures Shongre SAS comportent la TVA française légale à 20%.</span>
+          <span>{t('sellerworkspace.billingHistoryModal.toutesLesFacturesShongreSas')}</span>
           <Button variant="outline" size="sm" onClick={onClose}>
             Fermer
           </Button>

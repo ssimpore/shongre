@@ -4,6 +4,7 @@ import { Package, ShoppingBag, ExternalLink, X } from 'lucide-react';
 import { SupportContext } from '../../../domains/support/support.types';
 import { formatPrice } from '../../../utilities/formatters';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface SupportContextCardProps {
   context: SupportContext;
@@ -11,6 +12,7 @@ interface SupportContextCardProps {
 }
 
 export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context, onRemove }) => {
+  const { t } = useTranslation();
   if (context.type === 'listing') {
     return (
       <div className="flex items-center justify-between gap-3 p-3 bg-stone-50 border border-border-base rounded-2xl">
@@ -48,7 +50,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
             to={`/annonce/${context.listingId}`}
             target="_blank"
             className="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-200 transition-colors"
-            title="Ouvrir l'annonce"
+            title={t('support.supportContextCard.ouvrirLAnnonce')}
           >
             <ExternalLink className="w-4 h-4" />
           </Link>
@@ -57,7 +59,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
               type="button"
               onClick={onRemove}
               className="p-1.5 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
-              title="Détacher l'annonce"
+              title={t('support.supportContextCard.detacherLAnnonce')}
             >
               <X className="w-4 h-4" />
             </button>
@@ -95,7 +97,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
             to="/compte/achats"
             target="_blank"
             className="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-200 transition-colors"
-            title="Voir la commande"
+            title={t('support.supportContextCard.voirLaCommande')}
           >
             <ExternalLink className="w-4 h-4" />
           </Link>
@@ -104,7 +106,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({ context,
               type="button"
               onClick={onRemove}
               className="p-1.5 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
-              title="Détacher la commande"
+              title={t('support.supportContextCard.detacherLaCommande')}
             >
               <X className="w-4 h-4" />
             </button>

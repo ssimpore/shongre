@@ -4,6 +4,7 @@ import { IMAGE_SIZES, buildSrcSet } from '../../../design-system/primitives/resp
 import { Camera, ChevronLeft, ChevronRight, Maximize2, X, Image as ImageIcon } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { ListingPhoto } from '../../../types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface ListingMediaGalleryProps {
   photos: ListingPhoto[];
@@ -16,6 +17,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
   title,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -140,7 +142,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 e.stopPropagation();
                 handlePrev();
               }}
-              aria-label="Photo précédente"
+              aria-label={t('listings.listingMediaGallery.photoPrecedente')}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-10"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -185,7 +187,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
           <button
             type="button"
             onClick={() => setIsLightboxOpen(true)}
-            aria-label="Agrandir en plein écran"
+            aria-label={t('listings.listingMediaGallery.agrandirEnPleinEcran')}
             className="pointer-events-auto ml-auto bg-stone-900/80 hover:bg-stone-900 backdrop-blur-md text-white text-xs p-1.5 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-xs"
           >
             <Maximize2 className="w-4 h-4" />
@@ -233,7 +235,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
-              aria-label="Fermer le plein écran"
+              aria-label={t('listings.listingMediaGallery.fermerLePleinEcran')}
               className="p-2 rounded-full bg-stone-800/80 hover:bg-stone-700 text-white transition-colors cursor-pointer"
             >
               <X className="w-6 h-6" />
@@ -255,7 +257,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 <button
                   type="button"
                   onClick={handlePrev}
-                  aria-label="Photo précédente"
+                  aria-label={t('listings.listingMediaGallery.photoPrecedente')}
                   className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronLeft className="w-6 h-6" />

@@ -31,8 +31,10 @@ import {
   formatBusinessIdentifier,
 } from '../../configuration/market.config';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const RegisterChoicePage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Créer un compte",
     description:
@@ -106,7 +108,7 @@ export const RegisterChoicePage: React.FC = () => {
         <div className="mt-6 p-4 rounded-xl bg-stone-100/60 border border-stone-200 text-xs text-stone-600 flex items-start gap-3">
           <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
           <div>
-            <strong className="text-stone-900">Évolution de compte souple :</strong> Vous commencez en tant que particulier et souhaitez ouvrir une boutique plus tard ? Vous pourrez passer en compte professionnel en 1 clic depuis vos paramètres.
+            <strong className="text-stone-900">{t('auth.registerPages.evolutionDeCompteSouple')}</strong> Vous commencez en tant que particulier et souhaitez ouvrir une boutique plus tard ? Vous pourrez passer en compte professionnel en 1 clic depuis vos paramètres.
           </div>
         </div>
       </div>
@@ -115,6 +117,7 @@ export const RegisterChoicePage: React.FC = () => {
 };
 
 export const RegisterIndividualPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Créer un compte particulier",
     description:
@@ -182,7 +185,7 @@ export const RegisterIndividualPage: React.FC = () => {
   return (
     <AuthLayout
       title="Inscription Particulier"
-      subtitle="Créez votre compte gratuit en 1 minute pour acheter et vendre en toute sérénité"
+      subtitle={t('auth.registerPages.creezVotreCompteGratuitEn')}
       badgeText="Compte Particulier Gratuit"
       footerLink={{
         text: 'Vous êtes un professionnel ?',
@@ -346,6 +349,7 @@ export const RegisterIndividualPage: React.FC = () => {
 };
 
 export const RegisterProPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Créer un compte professionnel",
     description:
@@ -455,7 +459,7 @@ export const RegisterProPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-3">
             <Briefcase className="w-3.5 h-3.5" />
-            <span>Vendeur Professionnel</span>
+            <span>{t('auth.registerPages.vendeurProfessionnel')}</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
@@ -472,7 +476,7 @@ export const RegisterProPage: React.FC = () => {
             <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? 'bg-primary text-white' : 'bg-success-surface text-success'}`}>
               {step > 1 ? <Check className="w-3.5 h-3.5" /> : '1'}
             </span>
-            <span>Identité du gérant</span>
+            <span>{t('auth.registerPages.identiteDuGerant')}</span>
           </div>
           <ChevronRight className="w-4 h-4 text-stone-300" />
           <div className={`flex items-center gap-1.5 ${step === 2 ? 'text-stone-950 font-black' : 'text-stone-500'}`}>
@@ -659,7 +663,7 @@ export const RegisterProPage: React.FC = () => {
                     type="text"
                     value={businessAddress}
                     onChange={(e) => setBusinessAddress(e.target.value)}
-                    placeholder="14 rue des Antiquaires"
+                    placeholder={t('auth.registerPages.14RueDesAntiquaires')}
                     required
                     className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />

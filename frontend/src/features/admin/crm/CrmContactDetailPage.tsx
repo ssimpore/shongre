@@ -28,8 +28,10 @@ import { ActivityTimeline } from './components/ActivityTimeline';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { formatDate } from '../../../utilities/formatters';
 import { Skeleton } from '../../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmContactDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -141,7 +143,7 @@ export const CrmContactDetailPage: React.FC = () => {
       <StatePanel
         variant="notFound"
         title="Contact introuvable"
-        description="Ce contact n'existe plus dans le CRM, ou a été fusionné avec une autre fiche."
+        description={t('admin.crmContactDetailPage.ceContactNExistePlus')}
         action={
           <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/contacts')}>
             Retour aux contacts
@@ -163,7 +165,7 @@ export const CrmContactDetailPage: React.FC = () => {
           className="text-xs font-bold text-stone-500 hover:text-stone-900 flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Tous les contacts</span>
+          <span>{t('admin.crmContactDetailPage.tousLesContacts')}</span>
         </Link>
       </div>
 
@@ -217,7 +219,7 @@ export const CrmContactDetailPage: React.FC = () => {
               className="font-bold flex items-center gap-1.5"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Planifier une tâche</span>
+              <span>{t('admin.crmContactDetailPage.planifierUneTache')}</span>
             </Button>
           </div>
         </div>
@@ -225,9 +227,9 @@ export const CrmContactDetailPage: React.FC = () => {
         {/* Lifecycle & Status Switcher */}
         <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-stone-500">Changer de statut :</span>
+            <span className="font-bold text-stone-500">{t('admin.crmContactDetailPage.changerDeStatut')}</span>
             <Select
-              aria-label="Cycle de vie du contact"
+              aria-label={t('admin.crmContactDetailPage.cycleDeVieDuContact')}
               value={contact.lifecycle}
               onChange={(e) => handleUpdateLifecycle(e.target.value as ContactLifecycle)}
               options={[
@@ -252,20 +254,20 @@ export const CrmContactDetailPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-success">
               <ShieldCheck className="w-5 h-5 text-success" />
-              <h2 className="text-sm font-black">Compte Plateforme Shongre Rattaché</h2>
+              <h2 className="text-sm font-black">{t('admin.crmContactDetailPage.comptePlateformeShongreRattache')}</h2>
             </div>
             <Link
               to={linkedUser.sellerType === 'pro' ? `/vendeur/${linkedUser.slug || linkedUser.id}` : '#'}
               className="text-xs font-bold text-success hover:underline flex items-center gap-1"
             >
-              <span>Voir la vitrine publique</span>
+              <span>{t('admin.crmContactDetailPage.voirLaVitrinePublique')}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-              <span className="text-success text-micro block">Type de compte</span>
+              <span className="text-success text-micro block">{t('admin.crmContactDetailPage.typeDeCompte')}</span>
               <strong className="text-success">{linkedUser.sellerType === 'pro' ? 'Vendeur Professionnel' : 'Particulier'}</strong>
             </div>
             <div>
@@ -273,7 +275,7 @@ export const CrmContactDetailPage: React.FC = () => {
               <strong className="text-success">{formatDate(linkedUser.createdAt)}</strong>
             </div>
             <div>
-              <span className="text-success text-micro block">Note vendeur</span>
+              <span className="text-success text-micro block">{t('admin.crmContactDetailPage.noteVendeur')}</span>
               <strong className="text-success">{linkedUser.rating || 5.0} / 5.0 ({linkedUser.reviewCount || 0} avis)</strong>
             </div>
             <div>
@@ -287,7 +289,7 @@ export const CrmContactDetailPage: React.FC = () => {
       {/* 4. Split: Activity Stream & Pending Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-black text-stone-900">Historique des échanges & Notes</h2>
+          <h2 className="text-base font-black text-stone-900">{t('admin.crmContactDetailPage.historiqueDesEchangesNotes')}</h2>
           <ActivityTimeline activities={activities} onAddNote={handleAddNote} />
         </div>
 
@@ -296,7 +298,7 @@ export const CrmContactDetailPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-stone-700" />
-                <h3 className="text-sm font-black text-stone-900">Tâches associées</h3>
+                <h3 className="text-sm font-black text-stone-900">{t('admin.crmContactDetailPage.tachesAssociees')}</h3>
               </div>
               <Button variant="outline" size="sm" onClick={() => setIsTaskModalOpen(true)}>
                 + Tâche
@@ -304,7 +306,7 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
 
             {tasks.length === 0 ? (
-              <p className="text-xs text-stone-500 text-center py-4">Aucune tâche planifiée.</p>
+              <p className="text-xs text-stone-500 text-center py-4">{t('admin.crmContactDetailPage.aucuneTachePlanifiee')}</p>
             ) : (
               <div className="space-y-2">
                 {tasks.map((t) => (
@@ -323,19 +325,19 @@ export const CrmContactDetailPage: React.FC = () => {
       <Modal
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
-        title="Planifier une tâche"
+        title={t('admin.crmContactDetailPage.planifierUneTache')}
         description={`Ajouter une tâche pour ${contact.identity.firstName} ${contact.identity.lastName}`}
       >
         <form onSubmit={handleCreateTask} className="space-y-3 text-xs">
-          <FormField label="Titre de la tâche" required>
+          <FormField label={t('admin.crmContactDetailPage.titreDeLaTache')} required>
             <Input
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder="ex: Rappeler pour planifier la démo"
+              placeholder={t('admin.crmContactDetailPage.exRappelerPourPlanifierLa')}
             />
           </FormField>
 
-          <FormField label="Date d'échéance" required>
+          <FormField label={t('admin.crmContactDetailPage.dateDEcheance')} required>
             <Input
               type="date"
               value={taskDueDate}

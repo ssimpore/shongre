@@ -52,6 +52,7 @@ import { usePublishCta } from '../../security/usePublishCta';
 import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/ViewModeToggle';
 import { plural } from '../../utilities/formatters';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 /**
  * How many cards each homepage rail shows.
@@ -84,6 +85,7 @@ const POPULAR_SEARCHES = [
 ] as const;
 
 export const HomePage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     description:
       "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.",
@@ -177,7 +179,7 @@ export const HomePage: React.FC = () => {
               <div className="space-y-2.5 sm:space-y-3">
                 <div className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full border border-stone-200/90 bg-white text-xs font-semibold text-stone-700 shadow-2xs w-fit">
                   <Sparkle className="w-3 h-3 text-primary fill-primary shrink-0" />
-                  <span>Le marché local français de confiance</span>
+                  <span>{t('home.homePage.leMarcheLocalFrancaisDe')}</span>
                 </div>
 
                 <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">
@@ -246,7 +248,7 @@ export const HomePage: React.FC = () => {
                     className="h-10.5 sm:h-11 px-5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/90 hover:border-stone-300 text-stone-800 font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 w-full sm:w-auto whitespace-nowrap"
                   >
                     <Search className="w-4 h-4 text-stone-400 shrink-0" />
-                    <span>Explorer le catalogue</span>
+                    <span>{t('home.homePage.explorerLeCatalogue')}</span>
                   </button>
                 </div>
               </div>
@@ -289,8 +291,8 @@ export const HomePage: React.FC = () => {
               to="/recherche?sortBy=date_desc"
               className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap"
             >
-              <span className="hidden sm:inline">Toutes les nouveautés</span>
-              <span className="sm:hidden">Voir tout</span>
+              <span className="hidden sm:inline">{t('home.homePage.toutesLesNouveautes')}</span>
+              <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
             </Link>
           </div>
@@ -330,7 +332,7 @@ export const HomePage: React.FC = () => {
           <EmptyState
             icon={<ScanSearch className="w-8 h-8 text-stone-400" />}
             title={`Aucune annonce sur le marché ${activeMarket.name} pour l'instant`}
-            description="Ce marché vient d'ouvrir. Publiez la première annonce, ou changez de marché depuis l'en-tête pour explorer les autres pays."
+            description={t('home.homePage.ceMarcheVientDOuvrir')}
             action={
               <Button to={publishCta.to} variant="primary" size="md" leftIcon={<PlusCircle className="w-4 h-4" />}>
                 {publishCta.label}
@@ -397,8 +399,8 @@ export const HomePage: React.FC = () => {
                 to="/bons-plans"
                 className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-warning-border hover:bg-warning-surface hover:border-warning px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shrink-0 flex items-center gap-1.5 whitespace-nowrap shadow-2xs active:scale-95 w-fit mb-0.5"
               >
-                <span className="hidden sm:inline">Toutes les offres</span>
-                <span className="sm:hidden">Voir tout</span>
+                <span className="hidden sm:inline">{t('home.homePage.toutesLesOffres')}</span>
+                <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
               </Link>
             </div>
@@ -437,8 +439,8 @@ export const HomePage: React.FC = () => {
               to="/professionnels"
               className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
             >
-              <span className="hidden sm:inline">Tous les professionnels</span>
-              <span className="sm:hidden">Voir tout</span>
+              <span className="hidden sm:inline">{t('home.homePage.tousLesProfessionnels')}</span>
+              <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
             </Link>
           </div>

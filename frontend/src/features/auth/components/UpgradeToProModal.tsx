@@ -4,6 +4,7 @@ import { useDialogBehavior } from '../../../design-system/primitives/useDialogBe
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { Button } from '../../../design-system/primitives/Button';
 import { SUPPORTED_MARKETS, validateBusinessIdentifier } from '../../../configuration/market.config';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface UpgradeToProModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, upgradeToPro } = useAuth();
   const [companyName, setCompanyName] = useState('');
   const [sirenSiret, setSirenSiret] = useState('');
@@ -118,7 +120,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Ex: Atelier Ébénisterie Dupont"
+              placeholder={t('auth.upgradeToProModal.exAtelierEbenisterieDupont')}
               required
               className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
@@ -193,7 +195,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               type="text"
               value={businessAddress}
               onChange={(e) => setBusinessAddress(e.target.value)}
-              placeholder="12 rue du Commerce, 75011 Paris"
+              placeholder={t('auth.upgradeToProModal.12RueDuCommerce75011')}
               required
               className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
@@ -202,7 +204,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
           <div className="p-3.5 rounded-xl bg-warning-surface/70 border border-warning-border/80 text-xs text-warning flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 text-warning shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong>Vérification légale :</strong> Votre immatriculation fera l'objet d'un examen par nos services de conformité. Votre badge Vendeur Pro sera délivré dès validation du dossier.
+              <strong>{t('auth.upgradeToProModal.verificationLegale')}</strong> Votre immatriculation fera l'objet d'un examen par nos services de conformité. Votre badge Vendeur Pro sera délivré dès validation du dossier.
             </div>
           </div>
 

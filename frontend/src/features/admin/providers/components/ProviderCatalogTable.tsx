@@ -34,6 +34,7 @@ import {
 import { Button } from '../../../../design-system/primitives/Button';
 import { Badge } from '../../../../design-system/primitives/Badge';
 import { Input, Select } from '../../../../design-system/primitives/FormField';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderCatalogTableProps {
   providers: Provider[];
@@ -50,6 +51,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
   onSelectCategory,
   onOpenTestModal,
 }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled' | 'requires_action'>('all');
   const [envFilter, setEnvFilter] = useState<'all' | ProviderEnvironment>('all');
@@ -108,7 +110,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
             <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Rechercher par nom, capacité (ex: payment.card), code..."
+              placeholder={t('admin.providerCatalogTable.rechercherParNomCapaciteEx')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-transparent bg-stone-50/50"
@@ -130,7 +132,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               onChange={(e) => onSelectCategory(e.target.value)}
               className="w-full py-2 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700"
             >
-              <option value="ALL">Toutes les catégories</option>
+              <option value="ALL">{t('admin.providerCatalogTable.toutesLesCategories')}</option>
               {Object.values(PROVIDER_CATEGORIES).map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.shortLabel} ({cat.name})
@@ -146,9 +148,9 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               onChange={(e) => setStatusFilter(e.target.value as any)}
               className="w-full py-2 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700"
             >
-              <option value="all">Tous les statuts</option>
+              <option value="all">{t('admin.providerCatalogTable.tousLesStatuts')}</option>
               <option value="active">Actif uniquement</option>
-              <option value="disabled">Désactivé</option>
+              <option value="disabled">{t('admin.providerCatalogTable.desactive')}</option>
               <option value="requires_action">Action requise</option>
             </select>
           </div>
@@ -160,9 +162,9 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               onChange={(e) => setHealthFilter(e.target.value as any)}
               className="w-full py-2 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700"
             >
-              <option value="all">Toutes les santés</option>
-              <option value="healthy">Opérationnel</option>
-              <option value="degraded">Dégradé</option>
+              <option value="all">{t('admin.providerCatalogTable.toutesLesSantes')}</option>
+              <option value="healthy">{t('admin.providerCatalogTable.operationnel')}</option>
+              <option value="degraded">{t('admin.providerCatalogTable.degrade')}</option>
               <option value="unavailable">Indisponible</option>
             </select>
           </div>
@@ -193,9 +195,9 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               <tr>
                 <th className="py-3 px-4">Fournisseur & Code</th>
                 <th className="py-3 px-3">Domaine</th>
-                <th className="py-3 px-3">Capacités Prises en Charge</th>
-                <th className="py-3 px-3">Statut & Santé</th>
-                <th className="py-3 px-3">Marchés Supportés</th>
+                <th className="py-3 px-3">{t('admin.providerCatalogTable.capacitesPrisesEnCharge')}</th>
+                <th className="py-3 px-3">{t('admin.providerCatalogTable.statutSante')}</th>
+                <th className="py-3 px-3">{t('admin.providerCatalogTable.marchesSupportes')}</th>
                 <th className="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -273,10 +275,10 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           )}
 
                           {isEnabled && health === 'healthy' && (
-                            <span className="w-2 h-2 rounded-full bg-success" title="Opérationnel" />
+                            <span className="w-2 h-2 rounded-full bg-success" title={t('admin.providerCatalogTable.operationnel')} />
                           )}
                           {isEnabled && health === 'degraded' && (
-                            <span className="w-2 h-2 rounded-full bg-amber-500" title="Dégradé" />
+                            <span className="w-2 h-2 rounded-full bg-amber-500" title={t('admin.providerCatalogTable.degrade')} />
                           )}
                           {isEnabled && health === 'unavailable' && (
                             <span className="w-2 h-2 rounded-full bg-danger animate-pulse" title="Indisponible" />

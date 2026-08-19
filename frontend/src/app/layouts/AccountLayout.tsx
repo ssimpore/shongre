@@ -25,8 +25,10 @@ import { useAuth } from '../providers/AuthProvider';
 import { useNotifications } from '../providers/NotificationProvider';
 import { Avatar, Badge } from '../../design-system/primitives/Badge';
 import { storageService } from '../../services/storage.service';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AccountLayout: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, role, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
   const navigate = useNavigate();
@@ -90,7 +92,7 @@ export const AccountLayout: React.FC = () => {
             </div>
             <div>
               {isPro ? (
-                <Badge variant="pro" size="sm">Compte Pro</Badge>
+                <Badge variant="pro" size="sm">{t('shell.accountLayout.comptePro')}</Badge>
               ) : (
                 <Badge variant="neutral" size="sm">Particulier</Badge>
               )}
@@ -99,7 +101,7 @@ export const AccountLayout: React.FC = () => {
 
           {/* Horizontally scrollable navigation tabs */}
           <nav
-            aria-label="Navigation du compte"
+            aria-label={t('shell.accountLayout.navigationDuCompte')}
             className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-1 -mx-1 px-1 no-scrollbar"
           >
             {navItems.map((item) => (
@@ -165,7 +167,7 @@ export const AccountLayout: React.FC = () => {
                 <div className="text-xs text-stone-500 truncate">{currentUser?.email}</div>
                 <div className="mt-1">
                   {isPro ? (
-                    <Badge variant="pro" size="sm">Compte Pro</Badge>
+                    <Badge variant="pro" size="sm">{t('shell.accountLayout.comptePro')}</Badge>
                   ) : (
                     <Badge variant="neutral" size="sm">Particulier</Badge>
                   )}
@@ -241,7 +243,7 @@ export const AccountLayout: React.FC = () => {
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-danger hover:bg-danger-surface rounded-lg transition-colors cursor-pointer text-left"
                 >
                   <LogOut className="w-4 h-4 text-danger" />
-                  <span>Se déconnecter</span>
+                  <span>{t('shell.accountLayout.seDeconnecter')}</span>
                 </button>
               </div>
             </nav>

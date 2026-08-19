@@ -8,6 +8,7 @@ import { PasswordField } from './components/PasswordField';
 import { AuthLayout } from './components/AuthLayout';
 import { routes } from '../../configuration/routes';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 // Safe redirect sanitization to prevent open redirect vulnerabilities
 function getSafeRedirectUrl(target: string | null): string {
@@ -21,6 +22,7 @@ function getSafeRedirectUrl(target: string | null): string {
 }
 
 export const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Connexion",
     description:
@@ -124,7 +126,7 @@ export const LoginPage: React.FC = () => {
               type="text"
               value={mfaCode}
               onChange={(e) => setMfaCode(e.target.value)}
-              placeholder="Ex: 123456 ou 8492-1049"
+              placeholder={t('auth.loginPage.ex123456Ou84921049')}
               autoFocus
               required
               className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
@@ -168,7 +170,7 @@ export const LoginPage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre.email@exemple.fr"
+                placeholder={t('auth.loginPage.votreEmailExempleFr')}
                 required
                 autoComplete="email"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -209,7 +211,7 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 rounded border-stone-300 text-primary focus:ring-primary"
               />
-              <span>Rester connecté sur cet appareil</span>
+              <span>{t('auth.loginPage.resterConnecteSurCetAppareil')}</span>
             </label>
           </div>
 
@@ -247,7 +249,7 @@ export const LoginPage: React.FC = () => {
               <User className="w-3.5 h-3.5 text-info shrink-0" />
               <span>Thomas (Particulier)</span>
             </div>
-            <div className="text-micro text-stone-600 truncate">Acheteur / Vendeur</div>
+            <div className="text-micro text-stone-600 truncate">{t('auth.loginPage.acheteurVendeur')}</div>
           </button>
 
           <button
@@ -259,7 +261,7 @@ export const LoginPage: React.FC = () => {
               <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
               <span>Atelier Nordique (Pro)</span>
             </div>
-            <div className="text-micro text-stone-600 truncate">SIRET & Vitrine vérifiée</div>
+            <div className="text-micro text-stone-600 truncate">{t('auth.loginPage.siretVitrineVerifiee')}</div>
           </button>
 
           <button

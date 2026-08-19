@@ -17,8 +17,10 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NotificationPreferencesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const currentUserId = currentUser ? currentUser.id : 'user-thomas';
@@ -72,7 +74,7 @@ export const NotificationPreferencesPage: React.FC = () => {
     // a centred "Chargement…" string, which collapsed the page then re-expanded it.
     return (
       <div className="space-y-6" aria-busy="true" aria-live="polite">
-        <span className="sr-only">Chargement de vos préférences de notification…</span>
+        <span className="sr-only">{t('notifications.notificationPreferencesPage.chargementDeVosPreferencesDe')}</span>
         <div className="space-y-2">
           <Skeleton className="h-control-sm w-72 rounded-lg" />
           <Skeleton className="h-4 w-96 max-w-full rounded-lg" />
@@ -160,7 +162,7 @@ export const NotificationPreferencesPage: React.FC = () => {
             className="text-xs font-bold text-stone-500 hover:text-stone-900 inline-flex items-center gap-1.5 mb-2 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Retour au centre de notifications</span>
+            <span>{t('notifications.notificationPreferencesPage.retourAuCentreDeNotifications')}</span>
           </Link>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Préférences de notifications
@@ -185,7 +187,7 @@ export const NotificationPreferencesPage: React.FC = () => {
       {/* Matrix Header */}
       <div className="bg-white rounded-3xl border border-border-base p-6 shadow-xs space-y-6">
         <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 border-b border-border-base text-xs font-black text-stone-500 uppercase tracking-wider">
-          <div className="col-span-6">Catégorie d'alerte</div>
+          <div className="col-span-6">{t('notifications.notificationPreferencesPage.categorieDAlerte')}</div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
             <Bell className="w-3.5 h-3.5 text-stone-500" />
             <span>Application</span>
@@ -228,7 +230,7 @@ export const NotificationPreferencesPage: React.FC = () => {
 
                 {/* In-App Toggle */}
                 <div className="sm:col-span-2 flex sm:justify-center items-center justify-between">
-                  <span className="sm:hidden text-xs font-semibold text-stone-600">Sur l'application :</span>
+                  <span className="sm:hidden text-xs font-semibold text-stone-600">{t('notifications.notificationPreferencesPage.surLApplication')}</span>
                   <input
                     type="checkbox"
                     checked={pref.inApp}
@@ -240,7 +242,7 @@ export const NotificationPreferencesPage: React.FC = () => {
 
                 {/* Email Toggle */}
                 <div className="sm:col-span-2 flex sm:justify-center items-center justify-between">
-                  <span className="sm:hidden text-xs font-semibold text-stone-600">Par email :</span>
+                  <span className="sm:hidden text-xs font-semibold text-stone-600">{t('notifications.notificationPreferencesPage.parEmail')}</span>
                   <input
                     type="checkbox"
                     checked={pref.email}
@@ -252,7 +254,7 @@ export const NotificationPreferencesPage: React.FC = () => {
 
                 {/* Push Toggle */}
                 <div className="sm:col-span-2 flex sm:justify-center items-center justify-between">
-                  <span className="sm:hidden text-xs font-semibold text-stone-600">Sur mobile (Push) :</span>
+                  <span className="sm:hidden text-xs font-semibold text-stone-600">{t('notifications.notificationPreferencesPage.surMobilePush')}</span>
                   <input
                     type="checkbox"
                     checked={pref.push}

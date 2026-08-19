@@ -27,8 +27,10 @@ import { PhoneVerificationModal } from '../auth/components/PhoneVerificationModa
 import { Button } from '../../design-system/primitives/Button';
 import { verificationService } from '../../domains/verification/verification.service';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const VerificationCenterPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const {
     currentUser,
@@ -231,7 +233,7 @@ export const VerificationCenterPage: React.FC = () => {
               straight from the page h1 into the cards' h3, skipping a level and
               leaving the only unlabelled panel of the three. */}
           <div className="space-y-1">
-            <h2 className="text-lg font-black text-stone-900">Checklist des vérifications</h2>
+            <h2 className="text-lg font-black text-stone-900">{t('verification.verificationCenterPage.checklistDesVerifications')}</h2>
             <p className="text-xs text-stone-600">
               Complétez chaque dimension pour renforcer la confiance des acheteurs et lever
               les limites de votre compte.
@@ -288,7 +290,7 @@ export const VerificationCenterPage: React.FC = () => {
 
                     {dim.rejectionReason && (
                       <div className="p-3 rounded-xl bg-danger-surface border border-danger-border text-micro text-danger">
-                        <strong>Motif du rejet :</strong> {dim.rejectionReason}
+                        <strong>{t('verification.verificationCenterPage.motifDuRejet')}</strong> {dim.rejectionReason}
                       </div>
                     )}
                   </div>
@@ -327,7 +329,7 @@ export const VerificationCenterPage: React.FC = () => {
       {activeTab === 'capabilities' && (
         <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-4">
           <div className="space-y-1">
-            <h2 className="text-lg font-black text-stone-900">Capacités & Permissions du Compte</h2>
+            <h2 className="text-lg font-black text-stone-900">{t('verification.verificationCenterPage.capacitesPermissionsDuCompte')}</h2>
             <p className="text-xs text-stone-600">
               Débloquez chaque palier pour accéder aux plafonds et fonctionnalités réservées.
             </p>
@@ -428,7 +430,7 @@ export const VerificationCenterPage: React.FC = () => {
       {activeTab === 'history' && (
         <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-4">
           <div className="space-y-1">
-            <h2 className="text-lg font-black text-stone-900">Journal des Événements de Conformité</h2>
+            <h2 className="text-lg font-black text-stone-900">{t('verification.verificationCenterPage.journalDesEvenementsDeConformite')}</h2>
             <p className="text-xs text-stone-600">
               Historique inaltérable des changements d'état et validations de conformité.
             </p>

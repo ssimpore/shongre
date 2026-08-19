@@ -29,8 +29,10 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminModerationPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, can } = useAuth();
   const toast = useToast();
 
@@ -138,7 +140,7 @@ export const AdminModerationPage: React.FC = () => {
             Modération & Sécurité
           </span>
           <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">Contrôle des contenus et profils</span>
+          <span className="text-xs text-stone-500 font-medium">{t('admin.adminModerationPage.controleDesContenusEtProfils')}</span>
         </div>
         <h1 className="text-2xl font-black text-stone-900 tracking-tight">
           File de Modération & Signalements
@@ -197,7 +199,7 @@ export const AdminModerationPage: React.FC = () => {
             <div className="p-12 text-center text-stone-500">
               <CheckCircle className="w-10 h-10 text-success mx-auto mb-2" />
               <div className="text-sm font-bold text-stone-800">Aucun signalement en attente</div>
-              <div className="text-xs text-stone-500 mt-1">La file de signalements communautaires est propre et à jour.</div>
+              <div className="text-xs text-stone-500 mt-1">{t('admin.adminModerationPage.laFileDeSignalementsCommunautaires')}</div>
             </div>
           ) : (
             <div className="divide-y divide-border-subtle">
@@ -251,18 +253,18 @@ export const AdminModerationPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
           <div className="p-3.5 border-b border-border-subtle bg-bg-base text-xs font-semibold text-stone-600 flex justify-between items-center">
             <span>Catalogue d'annonces Shongre ({listings.length} au total)</span>
-            <span className="text-micro text-stone-500">Cliquez sur « Audit IA » pour analyser les risques</span>
+            <span className="text-micro text-stone-500">{t('admin.adminModerationPage.cliquezSurAuditIaPour')}</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
                 <tr>
-                  <th className="p-3.5">Annonce</th>
-                  <th className="p-3.5">Vendeur</th>
+                  <th className="p-3.5">{t('admin.adminModerationPage.annonce')}</th>
+                  <th className="p-3.5">{t('admin.adminModerationPage.vendeur')}</th>
                   <th className="p-3.5">Prix</th>
                   <th className="p-3.5">Statut</th>
-                  <th className="p-3.5 text-right">Actions de Modération</th>
+                  <th className="p-3.5 text-right">{t('admin.adminModerationPage.actionsDeModeration')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
@@ -301,7 +303,7 @@ export const AdminModerationPage: React.FC = () => {
                           <span>Audit IA</span>
                         </Button>
                         <Button
-                          aria-label="Supprimer cette annonce"
+                          aria-label={t('admin.adminModerationPage.supprimerCetteAnnonce')}
                           size="sm"
                           variant="outline"
                           onClick={() => handleToggleListingStatus(list.id, list.status)}
@@ -373,7 +375,7 @@ export const AdminModerationPage: React.FC = () => {
         <Modal
           isOpen={Boolean(selectedListingForAI)}
           onClose={() => setSelectedListingForAI(null)}
-          title="Audit de Sécurité IA Gemini"
+          title={t('admin.adminModerationPage.auditDeSecuriteIaGemini')}
           maxWidth="md"
         >
           <div className="space-y-4">
@@ -385,7 +387,7 @@ export const AdminModerationPage: React.FC = () => {
             {isAiLoading ? (
               <div className="py-8 text-center space-y-3">
                 <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
-                <p className="text-xs font-medium text-stone-600">Analyse de conformité et détection de fraudes en cours...</p>
+                <p className="text-xs font-medium text-stone-600">{t('admin.adminModerationPage.analyseDeConformiteEtDetection')}</p>
               </div>
             ) : aiAnalysis ? (
               <div className="space-y-4">
@@ -397,7 +399,7 @@ export const AdminModerationPage: React.FC = () => {
                     : 'bg-success-surface border-success-border text-success'
                 }`}>
                   <div>
-                    <div className="text-xs uppercase font-bold tracking-wider">Score de Risque Détecté</div>
+                    <div className="text-xs uppercase font-bold tracking-wider">{t('admin.adminModerationPage.scoreDeRisqueDetecte')}</div>
                     <div className="text-2xl font-black">{aiAnalysis.riskScore}/100</div>
                   </div>
                   <Badge variant={aiAnalysis.riskScore > 50 ? 'urgent' : aiAnalysis.riskScore > 20 ? 'warning' : 'verified'}>
@@ -406,13 +408,13 @@ export const AdminModerationPage: React.FC = () => {
                 </div>
 
                 <div className="text-xs text-stone-700 space-y-1">
-                  <span className="font-bold block text-stone-900">Synthèse de l'agent IA :</span>
+                  <span className="font-bold block text-stone-900">{t('admin.adminModerationPage.syntheseDeLAgentIa')}</span>
                   <p className="leading-relaxed bg-stone-50 p-3 rounded-xl border border-border-subtle">{aiAnalysis.summary}</p>
                 </div>
 
                 {aiAnalysis.flaggedKeywords && aiAnalysis.flaggedKeywords.length > 0 && (
                   <div>
-                    <span className="text-xs font-bold text-stone-900 block mb-1.5">Éléments signalés :</span>
+                    <span className="text-xs font-bold text-stone-900 block mb-1.5">{t('admin.adminModerationPage.elementsSignales')}</span>
                     <div className="flex flex-wrap gap-1.5">
                       {aiAnalysis.flaggedKeywords.map((kw, i) => (
                         <span key={i} className="text-micro font-semibold bg-danger-surface text-danger px-2 py-0.5 rounded">
@@ -452,7 +454,7 @@ export const AdminModerationPage: React.FC = () => {
         isOpen={Boolean(deleteListingId)}
         onClose={() => setDeleteListingId(null)}
         onConfirm={handleConfirmDeleteListing}
-        title="Supprimer définitivement l'annonce ?"
+        title={t('admin.adminModerationPage.supprimerDefinitivementLAnnonce')}
         message="Cette action retirera irréversiblement l'annonce du catalogue public et notifiera le vendeur."
         confirmText="Supprimer l'annonce"
         variant="danger"
@@ -463,9 +465,9 @@ export const AdminModerationPage: React.FC = () => {
         isOpen={Boolean(suspendUserId)}
         onClose={() => setSuspendUserId(null)}
         onSubmit={handleConfirmSuspendUser}
-        title="Suspendre le compte utilisateur"
-        label="Motif légal et contractuel de la suspension"
-        placeholder="ex: Signalements multiples pour non-conformité ou tentative de fraude..."
+        title={t('admin.adminModerationPage.suspendreLeCompteUtilisateur')}
+        label={t('admin.adminModerationPage.motifLegalEtContractuelDe')}
+        placeholder={t('admin.adminModerationPage.exSignalementsMultiplesPourNon')}
         confirmText="Confirmer la suspension"
         required
       />

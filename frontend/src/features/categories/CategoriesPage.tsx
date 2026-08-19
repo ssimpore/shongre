@@ -15,6 +15,7 @@ import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { Category, SubCategory } from '../../types';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 interface CategoryMeta {
   itemCountLabel: string;
@@ -137,6 +138,7 @@ const BADGE_PILL_STYLES: Record<string, string> = {
 };
 
 export const CategoriesPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Toutes les catégories d'annonces",
     description:
@@ -175,7 +177,7 @@ export const CategoriesPage: React.FC = () => {
               <span>Accueil</span>
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
-            <span className="font-bold text-stone-900">Toutes les catégories</span>
+            <span className="font-bold text-stone-900">{t('categories.categoriesPage.toutesLesCategories')}</span>
           </nav>
         </div>
       </div>
@@ -202,7 +204,7 @@ export const CategoriesPage: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filtrer une catégorie, sous-catégorie..."
+                placeholder={t('categories.categoriesPage.filtrerUneCategorieSousCategorie')}
                 className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
               />
             </div>
@@ -222,8 +224,8 @@ export const CategoriesPage: React.FC = () => {
             to="/recherche"
             className="text-xs sm:text-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap"
           >
-            <span className="hidden sm:inline">Voir toutes les annonces</span>
-            <span className="sm:hidden">Voir tout</span>
+            <span className="hidden sm:inline">{t('categories.categoriesPage.voirToutesLesAnnonces')}</span>
+            <span className="sm:hidden">{t('categories.categoriesPage.voirTout')}</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -315,7 +317,7 @@ export const CategoriesPage: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
               <Search className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-stone-900">Aucune catégorie trouvée</h3>
+            <h3 className="text-base font-bold text-stone-900">{t('categories.categoriesPage.aucuneCategorieTrouvee')}</h3>
             <p className="text-xs text-stone-500">
               Aucune catégorie ne correspond à votre recherche "{searchQuery}".
             </p>

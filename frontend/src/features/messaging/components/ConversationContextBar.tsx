@@ -17,6 +17,7 @@ import { formatPrice } from '../../../utilities/formatters';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { Button } from '../../../design-system/primitives/Button';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface ConversationContextBarProps {
   listingContext?: ListingConversationContext | null;
@@ -33,6 +34,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
   onSchedulePickup,
   onViewTransaction,
 }) => {
+  const { t } = useTranslation();
   if (!listingContext && !transactionContext) return null;
 
   return (
@@ -63,7 +65,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
               {listingContext.listingStatus === 'reserved' && (
-                <Badge variant="warning" size="sm">Réservée</Badge>
+                <Badge variant="warning" size="sm">{t('messaging.conversationContextBar.reservee')}</Badge>
               )}
               {listingContext.listingStatus === 'sold' && (
                 <Badge variant="neutral" size="sm">Vendue</Badge>

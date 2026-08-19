@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Truck, Lock } from 'lucide-react';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface TrustPillar {
   id: string;
@@ -30,9 +31,10 @@ const TRUST_PILLARS: TrustPillar[] = [
 ];
 
 export const HomeTrustStrip: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <section
-      aria-label="Engagements et garanties Shongre"
+      aria-label={t('home.homeTrustStrip.engagementsEtGarantiesShongre')}
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 sm:mt-2"
     >
       <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-2xs">

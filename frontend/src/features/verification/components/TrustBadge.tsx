@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, Building2, CheckCircle2, Smartphone, Lock, Award } from 'lucide-react';
 import { TrustLevel, VerificationDimensionId } from '../../../domains/verification/verification.types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface TrustBadgeProps {
   level?: TrustLevel;
@@ -17,6 +18,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
   showLabel = true,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const sizeClasses = {
     sm: 'text-micro px-1.5 py-0.5 gap-1',
     md: 'text-xs px-2.5 py-1 gap-1.5 font-bold',
@@ -35,40 +37,40 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
         return (
           <span
             className={`inline-flex items-center rounded-full bg-success-surface text-success border border-success-border ${sizeClasses[size]} ${className}`}
-            title="Identité officielle vérifiée (CNI / Passeport)"
+            title={t('verification.trustBadge.identiteOfficielleVerifieeCniPasseport')}
           >
             <ShieldCheck className={iconSizes[size]} />
-            {showLabel && <span>Identité vérifiée</span>}
+            {showLabel && <span>{t('verification.trustBadge.identiteVerifiee')}</span>}
           </span>
         );
       case 'business':
         return (
           <span
             className={`inline-flex items-center rounded-full bg-warning-surface text-warning border border-warning-border ${sizeClasses[size]} ${className}`}
-            title="Entreprise certifiée au Registre du Commerce (RCS)"
+            title={t('verification.trustBadge.entrepriseCertifieeAuRegistreDu')}
           >
             <Building2 className={iconSizes[size]} />
-            {showLabel && <span>Pro Certifié RCS</span>}
+            {showLabel && <span>{t('verification.trustBadge.proCertifieRcs')}</span>}
           </span>
         );
       case 'phone':
         return (
           <span
             className={`inline-flex items-center rounded-full bg-info-surface text-info border border-info-border ${sizeClasses[size]} ${className}`}
-            title="Numéro de téléphone vérifié par SMS"
+            title={t('verification.trustBadge.numeroDeTelephoneVerifiePar')}
           >
             <Smartphone className={iconSizes[size]} />
-            {showLabel && <span>Téléphone certifié</span>}
+            {showLabel && <span>{t('verification.trustBadge.telephoneCertifie')}</span>}
           </span>
         );
       case 'bank_payout':
         return (
           <span
             className={`inline-flex items-center rounded-full bg-stone-100 text-stone-800 border border-stone-300 ${sizeClasses[size]} ${className}`}
-            title="Compte bancaire SEPA validé pour le séquestre"
+            title={t('verification.trustBadge.compteBancaireSepaValidePour')}
           >
             <CheckCircle2 className={iconSizes[size]} />
-            {showLabel && <span>IBAN vérifié</span>}
+            {showLabel && <span>{t('verification.trustBadge.ibanVerifie')}</span>}
           </span>
         );
       case 'mfa':
@@ -78,7 +80,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
             title="Double authentification active"
           >
             <Lock className={iconSizes[size]} />
-            {showLabel && <span>Compte 2FA</span>}
+            {showLabel && <span>{t('verification.trustBadge.compte2fa')}</span>}
           </span>
         );
       default:
@@ -94,7 +96,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
           className={`inline-flex items-center rounded-full bg-stone-900 text-amber-300 border border-amber-400/50 shadow-2xs ${sizeClasses[size]} ${className}`}
         >
           <Building2 className={iconSizes[size]} />
-          {showLabel && <span>Boutique Pro Vérifiée</span>}
+          {showLabel && <span>{t('verification.trustBadge.boutiqueProVerifiee')}</span>}
         </span>
       );
     case 'tier_3_trusted_seller':
@@ -103,7 +105,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
           className={`inline-flex items-center rounded-full bg-success text-white shadow-2xs ${sizeClasses[size]} ${className}`}
         >
           <Award className={iconSizes[size]} />
-          {showLabel && <span>Vendeur de Confiance</span>}
+          {showLabel && <span>{t('verification.trustBadge.vendeurDeConfiance')}</span>}
         </span>
       );
     case 'tier_2_verified_member':
@@ -112,7 +114,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
           className={`inline-flex items-center rounded-full bg-success-surface text-success border border-success-border ${sizeClasses[size]} ${className}`}
         >
           <CheckCircle2 className={iconSizes[size]} />
-          {showLabel && <span>Membre Vérifié</span>}
+          {showLabel && <span>{t('verification.trustBadge.membreVerifie')}</span>}
         </span>
       );
     case 'tier_1_starter':
@@ -121,7 +123,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
           className={`inline-flex items-center rounded-full bg-stone-100 text-stone-700 border border-stone-200 ${sizeClasses[size]} ${className}`}
         >
           <ShieldCheck className={iconSizes[size]} />
-          {showLabel && <span>Compte Débutant</span>}
+          {showLabel && <span>{t('verification.trustBadge.compteDebutant')}</span>}
         </span>
       );
     default:

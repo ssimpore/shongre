@@ -28,6 +28,7 @@ import { EvidenceDrawer } from './components/EvidenceDrawer';
 import { DuplicateConflictModal } from './components/DuplicateConflictModal';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { plural } from '../../../utilities/formatters';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 const EXAMPLE_PROMPTS = [
   'Boutiques de mobilier design vintage en Île-de-France',
@@ -37,6 +38,7 @@ const EXAMPLE_PROMPTS = [
 ];
 
 export const CrmAiProspectingPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -141,7 +143,7 @@ export const CrmAiProspectingPage: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Prospection B2B Assistée par IA</span>
+            <span>{t('admin.crmAiProspectingPage.prospectionB2bAssisteeParIa')}</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
             Découvrez de futurs vendeurs Pro à partir de sources publiques
@@ -167,7 +169,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Décrivez les prospects que vous recherchez (ex: Magasins de mobilier design à Paris)..."
+                  placeholder={t('admin.crmAiProspectingPage.decrivezLesProspectsQueVous')}
                   disabled={isSearching}
                   className="w-full h-12 pl-11 pr-4 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-2xl placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 />
@@ -209,7 +211,7 @@ export const CrmAiProspectingPage: React.FC = () => {
         <div className="p-8 bg-purple-50/60 border border-purple-200 rounded-3xl text-center space-y-3 animate-pulse">
           <Sparkles className="w-8 h-8 text-purple-600 animate-spin mx-auto" />
           <h3 className="text-sm font-bold text-purple-950">{searchStep}</h3>
-          <p className="text-xs text-purple-700">Exploration des registres d'entreprises et extraction des signaux d'activité...</p>
+          <p className="text-xs text-purple-700">{t('admin.crmAiProspectingPage.explorationDesRegistresDEntreprises')}</p>
         </div>
       )}
 
@@ -311,7 +313,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                     {cand.isDuplicate && (
                       <div className="p-2.5 rounded-xl bg-warning-surface text-warning text-micro font-medium flex items-center gap-1.5">
                         <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0" />
-                        <span>Compte Shongre ou fiche CRM existante détectée</span>
+                        <span>{t('admin.crmAiProspectingPage.compteShongreOuFicheCrm')}</span>
                       </div>
                     )}
                   </div>
@@ -330,7 +332,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                     {isImported ? (
                       <span className="text-xs text-success font-bold flex items-center gap-1">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>Importé</span>
+                        <span>{t('admin.crmAiProspectingPage.importe')}</span>
                       </span>
                     ) : (
                       <Button

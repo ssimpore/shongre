@@ -30,6 +30,7 @@ import { formatPrice, formatRelativeDate } from '../../../utilities/formatters';
 import { DisputeModal } from './DisputeModal';
 import { LeaveReviewModal } from './LeaveReviewModal';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface TransactionDetailModalProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   currentUser,
   onUpdate,
 }) => {
+  const { t } = useTranslation();
   const [tx, setTx] = useState<Transaction>(initialTx);
   const [sellerInputPin, setSellerInputPin] = useState('');
   const [trackingInput, setTrackingInput] = useState('');
@@ -259,7 +261,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Dossier de Réservation ${tx.code || tx.id}`}
-      description="Paiement garanti par le service de séquestre sécurisé Shongre"
+      description={t('transactions.transactionDetailModal.paiementGarantiParLeService')}
       className="max-w-2xl"
     >
       <div className="space-y-4 text-xs">
@@ -331,7 +333,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl space-y-3">
             <div className="flex items-center gap-2 text-warning font-bold">
               <Clock className="w-4 h-4 text-warning" />
-              <span>Action requise : Accepter ou Refuser la réservation</span>
+              <span>{t('transactions.transactionDetailModal.actionRequiseAccepterOuRefuser')}</span>
             </div>
             <p className="text-micro text-warning leading-relaxed">
               L'acheteur a payé {formatPrice(tx.totalAmount)} qui sont actuellement garantis sous séquestre. En acceptant, vous vous engagez à remettre ou expédier l'article.
@@ -365,7 +367,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <KeyRound className="w-4 h-4 text-primary" />
-                <span className="font-bold text-stone-100">Code secret de confirmation</span>
+                <span className="font-bold text-stone-100">{t('transactions.transactionDetailModal.codeSecretDeConfirmation')}</span>
               </div>
               <span className="text-micro bg-success/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">
                 Sécurité main propre
@@ -376,7 +378,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             {isBuyer && (
               <div className="space-y-2">
                 <p className="text-micro text-stone-300">
-                  Donnez ce code secret à 6 chiffres au vendeur lors du rendez-vous, <strong>uniquement après avoir vérifié la conformité de l'article</strong> :
+                  Donnez ce code secret à 6 chiffres au vendeur lors du rendez-vous, <strong>{t('transactions.transactionDetailModal.uniquementApresAvoirVerifieLa')}</strong> :
                 </p>
                 <div className="flex items-center justify-between bg-stone-800 p-3 rounded-xl border border-stone-700">
                   {/* The 6-digit handover code sits on a stone-800 panel, where the
@@ -472,7 +474,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             {/* Buyer confirms receipt */}
             {isBuyer && (tx.status === 'shipped' || tx.status === 'delivered') && (
               <div className="p-3 bg-success-surface border border-success-border rounded-xl space-y-2">
-                <p className="font-bold text-success">Avez-vous bien reçu l'article ?</p>
+                <p className="font-bold text-success">{t('transactions.transactionDetailModal.avezVousBienRecuL')}</p>
                 <p className="text-micro text-success leading-relaxed">
                   Si le colis est arrivé et que l'objet est conforme à la description, validez la réception pour débloquer les fonds au vendeur.
                 </p>
@@ -497,7 +499,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 font-bold text-stone-800">
                 <Calendar className="w-4 h-4 text-primary" />
-                <span>Rendez-vous de remise convenu</span>
+                <span>{t('transactions.transactionDetailModal.rendezVousDeRemiseConvenu')}</span>
               </div>
               <button
                 type="button"
@@ -511,7 +513,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             {!isEditingMeeting ? (
               <div className="text-xs text-stone-700 space-y-1">
                 <div>
-                  <span className="text-stone-500">Date prévue : </span>
+                  <span className="text-stone-500">{t('transactions.transactionDetailModal.datePrevue')} </span>
                   <span className="font-semibold">{tx.pickupDetails?.scheduledDate || 'À définir'}</span>
                 </div>
                 <div>
@@ -520,7 +522,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 </div>
                 {(tx.pickupDetails?.sellerPhone || tx.pickupDetails?.buyerPhone) && (
                   <div>
-                    <span className="text-stone-500">Téléphone de contact : </span>
+                    <span className="text-stone-500">{t('transactions.transactionDetailModal.telephoneDeContact')} </span>
                     <span className="font-semibold">{tx.pickupDetails?.sellerPhone || tx.pickupDetails?.buyerPhone}</span>
                   </div>
                 )}
@@ -528,27 +530,27 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             ) : (
               <div className="space-y-2 pt-2 text-xs">
                 <div>
-                  <label className="font-semibold text-stone-700 block mb-1">Date et heure :</label>
+                  <label className="font-semibold text-stone-700 block mb-1">{t('transactions.transactionDetailModal.dateEtHeure')}</label>
                   <input
                     type="text"
                     value={meetingDate}
                     onChange={(e) => setMeetingDate(e.target.value)}
-                    placeholder="ex: Samedi 22 août à 14h30"
+                    placeholder={t('transactions.transactionDetailModal.exSamedi22AoutA')}
                     className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-stone-700 block mb-1">Lieu de rencontre :</label>
+                  <label className="font-semibold text-stone-700 block mb-1">{t('transactions.transactionDetailModal.lieuDeRencontre')}</label>
                   <input
                     type="text"
                     value={meetingPlace}
                     onChange={(e) => setMeetingPlace(e.target.value)}
-                    placeholder="ex: 12 rue des Remparts, Bordeaux"
+                    placeholder={t('transactions.transactionDetailModal.ex12RueDesRemparts')}
                     className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-stone-700 block mb-1">Numéro de téléphone direct :</label>
+                  <label className="font-semibold text-stone-700 block mb-1">{t('transactions.transactionDetailModal.numeroDeTelephoneDirect')}</label>
                   <input
                     type="text"
                     value={meetingPhone}
@@ -574,7 +576,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
         {/* FINANCIAL SUMMARY & ESCROW STATUS */}
         <div className="p-5 bg-white border border-stone-200/60 rounded-2xl space-y-2 shadow-2xs font-medium text-sm">
-          <span className="font-black text-stone-800 block mb-3">Récapitulatif financier :</span>
+          <span className="font-black text-stone-800 block mb-3">{t('transactions.transactionDetailModal.recapitulatifFinancier')}</span>
           <div className="flex justify-between text-stone-600">
             <span>Prix article :</span>
             <span className="font-black text-stone-900">{formatPrice(tx.amount)}</span>
@@ -584,16 +586,16 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <span className="font-black text-stone-900">{formatPrice(tx.protectionFee)}</span>
           </div>
           <div className="flex justify-between text-stone-600">
-            <span>Frais de port :</span>
+            <span>{t('transactions.transactionDetailModal.fraisDePort')}</span>
             <span className="font-black text-stone-900">{formatPrice(tx.shippingFee)}</span>
           </div>
           <div className="border-t border-stone-100 pt-3 flex justify-between font-black text-stone-900 text-base">
-            <span>Total réglé par l'acheteur :</span>
+            <span>{t('transactions.transactionDetailModal.totalRegleParLAcheteur')}</span>
             <span className="text-primary text-lg">{formatPrice(tx.totalAmount)}</span>
           </div>
           {isSeller && (
             <div className="bg-success-surface p-3 rounded-xl mt-3 flex justify-between font-bold text-success border border-success-border">
-              <span>Montant net versé au vendeur :</span>
+              <span>{t('transactions.transactionDetailModal.montantNetVerseAuVendeur')}</span>
               <span>{formatPrice(tx.sellerPayoutAmount || tx.amount)}</span>
             </div>
           )}
@@ -602,7 +604,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         {/* TIMELINE / AUDIT LOG */}
         {tx.statusHistory && tx.statusHistory.length > 0 && (
           <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-2">
-            <span className="font-bold text-stone-800 block">Historique du dossier :</span>
+            <span className="font-bold text-stone-800 block">{t('transactions.transactionDetailModal.historiqueDuDossier')}</span>
             <div className="space-y-2">
               {tx.statusHistory.map((h, i) => (
                 <div key={i} className="flex items-start gap-2 text-micro">
@@ -654,7 +656,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               className="text-micro font-bold text-warning hover:text-warning flex items-center gap-1"
             >
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Signaler un problème / Litige</span>
+              <span>{t('transactions.transactionDetailModal.signalerUnProblemeLitige')}</span>
             </button>
           )}
 
@@ -703,7 +705,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         isOpen={isRejectConfirmOpen}
         onClose={() => setIsRejectConfirmOpen(false)}
         onConfirm={handleConfirmSellerReject}
-        title="Refuser la réservation ?"
+        title={t('transactions.transactionDetailModal.refuserLaReservation')}
         message="Êtes-vous sûr de vouloir refuser cette réservation ? L'acheteur sera automatiquement et intégralement remboursé sur son moyen de paiement."
         confirmText="Refuser & Rembourser"
         variant="danger"
@@ -715,7 +717,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         isOpen={isReceiptConfirmOpen}
         onClose={() => setIsReceiptConfirmOpen(false)}
         onConfirm={handleConfirmBuyerReceipt}
-        title="Confirmer la réception conforme ?"
+        title={t('transactions.transactionDetailModal.confirmerLaReceptionConforme')}
         message="Confirmez-vous avoir bien reçu l'article en bon état et conforme à l'annonce ? Les fonds garantis sous séquestre seront immédiatement débloqués au vendeur."
         confirmText="Confirmer & Débloquer les fonds"
         variant="success"
@@ -727,7 +729,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
         isOpen={isCancelConfirmOpen}
         onClose={() => setIsCancelConfirmOpen(false)}
         onConfirm={handleConfirmCancelByBuyer}
-        title="Annuler votre réservation ?"
+        title={t('transactions.transactionDetailModal.annulerVotreReservation')}
         message="Souhaitez-vous annuler votre réservation ? Le montant total payé vous sera intégralement recrédité sous 24 à 48h."
         confirmText="Annuler ma réservation"
         variant="warning"

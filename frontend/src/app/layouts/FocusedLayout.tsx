@@ -4,6 +4,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { routes } from '../../configuration/routes';
 import { AppScrollRestoration } from '../router/AppScrollRestoration';
 import { DemoRoleSwitcher } from './DemoRoleSwitcher';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 /**
  * Shell for task-completion flows: publication, checkout, verification.
@@ -16,6 +17,7 @@ import { DemoRoleSwitcher } from './DemoRoleSwitcher';
  * and the task.
  */
 export const FocusedLayout: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -51,7 +53,7 @@ export const FocusedLayout: React.FC = () => {
               a hunt for the browser's back button. */}
           <Link
             to={routes.home()}
-            aria-label="Quitter et revenir à l'accueil"
+            aria-label={t('shell.focusedLayout.quitterEtRevenirAL')}
             className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-bg-subtle transition-colors"
           >
             <X className="w-5 h-5" />

@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Plus, Filter, ChevronsUpDown, X } from 'lucide-react';
 import { Button } from '../../../../design-system/primitives/Button';
 import { TaxonomyLevel, TaxonomyNodeStatus } from '../../../../domains/taxonomy/taxonomy.types';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyTreeToolbarProps {
   searchQuery: string;
@@ -26,6 +27,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
   onCollapseAll,
   onAddRootCategory,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3 bg-white p-4 rounded-2xl border border-border-base shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -34,8 +36,8 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Rechercher par libellé, nom court, alias, ID, slug..."
-            aria-label="Rechercher dans l'arborescence"
+            placeholder={t('admin.taxonomyTreeToolbar.rechercherParLibelleNomCourt')}
+            aria-label={t('admin.taxonomyTreeToolbar.rechercherDansLArborescence')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -72,28 +74,28 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           </div>
 
           <select
-            aria-label="Filtrer par niveau de taxonomie"
+            aria-label={t('admin.taxonomyTreeToolbar.filtrerParNiveauDeTaxonomie')}
             value={levelFilter}
             onChange={(e) => onLevelFilterChange(e.target.value)}
             className="h-control-sm px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
           >
-            <option value="all">Tous les niveaux</option>
-            <option value="category">Catégories racines (Univers)</option>
-            <option value="subcategory">Sous-catégories</option>
+            <option value="all">{t('admin.taxonomyTreeToolbar.tousLesNiveaux')}</option>
+            <option value="category">{t('admin.taxonomyTreeToolbar.categoriesRacinesUnivers')}</option>
+            <option value="subcategory">{t('admin.taxonomyTreeToolbar.sousCategories')}</option>
             <option value="type">Types (Feuilles)</option>
             <option value="subtype">Sous-types</option>
           </select>
 
           <select
-            aria-label="Filtrer par statut de nœud"
+            aria-label={t('admin.taxonomyTreeToolbar.filtrerParStatutDeN')}
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
             className="h-control-sm px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
           >
-            <option value="all">Tous les statuts</option>
+            <option value="all">{t('admin.taxonomyTreeToolbar.tousLesStatuts')}</option>
             <option value="active">Actifs uniquement</option>
             <option value="draft">Brouillons uniquement</option>
-            <option value="deprecated">Dépréciés uniquement</option>
+            <option value="deprecated">{t('admin.taxonomyTreeToolbar.depreciesUniquement')}</option>
           </select>
         </div>
 

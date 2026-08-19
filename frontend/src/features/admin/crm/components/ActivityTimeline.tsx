@@ -13,6 +13,7 @@ import {
 import { CrmActivity, ActivityType } from '../../../../domains/crm/crm.types';
 import { Button } from '../../../../design-system/primitives/Button';
 import { formatDate } from '../../../../utilities/formatters';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ActivityTimelineProps {
   activities: CrmActivity[];
@@ -25,6 +26,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   onAddNote,
   loading = false,
 }) => {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'notes' | 'ai' | 'milestones'>('all');
   const [newNote, setNewNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,7 +78,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Ajouter une note commerciale, compte-rendu d'appel ou remarque..."
+            placeholder={t('admin.activityTimeline.ajouterUneNoteCommercialeCompte')}
             rows={2}
             className="w-full text-xs p-2.5 bg-white border border-stone-200 rounded-xl placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
           />

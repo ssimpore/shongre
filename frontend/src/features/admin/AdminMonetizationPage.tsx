@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../../app/providers/AuthProvider';
 import { PRO_PLANS, LISTING_BOOSTS } from '../../configuration/plans.config';
 import { Button } from '../../design-system/primitives/Button';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 interface AdminPlanConfig {
   id: string;
@@ -69,6 +70,7 @@ const INITIAL_PLANS: AdminPlanConfig[] = [
 ];
 
 export const AdminMonetizationPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, can } = useAuth();
   const [plans, setPlans] = useState<AdminPlanConfig[]>(INITIAL_PLANS);
   const [addons, setAddons] = useState(LISTING_BOOSTS);
@@ -88,7 +90,7 @@ export const AdminMonetizationPage: React.FC = () => {
             Revenus & Monétisation
           </span>
           <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">Gestion des formules d'abonnement Pro</span>
+          <span className="text-xs text-stone-500 font-medium">{t('admin.adminMonetizationPage.gestionDesFormulesDAbonnement')}</span>
         </div>
         <h1 className="text-2xl font-black text-stone-900 tracking-tight">
           Formules Pro, Quotas & Options de Mise en Avant
@@ -185,7 +187,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       }}
                       className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
                     />
-                    <span>Personnalisation Vitrine (Bannière, Story)</span>
+                    <span>{t('admin.adminMonetizationPage.personnalisationVitrineBanniereStory')}</span>
                   </label>
 
                   <label className="flex items-center gap-2 min-h-6 cursor-pointer">

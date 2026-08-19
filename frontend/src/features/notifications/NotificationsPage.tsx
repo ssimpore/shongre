@@ -23,8 +23,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { NotificationItemCard } from './components/NotificationItemCard';
 import { NotificationDemoToolbar } from './components/NotificationDemoToolbar';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NotificationsPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const currentUserId = currentUser ? currentUser.id : 'user-thomas';
@@ -90,7 +92,7 @@ export const NotificationsPage: React.FC = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
             <Bell className="w-6 h-6 text-primary" />
-            <span>Centre de notifications</span>
+            <span>{t('notifications.notificationsPage.centreDeNotifications')}</span>
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
             Mises à jour en direct concernant vos annonces, messages, commandes et sécurité.

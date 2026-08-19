@@ -3,6 +3,7 @@ import { Sparkles, Check, X, ExternalLink, ShieldCheck } from 'lucide-react';
 import { Modal } from '../../../../design-system/primitives/Modal';
 import { Button } from '../../../../design-system/primitives/Button';
 import { CrmCompany, CompanyEnrichmentDiff } from '../../../../domains/crm/crm.types';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface EnrichmentDiffModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
   diff,
   onApply,
 }) => {
+  const { t } = useTranslation();
   const [applyIndustry, setApplyIndustry] = useState(true);
   const [applyWebsite, setApplyWebsite] = useState(true);
   const [applySummary, setApplySummary] = useState(true);
@@ -49,7 +51,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Enrichissement IA : ${company.name}`}
-      description="Examinez et sélectionnez les informations publiques suggérées avant mise à jour."
+      description={t('admin.enrichmentDiffModal.examinezEtSelectionnezLesInformations')}
     >
       <div className="space-y-4 text-xs">
         {/* Industry Diff */}
@@ -62,7 +64,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
               className="w-4 h-4 rounded text-primary focus:ring-primary border-stone-300 mt-0.5"
             />
             <div className="flex-1 space-y-1">
-              <span className="font-bold text-stone-900 block">Secteur d'activité</span>
+              <span className="font-bold text-stone-900 block">{t('admin.enrichmentDiffModal.secteurDActivite')}</span>
               <div className="grid grid-cols-2 gap-2 text-micro">
                 <div className="text-stone-500">
                   Actuel : <strong className="text-stone-700">{company.industry || 'Non renseigné'}</strong>
@@ -108,7 +110,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
               className="w-4 h-4 rounded text-primary focus:ring-primary border-stone-300 mt-0.5"
             />
             <div className="flex-1 space-y-1">
-              <span className="font-bold text-stone-900 block">Synthèse commerciale IA</span>
+              <span className="font-bold text-stone-900 block">{t('admin.enrichmentDiffModal.syntheseCommercialeIa')}</span>
               <p className="text-micro text-stone-700 leading-relaxed bg-white p-2 rounded-lg border border-stone-200">
                 {diff.suggestedSummary}
               </p>
@@ -119,7 +121,7 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
         {/* Sources Notice */}
         <div className="p-3 bg-stone-100 rounded-xl flex items-center justify-between text-micro text-stone-500">
           <span>Sources analysées : {diff.sources.length} site(s) public(s)</span>
-          <span className="font-bold text-stone-700">100% Validé humain</span>
+          <span className="font-bold text-stone-700">{t('admin.enrichmentDiffModal.100ValideHumain')}</span>
         </div>
 
         <div className="flex justify-end gap-2.5 pt-3 border-t border-border-subtle">

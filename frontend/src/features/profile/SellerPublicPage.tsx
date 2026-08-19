@@ -26,8 +26,10 @@ import { ProBusinessInfo } from './components/ProBusinessInfo';
 import { SellerReportModal } from './components/SellerReportModal';
 import { Button } from '../../design-system/primitives/Button';
 import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const SellerPublicPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug, sellerSlug } = useParams<{ slug?: string; sellerSlug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -261,7 +263,7 @@ export const SellerPublicPage: React.FC = () => {
 
         {/* 3. Navigation Tabs */}
         <Tabs
-          label="Sections du profil vendeur"
+          label={t('profile.sellerPublicPage.sectionsDuProfilVendeur')}
           idPrefix="seller"
           activeTab={activeTab}
           onChange={(tab) => handleTabChange(tab as typeof activeTab)}

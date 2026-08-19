@@ -18,12 +18,14 @@ import {
 } from '../../../../domains/providers/provider-capabilities';
 import { Badge } from '../../../../design-system/primitives/Badge';
 import { Button } from '../../../../design-system/primitives/Button';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderMarketMatrixProps {
   onSelectProvider?: (providerId: string) => void;
 }
 
 export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const marketCodes = ['FR', 'BE', 'CH', 'ES', 'LU', 'DE'];
   const marketLabels: Record<string, { name: string; flag: string; isDefault?: boolean }> = {
@@ -73,22 +75,22 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 text-xs text-stone-600 bg-stone-50/80 p-3 rounded-lg border border-stone-200">
-        <span className="font-semibold text-stone-700">Légende :</span>
+        <span className="font-semibold text-stone-700">{t('admin.providerMarketMatrix.legende')}</span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-success" />
-          <span>Référence France active</span>
+          <span>{t('admin.providerMarketMatrix.referenceFranceActive')}</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-stone-400" />
-          <span>Hérité de France</span>
+          <span>{t('admin.providerMarketMatrix.heriteDeFrance')}</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-info" />
-          <span>Personnalisé (Surchargé)</span>
+          <span>{t('admin.providerMarketMatrix.personnaliseSurcharge')}</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-danger" />
-          <span>Désactivé / Indisponible</span>
+          <span>{t('admin.providerMarketMatrix.desactiveIndisponible')}</span>
         </span>
       </div>
 
@@ -98,7 +100,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
           <table className="w-full text-left text-xs text-stone-700 border-collapse">
             <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b border-stone-200">
               <tr>
-                <th className="py-3 px-4 min-w-[220px]">Fonctionnalité / Capacité</th>
+                <th className="py-3 px-4 min-w-[220px]">{t('admin.providerMarketMatrix.fonctionnaliteCapacite')}</th>
                 {marketCodes.map((code) => {
                   const m = marketLabels[code];
                   return (

@@ -4,6 +4,7 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { Button } from '../../design-system/primitives/Button';
 import { useMarketLocation } from '../providers/MarketLocationProvider';
 import { SUPPORTED_LANGUAGES } from '../../design-system/primitives/LanguageSelector';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 const CURRENCIES = [
   { code: 'EUR', label: 'Euro', symbol: '€' },
@@ -13,6 +14,7 @@ const CURRENCIES = [
 ];
 
 export const PreferencesModal: React.FC = () => {
+  const { t } = useTranslation();
   const {
     activeMarket,
     availableMarkets,
@@ -33,8 +35,8 @@ export const PreferencesModal: React.FC = () => {
     <Modal
       isOpen={isPreferencesModalOpen}
       onClose={closePreferencesModal}
-      title="Préférences régionales"
-      description="Personnalisez votre pays de navigation, votre devise d'affichage et votre langue"
+      title={t('shell.preferencesModal.preferencesRegionales')}
+      description={t('shell.preferencesModal.personnalisezVotrePaysDeNavigation')}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -42,7 +44,7 @@ export const PreferencesModal: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
             <Building2 className="w-3.5 h-3.5 text-primary" />
-            <span>Marché / Pays</span>
+            <span>{t('shell.preferencesModal.marchePays')}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {availableMarkets.map((m) => {
@@ -104,7 +106,7 @@ export const PreferencesModal: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
             <Languages className="w-3.5 h-3.5 text-primary" />
-            <span>Langue de l'interface</span>
+            <span>{t('shell.preferencesModal.langueDeLInterface')}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {SUPPORTED_LANGUAGES.map((lang) => {

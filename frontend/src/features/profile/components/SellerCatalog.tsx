@@ -21,6 +21,7 @@ import { NoResultsFound } from '../../../design-system/primitives/NoResultsFound
 import { usePublishCta } from '../../../security/usePublishCta';
 import { DropdownMenu, DropdownOption } from '../../../design-system/primitives/DropdownMenu';
 import { ViewModeToggle } from '../../../design-system/primitives/ViewModeToggle';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface SellerCatalogProps {
   listings: Listing[];
@@ -35,6 +36,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
   seller,
   isOwnProfile = false,
 }) => {
+  const { t } = useTranslation();
   const publishCta = usePublishCta();
   const isPro = isProSeller(seller);
 
@@ -226,7 +228,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                aria-label="Effacer la recherche"
+                aria-label={t('profile.sellerCatalog.effacerLaRecherche')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-1"
               >
                 <X className="w-3.5 h-3.5" />
@@ -284,7 +286,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         {/* Collapsible Price Filter Tray */}
         {isFilterDrawerOpen && (
           <div className="mt-3 pt-3 border-t border-border-subtle flex flex-wrap items-center gap-3 animate-in fade-in duration-fast">
-            <span className="text-xs font-bold text-stone-700">Fourchette de prix (€) :</span>
+            <span className="text-xs font-bold text-stone-700">{t('profile.sellerCatalog.fourchetteDePrix')}</span>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -432,10 +434,10 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         <NoResultsFound
           id="seller-catalog-no-results"
           query={searchQuery}
-          title="Aucun article ne correspond à votre sélection"
-          description="Essayez de modifier votre mot-clé de recherche ou de réinitialiser vos filtres de catégorie et de prix."
+          title={t('profile.sellerCatalog.aucunArticleNeCorrespondA')}
+          description={t('profile.sellerCatalog.essayezDeModifierVotreMot')}
           onClearFilters={handleResetFilters}
-          clearFiltersLabel="Réinitialiser les filtres"
+          clearFiltersLabel={t('profile.sellerCatalog.reinitialiserLesFiltres')}
         />
       )}
     </div>

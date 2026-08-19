@@ -6,6 +6,7 @@ import { useToast } from '../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../app/providers/AuthProvider';
 import { Download, Upload, FileCode, CheckCircle2, AlertOctagon, RotateCcw } from 'lucide-react';
 import { ConfirmModal } from '../../../../design-system/primitives/ConfirmModal';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyImportExportTabProps {
   onImportSuccess: () => void;
@@ -14,6 +15,7 @@ export interface TaxonomyImportExportTabProps {
 export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = ({
   onImportSuccess,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
 
@@ -76,7 +78,7 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
           <div>
             <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
               <Download className="w-5 h-5 text-primary" />
-              <span>Exporter la Taxonomie Canonique (JSON)</span>
+              <span>{t('admin.taxonomyImportExportTab.exporterLaTaxonomieCanoniqueJson')}</span>
             </h3>
             <p className="text-xs text-stone-500 mt-1">
               Générez un export complet et structuré comprenant l'arborescence, les attributs, les surcharges de marchés et les capacités.
@@ -99,14 +101,14 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <Upload className="w-5 h-5 text-primary" />
-            <span>Importer une Arborescence Externe</span>
+            <span>{t('admin.taxonomyImportExportTab.importerUneArborescenceExterne')}</span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
             Collez le schéma JSON à importer. Le moteur effectue une validation syntaxique et structurelle avant d'appliquer les changements.
           </p>
         </div>
 
-        <FormField label="Contenu JSON de taxonomie">
+        <FormField label={t('admin.taxonomyImportExportTab.contenuJsonDeTaxonomie')}>
           <Textarea
             rows={8}
             value={importJson}
@@ -168,7 +170,7 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
         onConfirm={handleResetToBaseline}
-        title="Réinitialiser la taxonomie d'origine ?"
+        title={t('admin.taxonomyImportExportTab.reinitialiserLaTaxonomieDOrigine')}
         message="Cette action supprimera toutes les modifications locales et restaurera les 16 univers canoniques initiaux de Shongre."
         confirmText="Réinitialiser"
         variant="danger"

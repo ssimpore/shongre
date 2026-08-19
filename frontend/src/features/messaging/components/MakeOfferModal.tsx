@@ -4,6 +4,7 @@ import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { FormField, Input } from '../../../design-system/primitives/FormField';
 import { formatPrice } from '../../../utilities/formatters';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface MakeOfferModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
   currentPrice,
   onSendOffer,
 }) => {
+  const { t } = useTranslation();
   const [offerAmount, setOfferAmount] = useState<string>(Math.round(currentPrice * 0.9).toString());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,11 +41,11 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Faire une offre de prix"
+      title={t('messaging.makeOfferModal.faireUneOffreDePrix')}
       description={`Prix affiché : ${formatPrice(currentPrice)}. Le vendeur pourra accepter ou refuser votre proposition.`}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-        <FormField label="Montant de votre offre (€)" required>
+        <FormField label={t('messaging.makeOfferModal.montantDeVotreOffre')} required>
           <Input
             type="number"
             min="1"

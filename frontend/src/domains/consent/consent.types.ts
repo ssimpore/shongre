@@ -1,3 +1,5 @@
+import { MessageKey } from '../../i18n/messages.fr';
+
 /**
  * Cookie/tracking consent, as the CNIL and the GDPR frame it.
  *
@@ -20,8 +22,13 @@ export interface ConsentDecision {
 
 export interface ConsentCategoryDescriptor {
   id: ConsentCategory;
-  label: string;
-  description: string;
+  /**
+   * Message keys rather than literals: the panel is part of the shell, which is
+   * translated, and a purpose described only in French is not consent a
+   * non-French speaker can meaningfully give.
+   */
+  labelKey: MessageKey;
+  descriptionKey: MessageKey;
   /** `necessary` cannot be switched off, and its control says so. */
   required: boolean;
 }

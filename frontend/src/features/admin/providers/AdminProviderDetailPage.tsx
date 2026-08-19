@@ -27,10 +27,12 @@ import { Button } from '../../../design-system/primitives/Button';
 import { StatePanel } from '../../../design-system/primitives/StatePanel';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 type DetailTab = 'configuration' | 'markets' | 'health' | 'dependencies' | 'audit';
 
 export const AdminProviderDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { providerId } = useParams<{ providerId: string }>();
   const navigate = useNavigate();
   const toast = useToast();
@@ -56,7 +58,7 @@ export const AdminProviderDetailPage: React.FC = () => {
       <StatePanel
         variant="notFound"
         title="Fournisseur introuvable"
-        description="Cet identifiant de prestataire n'est pas répertorié dans le registre canonique Shongre. Il a peut-être été retiré ou renommé."
+        description={t('admin.adminProviderDetailPage.cetIdentifiantDePrestataireN')}
         technicalDetail={`providerId: ${providerId}`}
         action={
           <Button
@@ -85,7 +87,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Retour au catalogue des fournisseurs</span>
+          <span>{t('admin.adminProviderDetailPage.retourAuCatalogueDesFournisseurs')}</span>
         </Link>
 
         {provider.metadata.documentationUrl && (
@@ -176,7 +178,7 @@ export const AdminProviderDetailPage: React.FC = () => {
 
         {/* Capabilities badges bar */}
         <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
-          <span className="text-xs font-semibold text-stone-500 mr-1">Capacités fournies :</span>
+          <span className="text-xs font-semibold text-stone-500 mr-1">{t('admin.adminProviderDetailPage.capacitesFournies')}</span>
           {provider.capabilities.map((cap) => (
             <span
               key={cap}
@@ -199,7 +201,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           }`}
         >
           <Sliders className="w-3.5 h-3.5" />
-          <span>Configuration & Clés</span>
+          <span>{t('admin.adminProviderDetailPage.configurationCles')}</span>
         </button>
 
         <button
@@ -211,7 +213,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Marchés & Surcharges</span>
+          <span>{t('admin.adminProviderDetailPage.marchesSurcharges')}</span>
         </button>
 
         <button
@@ -223,7 +225,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           }`}
         >
           <Activity className="w-3.5 h-3.5" />
-          <span>Santé & Tests Démo</span>
+          <span>{t('admin.adminProviderDetailPage.santeTestsDemo')}</span>
         </button>
 
         <button
@@ -235,7 +237,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Utilisation & Dépendances</span>
+          <span>{t('admin.adminProviderDetailPage.utilisationDependances')}</span>
         </button>
 
         <button

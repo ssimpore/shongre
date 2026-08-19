@@ -39,6 +39,7 @@ import { MoveNodeModal } from './modals/MoveNodeModal';
 import { DeprecateNodeModal } from './modals/DeprecateNodeModal';
 import { DeleteNodeModal } from './modals/DeleteNodeModal';
 import { plural } from '../../../../utilities/formatters';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyNodeEditorProps {
   nodeId: string;
@@ -63,6 +64,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
   onNodeUpdated,
   onSelectNode,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const node = taxonomyAdminRepository.getNode(nodeId);
@@ -166,7 +168,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
     return (
       <div className="bg-white rounded-2xl border border-border-base p-8 text-center text-xs text-stone-500">
         <Layers className="w-8 h-8 mx-auto text-stone-300 mb-2" />
-        <p className="font-semibold text-stone-600">Sélectionnez une catégorie dans l'arbre pour l'éditer.</p>
+        <p className="font-semibold text-stone-600">{t('admin.taxonomyNodeEditor.selectionnezUneCategorieDansL')}</p>
       </div>
     );
   }
@@ -330,7 +332,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               ) : status === 'draft' ? (
                 <Badge variant="neutral">Brouillon</Badge>
               ) : (
-                <Badge variant="urgent">Déprécié</Badge>
+                <Badge variant="urgent">{t('admin.taxonomyNodeEditor.deprecie')}</Badge>
               )}
             </div>
             <div className="flex items-center gap-3 text-xs text-stone-500 font-mono mt-1">
@@ -458,7 +460,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           <div className="space-y-5 max-w-3xl">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
-                label="Nom complet de la catégorie (Français)"
+                label={t('admin.taxonomyNodeEditor.nomCompletDeLaCategorie')}
                 required
                 hint="Libellé complet faisant autorité (titres de pages, H1, SEO)"
               >
@@ -472,7 +474,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <Input
                   value={shortLabel}
                   onChange={(e) => setShortLabel(e.target.value)}
-                  placeholder="Ex: Voitures, Matériel Pro..."
+                  placeholder={t('admin.taxonomyNodeEditor.exVoituresMaterielPro')}
                 />
               </FormField>
             </div>
@@ -483,7 +485,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 Aperçu du rendu visuel :
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500">Rendu standard (Page annonce, H1, SEO) :</span>
+                <span className="text-stone-500">{t('admin.taxonomyNodeEditor.renduStandardPageAnnonceH1')}</span>
                 <span className="font-bold text-stone-900">{name || node.name}</span>
               </div>
               <div className="flex items-center justify-between">
@@ -501,18 +503,18 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
               </FormField>
 
-              <FormField label="Schéma d'état">
+              <FormField label={t('admin.taxonomyNodeEditor.schemaDEtat')}>
                 <select
                   value={conditionScheme}
                   onChange={(e) => setConditionScheme(e.target.value as any)}
                   className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
                 >
-                  <option value="consumer_product">Produit standard (Neuf, Très bon état...)</option>
-                  <option value="vehicle">Véhicule (0 km, Excellent, Contrôle technique...)</option>
-                  <option value="real_estate">Immobilier (Neuf/VEFA, Rénové, À rafraîchir...)</option>
-                  <option value="professional">Professionnel (Neuf garanti, Reconditionné...)</option>
+                  <option value="consumer_product">{t('admin.taxonomyNodeEditor.produitStandardNeufTresBon')}</option>
+                  <option value="vehicle">{t('admin.taxonomyNodeEditor.vehicule0KmExcellentControle')}</option>
+                  <option value="real_estate">{t('admin.taxonomyNodeEditor.immobilierNeufVefaRenoveA')}</option>
+                  <option value="professional">{t('admin.taxonomyNodeEditor.professionnelNeufGarantiReconditionne')}</option>
                   <option value="job">Emploi (Temps plein, Partiel, Freelance...)</option>
-                  <option value="service">Service (À domicile, En atelier, À distance...)</option>
+                  <option value="service">{t('admin.taxonomyNodeEditor.serviceADomicileEnAtelier')}</option>
                 </select>
               </FormField>
             </div>
@@ -522,7 +524,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description canonique et éditoriale de la catégorie..."
+                placeholder={t('admin.taxonomyNodeEditor.descriptionCanoniqueEtEditorialeDe')}
               />
             </FormField>
 
@@ -553,7 +555,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    aria-label="Couleur d'accentuation de la catégorie"
+                    aria-label={t('admin.taxonomyNodeEditor.couleurDAccentuationDeLa')}
                     value={accentColor}
                     onChange={(e) => setAccentColor(e.target.value)}
                     className="w-10 h-10 rounded-xl cursor-pointer border border-border-base"
@@ -576,8 +578,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   value={newAlias}
                   onChange={(e) => setNewAlias(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAlias())}
-                  placeholder="Ajouter un synonyme (ex: Smartphone, Portable, GSM...)"
-                  aria-label="Ajouter un synonyme"
+                  placeholder={t('admin.taxonomyNodeEditor.ajouterUnSynonymeExSmartphone')}
+                  aria-label={t('admin.taxonomyNodeEditor.ajouterUnSynonyme')}
                 />
                 <Button variant="outline" size="sm" onClick={handleAddAlias}>
                   Ajouter
@@ -593,7 +595,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveAlias(alias)}
-                      aria-label="Retirer cet élément"
+                      aria-label={t('admin.taxonomyNodeEditor.retirerCetElement')}
                       className="text-stone-500 hover:text-stone-700"
                     >
                       <X className="w-3 h-3" />
@@ -609,16 +611,16 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 Cycle de vie & Publication
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Statut opérationnel">
+                <FormField label={t('admin.taxonomyNodeEditor.statutOperationnel')}>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
                     className="w-full h-10 px-3 bg-white border border-border-base rounded-xl text-xs font-semibold"
                   >
-                    <option value="active">Actif (en ligne et indexable)</option>
-                    <option value="draft">Brouillon (invisible aux utilisateurs)</option>
-                    <option value="disabled">Désactivé</option>
-                    <option value="deprecated">Déprécié (archivage progressif)</option>
+                    <option value="active">{t('admin.taxonomyNodeEditor.actifEnLigneEtIndexable')}</option>
+                    <option value="draft">{t('admin.taxonomyNodeEditor.brouillonInvisibleAuxUtilisateurs')}</option>
+                    <option value="disabled">{t('admin.taxonomyNodeEditor.desactive')}</option>
+                    <option value="deprecated">{t('admin.taxonomyNodeEditor.deprecieArchivageProgressif')}</option>
                   </select>
                 </FormField>
 
@@ -628,7 +630,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                       checked={publishable}
                       onChange={(e) => setPublishable(e.target.checked)}
                     />
-                    <span>Nœud publiable (sélectionnable comme catégorie finale d'annonce)</span>
+                    <span>{t('admin.taxonomyNodeEditor.nUdPubliableSelectionnableComme')}</span>
                   </label>
                 </div>
               </div>
@@ -647,7 +649,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   </h4>
                   <p className="text-xs text-stone-600 mt-1 max-w-prose">
                     La suppression est définitive et affecte toutes les annonces rattachées à cette
-                    rubrique. Préférez <strong>Déprécier</strong> pour la retirer des nouvelles
+                    rubrique. Préférez <strong>{t('admin.taxonomyNodeEditor.deprecier')}</strong> pour la retirer des nouvelles
                     publications sans toucher à l'existant.
                   </p>
                 </div>
@@ -730,7 +732,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     onChange={(e) => setSelectedRegistryAttrId(e.target.value)}
                     className="h-control-md px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold max-w-xs"
                   >
-                    <option value="">-- Choisir dans le Registre --</option>
+                    <option value="">{t('admin.taxonomyNodeEditor.choisirDansLeRegistre')}</option>
                     {availableRegistryAttributes.map((attr) => (
                       <option key={attr.id} value={attr.id}>
                         {attr.label} ({attr.dataType})
@@ -817,7 +819,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="p-4 bg-bg-subtle rounded-xl border border-border-subtle space-y-3">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
                 <FileCheck className="w-4 h-4 text-primary" />
-                <span>Schéma de Publication Résolu (Effectif pour le vendeur)</span>
+                <span>{t('admin.taxonomyNodeEditor.schemaDePublicationResoluEffectif')}</span>
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                 <div>
@@ -825,17 +827,17 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <p className="font-bold text-stone-900">{resolvedSchema.attributes.length}</p>
                 </div>
                 <div>
-                  <span className="text-stone-500">Options d'état :</span>
+                  <span className="text-stone-500">{t('admin.taxonomyNodeEditor.optionsDEtat')}</span>
                   <p className="font-bold text-stone-900">{plural(resolvedSchema.conditionScheme.length, 'palier')}</p>
                 </div>
                 <div>
-                  <span className="text-stone-500">Vente autorisée :</span>
+                  <span className="text-stone-500">{t('admin.taxonomyNodeEditor.venteAutorisee')}</span>
                   <p className="font-bold text-success">
                     {resolvedSchema.capabilities.canSell ? 'Oui' : 'Non'}
                   </p>
                 </div>
                 <div>
-                  <span className="text-stone-500">Séquestre CB actif :</span>
+                  <span className="text-stone-500">{t('admin.taxonomyNodeEditor.sequestreCbActif')}</span>
                   <p className="font-bold text-primary">
                     {resolvedSchema.capabilities.securePaymentAllowed ? 'Actif' : 'Désactivé'}
                   </p>
@@ -880,11 +882,11 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="p-3.5 bg-info-surface border border-info-border rounded-xl text-xs text-info space-y-1">
               <div className="font-bold text-info flex items-center gap-1.5">
                 <HelpCircle className="w-4 h-4 text-info" />
-                <span>Frontière d'architecture :</span>
+                <span>{t('admin.taxonomyNodeEditor.frontiereDArchitecture')}</span>
               </div>
               <p>
-                La taxonomie définit l'<strong>éligibilité intrinsèque</strong> de la catégorie (ex: peut-on vendre en ligne ? envoyer par colis ?).
-                Les transporteurs réels (Mondial Relay, Colissimo) sont gérés dans le <strong>Gestionnaire de Prestataires</strong>.
+                La taxonomie définit l'<strong>{t('admin.taxonomyNodeEditor.eligibiliteIntrinseque')}</strong> de la catégorie (ex: peut-on vendre en ligne ? envoyer par colis ?).
+                Les transporteurs réels (Mondial Relay, Colissimo) sont gérés dans le <strong>{t('admin.taxonomyNodeEditor.gestionnaireDePrestataires')}</strong>.
               </p>
             </div>
 
@@ -908,7 +910,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                       setCapabilities({ ...capabilities, securePaymentAllowed: e.target.checked })
                     }
                   />
-                  <span>Paiement sécurisé en ligne (Séquestre Shongre)</span>
+                  <span>{t('admin.taxonomyNodeEditor.paiementSecuriseEnLigneSequestre')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
                   <Checkbox
@@ -917,28 +919,28 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                       setCapabilities({ ...capabilities, reservationAllowed: e.target.checked })
                     }
                   />
-                  <span>Réservation avec acompte de séquestre</span>
+                  <span>{t('admin.taxonomyNodeEditor.reservationAvecAcompteDeSequestre')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
                   <Checkbox
                     checked={capabilities.canGive}
                     onChange={(e) => setCapabilities({ ...capabilities, canGive: e.target.checked })}
                   />
-                  <span>Don gratuit autorisé</span>
+                  <span>{t('admin.taxonomyNodeEditor.donGratuitAutorise')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
                   <Checkbox
                     checked={capabilities.canExchange}
                     onChange={(e) => setCapabilities({ ...capabilities, canExchange: e.target.checked })}
                   />
-                  <span>Troc / Échange autorisé</span>
+                  <span>{t('admin.taxonomyNodeEditor.trocEchangeAutorise')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
                   <Checkbox
                     checked={capabilities.canRent}
                     onChange={(e) => setCapabilities({ ...capabilities, canRent: e.target.checked })}
                   />
-                  <span>Location autorisée</span>
+                  <span>{t('admin.taxonomyNodeEditor.locationAutorisee')}</span>
                 </label>
               </div>
             </div>
@@ -980,7 +982,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="p-3.5 bg-bg-subtle rounded-xl border border-border-subtle text-xs space-y-1">
               <div className="font-bold text-stone-900 flex items-center gap-1.5">
                 <Globe className="w-4 h-4 text-primary" />
-                <span>Architecture Multi-Marchés & Héritage France :</span>
+                <span>{t('admin.taxonomyNodeEditor.architectureMultiMarchesHeritageFrance')}</span>
               </div>
               <p className="text-stone-600">
                 La France (<strong>FR</strong>) constitue la référence canonique. Les autres marchés héritent automatiquement de tous les paramètres non surchargés.
@@ -1064,31 +1066,31 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {activeTab === 'seo' && (
           <div className="space-y-5 max-w-2xl">
             <FormField
-              label="Modèle de Titre SEO (Meta Title)"
+              label={t('admin.taxonomyNodeEditor.modeleDeTitreSeoMeta')}
               hint="Variables disponibles : {category}, {location}, {count}"
             >
               <Input
                 value={metaTitleTemplate}
                 onChange={(e) => setMetaTitleTemplate(e.target.value)}
-                placeholder="Ex: Petites annonces {category} d'occasion - Shongre"
+                placeholder={t('admin.taxonomyNodeEditor.exempleTitreSeo')}
               />
             </FormField>
 
             <FormField
-              label="Modèle de Meta Description"
+              label={t('admin.taxonomyNodeEditor.modeleDeMetaDescription')}
               hint="Description affichée dans les résultats Google"
             >
               <Textarea
                 rows={2}
                 value={metaDescriptionTemplate}
                 onChange={(e) => setMetaDescriptionTemplate(e.target.value)}
-                placeholder="Ex: Achetez et vendez vos articles {category} en toute sécurité avec paiement séquestre Shongre..."
+                placeholder={t('admin.taxonomyNodeEditor.exempleDescriptionSeo')}
               />
             </FormField>
 
             <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-stone-800">
               <Checkbox checked={indexable} onChange={(e) => setIndexable(e.target.checked)} />
-              <span>Autoriser l'indexation par les moteurs de recherche (Robots: index, follow)</span>
+              <span>{t('admin.taxonomyNodeEditor.autoriserLIndexationParLes')}</span>
             </label>
 
             {/* Google SERP Preview */}
@@ -1123,13 +1125,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   onChange={(e) => setPreviewUserType(e.target.value as any)}
                   className="h-8 px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold"
                 >
-                  <option value="individual">Vendeur Particulier</option>
-                  <option value="pro">Vendeur Professionnel</option>
+                  <option value="individual">{t('admin.taxonomyNodeEditor.vendeurParticulier')}</option>
+                  <option value="pro">{t('admin.taxonomyNodeEditor.vendeurProfessionnel')}</option>
                 </select>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-stone-700">Marché :</span>
+                <span className="text-xs font-bold text-stone-700">{t('admin.taxonomyNodeEditor.marche')}</span>
                 <select
                   value={previewMarket}
                   onChange={(e) => setPreviewMarket(e.target.value)}
@@ -1147,7 +1149,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="p-5 bg-bg-subtle rounded-2xl border border-border-subtle space-y-4">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
                 <Eye className="w-4 h-4 text-primary" />
-                <span>Simulation du Formulaire de Publication Réel</span>
+                <span>{t('admin.taxonomyNodeEditor.simulationDuFormulaireDePublication')}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1179,11 +1181,11 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               </h3>
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div className="p-3 bg-white rounded-lg border border-border-base">
-                  <span className="text-stone-500">Annonces actives associées :</span>
+                  <span className="text-stone-500">{t('admin.taxonomyNodeEditor.annoncesActivesAssociees')}</span>
                   <p className="text-lg font-black text-stone-900">{impact.activeListingsCount}</p>
                 </div>
                 <div className="p-3 bg-white rounded-lg border border-border-base">
-                  <span className="text-stone-500">Sous-catégories dépendantes :</span>
+                  <span className="text-stone-500">{t('admin.taxonomyNodeEditor.sousCategoriesDependantes')}</span>
                   <p className="text-lg font-black text-stone-900">{impact.descendantsCount}</p>
                 </div>
                 <div className="p-3 bg-white rounded-lg border border-border-base">
@@ -1191,7 +1193,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <p className="text-lg font-black text-stone-900">{impact.publishableLeavesCount}</p>
                 </div>
                 <div className="p-3 bg-white rounded-lg border border-border-base">
-                  <span className="text-stone-500">Surcharges marchés actives :</span>
+                  <span className="text-stone-500">{t('admin.taxonomyNodeEditor.surchargesMarchesActives')}</span>
                   <p className="text-lg font-black text-stone-900">{impact.marketOverridesCount}</p>
                 </div>
               </div>
@@ -1200,7 +1202,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-2 text-xs text-stone-700">
               <div className="font-bold text-stone-900 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-success" />
-                <span>Politique d'intégrité canonique :</span>
+                <span>{t('admin.taxonomyNodeEditor.politiqueDIntegriteCanonique')}</span>
               </div>
               <p>
                 L'identifiant <code>{node.id}</code> est permanent. Toute modification de nom ou de position préserve la validité des annonces sans risque de rupture.

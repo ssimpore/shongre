@@ -7,6 +7,8 @@ import {
   DROPDOWN_HEADER_TITLE_CLASSES,
   DROPDOWN_ITEM_CLASSES,
 } from './DropdownMenu';
+import { useTranslation } from '../../i18n/I18nProvider';
+import { catalogueCoverage } from '../../i18n/i18n.service';
 
 export interface LanguageOption {
   code: string;
@@ -20,19 +22,54 @@ export interface LanguageOption {
    * `Deutsch` stored a locale nobody read and left every string in French. A
    * control that claims to do something it cannot is worse than a shorter list,
    * so unavailable languages are shown as coming soon and cannot be selected.
-   * Flip the flag here when a locale's translations actually ship.
+   *
+   * This is now measured rather than declared — see `LOCALE_READY_THRESHOLD`.
+   * A locale becomes selectable when its catalogue actually covers the shared
+   * interface, so nobody has to remember to flip a boolean, and nobody can flip
+   * one ahead of the translations.
    */
   isAvailable: boolean;
 }
 
-export const SUPPORTED_LANGUAGES: LanguageOption[] = [
-  { code: 'fr-FR', name: 'Français', nativeName: 'Français', flag: '🇫🇷', isAvailable: true },
-  { code: 'en-US', name: 'English', nativeName: 'English', flag: '🇬🇧', isAvailable: false },
-  { code: 'de-DE', name: 'Deutsch', nativeName: 'Deutsch', flag: '🇩🇪', isAvailable: false },
-  { code: 'es-ES', name: 'Español', nativeName: 'Español', flag: '🇪🇸', isAvailable: false },
-  { code: 'nl-NL', name: 'Nederlands', nativeName: 'Nederlands', flag: '🇳🇱', isAvailable: false },
-  { code: 'it-IT', name: 'Italiano', nativeName: 'Italiano', flag: '🇮🇹', isAvailable: false },
+/**
+ * How much of the source catalogue a locale must cover to be offered.
+ *
+ * Full coverage: a language that switches the navigation but leaves the footer
+ * in French reads as a bug, not as a partial translation.
+ */
+export const LOCALE_READY_THRESHOLD = 1;
+
+/**
+ * Locales the interface is actually finished in.
+ *
+ * Deliberately a second condition on top of catalogue coverage, because the two
+ * measure different things. Coverage asks "is every key in the catalogue
+ * translated?" — and the catalogue only contains the strings that have been
+ * migrated to `t()` so far. It reported 100% for English while the entire page
+ * body was still hardcoded French, which rendered "Home / Search / Account" in
+ * a tab bar under a fully French homepage.
+ *
+ * So a locale ships when someone asserts the migration is done for it *and* the
+ * catalogue backs that claim. `npm run check:i18n` counts the hardcoded strings
+ * still standing between English and this list.
+ */
+export const SHIPPED_LOCALES = ['fr-FR'] as const;
+
+const LANGUAGES: Omit<LanguageOption, 'isAvailable'>[] = [
+  { code: 'fr-FR', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
+  { code: 'en-US', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'de-DE', name: 'Deutsch', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es-ES', name: 'Español', nativeName: 'Español', flag: '🇪🇸' },
+  { code: 'nl-NL', name: 'Nederlands', nativeName: 'Nederlands', flag: '🇳🇱' },
+  { code: 'it-IT', name: 'Italiano', nativeName: 'Italiano', flag: '🇮🇹' },
 ];
+
+export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map((language) => ({
+  ...language,
+  isAvailable:
+    (SHIPPED_LOCALES as readonly string[]).includes(language.code) &&
+    catalogueCoverage(language.code) >= LOCALE_READY_THRESHOLD,
+}));
 
 export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter((lang) => lang.isAvailable);
 
@@ -53,6 +90,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const { currentLocale, setLocale, activeMarket, currentCurrency, openPreferencesModal } = useMarketLocation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   // Find active language or default to French
   const activeLanguage =
@@ -118,7 +156,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        aria-label={`Langue : ${activeLanguage.name}. Cliquez pour changer.`}
+        aria-label={t('language.current', { language: activeLanguage.name })}
         className={buttonClasses}
       >
         <span className="text-base shrink-0 leading-none">{activeLanguage.flag}</span>
@@ -143,7 +181,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         >
           <div className={DROPDOWN_HEADER_CLASSES}>
             <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
-              <span>Choisir la langue</span>
+              <span>{t('language.choose')}</span>
             </div>
           </div>
 
@@ -178,7 +216,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   {isSelected && lang.isAvailable && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
                   {!lang.isAvailable && (
                     <span className="text-micro font-bold uppercase tracking-wider text-stone-400 shrink-0">
-                      Bientôt
+                      {t('language.comingSoon')}
                     </span>
                   )}
                 </button>
@@ -197,7 +235,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Settings2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span>Préférences...</span>
+                <span>{t('language.preferences')}</span>
               </div>
               <div className="flex items-center gap-1.5 text-micro font-bold text-stone-500">
                 <span>{activeMarket.flag} {activeMarket.code}</span>

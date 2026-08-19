@@ -29,6 +29,7 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { DataTable } from '../../design-system/primitives/DataTable';
 import { BulkImportModal } from './components/BulkImportModal';
 import { usePublishCta } from '../../security/usePublishCta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 type BoostPack = 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight';
 
@@ -88,6 +89,7 @@ function getPhotoUrl(photo: any): string {
 }
 
 export const MyListingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const publishCta = usePublishCta();
@@ -252,7 +254,7 @@ export const MyListingsPage: React.FC = () => {
           tabs={tabs}
           activeTab={activeTab}
           onChange={setActiveTab}
-          label="Filtrer mes annonces par statut"
+          label={t('sellerworkspace.myListingsPage.filtrerMesAnnoncesParStatut')}
           idPrefix="my-listings"
         />
 
@@ -342,7 +344,7 @@ export const MyListingsPage: React.FC = () => {
                           setSelectedMarketsInModal(markets);
                         }}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg-base hover:bg-bg-subtle border border-border-base text-xs font-semibold text-stone-700 transition-colors"
-                        title="Gérer les pays de publication"
+                        title={t('sellerworkspace.myListingsPage.gererLesPaysDePublication')}
                       >
                         <Globe className="w-3.5 h-3.5 text-primary" />
                         <span>{markets.join(', ')}</span>
@@ -391,7 +393,7 @@ export const MyListingsPage: React.FC = () => {
                             type="button"
                             onClick={() => setBoostModalListing(listing)}
                             className="px-2.5 py-1 rounded-lg bg-warning-surface hover:bg-warning-surface border border-warning-border text-warning font-bold text-xs flex items-center gap-1 transition-colors"
-                            title="Booster l'annonce"
+                            title={t('sellerworkspace.myListingsPage.boosterLAnnonce')}
                           >
                             <Zap className="w-3.5 h-3.5 text-warning fill-amber-500" />
                             <span className="hidden lg:inline">Booster</span>
@@ -412,7 +414,7 @@ export const MyListingsPage: React.FC = () => {
                         type="button"
                         onClick={() => handleDeleteListing(listing.id)}
                         className="p-1.5 rounded-lg hover:bg-danger-surface text-stone-400 hover:text-danger transition-colors"
-                        title="Supprimer l'annonce"
+                        title={t('sellerworkspace.myListingsPage.supprimerLAnnonce')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

@@ -41,6 +41,7 @@ import { BillingHistoryModal } from './components/BillingHistoryModal';
 import { Image } from '../../design-system/primitives/Image';
 import { Listing } from '../../types';
 import { usePublishCta } from '../../security/usePublishCta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
@@ -49,6 +50,7 @@ function getPhotoUrl(photo: any): string {
 }
 
 export const AccountOverviewPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, isEmailVerified, isPhoneVerified, refreshUser, updateProfile } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -139,8 +141,8 @@ export const AccountOverviewPage: React.FC = () => {
               <span className="text-sm font-normal text-stone-300">Bonjour, </span>
               {currentUser?.name}
             </h1>
-            {isProSeller(currentUser) && <Badge variant="pro" size="sm">Compte Pro</Badge>}
-            {currentUser?.isVerified && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
+            {isProSeller(currentUser) && <Badge variant="pro" size="sm">{t('sellerworkspace.accountOverviewPage.comptePro')}</Badge>}
+            {currentUser?.isVerified && <Badge variant="verified" size="sm" icon>{t('sellerworkspace.accountOverviewPage.verifie')}</Badge>}
           </div>
           <p className="text-xs text-stone-300">
             Gérez vos annonces, vos ventes, vos messages et vos favoris en toute simplicité.
@@ -243,7 +245,7 @@ export const AccountOverviewPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h3 className="text-xs font-bold text-stone-900">Numéro de téléphone</h3>
+              <h3 className="text-xs font-bold text-stone-900">{t('sellerworkspace.accountOverviewPage.numeroDeTelephone')}</h3>
               <p className="text-micro text-stone-600 truncate mt-0.5">
                 {currentUser?.phone || 'Non renseigné'}
               </p>
@@ -304,7 +306,7 @@ export const AccountOverviewPage: React.FC = () => {
             <List className="w-4 h-4" />
           </div>
           <div className="text-2xl font-black text-stone-900">{activeListings.length}</div>
-          <div className="text-xs font-semibold text-stone-500 mt-0.5">Annonces actives</div>
+          <div className="text-xs font-semibold text-stone-500 mt-0.5">{t('sellerworkspace.accountOverviewPage.annoncesActives')}</div>
         </Link>
 
         <Link
@@ -326,7 +328,7 @@ export const AccountOverviewPage: React.FC = () => {
             <Heart className="w-4 h-4" />
           </div>
           <div className="text-2xl font-black text-stone-900">{favCount}</div>
-          <div className="text-xs font-semibold text-stone-500 mt-0.5">Annonces sauvegardées</div>
+          <div className="text-xs font-semibold text-stone-500 mt-0.5">{t('sellerworkspace.accountOverviewPage.annoncesSauvegardees')}</div>
         </Link>
 
         {/* This card opens the billing history — it is an action, not a metric.
@@ -346,7 +348,7 @@ export const AccountOverviewPage: React.FC = () => {
               Factures
               <ChevronRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
             </div>
-            <div className="text-xs font-semibold text-stone-500 mt-0.5">Reçus &amp; justificatifs</div>
+            <div className="text-xs font-semibold text-stone-500 mt-0.5">{t('sellerworkspace.accountOverviewPage.recusJustificatifs')}</div>
           </div>
         </button>
       </div>
@@ -438,7 +440,7 @@ export const AccountOverviewPage: React.FC = () => {
                 rows={2}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Présentez-vous brièvement aux autres membres de la communauté..."
+                placeholder={t('sellerworkspace.accountOverviewPage.presentezVousBrievementAuxAutres')}
                 className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -473,7 +475,7 @@ export const AccountOverviewPage: React.FC = () => {
               <span className="font-bold text-stone-900 truncate block">{currentUser?.email}</span>
             </div>
             <div>
-              <span className="text-stone-500 block mb-0.5 font-medium">Téléphone</span>
+              <span className="text-stone-500 block mb-0.5 font-medium">{t('sellerworkspace.accountOverviewPage.telephone')}</span>
               <span className="font-bold text-stone-900">{currentUser?.phone || 'Non renseigné'}</span>
             </div>
             <div>

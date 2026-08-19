@@ -5,8 +5,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { Input } from '../../design-system/primitives/FormField';
 import { useMarketLocation } from '../providers/MarketLocationProvider';
 import { LocationSelection } from '../../types';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const LocationPickerModal: React.FC = () => {
+  const { t } = useTranslation();
   const {
     activeMarket,
     location,
@@ -65,7 +67,7 @@ export const LocationPickerModal: React.FC = () => {
     <Modal
       isOpen={isLocationModalOpen}
       onClose={closeLocationModal}
-      title="Zone géographique"
+      title={t('shell.locationPickerModal.zoneGeographique')}
       description={`Trouvez des annonces près de chez vous ou partout en ${activeMarket.name} (${activeMarket.flag})`}
       maxWidth="md"
     >
@@ -107,7 +109,7 @@ export const LocationPickerModal: React.FC = () => {
         {cityInput.trim() && (
           <div className="space-y-2">
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider flex justify-between">
-              <span>Rayon de recherche</span>
+              <span>{t('shell.locationPickerModal.rayonDeRecherche')}</span>
               <span className="text-primary font-semibold">
                 {radius === 0 ? 'Ville exacte' : `+ ${radius} km`}
               </span>

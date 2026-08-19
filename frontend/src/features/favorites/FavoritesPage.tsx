@@ -9,8 +9,10 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { Button } from '../../design-system/primitives/Button';
 import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const FavoritesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { favoriteIds, clearFavorites, isLoading: isLoadingIds } = useFavorites();
   const toast = useToast();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -85,8 +87,8 @@ export const FavoritesPage: React.FC = () => {
       ) : (
         <EmptyState
           icon={<Heart className="w-10 h-10 text-stone-400" />}
-          title="Aucun favori pour le moment"
-          description="Cliquez sur le cœur d'une annonce pour la sauvegarder et la retrouver facilement ici."
+          title={t('favorites.favoritesPage.aucunFavoriPourLeMoment')}
+          description={t('favorites.favoritesPage.cliquezSurLeCUr')}
           action={
             <Button
               to={routes.search()}

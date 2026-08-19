@@ -4,6 +4,7 @@ import { ShieldCheck, Star, Clock, MapPin, CheckCircle2, ChevronRight, Store } f
 import { UserProfile, ReviewItem } from '../../../types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';
 import { isProSeller, showsVerifiedBadge } from '../../../domains/user/user.domain';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface ListingSellerTrustSectionProps {
   seller: UserProfile;
@@ -16,6 +17,7 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
   reviews = [],
   className = '',
 }) => {
+  const { t } = useTranslation();
   const isPro = isProSeller(seller);
   const profileUrl = isPro && seller.storeSlug ? `/boutique/${seller.storeSlug}` : `/profil/${seller.slug || seller.id}`;
 
@@ -56,8 +58,8 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
             >
               {seller.companyName || seller.name}
             </Link>
-            {isPro && <Badge variant="pro" size="sm">Vendeur Pro</Badge>}
-            {showsVerifiedBadge(seller) && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
+            {isPro && <Badge variant="pro" size="sm">{t('listings.listingSellerTrustSection.vendeurPro')}</Badge>}
+            {showsVerifiedBadge(seller) && <Badge variant="verified" size="sm" icon>{t('listings.listingSellerTrustSection.verifie')}</Badge>}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-stone-600 flex-wrap">

@@ -3,8 +3,10 @@ import { Mail, Sparkles, Tag, ShieldCheck, CheckCircle2, ArrowRight } from 'luci
 import { NewsletterSignup } from './components/NewsletterSignup';
 import { newsletterTopicsService } from '../../domains/newsletter/newsletter.topics';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const NewsletterLandingPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Newsletter Shongre",
     description:
@@ -20,7 +22,7 @@ export const NewsletterLandingPage: React.FC = () => {
       <div className="text-center max-w-2xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
           <Mail className="w-3.5 h-3.5" />
-          <span>La Newsletter Shongre</span>
+          <span>{t('newsletter.newsletterLandingPage.laNewsletterShongre')}</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 tracking-tight leading-tight">
@@ -67,24 +69,24 @@ export const NewsletterLandingPage: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto mb-2">
             <CheckCircle2 className="w-4 h-4" />
           </div>
-          <h4 className="font-black text-stone-900">100% Sans Spam</h4>
-          <p>Une fréquence raisonnée d'un à deux emails par semaine maximum.</p>
+          <h4 className="font-black text-stone-900">{t('newsletter.newsletterLandingPage.100SansSpam')}</h4>
+          <p>{t('newsletter.newsletterLandingPage.uneFrequenceRaisonneeDUn')}</p>
         </div>
 
         <div className="space-y-1">
           <div className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center mx-auto mb-2">
             <Sparkles className="w-4 h-4" />
           </div>
-          <h4 className="font-black text-stone-900">Contenu éditorial soigné</h4>
-          <p>Des sélections manuelles préparées par nos équipes basées en France.</p>
+          <h4 className="font-black text-stone-900">{t('newsletter.newsletterLandingPage.contenuEditorialSoigne')}</h4>
+          <p>{t('newsletter.newsletterLandingPage.desSelectionsManuellesPrepareesPar')}</p>
         </div>
 
         <div className="space-y-1">
           <div className="w-8 h-8 rounded-full bg-stone-200 text-stone-700 flex items-center justify-center mx-auto mb-2">
             <ShieldCheck className="w-4 h-4" />
           </div>
-          <h4 className="font-black text-stone-900">Désinscription instantanée</h4>
-          <p>Un lien de désabonnement en 1 clic dans chaque email envoyé.</p>
+          <h4 className="font-black text-stone-900">{t('newsletter.newsletterLandingPage.desinscriptionInstantanee')}</h4>
+          <p>{t('newsletter.newsletterLandingPage.unLienDeDesabonnementEn')}</p>
         </div>
       </div>
     </div>

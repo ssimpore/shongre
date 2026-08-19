@@ -3,6 +3,7 @@ import { AlertCircle, Building2, ExternalLink } from 'lucide-react';
 import { Modal } from '../../../../design-system/primitives/Modal';
 import { Button } from '../../../../design-system/primitives/Button';
 import { CrmCompany, ProspectResearchCandidate } from '../../../../domains/crm/crm.types';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface DuplicateConflictModalProps {
   isOpen: boolean;
@@ -21,20 +22,21 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
   onAssociate,
   onCreateSeparate,
 }) => {
+  const { t } = useTranslation();
   if (!candidate) return null;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Entreprise existante détectée"
-      description="Une correspondance a été trouvée avec un compte déjà enregistré dans Shongre."
+      title={t('admin.duplicateConflictModal.entrepriseExistanteDetectee')}
+      description={t('admin.duplicateConflictModal.uneCorrespondanceAEteTrouvee')}
     >
       <div className="space-y-4 text-xs">
         <div className="p-3.5 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-2.5 text-warning">
           <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold block">Doublon potentiel identifié</span>
+            <span className="font-bold block">{t('admin.duplicateConflictModal.doublonPotentielIdentifie')}</span>
             <p className="text-warning text-micro leading-relaxed">
               L'entreprise <strong className="text-stone-900">{candidate.company.name}</strong> partage le même domaine web ou nom commercial qu'une entité existante.
             </p>

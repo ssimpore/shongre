@@ -5,6 +5,7 @@ import { Notification } from '../../../domains/notifications/notification.types'
 import { notificationCatalogService } from '../../../domains/notifications/notification.catalog';
 import { NotificationItemCard } from './NotificationItemCard';
 import { Button } from '../../../design-system/primitives/Button';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   onMarkAllAsRead,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -64,7 +66,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       ref={panelRef}
       className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-border-base z-50 overflow-hidden flex flex-col max-h-[500px] animate-in fade-in slide-in-from-top-2 duration-fast"
       role="region"
-      aria-label="Panneau des notifications"
+      aria-label={t('notifications.notificationPanel.panneauDesNotifications')}
     >
       {/* Header */}
       <div className="p-3.5 border-b border-border-base flex items-center justify-between gap-2 bg-stone-50/50">
@@ -85,7 +87,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               className="text-micro font-bold text-stone-600 hover:text-stone-900 p-1 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Check className="w-3.5 h-3.5 text-primary" />
-              <span>Tout lire</span>
+              <span>{t('notifications.notificationPanel.toutLire')}</span>
             </button>
           )}
 
@@ -93,8 +95,8 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             to="/compte/notifications/preferences"
             onClick={onClose}
             className="p-1 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-100 transition-colors"
-            title="Préférences de notifications"
-            aria-label="Préférences de notifications"
+            title={t('notifications.notificationPanel.preferencesDeNotifications')}
+            aria-label={t('notifications.notificationPanel.preferencesDeNotifications')}
           >
             <Settings className="w-3.5 h-3.5" />
           </Link>
@@ -120,7 +122,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mx-auto">
               <Bell className="w-5 h-5" />
             </div>
-            <p className="text-xs font-bold text-stone-800">Aucune notification pour le moment</p>
+            <p className="text-xs font-bold text-stone-800">{t('notifications.notificationPanel.aucuneNotificationPourLeMoment')}</p>
             <p className="text-micro text-stone-500">
               Vos alertes, messages et transactions apparaîtront ici.
             </p>
@@ -144,7 +146,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           onClick={onClose}
           className="text-xs font-bold text-primary hover:text-primary-hover transition-colors inline-flex items-center gap-1.5"
         >
-          <span>Voir toutes les notifications</span>
+          <span>{t('notifications.notificationPanel.voirToutesLesNotifications')}</span>
           <ExternalLink className="w-3 h-3" />
         </Link>
       </div>

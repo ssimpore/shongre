@@ -20,6 +20,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { Link } from 'react-router-dom';
 import { BillingHistoryModal } from './components/BillingHistoryModal';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
@@ -28,6 +29,7 @@ function getPhotoUrl(photo: any): string {
 }
 
 export const ProDashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -64,7 +66,7 @@ export const ProDashboardPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-black text-stone-900">
               Tableau de bord Vendeur Pro
             </h1>
-            <Badge variant="pro" size="sm">SIRET Vérifié</Badge>
+            <Badge variant="pro" size="sm">{t('sellerworkspace.proDashboardPage.siretVerifie')}</Badge>
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
             Suivi des performances de votre catalogue commercial et conversion clients
@@ -118,20 +120,20 @@ export const ProDashboardPage: React.FC = () => {
 
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
-            <span>Taux de conversion</span>
+            <span>{t('sellerworkspace.proDashboardPage.tauxDeConversion')}</span>
             <BarChart2 className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl font-black text-stone-900">5.8%</div>
-          <div className="text-xs text-stone-500 mt-1">Sur les fiches articles</div>
+          <div className="text-xs text-stone-500 mt-1">{t('sellerworkspace.proDashboardPage.surLesFichesArticles')}</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
-            <span>Volume de ventes estimé</span>
+            <span>{t('sellerworkspace.proDashboardPage.volumeDeVentesEstime')}</span>
             <DollarSign className="w-4 h-4 text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">{formatPrice(14250)}</div>
-          <div className="text-xs text-stone-500 mt-1">Ce mois-ci</div>
+          <div className="text-xs text-stone-500 mt-1">{t('sellerworkspace.proDashboardPage.ceMoisCi')}</div>
         </div>
       </div>
 

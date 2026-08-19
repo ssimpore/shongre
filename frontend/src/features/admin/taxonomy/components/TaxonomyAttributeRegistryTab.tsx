@@ -6,8 +6,10 @@ import { Input } from '../../../../design-system/primitives/FormField';
 import { Plus, Search, Filter, Layers, Edit2, Archive, CheckCircle2 } from 'lucide-react';
 import { AttributeEditModal } from './modals/AttributeEditModal';
 import { plural } from '../../../../utilities/formatters';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export const TaxonomyAttributeRegistryTab: React.FC = () => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [dataTypeFilter, setDataTypeFilter] = useState<string>('all');
   const [editingAttribute, setEditingAttribute] = useState<TaxonomyAttribute | null>(null);
@@ -51,7 +53,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <Layers className="w-5 h-5 text-primary" />
-            <span>Registre Central des Attributs Canoniques</span>
+            <span>{t('admin.taxonomyAttributeRegistryTab.registreCentralDesAttributsCanoniques')}</span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
             Gérez le dictionnaire des {attributes.length} attributs normalisés partagés entre les différentes catégories.
@@ -74,8 +76,8 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Rechercher par libellé, ID ou code d'attribut..."
-            aria-label="Rechercher un attribut"
+            placeholder={t('admin.taxonomyAttributeRegistryTab.rechercherParLibelleIdOu')}
+            aria-label={t('admin.taxonomyAttributeRegistryTab.rechercherUnAttribut')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -89,14 +91,14 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             onChange={(e) => setDataTypeFilter(e.target.value)}
             className="h-control-md px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-700"
           >
-            <option value="all">Tous les types de données</option>
+            <option value="all">{t('admin.taxonomyAttributeRegistryTab.tousLesTypesDeDonnees')}</option>
             <option value="text">Texte libre (String)</option>
-            <option value="number">Nombre (Numérique)</option>
-            <option value="select">Menu déroulant (Select)</option>
+            <option value="number">{t('admin.taxonomyAttributeRegistryTab.nombreNumerique')}</option>
+            <option value="select">{t('admin.taxonomyAttributeRegistryTab.menuDeroulantSelect')}</option>
             <option value="multi_select">Choix multiples (Multi-select)</option>
-            <option value="boolean">Booléen (Oui/Non)</option>
+            <option value="boolean">{t('admin.taxonomyAttributeRegistryTab.booleenOuiNon')}</option>
             <option value="range">Plage / Intervalle</option>
-            <option value="year">Année (Millésime)</option>
+            <option value="year">{t('admin.taxonomyAttributeRegistryTab.anneeMillesime')}</option>
           </select>
         </div>
       </div>

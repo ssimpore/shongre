@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, ShieldCheck, Sparkles, Zap, Tag } from 'lucide-react';
 import { Image } from './Image';
 import { AVATAR_SIZES } from './responsiveImage';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface BadgeProps {
   children: React.ReactNode;
@@ -86,6 +87,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   isPro = false,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const sizeStyles = {
     sm: 'w-7 h-7 text-xs',
     md: 'w-10 h-10 text-sm',
@@ -121,7 +123,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       {isVerified && (
         <span
           className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 shadow-sm text-success"
-          title="Profil vérifié"
+          title={t('ui.badge.profilVerifie')}
         >
           <CheckCircle2 className="w-3.5 h-3.5 fill-success text-white" />
         </span>

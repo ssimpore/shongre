@@ -41,8 +41,10 @@ import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
 import { DROPDOWN_PANEL_CLASSES } from '../../design-system/primitives/DropdownMenu';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const Header: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   /* The results page renders its own, richer search bar — see the desktop
@@ -266,12 +268,12 @@ export const Header: React.FC = () => {
                     <div className="text-xs text-stone-500 truncate">{currentUser.email}</div>
                     <div className="mt-1.5 flex items-center gap-1.5">
                       {isProSeller(currentUser) ? (
-                        <Badge variant="pro" size="sm">Compte Professionnel</Badge>
+                        <Badge variant="pro" size="sm">{t('shell.header.compteProfessionnel')}</Badge>
                       ) : (
                         <Badge variant="neutral" size="sm">Particulier</Badge>
                       )}
                       {currentUser.isVerified && (
-                        <Badge variant="verified" size="sm">Vérifié</Badge>
+                        <Badge variant="verified" size="sm">{t('shell.header.verifie')}</Badge>
                       )}
                     </div>
                   </div>
@@ -361,7 +363,7 @@ export const Header: React.FC = () => {
                 setIsMobileMenuOpen(true);
                 setShouldFocusMobileSearch(true);
               }}
-              aria-label="Rechercher une annonce"
+              aria-label={t('shell.header.rechercherUneAnnonce')}
               /* `md:hidden`, unlike the burger next to it: from `md` up the
                  inline search bar is already on screen, and a second search
                  entry point in the same header is exactly the duplication the
@@ -441,7 +443,7 @@ export const Header: React.FC = () => {
                 type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-200/70 transition-all active:scale-95 cursor-pointer bg-white shadow-2xs border border-stone-200"
-                aria-label="Fermer le menu"
+                aria-label={t('shell.header.fermerLeMenu')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -472,7 +474,7 @@ export const Header: React.FC = () => {
                           <Badge variant="neutral" size="sm">Particulier</Badge>
                         )}
                         {currentUser.isVerified && (
-                          <Badge variant="verified" size="sm">Vérifié</Badge>
+                          <Badge variant="verified" size="sm">{t('shell.header.verifie')}</Badge>
                         )}
                       </div>
                     </div>

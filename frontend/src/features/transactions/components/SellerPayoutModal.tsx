@@ -7,6 +7,7 @@ import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { SelectableCard } from '../../../design-system/primitives/SelectableCard';
 import { formatPrice } from '../../../utilities/formatters';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface SellerPayoutModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   availableBalance,
   onPayoutSuccess,
 }) => {
+  const { t } = useTranslation();
   const [payoutType, setPayoutType] = useState<'standard' | 'instant'>('standard');
   const [amountStr, setAmountStr] = useState(availableBalance > 0 ? availableBalance.toFixed(2) : '0.00');
   const [bankIban, setBankIban] = useState('FR76 3000 4019 8291 8291 0029 821');
@@ -68,8 +70,8 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Transférer mes gains vers mon compte bancaire"
-      description="Sélectionnez le montant et le délai de virement souhaité."
+      title={t('transactions.sellerPayoutModal.transfererMesGainsVersMon')}
+      description={t('transactions.sellerPayoutModal.selectionnezLeMontantEtLe')}
     >
       <div className="space-y-4 text-xs">
         {/* Available Balance Box */}
@@ -99,7 +101,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
 
         {/* Amount Input */}
         <div>
-          <label className="block font-bold text-stone-700 mb-2 text-sm">Montant du virement (€)</label>
+          <label className="block font-bold text-stone-700 mb-2 text-sm">{t('transactions.sellerPayoutModal.montantDuVirement')}</label>
           <div className="relative">
             <input
               type="number"
@@ -116,12 +118,12 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
 
         {/* Payout Options */}
         <div className="space-y-3">
-          <label className="block font-bold text-stone-700 text-sm">Type de virement</label>
+          <label className="block font-bold text-stone-700 text-sm">{t('transactions.sellerPayoutModal.typeDeVirement')}</label>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <SelectableCard
               selected={payoutType === 'standard'}
               onSelect={() => setPayoutType('standard')}
-              aria-label="Virement standard, gratuit, 24 à 48h ouvrées"
+              aria-label={t('transactions.sellerPayoutModal.virementStandardGratuit24A')}
               className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                 payoutType === 'standard'
                   ? 'border-primary bg-primary-light ring-1 ring-primary/50'
@@ -134,13 +136,13 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
                   Gratuit
                 </span>
               </div>
-              <p className="text-xs font-medium text-stone-500">Délai SEPA classique (24 à 48h ouvrées)</p>
+              <p className="text-xs font-medium text-stone-500">{t('transactions.sellerPayoutModal.delaiSepaClassique24A')}</p>
             </SelectableCard>
 
             <SelectableCard
               selected={payoutType === 'instant'}
               onSelect={() => setPayoutType('instant')}
-              aria-label="Virement instantané, 0,90 €, crédité en moins de 10 minutes"
+              aria-label={t('transactions.sellerPayoutModal.virementInstantane090Credite')}
               className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
                 payoutType === 'instant'
                   ? 'border-primary bg-primary-light ring-1 ring-primary/50'
@@ -155,7 +157,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
                   0,90 €
                 </span>
               </div>
-              <p className="text-xs font-medium text-stone-500">Crédité en moins de 10 minutes sur votre IBAN</p>
+              <p className="text-xs font-medium text-stone-500">{t('transactions.sellerPayoutModal.crediteEnMoinsDe10')}</p>
             </SelectableCard>
           </div>
         </div>
@@ -179,7 +181,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         {/* Summary Breakdown */}
         <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-2xl space-y-3 shadow-inner font-medium text-sm">
           <div className="flex justify-between text-stone-600">
-            <span>Montant prélevé du solde :</span>
+            <span>{t('transactions.sellerPayoutModal.montantPreleveDuSolde')}</span>
             <span className="font-black text-stone-900">{formatPrice(amount)}</span>
           </div>
           <div className="flex justify-between text-stone-600">
@@ -187,14 +189,14 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
             <span className="font-black text-stone-900">{formatPrice(fee)}</span>
           </div>
           <div className="border-t border-stone-200 pt-3 flex justify-between font-black text-stone-900 text-base">
-            <span>Montant net versé sur votre compte :</span>
+            <span>{t('transactions.sellerPayoutModal.montantNetVerseSurVotre')}</span>
             <span className="text-success text-lg">{formatPrice(netTransfer)}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-micro text-stone-500 pt-1">
           <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-          <span>Virements exécutés via Mangopay, établissement de monnaie électronique agréé ACPR.</span>
+          <span>{t('transactions.sellerPayoutModal.virementsExecutesViaMangopayEtablissement')}</span>
         </div>
 
         <div className="flex gap-2.5 pt-2">

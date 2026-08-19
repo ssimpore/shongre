@@ -20,8 +20,10 @@ import { formatLogTimestamp } from '../../utilities/formatters';
 import { ROLE_DEFINITIONS, roleLabel } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminOverviewPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, platformRole, can } = useAuth();
   const [usersCount, setUsersCount] = useState(0);
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
@@ -93,7 +95,7 @@ export const AdminOverviewPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between text-stone-500 mb-2">
-            <span className="text-xs font-semibold">Utilisateurs enregistrés</span>
+            <span className="text-xs font-semibold">{t('admin.adminOverviewPage.utilisateursEnregistres')}</span>
             <Users className="w-4 h-4 text-stone-400" />
           </div>
           <div className="text-2xl font-black text-stone-900">{usersCount}</div>
@@ -104,7 +106,7 @@ export const AdminOverviewPage: React.FC = () => {
 
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between text-stone-500 mb-2">
-            <span className="text-xs font-semibold">Vérifications Pro en attente</span>
+            <span className="text-xs font-semibold">{t('admin.adminOverviewPage.verificationsProEnAttente')}</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl font-black text-warning">{pendingVerifications.length}</div>
@@ -126,7 +128,7 @@ export const AdminOverviewPage: React.FC = () => {
 
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
           <div className="flex items-center justify-between text-stone-500 mb-2">
-            <span className="text-xs font-semibold">Catalogue d'annonces</span>
+            <span className="text-xs font-semibold">{t('admin.adminOverviewPage.catalogueDAnnonces')}</span>
             <TrendingUp className="w-4 h-4 text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">{listingsCount}</div>

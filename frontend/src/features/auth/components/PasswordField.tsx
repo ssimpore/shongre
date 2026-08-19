@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Check, X, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface PasswordFieldProps {
   id?: string;
@@ -33,6 +34,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
   error,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
 
   // Strength rules
@@ -108,7 +110,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       {showStrength && value.length > 0 && (
         <div className="mt-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-100 text-xs">
           <div className="flex items-center justify-between font-bold mb-1.5">
-            <span className="text-stone-500">Robustesse du mot de passe :</span>
+            <span className="text-stone-500">{t('auth.passwordField.robustesseDuMotDePasse')}</span>
             <span className={strengthColor.split(' ')[1]}>{strengthLabel}</span>
           </div>
 
@@ -126,7 +128,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
-              <span>8 caractères minimum</span>
+              <span>{t('auth.passwordField.8CaracteresMinimum')}</span>
             </div>
             <div className="flex items-center gap-1">
               {hasUppercase ? (
@@ -150,7 +152,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
-              <span>1 caractère spécial</span>
+              <span>{t('auth.passwordField.1CaractereSpecial')}</span>
             </div>
           </div>
         </div>

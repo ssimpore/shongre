@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { UserProfile } from '../../types';
 import { Avatar } from './Badge';
 import { Badge } from './Badge';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface SellerCardProps {
   user: UserProfile;
@@ -19,6 +20,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
   onContact,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const isPro = isProSeller(user);
   const profileUrl = isPro && user.storeSlug ? `/boutique/${user.storeSlug}` : `/profil/${user.slug || user.id}`;
 
@@ -44,7 +46,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
               {user.companyName || user.name}
             </Link>
             {isPro && <Badge variant="pro" size="sm">Pro</Badge>}
-            {showsVerifiedBadge(user) && <Badge variant="verified" size="sm" icon>Vérifié</Badge>}
+            {showsVerifiedBadge(user) && <Badge variant="verified" size="sm" icon>{t('ui.sellerCard.verifie')}</Badge>}
           </div>
 
           <div className="flex items-center gap-2 mt-1 text-xs text-stone-600">
@@ -87,13 +89,13 @@ export const SellerCard: React.FC<SellerCardProps> = ({
         >
           {isPro ? (
             <>
-              <span className="hidden sm:inline">Visiter la boutique officielle & catalogue</span>
-              <span className="sm:hidden">Visiter la boutique</span>
+              <span className="hidden sm:inline">{t('ui.sellerCard.visiterLaBoutiqueOfficielleCatalogue')}</span>
+              <span className="sm:hidden">{t('ui.sellerCard.visiterLaBoutique')}</span>
             </>
           ) : (
             <>
-              <span className="hidden sm:inline">Voir le profil & annonces</span>
-              <span className="sm:hidden">Voir le profil</span>
+              <span className="hidden sm:inline">{t('ui.sellerCard.voirLeProfilAnnonces')}</span>
+              <span className="sm:hidden">{t('ui.sellerCard.voirLeProfil')}</span>
             </>
           )}
           <span aria-hidden="true">→</span>

@@ -5,6 +5,7 @@ import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { userRepository } from '../../../repositories/user.repository';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface SellerReportModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
   onClose,
   seller,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0].id);
   const [comment, setComment] = useState('');
@@ -59,7 +61,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Signaler ce profil"
+      title={t('profile.sellerReportModal.signalerCeProfil')}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +109,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Décrivez précisément les faits constatés, liens d'annonces ou échanges..."
+            placeholder={t('profile.sellerReportModal.decrivezPrecisementLesFaitsConstates')}
             rows={3}
             className="w-full p-3 bg-bg-base border border-border-base rounded-xl text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary"
           />

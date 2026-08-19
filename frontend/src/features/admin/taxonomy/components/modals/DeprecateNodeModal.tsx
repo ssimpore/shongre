@@ -7,6 +7,7 @@ import { FormField } from '../../../../../design-system/primitives/FormField';
 import { useToast } from '../../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../../app/providers/AuthProvider';
 import { Archive, ArrowRight, ShieldCheck } from 'lucide-react';
+import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export interface DeprecateNodeModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
   allNodes,
   onSuccess,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const [replacementId, setReplacementId] = useState<string>(node.replacedById || '');
@@ -55,7 +57,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Déprécier la catégorie "${node.name}"`}
-      description="La dépréciation retire cette rubrique des nouvelles publications tout en préservant l'intégrité des annonces existantes."
+      description={t('admin.deprecateNodeModal.laDepreciationRetireCetteRubrique')}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -63,17 +65,17 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
         <div className="p-3.5 bg-info-surface border border-info-border rounded-xl space-y-2 text-xs text-info">
           <div className="flex items-center gap-2 font-bold text-info">
             <ShieldCheck className="w-4 h-4 text-info" />
-            <span>Garanties de rétrocompatibilité :</span>
+            <span>{t('admin.deprecateNodeModal.garantiesDeRetrocompatibilite')}</span>
           </div>
           <ul className="list-disc list-inside space-y-1 text-info">
-            <li>Les annonces existantes publiées sous cette catégorie restent 100% consultables.</li>
-            <li>Le wizard de publication ne proposera plus cette rubrique aux vendeurs.</li>
-            <li>Si un successeur est défini, les redirections de recherche s'appliqueront harmonieusement.</li>
+            <li>{t('admin.deprecateNodeModal.lesAnnoncesExistantesPublieesSous')}</li>
+            <li>{t('admin.deprecateNodeModal.leWizardDePublicationNe')}</li>
+            <li>{t('admin.deprecateNodeModal.siUnSuccesseurEstDefini')}</li>
           </ul>
         </div>
 
         <FormField
-          label="Catégorie de remplacement / Successeur logique (optionnel)"
+          label={t('admin.deprecateNodeModal.categorieDeRemplacementSuccesseurLogique')}
           hint="Recommandé : redirige les recherches et suggestions vers une nouvelle catégorie active."
         >
           <select
@@ -81,7 +83,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
             onChange={(e) => setReplacementId(e.target.value)}
             className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
           >
-            <option value="">-- Aucun successeur direct (dépréciation simple) --</option>
+            <option value="">{t('admin.deprecateNodeModal.aucunSuccesseurDirectDepreciationSimple')}</option>
             {availableReplacements.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name} [{r.level} - /{r.slug}]

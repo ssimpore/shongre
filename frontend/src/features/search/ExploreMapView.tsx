@@ -20,6 +20,7 @@ import { Badge } from '../../design-system/primitives/Badge';
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
 import { showsVerifiedBadge } from '../../domains/user/user.domain';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -32,6 +33,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   selectedCity,
   onSelectCity,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -258,7 +260,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <button
             type="button"
             onClick={handleFitAll}
-            title="Recadrer sur les annonces"
+            title={t('search.exploreMapView.recadrerSurLesAnnonces')}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -268,7 +270,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <button
             type="button"
             onClick={() => setMapStyle((s) => (s === 'positron' ? 'osm' : 'positron'))}
-            title="Changer le style de carte"
+            title={t('search.exploreMapView.changerLeStyleDeCarte')}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
           >
             <Layers className="w-3.5 h-3.5" />
@@ -298,7 +300,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               <span className="text-xs font-bold text-stone-800 truncate">
                 {plural(listings.length, 'annonce')} sur la carte
               </span>
-              <span className="text-xs text-stone-500">Cliquez pour centrer</span>
+              <span className="text-xs text-stone-500">{t('search.exploreMapView.cliquezPourCentrer')}</span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5 divide-y divide-border-subtle">
@@ -371,7 +373,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               type="button"
               onClick={() => setActiveListing(null)}
               className="absolute top-2.5 right-2.5 p-1 rounded-full text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
-              aria-label="Fermer la prévisualisation"
+              aria-label={t('search.exploreMapView.fermerLaPrevisualisation')}
             >
               <X className="w-4 h-4" />
             </button>

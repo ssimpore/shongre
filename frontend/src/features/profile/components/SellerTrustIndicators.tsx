@@ -14,12 +14,14 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../../../types';
 import { verificationService } from '../../../domains/verification/verification.service';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface SellerTrustIndicatorsProps {
   seller: UserProfile;
 }
 
 export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ seller }) => {
+  const { t } = useTranslation();
   const isPro = isProSeller(seller);
   const trustScore = verificationService.computeTrustScore(seller);
   const isIdentityVerified = seller.identityVerification?.status === 'verified';
@@ -65,7 +67,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block mb-0.5">Paiement sécurisé</span>
+            <span className="font-bold text-stone-900 block mb-0.5">{t('profile.sellerTrustIndicators.paiementSecurise')}</span>
             <span className="text-stone-500 text-xs leading-relaxed">
               {isBankVerified
                 ? 'Séquestre Shongre & Virement SEPA certifié'
@@ -80,7 +82,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
             <Truck className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block mb-0.5">Livraison & Retrait</span>
+            <span className="font-bold text-stone-900 block mb-0.5">{t('profile.sellerTrustIndicators.livraisonRetrait')}</span>
             <span className="text-stone-500 text-xs leading-relaxed">
               Remise en main propre ou envoi avec numéro de suivi
             </span>
@@ -93,7 +95,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <span className="font-bold text-stone-900 block mb-0.5">Réactivité certifiée</span>
+            <span className="font-bold text-stone-900 block mb-0.5">{t('profile.sellerTrustIndicators.reactiviteCertifiee')}</span>
             <span className="text-stone-500 text-xs leading-relaxed">
               {seller.responseRatePercent}% de réponses {seller.responseTimeText}
             </span>

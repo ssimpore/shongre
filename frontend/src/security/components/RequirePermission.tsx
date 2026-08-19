@@ -6,6 +6,7 @@ import { Permission } from '../../types';
 import { useAuthorization } from '../useAuthorization';
 import { Button } from '../../design-system/primitives/Button';
 import { ResourceOwnershipContext, AuthorizationContextOptions } from '../authorization.service';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface RequirePermissionProps {
   permission: Permission;
@@ -138,6 +139,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   standalone,
   children,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, can, isSuspended, isPro } = useAuthorization();
   const location = useLocation();
 
@@ -182,7 +184,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
         <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-black text-stone-900 mb-2">Compte suspendu</h1>
+        <h1 className="text-2xl font-black text-stone-900 mb-2">{t('security.requirePermission.compteSuspendu')}</h1>
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
           {currentUser.suspendedReason
             ? `Votre compte a été restreint par nos équipes : "${currentUser.suspendedReason}".`

@@ -34,8 +34,10 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { useDialogBehavior } from '../../design-system/primitives/useDialogBehavior';
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const MessagingPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, isPro } = useAuth();
   const toast = useToast();
@@ -375,7 +377,7 @@ export const MessagingPage: React.FC = () => {
             <MessageSquare className="w-7 h-7" />
           </div>
           <div className="space-y-1.5">
-            <p className="text-base font-black text-stone-800">Aucun message pour le moment</p>
+            <p className="text-base font-black text-stone-800">{t('messaging.messagingPage.aucunMessagePourLeMoment')}</p>
             <p className="text-xs text-stone-500 max-w-sm leading-relaxed">
               Vos échanges avec les acheteurs et les vendeurs apparaîtront ici, avec le paiement
               sécurisé et le suivi de commande.
@@ -467,7 +469,7 @@ export const MessagingPage: React.FC = () => {
               <Sparkles className="w-7 h-7 text-primary" />
             </div>
             <div>
-              <p className="text-base font-black text-stone-800">Sélectionnez une conversation</p>
+              <p className="text-base font-black text-stone-800">{t('messaging.messagingPage.selectionnezUneConversation')}</p>
               <p className="text-xs text-stone-500 mt-1 max-w-sm">
                 Choisissez une conversation dans la liste de gauche pour échanger avec vos acheteurs et vendeurs en toute sécurité.
               </p>
@@ -520,7 +522,7 @@ export const MessagingPage: React.FC = () => {
           isOpen={!!blockModalTarget}
           onClose={() => setBlockModalTarget(null)}
           title="Bloquer cet utilisateur"
-          description="Cet utilisateur ne pourra plus vous envoyer de messages ni interagir avec vos annonces."
+          description={t('messaging.messagingPage.cetUtilisateurNePourraPlus')}
         >
           <div className="space-y-4 text-xs">
             <p className="text-stone-600 leading-relaxed font-medium">
@@ -543,8 +545,8 @@ export const MessagingPage: React.FC = () => {
         <Modal
           isOpen={!!reportModalTarget}
           onClose={() => setReportModalTarget(null)}
-          title="Signaler la conversation"
-          description="Aidez l'équipe de modération à garantir la sécurité sur Shongre."
+          title={t('messaging.messagingPage.signalerLaConversation')}
+          description={t('messaging.messagingPage.aidezLEquipeDeModeration')}
         >
           <div className="space-y-4 text-xs">
             <p className="text-stone-600 leading-relaxed">
@@ -587,13 +589,13 @@ export const MessagingPage: React.FC = () => {
             type="button"
             onClick={() => setLightboxImageUrl(null)}
             className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-            aria-label="Fermer la vue plein écran"
+            aria-label={t('messaging.messagingPage.fermerLaVuePleinEcran')}
           >
             <X className="w-6 h-6" />
           </button>
           <Image
             src={lightboxImageUrl}
-            alt="Vue plein écran"
+            alt={t('messaging.messagingPage.vuePleinEcran')}
             sizes="90vw"
               className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl border border-white/10"
             onClick={(e) => e.stopPropagation()}

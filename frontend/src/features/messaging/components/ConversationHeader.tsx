@@ -15,6 +15,7 @@ import {
 import { ConversationParticipant, ConversationCapabilities } from '../../../domains/messaging/messaging.types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';
 import { Button } from '../../../design-system/primitives/Button';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface ConversationHeaderProps {
   counterpart: ConversationParticipant;
@@ -35,6 +36,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   onSimulateReply,
   publicProfileSlug,
 }) => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -46,7 +48,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             type="button"
             onClick={onBack}
             className="md:hidden p-1.5 -ml-1 text-stone-600 hover:text-stone-900 rounded-lg hover:bg-stone-100 transition-colors"
-            aria-label="Retour aux conversations"
+            aria-label={t('messaging.conversationHeader.retourAuxConversations')}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -61,7 +63,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-black text-stone-900 truncate">{counterpart.name}</span>
             {counterpart.isVerified && (
-              <span title="Identité vérifiée">
+              <span title={t('messaging.conversationHeader.identiteVerifiee')}>
                 <ShieldCheck className="w-4 h-4 text-success shrink-0" />
               </span>
             )}
@@ -79,7 +81,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               </span>
             )}
             {capabilities.isBlockedByViewer ? (
-              <span className="text-danger font-bold">Utilisateur bloqué</span>
+              <span className="text-danger font-bold">{t('messaging.conversationHeader.utilisateurBloque')}</span>
             ) : (
               <span className="flex items-center gap-1 text-success font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
@@ -110,7 +112,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             type="button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="p-2 text-stone-600 hover:text-stone-900 rounded-xl hover:bg-stone-100 transition-colors"
-            aria-label="Options de la conversation"
+            aria-label={t('messaging.conversationHeader.optionsDeLaConversation')}
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -129,7 +131,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-100 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4 text-stone-400" />
-                    <span>Voir le profil public</span>
+                    <span>{t('messaging.conversationHeader.voirLeProfilPublic')}</span>
                   </Link>
                 )}
 
@@ -148,7 +150,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                   {capabilities.isBlockedByViewer ? (
                     <>
                       <UserCheck className="w-4 h-4 text-success" />
-                      <span>Débloquer l'utilisateur</span>
+                      <span>{t('messaging.conversationHeader.debloquerLUtilisateur')}</span>
                     </>
                   ) : (
                     <>
@@ -167,7 +169,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-danger hover:bg-danger-surface text-left transition-colors"
                 >
                   <Flag className="w-4 h-4 text-danger" />
-                  <span>Signaler la conversation</span>
+                  <span>{t('messaging.conversationHeader.signalerLaConversation')}</span>
                 </button>
               </div>
             </>

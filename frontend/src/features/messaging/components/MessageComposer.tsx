@@ -11,6 +11,7 @@ import {
 import { ConversationCapabilities } from '../../../domains/messaging/messaging.types';
 import { Button } from '../../../design-system/primitives/Button';
 import { Image } from '../../../design-system/primitives/Image';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface MessageComposerProps {
   onSendMessage: (text: string, attachmentUrl?: string) => Promise<void>;
@@ -38,6 +39,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   capabilities,
   isPro = false,
 }) => {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
@@ -95,17 +97,17 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       {/* Attached Photo Preview Bubble */}
       {attachedPhoto && (
         <div className="flex items-center gap-2 p-2 bg-stone-50 border border-border-base rounded-xl w-fit">
-          <Image src={attachedPhoto} alt="Aperçu pièce jointe" sizes="48px"
+          <Image src={attachedPhoto} alt={t('messaging.messageComposer.apercuPieceJointe')} sizes="48px"
   className="w-12 h-12 object-cover rounded-lg" />
           <div className="text-xs">
-            <span className="font-bold text-stone-800 block">Photo prête à être envoyée</span>
-            <span className="text-micro text-stone-500">Sera transmise avec votre message</span>
+            <span className="font-bold text-stone-800 block">{t('messaging.messageComposer.photoPreteAEtreEnvoyee')}</span>
+            <span className="text-micro text-stone-500">{t('messaging.messageComposer.seraTransmiseAvecVotreMessage')}</span>
           </div>
           <button
             type="button"
             onClick={() => setAttachedPhoto(null)}
             className="p-1 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-200"
-            aria-label="Supprimer la photo"
+            aria-label={t('messaging.messageComposer.supprimerLaPhoto')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -116,7 +118,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       {showPhotoPicker && (
         <div className="p-3 bg-stone-50 border border-border-base rounded-xl space-y-2 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-stone-800">Ajouter une photo à la conversation</span>
+            <span className="font-bold text-stone-800">{t('messaging.messageComposer.ajouterUnePhotoALa')}</span>
             <button
               type="button"
               onClick={() => setShowPhotoPicker(false)}
@@ -173,8 +175,8 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
               ? 'bg-primary text-white border-primary'
               : 'border-border-base text-stone-500 hover:text-stone-900 hover:bg-stone-100'
           }`}
-          title="Joindre une photo"
-          aria-label="Joindre une photo"
+          title={t('messaging.messageComposer.joindreUnePhoto')}
+          aria-label={t('messaging.messageComposer.joindreUnePhoto')}
         >
           <ImageIcon className="w-4 h-4" />
         </button>
@@ -186,7 +188,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             value={text}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
-            placeholder="Écrivez votre message... (Entrée pour envoyer)"
+            placeholder={t('messaging.messageComposer.ecrivezVotreMessageEntreePour')}
             className="w-full min-h-[42px] max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400 resize-none"
           />
         </div>

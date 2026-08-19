@@ -10,6 +10,7 @@ import { Badge } from './Badge';
 import { Image } from './Image';
 import { IMAGE_SIZES } from './responsiveImage';
 import { useFavorites } from '../../app/providers/FavoritesProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface ListingCardProps {
   listing: Listing;
@@ -22,6 +23,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   variant = 'grid',
   className = '',
 }) => {
+  const { t } = useTranslation();
   // Read from the shared store rather than keeping per-card state: two cards
   // showing the same listing (a rail and the grid below it) used to disagree
   // after a toggle, and the header badge never heard about it at all.
@@ -74,7 +76,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
             {listing.isBoosted && (
               <Badge variant="featured" size="sm" icon className="px-1.5">
-                <span className="sr-only">Annonce à la une</span>
+                <span className="sr-only">{t('ui.listingCard.annonceALaUne')}</span>
               </Badge>
             )}
           </div>

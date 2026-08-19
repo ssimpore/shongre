@@ -9,6 +9,7 @@ import { getTaxonomyLabel } from '../../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../../design-system/primitives/CategoryIcon';
 import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
 import { routes } from '../../../configuration/routes';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface CategoryVisualMeta {
   itemCountLabel: string;
@@ -71,6 +72,7 @@ const BADGE_PILL_STYLES: Record<string, string> = {
 };
 
 export const HomeCategoryExplorer: React.FC = () => {
+  const { t } = useTranslation();
   // Show exactly 5 main categories on the homepage
   const topFiveCategories = TAXONOMY.slice(0, 5);
 
@@ -92,14 +94,14 @@ export const HomeCategoryExplorer: React.FC = () => {
           to="/categories"
           className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
         >
-          <span className="hidden sm:inline">Toutes les catégories</span>
-          <span className="sm:hidden">Voir tout</span>
+          <span className="hidden sm:inline">{t('home.homeCategoryExplorer.toutesLesCategories')}</span>
+          <span className="sm:hidden">{t('home.homeCategoryExplorer.voirTout')}</span>
           <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
         </Link>
       </div>
 
       {/* Top 5 Categories Grid / Rail */}
-      <ScrollRail label="5 catégories principales" className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
+      <ScrollRail label={t('home.homeCategoryExplorer.5CategoriesPrincipales')} className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
         <div className="flex gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-4.5">
           {topFiveCategories.map((cat) => {
             const meta = CATEGORY_META[cat.slug] || {

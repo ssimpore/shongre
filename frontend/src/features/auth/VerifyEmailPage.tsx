@@ -8,8 +8,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { AuthLayout } from './components/AuthLayout';
 import { routes } from '../../configuration/routes';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const VerifyEmailPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Vérification de l'adresse e-mail",
     description:
@@ -72,8 +74,8 @@ export const VerifyEmailPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title="Vérification d'adresse email"
-      subtitle="Confirmez votre adresse email pour sécuriser votre compte et activer toutes les fonctionnalités"
+      title={t('auth.verifyEmailPage.verificationDAdresseEmail')}
+      subtitle={t('auth.verifyEmailPage.confirmezVotreAdresseEmailPour')}
       footerLink={{
         text: 'Retourner à votre compte ?',
         linkText: 'Mon tableau de bord',
@@ -152,7 +154,7 @@ export const VerifyEmailPage: React.FC = () => {
                 type="text"
                 value={tokenInput}
                 onChange={(e) => setTokenInput(e.target.value)}
-                placeholder="Collez ici votre jeton de validation"
+                placeholder={t('auth.verifyEmailPage.collezIciVotreJetonDe')}
                 required
                 className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
@@ -177,7 +179,7 @@ export const VerifyEmailPage: React.FC = () => {
                 className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Renvoyer un email de validation</span>
+                <span>{t('auth.verifyEmailPage.renvoyerUnEmailDeValidation')}</span>
               </button>
             </div>
           )}

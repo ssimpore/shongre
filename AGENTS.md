@@ -2218,6 +2218,63 @@ Do not concatenate translated strings.
 
 ---
 
+
+## The translation layer
+
+Messages live in `src/i18n/`. `messages.fr.ts` is the source catalogue and
+`MessageKey` is derived from it, so a mistyped key is a compile error rather than
+a string that renders as itself. Components call `const { t } = useTranslation()`.
+
+Rules that are not negotiable:
+
+* **Never pluralise by hand.** `t('common.listingCount', { count })` resolves
+  through `Intl.PluralRules`. French puts 0 in the singular ("0 annonce") and
+  English puts it in the plural ("0 listings"); the existing `plural()` helper in
+  `utilities/formatters.ts` hard-codes `>= 2`, which is the French rule and will
+  be wrong in every other language.
+* **A missing translation falls back to French, never to the raw key.** An
+  incomplete locale degrades to readable text instead of `nav.sell` appearing in
+  the navigation.
+* **Locale is not owned here.** `MarketLocationProvider` holds it, persists it
+  and syncs `<html lang>`; `I18nProvider` reads it. Do not add a second source of
+  truth for what language the page is in.
+
+## A language ships when the interface is actually translated
+
+Two independent conditions, because they measure different things:
+
+```text
+SHIPPED_LOCALES          someone asserts the migration is done
+catalogueCoverage(code)  the catalogue backs that claim
+```
+
+Catalogue coverage alone is not enough, and this is the trap to avoid: it only
+sees keys that already exist, so it reported 100% for English while every page
+body was still hardcoded French — which rendered "Home / Search / Account" in the
+tab bar underneath an entirely French homepage. `npm run check:i18n` counts the
+user-visible French strings still outside the catalogue; that number, not
+catalogue coverage, is what stands between a locale and `SHIPPED_LOCALES`.
+
+The check also fails if an already-migrated surface picks up hardcoded copy
+again, which is how partial translations quietly regress.
+
+## Two kinds of French, and only one belongs in the catalogue
+
+**UI chrome** — labels, buttons, headings, empty states, accessibility names —
+lives in `messages.*.ts` and is reached with `t()`.
+
+**Domain data** — taxonomy category names, permission descriptions, condition
+schemes, collection copy, provider capability labels, market defaults — does not.
+It sits in `src/domains/**` and `src/security/**` as seed data for content that
+§54 says administrators are expected to manage. Translating it into the UI
+catalogue would freeze admin-managed content into the frontend bundle and put two
+sources of truth in the product. It needs per-locale fields on the records
+themselves, served by the backend — a data-model change, not a `t()` call.
+
+`npm run check:i18n` counts both, because both block a second language. Keep the
+distinction in mind when reading the number: the `.tsx` figure is UI migration
+work, the `.ts` figure is a backend content question.
+
 # 76. Locale formatting
 
 Centralize:

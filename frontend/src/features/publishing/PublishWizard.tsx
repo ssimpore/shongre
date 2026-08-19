@@ -60,6 +60,7 @@ import { ListingAssistanceResult } from '../../api/contracts/ai.contract';
 import { formatPrice, plural } from '../../utilities/formatters';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { Image } from '../../design-system/primitives/Image';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 const samplePhotoUrls = [
   'https://images.unsplash.com/photo-1507034589631-9433cc6bc453?w=800&auto=format&fit=crop&q=80',
@@ -107,6 +108,7 @@ const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
 
 export const PublishWizard: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser, isAuthenticated } = useAuth();
   const toast = useToast();
@@ -397,7 +399,7 @@ export const PublishWizard: React.FC = () => {
           <Badge variant="neutral" size="sm">
             Étape {currentStep} / {PHASES.length}
           </Badge>
-          <span className="text-xs text-stone-500 hidden sm:inline">Brouillon auto-sauvegardé</span>
+          <span className="text-xs text-stone-500 hidden sm:inline">{t('publishing.publishWizard.brouillonAutoSauvegarde')}</span>
         </div>
       </div>
 
@@ -516,7 +518,7 @@ export const PublishWizard: React.FC = () => {
               <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
               <input
                 type="text"
-                placeholder="ex: Canapé d'angle, iPhone 15, Voitures, Vélos..."
+                placeholder={t('publishing.publishWizard.exCanapeDAngleIphone')}
                 value={categorySearchQuery}
                 onChange={(e) => setCategorySearchQuery(e.target.value)}
                 className="w-full h-10 pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
@@ -585,7 +587,7 @@ export const PublishWizard: React.FC = () => {
           {schema && (
             <div className="p-3.5 bg-success-surface text-success rounded-xl border border-success-border text-xs flex items-center justify-between">
               <div>
-                <span className="font-bold block mb-0.5">Catégorie active validée :</span>
+                <span className="font-bold block mb-0.5">{t('publishing.publishWizard.categorieActiveValidee')}</span>
                 <span className="font-mono text-success">
                   {taxonomyService.getBreadcrumbs(schema.node.id).map((b) => b.label).join(' › ')}
                 </span>
@@ -645,7 +647,7 @@ export const PublishWizard: React.FC = () => {
             <div className="pt-4 border-t border-border-subtle space-y-4">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5 text-primary" />
-                <span>Critères détaillés</span>
+                <span>{t('publishing.publishWizard.criteresDetailles')}</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -662,7 +664,7 @@ export const PublishWizard: React.FC = () => {
                           onChange={(e) => updateAttribute(attr.code, e.target.value)}
                           className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
                         >
-                          <option value="">Sélectionner une option...</option>
+                          <option value="">{t('publishing.publishWizard.selectionnerUneOption')}</option>
                           {attr.options?.map((opt) => (
                             <option key={opt.value} value={opt.value}>
                               {opt.label}
@@ -802,7 +804,7 @@ export const PublishWizard: React.FC = () => {
               >
                 <Camera className="w-6 h-6 text-stone-400" />
                 <span className="text-xs font-bold">+ Ajouter photo</span>
-                <span className="text-micro text-stone-500">Exemple démo</span>
+                <span className="text-micro text-stone-500">{t('publishing.publishWizard.exempleDemo')}</span>
               </button>
             )}
           </div>
@@ -852,18 +854,18 @@ export const PublishWizard: React.FC = () => {
             </div>
           </div>
 
-          <FormField label="Titre de l'annonce" required hint="Indiquez le produit, la marque et le modèle précis">
+          <FormField label={t('publishing.publishWizard.titreDeLAnnonce')} required hint="Indiquez le produit, la marque et le modèle précis">
             <Input
-              placeholder="ex: Canapé scandinave 3 places tissu bouclette beige"
+              placeholder={t('publishing.publishWizard.exCanapeScandinave3Places')}
               value={draft.title}
               onChange={(e) => updateDraft({ title: e.target.value })}
             />
           </FormField>
 
-          <FormField label="Description détaillée" required hint="Précisez l'état, l'historique d'achat, les accessoires inclus">
+          <FormField label={t('publishing.publishWizard.descriptionDetaillee')} required hint="Précisez l'état, l'historique d'achat, les accessoires inclus">
             <Textarea
               rows={6}
-              placeholder="Vends canapé en excellent état, très confortable. Facture d'achat fournie..."
+              placeholder={t('publishing.publishWizard.vendsCanapeEnExcellentEtat')}
               value={draft.description}
               onChange={(e) => updateDraft({ description: e.target.value })}
             />
@@ -887,8 +889,8 @@ export const PublishWizard: React.FC = () => {
 
           <div className="space-y-4">
             <Checkbox
-              label="Faire un don gratuit (0 €)"
-              description="Idéal pour désencombrer et donner une seconde vie à vos objets"
+              label={t('publishing.publishWizard.faireUnDonGratuit0')}
+              description={t('publishing.publishWizard.idealPourDesencombrerEtDonner')}
               checked={draft.pricing.isFreeDonation}
               onChange={(e) =>
                 updateDraft({
@@ -921,8 +923,8 @@ export const PublishWizard: React.FC = () => {
 
                 <div className="flex items-center pt-6">
                   <Checkbox
-                    label="Prix négociable"
-                    description="Permet aux acheteurs de faire des offres de prix"
+                    label={t('publishing.publishWizard.prixNegociable')}
+                    description={t('publishing.publishWizard.permetAuxAcheteursDeFaire')}
                     checked={draft.pricing.isNegotiable}
                     onChange={(e) =>
                       updateDraft({
@@ -942,11 +944,11 @@ export const PublishWizard: React.FC = () => {
               <div className="pt-4 border-t border-border-subtle space-y-3">
                 <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                   <Store className="w-3.5 h-3.5 text-primary" />
-                  <span>Gestion des stocks & Référence Professionnelle</span>
+                  <span>{t('publishing.publishWizard.gestionDesStocksReferenceProfessionnelle')}</span>
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <FormField label="Quantité en stock">
+                  <FormField label={t('publishing.publishWizard.quantiteEnStock')}>
                     <Input
                       type="number"
                       min={1}
@@ -961,7 +963,7 @@ export const PublishWizard: React.FC = () => {
                       }
                     />
                   </FormField>
-                  <FormField label="Référence interne / SKU (facultatif)">
+                  <FormField label={t('publishing.publishWizard.referenceInterneSkuFacultatif')}>
                     <Input
                       placeholder="ex: CAN-BOUC-BEIGE-01"
                       value={draft.proInventory?.sku || ''}
@@ -1011,7 +1013,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
               </div>
               <Checkbox
-                aria-label="Autoriser le contact direct et la messagerie"
+                aria-label={t('publishing.publishWizard.autoriserLeContactDirectEt')}
                 checked={draft.transaction.allowContact}
                 onChange={(e) =>
                   updateDraft({
@@ -1035,7 +1037,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
-                    <span>Achat en ligne direct (Sans réservation)</span>
+                    <span>{t('publishing.publishWizard.achatEnLigneDirectSans')}</span>
                     <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.2 rounded">
                       Séquestre Garanti
                     </span>
@@ -1046,7 +1048,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
               </div>
               <Checkbox
-                aria-label="Autoriser le paiement sécurisé direct"
+                aria-label={t('publishing.publishWizard.autoriserLePaiementSecuriseDirect')}
                 disabled={!transactionCaps.canDirectPurchase}
                 checked={draft.transaction.allowDirectPurchase && transactionCaps.canDirectPurchase}
                 onChange={(e) =>
@@ -1070,7 +1072,7 @@ export const PublishWizard: React.FC = () => {
                   <Clock className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-stone-900">Réservation avec acompte</div>
+                  <div className="text-xs font-bold text-stone-900">{t('publishing.publishWizard.reservationAvecAcompte')}</div>
                   <div className="text-micro text-stone-500">
                     Permet à l'acheteur de bloquer l'article pendant le temps de convenir d'un rendez-vous.
                   </div>
@@ -1137,7 +1139,7 @@ export const PublishWizard: React.FC = () => {
                       <Package className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-stone-900">Livraison en colis (Mondial Relay, Colissimo)</div>
+                      <div className="text-xs font-bold text-stone-900">{t('publishing.publishWizard.livraisonEnColisMondialRelay')}</div>
                       <div className="text-micro text-stone-500">
                         Étiquette prépayée générée automatiquement. L'acheteur règle les frais de port.
                       </div>
@@ -1200,7 +1202,7 @@ export const PublishWizard: React.FC = () => {
                     <Truck className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-stone-900">Transport de meubles & Gros colis (Cocolis)</div>
+                    <div className="text-xs font-bold text-stone-900">{t('publishing.publishWizard.transportDeMeublesGrosColis')}</div>
                     <div className="text-micro text-stone-500">
                       Idéal pour canapés, tables, électroménager lourd avec transporteur spécialisé.
                     </div>
@@ -1279,7 +1281,7 @@ export const PublishWizard: React.FC = () => {
             <span className="flex items-center gap-2.5 min-w-0">
               <Globe className="w-5 h-5 text-primary shrink-0" />
               <span className="min-w-0">
-                <span className="block font-black text-stone-900">Options avancées</span>
+                <span className="block font-black text-stone-900">{t('publishing.publishWizard.optionsAvancees')}</span>
                 <span className="block text-xs text-stone-500 mt-0.5">
                   Diffusion multi-marchés et visibilité —{' '}
                   {plural(draft.selectedMarkets?.length || 1, 'marché sélectionné', 'marchés sélectionnés')}
@@ -1454,7 +1456,7 @@ export const PublishWizard: React.FC = () => {
             <div className="p-4 bg-bg-base rounded-xl border border-border-base flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="text-xs text-stone-700 space-y-1">
-                <span className="font-bold text-stone-900">Garantie & Sécurité Transfrontalière :</span>
+                <span className="font-bold text-stone-900">{t('publishing.publishWizard.garantieSecuriteTransfrontaliere')}</span>
                 <p>
                   Toutes les transactions multi-marchés sont automatiquement couvertes par le séquestre Shongre. Les prix sont convertis en toute transparence et la TVA locale est appliquée en conformité avec la réglementation européenne et suisse.
                 </p>
@@ -1524,7 +1526,7 @@ export const PublishWizard: React.FC = () => {
             <div className="lg:col-span-7 space-y-4 text-xs">
               <div className="p-4 bg-bg-base rounded-xl border border-border-base space-y-2.5">
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">Catégorie</span>
+                  <span className="text-stone-500">{t('publishing.publishWizard.categorie')}</span>
                   <span className="font-bold text-stone-900">{schema?.node.name}</span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
@@ -1538,7 +1540,7 @@ export const PublishWizard: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">Marchés de diffusion</span>
+                  <span className="text-stone-500">{t('publishing.publishWizard.marchesDeDiffusion')}</span>
                   <div className="flex flex-wrap items-center gap-1.5 justify-end">
                     {(draft.selectedMarkets || ['FR']).map((mCode) => {
                       const m = marketService.getMarketByCode(mCode);
@@ -1554,7 +1556,7 @@ export const PublishWizard: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">Modes de transaction</span>
+                  <span className="text-stone-500">{t('publishing.publishWizard.modesDeTransaction')}</span>
                   <span className="font-semibold text-stone-800">
                     {[
                       draft.transaction.allowDirectPurchase && 'Achat en ligne',

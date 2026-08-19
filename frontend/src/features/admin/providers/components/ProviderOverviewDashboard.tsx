@@ -23,6 +23,7 @@ import {
 } from '../../../../domains/providers/provider-capabilities';
 import { Badge } from '../../../../design-system/primitives/Badge';
 import { Button } from '../../../../design-system/primitives/Button';
+import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderOverviewDashboardProps {
   providers: Provider[];
@@ -37,6 +38,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
   onSelectCategory,
   onNavigateToTab,
 }) => {
+  const { t } = useTranslation();
   // Key Metrics
   const metrics = useMemo(() => {
     let activeCount = 0;
@@ -356,7 +358,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
           </div>
 
           {recentAudit.length === 0 ? (
-            <p className="text-xs text-stone-500 italic">Aucune modification récente enregistrée.</p>
+            <p className="text-xs text-stone-500 italic">{t('admin.providerOverviewDashboard.aucuneModificationRecenteEnregistree')}</p>
           ) : (
             <div className="space-y-3">
               {recentAudit.map((evt) => (

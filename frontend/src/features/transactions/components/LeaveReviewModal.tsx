@@ -6,6 +6,7 @@ import { Textarea } from '../../../design-system/primitives/FormField';
 import { userRepository } from '../../../repositories/user.repository';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Transaction, UserProfile } from '../../../types';
+import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface LeaveReviewModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
   currentUser,
   onReviewSubmitted,
 }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -157,7 +159,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
           </label>
           <Textarea
             rows={3}
-            placeholder="Partagez votre expérience avec cet utilisateur (rapidité, politesse, conformité du produit...)"
+            placeholder={t('transactions.leaveReviewModal.partagezVotreExperienceAvecCet')}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />

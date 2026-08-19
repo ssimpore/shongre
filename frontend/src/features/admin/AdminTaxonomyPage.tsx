@@ -27,8 +27,10 @@ import { TaxonomyImportExportTab } from './taxonomy/components/TaxonomyImportExp
 import { TaxonomyAuditTab } from './taxonomy/components/TaxonomyAuditTab';
 import { AddNodeModal } from './taxonomy/components/modals/AddNodeModal';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminTaxonomyPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -178,7 +180,7 @@ export const AdminTaxonomyPage: React.FC = () => {
           ) : (
             <span className="px-3 py-1.5 rounded-xl bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-success" />
-              <span>Taxonomie Synchronisée</span>
+              <span>{t('admin.adminTaxonomyPage.taxonomieSynchronisee')}</span>
             </span>
           )}
         </div>
