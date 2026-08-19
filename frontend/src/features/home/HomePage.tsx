@@ -287,7 +287,7 @@ export const HomePage: React.FC = () => {
       {/* 6. Deals & Price Drops Showcase */}
       {dealsListings.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-amber-50/70 via-stone-50/50 to-white rounded-3xl border border-amber-200/80 p-4 sm:p-8 shadow-xs">
+          <div className="bg-gradient-to-br from-warning-surface/70 via-stone-50/50 to-white rounded-3xl border border-warning-border p-4 sm:p-8 shadow-xs">
             <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
               <div className="min-w-0 space-y-1">
                 <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
@@ -299,7 +299,7 @@ export const HomePage: React.FC = () => {
               </div>
               <Link
                 to="/bons-plans"
-                className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-amber-300/80 hover:bg-amber-100/60 hover:border-amber-400 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shrink-0 flex items-center gap-1.5 whitespace-nowrap shadow-2xs active:scale-95 w-fit mb-0.5"
+                className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-warning-border hover:bg-warning-surface hover:border-warning px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shrink-0 flex items-center gap-1.5 whitespace-nowrap shadow-2xs active:scale-95 w-fit mb-0.5"
               >
                 <span className="hidden sm:inline">Toutes les offres</span>
                 <span className="sm:hidden">Voir tout</span>

@@ -23,22 +23,22 @@ const CATEGORY_META: Record<string, CategoryVisualMeta> = {
     itemCountLabel: '18 400+ annonces',
     badge: { label: '🛡️ Contrôle vérifié', variant: 'terracotta' },
     accentBg: 'from-orange-50/60 to-stone-50',
-    accentBorder: 'border-orange-200/80',
+    accentBorder: 'border-primary-border',
     hoverBorder: 'hover:border-primary',
   },
   immobilier: {
     itemCountLabel: '12 800+ biens',
     badge: { label: '📍 Villes & Régions', variant: 'sky' },
     accentBg: 'from-sky-50/60 to-stone-50',
-    accentBorder: 'border-sky-200/80',
-    hoverBorder: 'hover:border-sky-500',
+    accentBorder: 'border-info-border',
+    hoverBorder: 'hover:border-info',
   },
   'maison-deco': {
     itemCountLabel: '24 500+ pépites',
     badge: { label: '🛋️ Mobilier & Déco', variant: 'amber' },
     accentBg: 'from-amber-50/60 to-stone-50',
-    accentBorder: 'border-amber-200/80',
-    hoverBorder: 'hover:border-amber-500',
+    accentBorder: 'border-warning-border',
+    hoverBorder: 'hover:border-warning',
   },
   multimedia: {
     itemCountLabel: '16 200+ appareils',
@@ -51,19 +51,23 @@ const CATEGORY_META: Record<string, CategoryVisualMeta> = {
     itemCountLabel: '31 000+ articles',
     badge: { label: '✨ Seconde main chic', variant: 'rose' },
     accentBg: 'from-rose-50/60 to-stone-50',
-    accentBorder: 'border-rose-200/80',
-    hoverBorder: 'hover:border-rose-500',
+    accentBorder: 'border-danger-border',
+    hoverBorder: 'hover:border-danger',
   },
 };
 
 const BADGE_PILL_STYLES: Record<string, string> = {
   terracotta: 'bg-primary-light text-primary border-primary-border',
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  sky: 'bg-sky-50 text-sky-700 border-sky-200',
-  amber: 'bg-amber-50 text-amber-800 border-amber-200',
+  emerald: 'bg-success-surface text-success border-success-border',
+  sky: 'bg-info-surface text-info border-info-border',
+  amber: 'bg-warning-surface text-warning border-warning-border',
   purple: 'bg-purple-50 text-purple-700 border-purple-200',
-  rose: 'bg-rose-50 text-rose-700 border-rose-200',
+  rose: 'bg-danger-surface text-danger border-danger-border',
   indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  success: 'bg-success-surface text-success border-success-border',
+  info: 'bg-info-surface text-info border-info-border',
+  warning: 'bg-warning-surface text-warning border-warning-border',
+  danger: 'bg-danger-surface text-danger border-danger-border',
 };
 
 export const HomeCategoryExplorer: React.FC = () => {

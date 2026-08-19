@@ -269,7 +269,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
                 {formatPrice(item.price)}
               </span>
               {item.originalPrice && item.originalPrice > item.price && (
-                <span className="text-[10px] sm:text-xs text-stone-400 line-through font-normal">
+                <span className="text-[10px] sm:text-xs text-stone-500 line-through font-normal">
                   {formatPrice(item.originalPrice)}
                 </span>
               )}

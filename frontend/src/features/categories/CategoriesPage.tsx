@@ -17,7 +17,7 @@ import { Category, SubCategory } from '../../types';
 
 interface CategoryMeta {
   itemCountLabel: string;
-  badge?: { label: string; variant: 'terracotta' | 'emerald' | 'sky' | 'amber' | 'purple' | 'rose' | 'indigo' };
+  badge?: { label: string; variant: 'terracotta' | 'emerald' | 'sky' | 'amber' | 'purple' | 'rose' | 'indigo' | 'success' | 'info' | 'warning' | 'danger' };
   accentBg: string;
   accentBorder: string;
 }
@@ -27,25 +27,25 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     itemCountLabel: '18 400+ annonces',
     badge: { label: '🛡️ Contrôle vérifié', variant: 'terracotta' },
     accentBg: 'from-orange-50/60 to-stone-50',
-    accentBorder: 'border-orange-200/80',
+    accentBorder: 'border-primary-border',
   },
   immobilier: {
     itemCountLabel: '12 800+ biens',
     badge: { label: '📍 Villes & Régions', variant: 'sky' },
     accentBg: 'from-sky-50/60 to-stone-50',
-    accentBorder: 'border-sky-200/80',
+    accentBorder: 'border-info-border',
   },
   'maison-deco': {
     itemCountLabel: '24 500+ pépites',
     badge: { label: '🛋️ Mobilier & Déco', variant: 'amber' },
     accentBg: 'from-amber-50/60 to-stone-50',
-    accentBorder: 'border-amber-200/80',
+    accentBorder: 'border-warning-border',
   },
   'mode-beaute': {
     itemCountLabel: '31 000+ articles',
     badge: { label: '✨ Seconde main chic', variant: 'rose' },
     accentBg: 'from-rose-50/60 to-stone-50',
-    accentBorder: 'border-rose-200/80',
+    accentBorder: 'border-danger-border',
   },
   multimedia: {
     itemCountLabel: '16 200+ appareils',
@@ -57,7 +57,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     itemCountLabel: '14 100+ équipements',
     badge: { label: '🚴 Plein air & Cycles', variant: 'emerald' },
     accentBg: 'from-emerald-50/60 to-stone-50',
-    accentBorder: 'border-emerald-200/80',
+    accentBorder: 'border-success-border',
   },
   'famille-enfants': {
     itemCountLabel: '11 500+ articles',
@@ -69,7 +69,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     itemCountLabel: '9 800+ outils',
     badge: { label: '🔧 Outillage Pro', variant: 'amber' },
     accentBg: 'from-yellow-50/60 to-stone-50',
-    accentBorder: 'border-yellow-200/80',
+    accentBorder: 'border-warning-border',
   },
   'materiel-professionnel': {
     itemCountLabel: '6 400+ équipements',
@@ -81,25 +81,25 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     itemCountLabel: '4 500+ prestataires',
     badge: { label: '🤝 Services de proximité', variant: 'sky' },
     accentBg: 'from-cyan-50/60 to-stone-50',
-    accentBorder: 'border-cyan-200/80',
+    accentBorder: 'border-info-border',
   },
   emploi: {
     itemCountLabel: '3 200+ offres',
     badge: { label: '💼 Recrutements actifs', variant: 'indigo' },
     accentBg: 'from-blue-50/60 to-stone-50',
-    accentBorder: 'border-blue-200/80',
+    accentBorder: 'border-info-border',
   },
   'locations-vacances': {
     itemCountLabel: '5 800+ séjours',
     badge: { label: '☀️ Évasion & Gîtes', variant: 'emerald' },
     accentBg: 'from-teal-50/60 to-stone-50',
-    accentBorder: 'border-teal-200/80',
+    accentBorder: 'border-success-border',
   },
   animaux: {
     itemCountLabel: '3 900+ annonces',
     badge: { label: '🐾 Accessoires & Soins', variant: 'amber' },
     accentBg: 'from-amber-50/60 to-stone-50',
-    accentBorder: 'border-amber-200/80',
+    accentBorder: 'border-warning-border',
   },
   'art-artisanat': {
     itemCountLabel: '4 100+ créations',
@@ -111,24 +111,28 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     itemCountLabel: '3 400+ instruments',
     badge: { label: '🎸 Studio & Scène', variant: 'terracotta' },
     accentBg: 'from-red-50/60 to-stone-50',
-    accentBorder: 'border-red-200/80',
+    accentBorder: 'border-danger-border',
   },
   'dons-echanges': {
     itemCountLabel: '1 200+ dons gratuits',
     badge: { label: '🎁 100% Gratuit', variant: 'emerald' },
     accentBg: 'from-emerald-50/60 to-stone-50',
-    accentBorder: 'border-emerald-200/80',
+    accentBorder: 'border-success-border',
   },
 };
 
 const BADGE_PILL_STYLES: Record<string, string> = {
   terracotta: 'bg-primary-light text-primary border-primary-border',
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  sky: 'bg-sky-50 text-sky-700 border-sky-200',
-  amber: 'bg-amber-50 text-amber-800 border-amber-200',
+  emerald: 'bg-success-surface text-success border-success-border',
+  sky: 'bg-info-surface text-info border-info-border',
+  amber: 'bg-warning-surface text-warning border-warning-border',
   purple: 'bg-purple-50 text-purple-700 border-purple-200',
-  rose: 'bg-rose-50 text-rose-700 border-rose-200',
+  rose: 'bg-danger-surface text-danger border-danger-border',
   indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  success: 'bg-success-surface text-success border-success-border',
+  info: 'bg-info-surface text-info border-info-border',
+  warning: 'bg-warning-surface text-warning border-warning-border',
+  danger: 'bg-danger-surface text-danger border-danger-border',
 };
 
 export const CategoriesPage: React.FC = () => {

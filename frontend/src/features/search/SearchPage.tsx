@@ -761,12 +761,16 @@ export const SearchPage: React.FC = () => {
             <div
               className={
                 showDesktopFilters
-                  ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4'
-                  : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4'
+                  ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[900px]'
+                  : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[900px]'
               }
             >
-              {[...Array(showDesktopFilters ? 6 : 10)].map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-xl" />
+              {[...Array(showDesktopFilters ? 12 : 15)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
+                  <Skeleton className="h-44 w-full rounded-xl" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-5 w-1/3" />
+                </div>
               ))}
             </div>
           ) : listings.length > 0 ? (

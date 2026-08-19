@@ -97,7 +97,7 @@ test.describe('navigation shell', () => {
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.waitForTimeout(200);
 
-    await page.locator('a[href^="/annonce/"]').first().click();
+    await page.locator('a[href^="/annonce/"]').nth(6).click();
     await page.waitForURL(/\/annonce\//);
     await waitForStableLayout(page);
     // Poll rather than sample once: WebKit applies the scroll a frame or two

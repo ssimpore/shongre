@@ -19,12 +19,16 @@ import { CollectionPillarId } from '../../../domains/collection/collection.types
 
 const BADGE_STYLES: Record<string, string> = {
   terracotta: 'bg-primary-light text-primary border-primary-border',
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  sky: 'bg-sky-50 text-sky-700 border-sky-200',
-  amber: 'bg-amber-50 text-amber-800 border-amber-200',
+  emerald: 'bg-success-surface text-success border-success-border',
+  sky: 'bg-info-surface text-info border-info-border',
+  amber: 'bg-warning-surface text-warning border-warning-border',
   purple: 'bg-purple-50 text-purple-700 border-purple-200',
-  rose: 'bg-rose-50 text-rose-700 border-rose-200',
+  rose: 'bg-danger-surface text-danger border-danger-border',
   indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  success: 'bg-success-surface text-success border-success-border',
+  info: 'bg-info-surface text-info border-info-border',
+  warning: 'bg-warning-surface text-warning border-warning-border',
+  danger: 'bg-danger-surface text-danger border-danger-border',
 };
 
 const HOME_PILLARS: { id: CollectionPillarId; label: string; icon: React.FC<{ className?: string }> }[] = [
