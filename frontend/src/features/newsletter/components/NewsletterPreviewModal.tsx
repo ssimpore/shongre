@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Monitor, Smartphone, Mail, X, ArrowRight, ExternalLink } from 'lucide-react';
+import { Monitor, Smartphone,   ArrowRight } from 'lucide-react';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { NewsletterCampaign } from '../../../domains/newsletter/newsletter.types';

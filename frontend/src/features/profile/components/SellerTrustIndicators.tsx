@@ -2,15 +2,15 @@ import { isProSeller } from '../../../domains/user/user.domain';
 import React from 'react';
 import {
   ShieldCheck,
-  CreditCard,
+  
   Truck,
   Clock,
-  Award,
+  
   CheckCircle2,
   Lock,
-  Building2,
-  Smartphone,
-  Sparkles,
+  
+  
+  Sparkles
 } from 'lucide-react';
 import { UserProfile } from '../../../types';
 import { verificationService } from '../../../domains/verification/verification.service';

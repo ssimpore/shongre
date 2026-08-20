@@ -14,7 +14,6 @@ import {
   ProspectResearchCandidate,
 } from '../domains/crm/crm.types';
 import { storageService } from '../services/storage.service';
-import { userRepository } from './user.repository';
 
 export interface CrmOverviewStats {
   totalContacts: number;

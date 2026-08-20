@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { CheckCircle2,   ShieldCheck } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -13,7 +13,7 @@ export const NewsletterConfirmPage: React.FC = () => {
   const toast = useToast();
   const emailParam = searchParams.get('email') || 'thomas@example.fr';
 
-  const [confirmed, setConfirmed] = useState(false);
+  const [, setConfirmed] = useState(false);
 
   useEffect(() => {
     newsletterRepository.confirmSubscription(emailParam).then(() => {

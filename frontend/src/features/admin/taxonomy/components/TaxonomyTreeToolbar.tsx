@@ -1,7 +1,6 @@
 import React from 'react';
-import { Search, Plus, Filter, ChevronsUpDown, X } from 'lucide-react';
+import { Search, Plus, Filter,  X } from 'lucide-react';
 import { Button } from '../../../../design-system/primitives/Button';
-import { TaxonomyLevel, TaxonomyNodeStatus } from '../../../../domains/taxonomy/taxonomy.types';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyTreeToolbarProps {

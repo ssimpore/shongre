@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, MessageSquare, ShoppingBag, Tag, CheckCheck, Clock, X } from 'lucide-react';
+import { Search, MessageSquare,     X } from 'lucide-react';
 import { ConversationPreview, InboxFilterTab } from '../../../domains/messaging/messaging.types';
 import { formatRelativeDate, formatPrice } from '../../../utilities/formatters';
 import { Badge, Avatar } from '../../../design-system/primitives/Badge';

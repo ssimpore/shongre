@@ -1,4 +1,4 @@
-import { UserProfile, Listing, Transaction } from '../../types';
+import { UserProfile  } from '../../types';
 
 export interface AdminStatsSummary {
   totalUsers: number;

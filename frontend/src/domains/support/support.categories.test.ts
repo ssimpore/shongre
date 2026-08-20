@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { supportCategoriesService, SUPPORT_CATEGORIES } from './support.categories';
+import { supportCategoriesService } from './support.categories';
 import { supportCapabilitiesService } from './support.capabilities';
 import { DEMO_USERS } from '../../mocks/initialDemoData';
 

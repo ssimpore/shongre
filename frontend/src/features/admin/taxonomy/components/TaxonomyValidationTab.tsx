@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TaxonomyNode, TaxonomyValidationIssue, ValidationSeverity } from '../../../../domains/taxonomy/taxonomy.types';
+import { TaxonomyNode  } from '../../../../domains/taxonomy/taxonomy.types';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
 import { Button } from '../../../../design-system/primitives/Button';
 import { AlertOctagon, AlertTriangle, Info, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';

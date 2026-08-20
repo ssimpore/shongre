@@ -9,8 +9,8 @@ import {
   UserCheck,
   Flag,
   ExternalLink,
-  Sparkles,
-  Shield,
+  Sparkles
+  
 } from 'lucide-react';
 import { ConversationParticipant, ConversationCapabilities } from '../../../domains/messaging/messaging.types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';

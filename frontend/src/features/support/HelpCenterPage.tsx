@@ -4,7 +4,7 @@ import {
   Search,
   HelpCircle,
   ShieldCheck,
-  ShoppingBag,
+  
   Tag,
   Truck,
   CreditCard,
@@ -12,7 +12,7 @@ import {
   Briefcase,
   ChevronDown,
   ArrowRight,
-  Headphones,
+  Headphones
 } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { usePageMeta } from '../../hooks/usePageMeta';

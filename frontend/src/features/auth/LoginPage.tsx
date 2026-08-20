@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, ShieldAlert, KeyRound, CheckCircle2, User, Briefcase, Shield } from 'lucide-react';
+import {  Mail, ArrowRight, ShieldAlert,   User, Briefcase, Shield } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';

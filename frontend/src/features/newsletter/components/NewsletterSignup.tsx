@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, CheckCircle2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Mail, CheckCircle2, ArrowRight,  AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Button } from '../../../design-system/primitives/Button';
@@ -22,7 +22,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   source = 'homepage',
 }) => {
   const { t } = useTranslation();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser } = useAuth();
   const toast = useToast();
 
   const [email, setEmail] = useState(currentUser?.email || '');

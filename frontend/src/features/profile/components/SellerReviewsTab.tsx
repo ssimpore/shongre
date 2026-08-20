@@ -3,10 +3,10 @@ import {
   Star,
   CheckCircle2,
   MessageSquare,
-  Sparkles,
+  
   ShoppingBag,
-  Calendar,
-  Filter,
+  Calendar
+  
 } from 'lucide-react';
 import { ReviewItem, UserProfile } from '../../../types';
 import { Avatar } from '../../../design-system/primitives/Badge';

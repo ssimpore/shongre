@@ -1,6 +1,6 @@
 import { routes } from '../../configuration/routes';
-import React, { useState, useEffect } from 'react';
-import { Search, Bell, Trash2, ArrowRight, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Bell, Trash2, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SavedSearch } from '../../types';
 import { storageService } from '../../services/storage.service';

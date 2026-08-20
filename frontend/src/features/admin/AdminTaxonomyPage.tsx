@@ -3,14 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Layers,
   FolderTree,
-  FileCheck,
+  
   ShieldCheck,
   History,
   Download,
   AlertOctagon,
-  AlertTriangle,
-  GitCommit,
-  Plus,
+  
+  GitCommit
+  
 } from 'lucide-react';
 import { taxonomyAdminRepository } from '../../repositories/taxonomy.repository';
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';

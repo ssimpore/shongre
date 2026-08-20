@@ -4043,3 +4043,54 @@ unconfigured production build is rejected in `vite.config.ts`.
 3. Check ownership on any resource addressed by id.
 4. Allowlist the fields a write may touch.
 5. Add a test that the wrong caller is refused — not only that the right one succeeds.
+
+## Dead code is removed by the compiler, not by eye
+
+`tsconfig.json` deliberately leaves `noUnusedLocals` off, so unused bindings
+accumulate invisibly — 581 unused imports had piled up by the time anyone
+counted. Two scripts clear them, and both take their orders from
+`tsc --noEmit --noUnusedLocals` rather than from a regex deciding what looks
+dead:
+
+* `scripts/prune-unused-imports.mjs` — imports only. Loops, because removals
+  cascade: dropping the last named binding turns the statement into TS6192.
+* `scripts/prune-unused-locals.mjs` — destructured bindings and single-line
+  `const`s. Prints everything it declines, so what is left is a short list a
+  human reads rather than a silent gap.
+
+**A rewriter must match a whole binding, never half of one.** Three shapes look
+alike and are not:
+
+| Shape | Reported name | Wrong edit leaves |
+|---|---|---|
+| `{ location: userLocation }` | the *alias* | `{ location: }` |
+| `{ marketCode = 'FR' }` | the property | `{ , = 'FR' }` |
+| `[value, setValue]` | the element | `[setValue]` — **still compiles** |
+
+The array case is the dangerous one: destructuring is positional, so deleting a
+slot silently rebinds every name after it. `const [value, setValue] = useState(false)`
+became `const [setValue] = useState(false)`, making `setValue` the boolean — the
+only symptom was `Type 'Boolean' has no call signatures` in ten files, and
+wherever the types happened to line up there would have been no symptom at all.
+Elide instead: `const [, setValue]`. So the script tries the shapes in order and
+**the first match wins** — chaining `.replace` calls is what broke it, because
+the rename pattern missed and the plain pattern then matched the alias alone.
+The import pruner had already learned this from `List as ListIcon`; the lesson
+did not transfer for free.
+
+Function parameters are never touched. An unused parameter usually exists to
+satisfy an interface, so removing it changes a signature rather than deleting
+dead weight.
+
+## Measure against device pixels, not CSS pixels
+
+`e2e/media.spec.ts` caps how far a chosen source may overshoot its slot. It once
+compared the CDN width against the slot's **CSS** width, on the stated assumption
+that "devicePixelRatio is 1 in the default Playwright context". That is true for
+`Desktop Chrome` and `Desktop Firefox` and false for `Desktop Safari`, which
+Playwright runs at `deviceScaleFactor: 2`. So webkit failed for behaving
+correctly: a 96px slot needs a 192px source, and the ladder's next rung is 320w.
+
+Any budget expressed in pixels has to say which pixels. The gate now multiplies
+the slot by `window.devicePixelRatio`, which leaves chromium exactly as strict as
+it was and stops punishing webkit for honouring the ladder.

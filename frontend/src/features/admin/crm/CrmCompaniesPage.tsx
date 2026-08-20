@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Building2,
+  
   PlusCircle,
   Search,
-  Sparkles,
-  ExternalLink,
-  MapPin,
+  Sparkles
+  
+  
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { FormField, Input, Select } from '../../../design-system/primitives/FormField';
 import { crmRepository } from '../../../repositories/crm.repository';
-import { CrmCompany, CompanyLifecycle } from '../../../domains/crm/crm.types';
+import { CrmCompany } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton } from '../../../design-system/primitives/UIComponents';

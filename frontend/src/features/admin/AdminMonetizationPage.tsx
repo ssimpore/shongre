@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import {
-  CreditCard,
-  CheckCircle2,
-  Sparkles,
-  Sliders,
-  Shield,
-  Zap,
-  TrendingUp,
+  
+  CheckCircle2
+  
+  
+  
+  
+  
 } from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { PRO_PLANS, LISTING_BOOSTS } from '../../configuration/plans.config';
+import {  LISTING_BOOSTS } from '../../configuration/plans.config';
 import { Button } from '../../design-system/primitives/Button';
 import { useTranslation } from '../../i18n/I18nProvider';
 
@@ -71,9 +70,8 @@ const INITIAL_PLANS: AdminPlanConfig[] = [
 
 export const AdminMonetizationPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, can } = useAuth();
   const [plans, setPlans] = useState<AdminPlanConfig[]>(INITIAL_PLANS);
-  const [addons, setAddons] = useState(LISTING_BOOSTS);
+  const [] = useState(LISTING_BOOSTS);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   const handleSave = () => {

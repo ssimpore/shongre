@@ -30,7 +30,6 @@ const MyListingsPage = lazy(() => import('../../features/seller-workspace/MyList
 const ProDashboardPage = lazy(() => import('../../features/seller-workspace/ProDashboardPage').then((m) => ({ default: m.ProDashboardPage })));
 const ProStorefrontEditorPage = lazy(() => import('../../features/seller-workspace/ProStorefrontEditorPage').then((m) => ({ default: m.ProStorefrontEditorPage })));
 const ProPlansPage = lazy(() => import('../../features/seller-workspace/ProPlansPage').then((m) => ({ default: m.ProPlansPage })));
-const ProStorefrontPage = lazy(() => import('../../features/pro/ProStorefrontPage').then((m) => ({ default: m.ProStorefrontPage })));
 const ProDirectoryPage = lazy(() => import('../../features/pro/ProDirectoryPage').then((m) => ({ default: m.ProDirectoryPage })));
 const SellerPublicPage = lazy(() => import('../../features/profile/SellerPublicPage').then((m) => ({ default: m.SellerPublicPage })));
 const LoginPage = lazy(() => import('../../features/auth/LoginPage').then((m) => ({ default: m.LoginPage })));

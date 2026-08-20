@@ -11,16 +11,16 @@ import {
   MessageSquare,
   DollarSign,
   ShoppingBag,
-  Info,
+  
   CheckCircle2,
-  AlertTriangle,
+  
   Send,
-  Eye,
+  
   Edit3,
   Sliders,
-  TrendingUp,
+  
   Sparkles,
-  Star,
+  Star
 } from 'lucide-react';
 import { routes } from '../../configuration/routes';
 import { listingRepository } from '../../repositories/listing.repository';
@@ -30,11 +30,10 @@ import { Listing, UserProfile, Transaction } from '../../types';
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { marketService } from '../../domains/market/market.service';
 import { transactionCapabilitiesService } from '../../domains/transaction/transaction.capabilities';
-import { fulfillmentResolver } from '../../domains/fulfillment/fulfillment.resolver';
 import { listingDisplayResolver } from '../../domains/listing/listing.display';
 import { listingActionsResolver } from '../../domains/listing/listing.actions';
 import { formatPrice, formatRelativeDate, calculateBuyerFee, plural } from '../../utilities/formatters';
-import { Breadcrumbs, PriceDisplay, Notice } from '../../design-system/primitives/UIComponents';
+import { Breadcrumbs, PriceDisplay } from '../../design-system/primitives/UIComponents';
 import { Button } from '../../design-system/primitives/Button';
 import { StatePanel } from '../../design-system/primitives/StatePanel';
 import { Badge } from '../../design-system/primitives/Badge';
@@ -63,7 +62,7 @@ export const ListingDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser } = useAuth();
   const toast = useToast();
   const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
 

@@ -3,19 +3,19 @@ import { Link } from 'react-router-dom';
 import {
   User,
   PlusCircle,
-  Search,
-  Building2,
-  Phone,
-  Mail,
-  ShieldCheck,
-  Filter,
+  Search
+  
+  
+  
+  
+  
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { FormField, Input, Select } from '../../../design-system/primitives/FormField';
 import { crmRepository } from '../../../repositories/crm.repository';
-import { CrmContact, ContactLifecycle } from '../../../domains/crm/crm.types';
+import { CrmContact } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';

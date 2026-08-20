@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  User,
+  
   Building2,
   Mail,
   Phone,
   ShieldCheck,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
+  
+  
+  
   Clock,
   PlusCircle,
-  Send,
-  ExternalLink,
+  
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
 import { StatePanel } from '../../../design-system/primitives/StatePanel';
@@ -22,7 +22,7 @@ import { Modal } from '../../../design-system/primitives/Modal';
 import { FormField, Input, Select } from '../../../design-system/primitives/FormField';
 import { crmRepository } from '../../../repositories/crm.repository';
 import { userRepository } from '../../../repositories/user.repository';
-import { CrmContact, CrmActivity, CrmTask, ContactLifecycle, ContactQualification } from '../../../domains/crm/crm.types';
+import { CrmContact, CrmActivity, CrmTask, ContactLifecycle } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { ActivityTimeline } from './components/ActivityTimeline';
 import { useToast } from '../../../app/providers/ToastProvider';

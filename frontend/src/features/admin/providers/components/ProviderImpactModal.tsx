@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import {
   AlertTriangle,
-  ShieldAlert,
+  
   Globe,
-  Layers,
-  ArrowRight,
-  CheckCircle2,
-  XCircle,
+  Layers
+  
+  
+  
 } from 'lucide-react';
 import { Provider } from '../../../../domains/providers/provider.types';
 import { providerService } from '../../../../domains/providers/provider.service';

@@ -12,7 +12,7 @@ import {
   TrustLevel,
 } from './verification.types';
 import { storageService } from '../../services/storage.service';
-import { validateBusinessIdentifier, calculateVatNumber } from '../../configuration/market.config';
+import {  calculateVatNumber } from '../../configuration/market.config';
 
 const VERIFICATION_AUDIT_KEY = 'shongre_verification_audit_logs';
 

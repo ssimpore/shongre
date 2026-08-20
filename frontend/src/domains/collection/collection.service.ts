@@ -1,5 +1,5 @@
-import { Collection, CollectionFilterCriteria } from './collection.types';
-import { ALL_COLLECTIONS, COLLECTION_PILLARS, getCollectionBySlug, getCollectionsByPillar } from './collection.data';
+import { Collection } from './collection.types';
+import {  COLLECTION_PILLARS, getCollectionBySlug, getCollectionsByPillar } from './collection.data';
 import { Listing } from '../../types';
 import { isProSeller } from '../user/user.domain';
 

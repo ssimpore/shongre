@@ -3,11 +3,11 @@ import {
   TransactionStatus,
   DeliveryType,
   SellerType,
-  Listing,
+  
   UserProfile,
   SellerEarningsSummary,
   SellerPayoutRequest,
-  TransactionDispute,
+  TransactionDispute
 } from '../../types';
 import { TRANSACTION_CONFIG } from '../../configuration/transaction.config';
 import { storageService } from '../../services/storage.service';

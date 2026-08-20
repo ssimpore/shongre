@@ -3,17 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search,
-  MapPin,
-  Sparkles,
+  
+  
   ArrowRight,
   TrendingUp,
-  ShieldCheck,
-  CheckCircle,
-  Truck,
-  Building2,
-  Tag,
+  
+  
+  
+  
+  
   Car,
-  Home as HomeIcon,
+  Home as 
   Smartphone,
   Shirt,
   Bike,
@@ -23,16 +23,14 @@ import {
   Lamp,
   ScanSearch,
   Sparkle,
-  Wrench,
-  Briefcase,
-  Layers,
-  ChevronRight,
-  PlusCircle,
-  X,
-  ChevronDown,
+  
+  
+  
+  
+  PlusCircle
+  
+  
 } from 'lucide-react';
-import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
-import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { listingRepository } from '../../repositories/listing.repository';
 import { userRepository } from '../../repositories/user.repository';
 import { Listing, UserProfile } from '../../types';
@@ -45,12 +43,9 @@ import { HeroBoostedScroll } from './components/HeroBoostedScroll';
 import { HomeTrustStrip } from './components/HomeTrustStrip';
 import { HomeCollectionsSection } from './components/HomeCollectionsSection';
 import { HomeCategoryExplorer } from './components/HomeCategoryExplorer';
-import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
-import { ScrollRail } from '../../design-system/primitives/ScrollRail';
 import { storageService } from '../../services/storage.service';
 import { usePublishCta } from '../../security/usePublishCta';
 import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/ViewModeToggle';
-import { plural } from '../../utilities/formatters';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
@@ -96,7 +91,7 @@ export const HomePage: React.FC = () => {
 
   const navigate = useNavigate();
   const publishCta = usePublishCta();
-  const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
+  const { activeMarket } = useMarketLocation();
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);

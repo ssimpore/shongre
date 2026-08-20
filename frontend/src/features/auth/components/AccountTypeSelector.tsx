@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Briefcase, CheckCircle2, ShieldCheck, Zap, Store, ArrowRight } from 'lucide-react';
+import { User, Briefcase, CheckCircle2, ShieldCheck, Zap, Store } from 'lucide-react';
 import { AccountType } from '../../../types';
 import { useTranslation } from '../../../i18n/I18nProvider';
 

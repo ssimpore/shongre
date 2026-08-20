@@ -1,4 +1,4 @@
-import { PlatformRole, AccountType, Permission, UserProfile } from './index';
+import {    UserProfile } from './index';
 
 export type AccountStatus =
   | 'pending'

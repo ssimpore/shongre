@@ -9,7 +9,7 @@ export interface RequireRoleProps {
 }
 
 export const RequireRole: React.FC<RequireRoleProps> = ({ roles, children }) => {
-  const { role, isSuspended } = useAuthorization();
+  const { role } = useAuthorization();
 
   const hasRole = roles.includes(role);
 

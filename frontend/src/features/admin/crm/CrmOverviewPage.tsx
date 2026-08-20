@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Users,
-  Building2,
+  
+  
   TrendingUp,
   Sparkles,
-  CheckCircle2,
-  PlusCircle,
+  
+  
   Clock,
   ArrowRight,
-  ShieldCheck,
-  Briefcase,
-  Layers,
+  
+  Briefcase
+  
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
 import { crmRepository, CrmOverviewStats } from '../../../repositories/crm.repository';
 import { CrmOpportunity, CrmTask } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { CrmUniversalSearch } from './components/CrmUniversalSearch';
-import { formatDate } from '../../../utilities/formatters';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
 export const CrmOverviewPage: React.FC = () => {
@@ -27,7 +25,7 @@ export const CrmOverviewPage: React.FC = () => {
   const [stats, setStats] = useState<CrmOverviewStats | null>(null);
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
   const [tasks, setTasks] = useState<CrmTask[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {

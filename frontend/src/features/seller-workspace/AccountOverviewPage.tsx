@@ -4,27 +4,27 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   List,
   Heart,
-  Search,
+  
   MessageSquare,
   Sparkles,
-  ShoppingBag,
-  TrendingUp,
+  
+  
   ShieldCheck,
   PlusCircle,
-  Clock,
-  ArrowRight,
+  
+  
   Shield,
   Smartphone,
   Mail,
-  Lock,
+  
   KeyRound,
   CheckCircle2,
   AlertCircle,
   Briefcase,
-  ExternalLink,
+  
   Edit3,
   FileText,
-  ChevronRight,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { listingRepository } from '../../repositories/listing.repository';
@@ -76,7 +76,7 @@ export const AccountOverviewPage: React.FC = () => {
 
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [favCount, setFavCount] = useState(0);
-  const [savedSearchCount, setSavedSearchCount] = useState(0);
+  const [, setSavedSearchCount] = useState(0);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
 
   useEffect(() => {

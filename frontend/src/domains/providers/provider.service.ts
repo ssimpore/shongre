@@ -23,8 +23,8 @@ import {
 import {
   getAllCapabilities,
   getCapabilitiesByCategory,
-  getCategoryMetadata,
-  getCapabilityMetadata,
+  
+  getCapabilityMetadata
 } from './provider-capabilities';
 
 export interface MarketCoverageRow {

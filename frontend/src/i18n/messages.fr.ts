@@ -76,7 +76,6 @@ export const messagesFr = {
   // --- Language selector ----------------------------------------------------
   'language.choose': 'Choisir la langue',
   'language.current': 'Langue : {language}. Cliquez pour changer.',
-  'language.comingSoon': 'Bientôt',
   'language.preferences': 'Préférences…',
 
   // --- Cookie consent -------------------------------------------------------
@@ -124,7 +123,6 @@ export const messagesFr = {
   'shell.focusedLayout.quitterEtRevenirAL': "Quitter et revenir à l'accueil",
 
   // --- shell.header ---
-  'shell.header.rechercherUneAnnonce': "Rechercher une annonce",
   'shell.header.fermerLeMenu': "Fermer le menu",
   'shell.header.compteProfessionnel': "Compte Professionnel",
   'shell.header.verifie': "Vérifié",
@@ -176,14 +174,6 @@ export const messagesFr = {
   // --- ui.listingCard ---
   'ui.listingCard.annonceALaUne': "Annonce à la une",
 
-  // --- ui.marketSelector ---
-  'ui.marketSelector.changerDePaysMarche': "Changer de pays / marché",
-  'ui.marketSelector.preferencesRegionalesDAffichage': "Préférences régionales & d'affichage",
-  'ui.marketSelector.personnalisezVotrePaysVotreLangue': "Personnalisez votre pays, votre langue d'affichage et votre devise préférée sur Shongre.",
-  'ui.marketSelector.marcheTerritoire': "Marché & Territoire",
-  'ui.marketSelector.preferencesLangueDevise': "Préférences (Langue, Devise...)",
-  'ui.marketSelector.marcheTerritoireActif': "Marché / Territoire Actif",
-  'ui.marketSelector.deviseDAffichageDesPrix': "Devise d'affichage des prix",
 
   // --- ui.noResultsFound ---
   'ui.noResultsFound.conseilsPourTrouverVotreBonheur': "Conseils pour trouver votre bonheur :",
@@ -465,12 +455,6 @@ export const messagesFr = {
   'notifications.notificationPanel.aucuneNotificationPourLeMoment': "Aucune notification pour le moment",
   'notifications.notificationPanel.voirToutesLesNotifications': "Voir toutes les notifications",
 
-  // --- pro.proStorefrontPage ---
-  'pro.proStorefrontPage.cetteBoutiqueNExistePlus': "Cette boutique n'existe plus ou son adresse a changé. Parcourez l'annuaire pour trouver un professionnel équivalent.",
-  'pro.proStorefrontPage.rechercherDansCetteBoutique': "Rechercher dans cette boutique...",
-  'pro.proStorefrontPage.vendeurProfessionnelAgree': "Vendeur Professionnel Agréé",
-  'pro.proStorefrontPage.tauxDeReponse': "Taux de réponse",
-  'pro.proStorefrontPage.delaiMoyen': "Délai moyen",
 
   // --- profile.sellerPublicPage ---
   'profile.sellerPublicPage.sectionsDuProfilVendeur': "Sections du profil vendeur",
@@ -766,10 +750,6 @@ export const messagesFr = {
   'verification.trustBadge.membreVerifie': "Membre Vérifié",
   'verification.trustBadge.compteDebutant': "Compte Débutant",
 
-  // --- security.accountStatusBanner ---
-  'security.accountStatusBanner.compteRestreint': "Compte restreint :",
-  'security.accountStatusBanner.verificationProEnCoursD': "Vérification Pro en cours d'examen :",
-  'security.accountStatusBanner.votreCompteAAtteintSa': "Votre compte a atteint sa limite d'annonces actives pour le mois en cours.",
 
   // --- security.requirePermission ---
   'security.requirePermission.compteSuspendu': "Compte suspendu",
@@ -1301,13 +1281,8 @@ export const messagesFr = {
   'ui.globalSearchBar.toutesLesCategories2': "Toutes les catégories",
 
   // --- ui.listingCard ---
-  'ui.listingCard.livraisonPossible': "Livraison possible",
   'ui.listingCard.livraisonCourt': "Livraison",
 
-  // --- ui.marketSelector ---
-  'ui.marketSelector.defaut': "Défaut",
-  'ui.marketSelector.bientot': "Bientôt",
-  'ui.marketSelector.enregistrerMesPreferences': "Enregistrer mes préférences",
 
   // --- ui.priceRangeSlider ---
   'ui.priceRangeSlider.reinitialiser': "Réinitialiser",
@@ -1874,11 +1849,6 @@ export const messagesFr = {
   'pro.proDirectoryPage.trouvezDesCommercantsEtArtisans': "Trouvez des commerçants et artisans de confiance",
   'pro.proDirectoryPage.toutesLesEntreprisesReferenceesPossedent': "Toutes les entreprises référencées possèdent un numéro SIRET vérifié et proposent des garanties professionnelles.",
 
-  // --- pro.proStorefrontPage ---
-  'pro.proStorefrontPage.voirLAnnuaireDesProfessionnels': "Voir l'annuaire des professionnels",
-  'pro.proStorefrontPage.retourALAccueil': "Retour à l'accueil",
-  'pro.proStorefrontPage.contacterLaBoutique': "Contacter la boutique",
-  'pro.proStorefrontPage.aucunArticleCorrespondantDansCette': "Aucun article correspondant dans cette boutique.",
 
   // --- profile.sellerPublicPage ---
   'profile.sellerPublicPage.lUtilisateurOuLaBoutique': "L'utilisateur ou la boutique demandée n'existe pas ou le lien est erroné.",
@@ -2191,12 +2161,7 @@ export const messagesFr = {
   'verification.identityVerificationModal.regardezLObjectifSansLunettes': "Regardez l'objectif sans lunettes de soleil ni couvre-chef.",
   'verification.identityVerificationModal.validationInstantaneeParSimulationOcr': "Validation instantanée par simulation OCR / Liveness",
 
-  // --- verification.verificationPromptModal ---
-  'verification.verificationPromptModal.avantagesApresVerification': "Avantages après vérification :",
-  'verification.verificationPromptModal.plusTard': "Plus tard",
 
-  // --- security.accountStatusBanner ---
-  'security.accountStatusBanner.consulterLeCentreDAide': "Consulter le centre d'aide & recours →",
 
   // --- security.requireAuth ---
   'security.requireAuth.cettePageEstReserveeAux': "Cette page est réservée aux membres inscrits sur Shongre. Connectez-vous ou créez un compte gratuitement en 1 minute.",

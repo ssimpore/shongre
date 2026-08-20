@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Building2, ExternalLink } from 'lucide-react';
+import { AlertCircle  } from 'lucide-react';
 import { Modal } from '../../../../design-system/primitives/Modal';
 import { Button } from '../../../../design-system/primitives/Button';
 import { CrmCompany, ProspectResearchCandidate } from '../../../../domains/crm/crm.types';

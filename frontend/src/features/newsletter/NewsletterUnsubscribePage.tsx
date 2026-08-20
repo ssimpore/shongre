@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Mail, CheckCircle2, ShieldCheck, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Mail, CheckCircle2, ShieldCheck  } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { FormField, Input } from '../../design-system/primitives/FormField';
 import { newsletterRepository } from '../../repositories/newsletter.repository';

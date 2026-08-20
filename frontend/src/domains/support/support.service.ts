@@ -3,7 +3,7 @@
  * Pure domain utilities for support references, status formatting, and form validation.
  */
 
-import { SupportRequestStatus, SupportPriority, CreateSupportRequestInput } from './support.types';
+import { SupportRequestStatus,  CreateSupportRequestInput } from './support.types';
 
 export interface SupportStatusInfo {
   label: string;

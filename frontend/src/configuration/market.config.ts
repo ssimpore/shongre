@@ -1,5 +1,5 @@
 import { marketService } from '../domains/market/market.service';
-import { Market, MarketConfiguration } from '../domains/market/market.types';
+import { Market } from '../domains/market/market.types';
 
 export interface CountryMarketDefinition {
   code: string;

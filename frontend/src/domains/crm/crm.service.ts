@@ -10,8 +10,8 @@ import {
   CompanyLifecycle,
   ContactQualification,
   CrmMoney,
-  CrmCompany,
-  ProspectResearchCandidate,
+  CrmCompany
+  
 } from './crm.types';
 
 export interface StageMetadata {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect,  useMemo } from 'react';
 import { scrollToTop } from '../../utilities/motion';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
@@ -6,7 +6,7 @@ import {
   Sparkles,
   Camera,
   Trash2,
-  Plus,
+  
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
@@ -14,44 +14,41 @@ import {
   MapPin,
   ShieldCheck,
   Tag,
-  Zap,
-  Info,
-  UploadCloud,
+  
+  
+  
   Bot,
-  Lightbulb,
-  Layers,
+  
+  
   Search,
   Check,
   ChevronRight,
   Clock,
-  ShoppingBag,
-  CreditCard,
+  
+  
   Store,
-  DollarSign,
+  
   Package,
-  AlertTriangle,
-  Eye,
-  Edit3,
-  Globe,
+  
+  
+  
+  Globe
 } from 'lucide-react';
 import { taxonomyService, getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { publicationResolver } from '../../domains/publication/publication.resolver';
 import { transactionCapabilitiesService } from '../../domains/transaction/transaction.capabilities';
 import { fulfillmentResolver } from '../../domains/fulfillment/fulfillment.resolver';
 import { publicationService } from '../../domains/publication/publication.service';
-import { marketResolver } from '../../domains/market/market.resolver';
 import { marketService } from '../../domains/market/market.service';
 import {
   PublicationDraftState,
   ListingIntent,
-  PriceModel,
-  PackageSizeTier,
+  
+  PackageSizeTier
 } from '../../domains/publication/publication.types';
-import { TaxonomyNode } from '../../domains/taxonomy/taxonomy.types';
 import { Button } from '../../design-system/primitives/Button';
 import { Input, Textarea, Checkbox, FormField } from '../../design-system/primitives/FormField';
 import { Badge } from '../../design-system/primitives/Badge';
-import { Notice } from '../../design-system/primitives/UIComponents';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -110,16 +107,15 @@ const REVIEW_PANEL = 10;
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser } = useAuth();
   const toast = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
-  const [aiPromptKeyword, setAiPromptKeyword] = useState('');
-  const [aiGeneratedTips, setAiGeneratedTips] = useState<string[]>([]);
+  const [aiPromptKeyword, ] = useState('');
+  const [, setAiGeneratedTips] = useState<string[]>([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
   // Draft State initialized with default or restored values

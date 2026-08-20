@@ -5,16 +5,16 @@ import {
   CheckCircle2,
   Clock,
   ShieldCheck,
-  Package,
-  ExternalLink,
-  DollarSign,
+  
+  
+  
   MapPin,
   KeyRound,
-  AlertTriangle,
+  
   Landmark,
-  ArrowUpRight,
-  Filter,
-  Search,
+  
+  Filter
+  
 } from 'lucide-react';
 
 import { useAuth } from '../../app/providers/AuthProvider';
@@ -44,7 +44,7 @@ export const TransactionsPage: React.FC = () => {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [purchasesCount, setPurchasesCount] = useState(0);
   const [salesCount, setSalesCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   const fetchTransactions = async () => {
     if (!currentUser?.id) return;

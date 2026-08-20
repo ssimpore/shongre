@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
-import { Search, History, Clock, User, FileSpreadsheet } from 'lucide-react';
+import { Search, History, Clock, User } from 'lucide-react';
 import { roleLabel } from '../../../../security/roles.config';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 

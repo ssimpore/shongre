@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
   CreditCard,
-  CheckCircle2,
+  
   AlertCircle,
   X,
   Lock,
-  ArrowRight,
-  ShieldCheck,
-  Building,
+  
+  ShieldCheck
+  
 } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { Button } from '../../../design-system/primitives/Button';

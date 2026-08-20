@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Star, Clock, MapPin, CheckCircle2, ChevronRight, Store } from 'lucide-react';
+import { ShieldCheck, Star, Clock, MapPin,  ChevronRight } from 'lucide-react';
 import { UserProfile, ReviewItem } from '../../../types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';
 import { isProSeller, showsVerifiedBadge } from '../../../domains/user/user.domain';

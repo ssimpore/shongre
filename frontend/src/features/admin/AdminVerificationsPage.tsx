@@ -3,17 +3,17 @@ import {
   ShieldCheck,
   Building2,
   CreditCard,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  FileText,
-  User,
-  Search,
-  Eye,
+  
+  
+  
+  
+  
+  
+  
   Check,
   X,
-  History,
-  Lock,
+  History
+  
 } from 'lucide-react';
 import { storageService } from '../../services/storage.service';
 import { verificationService } from '../../domains/verification/verification.service';
@@ -30,7 +30,7 @@ export const AdminVerificationsPage: React.FC = () => {
   const toast = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [activeTab, setActiveTab] = useState<'kyc' | 'kyb' | 'bank' | 'audit'>('kyc');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [] = useState('');
   
   // Review modals
   const [rejectModal, setRejectModal] = useState<{

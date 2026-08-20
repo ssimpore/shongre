@@ -2,20 +2,19 @@ import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
   CheckCircle,
-  XCircle,
+  
   Eye,
-  AlertTriangle,
+  
   Lock,
   Unlock,
   Trash2,
-  Filter,
-  Search,
-  Sparkles,
-  Bot,
-  ShieldCheck,
-  Info,
+  
+  
+  Sparkles
+  
+  
+  
 } from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { storageService } from '../../services/storage.service';
 import { listingRepository } from '../../repositories/listing.repository';
@@ -33,7 +32,6 @@ import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, can } = useAuth();
   const toast = useToast();
 
   const [activeTab, setActiveTab] = useState<'reports' | 'listings' | 'users'>('reports');

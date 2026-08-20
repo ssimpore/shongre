@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import {
   Send,
-  Paperclip,
+  
   Image as ImageIcon,
   X,
-  Sparkles,
-  ShieldAlert,
-  Clock,
+  
+  ShieldAlert
+  
 } from 'lucide-react';
 import { ConversationCapabilities } from '../../../domains/messaging/messaging.types';
 import { Button } from '../../../design-system/primitives/Button';

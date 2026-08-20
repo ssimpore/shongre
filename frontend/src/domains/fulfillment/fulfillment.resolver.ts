@@ -18,7 +18,7 @@ import {
   PackageSpecs,
   PackageSizeTier,
 } from '../publication/publication.types';
-import { Listing, DeliveryOption } from '../../types';
+import { Listing } from '../../types';
 
 export interface ResolveFulfillmentCapabilitiesParams {
   taxonomyNodeId: string;
@@ -48,7 +48,7 @@ export class FulfillmentResolver {
    * Evaluates what fulfillment capabilities a seller is permitted to enable during publication.
    */
   resolveCapabilities(params: ResolveFulfillmentCapabilitiesParams): FulfillmentCapabilitiesResult {
-    const { taxonomyNodeId, marketCode = 'FR', sellerType = 'individual', price = 0 } = params;
+    const { taxonomyNodeId, marketCode = 'FR', sellerType = 'individual'} = params;
     const node = taxonomyService.getNode(taxonomyNodeId);
     const family = taxonomyService.getFamily(taxonomyNodeId);
     const effectiveMarket = marketService.getEffectiveConfig(marketCode);
@@ -128,7 +128,7 @@ export class FulfillmentResolver {
    * Resolves concrete delivery quotes available to the buyer at checkout.
    */
   resolveAvailableQuotes(params: ResolveDeliveryQuotesParams): DeliveryQuote[] {
-    const { listing, marketCode = 'FR', destinationPostalCode, quantity = 1, packageSpecs } = params;
+    const { listing, marketCode = 'FR', packageSpecs } = params;
     const effectiveMarket = marketService.getEffectiveConfig(marketCode);
     const quotes: DeliveryQuote[] = [];
 

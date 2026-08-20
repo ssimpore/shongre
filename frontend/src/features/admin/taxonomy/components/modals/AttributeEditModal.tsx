@@ -10,7 +10,7 @@ import { Button } from '../../../../../design-system/primitives/Button';
 import { Input, FormField, Checkbox } from '../../../../../design-system/primitives/FormField';
 import { useToast } from '../../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../../app/providers/AuthProvider';
-import { Plus, Trash2, Tag } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from '../../../../../i18n/I18nProvider';
 
 export interface AttributeEditModalProps {

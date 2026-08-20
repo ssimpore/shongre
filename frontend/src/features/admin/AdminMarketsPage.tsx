@@ -1,40 +1,40 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Globe,
-  CheckCircle2,
-  AlertCircle,
-  Lock,
-  Coins,
-  Percent,
-  MapPin,
+  
+  
+  
+  
+  
+  
+  
   Sliders,
   ShieldAlert,
-  Sparkles,
+  
   RefreshCw,
   Plus,
-  ArrowRight,
-  Info,
-  Layers,
-  CreditCard,
-  Truck,
-  Briefcase,
-  Scale,
-  Zap,
-  Check,
-  X,
-  Eye,
-  SlidersHorizontal,
-  ChevronRight,
-  HelpCircle,
-  ExternalLink,
+  
+  Info
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { Modal } from '../../design-system/primitives/Modal';
 import { Badge } from '../../design-system/primitives/Badge';
 import { marketService } from '../../domains/market/market.service';
-import { Market, MarketStatus, MarketConfiguration } from '../../domains/market/market.types';
-import { formatPrice, plural } from '../../utilities/formatters';
+import {  MarketStatus } from '../../domains/market/market.types';
+import {  plural } from '../../utilities/formatters';
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -85,7 +85,6 @@ export const AdminMarketsPage: React.FC = () => {
   // Load live markets
   const markets = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = refreshTrigger;
     return marketService.getMarkets();
   }, [refreshTrigger]);
 
@@ -100,14 +99,6 @@ export const AdminMarketsPage: React.FC = () => {
   const inheritanceMetrics = useMemo(() => {
     return marketService.getInheritanceMetrics(selectedMarket.code);
   }, [selectedMarket, refreshTrigger]);
-
-  const franceMarket = useMemo(() => {
-    return marketService.getDefaultMarket();
-  }, [markets]);
-
-  const franceEffectiveConfig = useMemo(() => {
-    return marketService.getEffectiveConfig('FR');
-  }, [markets, refreshTrigger]);
 
   const handleRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -645,8 +636,6 @@ export const AdminMarketsPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {taxonomyService.getRootCategories().map((rootCat) => {
                     const isRootEnabled = marketService.isCategoryEnabledInMarket(selectedMarket.code, rootCat.slug);
-                    const disabledCatSlugs = (effectiveConfig.taxonomy?.disabledCategorySlugs || []).map((s) => s.toLowerCase());
-                    const isRootExplicitlyDisabled = disabledCatSlugs.includes(rootCat.slug.toLowerCase());
 
                     return (
                       <div

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Search, MapPin, Star, ShieldCheck, ArrowRight } from 'lucide-react';
+import {  Search    } from 'lucide-react';
 
 import { userRepository } from '../../repositories/user.repository';
 import { UserProfile } from '../../types';

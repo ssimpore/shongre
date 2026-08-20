@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Check, Building2, Zap, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Sparkles, Check,  Zap  } from 'lucide-react';
 import { PRO_PLANS, LISTING_BOOSTS } from '../../configuration/plans.config';
 import { formatPrice } from '../../utilities/formatters';
 import { Button } from '../../design-system/primitives/Button';

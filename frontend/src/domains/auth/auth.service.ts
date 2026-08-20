@@ -2,11 +2,11 @@ import {
   UserProfile,
   UserSession,
   AuthSecurityEvent,
-  MFASettings,
+  
   AuthResult,
-  AuthErrorCode,
-  PlatformRole,
-  AccountType,
+  
+  PlatformRole
+  
 } from '../../types';
 import { storageService } from '../../services/storage.service';
 import { auditService } from '../../security/audit.service';
@@ -569,7 +569,6 @@ class AuthService {
     this.saveUserProfile(newUser);
 
     // Generate initial email verification token
-    const tokenObj = this.generateEmailVerificationToken(newUser.id, newUser.email);
 
     // Create session
     const session = this.createSession(newUser.id, true);

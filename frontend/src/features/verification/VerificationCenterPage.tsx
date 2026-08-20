@@ -12,13 +12,13 @@ import {
   XCircle,
   ArrowRight,
   Sparkles,
-  ExternalLink,
-  Info,
-  History,
-  Award,
+  
+  
+  History
+  
 } from 'lucide-react';
 import { useVerification } from '../../domains/verification/useVerification';
-import { VerificationDimensionId, TrustLevel } from '../../domains/verification/verification.types';
+import { VerificationDimensionId } from '../../domains/verification/verification.types';
 import { TrustBadge } from './components/TrustBadge';
 import { IdentityVerificationModal } from './components/IdentityVerificationModal';
 import { BusinessVerificationModal } from './components/BusinessVerificationModal';
@@ -34,7 +34,6 @@ export const VerificationCenterPage: React.FC = () => {
   const toast = useToast();
   const {
     currentUser,
-    summary,
     capabilities,
     dimensions,
     trustLevel,

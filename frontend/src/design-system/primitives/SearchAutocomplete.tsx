@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, {  useRef } from 'react';
 import {
   Search,
   TrendingUp,
@@ -14,7 +14,6 @@ import {
   CategorySuggestion,
   PopularSearchKeyword,
 } from '../../configuration/search.config';
-import { Category } from '../../types';
 import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface AutocompleteSelection {

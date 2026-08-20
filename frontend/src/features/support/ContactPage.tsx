@@ -10,12 +10,12 @@ import {
   Truck,
   Briefcase,
   ShieldAlert,
-  ChevronRight,
+  
   AlertTriangle,
   UploadCloud,
   CheckCircle2,
   X,
-  MessageSquare,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -28,8 +28,8 @@ import {
 } from '../../domains/support/support.types';
 import {
   SUPPORT_CATEGORIES,
-  SupportCategoryDefinition,
-  supportCategoriesService,
+  
+  supportCategoriesService
 } from '../../domains/support/support.categories';
 import { supportCapabilitiesService } from '../../domains/support/support.capabilities';
 import { supportService } from '../../domains/support/support.service';

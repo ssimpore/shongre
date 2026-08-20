@@ -1049,7 +1049,6 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
         };
       }
 
-      let newCount = 0;
       let updatedCount = 0;
 
       // Validate imported nodes

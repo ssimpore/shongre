@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { collectionService } from './collection.service';
-import { ALL_COLLECTIONS, COLLECTION_PILLARS } from './collection.data';
+import { ALL_COLLECTIONS } from './collection.data';
 import { Listing } from '../../types';
 
 describe('CollectionService', () => {

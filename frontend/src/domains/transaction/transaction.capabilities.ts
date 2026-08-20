@@ -8,7 +8,7 @@
  * that does NOT require or depend on a reservation workflow.
  */
 
-import { TaxonomyNode, ListingFamily } from '../taxonomy/taxonomy.types';
+import {  ListingFamily } from '../taxonomy/taxonomy.types';
 import { taxonomyService } from '../taxonomy/taxonomy.service';
 import { marketService } from '../market/market.service';
 import { TransactionCapabilitiesResult, TransactionMode, ListingIntent } from '../publication/publication.types';

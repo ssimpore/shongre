@@ -4,8 +4,8 @@ import {
   MarketGeography,
   MarketStatus,
   SettingResolution,
-  MarketInheritanceMetrics,
-  DeepPartial,
+  MarketInheritanceMetrics
+  
 } from './market.types';
 import { INITIAL_MARKETS } from './market.defaults';
 import {

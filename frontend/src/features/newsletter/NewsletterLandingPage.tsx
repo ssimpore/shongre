@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Sparkles, Tag, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, Sparkles,  ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { NewsletterSignup } from './components/NewsletterSignup';
 import { newsletterTopicsService } from '../../domains/newsletter/newsletter.topics';
 import { usePageMeta } from '../../hooks/usePageMeta';

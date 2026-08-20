@@ -6,9 +6,9 @@ import {
   Globe,
   Sliders,
   RefreshCw,
-  Clock,
-  ShieldCheck,
-  Zap,
+  Clock
+  
+  
 } from 'lucide-react';
 import { providerService } from '../../../domains/providers/provider.service';
 import { ProviderOverviewDashboard } from './components/ProviderOverviewDashboard';
@@ -37,13 +37,11 @@ export const AdminProvidersPage: React.FC = () => {
 
   const providers = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = refreshTrigger;
     return providerService.getProviders();
   }, [refreshTrigger]);
 
   const configurations = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = refreshTrigger;
     return providerService.getConfigurations();
   }, [refreshTrigger]);
 

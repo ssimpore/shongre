@@ -1,26 +1,26 @@
 import { isProSeller } from '../../domains/user/user.domain';
 import React, { useState, useEffect } from 'react';
 import {
-  Users,
+  
   Search,
   CheckCircle2,
-  XCircle,
-  Shield,
-  ShieldCheck,
+  
+  
+  
   AlertTriangle,
-  Lock,
-  Unlock,
-  Building2,
-  User,
-  Sliders,
-  FileCheck,
+  
+  
+  
+  
+  
+  FileCheck
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { storageService } from '../../services/storage.service';
 import { userRepository } from '../../repositories/user.repository';
 import { ROLE_DEFINITIONS, ALL_PLATFORM_ROLES } from '../../security/roles.config';
-import { UserProfile, PlatformRole, AccountType } from '../../types';
+import { UserProfile  } from '../../types';
 import { Button } from '../../design-system/primitives/Button';
 import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
@@ -29,7 +29,7 @@ import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, can, switchDemoUser } = useAuth();
+  const { can, switchDemoUser } = useAuth();
   const toast = useToast();
 
   const [users, setUsers] = useState<UserProfile[]>([]);

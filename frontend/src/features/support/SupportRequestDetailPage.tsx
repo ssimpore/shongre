@@ -6,17 +6,17 @@ import {
   Send,
   CheckCircle2,
   Paperclip,
-  Sparkles,
-  ShieldCheck,
-  AlertCircle,
-  FileText,
+  Sparkles
+  
+  
+  
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Textarea } from '../../design-system/primitives/FormField';
-import { SupportRequest, SupportAttachment } from '../../domains/support/support.types';
+import { SupportRequest } from '../../domains/support/support.types';
 import { supportService } from '../../domains/support/support.service';
 import { supportRepository } from '../../repositories/support.repository';
 import { formatDate } from '../../utilities/formatters';

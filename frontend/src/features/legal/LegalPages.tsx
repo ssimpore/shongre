@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Lock, AlertTriangle, HelpCircle, Check, Sparkles, Tag } from 'lucide-react';
+import { ShieldCheck,  AlertTriangle,    Tag } from 'lucide-react';
 import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
 import { storageService } from '../../services/storage.service';
 import { ListingCard } from '../../design-system/primitives/ListingCard';

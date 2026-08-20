@@ -5,9 +5,9 @@ import {
   DollarSign,
   Calendar,
   ShieldCheck,
-  Package,
-  Clock,
-  CheckCircle2,
+  Package
+  
+  
 } from 'lucide-react';
 import {
   ListingConversationContext,

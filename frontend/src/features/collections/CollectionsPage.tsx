@@ -1,24 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   Sparkles,
-  ArrowRight,
+  
   ChevronRight,
   Filter,
   Layers,
   ArrowLeft,
   Search,
-  SlidersHorizontal,
+  
   Home,
   Tag,
   TrendingUp,
   Shirt,
   Bike,
   MapPin,
-  Heart,
-  Grid,
-  Sparkle,
-  CheckCircle2,
+  Heart
+  
+  
+  
 } from 'lucide-react';
 import { collectionService } from '../../domains/collection/collection.service';
 import { Collection, CollectionPillarId } from '../../domains/collection/collection.types';
@@ -60,7 +60,6 @@ const PILLAR_ICONS: Record<string, React.FC<{ className?: string }>> = {
 export const CollectionsPage: React.FC = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug?: string }>();
-  const navigate = useNavigate();
 
   const selectedCollection: Collection | undefined = useMemo(() => {
     return slug ? collectionService.getCollection(slug) : undefined;
@@ -70,7 +69,7 @@ export const CollectionsPage: React.FC = () => {
   const [collectionSearch, setCollectionSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
-  const [allListings, setAllListings] = useState<Listing[]>([]);
+  const [, setAllListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [inCollectionSearch, setInCollectionSearch] = useState('');
 

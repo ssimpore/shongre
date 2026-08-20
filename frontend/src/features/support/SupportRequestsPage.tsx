@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import {
   Headphones,
   PlusCircle,
-  Clock,
-  CheckCircle2,
+  
+  
   ChevronRight,
-  MessageSquare,
-  AlertCircle,
+  MessageSquare
+  
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { Button } from '../../design-system/primitives/Button';

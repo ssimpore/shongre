@@ -1,4 +1,3 @@
-import { UserProfile } from '../../types';
 
 export function isProSeller(user: any): boolean {
   if (!user) return false;

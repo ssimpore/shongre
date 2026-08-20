@@ -4,13 +4,13 @@ import {
   ShieldAlert,
   Users,
   CheckCircle2,
-  AlertTriangle,
+  
   ArrowRight,
   Clock,
   TrendingUp,
-  FileSpreadsheet,
-  Globe,
-  Sliders,
+  FileSpreadsheet
+  
+  
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { storageService } from '../../services/storage.service';

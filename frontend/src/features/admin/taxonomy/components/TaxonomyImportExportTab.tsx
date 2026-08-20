@@ -4,7 +4,7 @@ import { Button } from '../../../../design-system/primitives/Button';
 import { Textarea, FormField } from '../../../../design-system/primitives/FormField';
 import { useToast } from '../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../app/providers/AuthProvider';
-import { Download, Upload, FileCode, CheckCircle2, AlertOctagon, RotateCcw } from 'lucide-react';
+import { Download, Upload,  CheckCircle2, AlertOctagon, RotateCcw } from 'lucide-react';
 import { ConfirmModal } from '../../../../design-system/primitives/ConfirmModal';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 

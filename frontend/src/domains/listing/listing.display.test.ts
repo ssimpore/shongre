@@ -9,7 +9,6 @@ import { describe, it, expect } from 'vitest';
 import { listingDisplayResolver } from './listing.display';
 import { listingActionsResolver } from './listing.actions';
 import { Listing, UserProfile } from '../../types';
-import { taxonomyService } from '../taxonomy/taxonomy.service';
 import { transactionCapabilitiesService } from '../transaction/transaction.capabilities';
 
 describe('Listing Detail Display & Action Resolvers', () => {

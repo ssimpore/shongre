@@ -6,16 +6,13 @@
 
 import { taxonomyService } from '../taxonomy/taxonomy.service';
 import { publicationResolver } from './publication.resolver';
-import { transactionCapabilitiesService } from '../transaction/transaction.capabilities';
-import { fulfillmentResolver } from '../fulfillment/fulfillment.resolver';
-import { marketService } from '../market/market.service';
 import { storageService } from '../../services/storage.service';
 import {
   PublicationDraftState,
   ValidationResult,
-  ValidationError,
-  SellerTransactionChoice,
-  SellerFulfillmentChoice,
+  ValidationError
+  
+  
 } from './publication.types';
 import { Listing, UserProfile, DeliveryOption } from '../../types';
 
@@ -30,7 +27,6 @@ export class PublicationService {
     const warnings: string[] = [];
 
     const marketCode = draft.marketCode || 'FR';
-    const effectiveMarket = marketService.getEffectiveConfig(marketCode);
 
     // 1. Taxonomy & Publishable Leaf check
     if (!draft.taxonomyNodeId) {
@@ -208,7 +204,6 @@ export class PublicationService {
     const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(); // 60 days
 
     const isPro = user.role === 'pro_seller';
-    const initialStock = isPro ? (draft.proInventory?.stock ?? 1) : 1;
 
     const rawSelectedMarkets =
       draft.selectedMarkets && draft.selectedMarkets.length > 0

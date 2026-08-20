@@ -8,11 +8,11 @@ import {
   Lock,
   ArrowRight,
   Info,
-  Clock,
-  Sparkles,
+  
+  
   KeyRound,
   Copy,
-  Check,
+  Check
 } from 'lucide-react';
 import { Listing, UserProfile, DeliveryType, Transaction } from '../../../types';
 import { transactionService } from '../../../domains/transaction/transaction.service';

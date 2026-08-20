@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { newsletterTopicsService, NEWSLETTER_TOPICS } from './newsletter.topics';
+import { newsletterTopicsService } from './newsletter.topics';
 import { newsletterCapabilitiesService } from './newsletter.capabilities';
 import { DEMO_USERS } from '../../mocks/initialDemoData';
 

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { providerService } from './provider.service';
-import { DemoProviderRepository } from '../../repositories/provider.repository';
 
 describe('Provider Service High-Level Operations', () => {
   let service: typeof providerService;

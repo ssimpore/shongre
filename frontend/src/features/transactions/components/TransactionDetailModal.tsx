@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import {
-  ShieldCheck,
+  
   CheckCircle2,
   Clock,
   AlertTriangle,
-  MapPin,
+  
   Truck,
   KeyRound,
   Copy,
   Check,
-  Send,
+  
   Calendar,
-  Phone,
-  FileText,
-  HelpCircle,
-  XCircle,
-  ExternalLink,
-  ChevronRight,
-  ArrowDownCircle,
-  Sparkles,
-  Star,
+  
+  
+  
+  
+  
+  
+  
+  
+  Star
 } from 'lucide-react';
 import { Transaction, UserProfile } from '../../../types';
 import { transactionService } from '../../../domains/transaction/transaction.service';
@@ -68,7 +68,6 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   const isBuyer = currentUser.id === tx.buyerId;
   const isSeller = currentUser.id === tx.sellerId;
-  const isAdmin = currentUser.role === 'admin' || currentUser.role === 'super_admin' || currentUser.role === 'support';
 
   const copyPin = () => {
     if (tx.verificationCode) {

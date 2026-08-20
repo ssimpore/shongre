@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MailCheck, AlertCircle, ArrowRight, RefreshCw, CheckCircle2, ShieldCheck, Mail } from 'lucide-react';
+import {  AlertCircle, ArrowRight, RefreshCw, CheckCircle2,  Mail } from 'lucide-react';
 import { authService } from '../../domains/auth/auth.service';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { AuthLayout } from './components/AuthLayout';
-import { routes } from '../../configuration/routes';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 
@@ -30,7 +29,7 @@ export const VerifyEmailPage: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>(urlToken ? 'verifying' : 'idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resendStatus, setResendStatus] = useState<string | null>(null);
-  const [demoCodeHint, setDemoCodeHint] = useState<string | null>(null);
+  const [demoCodeHint, ] = useState<string | null>(null);
 
   useEffect(() => {
     if (urlToken) {

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   TaxonomyNode,
-  TaxonomyAttribute,
-  TaxonomyMarketOverride,
+  
+  
   TaxonomyCapabilities,
-  FulfillmentMode,
+  FulfillmentMode
 } from '../../../../domains/taxonomy/taxonomy.types';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
-import { taxonomyService, getTaxonomyLabel } from '../../../../domains/taxonomy/taxonomy.service';
+import { taxonomyService } from '../../../../domains/taxonomy/taxonomy.service';
 import { Button } from '../../../../design-system/primitives/Button';
 import { Input, FormField, Textarea, Checkbox } from '../../../../design-system/primitives/FormField';
 import { Badge } from '../../../../design-system/primitives/Badge';
@@ -31,8 +31,8 @@ import {
   Plus,
   X,
   ShieldCheck,
-  HelpCircle,
-  ExternalLink,
+  HelpCircle
+  
 } from 'lucide-react';
 import { IconPickerModal } from './modals/IconPickerModal';
 import { MoveNodeModal } from './modals/MoveNodeModal';

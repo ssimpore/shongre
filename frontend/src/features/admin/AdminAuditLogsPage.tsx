@@ -2,18 +2,17 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
 import React, { useState, useEffect } from 'react';
 import {
-  FileSpreadsheet,
+  
   Search,
-  Filter,
-  Shield,
+  
+  
   Download,
   Trash2,
-  Calendar,
-  User,
-  KeyRound,
-  Eye,
+  
+  
+  
+  Eye
 } from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { auditService } from '../../security/audit.service';
 import { SecurityAuditLog, auditActionLabel } from '../../types';
@@ -23,7 +22,6 @@ import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminAuditLogsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
   const toast = useToast();
   const [logs, setLogs] = useState<SecurityAuditLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

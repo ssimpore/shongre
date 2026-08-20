@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import {
   MapPin,
   Star,
-  ShieldCheck,
+  
   Calendar,
   MessageSquare,
   Share2,
@@ -12,12 +12,12 @@ import {
   MoreVertical,
   Flag,
   Ban,
-  Check,
+  
   Building2,
-  ExternalLink,
+  
   Edit3,
-  List,
-  Sparkles,
+  List
+  
 } from 'lucide-react';
 import { UserProfile } from '../../../types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';
@@ -48,7 +48,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   onOpenReportModal,
 }) => {
   const { t } = useTranslation();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const toast = useToast();
 
   const [isFollowing, setIsFollowing] = useState(() => userRepository.isFollowing(seller.id));

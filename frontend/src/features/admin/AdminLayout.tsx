@@ -1,6 +1,6 @@
 import { routes } from '../../configuration/routes';
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import {
   Shield,
   LayoutDashboard,
@@ -11,19 +11,18 @@ import {
   KeyRound,
   FileSpreadsheet,
   ArrowLeft,
-  Lock,
-  ExternalLink,
-  SlidersHorizontal,
+  
+  
+  
   Layers,
   Mail,
   Briefcase,
   Sparkles,
   Cpu,
-  ChevronDown,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { ROLE_DEFINITIONS } from '../../security/roles.config';
-import { Button } from '../../design-system/primitives/Button';
 import { useAuthorization } from '../../security/useAuthorization';
 import { Image } from '../../design-system/primitives/Image';
 import { AppScrollRestoration } from '../../app/router/AppScrollRestoration';
@@ -33,7 +32,6 @@ export const AdminLayout: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, role: platformRole } = useAuth();
   const { can } = useAuthorization();
-  const navigate = useNavigate();
   const location = useLocation();
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const sectionMenuRef = useRef<HTMLDivElement>(null);

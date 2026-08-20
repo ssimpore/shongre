@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flag, AlertTriangle, ShieldAlert, CheckCircle2, X } from 'lucide-react';
+import { Flag, AlertTriangle   } from 'lucide-react';
 import { UserProfile } from '../../../types';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';

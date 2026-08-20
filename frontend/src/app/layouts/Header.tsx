@@ -2,13 +2,13 @@ import { routes } from '../../configuration/routes';
 import { isProSeller } from '../../domains/user/user.domain';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link,  useLocation } from 'react-router-dom';
 import {
-  MapPin,
+  
   PlusCircle,
   Heart,
   MessageSquare,
-  Bell,
+  
   User,
   ChevronDown,
   Sparkles,
@@ -16,13 +16,13 @@ import {
   LogOut,
   ShoppingBag,
   List,
-  Sliders,
-  Shield,
+  
+  
   Menu,
   X,
   Map as MapIcon,
   ChevronRight,
-  Layers,
+  Layers
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 import { useMarketLocation } from '../providers/MarketLocationProvider';
@@ -36,7 +36,6 @@ import { Avatar } from '../../design-system/primitives/Badge';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { NotificationBell } from '../../features/notifications/components/NotificationBell';
 import { useDialogBehavior } from '../../design-system/primitives/useDialogBehavior';
-import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
 import { DROPDOWN_PANEL_CLASSES } from '../../design-system/primitives/DropdownMenu';
@@ -45,13 +44,12 @@ import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButto
 
 export const Header: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const location = useLocation();
   /* The results page renders its own, richer search bar — see the desktop
      search slot below. */
   const isSearchRoute = location.pathname === '/recherche';
-  const { currentUser, isAuthenticated, role, logout } = useAuth();
-  const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
+  const { currentUser, isAuthenticated, logout } = useAuth();
+  const { activeMarket } = useMarketLocation();
 
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -104,7 +102,6 @@ export const Header: React.FC = () => {
   const { count: favCount } = useFavorites();
   const unreadMessagesCount = storageService.getUnreadMessageCount(currentUser?.id);
   const publishCta = usePublishCta();
-  const unreadNotifsCount = storageService.getNotifications().filter((n) => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-border-base">

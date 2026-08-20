@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Briefcase, Building2, ShieldCheck, CheckCircle2, AlertCircle, X, ArrowRight } from 'lucide-react';
+import { Briefcase,  ShieldCheck,  AlertCircle, X, ArrowRight } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { Button } from '../../../design-system/primitives/Button';

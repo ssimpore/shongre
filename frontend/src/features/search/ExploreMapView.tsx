@@ -8,16 +8,15 @@ import {
   Maximize2,
   X,
   ExternalLink,
-  ShieldCheck,
-  Star,
+  
+  
   Navigation,
-  Compass,
+  Compass
 } from 'lucide-react';
 import { Listing } from '../../types';
 import { formatPrice, plural } from '../../utilities/formatters';
 import { getListingCoordinates, FRENCH_MAJOR_CITIES, FRANCE_CENTER } from '../../configuration/geoCoordinates';
 import { Badge } from '../../design-system/primitives/Badge';
-import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
 import { showsVerifiedBadge } from '../../domains/user/user.domain';
 import { useTranslation } from '../../i18n/I18nProvider';

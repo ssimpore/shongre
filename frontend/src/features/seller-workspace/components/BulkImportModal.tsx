@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Download, CheckCircle2, AlertTriangle, FileSpreadsheet, Sparkles, X, Layers } from 'lucide-react';
+import { Upload, Download, CheckCircle2, AlertTriangle, FileSpreadsheet, Sparkles  } from 'lucide-react';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';
@@ -44,7 +44,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [csvContent, setCsvContent] = useState<string>('');
+  const [, setCsvContent] = useState<string>('');
   const [parsedItems, setParsedItems] = useState<ParsedListingItem[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MarketResolver, deepMergeOverrides, getNestedValue, setNestedValue, deleteNestedValue } from './market.resolver';
-import { Market, MarketConfiguration } from './market.types';
-import { FR_CANONICAL_CONFIG, INITIAL_MARKETS } from './market.defaults';
+import { MarketResolver,    deleteNestedValue } from './market.resolver';
+import { Market } from './market.types';
+import {  INITIAL_MARKETS } from './market.defaults';
 
 describe('Multi-Market Inheritance Engine (MarketResolver)', () => {
   let resolver: MarketResolver;

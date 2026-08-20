@@ -14,8 +14,8 @@ import {
   EffectiveProviderResolution,
   CapabilityHealthResult,
   ProviderImpactAnalysis,
-  ProviderCapability,
-  ProviderCategory,
+  ProviderCapability
+  
 } from '../domains/providers/provider.types';
 import {
   CANONICAL_PROVIDER_REGISTRY,

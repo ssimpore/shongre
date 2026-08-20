@@ -4,13 +4,13 @@ import {
   CheckCheck,
   Clock,
   AlertCircle,
-  RotateCw,
-  Image as ImageIcon,
+  
+  Image as 
   DollarSign,
-  Calendar,
+  
   ShieldCheck,
   Maximize2,
-  Info,
+  Info
 } from 'lucide-react';
 import {
   TimelineItem,
@@ -20,7 +20,6 @@ import {
 } from '../../../domains/messaging/messaging.types';
 import { messagingService, TimelineDateGroup } from '../../../domains/messaging/messaging.service';
 import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
 import { formatPrice } from '../../../utilities/formatters';
 import { Image } from '../../../design-system/primitives/Image';
 import { useTranslation } from '../../../i18n/I18nProvider';

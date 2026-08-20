@@ -9,9 +9,9 @@ import {
   TimelineItem,
   UserTimelineMessage,
   TypingState,
-  ConversationParticipant,
-  ListingConversationContext,
-  TransactionConversationContext,
+  
+  ListingConversationContext
+  
 } from '../../domains/messaging/messaging.types';
 import { messagingService } from '../../domains/messaging/messaging.service';
 import { messagingCapabilitiesService } from '../../domains/messaging/messaging.capabilities';

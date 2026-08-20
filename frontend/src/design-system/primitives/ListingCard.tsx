@@ -1,7 +1,7 @@
 import { isProSeller } from '../../domains/user/user.domain';
-import React, { useState } from 'react';
+import React, { } from 'react';
 import { FavoriteButton } from './FavoriteButton';
-import { Heart, MapPin, Truck, ShieldCheck, Camera, Star } from 'lucide-react';
+import {  MapPin, Truck,  Camera, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Listing } from '../../types';
 import { formatRelativeDate, formatRelativeTimestamp } from '../../utilities/formatters';
@@ -36,22 +36,6 @@ export const ListingCard: React.FC<ListingCardProps> = ({
     void toggleFavorite(listing.id);
   };
 
-  const summarySnippets = React.useMemo(() => {
-    if (!listing.attributes) return [];
-    const snippets: string[] = [];
-    const attrs = listing.attributes;
-
-    if (attrs.year) snippets.push(`${attrs.year}`);
-    if (attrs.mileage) snippets.push(`${Number(attrs.mileage).toLocaleString('fr-FR')} km`);
-    if (attrs.fuel) snippets.push(`${attrs.fuel}`);
-    if (attrs.surface) snippets.push(`${attrs.surface} m²`);
-    if (attrs.rooms) snippets.push(`${attrs.rooms} p.`);
-    if (attrs.storage_capacity) snippets.push(`${attrs.storage_capacity.replace('_', ' ').toUpperCase()}`);
-    if (attrs.clothing_size) snippets.push(`Taille ${attrs.clothing_size.toUpperCase()}`);
-    if (attrs.shoe_size) snippets.push(`Pointure ${attrs.shoe_size}`);
-
-    return snippets.slice(0, 3);
-  }, [listing.attributes]);
 
   const hasDelivery = listing.deliveryOptions.some((d) => d.available && d.type !== 'hand_delivery');
 

@@ -6,9 +6,9 @@ import {
   Layers,
   ChevronDown,
   X,
-  Sparkles,
+  
   Check,
-  Compass,
+  Compass
 } from 'lucide-react';
 import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
@@ -25,12 +25,12 @@ import { storageService } from '../../services/storage.service';
 import { useTranslation } from '../../i18n/I18nProvider';
 import {
   DropdownMenu,
-  DropdownOption,
+  
   DROPDOWN_PANEL_CLASSES,
   DROPDOWN_HEADER_CLASSES,
   DROPDOWN_HEADER_TITLE_CLASSES,
   DROPDOWN_ITEM_CLASSES,
-  DROPDOWN_SEARCH_INPUT_CLASSES,
+  DROPDOWN_SEARCH_INPUT_CLASSES
 } from './DropdownMenu';
 
 export interface GlobalSearchCriteria {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Check, X, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
 export interface PasswordFieldProps {

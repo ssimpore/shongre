@@ -1,6 +1,6 @@
 import { isProSeller, showsVerifiedBadge } from '../../domains/user/user.domain';
 import React from 'react';
-import { ShieldCheck, Star, MapPin, Clock, MessageSquare } from 'lucide-react';
+import { ShieldCheck, Star, MapPin, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserProfile } from '../../types';
 import { Avatar } from './Badge';

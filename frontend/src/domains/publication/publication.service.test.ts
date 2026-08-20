@@ -11,7 +11,6 @@ import { transactionCapabilitiesService } from '../transaction/transaction.capab
 import { fulfillmentResolver } from '../fulfillment/fulfillment.resolver';
 import { publicationService } from './publication.service';
 import { ATTRIBUTE_REGISTRY } from '../taxonomy/attribute.registry';
-import { CONDITION_SCHEMES } from '../taxonomy/condition.schemes';
 import { PublicationDraftState } from './publication.types';
 
 describe('Publication System & Schema Resolvers', () => {

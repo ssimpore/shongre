@@ -4,7 +4,7 @@
  */
 
 import { UserProfile } from '../../types';
-import { ConversationCapabilities, ConversationPreview } from './messaging.types';
+import { ConversationCapabilities } from './messaging.types';
 
 export interface ResolveCapabilitiesParams {
   viewer: UserProfile | null;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, CheckCircle2, AlertCircle, RefreshCw, X, ShieldCheck } from 'lucide-react';
+import { Smartphone, CheckCircle2, AlertCircle, RefreshCw, X } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { authService } from '../../../domains/auth/auth.service';
 import { Button } from '../../../design-system/primitives/Button';

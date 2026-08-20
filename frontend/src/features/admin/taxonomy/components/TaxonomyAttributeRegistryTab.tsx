@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { TaxonomyAttribute, AttributeDataType } from '../../../../domains/taxonomy/taxonomy.types';
+import { TaxonomyAttribute } from '../../../../domains/taxonomy/taxonomy.types';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
 import { Button } from '../../../../design-system/primitives/Button';
-import { Input } from '../../../../design-system/primitives/FormField';
-import { Plus, Search, Filter, Layers, Edit2, Archive, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Filter, Layers, Edit2  } from 'lucide-react';
 import { AttributeEditModal } from './modals/AttributeEditModal';
 import { plural } from '../../../../utilities/formatters';
 import { useTranslation } from '../../../../i18n/I18nProvider';

@@ -5,11 +5,11 @@ import {
   ArrowRight,
   ChevronRight,
   Layers,
-  TrendingUp,
+  
   Tag,
   Shirt,
   Home,
-  Bike,
+  Bike
 } from 'lucide-react';
 import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
 import { Image } from '../../../design-system/primitives/Image';

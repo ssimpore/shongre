@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Sliders,
@@ -8,13 +8,13 @@ import {
   Layers,
   Clock,
   ExternalLink,
-  ShieldCheck,
+  
   CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  Cpu,
-  Building,
-  Key,
+  
+  
+  
+  Building
+  
 } from 'lucide-react';
 import { providerService } from '../../../domains/providers/provider.service';
 import { getCategoryMetadata, getCapabilityMetadata } from '../../../domains/providers/provider-capabilities';
@@ -25,8 +25,6 @@ import { ProviderAuditLogsTab } from './components/ProviderAuditLogsTab';
 import { ProviderImpactModal } from './components/ProviderImpactModal';
 import { Button } from '../../../design-system/primitives/Button';
 import { StatePanel } from '../../../design-system/primitives/StatePanel';
-import { Badge } from '../../../design-system/primitives/Badge';
-import { useToast } from '../../../app/providers/ToastProvider';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
 type DetailTab = 'configuration' | 'markets' | 'health' | 'dependencies' | 'audit';
@@ -34,8 +32,6 @@ type DetailTab = 'configuration' | 'markets' | 'health' | 'dependencies' | 'audi
 export const AdminProviderDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { providerId } = useParams<{ providerId: string }>();
-  const navigate = useNavigate();
-  const toast = useToast();
   const [activeTab, setActiveTab] = useState<DetailTab>('configuration');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -49,7 +45,6 @@ export const AdminProviderDetailPage: React.FC = () => {
 
   const configuration = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = refreshTrigger;
     return providerId ? providerService.getConfiguration(providerId) : null;
   }, [providerId, refreshTrigger]);
 

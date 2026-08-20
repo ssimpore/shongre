@@ -33,7 +33,6 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
   private statusListeners = new Set<(status: RealtimeConnectionStatus) => void>();
   private conversationListeners = new Map<string, Set<RealtimeEventHandler>>();
   private inboxListeners = new Map<string, Set<RealtimeEventHandler>>();
-  private typingTimers = new Map<string, NodeJS.Timeout>();
 
   getConnectionStatus(): RealtimeConnectionStatus {
     return this.status;

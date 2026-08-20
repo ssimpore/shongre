@@ -4,12 +4,12 @@ import {
   Eye,
   MessageSquare,
   DollarSign,
-  Users,
-  Sparkles,
+  
+  
   ArrowUpRight,
   BarChart2,
-  Package,
-  FileText,
+  
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { listingRepository } from '../../repositories/listing.repository';
@@ -44,8 +44,6 @@ export const ProDashboardPage: React.FC = () => {
   }, [currentUser?.id]);
 
   const totalViews = listings.reduce((acc, l) => acc + (l.viewsCount ?? l.viewCount ?? 0), 0);
-  const activeCount = listings.filter((l) => l.status === 'active').length;
-  const soldCount = listings.filter((l) => l.status === 'sold').length;
 
   const weeklyStats = [
     { day: 'Lun', views: 240, leads: 12 },

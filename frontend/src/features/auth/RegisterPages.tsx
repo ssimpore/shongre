@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   User,
   Briefcase,
@@ -9,14 +9,14 @@ import {
   Building2,
   MapPin,
   Mail,
-  Lock,
+  
   Phone,
   AlertCircle,
   Sparkles,
-  Store,
-  FileText,
-  ChevronRight,
-  CheckCircle2,
+  
+  
+  ChevronRight
+  
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -24,11 +24,10 @@ import { Button } from '../../design-system/primitives/Button';
 import { PasswordField } from './components/PasswordField';
 import { AuthLayout } from './components/AuthLayout';
 import { AccountTypeSelector } from './components/AccountTypeSelector';
-import { routes } from '../../configuration/routes';
 import {
   SUPPORTED_MARKETS,
-  validateBusinessIdentifier,
-  formatBusinessIdentifier,
+  validateBusinessIdentifier
+  
 } from '../../configuration/market.config';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';

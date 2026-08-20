@@ -5,10 +5,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Clock,
-  Zap,
-  RotateCw,
-  Terminal,
+  
+  
+  
+  Terminal
 } from 'lucide-react';
 import {
   Provider,

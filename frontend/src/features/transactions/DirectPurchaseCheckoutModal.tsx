@@ -14,15 +14,14 @@ import {
   Lock,
   ChevronRight,
   AlertCircle,
-  Package,
-  Store,
+  
+  
   QrCode,
   Minus,
-  Plus,
-  RefreshCw,
+  Plus
+  
 } from 'lucide-react';
 import { Listing } from '../../types';
-import { DeliveryQuote } from '../../domains/publication/publication.types';
 import { fulfillmentResolver } from '../../domains/fulfillment/fulfillment.resolver';
 import { listingRepository } from '../../repositories/listing.repository';
 import { transactionService } from '../../domains/transaction/transaction.service';
@@ -30,8 +29,6 @@ import { Modal } from '../../design-system/primitives/Modal';
 import { Button } from '../../design-system/primitives/Button';
 import { SelectableCard } from '../../design-system/primitives/SelectableCard';
 import { Input, FormField } from '../../design-system/primitives/FormField';
-import { Badge } from '../../design-system/primitives/Badge';
-import { storageService } from '../../services/storage.service';
 import { providerService } from '../../domains/providers/provider.service';
 import { formatPrice } from '../../utilities/formatters';
 import { useAuth } from '../../app/providers/AuthProvider';

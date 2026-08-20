@@ -1,5 +1,5 @@
 import { isProSeller } from '../domains/user/user.domain';
-import { UserProfile, Permission, PlatformRole } from '../types';
+import { UserProfile, Permission } from '../types';
 import { ROLE_DEFINITIONS, normalizePlatformRole } from './roles.config';
 import { PRO_PLANS, ProPlan } from '../configuration/plans.config';
 

@@ -4,13 +4,13 @@ import React, { useState, useMemo } from 'react';
 import {
   Search,
   SlidersHorizontal,
-  Grid,
-  List as ListIcon,
+  
+  List as 
   X,
   PackageOpen,
   ArrowUpDown,
-  Tag,
-  PlusCircle,
+  
+  PlusCircle
 } from 'lucide-react';
 
 import { Listing, UserProfile } from '../../../types';
@@ -19,7 +19,7 @@ import { ListingCard } from '../../../design-system/primitives/ListingCard';
 import { Button } from '../../../design-system/primitives/Button';
 import { NoResultsFound } from '../../../design-system/primitives/NoResultsFound';
 import { usePublishCta } from '../../../security/usePublishCta';
-import { DropdownMenu, DropdownOption } from '../../../design-system/primitives/DropdownMenu';
+import { DropdownMenu } from '../../../design-system/primitives/DropdownMenu';
 import { ViewModeToggle } from '../../../design-system/primitives/ViewModeToggle';
 import { useTranslation } from '../../../i18n/I18nProvider';
 

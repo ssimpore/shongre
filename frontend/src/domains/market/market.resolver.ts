@@ -1,9 +1,9 @@
 import {
   Market,
   MarketConfiguration,
-  MarketOverrides,
+  
   SettingResolution,
-  MarketInheritanceMetrics,
+  MarketInheritanceMetrics
 } from './market.types';
 import { FR_CANONICAL_CONFIG } from './market.defaults';
 

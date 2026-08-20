@@ -6,9 +6,9 @@ import {
   Mail,
   CheckCircle2,
   TrendingUp,
-  AlertCircle,
-  Plus,
-  Send,
+  
+  
+  Send
 } from 'lucide-react';
 import { CrmActivity, ActivityType } from '../../../../domains/crm/crm.types';
 import { Button } from '../../../../design-system/primitives/Button';

@@ -8,7 +8,6 @@ import { TAXONOMY } from '../../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../../design-system/primitives/CategoryIcon';
 import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
-import { routes } from '../../../configuration/routes';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface CategoryVisualMeta {

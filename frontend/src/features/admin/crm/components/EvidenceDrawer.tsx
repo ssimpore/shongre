@@ -1,7 +1,6 @@
 import React from 'react';
-import { ExternalLink, ShieldCheck, Sparkles, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { ExternalLink, ShieldCheck,  CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Drawer } from '../../../../design-system/primitives/Modal';
-import { Button } from '../../../../design-system/primitives/Button';
 import { Badge } from '../../../../design-system/primitives/Badge';
 import { ProspectResearchCandidate } from '../../../../domains/crm/crm.types';
 import { useTranslation } from '../../../../i18n/I18nProvider';

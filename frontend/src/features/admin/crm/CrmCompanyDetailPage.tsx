@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  Building2,
+  
   Sparkles,
   ExternalLink,
-  ShieldCheck,
+  
   TrendingUp,
-  Clock,
-  PlusCircle,
-  Mail,
-  Phone,
-  CheckCircle2,
-  Users,
+  
+  
+  
+  
+  
+  Users
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
 import { StatePanel } from '../../../design-system/primitives/StatePanel';
@@ -32,7 +32,6 @@ import { crmService } from '../../../domains/crm/crm.service';
 import { ActivityTimeline } from './components/ActivityTimeline';
 import { EnrichmentDiffModal } from './components/EnrichmentDiffModal';
 import { useToast } from '../../../app/providers/ToastProvider';
-import { formatDate } from '../../../utilities/formatters';
 import { Skeleton } from '../../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../../i18n/I18nProvider';
 

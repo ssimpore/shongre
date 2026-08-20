@@ -5,14 +5,13 @@ import {
   Plus,
   ArrowUp,
   ArrowDown,
-  CheckCircle2,
-  AlertCircle,
+  
+  
   Archive,
-  Layers,
+  Layers
 } from 'lucide-react';
 import { TaxonomyNode } from '../../../../domains/taxonomy/taxonomy.types';
 import { CategoryIcon } from '../../../../design-system/primitives/CategoryIcon';
-import { getTaxonomyLabel } from '../../../../domains/taxonomy/taxonomy.service';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 
 export interface TaxonomyHierarchyTreeProps {

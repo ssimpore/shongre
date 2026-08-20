@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TrendingUp,
+  
   PlusCircle,
   ChevronRight,
   ChevronLeft,
-  DollarSign,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  XCircle,
+  
+  Building2
+  
+  
+  
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { FormField, Input, Select } from '../../../design-system/primitives/FormField';
 import { crmRepository } from '../../../repositories/crm.repository';
@@ -24,7 +23,7 @@ export const CrmPipelinePage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // New Opportunity Form

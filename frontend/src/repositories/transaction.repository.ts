@@ -1,8 +1,6 @@
 import { Transaction, TransactionStatus, TransactionDispute, SellerPayoutRequest } from '../types';
 import { storageService } from '../services/storage.service';
 import { transactionService } from '../domains/transaction/transaction.service';
-import { listingRepository } from './listing.repository';
-import { auditService } from '../security/audit.service';
 
 export interface ITransactionRepository {
   getTransactions(userId: string): Promise<Transaction[]>;
@@ -207,7 +205,6 @@ export class MockTransactionRepository implements ITransactionRepository {
     if (!tx) throw new Error('Transaction non trouvée');
 
     const now = new Date().toISOString();
-    const currentUser = storageService.getCurrentUser();
 
     if (action === 'full_refund') {
       tx.status = 'refunded';

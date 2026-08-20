@@ -3,14 +3,14 @@ import {
   Mail,
   PlusCircle,
   Eye,
-  Send,
-  Calendar,
-  Users,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  BarChart3,
-  X,
+  Send
+  
+  
+  
+  
+  
+  
+  
 } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';

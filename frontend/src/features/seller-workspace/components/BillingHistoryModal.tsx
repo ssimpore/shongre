@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { FileText, Download, CheckCircle2, CreditCard, Sparkles, Filter, Calendar } from 'lucide-react';
+import { FileText, Download     } from 'lucide-react';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';
 import { useToast } from '../../../app/providers/ToastProvider';
-import { formatPrice, formatRelativeDate } from '../../../utilities/formatters';
+import { formatPrice } from '../../../utilities/formatters';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface BillingHistoryModalProps {

@@ -3,17 +3,16 @@ import { Link } from 'react-router-dom';
 import {
   Home as HomeIcon,
   ChevronRight,
-  Search,
-  Layers,
-  ArrowRight,
-  Sparkles,
-  Tag,
-  CheckCircle2,
+  Search
+  
+  
+  
+  
+  
 } from 'lucide-react';
 import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
-import { Category, SubCategory } from '../../types';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 

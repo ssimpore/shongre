@@ -4,8 +4,7 @@
  * transaction modes, fulfillment capabilities, and draft lifecycles.
  */
 
-import { TaxonomyNode, TaxonomyAttribute, ConditionOption, ListingFamily, FulfillmentMode } from '../taxonomy/taxonomy.types';
-import { UserProfile, PlatformRole } from '../../types';
+import {    ListingFamily, FulfillmentMode } from '../taxonomy/taxonomy.types';
 
 export type ListingMarketStatus =
   | 'active'

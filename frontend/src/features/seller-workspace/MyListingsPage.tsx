@@ -4,19 +4,19 @@ import {
   PlusCircle,
   List,
   Eye,
-  Edit2,
+  
   Trash2,
-  CheckCircle,
-  Sparkles,
+  
+  
   Zap,
-  Clock,
-  ExternalLink,
+  
+  
   Download,
   Upload,
-  Globe,
+  Globe
 } from 'lucide-react';
 import { listingRepository } from '../../repositories/listing.repository';
-import { Listing, ListingStatus } from '../../types';
+import { Listing } from '../../types';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { marketService } from '../../domains/market/market.service';

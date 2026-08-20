@@ -1,4 +1,4 @@
-import { SecurityAuditLog, PlatformRole } from '../types';
+import { SecurityAuditLog } from '../types';
 
 const AUDIT_STORAGE_KEY = 'shongre_security_audit_logs_v1';
 

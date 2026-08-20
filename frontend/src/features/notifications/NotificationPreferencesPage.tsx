@@ -5,10 +5,10 @@ import {
   Bell,
   Mail,
   Smartphone,
-  ShieldCheck,
+  
   Save,
-  CheckCircle2,
-  Lock,
+  
+  Lock
 } from 'lucide-react';
 import { NotificationPreferences } from '../../domains/notifications/notification.types';
 import { notificationRepository } from '../../repositories/notification.repository';

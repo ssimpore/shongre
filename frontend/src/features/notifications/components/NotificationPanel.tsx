@@ -4,7 +4,6 @@ import { Bell, Check, ExternalLink, Settings } from 'lucide-react';
 import { Notification } from '../../../domains/notifications/notification.types';
 import { notificationCatalogService } from '../../../domains/notifications/notification.catalog';
 import { NotificationItemCard } from './NotificationItemCard';
-import { Button } from '../../../design-system/primitives/Button';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
 interface NotificationPanelProps {

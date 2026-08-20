@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Mail, KeyRound, ArrowRight, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Mail, KeyRound, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { authService } from '../../domains/auth/auth.service';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { PasswordField } from './components/PasswordField';
 import { AuthLayout } from './components/AuthLayout';
-import { routes } from '../../configuration/routes';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 

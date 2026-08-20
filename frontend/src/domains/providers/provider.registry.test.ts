@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   CANONICAL_PROVIDER_REGISTRY,
-  getProviderById,
+  
   getProvidersByCategory,
-  getProvidersByCapability,
+  getProvidersByCapability
 } from './provider.registry';
 import { PROVIDER_CATEGORIES, PROVIDER_CAPABILITIES } from './provider-capabilities';
 

@@ -2,25 +2,22 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sliders,
-  ShieldCheck,
-  AlertTriangle,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  CheckCircle2,
-  HelpCircle,
-  Zap,
+  ShieldCheck
+  
+  
+  
+  
+  
+  
+  
 } from 'lucide-react';
-import { Provider, ProviderCapability, ProviderConfiguration } from '../../../../domains/providers/provider.types';
+import { Provider,  ProviderConfiguration } from '../../../../domains/providers/provider.types';
 import { providerService } from '../../../../domains/providers/provider.service';
 import {
   getAllCapabilities,
-  getCapabilityMetadata,
-  getCategoryMetadata,
+  
+  getCategoryMetadata
 } from '../../../../domains/providers/provider-capabilities';
-import { Button } from '../../../../design-system/primitives/Button';
-import { Badge } from '../../../../design-system/primitives/Badge';
-import { useToast } from '../../../../app/providers/ToastProvider';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderRoutingManagerProps {
@@ -35,7 +32,6 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
   onRefresh,
 }) => {
   const { t } = useTranslation();
-  const toast = useToast();
   const [selectedMarket, setSelectedMarket] = useState<string>('FR');
 
   const capabilitiesWithMultipleProviders = useMemo(() => {
@@ -51,16 +47,6 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
       };
     });
   }, [providers, configurations, selectedMarket]);
-
-  const handleSetPriority = async (providerId: string, newPriority: number) => {
-    try {
-      await providerService.saveConfiguration(providerId, { priority: newPriority });
-      toast.success(`Priorité mise à jour pour le prestataire.`);
-      onRefresh();
-    } catch (e: any) {
-      toast.error(e.message || 'Erreur lors de la mise à jour de la priorité.');
-    }
-  };
 
   return (
     <div className="space-y-4">

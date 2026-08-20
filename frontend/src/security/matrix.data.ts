@@ -1,4 +1,4 @@
-import { PlatformRole, Permission } from '../types';
+import { PlatformRole } from '../types';
 import { ALL_PERMISSIONS, PermissionDefinition } from './permissions';
 import { ROLE_DEFINITIONS } from './roles.config';
 

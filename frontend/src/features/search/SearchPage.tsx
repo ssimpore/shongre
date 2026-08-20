@@ -1,27 +1,17 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { useSearchParams,  useParams } from 'react-router-dom';
 import {
-  Search,
   SlidersHorizontal,
-  Grid,
-  List as ListIcon,
-  Map as MapIcon,
-  MapPin,
   Bookmark,
-  Sparkles,
   ArrowUpDown,
-  Truck,
-  ShieldCheck,
   Tag,
-  Check,
-  ChevronDown,
   PanelLeftClose,
   PanelLeft,
   Layers,
 } from 'lucide-react';
 import { listingRepository } from '../../repositories/listing.repository';
-import { Listing, SearchFilters, ListingCondition } from '../../types';
-import { TAXONOMY, CONDITION_OPTIONS } from '../../domains/taxonomy/taxonomy.data';
+import { Listing, SearchFilters } from '../../types';
+import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
 import { taxonomyService, getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
@@ -38,7 +28,6 @@ import { storageService } from '../../services/storage.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { FilterChip } from '../../design-system/primitives/FilterChip';
 import { CategoryFilterRail } from '../../design-system/primitives/CategoryFilterRail';
-import { SEARCH_PLACEHOLDER } from '../../configuration/search.config';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { DropdownMenu, DropdownOption } from '../../design-system/primitives/DropdownMenu';
 import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
@@ -48,8 +37,7 @@ import { useTranslation } from '../../i18n/I18nProvider';
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { location: userLocation, openLocationModal, resetLocation } = useMarketLocation();
+  const { location: userLocation, resetLocation } = useMarketLocation();
   const toast = useToast();
 
   const urlViewParam = searchParams.get('view') as 'grid' | 'list' | 'map' | null;
@@ -108,7 +96,7 @@ export const SearchPage: React.FC = () => {
   const marketCode = searchParams.get('market') || storageService.getActiveMarketCode() || 'FR';
 
   // Temporary filter state for mobile drawer / inputs
-  const [tempQuery, setTempQuery] = useState(query);
+  const [, setTempQuery] = useState(query);
 
   useEffect(() => {
     setTempQuery(query);

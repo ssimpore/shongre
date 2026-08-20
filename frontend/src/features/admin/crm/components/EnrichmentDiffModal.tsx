@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Check, X, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Sparkles    } from 'lucide-react';
 import { Modal } from '../../../../design-system/primitives/Modal';
 import { Button } from '../../../../design-system/primitives/Button';
 import { CrmCompany, CompanyEnrichmentDiff } from '../../../../domains/crm/crm.types';

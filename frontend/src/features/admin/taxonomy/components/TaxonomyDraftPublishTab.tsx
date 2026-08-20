@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
 import { Button } from '../../../../design-system/primitives/Button';
-import { FormField, Input } from '../../../../design-system/primitives/FormField';
 import { useToast } from '../../../../app/providers/ToastProvider';
 import { useAuth } from '../../../../app/providers/AuthProvider';
 import { formatLogTimestamp } from '../../../../utilities/formatters';
 import {
   Send,
   RotateCcw,
-  CheckCircle2,
+  
   AlertCircle,
   GitCommit,
-  Clock,
+  
   History,
-  Layers,
-  FileDiff,
+  
+  FileDiff
 } from 'lucide-react';
 import { ConfirmModal } from '../../../../design-system/primitives/ConfirmModal';
 import { useTranslation } from '../../../../i18n/I18nProvider';

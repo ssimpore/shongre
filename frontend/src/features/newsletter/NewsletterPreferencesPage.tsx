@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, CheckCircle2, ShieldCheck, AlertCircle, Save, LogOut } from 'lucide-react';
+import { Mail,  ShieldCheck,  Save } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
@@ -10,7 +10,6 @@ import { newsletterTopicsService } from '../../domains/newsletter/newsletter.top
 import { newsletterCapabilitiesService } from '../../domains/newsletter/newsletter.capabilities';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { NewsletterTopicSelector } from './components/NewsletterTopicSelector';
-import { formatDate } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
 

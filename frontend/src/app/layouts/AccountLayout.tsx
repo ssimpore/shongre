@@ -10,8 +10,8 @@ import {
   MessageSquare,
   Bell,
   ShoppingBag,
-  CreditCard,
-  MapPin,
+  
+  
   Shield,
   Settings,
   Briefcase,
@@ -19,7 +19,7 @@ import {
   Sparkles,
   LogOut,
   Headphones,
-  Mail,
+  Mail
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 import { useNotifications } from '../providers/NotificationProvider';
@@ -29,7 +29,7 @@ import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, role, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
   const navigate = useNavigate();
 

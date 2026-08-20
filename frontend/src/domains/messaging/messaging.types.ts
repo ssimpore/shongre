@@ -4,7 +4,7 @@
  * participants, real-time subscriptions, and delivery statuses.
  */
 
-import { UserProfile, ListingStatus, DeliveryType } from '../../types';
+import {  ListingStatus, DeliveryType } from '../../types';
 
 export type ConversationType = 'listing' | 'transaction' | 'support' | 'general';
 

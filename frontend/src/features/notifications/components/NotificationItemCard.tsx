@@ -2,7 +2,7 @@ import React from 'react';
 import {
   MessageSquare,
   ShoppingBag,
-  CheckCircle2,
+  
   AlertCircle,
   ShieldCheck,
   Sparkles,
@@ -10,8 +10,8 @@ import {
   Package,
   Star,
   Tag,
-  Clock,
-  ArrowRight,
+  
+  ArrowRight
 } from 'lucide-react';
 import { Notification, NotificationCategory } from '../../../domains/notifications/notification.types';
 import { formatRelativeDate } from '../../../utilities/formatters';

@@ -5,11 +5,11 @@ import {
   MapPin,
   Truck,
   ShieldCheck,
-  Globe,
-  FileText,
+  
+  
   RotateCcw,
   CheckCircle2,
-  ExternalLink,
+  ExternalLink
 } from 'lucide-react';
 import { UserProfile } from '../../../types';
 import { useTranslation } from '../../../i18n/I18nProvider';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, QrCode, Key, Copy, Check, X, AlertCircle } from 'lucide-react';
+import { ShieldCheck,   Copy, Check, X, AlertCircle } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { authService } from '../../../domains/auth/auth.service';
 import { Button } from '../../../design-system/primitives/Button';

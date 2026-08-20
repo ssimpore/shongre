@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { ChevronDown, Check,  X } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface DropdownOption<T = string> {

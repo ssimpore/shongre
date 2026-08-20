@@ -8,20 +8,19 @@ import {
   Clock,
   ShieldCheck,
   Globe,
-  ArrowUpRight,
+  
   Activity,
-  Zap,
-  Sliders,
+  
+  
   Layers,
-  ArrowRight,
+  ArrowRight
 } from 'lucide-react';
 import { Provider, ProviderConfiguration } from '../../../../domains/providers/provider.types';
 import { providerService } from '../../../../domains/providers/provider.service';
 import {
-  PROVIDER_CATEGORIES,
-  getCapabilityMetadata,
+  PROVIDER_CATEGORIES
+  
 } from '../../../../domains/providers/provider-capabilities';
-import { Badge } from '../../../../design-system/primitives/Badge';
 import { Button } from '../../../../design-system/primitives/Button';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 

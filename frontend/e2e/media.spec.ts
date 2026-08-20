@@ -21,6 +21,8 @@ const OVERSHOOT_BUDGET = 2.5;
 
 interface PaintedImage {
   slot: number;
+  /** Device pixels the slot actually paints: CSS width x devicePixelRatio. */
+  painted: number;
   chosen: number;
   hasSrcSet: boolean;
   hasSizes: boolean;
@@ -37,6 +39,7 @@ async function paintedImages(page: import('@playwright/test').Page): Promise<Pai
       })
       .map((img) => ({
         slot: Math.round(img.getBoundingClientRect().width),
+        painted: Math.round(img.getBoundingClientRect().width * (window.devicePixelRatio || 1)),
         chosen: Number((img.currentSrc.match(/[?&]w=(\d+)/) || [])[1] || 0),
         hasSrcSet: img.hasAttribute('srcset'),
         hasSizes: img.hasAttribute('sizes'),
@@ -73,14 +76,18 @@ for (const viewport of [
             undeclared.map((i) => `  ${i.slot}px slot — ${i.src}`).join('\n'),
         ).toEqual([]);
 
-        // devicePixelRatio is 1 in the default Playwright context, so the budget
-        // is measured against CSS pixels here; the multiplier absorbs the step
-        // granularity of the ladder itself.
-        const oversized = images.filter((i) => i.chosen > i.slot * OVERSHOOT_BUDGET);
+        // Against device pixels, not CSS pixels. Playwright's Desktop Safari
+        // profile runs at devicePixelRatio 2, so a 96px slot legitimately needs
+        // a 192px source and the ladder's next rung up is the right choice —
+        // measuring in CSS pixels failed webkit for behaving correctly. The
+        // multiplier absorbs the step granularity of the ladder itself.
+        const oversized = images.filter((i) => i.chosen > i.painted * OVERSHOOT_BUDGET);
         expect(
           oversized,
           `sources overshooting their slot by more than ${OVERSHOOT_BUDGET}x on ${route.name}:\n` +
-            oversized.map((i) => `  ${i.slot}px slot got ${i.chosen}w — ${i.src}`).join('\n'),
+            oversized
+              .map((i) => `  ${i.slot}px slot needs ${i.painted}px, got ${i.chosen}w — ${i.src}`)
+              .join('\n'),
         ).toEqual([]);
       });
     }

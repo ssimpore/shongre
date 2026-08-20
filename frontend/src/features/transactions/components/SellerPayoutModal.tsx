@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Landmark, ArrowUpRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
+import { Landmark,  CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 import { UserProfile, SellerPayoutRequest } from '../../../types';
 import { TRANSACTION_CONFIG } from '../../../configuration/transaction.config';
 import { transactionService } from '../../../domains/transaction/transaction.service';
@@ -27,8 +27,8 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   const { t } = useTranslation();
   const [payoutType, setPayoutType] = useState<'standard' | 'instant'>('standard');
   const [amountStr, setAmountStr] = useState(availableBalance > 0 ? availableBalance.toFixed(2) : '0.00');
-  const [bankIban, setBankIban] = useState('FR76 3000 4019 8291 8291 0029 821');
-  const [bankName, setBankName] = useState('BNP Paribas');
+  const [bankIban, ] = useState('FR76 3000 4019 8291 8291 0029 821');
+  const [bankName, ] = useState('BNP Paribas');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

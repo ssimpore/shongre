@@ -3,16 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import {
   Bell,
   Check,
-  Settings,
-  MessageSquare,
-  ShoppingBag,
-  Tag,
-  Shield,
-  Filter,
+  Settings
 } from 'lucide-react';
 import {
   Notification,
-  NotificationFilterTab,
+  NotificationFilterTab
 } from '../../domains/notifications/notification.types';
 import { notificationService, NotificationDateGroup } from '../../domains/notifications/notification.service';
 import { notificationCatalogService } from '../../domains/notifications/notification.catalog';
@@ -20,7 +15,6 @@ import { notificationRepository } from '../../repositories/notification.reposito
 import { useNotifications } from '../../app/providers/NotificationProvider';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { Button } from '../../design-system/primitives/Button';
-import { Badge } from '../../design-system/primitives/Badge';
 import { NotificationItemCard } from './components/NotificationItemCard';
 import { NotificationDemoToolbar } from './components/NotificationDemoToolbar';
 import { useTranslation } from '../../i18n/I18nProvider';
@@ -31,7 +25,7 @@ export const NotificationsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const currentUserId = currentUser ? currentUser.id : 'user-thomas';
 
-  const { unreadCount, markAsRead, markAllAsRead, refresh: refreshProvider } = useNotifications();
+  const { unreadCount, markAsRead, markAllAsRead} = useNotifications();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<NotificationFilterTab>('all');
@@ -43,7 +37,7 @@ export const NotificationsPage: React.FC = () => {
     try {
       const res = await notificationRepository.getNotifications({
         recipientId: currentUserId,
-        limit: 100,
+        limit: 100
       });
       setNotifications(res.notifications);
     } finally {

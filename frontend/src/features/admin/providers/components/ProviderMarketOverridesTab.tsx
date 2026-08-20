@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Globe,
-  CheckCircle2,
-  AlertCircle,
-  RotateCcw,
-  Sliders,
-  Check,
-  X,
-  Sparkles,
+  
+  
+  
+  RotateCcw
+  
+  
+  
+  
 } from 'lucide-react';
 import {
   Provider,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, CheckCircle2 } from 'lucide-react';
+import { Calendar   } from 'lucide-react';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { FormField, Input } from '../../../design-system/primitives/FormField';

@@ -2,20 +2,19 @@ import React, { useState } from 'react';
 import {
   Sparkles,
   Search,
-  Building2,
-  ExternalLink,
+  
+  
   CheckCircle2,
   AlertCircle,
   PlusCircle,
-  ShieldCheck,
+  
   Eye,
   CheckSquare,
-  Square,
-  ArrowRight,
-  Filter,
+  Square
+  
+  
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
 import { prospectResearchService } from '../../../services/prospect-research.service';
 import { crmRepository } from '../../../repositories/crm.repository';
 import { crmService } from '../../../domains/crm/crm.service';

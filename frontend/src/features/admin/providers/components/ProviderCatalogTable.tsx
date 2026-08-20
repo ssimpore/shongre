@@ -2,38 +2,36 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search,
-  Filter,
+  
   CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  Clock,
-  Shield,
-  Key,
-  ExternalLink,
+  
+  
+  
+  
+  
+  
   ChevronRight,
-  Sparkles,
-  Sliders,
-  Check,
+  
+  
+  
   X,
   Play,
-  RotateCcw,
+  RotateCcw
 } from 'lucide-react';
 import {
   Provider,
-  ProviderCategory,
+  
   ProviderConfiguration,
   ProviderEnvironment,
-  ProviderHealthStatus,
-  ProviderStatus,
+  ProviderHealthStatus
+  
 } from '../../../../domains/providers/provider.types';
 import {
   PROVIDER_CATEGORIES,
-  getCategoryMetadata,
-  getCapabilityMetadata,
+  getCategoryMetadata
+  
 } from '../../../../domains/providers/provider-capabilities';
 import { Button } from '../../../../design-system/primitives/Button';
-import { Badge } from '../../../../design-system/primitives/Badge';
-import { Input, Select } from '../../../../design-system/primitives/FormField';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderCatalogTableProps {

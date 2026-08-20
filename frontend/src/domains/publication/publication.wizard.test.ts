@@ -1,6 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { publicationService } from './publication.service.js';
-import { publicationResolver } from './publication.resolver.js';
 import { marketService } from '../market/market.service.js';
 import { PublicationDraftState } from './publication.types.js';
 

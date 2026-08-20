@@ -6,12 +6,12 @@
 
 import {
   TimelineItem,
-  UserTimelineMessage,
-  SystemTimelineEvent,
+  
+  
   ConversationPreview,
-  InboxFilterTab,
+  InboxFilterTab
 } from './messaging.types';
-import { Message, Conversation } from '../../types';
+import { Message } from '../../types';
 
 export interface TimelineDateGroup {
   dateLabel: string;

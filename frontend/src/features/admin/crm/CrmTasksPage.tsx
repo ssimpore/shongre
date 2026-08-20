@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Clock,
+  
   PlusCircle,
-  CheckCircle2,
-  AlertCircle,
-  Calendar,
-  User,
+  
+  
+  
+  
   CheckSquare,
-  Square,
+  Square
 } from 'lucide-react';
 import { Button } from '../../../design-system/primitives/Button';
 import { Badge } from '../../../design-system/primitives/Badge';

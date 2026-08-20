@@ -1,23 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Globe,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  HelpCircle,
-  ArrowRight,
-  Filter,
-  Layers,
+  Globe
+  
+  
+  
+  
+  
+  
+  
 } from 'lucide-react';
 import { ProviderCategory } from '../../../../domains/providers/provider.types';
-import { providerService, MarketCoverageRow } from '../../../../domains/providers/provider.service';
+import { providerService } from '../../../../domains/providers/provider.service';
 import {
   PROVIDER_CATEGORIES,
   getCategoryMetadata,
 } from '../../../../domains/providers/provider-capabilities';
-import { Badge } from '../../../../design-system/primitives/Badge';
-import { Button } from '../../../../design-system/primitives/Button';
 import { useTranslation } from '../../../../i18n/I18nProvider';
 
 interface ProviderMarketMatrixProps {
@@ -144,7 +142,6 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                       const isDefaultMarket = code === 'FR';
                       const isInherited = cell.isInherited && !isDefaultMarket;
                       const isCustomized = !cell.isInherited && !isDefaultMarket && cell.isAvailable;
-                      const isUnavailable = !cell.isAvailable;
 
                       return (
                         <td

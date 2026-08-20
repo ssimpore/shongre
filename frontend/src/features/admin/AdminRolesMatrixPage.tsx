@@ -1,31 +1,29 @@
 import React, { useState, useMemo } from 'react';
 import {
-  KeyRound,
-  Shield,
+  
+  
   Search,
   Check,
   X,
   AlertTriangle,
-  Info,
-  Filter,
-  Users,
+  
+  
+  
   ShieldCheck,
   ChevronDown,
-  ChevronRight,
-  Zap,
+  ChevronRight
+  
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { getRolePermissionMatrix, getRoleStats, MatrixCategoryGroup } from '../../security/matrix.data';
 import { ROLE_DEFINITIONS, ALL_PLATFORM_ROLES } from '../../security/roles.config';
-import { PlatformRole, Permission } from '../../types';
-import { Button } from '../../design-system/primitives/Button';
 import { plural } from '../../utilities/formatters';
 import { roleLabel } from '../../security/roles.config';
 import { useTranslation } from '../../i18n/I18nProvider';
 
 export const AdminRolesMatrixPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, platformRole, switchDemoUser } = useAuth();
+  const { currentUser, platformRole } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showSensitiveOnly, setShowSensitiveOnly] = useState(false);

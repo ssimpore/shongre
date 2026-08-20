@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Check, Sparkles, ThumbsUp, ShieldCheck } from 'lucide-react';
+import { Star, Check, Sparkles  } from 'lucide-react';
 import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { Textarea } from '../../../design-system/primitives/FormField';

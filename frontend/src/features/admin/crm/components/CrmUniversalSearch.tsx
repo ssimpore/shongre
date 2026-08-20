@@ -17,7 +17,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UniversalSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

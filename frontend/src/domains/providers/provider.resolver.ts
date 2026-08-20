@@ -5,14 +5,14 @@
  */
 
 import {
-  Provider,
+  
   ProviderCapability,
   ProviderConfiguration,
   ProviderHealthStatus,
   EffectiveProviderResolution,
   CapabilityHealthResult,
   ProviderImpactAnalysis,
-  ProviderRoutingRule,
+  ProviderRoutingRule
 } from './provider.types';
 import { CANONICAL_PROVIDER_REGISTRY, getProviderById } from './provider.registry';
 import { getCapabilityMetadata } from './provider-capabilities';
@@ -106,7 +106,7 @@ export class ProviderResolver {
     configurations: Record<string, ProviderConfiguration>;
     routingRules?: Record<string, ProviderRoutingRule>;
   }): EffectiveProviderResolution {
-    const { capability, marketCode = 'FR', configurations, routingRules = {} } = params;
+    const { capability, marketCode = 'FR', configurations } = params;
     const normMarket = marketCode.toUpperCase();
 
     // Find all providers registered for this capability

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Package, Truck, Store, ShieldCheck } from 'lucide-react';
+import { MapPin, Package, Truck, Store } from 'lucide-react';
 import { Listing } from '../../../types';
 import { fulfillmentResolver } from '../../../domains/fulfillment/fulfillment.resolver';
 import { useTranslation } from '../../../i18n/I18nProvider';

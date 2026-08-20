@@ -15,7 +15,7 @@ import {
   SellerEligibilityRules,
   ListingFamily,
 } from '../taxonomy/taxonomy.types';
-import { ListingIntent, PriceModel, PackageSizeTier } from './publication.types';
+import { ListingIntent, PriceModel } from './publication.types';
 import { marketService } from '../market/market.service';
 
 export interface ResolvedPublicationField {
@@ -60,7 +60,7 @@ export class PublicationResolver {
    * Resolves the full publication schema for a given taxonomy node and market context.
    */
   resolve(params: ResolvePublicationParams): ResolvedPublicationEngineSchema | null {
-    const { taxonomyNodeId, marketCode = 'FR', sellerRole, listingIntent, currentValues = {} } = params;
+    const { taxonomyNodeId, marketCode = 'FR', listingIntent, currentValues = {} } = params;
     const node = taxonomyService.getNode(taxonomyNodeId);
     if (!node) return null;
 

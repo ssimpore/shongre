@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, UploadCloud, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, UploadCloud } from 'lucide-react';
 import { Transaction, UserProfile } from '../../../types';
 import { TRANSACTION_CONFIG } from '../../../configuration/transaction.config';
 import { transactionService } from '../../../domains/transaction/transaction.service';

@@ -140,7 +140,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   children,
 }) => {
   const { t } = useTranslation();
-  const { currentUser, can, isSuspended, isPro } = useAuthorization();
+  const { currentUser, can, isSuspended } = useAuthorization();
   const location = useLocation();
 
   if (!currentUser) {

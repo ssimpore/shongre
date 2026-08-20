@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Clock, Shield, User, FileText } from 'lucide-react';
+import { Clock   } from 'lucide-react';
 import { providerService } from '../../../../domains/providers/provider.service';
 import { roleLabel } from '../../../../security/roles.config';
 import { useTranslation } from '../../../../i18n/I18nProvider';

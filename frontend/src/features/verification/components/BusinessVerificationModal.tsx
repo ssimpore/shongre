@@ -10,8 +10,8 @@ import {
   ArrowLeft,
   Search,
   Sparkles,
-  ShieldCheck,
-  Check,
+  ShieldCheck
+  
 } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { Button } from '../../../design-system/primitives/Button';
@@ -44,7 +44,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
   const [businessAddress, setBusinessAddress] = useState(currentUser?.businessAddress || '');
   const [city, setCity] = useState(currentUser?.city || 'Paris');
   const [postalCode, setPostalCode] = useState(currentUser?.postalCode || '75001');
-  const [country, setCountry] = useState(currentUser?.country || 'FR');
+  const [country, ] = useState(currentUser?.country || 'FR');
   
   const [legalRepName, setLegalRepName] = useState(currentUser?.name || '');
   const [legalRepRole, setLegalRepRole] = useState('Gérant / Président');

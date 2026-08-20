@@ -4,7 +4,7 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { Button } from '../../design-system/primitives/Button';
 import { Input, Textarea, FormField } from '../../design-system/primitives/FormField';
 import { Avatar } from '../../design-system/primitives/Badge';
-import { Check, Camera, Building2, MapPin, Globe, Phone, Mail } from 'lucide-react';
+import { Check,  Building2, MapPin, Globe, Phone } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
 
 export const ProStorefrontEditorPage: React.FC = () => {
