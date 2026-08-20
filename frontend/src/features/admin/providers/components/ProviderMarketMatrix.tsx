@@ -94,11 +94,11 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
           <table className="w-full text-left text-xs text-stone-700 border-collapse">
             <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b border-stone-200">
               <tr>
-                <th className="py-3 px-4 min-w-[220px]">{t('admin.providerMarketMatrix.fonctionnaliteCapacite')}</th>
+                <th scope="col" className="py-3 px-4 min-w-[220px]">{t('admin.providerMarketMatrix.fonctionnaliteCapacite')}</th>
                 {marketCodes.map((code) => {
                   const m = marketLabels[code];
                   return (
-                    <th
+                    <th scope="col"
                       key={code}
                       className={`py-3 px-3 text-center min-w-[140px] ${
                         m.isDefault ? 'bg-primary/5 text-primary border-x border-primary/20' : ''

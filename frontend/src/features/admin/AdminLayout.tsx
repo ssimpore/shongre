@@ -27,6 +27,7 @@ import { useAuthorization } from '../../security/useAuthorization';
 import { Image } from '../../design-system/primitives/Image';
 import { AppScrollRestoration } from '../../app/router/AppScrollRestoration';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { SkipLink } from '../../design-system/primitives/SkipLink';
 
 export const AdminLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -158,6 +159,7 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col font-sans text-stone-900">
+      <SkipLink />
       <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
       <header className="bg-stone-900 text-white sticky top-0 z-40 border-b border-stone-800 shadow-sm">
@@ -344,7 +346,7 @@ export const AdminLayout: React.FC = () => {
         </aside>
 
         {/* Content Outlet */}
-        <main className="flex-1 min-w-0">
+        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0">
           <Outlet />
         </main>
       </div>

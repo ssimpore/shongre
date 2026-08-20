@@ -171,7 +171,7 @@ export const CategoriesPage: React.FC = () => {
       <div className="border-b border-border-base bg-bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs text-stone-500">
-            <Link to="/" className="hover:text-stone-900 transition-colors flex items-center gap-1">
+            <Link to="/" className="hover:text-stone-900 transition-colors inline-flex items-center gap-1 min-h-6">
               <HomeIcon className="w-3.5 h-3.5" />
               <span>Accueil</span>
             </Link>
@@ -199,6 +199,7 @@ export const CategoriesPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('categories.categoriesPage.filtrerUneCategorieSousCategorie')}
+                aria-label={t('categories.categoriesPage.filtrerUneCategorieSousCategorie')}
                 className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
               />
             </div>
@@ -215,7 +216,7 @@ export const CategoriesPage: React.FC = () => {
 
           <Link
             to="/recherche"
-            className="text-xs sm:text-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap"
+            className="text-xs sm:text-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap min-h-6"
           >
             <span className="hidden sm:inline">{t('categories.categoriesPage.voirToutesLesAnnonces')}</span>
             <span className="sm:hidden">{t('categories.categoriesPage.voirTout')}</span>
@@ -252,7 +253,7 @@ export const CategoriesPage: React.FC = () => {
 
                       {meta.badge && (
                         <span
-                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs ${
+                          className={`text-micro font-bold px-2.5 py-0.5 rounded-full border shadow-2xs ${
                             BADGE_PILL_STYLES[meta.badge.variant] || BADGE_PILL_STYLES.terracotta
                           }`}
                         >
@@ -269,7 +270,11 @@ export const CategoriesPage: React.FC = () => {
                       >
                         {cat.name}
                       </Link>
-                      <p className="text-xs font-semibold text-stone-400">
+                                            {/* stone-400 measured 2.44:1 on the `bg-base` cream surface — an AA
+                        failure (WCAG 1.4.3) on text that carries the category
+                        inventory count. stone-500 is the next step of the same
+                        ramp and clears 4.5:1. */}
+                      <p className="text-xs font-semibold text-stone-500">
                         {meta.itemCountLabel}
                       </p>
                     </div>
@@ -281,7 +286,7 @@ export const CategoriesPage: React.FC = () => {
                           <Link
                             key={sub.id}
                             to={`/categorie/${cat.slug}?subCategory=${sub.slug}`}
-                            className="text-[11px] font-medium text-stone-600 bg-white/95 hover:bg-white hover:text-primary hover:border-primary/40 border border-stone-200/80 px-2 py-1 rounded-lg shadow-2xs transition-all active:scale-95 truncate max-w-[170px]"
+                            className="inline-flex items-center min-h-6 text-micro font-medium text-stone-600 bg-white/95 hover:bg-white hover:text-primary hover:border-primary/40 border border-stone-200/80 px-2 py-1 rounded-lg shadow-2xs transition-all active:scale-95 truncate max-w-[170px]"
                             title={sub.name}
                           >
                             {sub.shortLabel || sub.name}
@@ -295,7 +300,7 @@ export const CategoriesPage: React.FC = () => {
                   <div className="pt-4 mt-4 border-t border-stone-200/60">
                     <Link
                       to={`/categorie/${cat.slug}`}
-                      className="inline-flex items-center justify-between w-full text-xs font-bold text-stone-800 group-hover:text-primary transition-colors"
+                      className="inline-flex items-center justify-between w-full min-h-6 text-xs font-bold text-stone-800 group-hover:text-primary transition-colors"
                     >
                       <span>Explorer {getTaxonomyLabel(cat, 'compact')}</span>
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

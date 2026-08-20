@@ -247,11 +247,24 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = '' 
           return (
             <li key={index} className="flex items-center gap-1.5">
               {item.href && !isLast ? (
-                <Link to={item.href} className="hover:text-stone-900 transition-colors font-medium">
+                <Link
+                  to={item.href}
+                  className="inline-flex items-center min-h-6 hover:text-stone-900 transition-colors font-medium"
+                >
                   {item.label}
                 </Link>
               ) : (
-                <span className={isLast ? 'text-stone-900 font-bold truncate max-w-[240px]' : 'font-medium'}>
+                /* The trail's last item is the page's own name, clamped to
+                   240px — so "Annuaire des Boutiques Professionnelles" and every
+                   long listing title arrived as "Annuaire des Boutiques
+                   Profession…" with no way to read the rest. `title` restores it
+                   on hover and to assistive tech, and `aria-current` marks which
+                   crumb is the current page. */
+                <span
+                  className={isLast ? 'text-stone-900 font-bold truncate max-w-[240px]' : 'font-medium'}
+                  title={isLast && typeof item.label === 'string' ? item.label : undefined}
+                  aria-current={isLast ? 'page' : undefined}
+                >
                   {item.label}
                 </span>
               )}

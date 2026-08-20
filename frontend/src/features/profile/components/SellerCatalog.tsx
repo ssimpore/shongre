@@ -16,6 +16,7 @@ import {
 import { Listing, UserProfile } from '../../../types';
 import { taxonomyService, getTaxonomyLabel } from '../../../domains/taxonomy/taxonomy.service';
 import { ListingCard } from '../../../design-system/primitives/ListingCard';
+import { ListingRail } from '../../../design-system/primitives/ListingRail';
 import { Button } from '../../../design-system/primitives/Button';
 import { NoResultsFound } from '../../../design-system/primitives/NoResultsFound';
 import { usePublishCta } from '../../../security/usePublishCta';
@@ -218,6 +219,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Rechercher parmi les annonces de ${seller.companyName || seller.name}...`}
+              aria-label={`Rechercher parmi les annonces de ${seller.companyName || seller.name}`}
               className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
             {searchQuery && (
@@ -289,6 +291,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 placeholder="Min €"
+                aria-label={t('profile.sellerCatalog.prixMinimum')}
                 min="0"
                 className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-lg text-xs focus:bg-white focus:outline-hidden focus:border-primary"
               />
@@ -298,6 +301,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder="Max €"
+                aria-label={t('profile.sellerCatalog.prixMaximum')}
                 min="0"
                 className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-lg text-xs focus:bg-white focus:outline-hidden focus:border-primary"
               />
@@ -405,21 +409,19 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
 
       {/* Listings Grid or List */}
       {filteredListings.length > 0 ? (
-        <div
-          className={
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
-              : 'space-y-3'
-          }
-        >
-          {filteredListings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              variant={viewMode === 'list' ? 'list' : 'grid'}
-            />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <ListingRail label={t('profile.sellerCatalog.catalogueDuVendeur')}>
+            {filteredListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} variant="grid" />
+            ))}
+          </ListingRail>
+        ) : (
+          <div className="space-y-3">
+            {filteredListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} variant="list" />
+            ))}
+          </div>
+        )
       ) : (
         <NoResultsFound
           id="seller-catalog-no-results"

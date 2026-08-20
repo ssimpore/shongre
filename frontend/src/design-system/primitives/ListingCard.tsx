@@ -136,7 +136,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5 py-0.5">
           <div className="min-w-0">
             {/* `pr-8` keeps both lines clear of the favourite control above. */}
-            <span className="block text-[10px] font-bold uppercase tracking-wider text-primary truncate pr-8 mb-0.5">
+            <span className="block text-micro font-bold uppercase tracking-wider text-primary truncate pr-8 mb-0.5">
               {listing.categoryLabel}
             </span>
             <Link to={`/annonce/${listing.id}`} className="block">
@@ -160,7 +160,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             {/* Short delivery wording, and the row wraps. "Livraison possible"
                 is wide enough that the city — the more useful of the two — was
                 crushed to "Ly…" and "N…" beside it. */}
-            <div className="flex items-center gap-x-2.5 gap-y-0.5 flex-wrap mt-0.5 text-[11px] text-stone-500 min-w-0">
+            <div className="flex items-center gap-x-2.5 gap-y-0.5 flex-wrap mt-0.5 text-micro text-stone-500 min-w-0">
               <span className="flex items-center gap-1 font-medium min-w-0">
                 <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
                 <span className="truncate">{listing.city}</span>
@@ -274,7 +274,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
               </span>
               <Link
                 to={isProSeller(listing) ? `/boutique/${listing.sellerId}` : `/profil/${listing.sellerId}`}
-                className="hover:opacity-80 transition-opacity"
+                /* The row is 14px tall by design — it is dense metadata. The
+                   *link* still has to clear 24px (WCAG 2.5.8), so the target is
+                   grown vertically with padding and pulled back with a negative
+                   margin, leaving the row's visual height untouched. */
+                className="inline-flex items-center min-h-6 -my-1 py-1 hover:opacity-80 transition-opacity"
                 onClick={(e) => e.stopPropagation()}
               >
                 {isProSeller(listing) ? (
@@ -309,12 +313,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({
               against a 39.2px clamp, so the box was 2.24 line-heights tall and
               the extra quarter-line painted the sliced top of line three under
               the ellipsis on every card. An em-based reservation also stays
-              exact across the `text-sm` → `text-[15px]` step, which a rem
+              exact across the `text-sm` → `text-card-title` step, which a rem
               value cannot do. */}
           <Link to={`/annonce/${listing.id}`} className="block mb-2.5">
             <h3
               title={listing.title}
-              className="text-sm sm:text-[15px] font-bold text-stone-900 line-clamp-2 min-h-[2.8em] group-hover:text-primary transition-colors leading-[1.4]"
+              className="text-sm sm:text-card-title font-bold text-stone-900 line-clamp-2 min-h-[2.8em] group-hover:text-primary transition-colors leading-[1.4]"
             >
               {listing.title}
             </h3>

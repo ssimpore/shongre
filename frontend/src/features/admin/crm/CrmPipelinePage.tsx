@@ -18,9 +18,18 @@ import { CrmOpportunity, OpportunityStage, OpportunityType } from '../../../doma
 import { crmService, PIPELINE_STAGES } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
+import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
 
 export const CrmPipelinePage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.crmPipeline.title'),
+    description: t('meta.crmPipeline.description'),
+    canonicalPath: '/admin/crm/pipeline',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
   const [, setLoading] = useState(true);
@@ -126,7 +135,15 @@ export const CrmPipelinePage: React.FC = () => {
       </div>
 
       {/* 2. Kanban Columns */}
-      <div className="flex gap-4 overflow-x-auto pb-4 items-start min-h-[600px]">
+      {/* The kanban is wider than any viewport once the pipeline has more than
+          three stages, and the bare `overflow-x-auto` gave no cue: on macOS the
+          overlay scrollbar is invisible until you already scroll, so the fourth
+          column simply looked cut off. `ScrollRail` surfaces a control on
+          whichever side has more content and makes the track keyboard-scrollable. */}
+      <ScrollRail
+        label={t('admin.crmPipelinePage.colonnesDuPipeline')}
+        className="flex gap-4 pb-4 items-start min-h-[600px]"
+      >
         {PIPELINE_STAGES.map((stage, stageIndex) => {
           const stageOpps = opportunities.filter((o) => o.stage === stage.id);
           const stageTotal = stageOpps.reduce((sum, o) => sum + o.estimatedValue.amountMinor, 0);
@@ -185,7 +202,11 @@ export const CrmPipelinePage: React.FC = () => {
                           disabled={stageIndex === 0}
                           onClick={() => handleStageChange(opp.id, PIPELINE_STAGES[stageIndex - 1].id)}
                           className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
-                          title={t('admin.crmPipelinePage.etapePrecedente')}
+                          /* One pair of arrows per opportunity card, so a name
+                             that says only "Étape précédente" repeats verbatim
+                             down the column. Naming the opportunity makes each
+                             one addressable. */
+                          aria-label={t('admin.crmPipelinePage.etapePrecedenteOpp', { name: opp.title })}
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
@@ -197,7 +218,7 @@ export const CrmPipelinePage: React.FC = () => {
                           disabled={stageIndex === PIPELINE_STAGES.length - 1}
                           onClick={() => handleStageChange(opp.id, PIPELINE_STAGES[stageIndex + 1].id)}
                           className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
-                          title={t('admin.crmPipelinePage.etapeSuivante')}
+                          aria-label={t('admin.crmPipelinePage.etapeSuivanteOpp', { name: opp.title })}
                         >
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
@@ -209,7 +230,7 @@ export const CrmPipelinePage: React.FC = () => {
             </div>
           );
         })}
-      </div>
+      </ScrollRail>
 
       {/* Create Opportunity Modal */}
       <Modal

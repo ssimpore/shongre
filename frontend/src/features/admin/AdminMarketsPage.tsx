@@ -1,32 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import {
-  
-  
-  
-  
-  
-  
-  
   Sliders,
   ShieldAlert,
-  
   RefreshCw,
   Plus,
-  
-  Info
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  Info,
+  Tag,
+  Globe,
+  FolderTree,
+  Package,
+  CreditCard,
+  Handshake,
+  Truck,
+  Briefcase,
+  Landmark,
+  Rocket,
+  Settings2,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { Button } from '../../design-system/primitives/Button';
@@ -39,6 +29,7 @@ import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 type AdminTab = 'overview' | 'editor' | 'matrix';
 type DomainTab =
@@ -56,6 +47,13 @@ type DomainTab =
 
 export const AdminMarketsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminMarkets.title'),
+    description: t('meta.adminMarkets.description'),
+    canonicalPath: '/admin/marches',
+    noIndex: true,
+  });
+
   const { can, currentUser } = useAuth();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -371,7 +369,8 @@ export const AdminMarketsPage: React.FC = () => {
               : 'border-transparent text-stone-500 hover:text-stone-900'
           }`}
         >
-          ⚙️ Éditeur d'Héritage & Surcharges ({selectedMarket.name})
+          <Settings2 className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
+          Éditeur d'Héritage & Surcharges ({selectedMarket.name})
         </button>
         <button
           type="button"
@@ -382,7 +381,8 @@ export const AdminMarketsPage: React.FC = () => {
               : 'border-transparent text-stone-500 hover:text-stone-900'
           }`}
         >
-          📊 Matrice Comparative Multi-Pays
+          <BarChart3 className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
+          Matrice Comparative Multi-Pays
         </button>
       </div>
 
@@ -569,28 +569,30 @@ export const AdminMarketsPage: React.FC = () => {
           {/* Domain Subtabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border-subtle">
             {[
-              { id: 'general', label: '🏷️ Général' },
-              { id: 'localization', label: '🌐 Localisation' },
-              { id: 'taxonomy', label: '🗂️ Taxonomie & Catégories' },
-              { id: 'listings', label: '📦 Annonces' },
-              { id: 'payments', label: '💳 Paiements & Séquestre' },
-              { id: 'reservation', label: '🤝 Réservation' },
-              { id: 'delivery', label: '🚚 Livraison' },
-              { id: 'pro', label: '💼 Professionnels' },
-              { id: 'taxes', label: '🏛️ Fiscalité & TVA' },
-              { id: 'monetization', label: '🚀 Monétisation' },
-              { id: 'features', label: '⚙️ Fonctionnalités' },
+              { id: 'general', label: 'Général', Icon: Tag },
+              { id: 'localization', label: 'Localisation', Icon: Globe },
+              { id: 'taxonomy', label: 'Taxonomie & Catégories', Icon: FolderTree },
+              { id: 'listings', label: 'Annonces', Icon: Package },
+              { id: 'payments', label: 'Paiements & Séquestre', Icon: CreditCard },
+              { id: 'reservation', label: 'Réservation', Icon: Handshake },
+              { id: 'delivery', label: 'Livraison', Icon: Truck },
+              { id: 'pro', label: 'Professionnels', Icon: Briefcase },
+              { id: 'taxes', label: 'Fiscalité & TVA', Icon: Landmark },
+              { id: 'monetization', label: 'Monétisation', Icon: Rocket },
+              { id: 'features', label: 'Fonctionnalités', Icon: Settings2 },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveDomainTab(tab.id as DomainTab)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                aria-current={activeDomainTab === tab.id ? 'true' : undefined}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
                   activeDomainTab === tab.id
                     ? 'bg-stone-900 text-white'
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                 }`}
               >
+                <tab.Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                 {tab.label}
               </button>
             ))}
@@ -844,9 +846,9 @@ export const AdminMarketsPage: React.FC = () => {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border-base bg-stone-50">
-                  <th className="p-3 font-bold text-stone-900">{t('admin.adminMarketsPage.parametreRegle')}</th>
+                  <th scope="col" className="p-3 font-bold text-stone-900">{t('admin.adminMarketsPage.parametreRegle')}</th>
                   {markets.map((m) => (
-                    <th key={m.code} className="p-3 font-bold text-stone-900 min-w-[160px]">
+                    <th scope="col" key={m.code} className="p-3 font-bold text-stone-900 min-w-[160px]">
                       <div className="flex items-center gap-1.5">
                         <span className="text-base">{m.flag}</span>
                         <span>{m.name}</span>

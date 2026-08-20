@@ -34,9 +34,16 @@ import { EnrichmentDiffModal } from './components/EnrichmentDiffModal';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton } from '../../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 export const CrmCompanyDetailPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.crmCompanyDetail.title'),
+    description: t('meta.crmCompanyDetail.description'),
+    noIndex: true,
+  });
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();

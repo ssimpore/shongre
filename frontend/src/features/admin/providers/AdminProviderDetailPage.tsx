@@ -26,11 +26,18 @@ import { ProviderImpactModal } from './components/ProviderImpactModal';
 import { Button } from '../../../design-system/primitives/Button';
 import { StatePanel } from '../../../design-system/primitives/StatePanel';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 type DetailTab = 'configuration' | 'markets' | 'health' | 'dependencies' | 'audit';
 
 export const AdminProviderDetailPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminProviderDetail.title'),
+    description: t('meta.adminProviderDetail.description'),
+    noIndex: true,
+  });
+
   const { providerId } = useParams<{ providerId: string }>();
   const [activeTab, setActiveTab] = useState<DetailTab>('configuration');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -275,7 +282,7 @@ export const AdminProviderDetailPage: React.FC = () => {
 
       {activeTab === 'dependencies' && (
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-          <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe')}</h4>
+          <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {provider.capabilities.map((cap) => {
               const meta = getCapabilityMetadata(cap);

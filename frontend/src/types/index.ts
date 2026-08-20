@@ -505,6 +505,16 @@ export interface SavedSearch {
   matchCount: number;
 }
 
+export interface RecentSearch {
+  id: string;
+  title: string;
+  locationLabel?: string;
+  categorySlug?: string;
+  query?: string;
+  to: string;
+  createdAt?: string;
+}
+
 export type MessageType = 'text' | 'image' | 'file' | 'offer' | 'offer_accepted' | 'offer_declined' | 'reservation' | 'system';
 export type OfferStatus = 'pending' | 'accepted' | 'declined' | 'countered';
 

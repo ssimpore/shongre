@@ -189,6 +189,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             placeholder={t('messaging.messageComposer.ecrivezVotreMessageEntreePour')}
+            aria-label={t('messaging.messageComposer.votreMessage')}
             className="w-full min-h-[42px] max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400 resize-none"
           />
         </div>

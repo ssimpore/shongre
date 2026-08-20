@@ -30,6 +30,7 @@ import { DataTable } from '../../design-system/primitives/DataTable';
 import { BulkImportModal } from './components/BulkImportModal';
 import { usePublishCta } from '../../security/usePublishCta';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 type BoostPack = 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight';
 
@@ -90,6 +91,13 @@ function getPhotoUrl(photo: any): string {
 
 export const MyListingsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.myListings.title'),
+    description: t('meta.myListings.description'),
+    canonicalPath: '/compte/annonces',
+    noIndex: true,
+  });
+
   const { currentUser } = useAuth();
   const toast = useToast();
   const publishCta = usePublishCta();

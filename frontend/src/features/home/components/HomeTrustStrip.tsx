@@ -39,7 +39,7 @@ export const HomeTrustStrip: React.FC = () => {
                 <h3 className="text-xs sm:text-sm font-bold text-stone-900 leading-snug">
                   {t(titleKey)}
                 </h3>
-                <p className="text-[11px] sm:text-xs text-stone-500 font-normal leading-tight mt-0.5">
+                <p className="text-micro sm:text-xs text-stone-500 font-normal leading-tight mt-0.5">
                   {t(bodyKey)}
                 </p>
               </div>

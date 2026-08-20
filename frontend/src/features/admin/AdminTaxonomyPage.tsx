@@ -28,9 +28,17 @@ import { TaxonomyAuditTab } from './taxonomy/components/TaxonomyAuditTab';
 import { AddNodeModal } from './taxonomy/components/modals/AddNodeModal';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminTaxonomyPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminTaxonomy.title'),
+    description: t('meta.adminTaxonomy.description'),
+    canonicalPath: '/admin/taxonomie',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 

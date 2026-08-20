@@ -20,9 +20,17 @@ import { crmService } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 export const CrmContactsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.crmContacts.title'),
+    description: t('meta.crmContacts.description'),
+    canonicalPath: '/admin/crm/contacts',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [contacts, setContacts] = useState<CrmContact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -136,6 +144,7 @@ export const CrmContactsPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
+                aria-label={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
             className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>

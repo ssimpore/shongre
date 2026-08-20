@@ -4,6 +4,7 @@ import { ConversationPreview, InboxFilterTab } from '../../../domains/messaging/
 import { formatRelativeDate, formatPrice } from '../../../utilities/formatters';
 import { Badge, Avatar } from '../../../design-system/primitives/Badge';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
@@ -59,6 +60,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <input
             type="text"
             placeholder={t('messaging.conversationList.rechercherParNomOuAnnonce')}
+            aria-label={t('messaging.conversationList.rechercherParNomOuAnnonce')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400"
@@ -75,8 +77,15 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           )}
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        {/* Filter Pills.
+
+            The bare `overflow-x-auto` rail relied on content visibly bleeding
+            off the edge as its only affordance. In the inbox's narrow middle
+            column the last pill ("Commandes") ended flush with the boundary, so
+            it read as absent rather than as scrollable. `ScrollRail` shows a
+            scroll control on whichever side actually has more content, and
+            renders like the bare rail when everything fits. */}
+        <ScrollRail label={t('messaging.conversationList.filtres')} className="pb-1">
           {tabs.map((tab) => {
             const isActive = selectedFilter === tab.id;
             return (
@@ -103,7 +112,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               </button>
             );
           })}
-        </div>
+        </ScrollRail>
       </div>
 
       {/* Conversation Cards Scroll Area */}

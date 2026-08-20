@@ -18,9 +18,17 @@ import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NotificationPreferencesPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.notificationPreferences.title'),
+    description: t('meta.notificationPreferences.description'),
+    canonicalPath: '/compte/notifications/preferences',
+    noIndex: true,
+  });
+
   const { currentUser } = useAuth();
   const toast = useToast();
   const currentUserId = currentUser ? currentUser.id : 'user-thomas';
@@ -232,6 +240,10 @@ export const NotificationPreferencesPage: React.FC = () => {
                     checked={pref.inApp}
                     disabled={sec.isMandatory}
                     onChange={() => handleToggle(sec.key, 'inApp')}
+                    aria-label={t('notifications.notificationPreferencesPage.canalPourAlerte', {
+                      channel: t('notifications.notificationPreferencesPage.canalApplication'),
+                      alert: sec.title,
+                    })}
                     className="w-4.5 h-4.5 text-primary rounded-md border-border-base focus:ring-primary disabled:opacity-50 cursor-pointer"
                   />
                 </div>
@@ -244,6 +256,10 @@ export const NotificationPreferencesPage: React.FC = () => {
                     checked={pref.email}
                     disabled={sec.isMandatory}
                     onChange={() => handleToggle(sec.key, 'email')}
+                    aria-label={t('notifications.notificationPreferencesPage.canalPourAlerte', {
+                      channel: t('notifications.notificationPreferencesPage.canalEmail'),
+                      alert: sec.title,
+                    })}
                     className="w-4.5 h-4.5 text-primary rounded-md border-border-base focus:ring-primary disabled:opacity-50 cursor-pointer"
                   />
                 </div>
@@ -255,6 +271,10 @@ export const NotificationPreferencesPage: React.FC = () => {
                     type="checkbox"
                     checked={pref.push}
                     onChange={() => handleToggle(sec.key, 'push')}
+                    aria-label={t('notifications.notificationPreferencesPage.canalPourAlerte', {
+                      channel: t('notifications.notificationPreferencesPage.canalPush'),
+                      alert: sec.title,
+                    })}
                     className="w-4.5 h-4.5 text-primary rounded-md border-border-base focus:ring-primary cursor-pointer"
                   />
                 </div>

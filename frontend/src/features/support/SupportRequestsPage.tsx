@@ -18,9 +18,17 @@ import { supportRepository } from '../../repositories/support.repository';
 import { formatDate } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const SupportRequestsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.supportRequests.title'),
+    description: t('meta.supportRequests.description'),
+    canonicalPath: '/compte/support',
+    noIndex: true,
+  });
+
   const { currentUser } = useAuth();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);

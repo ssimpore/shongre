@@ -58,6 +58,7 @@ import { formatPrice, plural } from '../../utilities/formatters';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 const samplePhotoUrls = [
   'https://images.unsplash.com/photo-1507034589631-9433cc6bc453?w=800&auto=format&fit=crop&q=80',
@@ -106,6 +107,13 @@ const REVIEW_PANEL = 10;
 
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.publishWizard.title'),
+    description: t('meta.publishWizard.description'),
+    canonicalPath: '/deposer',
+    noIndex: true,
+  });
+
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const toast = useToast();
@@ -503,6 +511,7 @@ export const PublishWizard: React.FC = () => {
               <input
                 type="text"
                 placeholder={t('publishing.publishWizard.exCanapeDAngleIphone')}
+                aria-label={t('publishing.publishWizard.rechercherUneCategorie')}
                 value={categorySearchQuery}
                 onChange={(e) => setCategorySearchQuery(e.target.value)}
                 className="w-full h-10 pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"

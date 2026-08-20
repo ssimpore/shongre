@@ -5,9 +5,17 @@ import { Button } from '../../design-system/primitives/Button';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NewsletterConfirmPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.newsletterConfirm.title'),
+    description: t('meta.newsletterConfirm.description'),
+    canonicalPath: '/newsletter/confirmer',
+    noIndex: true,
+  });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();

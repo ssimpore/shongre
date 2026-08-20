@@ -38,6 +38,17 @@ const BANNED = [
   { re: /\b(?:[a-z-]+:)*bg-(emerald|green|red|rose|sky|blue)-(?:500|600|700)\b/, hint: 'bg-{success|danger|info}' },
   // Error-state borders are unambiguous, unlike amber's 400/500 accent range.
   { re: /\b(?:[a-z-]+:)*border-(red|rose)-(?:400|500)\b/, hint: 'border-danger' },
+  /* Arbitrary type sizes. The scale in src/index.css documents `micro` (11px)
+     as the smallest size allowed anywhere — "for badges, counters and dense
+     metadata only, never for body copy". 45 call sites ignored it, including
+     `text-[10px]` x17 and `text-[9px]` x2 inside the listing card, the mobile
+     tab bar and the hero: the three components a visitor sees first. A size the
+     scale genuinely lacks gets a named step (see `--text-card-title` and
+     `--text-hero`), not a bracket. */
+  {
+    re: /\b(?:[a-z-]+:)*text-\[[0-9.]+(?:px|rem|em)\]/,
+    hint: 'a named step — text-micro / text-xs / text-sm / text-card-title / text-hero',
+  },
 ];
 
 /* ---------------------------------------------------------------------------
@@ -126,14 +137,14 @@ if (undeclared.length > 0) {
 }
 
 if (violations.length === 0 && undeclared.length === 0) {
-  console.log('✔ design tokens: no raw status palettes, no undeclared tokens in src/**/*.tsx');
+  console.log('✔ design tokens: no raw status palettes, no off-scale type sizes, no undeclared tokens in src/**/*.tsx');
   process.exit(0);
 }
 
 if (violations.length === 0) process.exit(1);
 
-console.error(`\n✘ design tokens: ${violations.length} raw status palette usage(s).\n`);
-console.error('  These have exact semantic equivalents — see the ramp comments in src/index.css.\n');
+console.error(`\n✘ design tokens: ${violations.length} off-scale value(s).\n`);
+console.error('  These have exact semantic equivalents — see the ramp and type-scale comments in src/index.css.\n');
 for (const v of violations.slice(0, 40)) {
   console.error(`  ${v.file}:${v.line}\n      ${v.found}  →  ${v.hint}`);
 }

@@ -12,9 +12,17 @@ import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { NewsletterTopicSelector } from './components/NewsletterTopicSelector';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NewsletterPreferencesPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.newsletterPreferences.title'),
+    description: t('meta.newsletterPreferences.description'),
+    canonicalPath: '/compte/newsletter',
+    noIndex: true,
+  });
+
   const { currentUser } = useAuth();
   const toast = useToast();
 

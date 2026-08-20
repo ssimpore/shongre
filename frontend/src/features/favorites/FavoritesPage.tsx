@@ -7,12 +7,21 @@ import { services } from '../../api/client/service-registry';
 import { useFavorites } from '../../app/providers/FavoritesProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
+import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Button } from '../../design-system/primitives/Button';
 import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const FavoritesPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.favorites.title'),
+    description: t('meta.favorites.description'),
+    canonicalPath: '/compte/favoris',
+    noIndex: true,
+  });
+
   const { favoriteIds, clearFavorites, isLoading: isLoadingIds } = useFavorites();
   const toast = useToast();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -72,11 +81,11 @@ export const FavoritesPage: React.FC = () => {
         // jumping from the page h1.
         <section aria-labelledby="favorites-grid-heading">
           <h2 id="favorites-grid-heading" className="sr-only">{t('favorites.favoritesPage.annoncesSauvegardees')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ListingRail label={t('favorites.favoritesPage.annoncesSauvegardees')}>
             {favoriteListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
-          </div>
+          </ListingRail>
         </section>
       ) : (
         <EmptyState

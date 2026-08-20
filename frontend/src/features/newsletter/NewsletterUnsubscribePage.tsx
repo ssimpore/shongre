@@ -7,9 +7,17 @@ import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { newsletterService } from '../../domains/newsletter/newsletter.service';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NewsletterUnsubscribePage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.newsletterUnsubscribe.title'),
+    description: t('meta.newsletterUnsubscribe.description'),
+    canonicalPath: '/newsletter/desabonnement',
+    noIndex: true,
+  });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();

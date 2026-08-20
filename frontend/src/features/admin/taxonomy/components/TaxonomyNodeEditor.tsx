@@ -342,7 +342,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   type="button"
                   onClick={handleCopyId}
                   className="p-1 hover:text-stone-900 rounded min-w-6 min-h-6 inline-flex items-center justify-center"
-                  title="Copier l'ID stable"
+                  aria-label={t('admin.taxonomyNodeEditor.copierLIdStable', { id: node.id })}
                 >
                   <Copy className="w-3 h-3" />
                 </button>

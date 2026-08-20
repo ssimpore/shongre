@@ -42,10 +42,26 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
   onRespondOffer,
 }) => {
   const { t } = useTranslation();
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Scroll the message list, not the page.
+   *
+   * This was `bottomRef.current?.scrollIntoView()`. That method walks *every*
+   * scrollable ancestor, and the thread lives inside the ordinary page shell —
+   * so bringing the last message into view also scrolled the document. The
+   * inbox opened at `scrollY = 615` of a 1703px page: the header gone, the
+   * conversation off-screen, and the footer filling half the viewport. The user
+   * had to scroll up to see the conversation they had just opened.
+   *
+   * Setting `scrollTop` on the list itself cannot move anything outside it.
+   * `scrollHeight` is read after paint via the effect, so it already accounts
+   * for the message that triggered it.
+   */
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const list = scrollRef.current;
+    if (!list) return;
+    list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
   }, [items, typingState]);
 
   const groups: TimelineDateGroup[] = messagingService.groupTimelineByDate(items);
@@ -65,6 +81,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
        role/label pair keeps it announced as the message history rather than as
        an unnamed scroll box. */
     <div
+      ref={scrollRef}
       className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/50"
       tabIndex={0}
       role="log"
@@ -241,7 +258,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
         </div>
       )}
 
-      <div ref={bottomRef} />
+      {/* Sentinel kept as the visual end-of-list spacer; scrolling is done on
+          the list container above, not by scrolling this into view. */}
+      <div aria-hidden="true" />
     </div>
   );
 };

@@ -40,6 +40,7 @@ import { Badge } from '../../design-system/primitives/Badge';
 import { Modal } from '../../design-system/primitives/Modal';
 import { Input, Textarea, FormField } from '../../design-system/primitives/FormField';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
+import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Image } from '../../design-system/primitives/Image';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -795,11 +796,11 @@ export const ListingDetailPage: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ListingRail label={t('listings.listingDetailPage.annoncesSimilaires')}>
             {similarListings.map((simListing) => (
               <ListingCard key={simListing.id} listing={simListing} />
             ))}
-          </div>
+          </ListingRail>
         </div>
       )}
 
@@ -961,7 +962,7 @@ export const ListingDetailPage: React.FC = () => {
         className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         {/* One line on phones so the bar stays short; stacked once there is room. */}
         <div className="flex items-baseline gap-2 min-w-0 sm:block sm:shrink-0">
-          <div className="text-[10px] text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
+          <div className="text-micro text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
             {showsBuyerFee ? 'Total à payer' : 'Prix'}
           </div>
           <div className="text-lg font-black text-stone-900 truncate tabular-nums leading-none">

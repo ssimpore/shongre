@@ -1,4 +1,4 @@
-import { Listing, Conversation, Transaction, NotificationItem, SavedSearch, UserProfile, UserRole } from '../types';
+import { Listing, Conversation, Transaction, NotificationItem, SavedSearch, RecentSearch, UserProfile, UserRole } from '../types';
 import { INITIAL_LISTINGS, INITIAL_CONVERSATIONS, INITIAL_MESSAGES, INITIAL_TRANSACTIONS, INITIAL_NOTIFICATIONS, INITIAL_SAVED_SEARCHES, DEMO_USERS } from '../mocks/initialDemoData';
 import { Market } from '../domains/market/market.types';
 import { INITIAL_MARKETS } from '../domains/market/market.defaults';
@@ -21,6 +21,7 @@ const KEYS = {
   USER_REPORTS: 'shongre_user_reports_v1',
   SAVED_SEARCHES: 'shongre_saved_searches_v1',
   RECENT_SEARCHES: 'shongre_recent_searches_v1',
+  RECENT_SEARCH_ITEMS: 'shongre_recent_search_items_v1',
   RECENTLY_VIEWED: 'shongre_recently_viewed_v1',
   LOCATION_PREF: 'shongre_location_preference_v1',
   PUBLISH_DRAFT: 'shongre_publish_draft_v1',
@@ -397,6 +398,58 @@ class StorageService {
     const list = this.getRecentSearches().filter((q) => q.toLowerCase() !== query.toLowerCase());
     list.unshift(query.trim());
     this.set(KEYS.RECENT_SEARCHES, list.slice(0, 8));
+  }
+
+  // Structured Recent Searches (Home & Header Cards)
+  getRecentSearchItems(): RecentSearch[] {
+    return this.get<RecentSearch[]>(KEYS.RECENT_SEARCH_ITEMS, [
+      {
+        id: 'recent-search-1',
+        title: 'Antiquités',
+        locationLabel: 'Toute la France',
+        categorySlug: 'antiquites',
+        to: '/recherche?category=antiquites',
+        createdAt: new Date(Date.now() - 3600000).toISOString(),
+      },
+      {
+        id: 'recent-search-2',
+        title: 'Accessoires & bagagerie',
+        locationLabel: 'Toute la France',
+        categorySlug: 'accessoires-bagagerie',
+        to: '/recherche?category=accessoires-bagagerie',
+        createdAt: new Date(Date.now() - 7200000).toISOString(),
+      },
+      {
+        id: 'recent-search-3',
+        title: 'Photo, audio & vidéo',
+        locationLabel: 'Bray-Dunes (59123)',
+        categorySlug: 'multimedia',
+        to: '/recherche?category=multimedia&location=Bray-Dunes',
+        createdAt: new Date(Date.now() - 10800000).toISOString(),
+      },
+    ]);
+  }
+
+  addRecentSearchItem(item: Omit<RecentSearch, 'id' | 'createdAt'>): void {
+    const list = this.getRecentSearchItems().filter(
+      (s) => s.title.toLowerCase() !== item.title.toLowerCase() || s.locationLabel !== item.locationLabel,
+    );
+    const newItem: RecentSearch = {
+      ...item,
+      id: `recent-search-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    list.unshift(newItem);
+    this.set(KEYS.RECENT_SEARCH_ITEMS, list.slice(0, 8));
+  }
+
+  deleteRecentSearchItem(id: string): void {
+    const list = this.getRecentSearchItems().filter((item) => item.id !== id);
+    this.set(KEYS.RECENT_SEARCH_ITEMS, list);
+  }
+
+  clearRecentSearchItems(): void {
+    this.set(KEYS.RECENT_SEARCH_ITEMS, []);
   }
 
   // Recently Viewed

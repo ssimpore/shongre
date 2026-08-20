@@ -233,10 +233,11 @@ export const RegisterIndividualPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label htmlFor="reg-country" className="block text-xs font-bold text-stone-800 mb-1.5">
               Pays <span className="text-primary">*</span>
             </label>
             <select
+              id="reg-country"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -250,10 +251,10 @@ export const RegisterIndividualPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label htmlFor="reg-code-postal" className="block text-xs font-bold text-stone-800 mb-1.5">
               Code Postal <span className="text-primary">*</span>
             </label>
-            <input
+            <input id="reg-code-postal"
               type="text"
               value={postalCode}
               onChange={(e) => setPostalCode(e.target.value)}
@@ -264,10 +265,10 @@ export const RegisterIndividualPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label htmlFor="reg-ville" className="block text-xs font-bold text-stone-800 mb-1.5">
               Ville <span className="text-primary">*</span>
             </label>
-            <input
+            <input id="reg-ville"
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
@@ -478,10 +479,11 @@ export const RegisterProPage: React.FC = () => {
           {step === 1 ? (
             <form onSubmit={handleNextStep} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.nomEtPrenomDuResponsable')}<span className="text-primary">*</span>
+                <label htmlFor="reg-pro-name" className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.nomEtPrenomDuResponsable')}<span className="text-primary">*</span>
                 </label>
                 <div className="relative">
                   <input
+                    id="reg-pro-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -494,11 +496,11 @@ export const RegisterProPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                <label htmlFor="reg-email-professionnel" className="block text-xs font-bold text-stone-800 mb-1.5">
                   Email professionnel <span className="text-primary">*</span>
                 </label>
                 <div className="relative">
-                  <input
+                  <input id="reg-email-professionnel"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -511,9 +513,9 @@ export const RegisterProPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.telephoneCommercial')}</label>
+                <label htmlFor="reg-telephonecommercial" className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.telephoneCommercial')}</label>
                 <div className="relative">
-                  <input
+                  <input id="reg-telephonecommercial"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -549,10 +551,10 @@ export const RegisterProPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                  <label htmlFor="reg-pays-d-immatriculation" className="block text-xs font-bold text-stone-800 mb-1.5">
                     Pays d'immatriculation <span className="text-primary">*</span>
                   </label>
-                  <select
+                  <select id="reg-pays-d-immatriculation"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
                     className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -566,10 +568,10 @@ export const RegisterProPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                  <label htmlFor="reg-forme-juridique" className="block text-xs font-bold text-stone-800 mb-1.5">
                     Forme juridique <span className="text-primary">*</span>
                   </label>
-                  <select
+                  <select id="reg-forme-juridique"
                     value={legalForm}
                     onChange={(e) => setLegalForm(e.target.value)}
                     className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -584,11 +586,11 @@ export const RegisterProPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                <label htmlFor="reg-raison-sociale-enseigne-commerciale" className="block text-xs font-bold text-stone-800 mb-1.5">
                   Raison sociale / Enseigne commerciale <span className="text-primary">*</span>
                 </label>
                 <div className="relative">
-                  <input
+                  <input id="reg-raison-sociale-enseigne-commerciale"
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
@@ -602,10 +604,10 @@ export const RegisterProPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                  <label htmlFor="reg-currentmarket-businessidentifierlabel" className="block text-xs font-bold text-stone-800 mb-1.5">
                     {currentMarket.businessIdentifierLabel} <span className="text-primary">*</span>
                   </label>
-                  <input
+                  <input id="reg-currentmarket-businessidentifierlabel"
                     type="text"
                     value={sirenSiret}
                     onChange={(e) => setSirenSiret(e.target.value)}
@@ -616,10 +618,10 @@ export const RegisterProPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                  <label htmlFor="reg-tva-intracommunautaire" className="block text-xs font-bold text-stone-800 mb-1.5">
                     TVA Intracommunautaire
                   </label>
-                  <input
+                  <input id="reg-tva-intracommunautaire"
                     type="text"
                     value={vatNumber}
                     onChange={(e) => setVatNumber(e.target.value)}
@@ -630,10 +632,10 @@ export const RegisterProPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.adresseDuSiegeSocialMagasin')}<span className="text-primary">*</span>
+                <label htmlFor="reg-adressedusiegesocialmagasin" className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.registerPages.adresseDuSiegeSocialMagasin')}<span className="text-primary">*</span>
                 </label>
                 <div className="relative">
-                  <input
+                  <input id="reg-adressedusiegesocialmagasin"
                     type="text"
                     value={businessAddress}
                     onChange={(e) => setBusinessAddress(e.target.value)}
@@ -647,10 +649,10 @@ export const RegisterProPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                  <label htmlFor="reg-code-postal-2" className="block text-xs font-bold text-stone-800 mb-1.5">
                     Code Postal <span className="text-primary">*</span>
                   </label>
-                  <input
+                  <input id="reg-code-postal-2"
                     type="text"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
@@ -661,10 +663,10 @@ export const RegisterProPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                  <label htmlFor="reg-ville-2" className="block text-xs font-bold text-stone-800 mb-1.5">
                     Ville <span className="text-primary">*</span>
                   </label>
-                  <input
+                  <input id="reg-ville-2"
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}

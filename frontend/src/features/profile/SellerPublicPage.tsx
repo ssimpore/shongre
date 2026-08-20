@@ -163,7 +163,11 @@ export const SellerPublicPage: React.FC = () => {
         <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-black text-stone-900 mb-2">Profil introuvable</h2>
+        {/* The page heading, not a section heading: this *is* the page in
+            this state. Rendered as an H2 it left the route with no H1 at
+            all, so the document outline started at level 2 and a screen
+            reader jumping by heading found nothing to land on. */}
+        <h1 className="text-2xl font-black text-stone-900 mb-2">Profil introuvable</h1>
         <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">{t('profile.sellerPublicPage.lUtilisateurOuLaBoutique')}</p>
         <div className="flex items-center justify-center gap-3">
           <Button
@@ -190,9 +194,9 @@ export const SellerPublicPage: React.FC = () => {
         <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-black text-stone-900 mb-2">
+        <h1 className="text-2xl font-black text-stone-900 mb-2">
           Profil temporairement indisponible
-        </h2>
+        </h1>
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">{t('profile.sellerPublicPage.ceCompteVendeurAEte')}</p>
         <Button
           to={routes.search()}

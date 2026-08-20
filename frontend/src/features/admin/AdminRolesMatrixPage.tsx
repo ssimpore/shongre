@@ -20,9 +20,17 @@ import { ROLE_DEFINITIONS, ALL_PLATFORM_ROLES } from '../../security/roles.confi
 import { plural } from '../../utilities/formatters';
 import { roleLabel } from '../../security/roles.config';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminRolesMatrixPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminRolesMatrix.title'),
+    description: t('meta.adminRolesMatrix.description'),
+    canonicalPath: '/admin/roles',
+    noIndex: true,
+  });
+
   const { currentUser, platformRole } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -162,6 +170,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('admin.adminRolesMatrixPage.filtrerUnePermissionExListing')}
+                aria-label={t('admin.adminRolesMatrixPage.filtrerUnePermissionExListing')}
               className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
             />
           </div>
@@ -210,12 +219,12 @@ export const AdminRolesMatrixPage: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-stone-900 text-white font-bold border-b border-stone-800">
-                <th className="p-3 min-w-[280px] sticky left-0 bg-stone-900 z-10">{t('admin.adminRolesMatrixPage.permissionPerimetre')}</th>
+                <th scope="col" className="p-3 min-w-[280px] sticky left-0 bg-stone-900 z-10">{t('admin.adminRolesMatrixPage.permissionPerimetre')}</th>
                 {ALL_PLATFORM_ROLES.map((r) => {
                   const def = ROLE_DEFINITIONS[r];
                   const isCurrent = r === platformRole;
                   return (
-                    <th
+                    <th scope="col"
                       key={r}
                       className={`p-2.5 text-center min-w-[90px] border-l border-stone-800 ${
                         isCurrent ? 'bg-primary-hover text-white' : ''

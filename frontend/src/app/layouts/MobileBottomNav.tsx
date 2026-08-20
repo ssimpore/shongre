@@ -42,7 +42,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <Home className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.home')}</span>
+              <span className={`text-micro ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.home')}</span>
             </>
           )}
         </NavLink>
@@ -61,7 +61,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <Search className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.search')}</span>
+              <span className={`text-micro ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.search')}</span>
             </>
           )}
         </NavLink>
@@ -77,7 +77,7 @@ export const MobileBottomNav: React.FC = () => {
             <div className="w-[3.25rem] h-[3.25rem] rounded-full bg-stone-900 text-white flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border-[3px] border-white">
               <PlusCircle className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-[10px] font-bold text-stone-900 mt-1 whitespace-nowrap">{t(publishCta.shortLabelKey)}</span>
+            <span className="text-micro font-bold text-stone-900 mt-1 whitespace-nowrap">{t(publishCta.shortLabelKey)}</span>
           </div>
         </NavLink>
 
@@ -95,7 +95,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`relative flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <MessageSquare className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
                 {unreadMessagesCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center shadow-xs border-[1.5px] border-white">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs border-[1.5px] border-white">
                     {unreadMessagesCount}
                     <span className="sr-only">
                       {' '}
@@ -104,7 +104,7 @@ export const MobileBottomNav: React.FC = () => {
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.messages')}</span>
+              <span className={`text-micro ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.messages')}</span>
             </>
           )}
         </NavLink>
@@ -123,7 +123,7 @@ export const MobileBottomNav: React.FC = () => {
               <div className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${isActive ? 'bg-stone-100' : 'bg-transparent'}`}>
                 <User className={`w-[22px] h-[22px] ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.account')}</span>
+              <span className={`text-micro ${isActive ? 'font-bold' : 'font-medium'}`}>{t('nav.account')}</span>
             </>
           )}
         </NavLink>

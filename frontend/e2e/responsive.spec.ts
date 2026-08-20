@@ -257,22 +257,22 @@ test.describe('collections rail', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
     await waitForStableLayout(page);
 
-    const heading = page.getByRole('heading', { name: /collections du moment/i });
+    const heading = page.getByRole('heading', { name: /tendance en ce moment|collections du moment/i });
     await heading.scrollIntoViewIfNeeded();
     const section = page.locator('section').filter({ has: heading });
 
-    await section.getByRole('button', { name: /défiler les collections vers la droite/i }).click();
+    await section.getByRole('button', { name: /défiler|droite/i }).click();
     await page.waitForTimeout(1200);
 
     const state = await page.evaluate(() => {
       const h = [...document.querySelectorAll('h2')].find((x) =>
-        /collections du moment/i.test((x as HTMLElement).innerText),
+        /tendance en ce moment|collections du moment/i.test((x as HTMLElement).innerText),
       );
       const track = [...h!.closest('section')!.querySelectorAll('div.overflow-x-auto')].pop()!;
       const trackLeft = track.getBoundingClientRect().left;
       return {
         scrollLeft: Math.round(track.scrollLeft),
-        offsets: [...track.querySelectorAll('[class*="w-[280px]"]')]
+        offsets: [...track.querySelectorAll('a')]
           .map((c) => Math.round(c.getBoundingClientRect().left - trackLeft))
           .slice(0, 4),
         // The fades were removed; nothing should paint over the rail's edges.

@@ -42,6 +42,7 @@ import { Image } from '../../design-system/primitives/Image';
 import { Listing } from '../../types';
 import { usePublishCta } from '../../security/usePublishCta';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
@@ -51,6 +52,13 @@ function getPhotoUrl(photo: any): string {
 
 export const AccountOverviewPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.accountOverview.title'),
+    description: t('meta.accountOverview.description'),
+    canonicalPath: '/compte',
+    noIndex: true,
+  });
+
   const { currentUser, isEmailVerified, isPhoneVerified, refreshUser, updateProfile } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();

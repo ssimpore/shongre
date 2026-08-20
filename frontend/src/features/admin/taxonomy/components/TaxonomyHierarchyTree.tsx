@@ -95,7 +95,17 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onToggleExpand(node.id, e)}
                 className="p-1 rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-200/50 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center"
-                title={isExpanded ? 'Replier' : 'Déplier'}
+                /* Named after the node, not the gesture. The tree renders this
+                   control on every branch, so a bare "Déplier" produced a dozen
+                   identically-named buttons in the accessibility tree with
+                   nothing to tell them apart. `title` alone was also the only
+                   name they had, and it is never surfaced on a touch device. */
+                aria-label={
+                  isExpanded
+                    ? t('admin.taxonomyHierarchyTree.replierNode', { name: node.name })
+                    : t('admin.taxonomyHierarchyTree.deplierNode', { name: node.name })
+                }
+                aria-expanded={isExpanded}
               >
                 {isExpanded ? (
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -143,7 +153,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onReorderNode(node.id, 'up', e)}
                 className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
-                title={t('admin.taxonomyHierarchyTree.monterDUnRang')}
+                aria-label={t('admin.taxonomyHierarchyTree.monterNode', { name: node.name })}
               >
                 <ArrowUp className="w-3 h-3" />
               </button>
@@ -153,7 +163,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onReorderNode(node.id, 'down', e)}
                 className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
-                title={t('admin.taxonomyHierarchyTree.descendreDUnRang')}
+                aria-label={t('admin.taxonomyHierarchyTree.descendreNode', { name: node.name })}
               >
                 <ArrowDown className="w-3 h-3" />
               </button>
@@ -165,7 +175,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 type="button"
                 onClick={(e) => onAddChild(node, e)}
                 className="p-1 rounded text-stone-500 hover:text-primary hover:bg-primary-light min-w-6 min-h-6 inline-flex items-center justify-center"
-                title={t('admin.taxonomyHierarchyTree.ajouterUneSousRubrique')}
+                aria-label={t('admin.taxonomyHierarchyTree.ajouterSousRubriqueNode', { name: node.name })}
               >
                 <Plus className="w-3 h-3" />
               </button>

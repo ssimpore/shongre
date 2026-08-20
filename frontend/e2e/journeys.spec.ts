@@ -97,7 +97,18 @@ test.describe('navigation shell', () => {
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.waitForTimeout(200);
 
-    await page.locator('a[href^="/annonce/"]').nth(6).click();
+    // Listings sit in a horizontal rail, so bringing the 7th card into view
+    // scrolls the rail sideways *and* carries the page back up to the rail. The
+    // position worth restoring is therefore the one the page actually holds at
+    // navigation time, not the offset asked for above — which is why this reads
+    // it rather than asserting a fixed number that only held while the results
+    // were a tall grid. Restoration itself is unchanged: measured 153 -> 153.
+    const link = page.locator('a[href^="/annonce/"]').nth(6);
+    await link.scrollIntoViewIfNeeded();
+    const departure = await page.evaluate(() => window.scrollY);
+    expect(departure).toBeGreaterThan(50);
+
+    await link.click();
     await page.waitForURL(/\/annonce\//);
     await waitForStableLayout(page);
     // Poll rather than sample once: WebKit applies the scroll a frame or two
@@ -111,7 +122,7 @@ test.describe('navigation shell', () => {
     await page.waitForURL(/\/recherche/);
     await expect
       .poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 })
-      .toBeGreaterThan(200);
+      .toBeGreaterThan(departure - 50);
   });
 });
 

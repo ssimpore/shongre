@@ -9,9 +9,17 @@ import { EmptyState } from '../../design-system/primitives/UIComponents';
 import { formatRelativeDate, plural } from '../../utilities/formatters';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const SavedSearchesPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.savedSearches.title'),
+    description: t('meta.savedSearches.description'),
+    canonicalPath: '/compte/recherches',
+    noIndex: true,
+  });
+
   const navigate = useNavigate();
   const toast = useToast();
   const [searches, setSearches] = useState<SavedSearch[]>(() => storageService.getSavedSearches());

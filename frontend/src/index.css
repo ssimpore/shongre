@@ -102,6 +102,19 @@
      `micro` is the smallest size allowed anywhere in the product. It exists for
      badges, counters and dense metadata only — never for body copy. Anything
      that needs to be read in a sentence starts at `xs`. */
+  /* Two steps that were written as arbitrary values at their call sites
+     (`text-[15px]`, `text-[44px]`) and so lived outside the scale entirely.
+     Both are deliberate — the card title sets the line-clamp height maths in
+     `ListingCard`, and the hero is the one display-sized headline in the
+     product — so they are named rather than rounded onto a neighbouring step,
+     which would have changed two of the most-seen surfaces to satisfy a lint
+     rule. Naming them is what lets the token checker forbid `text-[…px]`
+     outright. */
+  --text-card-title: 0.9375rem; /* 15px — listing card headline from sm up */
+  --text-card-title--line-height: 1.4;
+  --text-hero: 2.75rem;         /* 44px — marketing headline, lg and up       */
+  --text-hero--line-height: 1.08;
+
   --text-micro: 0.6875rem; /* 11px */
   --text-micro--line-height: 1.35;
 
@@ -123,6 +136,17 @@
   /* `control-touch` is the 44px WCAG 2.5.5 target. Use it for primary controls on
      touch surfaces instead of inventing an off-scale `h-11`. */
   --spacing-control-touch: 2.75rem; /* 44px */
+
+  /* --- Listing rail -------------------------------------------------------
+     Every listing surface is a single horizontally-scrolling row, so the card
+     no longer derives its width from a grid column — it carries one. 188px is
+     the width the 6-column "Reprendre ou vous en etiez" rail already produced
+     at 1280px and up, kept as the one listing-card width across the product so
+     a card is the same object on the home, in search, in favourites and on a
+     seller's shelf. It is deliberately the same on mobile: at 375px it leaves
+     ~143px of the next card visible, which is the affordance that says the row
+     scrolls. */
+  --spacing-listing-card: 11.75rem; /* 188px - one listing card in a rail */
 
   /* --- Layout containers -------------------------------------------------- */
   --container-content: 72rem;   /* 1152px — consumer reading width */
@@ -205,6 +229,40 @@
   input,
   textarea {
     min-width: 0;
+  }
+
+  /* --- Native boolean controls -------------------------------------------
+     Checkboxes and radios across the product carry `text-primary`,
+     `border-border-base` and `rounded-md`. None of those do anything to a
+     native control: they are the `@tailwindcss/forms` vocabulary, and that
+     plugin is not installed here. So every checkbox in the app — including the
+     `Checkbox` primitive — painted in the operating system's default blue,
+     which is why the notification preferences grid was the one user-facing
+     screen that did not look like Shongre.
+
+     `accent-color` is the platform-native way to tint them. One declaration
+     covers every control, present and future, keeps native keyboard and
+     screen-reader behaviour intact, and needs no plugin.
+
+     The size floor is here for the same reason: `w-4 h-4` (16px) is below the
+     24px WCAG 2.5.8 target minimum, and it appears at ~16 call sites. The
+     primitive already wraps bare checkboxes in a 24px box; this catches the
+     ones written by hand. */
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--color-primary);
+    min-width: 1.125rem;  /* 18px painted … */
+    min-height: 1.125rem;
+  }
+
+  /* … and the interactive target reaches the 24px floor via padding on coarse
+     pointers, where the finger — not the cursor — is doing the aiming. */
+  @media (pointer: coarse) {
+    input[type='checkbox'],
+    input[type='radio'] {
+      min-width: 1.5rem;
+      min-height: 1.5rem;
+    }
   }
 
   /* Focus visible accessibility outline */

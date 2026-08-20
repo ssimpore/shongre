@@ -25,6 +25,7 @@ import { Collection, CollectionPillarId } from '../../domains/collection/collect
 import { listingRepository } from '../../repositories/listing.repository';
 import { Listing } from '../../types';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
+import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { Image } from '../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../design-system/primitives/responsiveImage';
@@ -279,6 +280,7 @@ export const CollectionsPage: React.FC = () => {
                   value={collectionSearch}
                   onChange={(e) => setCollectionSearch(e.target.value)}
                   placeholder={t('collections.collectionsPage.chercherUneThematique')}
+                aria-label={t('collections.collectionsPage.chercherUneThematique')}
                   className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                 />
               </div>
@@ -466,6 +468,7 @@ export const CollectionsPage: React.FC = () => {
                     value={inCollectionSearch}
                     onChange={(e) => setInCollectionSearch(e.target.value)}
                     placeholder={t('collections.collectionsPage.filtrerDansLaSelection')}
+                aria-label={t('collections.collectionsPage.filtrerDansLaSelection')}
                     className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                   />
                 </div>
@@ -484,21 +487,21 @@ export const CollectionsPage: React.FC = () => {
               </div>
 
               {isLoading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="flex gap-3 sm:gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
                   {Array.from({ length: 8 }).map((_, idx) => (
-                    <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
-                      <Skeleton className="h-44 w-full rounded-xl" />
+                    <div key={idx} className="w-listing-card shrink-0 bg-white rounded-2xl p-3 border border-border-base space-y-3">
+                      <Skeleton className="aspect-[4/3] w-full rounded-xl" />
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-5 w-1/3" />
                     </div>
                   ))}
                 </div>
               ) : displayedListings.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <ListingRail label={t('collections.collectionsPage.annoncesDeLaCollection')}>
                   {displayedListings.map((listing) => (
                     <ListingCard key={listing.id} listing={listing} />
                   ))}
-                </div>
+                </ListingRail>
               ) : (
                 <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4">
                   <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
@@ -550,13 +553,13 @@ export const CollectionsPage: React.FC = () => {
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <span className="text-[10px] font-bold text-primary uppercase block truncate">
+                          <span className="text-micro font-bold text-primary uppercase block truncate">
                             {c.badge.label}
                           </span>
                           <h4 className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
                             {c.title}
                           </h4>
-                          <p className="text-[11px] text-stone-400 mt-0.5">{c.itemCountLabel}</p>
+                          <p className="text-micro text-stone-400 mt-0.5">{c.itemCountLabel}</p>
                         </div>
                       </Link>
                     ))}
