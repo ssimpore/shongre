@@ -232,7 +232,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         value={buyerPhone}
                         onChange={(e) => setBuyerPhone(e.target.value)}
                         placeholder="ex: 06 12 34 56 78"
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       />
                     </div>
                     <div>
@@ -242,7 +242,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         value={meetingNotes}
                         onChange={(e) => setMeetingNotes(e.target.value)}
                         placeholder={t('transactions.reservationCheckoutModal.exEnCentreVilleSamedi')}
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       />
                     </div>
                   </div>
@@ -280,7 +280,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       <select
                         value={relayPoint}
                         onChange={(e) => setRelayPoint(e.target.value)}
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       >
                         <option value="Tabac Presse des Halles (MR-13001)">{t('transactions.reservationCheckoutModal.tabacPresseDesHalles15')}</option>
                         <option value="Relais Colis City Express (MR-13002)">Relais Colis City Express (8 bd Longchamp, 13001 Marseille)</option>
@@ -324,7 +324,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         value={recipientName}
                         onChange={(e) => setRecipientName(e.target.value)}
                         placeholder={t('transactions.reservationCheckoutModal.nomEtPrenom')}
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       />
                     </div>
                     <div className="col-span-2">
@@ -334,7 +334,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
                         placeholder={t('transactions.reservationCheckoutModal.nEtNomDeRue')}
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       />
                     </div>
                     <div>
@@ -343,7 +343,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         type="text"
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       />
                     </div>
                     <div>
@@ -352,7 +352,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="w-full h-10 px-3 bg-white border border-stone-200 rounded-xl text-stone-900"
+                        className="w-full h-control-md px-3 bg-white border border-stone-200 rounded-control text-stone-900"
                       />
                     </div>
                   </div>
@@ -473,7 +473,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                     type="text"
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value)}
-                    className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-stone-900 font-medium"
+                    className="w-full h-control-touch px-3 bg-white border border-stone-200 rounded-control text-stone-900 font-medium"
                   />
                 </div>
                 <div>
@@ -484,7 +484,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
                       placeholder="4242 4242 4242 4242"
-                      className="w-full h-11 px-3 pr-10 bg-white border border-stone-200 rounded-xl text-stone-900 font-mono"
+                      className="w-full h-control-touch px-3 pr-10 bg-white border border-stone-200 rounded-control text-stone-900 font-mono"
                     />
                     <Lock className="w-5 h-5 text-success absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
@@ -497,7 +497,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(e.target.value)}
                       placeholder="MM/AA"
-                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-stone-900 font-mono"
+                      className="w-full h-control-touch px-3 bg-white border border-stone-200 rounded-control text-stone-900 font-mono"
                     />
                   </div>
                   <div>
@@ -508,7 +508,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       value={cardCvc}
                       onChange={(e) => setCardCvc(e.target.value)}
                       placeholder="123"
-                      className="w-full h-11 px-3 bg-white border border-stone-200 rounded-xl text-stone-900 font-mono"
+                      className="w-full h-control-touch px-3 bg-white border border-stone-200 rounded-control text-stone-900 font-mono"
                     />
                   </div>
                 </div>

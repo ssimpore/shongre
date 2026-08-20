@@ -190,7 +190,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             onKeyDown={handleKeyDown}
             placeholder={t('messaging.messageComposer.ecrivezVotreMessageEntreePour')}
             aria-label={t('messaging.messageComposer.votreMessage')}
-            className="w-full min-h-[42px] max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400 resize-none"
+            className="w-full min-h-control-touch max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-control focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400 resize-none"
           />
         </div>
 
@@ -201,7 +201,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           disabled={(!text.trim() && !attachedPhoto) || isSending}
           isLoading={isSending}
           leftIcon={<Send className="w-4 h-4" />}
-          className="h-[42px] px-4"
+          className="h-control-touch px-4"
         >
           <span className="hidden sm:inline">Envoyer</span>
         </Button>

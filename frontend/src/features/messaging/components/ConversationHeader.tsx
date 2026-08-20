@@ -118,10 +118,10 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
           {isMenuOpen && (
             <>
               <div
-                className="fixed inset-0 z-20"
+                className="fixed inset-0 z-sticky"
                 onClick={() => setIsMenuOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-lg border border-border-base p-1 z-30 space-y-0.5 text-xs font-semibold">
+              <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-lg border border-border-base p-1 z-dropdown space-y-0.5 text-xs font-semibold">
                 {publicProfileSlug && (
                   <Link
                     to={`/profil/${publicProfileSlug}`}

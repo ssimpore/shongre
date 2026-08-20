@@ -124,7 +124,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
               id="provider-environment"
               value={environment}
               onChange={(e) => setEnvironment(e.target.value as any)}
-              className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-medium text-stone-800"
+              className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-medium text-stone-800 h-control-touch"
             >
               <option value="demo">Demo (Simulation locale)</option>
               <option value="sandbox">{t('admin.providerConfigurationForm.sandboxEnvironnementDeTestPartenaire')}</option>
@@ -145,7 +145,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
               max={10}
               value={priority}
               onChange={(e) => setPriority(parseInt(e.target.value, 10) || 1)}
-              className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-bold text-stone-800 w-24"
+              className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-bold text-stone-800 w-24 h-control-touch"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                           aria-label={t('admin.providerConfigurationForm.statutDesIdentifiants')}
                           value={credentialStatus}
                           onChange={(e) => setCredentialStatus(e.target.value as any)}
-                          className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning"
+                          className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning h-control-touch"
                         >
                           <option value="configured">{t('admin.providerConfigurationForm.cleConfigureeEtValidee')}</option>
                           <option value="not_configured">{t('admin.providerConfigurationForm.nonConfiguree')}</option>
@@ -213,14 +213,14 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                           disabled
                           aria-label={field.label}
                           value="••••••••••••••••••••••••••••••••"
-                          className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-stone-100/80 text-stone-500 font-mono"
+                          className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-stone-100/80 text-stone-500 font-mono h-control-touch"
                         />
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => toast.info('La rotation des clés réelles sera exécutée par le backend sécurisé.')}
-                          className="text-xs shrink-0 h-8"
+                          className="text-xs shrink-0 h-control-sm"
                         >
                           Remplacer
                         </Button>
@@ -243,7 +243,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                       id={`provider-field-${field.key}`}
                       value={val}
                       onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                      className="w-full py-2 px-3 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50"
+                      className="w-full py-2 px-3 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 h-control-touch"
                     >
                       {field.options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -263,7 +263,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                           field.type === 'number' ? Number(e.target.value) : e.target.value
                         )
                       }
-                      className="w-full py-2 px-3 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50"
+                      className="w-full h-control-touch py-2 px-3 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50"
                     />
                   )}
                 </div>

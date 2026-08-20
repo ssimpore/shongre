@@ -231,7 +231,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
               size="sm"
               onClick={() => onNavigateToTab('matrix')}
               rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-              className="text-xs h-8"
+              className="text-xs h-control-sm"
             >{t('admin.providerOverviewDashboard.matriceMultiMarches')}</Button>
           </div>
         </div>

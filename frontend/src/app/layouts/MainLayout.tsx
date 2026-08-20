@@ -8,7 +8,7 @@ import { LocationPickerModal } from './LocationPickerModal';
 import { PreferencesModal } from './PreferencesModal';
 import { CookieConsent } from './CookieConsent';
 import { AppScrollRestoration } from '../router/AppScrollRestoration';
-import { SkipLink } from '../../design-system/primitives/SkipLink';
+import { SkipLink } from '../../design-system';
 
 export const MainLayout: React.FC = () => {
   return (

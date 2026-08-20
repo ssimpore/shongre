@@ -24,10 +24,9 @@ import {
 import { useAuth } from '../../app/providers/AuthProvider';
 import { ROLE_DEFINITIONS } from '../../security/roles.config';
 import { useAuthorization } from '../../security/useAuthorization';
-import { Image } from '../../design-system/primitives/Image';
+import { Container, Image, SkipLink } from '../../design-system';
 import { AppScrollRestoration } from '../../app/router/AppScrollRestoration';
 import { useTranslation } from '../../i18n/I18nProvider';
-import { SkipLink } from '../../design-system/primitives/SkipLink';
 
 export const AdminLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -162,8 +161,11 @@ export const AdminLayout: React.FC = () => {
       <SkipLink />
       <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
-      <header className="bg-stone-900 text-white sticky top-0 z-40 border-b border-stone-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+      <header className="bg-stone-900 text-white sticky top-0 z-header border-b border-stone-800 shadow-sm">
+        <Container
+          width="page"
+          className="h-14 flex items-center justify-between gap-3"
+        >
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/admin" className="flex items-center gap-2 group min-w-0">
               <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
@@ -228,11 +230,14 @@ export const AdminLayout: React.FC = () => {
               <span className="hidden md:inline">{t('admin.adminLayout.placeDeMarche')}</span>
             </Link>
           </div>
-        </div>
+        </Container>
       </header>
 
       {/* Main Admin Workspace Container */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col lg:flex-row gap-6">
+      <Container
+        width="page"
+        className="py-6 flex-1 flex flex-col lg:flex-row gap-6"
+      >
         {/* Compact section menu (below `lg`).
             This was a horizontal rail of every console section — fourteen items
             on one scrolling line, where finding "Taxonomie" meant swiping past
@@ -246,7 +251,7 @@ export const AdminLayout: React.FC = () => {
             aria-expanded={isSectionMenuOpen}
             aria-haspopup="menu"
             aria-controls="admin-section-menu"
-            className="w-full flex items-center justify-between gap-3 bg-white rounded-xl border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
+            className="w-full flex items-center justify-between gap-3 bg-white rounded-control border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
           >
             <span className="flex items-center gap-2.5 min-w-0">
               {activeNavItem ? (
@@ -275,7 +280,7 @@ export const AdminLayout: React.FC = () => {
               id="admin-section-menu"
               role="menu"
               aria-label={t('admin.adminLayout.sectionsDeLaConsole')}
-              className="absolute top-full left-0 right-0 mt-1.5 z-30 bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top"
+              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top"
             >
               {visibleNavItems.map((item) => {
                 const Icon = item.icon;
@@ -349,7 +354,7 @@ export const AdminLayout: React.FC = () => {
         <main id="main-content" tabIndex={-1} className="flex-1 min-w-0">
           <Outlet />
         </main>
-      </div>
+      </Container>
     </div>
   );
 };

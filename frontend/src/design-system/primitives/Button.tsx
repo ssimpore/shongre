@@ -1,10 +1,12 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { Link, LinkProps } from 'react-router-dom';
+import { cn, createVariants } from '../utils/variants';
+import { CONTROL_RADIUS_CLASS, controlHeightClasses } from '../utils/controlMetrics';
 
 export interface ButtonVisualProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'pro';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'compact' | 'md' | 'lg';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -89,29 +91,40 @@ const DISPLAY_SET_BY_CALLER =
  * the email field beside it. 48px is the scale's own large step and still reads
  * as the biggest control on the page.
  *
- * `sm` stays at `h-9` (36px) deliberately. It is off-scale too, but it is the
- * height dense admin tables and filter bars are laid out around, and moving it
- * is a change to those screens rather than to this one.
+ * `sm` uses control-sm (32px) for dense admin tables and filter bars. The
+ * `compact` step (40px) is reserved for dense navigation and search toolbars;
+ * the medium touch size remains the default for primary user journeys.
  */
-const sizeStyles = {
-  sm: 'text-xs px-4 py-1.5 gap-1.5 h-9 font-semibold rounded-xl',
-  md: 'text-sm px-5 py-2 gap-2 h-control-touch font-bold rounded-xl',
-  lg: 'text-base px-6 py-2.5 gap-2.5 h-control-lg font-bold rounded-2xl',
-};
-
-const variantStyles = {
-  primary: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:shadow-md hover:shadow-primary/20',
+const buttonClasses = createVariants({
+  base: baseStyles,
+  variants: {
+    size: {
+      sm: `text-xs px-3 gap-1.5 ${controlHeightClasses.sm} font-semibold ${CONTROL_RADIUS_CLASS}`,
+      compact: `text-xs px-4 gap-2 ${controlHeightClasses.compact} font-bold ${CONTROL_RADIUS_CLASS}`,
+      md: `text-sm px-5 gap-2 ${controlHeightClasses.md} font-bold ${CONTROL_RADIUS_CLASS}`,
+      lg: `text-base px-6 gap-2.5 ${controlHeightClasses.lg} font-bold ${CONTROL_RADIUS_CLASS}`,
+    },
+    variant: {
+      primary:
+        'bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:shadow-md hover:shadow-primary/20',
   /* The only filled variant that had no edge. On a white card that left it with
      no boundary at all — the "Message" action on a listing read as flat text
      rather than a control, sitting next to two bordered neighbours. A 1px border
      gives it definition while staying visibly lighter than `outline`'s 2px, so
      the two stay distinguishable when they appear side by side. */
-  secondary: 'bg-bg-base text-stone-900 border border-border-hover hover:bg-bg-subtle hover:border-stone-400 active:bg-bg-muted shadow-2xs',
-  outline: 'border-2 border-stone-200 bg-white text-stone-800 hover:bg-stone-50 hover:border-stone-300 active:bg-stone-100 shadow-2xs',
-  ghost: 'bg-transparent text-stone-700 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200',
-  danger: 'bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm',
-  pro: 'bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:shadow-md hover:shadow-stone-900/10',
-};
+      secondary:
+        'bg-bg-base text-stone-900 border border-border-hover hover:bg-bg-subtle hover:border-stone-400 active:bg-bg-muted shadow-2xs',
+      outline:
+        'border-2 border-stone-200 bg-white text-stone-800 hover:bg-stone-50 hover:border-stone-300 active:bg-stone-100 shadow-2xs',
+      ghost:
+        'bg-transparent text-stone-700 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200',
+      danger: 'bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm',
+      pro: 'bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:shadow-md hover:shadow-stone-900/10',
+    },
+    width: { auto: '', full: 'w-full' },
+  },
+  defaultVariants: { size: 'md', variant: 'primary', width: 'auto' },
+});
 
 export const Button: React.FC<ButtonProps> = (props) => {
   const {
@@ -127,14 +140,15 @@ export const Button: React.FC<ButtonProps> = (props) => {
   } = props;
 
   const display = DISPLAY_SET_BY_CALLER.test(className) ? '' : 'inline-flex';
-  const classes = `${display} ${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${
-    fullWidth ? 'w-full' : ''
-  } ${className}`;
+  const classes = cn(
+    display,
+    buttonClasses({ size, variant, width: fullWidth ? 'full' : 'auto', className }),
+  );
 
   const content = (
     <>
       {isLoading ? (
-        <Loader2 className="w-4 h-4 shrink-0 animate-spin text-current" />
+        <Loader2 className="w-icon-md h-icon-md shrink-0 animate-spin text-current" />
       ) : (
         leftIcon && <span className="shrink-0 inline-flex items-center">{leftIcon}</span>
       )}

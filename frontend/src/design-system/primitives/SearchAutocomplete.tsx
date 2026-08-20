@@ -106,7 +106,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
       id={`${idPrefix}-dropdown`}
       role="listbox"
       aria-label={t('ui.searchAutocomplete.suggestionsDeRecherche')}
-      className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-border-base overflow-hidden z-50 animate-in fade-in zoom-in-95 max-h-[440px] overflow-y-auto ${className}`}
+      className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-dropdown border border-border-base overflow-hidden z-popover animate-in fade-in zoom-in-95 max-h-[440px] overflow-y-auto ${className}`}
     >
       {/* ----------------------------------------------------------------- */}
       {/* STATE A: User is typing a query */}

@@ -75,15 +75,15 @@ export const DemoRoleSwitcher: React.FC = () => {
   };
 
   return (
-    /* `z-45` follows the same tier as the mobile drawer: above page chrome
-       (the sticky header is `z-40`), below modals and toasts (`z-50`).
+    /* `z-drawer` follows the same tier as the mobile drawer: above page chrome
+       (the sticky header is `z-header`), below modals and toasts (`z-modal`).
 
-       It was `z-40`. Because this element is positioned, that created a
-       stacking context, which trapped the dropdown's own `z-50` inside it — so
-       the menu competed with the header as a `z-40` sibling and lost on DOM
+       It was `z-header`. Because this element is positioned, that created a
+       stacking context, which trapped the dropdown's own `z-modal` inside it — so
+       the menu competed with the header as a `z-header` sibling and lost on DOM
        order, since the header comes later. The role list rendered underneath
        the header and its first entry was unreadable. */
-    <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-45">
+    <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-drawer">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded tracking-wider uppercase">{t('shell.demoRoleSwitcher.modeDemo')}</span>
@@ -103,7 +103,7 @@ export const DemoRoleSwitcher: React.FC = () => {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-2xl border border-stone-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-fast">
+            <div className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-dropdown border border-stone-200 py-1.5 z-popover animate-in fade-in zoom-in-95 duration-fast">
               <div className="px-3 py-1.5 border-b border-stone-100 text-xs font-bold text-stone-400 uppercase tracking-wider">{t('shell.demoRoleSwitcher.changerDeRolePourTester')}</div>
               {roles.map((r) => {
                 const isActive = normalizePlatformRole(r.role) === platformRole;

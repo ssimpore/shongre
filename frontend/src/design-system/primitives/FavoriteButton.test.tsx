@@ -25,7 +25,7 @@ describe('FavoriteButton', () => {
    */
   it('does not emit its own position when the caller supplies one', () => {
     for (const position of ['absolute', 'fixed', 'sticky', 'static']) {
-      const classes = classAttr(render({ className: `${position} top-2.5 right-2.5 z-10` }));
+      const classes = classAttr(render({ className: `${position} top-2.5 right-2.5 z-raised` }));
       expect(classes.split(/\s+/), `${position} call site`).toContain(position);
       expect(classes.split(/\s+/), `${position} call site kept a conflicting relative`)
         .not.toContain('relative');

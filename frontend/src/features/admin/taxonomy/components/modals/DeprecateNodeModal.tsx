@@ -81,7 +81,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
           <select
             value={replacementId}
             onChange={(e) => setReplacementId(e.target.value)}
-            className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+            className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
           >
             <option value="">{t('admin.deprecateNodeModal.aucunSuccesseurDirectDepreciationSimple')}</option>
             {availableReplacements.map((r) => (

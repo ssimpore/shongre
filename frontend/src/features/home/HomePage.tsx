@@ -1,51 +1,29 @@
-import { routes } from '../../configuration/routes';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Search,
-  
-  
   ArrowRight,
-  TrendingUp,
-  
-  
-  
-  
-  
-  Car,
-  Home as 
-  Smartphone,
-  Shirt,
-  Bike,
-  Armchair,
-  Gamepad2,
-  Gift,
-  Lamp,
   ScanSearch,
-  Sparkle,
-  
-  
-  
-  
-  PlusCircle
-  
-  
+  PlusCircle,
+  ShieldCheck,
+  Truck,
+  BadgeCheck,
 } from 'lucide-react';
 import { listingRepository } from '../../repositories/listing.repository';
 import { Listing } from '../../types';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Button } from '../../design-system/primitives/Button';
-import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
+import { Container, EmptyState, Heading, ListingCardSkeleton } from '../../design-system';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
-import { HomeTrustStrip } from './components/HomeTrustStrip';
 import { HomeRecentSearches } from './components/HomeRecentSearches';
 import { HomeCollectionsSection } from './components/HomeCollectionsSection';
 import { usePublishCta } from '../../security/usePublishCta';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
+import { HomeSectionHeading } from './components/HomeSectionHeading';
 
 /**
  * How many cards each homepage rail shows.
@@ -58,22 +36,6 @@ import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButto
 const RECENT_COUNT = 12;
 const DEALS_COUNT = 8;
 
-/**
- * Hero quick-search chips. Each carries a glyph so the row reads as a set of
- * things rather than a wall of words — the terms span vehicles, electronics,
- * furniture and giveaways, and the icon is what tells them apart at a glance.
- */
-const POPULAR_SEARCHES = [
-  { term: 'Vélo gravel', Icon: Bike },
-  { term: 'iPhone 15 Pro', Icon: Smartphone },
-  { term: 'Peugeot 208', Icon: Car },
-  { term: 'Fauteuil vintage', Icon: Armchair },
-  { term: 'PS5', Icon: Gamepad2 },
-  { term: 'Sézane', Icon: Shirt },
-  { term: 'Table teck', Icon: Lamp },
-  { term: 'Don gratuit', Icon: Gift },
-] as const;
-
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
@@ -83,7 +45,6 @@ export const HomePage: React.FC = () => {
     type: 'website',
   });
 
-  const navigate = useNavigate();
   const publishCta = usePublishCta();
   const { activeMarket } = useMarketLocation();
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
@@ -135,85 +96,78 @@ export const HomePage: React.FC = () => {
   return (
     <div className="space-y-8 sm:space-y-12 pb-16">
       {/* 1. Hero — pitch, search and the promoted rail */}
-      <section className="relative bg-[#FAF8F5] pt-4 sm:pt-6 pb-6 sm:pb-8 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center w-full">
-            {/* Column 1: Hero Pitch, Search & CTAs */}
-            <div className="lg:col-span-7 space-y-4 lg:space-y-4.5 text-left flex flex-col justify-center w-full">
-              <div className="space-y-2.5 sm:space-y-3">
-                <div className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full border border-stone-200/90 bg-white text-xs font-semibold text-stone-700 shadow-2xs w-fit">
-                  <Sparkle className="w-3 h-3 text-primary fill-primary shrink-0" />
-                  <span>{t('home.homePage.leMarcheLocalFrancaisDe')}</span>
+      <section className="relative overflow-hidden bg-bg-base py-3 sm:py-4">
+        <Container className="relative z-raised">
+          <div className="rounded-3xl bg-gradient-to-br from-bg-surface via-bg-surface to-primary-light/40 px-5 py-7 shadow-xs sm:p-8 lg:p-10">
+            <div className="grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
+              {/* Column 1: Hero Pitch, Search & CTAs */}
+              <div className="flex w-full flex-col justify-center gap-6 text-left sm:gap-7">
+                <div className="space-y-4 sm:space-y-5">
+                  <Heading as="h1" size="display-md" family="display">{t('home.homePage.trouvezLaPerleRare')}<br className="hidden sm:inline" />
+                    <span className="text-primary relative inline-block">{t('home.homePage.sansTracas')}<svg
+                        aria-hidden="true"
+                        className="absolute left-0 -bottom-1 sm:-bottom-1.5 w-full h-2.5 sm:h-3.5 text-primary/70 overflow-visible pointer-events-none"
+                        viewBox="0 0 200 14"
+                        preserveAspectRatio="none"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                      >
+                        <path d="M3 8.5C48 3.4 128 2.6 197 6.2" />
+                        <path d="M12 12.6C61 9 121 8.6 186 11.4" strokeWidth="2" opacity="0.6" />
+                      </svg>
+                    </span>
+                  </Heading>
+
+                  <p className="max-w-xl text-sm font-normal leading-relaxed text-stone-600 sm:text-base">{t('home.homePage.achetezEtVendezEnToute')}</p>
                 </div>
 
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-hero font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">{t('home.homePage.trouvezLaPerleRare')}<br className="hidden sm:inline" />
-                  <span className="text-primary relative inline-block">{t('home.homePage.sansTracas')}<svg
-                      aria-hidden="true"
-                      className="absolute left-0 -bottom-1 sm:-bottom-1.5 w-full h-2.5 sm:h-3.5 text-primary/60 overflow-visible pointer-events-none"
-                      viewBox="0 0 200 14"
-                      preserveAspectRatio="none"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
+                {/* Hero Secondary Actions */}
+                <div className="w-full">
+                  <div className="flex w-full flex-col gap-3 sm:w-fit sm:flex-row">
+                    <PublishCtaButton size="md" />
+
+                    <Button
+                      to="/recherche"
+                      variant="outline"
+                      size="md"
+                      leftIcon={<Search className="h-icon-lg w-icon-lg text-stone-500" />}
+                      className="w-full sm:w-auto"
                     >
-                      <path d="M3 8.5C48 3.4 128 2.6 197 6.2" />
-                      <path d="M12 12.6C61 9 121 8.6 186 11.4" strokeWidth="2" opacity="0.6" />
-                    </svg>
-                  </span>
-                </h1>
+                      {t('home.homePage.explorerLeCatalogue')}
+                    </Button>
+                  </div>
+                </div>
 
-                <p className="text-xs sm:text-sm text-stone-600 max-w-lg leading-relaxed font-normal">{t('home.homePage.achetezEtVendezEnToute')}</p>
-              </div>
-
-              {/* Quick search suggestions */}
-              <div className="w-full">
-                <p className="flex items-center gap-1.5 text-micro sm:text-xs font-semibold text-stone-600 mb-1.5 sm:mb-2">
-                  <TrendingUp className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>Recherches populaires</span>
-                </p>
-                <ul className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                  {POPULAR_SEARCHES.map(({ term, Icon }) => (
-                    <li key={term}>
-                      <button
-                        type="button"
-                        onClick={() => navigate(routes.search(term))}
-                        className="group inline-flex items-center gap-1.5 h-7.5 px-3 rounded-full bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-700 hover:text-stone-900 transition-all cursor-pointer font-medium text-micro sm:text-xs shadow-2xs active:scale-95"
-                      >
-                        <Icon className="w-3.5 h-3.5 shrink-0 text-stone-400 group-hover:text-primary transition-colors" />
-                        <span>{term}</span>
-                      </button>
-                    </li>
-                  ))}
+                <ul
+                  className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-border-subtle pt-4 text-xs font-medium text-stone-700 sm:text-sm"
+                  aria-label={t('home.homePage.garantiesShongre')}
+                >
+                  <li className="inline-flex items-center gap-2">
+                    <ShieldCheck className="h-icon-lg w-icon-lg shrink-0 text-primary" aria-hidden="true" />
+                    {t('home.homePage.paiementsSecurises')}
+                  </li>
+                  <li className="inline-flex items-center gap-2 border-l border-border-base pl-4">
+                    <Truck className="h-icon-lg w-icon-lg shrink-0 text-primary" aria-hidden="true" />
+                    {t('home.homePage.livraisonIntegree')}
+                  </li>
+                  <li className="inline-flex items-center gap-2 border-l border-border-base pl-4">
+                    <BadgeCheck className="h-icon-lg w-icon-lg shrink-0 text-primary" aria-hidden="true" />
+                    {t('home.homePage.vendeursVerifies')}
+                  </li>
                 </ul>
               </div>
 
-              {/* Hero Secondary Actions */}
-              <div className="pt-0.5 sm:pt-1 w-full">
-                <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-fit">
-                  <PublishCtaButton />
-
-                  <button
-                    type="button"
-                    onClick={() => navigate(routes.search())}
-                    className="h-10.5 sm:h-11 px-5 rounded-xl bg-white hover:bg-stone-50 border border-stone-200/90 hover:border-stone-300 text-stone-800 font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 w-full sm:w-auto whitespace-nowrap"
-                  >
-                    <Search className="w-4 h-4 text-stone-400 shrink-0" />
-                    <span>{t('home.homePage.explorerLeCatalogue')}</span>
-                  </button>
-                </div>
+              {/* Column 2: Boosted & Promoted Listings Auto-Scrolling.
+                  `empty:hidden` so the column stops reserving half the hero grid
+                  when the rail collapses on a market with no listings. */}
+              <div className="relative flex min-w-0 w-full flex-col empty:hidden">
+                <HeroBoostedScroll />
               </div>
             </div>
-
-            {/* Column 2: Boosted & Promoted Listings Auto-Scrolling.
-                `empty:hidden` so the column stops reserving half the hero grid
-                when the rail collapses on a market with no listings. */}
-            <div className="lg:col-span-5 relative w-full flex flex-col justify-center min-w-0 empty:hidden">
-              <HeroBoostedScroll />
-            </div>
           </div>
-
-        </div>
+        </Container>
       </section>
 
       {/* 2. Recent searches — quick resume for visitor queries */}
@@ -223,10 +177,10 @@ export const HomePage: React.FC = () => {
       <HomeCollectionsSection />
 
       {/* 3. Fresh listings — the first browsable inventory */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
+      <Container as="section" className="mt-12 sm:mt-16">
         <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
           <div className="min-w-0">
-            <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('home.homePage.annoncesRecentes')}</h2>
+            <HomeSectionHeading>{t('home.homePage.annoncesRecentes')}</HomeSectionHeading>
             <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.lesDernieresOffresPublieesPres')}</p>
           </div>
 
@@ -243,12 +197,10 @@ export const HomePage: React.FC = () => {
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {Array.from({ length: RECENT_COUNT }).map((_, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
-                <Skeleton className="h-44 w-full rounded-xl" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-5 w-1/3" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
+              <ListingCardSkeleton
+                key={idx}
+                className="rounded-2xl border border-border-base bg-white p-3"
+              />
             ))}
           </div>
         ) : recentListings.length === 0 ? (
@@ -273,31 +225,29 @@ export const HomePage: React.FC = () => {
             ))}
           </ListingRail>
         )}
-      </section>
+      </Container>
 
-
-      {/* 4. Trust reassurance — after the visitor has seen real goods */}
-      <HomeTrustStrip />
-
-      {/* 5. Deals & price drops */}
+      {/* 4. Deals & price drops */}
       {dealsListings.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container as="section">
           <div className="bg-gradient-to-br from-warning-surface/70 via-stone-50/50 to-white rounded-3xl border border-warning-border p-4 sm:p-8 shadow-xs">
             <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
               <div className="min-w-0 space-y-1">
-                <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
+                <HomeSectionHeading>
                   {t('home.homePage.meilleuresOffres')}
-                </h2>
+                </HomeSectionHeading>
                 <p className="text-xs sm:text-sm text-stone-600 mt-0.5 hidden sm:block font-medium">{t('home.homePage.desReductionsJusquA50')}</p>
               </div>
-              <Link
+              <Button
                 to="/bons-plans"
-                className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-warning-border hover:bg-warning-surface hover:border-warning px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shrink-0 flex items-center gap-1.5 whitespace-nowrap shadow-2xs active:scale-95 w-fit mb-0.5"
+                variant="secondary"
+                size="sm"
+                rightIcon={<ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />}
+                className="shrink-0 border-warning-border hover:border-warning hover:bg-warning-surface"
               >
                 <span className="hidden sm:inline">{t('home.homePage.toutesLesOffres')}</span>
                 <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
-              </Link>
+              </Button>
             </div>
 
             <ListingRail label={t('home.homePage.meilleuresOffres')}>
@@ -306,13 +256,10 @@ export const HomePage: React.FC = () => {
               ))}
             </ListingRail>
           </div>
-        </section>
+        </Container>
       )}
-
-
-
-      {/* 8. Pro banner CTA */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 5. Pro banner CTA */}
+      <Container as="section">
         <div className="bg-bg-base border border-border-base rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <h3 className="text-xl sm:text-2xl font-black text-stone-900">{t('home.homePage.vousEtesCommercantArtisanOu')}</h3>
@@ -320,17 +267,21 @@ export const HomePage: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
-            <Link
+            <Button
               to="/solutions-pro"
-              className="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl text-center transition-colors"
-            >{t('home.homePage.decouvrirLesForfaitsPro')}</Link>
-            <Link
+              variant="pro"
+              size="md"
+              fullWidth
+            >{t('home.homePage.decouvrirLesForfaitsPro')}</Button>
+            <Button
               to="/inscription/professionnel"
-              className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl text-center transition-colors shadow-xs"
-            >{t('home.homePage.creerMonComptePro')}</Link>
+              variant="primary"
+              size="md"
+              fullWidth
+            >{t('home.homePage.creerMonComptePro')}</Button>
           </div>
         </div>
-      </section>
+      </Container>
     </div>
   );
 };

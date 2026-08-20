@@ -116,7 +116,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
           aria-expanded={isOpen}
           aria-controls={isOpen ? resultsId : undefined}
           aria-busy={isLoading || undefined}
-          className="w-full h-10 pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-xl placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+          className="w-full h-control-md pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-control placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
         />
         {query && (
           <button
@@ -134,7 +134,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       {isOpen && (
         <div
           id={resultsId}
-          className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-96 overflow-y-auto overflow-x-hidden rounded-2xl border border-stone-200 bg-white shadow-lg animate-in fade-in"
+          className="absolute left-0 right-0 top-full z-popover mt-1.5 max-h-96 overflow-y-auto overflow-x-hidden rounded-2xl border border-stone-200 bg-white shadow-dropdown animate-in fade-in"
           aria-live="polite"
         >
           <div className="p-2 bg-stone-50 text-micro font-bold text-stone-500 uppercase tracking-wider">

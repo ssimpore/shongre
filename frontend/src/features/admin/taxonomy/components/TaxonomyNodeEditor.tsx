@@ -499,7 +499,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <select
                   value={conditionScheme}
                   onChange={(e) => setConditionScheme(e.target.value as any)}
-                  className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+                  className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
                   <option value="consumer_product">{t('admin.taxonomyNodeEditor.produitStandardNeufTresBon')}</option>
                   <option value="vehicle">{t('admin.taxonomyNodeEditor.vehicule0KmExcellentControle')}</option>
@@ -548,7 +548,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     aria-label={t('admin.taxonomyNodeEditor.couleurDAccentuationDeLa')}
                     value={accentColor}
                     onChange={(e) => setAccentColor(e.target.value)}
-                    className="w-10 h-10 rounded-xl cursor-pointer border border-border-base"
+                    className="w-10 h-control-md rounded-control cursor-pointer border border-border-base"
                   />
                   <span className="text-xs font-mono font-bold text-stone-700">{accentColor}</span>
                 </div>
@@ -601,7 +601,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full h-10 px-3 bg-white border border-border-base rounded-xl text-xs font-semibold"
+                    className="w-full h-control-md px-3 bg-white border border-border-base rounded-control text-xs font-semibold"
                   >
                     <option value="active">{t('admin.taxonomyNodeEditor.actifEnLigneEtIndexable')}</option>
                     <option value="draft">{t('admin.taxonomyNodeEditor.brouillonInvisibleAuxUtilisateurs')}</option>
@@ -702,7 +702,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <select
                     value={selectedRegistryAttrId}
                     onChange={(e) => setSelectedRegistryAttrId(e.target.value)}
-                    className="h-control-md px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold max-w-xs"
+                    className="h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold max-w-xs"
                   >
                     <option value="">{t('admin.taxonomyNodeEditor.choisirDansLeRegistre')}</option>
                     {availableRegistryAttributes.map((attr) => (
@@ -1083,7 +1083,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <select
                   value={previewUserType}
                   onChange={(e) => setPreviewUserType(e.target.value as any)}
-                  className="h-8 px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold"
+                  className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
                   <option value="individual">{t('admin.taxonomyNodeEditor.vendeurParticulier')}</option>
                   <option value="pro">{t('admin.taxonomyNodeEditor.vendeurProfessionnel')}</option>
@@ -1095,7 +1095,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <select
                   value={previewMarket}
                   onChange={(e) => setPreviewMarket(e.target.value)}
-                  className="h-8 px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold"
+                  className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
                   <option value="FR">France (FR)</option>
                   <option value="BE">Belgique (BE)</option>

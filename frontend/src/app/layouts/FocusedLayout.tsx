@@ -5,7 +5,7 @@ import { routes } from '../../configuration/routes';
 import { AppScrollRestoration } from '../router/AppScrollRestoration';
 import { DemoRoleSwitcher } from './DemoRoleSwitcher';
 import { useTranslation } from '../../i18n/I18nProvider';
-import { SkipLink } from '../../design-system/primitives/SkipLink';
+import { Container, SkipLink } from '../../design-system';
 
 /**
  * Shell for task-completion flows: publication, checkout, verification.
@@ -27,12 +27,15 @@ export const FocusedLayout: React.FC = () => {
       <AppScrollRestoration />
       <DemoRoleSwitcher />
 
-      <header className="bg-bg-surface border-b border-border-base sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+      <header className="bg-bg-surface border-b border-border-base sticky top-0 z-header">
+        <Container
+          width="task"
+          className="h-14 flex items-center justify-between gap-3"
+        >
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 h-control-touch -ml-2 px-2 rounded-xl text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 h-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Retour</span>
@@ -56,11 +59,11 @@ export const FocusedLayout: React.FC = () => {
           <Link
             to={routes.home()}
             aria-label={t('shell.focusedLayout.quitterEtRevenirAL')}
-            className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-bg-subtle transition-colors"
+            className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-stone-600 hover:text-stone-950 hover:bg-bg-subtle transition-colors"
           >
             <X className="w-5 h-5" />
           </Link>
-        </div>
+        </Container>
       </header>
 
       {/* No marketplace footer and no bottom tab bar: the flow's own primary

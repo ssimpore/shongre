@@ -176,7 +176,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -242,7 +242,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   onChange={(e) => setSiret(e.target.value)}
                   placeholder="Ex: 98765432100012"
                   required
-                  className="flex-1 px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-900 focus:outline-none focus:border-amber-600"
+                  className="flex-1 px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-bold text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
                 />
                 <Button
                   type="button"
@@ -273,7 +273,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Ex: Atelier Nordique SAS"
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-amber-600"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
               />
             </div>
 
@@ -285,7 +285,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 <select
                   value={legalForm}
                   onChange={(e) => setLegalForm(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-amber-600"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
                 >
                   {currentMarket.supportedLegalForms.map((form) => (
                     <option key={form} value={form}>
@@ -303,7 +303,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   value={vatNumber}
                   onChange={(e) => setVatNumber(e.target.value)}
                   placeholder="FR 54 987654321"
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-600"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
                 />
               </div>
             </div>
@@ -317,7 +317,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 onChange={(e) => setBusinessAddress(e.target.value)}
                 placeholder={t('verification.businessVerificationModal.14RueDeLArtisanat')}
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-600"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
               />
             </div>
 
@@ -331,7 +331,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-600"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
                 />
               </div>
               <div>
@@ -343,7 +343,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-amber-600"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
                 />
               </div>
             </div>
@@ -373,7 +373,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 onChange={(e) => setLegalRepName(e.target.value)}
                 placeholder="Ex: Sophie Laurent"
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-amber-600"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
               />
             </div>
 
@@ -383,7 +383,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               <select
                 value={legalRepRole}
                 onChange={(e) => setLegalRepRole(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-amber-600"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
               >
                 <option value="Gérant / Président">{t('verification.businessVerificationModal.presidentDirecteurGeneralGerant')}</option>
                 <option value="Entrepreneur individuel">Entrepreneur individuel / Auto-entrepreneur</option>

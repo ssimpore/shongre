@@ -35,6 +35,12 @@
   --color-text-main: #1C1917;
   --color-text-secondary: #57534E;
   --color-text-muted: #78716C;
+  --color-text-disabled: #A8A29E;
+  --color-text-inverse: #FFFFFF;
+  --color-focus: #C4431F;
+  --color-overlay: rgb(28 25 23 / 0.6);
+  --color-scrollbar: #D6D3CD;
+  --color-scrollbar-hover: #A8A29E;
   --color-stone-900: #1C1917;
 
   /* `stone-500` is the platform's secondary-text weight (the codebase uses the
@@ -68,6 +74,26 @@
   --color-info-surface: #F0F9FF;
   --color-info-border: #BAE6FD;
 
+  /* --- Taxonomy accents --------------------------------------------------
+     Category colors are dynamic presentation data consumed by CategoryIcon,
+     but they still belong to the owned palette rather than local hex maps. */
+  --color-category-vehicles: #C4431F;
+  --color-category-real-estate: #0284C7;
+  --color-category-jobs: #059669;
+  --color-category-multimedia: #6366F1;
+  --color-category-home-garden: #D97706;
+  --color-category-fashion: #DB2777;
+  --color-category-leisure: #8B5CF6;
+  --color-category-services: #0D9488;
+  --color-category-tech: #4F46E5;
+  --color-category-baby: #EC4899;
+  --color-category-pets: #EAB308;
+  --color-category-sport: #EA580C;
+  --color-category-trades: #DC2626;
+  --color-category-agriculture: #65A30D;
+  --color-category-neutral: #57534E;
+  --color-category-neutral-soft: #78716C;
+
   /* --- Radius scale -------------------------------------------------------
      Tuned so the shared classes already in use land on the right semantics:
        rounded-lg  (8px)  → chips, inline tags, small surfaces
@@ -92,6 +118,7 @@
   --radius-md: 0.375rem;  /* 6px  */
   --radius-lg: 0.5rem;    /* 8px  */
   --radius-xl: 0.625rem;  /* 10px — control */
+  --radius-control: 0.625rem; /* semantic control alias */
   --radius-2xl: 0.875rem; /* 14px — card    */
   --radius-3xl: 1.125rem; /* 18px */
   --radius-card: 1.25rem;    /* 20px — listing/category card shell */
@@ -118,6 +145,61 @@
   --text-micro: 0.6875rem; /* 11px */
   --text-micro--line-height: 1.35;
 
+  /* The standard Tailwind steps are declared here deliberately rather than
+     inherited as an invisible framework default. Shongre therefore owns the
+     complete type ramp used by feature code and the semantic primitives below. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1;
+
+  /* Semantic typography used by Text/Heading. Product code can still use the
+     owned numeric ramp for dense composition; page hierarchy uses these names. */
+  --text-display-lg: clamp(2.5rem, 5vw, 3.5rem);
+  --text-display-lg--line-height: 1.04;
+  --text-display-md: clamp(2rem, 4vw, 2.75rem);
+  --text-display-md--line-height: 1.08;
+  --text-display-sm: clamp(1.75rem, 3vw, 2.25rem);
+  --text-display-sm--line-height: 1.12;
+  --text-heading-xl: 2.25rem;
+  --text-heading-xl--line-height: 1.15;
+  --text-heading-lg: 1.875rem;
+  --text-heading-lg--line-height: 1.2;
+  --text-heading-md: 1.5rem;
+  --text-heading-md--line-height: 1.25;
+  --text-heading-sm: 1.25rem;
+  --text-heading-sm--line-height: 1.3;
+  --text-heading-xs: 1rem;
+  --text-heading-xs--line-height: 1.4;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.625;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.5;
+  --text-label-md: 0.875rem;
+  --text-label-md--line-height: 1.25;
+  --text-label-sm: 0.75rem;
+  --text-label-sm--line-height: 1.25;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-overline: 0.6875rem;
+  --text-overline--line-height: 1.35;
+
   /* The editorial display face, used for the marketing headline only. The app
      ships no webfont, so this is the platform serif stack: `ui-serif` resolves
      to New York on Apple platforms and the named fallbacks cover the rest. It
@@ -126,6 +208,31 @@
      goes through `font-display`. */
   --font-display: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino,
     Georgia, 'Times New Roman', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  --leading-none: 1;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 1.75;
+  --tracking-tighter: -0.035em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+
+  /* --- Spacing & component metrics ---------------------------------------
+     Declaring the base makes the familiar p-1/gap-4 scale an owned 4px system,
+     rather than an implicit framework implementation detail. */
+  --spacing: 0.25rem;
 
   /* --- Control metrics ----------------------------------------------------
      Shared heights for buttons, inputs, selects and icon buttons so a form row
@@ -133,9 +240,25 @@
   --spacing-control-sm: 2rem;   /* 32px */
   --spacing-control-md: 2.5rem; /* 40px */
   --spacing-control-lg: 3rem;   /* 48px */
+  --spacing-control-fab: 3.25rem; /* 52px — raised mobile publish action */
   /* `control-touch` is the 44px WCAG 2.5.5 target. Use it for primary controls on
      touch surfaces instead of inventing an off-scale `h-11`. */
   --spacing-control-touch: 2.75rem; /* 44px */
+  --spacing-control-indicator: 1.125rem; /* 18px — checkbox/radio paint */
+  --spacing-control-target: 1.5rem; /* 24px — WCAG 2.2 AA target floor */
+  --spacing-select-chevron-size: 0.25rem;
+  --spacing-select-chevron-offset: 0.75rem;
+  --spacing-icon-xs: 0.75rem;  /* 12px */
+  --spacing-icon-sm: 0.875rem; /* 14px */
+  --spacing-icon-md: 1rem;     /* 16px */
+  --spacing-icon-lg: 1.25rem;  /* 20px */
+  --spacing-icon-nav: 1.375rem; /* 22px — mobile primary navigation */
+  --spacing-icon-xl: 1.5rem;   /* 24px */
+  --spacing-avatar-sm: 1.75rem;
+  --spacing-avatar-md: 2.5rem;
+  --spacing-avatar-lg: 3rem;
+  --spacing-avatar-xl: 4rem;
+  --spacing-avatar-2xl: 8rem;
 
   /* --- Listing rail -------------------------------------------------------
      Every listing surface is a single horizontally-scrolling row, so the card
@@ -149,9 +272,32 @@
   --spacing-listing-card: 11.75rem; /* 188px - one listing card in a rail */
 
   /* --- Layout containers -------------------------------------------------- */
+  --container-task: 56rem;      /* 896px — focused forms / publication */
   --container-content: 72rem;   /* 1152px — consumer reading width */
   --container-page: 80rem;      /* 1280px — standard page shell    */
   --container-workspace: 96rem; /* 1536px — dense admin / CRM      */
+
+  /* --- Responsive breakpoints --------------------------------------------
+     These match the product's existing sm/md/lg/xl/2xl behaviour. Writing
+     them into the owned theme prevents new tooling from silently changing the
+     responsive contract underneath every route. */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
+
+  /* --- Elevation ----------------------------------------------------------
+     Semantic surfaces use dropdown/overlay/sticky; xs-lg remain available for
+     local hierarchy and are owned here instead of inherited from Tailwind. */
+  --shadow-2xs: 0 1px rgb(28 25 23 / 0.04);
+  --shadow-xs: 0 1px 2px rgb(28 25 23 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(28 25 23 / 0.08), 0 1px 2px -1px rgb(28 25 23 / 0.05);
+  --shadow-md: 0 6px 14px -5px rgb(28 25 23 / 0.12), 0 2px 5px -2px rgb(28 25 23 / 0.06);
+  --shadow-lg: 0 12px 28px -8px rgb(28 25 23 / 0.16), 0 4px 8px -4px rgb(28 25 23 / 0.08);
+  --shadow-dropdown: 0 14px 32px -8px rgb(28 25 23 / 0.18), 0 6px 12px -6px rgb(28 25 23 / 0.1);
+  --shadow-overlay: 0 28px 56px -16px rgb(28 25 23 / 0.3);
+  --shadow-sticky: 0 -4px 20px -10px rgb(28 25 23 / 0.1);
 
   /* --- Motion -------------------------------------------------------------
      Centralised so components stop inventing their own durations. */
@@ -174,6 +320,24 @@
      it as `--spacing-*`, and this is a layout constant, not a step on the
      spacing scale. */
   :root {
+    /* Runtime marker used by the browser contract suite. If an old Vite/HMR
+       graph serves a stale stylesheet, the suite fails before a visual defect
+       can masquerade as a component regression. */
+    --design-system-contract-version: 3;
+
+    /* One stacking vocabulary. Semantic utility classes below consume these
+       values; numeric z-index utilities are rejected by the design checker. */
+    --z-base: 0;
+    --z-raised: 10;
+    --z-sticky: 20;
+    --z-dropdown: 30;
+    --z-popover: 35;
+    --z-header: 40;
+    --z-drawer: 45;
+    --z-modal: 50;
+    --z-toast: 60;
+    --z-tooltip: 70;
+
     /* Must equal the grid height in MobileBottomNav, which consumes this same
        variable so the two cannot drift again. They did: this read 3.5rem while
        the bar rendered at 3.75rem, so everything pinned above it — the toast
@@ -207,7 +371,7 @@
   body {
     background-color: var(--color-bg-base);
     color: var(--color-text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
@@ -231,6 +395,41 @@
     min-width: 0;
   }
 
+  /* Native text controls still exist in specialised search, payment and admin
+     flows. Give them the design-system floor even before they are composed
+     through Input/Select/Textarea: compact by default, touch-sized in the
+     primitives, and always on the semantic control radius. Utility variants
+     can intentionally opt into another owned size without inventing pixels. */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+  select {
+    min-height: var(--spacing-control-md);
+    border-radius: var(--radius-control);
+  }
+
+  /* WebKit applies its own 5px radius to native selects even when a class sets
+     `border-radius`. Own the paint so Safari resolves the same control token as
+     Chromium, and redraw the disclosure chevron from semantic colour/spacing
+     tokens instead of replacing it with a hardcoded SVG. */
+  select:not([multiple]) {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+      linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - var(--spacing-select-chevron-offset) - var(--spacing-select-chevron-size)) 50%,
+      calc(100% - var(--spacing-select-chevron-offset)) 50%;
+    background-repeat: no-repeat;
+    background-size:
+      var(--spacing-select-chevron-size) var(--spacing-select-chevron-size),
+      var(--spacing-select-chevron-size) var(--spacing-select-chevron-size);
+    padding-inline-end: var(--spacing-control-md);
+  }
+
+  textarea {
+    min-height: var(--spacing-control-touch);
+    border-radius: var(--radius-control);
+  }
+
   /* --- Native boolean controls -------------------------------------------
      Checkboxes and radios across the product carry `text-primary`,
      `border-border-base` and `rounded-md`. None of those do anything to a
@@ -251,8 +450,8 @@
   input[type='checkbox'],
   input[type='radio'] {
     accent-color: var(--color-primary);
-    min-width: 1.125rem;  /* 18px painted … */
-    min-height: 1.125rem;
+    min-width: var(--spacing-control-indicator);
+    min-height: var(--spacing-control-indicator);
   }
 
   /* … and the interactive target reaches the 24px floor via padding on coarse
@@ -260,8 +459,8 @@
   @media (pointer: coarse) {
     input[type='checkbox'],
     input[type='radio'] {
-      min-width: 1.5rem;
-      min-height: 1.5rem;
+      min-width: var(--spacing-control-target);
+      min-height: var(--spacing-control-target);
     }
   }
 
@@ -357,6 +556,40 @@
   .pt-safe { padding-top: env(safe-area-inset-top); }
 }
 
+/* Tailwind v4 custom utilities participate in hover/focus/responsive variants,
+   unlike plain global classes. Keep stacking meaning at the call site. */
+@utility z-base { z-index: var(--z-base); }
+@utility z-raised { z-index: var(--z-raised); }
+@utility z-sticky { z-index: var(--z-sticky); }
+@utility z-dropdown { z-index: var(--z-dropdown); }
+@utility z-popover { z-index: var(--z-popover); }
+@utility z-header { z-index: var(--z-header); }
+@utility z-drawer { z-index: var(--z-drawer); }
+@utility z-modal { z-index: var(--z-modal); }
+@utility z-toast { z-index: var(--z-toast); }
+@utility z-tooltip { z-index: var(--z-tooltip); }
+
+/* --- Critical runtime contracts ------------------------------------------
+   Tailwind normally emits these from `@theme` / `@utility`. Keep the small set
+   that controls page geometry as explicit CSS as well: a stale incremental
+   utility graph previously dropped `z-header` and `w-listing-card` together,
+   allowing recent-search cards to paint over the header and stretching a
+   listing rail into three viewport-wide columns. These declarations are
+   intentionally unlayered so they remain present in the stylesheet even while
+   the generated utility graph is being refreshed. The fallback values also
+   preserve usable geometry if a custom property is temporarily unavailable. */
+.z-base { z-index: var(--z-base, 0); }
+.z-raised { z-index: var(--z-raised, 10); }
+.z-sticky { z-index: var(--z-sticky, 20); }
+.z-dropdown { z-index: var(--z-dropdown, 30); }
+.z-popover { z-index: var(--z-popover, 35); }
+.z-header { z-index: var(--z-header, 40); }
+.z-drawer { z-index: var(--z-drawer, 45); }
+.z-modal { z-index: var(--z-modal, 50); }
+.z-toast { z-index: var(--z-toast, 60); }
+.z-tooltip { z-index: var(--z-tooltip, 70); }
+.w-listing-card { width: var(--spacing-listing-card, 11.75rem); }
+
 /* Smooth Infinite Marquee Animations */
 @keyframes vertical-scroll-up {
   0% {
@@ -427,8 +660,8 @@
   input:not([type='checkbox']):not([type='radio']):not([type='range']),
   textarea,
   select {
-    font-size: 1rem;
-    line-height: 1.4;
+    font-size: var(--text-base);
+    line-height: var(--leading-snug);
   }
 }
 
@@ -441,9 +674,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D6D3CD;
+  background: var(--color-scrollbar);
   border-radius: var(--radius-pill);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A8A29E;
+  background: var(--color-scrollbar-hover);
 }

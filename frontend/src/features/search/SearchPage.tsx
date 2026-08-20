@@ -19,7 +19,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { Input, Checkbox } from '../../design-system/primitives/FormField';
 import { Drawer } from '../../design-system/primitives/Modal';
 import { plural } from '../../utilities/formatters';
-import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { ListingCardSkeleton, Skeleton } from '../../design-system';
 import { NoResultsFound } from '../../design-system/primitives/NoResultsFound';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { useToast } from '../../app/providers/ToastProvider';
@@ -634,7 +634,7 @@ export const SearchPage: React.FC = () => {
                     aria-label="Prix minimum en euros"
                               value={searchParams.get(`attr_${attr.code}_min`) || ''}
                               onChange={(e) => updateFilter(`attr_${attr.code}_min`, e.target.value || undefined)}
-                              className="h-8 text-xs"
+                              className="h-control-sm text-xs"
                             />
                             <Input
                               type="number"
@@ -642,7 +642,7 @@ export const SearchPage: React.FC = () => {
                     aria-label="Prix maximum en euros"
                               value={searchParams.get(`attr_${attr.code}_max`) || ''}
                               onChange={(e) => updateFilter(`attr_${attr.code}_max`, e.target.value || undefined)}
-                              className="h-8 text-xs"
+                              className="h-control-sm text-xs"
                             />
                           </div>
                         </div>
@@ -725,7 +725,7 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                   activeFilterCount > 0
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-bg-base text-stone-800 border border-border-base hover:bg-bg-subtle'
@@ -781,14 +781,10 @@ export const SearchPage: React.FC = () => {
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card),1fr))] gap-3 sm:gap-4">
               {[...Array(12)].map((_, i) => (
-                <div key={i} className="bg-white rounded-card p-2 border border-stone-200 space-y-2.5 flex flex-col">
-                  <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
-                  <div className="p-1 space-y-2 flex-1 flex flex-col justify-between">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-5 w-1/2" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
+                <ListingCardSkeleton
+                  key={i}
+                  className="rounded-card border border-stone-200 bg-white p-2"
+                />
               ))}
             </div>
           ) : listings.length > 0 ? (

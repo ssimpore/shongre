@@ -579,7 +579,7 @@ export const MessagingPage: React.FC = () => {
           aria-modal="true"
           aria-labelledby={lightboxTitleId}
           tabIndex={-1}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-modal bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setLightboxImageUrl(null)}
         >
           <h2 id={lightboxTitleId} className="sr-only">{t('messaging.messagingPage.pieceJointeEnPleinEcran')}</h2>

@@ -94,7 +94,7 @@ export const VerifyEmailPage: React.FC = () => {
             <Button
               type="button"
               variant="primary"
-              size="lg"
+              size="md"
               className="w-full"
               onClick={() => navigate('/compte')}
               rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -146,14 +146,14 @@ export const VerifyEmailPage: React.FC = () => {
                 onChange={(e) => setTokenInput(e.target.value)}
                 placeholder={t('auth.verifyEmailPage.collezIciVotreJetonDe')}
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
             </div>
 
             <Button
               type="submit"
               variant="primary"
-              size="lg"
+              size="md"
               className="w-full"
               isLoading={status === 'verifying'}
             >
@@ -163,14 +163,16 @@ export const VerifyEmailPage: React.FC = () => {
 
           {currentUser && (
             <div className="pt-2 text-center">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleResendVerification}
-                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1.5 cursor-pointer"
+                className="text-primary"
+                leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
               >
-                <RefreshCw className="w-3.5 h-3.5" />
                 <span>{t('auth.verifyEmailPage.renvoyerUnEmailDeValidation')}</span>
-              </button>
+              </Button>
             </div>
           )}
         </div>

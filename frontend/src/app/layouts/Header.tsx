@@ -3,7 +3,7 @@ import { isProSeller } from '../../domains/user/user.domain';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { CategoryFilterRail } from '../../design-system/primitives/CategoryFilterRail';
+import { HeaderCategoryNav } from './HeaderCategoryNav';
 import {
   
   PlusCircle,
@@ -42,6 +42,8 @@ import { LanguageSelector } from '../../design-system/primitives/LanguageSelecto
 import { DROPDOWN_PANEL_CLASSES } from '../../design-system/primitives/DropdownMenu';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
+import { Container } from '../../design-system';
+import { Button } from '../../design-system/primitives/Button';
 
 export const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -101,19 +103,6 @@ export const Header: React.FC = () => {
     }
   };
 
-  const handleSelectAll = () => {
-    if (location.pathname === '/recherche') {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('category');
-        next.delete('subCategory');
-        return next;
-      });
-    } else {
-      navigate('/recherche');
-    }
-  };
-
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
@@ -167,8 +156,8 @@ export const Header: React.FC = () => {
   const publishCta = usePublishCta();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-border-base">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-header bg-white/95 backdrop-blur-md border-b border-border-base">
+      <Container>
         <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
           
           {/* Logo & Category trigger.
@@ -234,21 +223,23 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
-            <Link
+            <Button
               to={publishCta.to}
               aria-label={t(publishCta.labelKey)}
-              className="hidden md:flex bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white text-xs sm:text-sm font-bold px-3 lg:px-4 h-10 rounded-xl shadow-xs hover:shadow-sm transition-all items-center justify-center gap-2 shrink-0 active:scale-95 whitespace-nowrap mr-1 lg:mr-2"
+              variant="pro"
+              size="compact"
+              leftIcon={<PlusCircle className="w-4 h-4 text-primary" />}
+              className="hidden md:flex px-3 lg:px-4 shrink-0 mr-1 lg:mr-2"
             >
-              <PlusCircle className="w-4 h-4 text-primary shrink-0" />
               {/* Tablet keeps the publish action but not its label — it is the
                   one action that must survive the narrower row. */}
               <span className="hidden lg:inline whitespace-nowrap">{t(publishCta.labelKey)}</span>
-            </Link>
+            </Button>
 
             {/* Favorites */}
             <Link
               to="/compte/favoris"
-              className="relative p-2 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200 transition-all hidden lg:flex items-center justify-center group"
+              className="relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 transition-all hover:bg-stone-100 hover:text-stone-950 active:bg-stone-200 lg:flex group"
               aria-label="Favoris"
             >
               <Heart className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
@@ -262,7 +253,7 @@ export const Header: React.FC = () => {
             {/* Messages */}
             <Link
               to="/compte/messages"
-              className="relative p-2 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200 transition-all hidden lg:flex items-center justify-center group"
+              className="relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 transition-all hover:bg-stone-100 hover:text-stone-950 active:bg-stone-200 lg:flex group"
               aria-label="Messagerie"
             >
               <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
@@ -287,7 +278,7 @@ export const Header: React.FC = () => {
                   aria-expanded={isAccountMenuOpen}
                   aria-haspopup="menu"
                   aria-label={`Menu du compte de ${currentUser.name}`}
-                  className={`flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border transition-all cursor-pointer ${isAccountMenuOpen ? 'bg-stone-100 border-stone-300 shadow-inner' : 'bg-white border-border-base hover:bg-stone-50 hover:border-stone-300 hover:shadow-2xs'}`}
+                  className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 transition-all cursor-pointer ${isAccountMenuOpen ? 'bg-stone-100 border-stone-300 shadow-inner' : 'bg-white border-border-base hover:bg-stone-50 hover:border-stone-300 hover:shadow-2xs'}`}
                 >
                   <Avatar
                     src={currentUser.avatarUrl}
@@ -302,13 +293,15 @@ export const Header: React.FC = () => {
                   <ChevronDown className={`w-3.5 h-3.5 text-stone-400 hidden sm:inline transition-transform duration-normal ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
               ) : (
-                <Link
+                <Button
                   to="/connexion"
-                  className="flex items-center gap-2 text-sm font-bold text-stone-700 hover:text-stone-950 px-3 py-2 rounded-xl hover:bg-stone-100 active:bg-stone-200 transition-all"
+                  variant="ghost"
+                  size="compact"
+                  leftIcon={<User className="w-4 h-4" />}
+                  className="px-3"
                 >
-                  <User className="w-4 h-4" />
-                  <span>Se connecter</span>
-                </Link>
+                  Se connecter
+                </Button>
               )}
 
               {/* Account Dropdown */}
@@ -421,34 +414,35 @@ export const Header: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* Category Sub-Header Bar (Smartly shown on Home and Discovery surfaces) */}
       {shouldShowCategoryBar && (
-        <nav aria-label={t('ui.categoryFilterRail.filtresParCategorie')} className="border-t border-border-base/70 bg-white/95 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2">
-            <CategoryFilterRail
-              idPrefix="header-category-rail"
-              selectedCategorySlug={activeCategorySlug}
+        <nav
+          aria-label={t('ui.categoryFilterRail.filtresParCategorie')}
+          className="bg-white/95 backdrop-blur-md"
+        >
+          <Container>
+            <HeaderCategoryNav
+              activeCategorySlug={activeCategorySlug}
+              currentPath={location.pathname}
               onSelectCategory={handleCategorySelect}
-              onSelectAll={handleSelectAll}
-              showSubCategories={false}
             />
-          </div>
+          </Container>
         </nav>
       )}
 
       {/* Mobile Drawer Navigation (rendered via Portal to prevent sticky header
           clipping).
 
-          `z-45` puts the drawer between page chrome and dialogs: above the
-          sticky header and the mobile tab bar (both `z-40`), below modals and
-          toasts (`z-50`). It was `z-[9999]`, the only arbitrary z-index in the
+          `z-drawer` puts the drawer between page chrome and dialogs: above the
+          sticky header and the mobile tab bar (both `z-header`), below modals and
+          toasts (`z-modal`). It was `z-[9999]`, the only arbitrary z-index in the
           app, which stacked it over every dialog — including the ones it opens
           itself. Tapping "Changer" beside the location did open the picker; it
           just rendered underneath the drawer, so nothing appeared to happen. */}
       {isMobileMenuOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-45 lg:hidden flex justify-end">
+        <div className="fixed inset-0 z-drawer lg:hidden flex justify-end">
           {/* Backdrop overlay */}
           <div
             className="fixed inset-0 bg-stone-900/40 backdrop-blur-[2px] transition-opacity duration-normal"
@@ -463,11 +457,11 @@ export const Header: React.FC = () => {
             aria-modal="true"
             aria-labelledby={drawerTitleId}
             tabIndex={-1}
-            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-10 sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
+            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-raised sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
           >
             
             {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
-            <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-stone-50 shrink-0 sticky top-0 z-20">
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-stone-50 shrink-0 sticky top-0 z-sticky">
               <Link
                 to={routes.home()}
                 onClick={() => setIsMobileMenuOpen(false)}

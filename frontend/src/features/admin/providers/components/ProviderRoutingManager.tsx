@@ -63,7 +63,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
           <select
             value={selectedMarket}
             onChange={(e) => setSelectedMarket(e.target.value)}
-            className="py-1 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-800 font-bold"
+            className="py-1 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-800 font-bold h-control-touch"
           >
             <option value="FR">{t('admin.providerRoutingManager.franceReference')}</option>
             <option value="BE">🇧🇪 Belgique</option>

@@ -24,12 +24,12 @@ export interface StageMetadata {
 
 export const PIPELINE_STAGES: StageMetadata[] = [
   { id: 'new', label: 'Nouveau', order: 1, color: 'bg-stone-100 text-stone-700', description: 'Opportunité identifiée' },
-  { id: 'qualified', label: 'Qualifié', order: 2, color: 'bg-blue-100 text-blue-800', description: 'Intérêt confirmé et fit validé' },
+  { id: 'qualified', label: 'Qualifié', order: 2, color: 'bg-info-surface text-info', description: 'Intérêt confirmé et fit validé' },
   { id: 'contacted', label: 'Contacté', order: 3, color: 'bg-purple-100 text-purple-800', description: 'Premier échange ou démo planifiée' },
-  { id: 'proposal', label: 'Proposition', order: 4, color: 'bg-amber-100 text-amber-800', description: 'Devis ou offre Pro soumise' },
+  { id: 'proposal', label: 'Proposition', order: 4, color: 'bg-warning-surface text-warning', description: 'Devis ou offre Pro soumise' },
   { id: 'negotiation', label: 'Négociation', order: 5, color: 'bg-indigo-100 text-indigo-800', description: 'Discussion contractuelle en cours' },
-  { id: 'won', label: 'Gagné (Converti)', order: 6, color: 'bg-emerald-100 text-emerald-800', description: 'Vendeur Pro actif / contrat signé' },
-  { id: 'lost', label: 'Perdu', order: 7, color: 'bg-rose-100 text-rose-800', description: 'Sans suite ou refus' },
+  { id: 'won', label: 'Gagné (Converti)', order: 6, color: 'bg-success-surface text-success', description: 'Vendeur Pro actif / contrat signé' },
+  { id: 'lost', label: 'Perdu', order: 7, color: 'bg-danger-surface text-danger', description: 'Sans suite ou refus' },
 ];
 
 export class CrmService {
@@ -65,9 +65,9 @@ export class CrmService {
   } {
     switch (qualification) {
       case 'high':
-        return { label: 'Priorité Haute', badgeClass: 'bg-emerald-100 text-emerald-800' };
+        return { label: 'Priorité Haute', badgeClass: 'bg-success-surface text-success' };
       case 'medium':
-        return { label: 'Priorité Moyenne', badgeClass: 'bg-amber-100 text-amber-800' };
+        return { label: 'Priorité Moyenne', badgeClass: 'bg-warning-surface text-warning' };
       case 'low':
         return { label: 'Priorité Basse', badgeClass: 'bg-stone-100 text-stone-700' };
       case 'unqualified':

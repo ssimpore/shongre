@@ -115,7 +115,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(-1)}
           aria-label={t('common.scrollRailLeft', { label })}
-          className="absolute left-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-20"
+          className="absolute left-1 top-1/2 -translate-y-1/2 w-9 h-control-md rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-sticky"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -126,7 +126,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(1)}
           aria-label={t('common.scrollRailRight', { label })}
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-20"
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-control-md rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-sticky"
         >
           <ChevronRight className="w-5 h-5" />
         </button>

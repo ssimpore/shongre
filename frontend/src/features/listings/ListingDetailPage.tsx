@@ -33,7 +33,7 @@ import { transactionCapabilitiesService } from '../../domains/transaction/transa
 import { listingDisplayResolver } from '../../domains/listing/listing.display';
 import { listingActionsResolver } from '../../domains/listing/listing.actions';
 import { formatPrice, formatRelativeDate, calculateBuyerFee, plural } from '../../utilities/formatters';
-import { Breadcrumbs, PriceDisplay } from '../../design-system/primitives/UIComponents';
+import { Breadcrumbs, PriceDisplay } from '../../design-system';
 import { Button } from '../../design-system/primitives/Button';
 import { StatePanel } from '../../design-system/primitives/StatePanel';
 import { Badge } from '../../design-system/primitives/Badge';
@@ -435,7 +435,7 @@ export const ListingDetailPage: React.FC = () => {
             {/* Subtle background glow */}
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
             
-            <div className="flex items-start justify-between gap-4 relative z-10">
+            <div className="flex items-start justify-between gap-4 relative z-raised">
               <div className="space-y-2 flex-1">
                 {/* Badges strip: Category, Pro, Boosted */}
                 <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -658,7 +658,7 @@ export const ListingDetailPage: React.FC = () => {
                   <Button
                     to={`/deposer?edit=${listing.id}`}
                     variant="primary"
-                    size="lg"
+                    size="md"
                     fullWidth
                     leftIcon={<Edit3 className="w-4 h-4" />}
                   >{t('listings.listingDetailPage.modifierMonAnnonce')}</Button>
@@ -699,17 +699,19 @@ export const ListingDetailPage: React.FC = () => {
                  same full width. Emphasis is carried by `variant` (colour), not
                  by size, so the stack reads as one set of choices.
 
-                 It previously mixed `size="lg"` plus a `py-3.5` override (48px)
-                 with `size="md"` (44px), and put the last two in a fixed
+                 The shared `md` action metric is the same 44px control used by
+                 the Pro discovery CTA. It keeps these transaction actions aligned
+                 with the rest of the marketplace instead of promoting them to the
+                 48px page-level `lg` step. The last two actions also use a responsive
                  two-column row — so a listing that allowed contact but not an
                  offer rendered a single half-width "Message" button stranded
                  beside an empty cell. */
-              <div className="space-y-3">
+              <div className="space-y-3" data-testid="listing-desktop-actions">
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
                   <Button
                     variant="primary"
-                    size="lg"
+                    size="md"
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
                     leftIcon={<ShieldCheck className="w-5 h-5" />}
@@ -723,7 +725,7 @@ export const ListingDetailPage: React.FC = () => {
                 {actions.canReserve && (
                   <Button
                     variant={actions.primaryAction === 'reservation' ? 'primary' : 'outline'}
-                    size="lg"
+                    size="md"
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
                     leftIcon={<Clock className="w-5 h-5 text-warning" />}
@@ -739,7 +741,7 @@ export const ListingDetailPage: React.FC = () => {
                   {actions.canMakeOffer && (
                     <Button
                       variant="outline"
-                      size="lg"
+                      size="md"
                       fullWidth
                       onClick={() => setIsOfferModalOpen(true)}
                       leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
@@ -761,7 +763,7 @@ export const ListingDetailPage: React.FC = () => {
                   {actions.canContact && (
                     <Button
                       variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
-                      size="lg"
+                      size="md"
                       fullWidth
                       onClick={() => setIsContactModalOpen(true)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
@@ -959,7 +961,7 @@ export const ListingDetailPage: React.FC = () => {
           produce. From `sm` there is room for a single row again. */}
       <div
         ref={actionBarRef}
-        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-30 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         {/* One line on phones so the bar stays short; stacked once there is room. */}
         <div className="flex items-baseline gap-2 min-w-0 sm:block sm:shrink-0">
           <div className="text-micro text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
@@ -973,6 +975,7 @@ export const ListingDetailPage: React.FC = () => {
         </div>
 
         <div
+          data-testid="listing-mobile-actions"
           className={`grid gap-2 ${
             mobileActionCount > 1 ? 'grid-cols-2' : 'grid-cols-1'
           } sm:flex sm:items-center sm:justify-end sm:shrink-0`}
@@ -981,7 +984,7 @@ export const ListingDetailPage: React.FC = () => {
             <Button
               to={`/deposer?edit=${listing.id}`}
               variant="primary"
-              size="sm"
+              size="md"
               className="w-full sm:w-auto"
               leftIcon={<Edit3 className="w-3.5 h-3.5" />}
             >
@@ -996,7 +999,7 @@ export const ListingDetailPage: React.FC = () => {
               {actions.canMakeOffer && (
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   className="w-full sm:w-auto"
                   onClick={() => setIsOfferModalOpen(true)}
                   leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
@@ -1007,7 +1010,7 @@ export const ListingDetailPage: React.FC = () => {
               {actions.canReserve && (
                 <Button
                   variant={actions.canDirectPurchase ? 'outline' : 'primary'}
-                  size="sm"
+                  size="md"
                   className="w-full sm:w-auto"
                   onClick={() => setIsReservationModalOpen(true)}
                   leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
@@ -1016,7 +1019,7 @@ export const ListingDetailPage: React.FC = () => {
               {actions.canContact && (
                 <Button
                   variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
-                  size="sm"
+                  size="md"
                   className="w-full sm:w-auto"
                   onClick={() => setIsContactModalOpen(true)}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
@@ -1025,7 +1028,7 @@ export const ListingDetailPage: React.FC = () => {
               {actions.canDirectPurchase && (
                 <Button
                   variant="primary"
-                  size="sm"
+                  size="md"
                   className="w-full sm:w-auto"
                   onClick={() => setIsDirectPurchaseModalOpen(true)}
                   leftIcon={<ShoppingBag className="w-3.5 h-3.5" />}

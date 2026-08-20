@@ -42,6 +42,10 @@ export default defineConfig(({ mode, command }) => {
     },
     server: {
       port,
+      // Never hide a second frontend behind Vite's automatic 3001/3002
+      // fallback. That made visual QA target one server while the browser kept
+      // an older HMR graph on another port.
+      strictPort: true,
       host: '0.0.0.0',
       allowedHosts: ['dev.shongre.com', '.shongre.com'],
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

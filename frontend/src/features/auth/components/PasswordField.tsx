@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { IconButton } from '../../../design-system/primitives/IconButton';
 
 export interface PasswordFieldProps {
   id?: string;
@@ -83,21 +84,22 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           required={required}
           autoComplete={autoComplete}
           disabled={disabled}
-          className={`w-full px-3.5 py-2.5 pr-11 bg-white border rounded-xl text-sm text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+          className={`w-full h-control-touch px-3.5 py-2.5 pr-11 bg-white border rounded-control text-sm text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
             error
               ? 'border-danger focus:border-danger bg-danger-surface/20'
               : 'border-stone-200 focus:border-primary'
           }`}
         />
 
-        <button
-          type="button"
+        <IconButton
+          size="sm"
+          variant="ghost"
           onClick={() => setShowPassword(!showPassword)}
-          aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-500 hover:text-stone-700 transition-colors cursor-pointer"
+          ariaLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          className="absolute right-1.5 top-1/2 -translate-y-1/2"
         >
           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-        </button>
+        </IconButton>
       </div>
 
       {error && (

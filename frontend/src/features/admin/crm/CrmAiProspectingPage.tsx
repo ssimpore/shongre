@@ -175,7 +175,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                   placeholder={t('admin.crmAiProspectingPage.decrivezLesProspectsQueVous')}
                 aria-label={t('admin.crmAiProspectingPage.decrivezLesProspectsQueVous')}
                   disabled={isSearching}
-                  className="w-full h-12 pl-11 pr-4 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-2xl placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-control placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 />
               </div>
 

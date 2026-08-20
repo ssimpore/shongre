@@ -205,7 +205,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="draft">Brouillon (non visible publiquement)</option>
               <option value="active">Actif</option>
@@ -216,7 +216,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             <select
               value={conditionScheme}
               onChange={(e) => setConditionScheme(e.target.value as any)}
-              className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="consumer_product">Produit standard</option>
               <option value="vehicle">{t('admin.addNodeModal.vehicule')}</option>

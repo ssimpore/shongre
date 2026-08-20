@@ -5,7 +5,7 @@ import {  MapPin, Truck,  Camera, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Listing } from '../../types';
 import { formatRelativeDate, formatRelativeTimestamp } from '../../utilities/formatters';
-import { PriceDisplay } from './UIComponents';
+import { PriceDisplay } from '../components/Price';
 import { Badge } from './Badge';
 import { Image } from './Image';
 import { IMAGE_SIZES } from './responsiveImage';
@@ -57,7 +57,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             />
           </Link>
           {/* Tags */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
+          <div className="absolute top-2 left-2 flex flex-col gap-1 z-raised pointer-events-none">
             {listing.isBoosted && (
               <Badge variant="featured" size="sm" icon className="px-1.5">
                 <span className="sr-only">{t('ui.listingCard.annonceALaUne')}</span>
@@ -180,7 +180,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           onToggle={handleFavoriteClick}
           size="md"
           variant="floating"
-          className="absolute top-2.5 right-2.5 z-10"
+          className="absolute top-2.5 right-2.5 z-raised"
         />
       </article>
     );
@@ -217,12 +217,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           onToggle={handleFavoriteClick}
           size="lg"
           variant="floating"
-          className="absolute top-2.5 right-2.5 z-10"
+          className="absolute top-2.5 right-2.5 z-raised"
         />
 
         {/* Tags / Badges — one controlled slot, at most two states, so cards
             never accumulate a wall of labels. */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1 z-10 pointer-events-none">
+        <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1 z-raised pointer-events-none">
           {listing.isBoosted && (
             <Badge variant="featured" size="sm" icon>
               Vedette

@@ -105,7 +105,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
           <select
             value={selectedParentId}
             onChange={(e) => setSelectedParentId(e.target.value)}
-            className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+            className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
           >
             <option value="root">{t('admin.moveNodeModal.racinePrincipaleNiveauCategorieRacine')}</option>
             {validParents.map((p) => {

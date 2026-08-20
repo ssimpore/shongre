@@ -1,4 +1,10 @@
 import React, { forwardRef, isValidElement, cloneElement, useId } from 'react';
+import { cn } from '../utils/variants';
+import {
+  CONTROL_RADIUS_CLASS,
+  ControlSize,
+  controlHeightClasses,
+} from '../utils/controlMetrics';
 
 export interface FormFieldProps {
   label?: string;
@@ -89,14 +95,30 @@ export const FormField: React.FC<FormFieldProps> = ({
   );
 };
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   error?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  size?: ControlSize;
 }
 
+const fieldSizeClasses: Record<ControlSize, string> = {
+  sm: `${controlHeightClasses.sm} px-3 text-xs`,
+  compact: `${controlHeightClasses.compact} px-3.5 text-sm`,
+  md: `${controlHeightClasses.md} px-4 text-sm`,
+  lg: `${controlHeightClasses.lg} px-4 text-base sm:text-sm`,
+};
+
+const fieldStateClasses = (error?: boolean) =>
+  error
+    ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
+    : 'border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-primary/20';
+
+const FIELD_BASE_CLASSES =
+  'w-full bg-bg-surface text-text-main border transition-all duration-normal placeholder:text-text-muted focus:bg-bg-surface focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed';
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', error, leftIcon, rightIcon, ...props }, ref) => {
+  ({ className = '', error, leftIcon, rightIcon, size = 'md', ...props }, ref) => {
     return (
       <div className="relative flex items-center w-full">
         {leftIcon && (
@@ -107,13 +129,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           aria-invalid={error ? 'true' : undefined}
-          className={`w-full h-11 sm:h-12 px-4 ${leftIcon ? 'pl-11' : ''} ${
-            rightIcon ? 'pr-11' : ''
-          } bg-stone-50 text-stone-900 text-base sm:text-sm rounded-xl sm:rounded-2xl border border-stone-200/80 transition-all duration-normal placeholder:text-stone-400 focus:bg-white focus:outline-none ${
-            error
-              ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
-              : 'hover:border-stone-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
-          } disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
+          className={cn(
+            FIELD_BASE_CLASSES,
+            CONTROL_RADIUS_CLASS,
+            fieldSizeClasses[size],
+            leftIcon ? 'pl-11' : '',
+            rightIcon ? 'pr-11' : '',
+            fieldStateClasses(error),
+            className,
+          )}
           {...props}
         />
         {rightIcon && (
@@ -138,11 +162,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         ref={ref}
         rows={rows}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full p-4 bg-stone-50 text-stone-900 text-base sm:text-sm rounded-xl sm:rounded-2xl border border-stone-200/80 transition-all duration-normal placeholder:text-stone-400 focus:bg-white focus:outline-none ${
-          error
-            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
-            : 'hover:border-stone-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
-        } disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
+        className={cn(
+          FIELD_BASE_CLASSES,
+          CONTROL_RADIUS_CLASS,
+          'min-h-control-touch p-4 text-base sm:text-sm',
+          fieldStateClasses(error),
+          className,
+        )}
         {...props}
       />
     );
@@ -150,9 +176,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 );
 Textarea.displayName = 'Textarea';
 
-interface SelectBaseProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectBaseProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   error?: boolean;
   options?: { value: string | number; label: string }[];
+  size?: ControlSize;
 }
 
 /**
@@ -172,16 +199,19 @@ export type SelectProps = SelectBaseProps &
   );
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className = '', error, children, options, ...props }, ref) => {
+  ({ className = '', error, children, options, size = 'md', ...props }, ref) => {
     return (
       <select
         ref={ref}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full h-11 sm:h-12 px-4 bg-stone-50 text-stone-900 text-base sm:text-sm rounded-xl sm:rounded-2xl border border-stone-200/80 transition-all duration-normal focus:outline-none cursor-pointer ${
-          error
-            ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20'
-            : 'hover:border-stone-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
-        } disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed ${className}`}
+        className={cn(
+          FIELD_BASE_CLASSES,
+          CONTROL_RADIUS_CLASS,
+          fieldSizeClasses[size],
+          'cursor-pointer',
+          fieldStateClasses(error),
+          className,
+        )}
         {...props}
       >
         {options
@@ -265,40 +295,60 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 );
 Checkbox.displayName = 'Checkbox';
 
-export interface SwitchProps {
+interface SwitchBaseProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
-  label?: string;
   description?: string;
   disabled?: boolean;
+  id?: string;
 }
 
-export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, description, disabled = false }) => {
+export type SwitchProps = SwitchBaseProps &
+  ({ label: string; 'aria-label'?: string } | { label?: undefined; 'aria-label': string });
+
+/** Native checkbox semantics with the visual treatment of a switch. */
+export const Switch: React.FC<SwitchProps> = ({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled = false,
+  id,
+  'aria-label': ariaLabel,
+}) => {
+  const generatedId = useId();
+  const inputId = id ?? `switch-${generatedId}`;
+
   return (
-    <label className={`flex items-center justify-between gap-4 cursor-pointer select-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+    <label
+      htmlFor={inputId}
+      className={`flex min-h-control-touch items-center justify-between gap-4 select-none ${
+        disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+      }`}
+    >
       {(label || description) && (
         <div className="flex flex-col">
           {label && <span className="text-sm font-medium text-stone-900">{label}</span>}
           {description && <span className="text-xs text-stone-500">{description}</span>}
         </div>
       )}
-      <button
-        type="button"
+      <input
+        id={inputId}
+        type="checkbox"
         role="switch"
-        aria-checked={checked}
-        aria-label={label}
+        className="peer sr-only"
+        checked={checked}
         disabled={disabled}
-        onClick={() => !disabled && onChange(!checked)}
-        className={`w-11 h-6 shrink-0 flex items-center rounded-full p-1 transition-colors duration-normal cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-          checked ? 'bg-primary' : 'bg-stone-400'
-        }`}
-      >
-        <div
-          className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-normal ${
+        aria-label={ariaLabel ?? label}
+        onChange={(event) => onChange(event.currentTarget.checked)}
+      />
+      <span className="flex h-6 w-11 shrink-0 items-center rounded-full bg-stone-400 p-1 transition-colors duration-normal peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">
+        <span
+          className={`h-icon-md w-icon-md rounded-full bg-white shadow-sm transition-transform duration-normal ${
             checked ? 'translate-x-5' : 'translate-x-0'
           }`}
         />
-      </button>
+      </span>
     </label>
   );
 };

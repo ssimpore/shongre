@@ -108,7 +108,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -158,7 +158,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
               onChange={(e) => setAccountHolder(e.target.value)}
               placeholder={t('verification.bankPayoutModal.exJeanDupontOuSarl')}
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-800"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-800 h-control-touch"
             />
             <p className="text-micro text-stone-500 mt-1">{t('verification.bankPayoutModal.leNomDoitCorrespondreA')}</p>
           </div>
@@ -172,7 +172,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
               onChange={handleIbanChange}
               placeholder="FR76 1234 5678 9012 3456 7890 123"
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono font-bold text-stone-900 tracking-wider focus:outline-none focus:border-stone-800 uppercase"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono font-bold text-stone-900 tracking-wider focus:outline-none focus:border-stone-800 uppercase h-control-touch"
             />
           </div>
 
@@ -186,7 +186,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
                 value={bic}
                 onChange={(e) => setBic(e.target.value.toUpperCase())}
                 placeholder="BNPAFRPP"
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-xs font-mono font-bold text-stone-900 focus:outline-none focus:border-stone-800 uppercase"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-xs font-mono font-bold text-stone-900 focus:outline-none focus:border-stone-800 uppercase h-control-touch"
               />
             </div>
             <div>
@@ -196,7 +196,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="Ex: BNP Paribas, BoursoBank..."
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-900 focus:outline-none focus:border-stone-800"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs text-stone-900 focus:outline-none focus:border-stone-800 h-control-touch"
               />
             </div>
           </div>

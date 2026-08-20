@@ -146,7 +146,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 placeholder={t('auth.forgotPasswordPage.votreEmailExempleFr')}
                 required
                 autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
               <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -155,7 +155,7 @@ export const ForgotPasswordPage: React.FC = () => {
           <Button
             type="submit"
             variant="primary"
-            size="lg"
+            size="md"
             className="w-full"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -173,7 +173,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 onChange={(e) => setToken(e.target.value)}
                 placeholder={t('auth.forgotPasswordPage.collezLeTokenRecuPar')}
                 required
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
               <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -201,24 +201,26 @@ export const ForgotPasswordPage: React.FC = () => {
               placeholder="••••••••••••"
               required
               autoComplete="new-password"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
           </div>
 
           <Button
             type="submit"
             variant="primary"
-            size="lg"
+            size="md"
             className="w-full mt-2"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
           >{t('auth.forgotPasswordPage.mettreAJourMonMot')}</Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => setStep('request')}
-            className="w-full text-center text-xs font-semibold text-stone-500 hover:text-stone-900 py-1"
-          >{t('auth.forgotPasswordPage.renvoyerUnNouvelEmail')}</button>
+            className="w-full text-stone-500"
+          >{t('auth.forgotPasswordPage.renvoyerUnNouvelEmail')}</Button>
         </form>
       )}
     </AuthLayout>

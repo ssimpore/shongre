@@ -39,7 +39,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             aria-label={t('admin.taxonomyTreeToolbar.rechercherDansLArborescence')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           />
           {searchQuery && (
             <button
@@ -74,7 +74,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             aria-label={t('admin.taxonomyTreeToolbar.filtrerParNiveauDeTaxonomie')}
             value={levelFilter}
             onChange={(e) => onLevelFilterChange(e.target.value)}
-            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
+            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
             <option value="all">{t('admin.taxonomyTreeToolbar.tousLesNiveaux')}</option>
             <option value="category">{t('admin.taxonomyTreeToolbar.categoriesRacinesUnivers')}</option>
@@ -87,7 +87,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             aria-label={t('admin.taxonomyTreeToolbar.filtrerParStatutDeN')}
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-lg text-xs font-semibold text-stone-700"
+            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
             <option value="all">{t('admin.taxonomyTreeToolbar.tousLesStatuts')}</option>
             <option value="active">Actifs uniquement</option>

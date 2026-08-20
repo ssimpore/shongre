@@ -79,7 +79,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             aria-label={t('admin.taxonomyAttributeRegistryTab.rechercherUnAttribut')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
 
@@ -88,7 +88,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           <select
             value={dataTypeFilter}
             onChange={(e) => setDataTypeFilter(e.target.value)}
-            className="h-control-md px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-700"
+            className="h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
             <option value="all">{t('admin.taxonomyAttributeRegistryTab.tousLesTypesDeDonnees')}</option>
             <option value="text">Texte libre (String)</option>

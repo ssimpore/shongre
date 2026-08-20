@@ -39,7 +39,7 @@ export const TaxonomyAuditTab: React.FC = () => {
             placeholder={t('admin.taxonomyAuditTab.filtrerLesLogsDAudit')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
       </div>

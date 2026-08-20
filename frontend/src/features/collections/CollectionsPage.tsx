@@ -26,7 +26,13 @@ import { listingRepository } from '../../repositories/listing.repository';
 import { Listing } from '../../types';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { ListingRail } from '../../design-system/primitives/ListingRail';
-import { Skeleton } from '../../design-system/primitives/UIComponents';
+import {
+  Breadcrumbs,
+  Container,
+  Heading,
+  Input,
+  ListingCardSkeleton,
+} from '../../design-system';
 import { Image } from '../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../design-system/primitives/responsiveImage';
 import { ScrollRail } from '../../design-system/primitives/ScrollRail';
@@ -175,35 +181,25 @@ export const CollectionsPage: React.FC = () => {
     <div className="min-h-screen bg-bg-base pb-20">
       {/* 1. Breadcrumbs */}
       <div className="border-b border-border-base bg-bg-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs text-stone-500">
-            <Link to="/" className="hover:text-stone-900 transition-colors flex items-center gap-1">
-              <Home className="w-3.5 h-3.5" />
-              <span>Accueil</span>
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
-            <Link
-              to="/collections"
-              className={selectedCollection ? 'hover:text-stone-900 transition-colors' : 'font-bold text-stone-900'}
-            >
-              Collections
-            </Link>
-            {selectedCollection && (
-              <>
-                <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
-                <span className="font-bold text-stone-900 truncate max-w-xs">{selectedCollection.title}</span>
-              </>
-            )}
-          </nav>
-        </div>
+        <Container className="py-3">
+          <Breadcrumbs
+            items={[
+              { label: 'Accueil', href: '/' },
+              selectedCollection
+                ? { label: 'Collections', href: '/collections' }
+                : { label: 'Collections' },
+              ...(selectedCollection ? [{ label: selectedCollection.title }] : []),
+            ]}
+          />
+        </Container>
       </div>
 
       {/* 2. Header / Hero Section */}
       {selectedCollection ? (
         <section className="relative bg-gradient-to-b from-stone-900 to-stone-950 text-white pt-8 pb-12 sm:py-14 overflow-hidden">
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#C4431F_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(var(--color-primary)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <Container className="relative z-raised">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Left Column: Title, description, curator note */}
               <div className="lg:col-span-7 space-y-4">
@@ -229,9 +225,9 @@ export const CollectionsPage: React.FC = () => {
                   </span>
                 </div>
 
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+                <Heading as="h1" size="display-md" family="display" tone="inverse">
                   {selectedCollection.title}
-                </h1>
+                </Heading>
 
                 <p className="text-sm sm:text-base text-stone-300 max-w-xl leading-relaxed">
                   {selectedCollection.description}
@@ -260,37 +256,39 @@ export const CollectionsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </Container>
         </section>
       ) : (
-        <section className="relative bg-[#FAF8F5] pt-8 pb-10 sm:py-14 border-b border-border-base">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="relative bg-bg-base pt-8 pb-10 sm:py-14 border-b border-border-base">
+          <Container>
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
               <div className="max-w-3xl space-y-3">
-                <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">{t('collections.collectionsPage.toutesNosCollections')}</h1>
+                <Heading as="h1" size="display-md" family="display">
+                  {t('collections.collectionsPage.toutesNosCollections')}
+                </Heading>
 
                 <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">{t('collections.collectionsPage.decouvrezDesUniversThematiquesPenses')}</p>
               </div>
 
               {/* Search collections bar */}
               <div className="relative w-full sm:w-80 shrink-0">
-                <Search className="w-4.5 h-4.5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
+                <Input
                   type="text"
                   value={collectionSearch}
                   onChange={(e) => setCollectionSearch(e.target.value)}
                   placeholder={t('collections.collectionsPage.chercherUneThematique')}
-                aria-label={t('collections.collectionsPage.chercherUneThematique')}
-                  className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                  aria-label={t('collections.collectionsPage.chercherUneThematique')}
+                  leftIcon={<Search aria-hidden="true" className="h-icon-md w-icon-md" />}
+                  className="h-control-touch bg-white shadow-2xs"
                 />
               </div>
             </div>
-          </div>
+          </Container>
         </section>
       )}
 
       {/* 3. Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10 space-y-10">
+      <Container className="mt-6 space-y-10 sm:mt-10">
         {/* ========================================================= */}
         {/* A. OVERVIEW MODE: Browse All Collections with Pillar Tabs */}
         {/* ========================================================= */}
@@ -353,7 +351,7 @@ export const CollectionsPage: React.FC = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
 
-                      <div className="absolute top-3 left-3 z-10">
+                      <div className="absolute top-3 left-3 z-raised">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border shadow-xs backdrop-blur-xs ${
                             BADGE_STYLES[col.badge.variant] || BADGE_STYLES.terracotta
@@ -363,7 +361,7 @@ export const CollectionsPage: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="absolute bottom-3 left-3 z-10">
+                      <div className="absolute bottom-3 left-3 z-raised">
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
                           <Layers className="w-3.5 h-3.5 text-stone-300" />
                           {col.itemCountLabel}
@@ -417,7 +415,7 @@ export const CollectionsPage: React.FC = () => {
                     setCollectionSearch('');
                     setActivePillar('all');
                   }}
-                  className="h-9 px-4 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
+                  className="h-control-md px-4 rounded-control bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
                 >{t('collections.collectionsPage.voirToutesLesCollections')}</button>
               </div>
             )}
@@ -469,7 +467,7 @@ export const CollectionsPage: React.FC = () => {
                     onChange={(e) => setInCollectionSearch(e.target.value)}
                     placeholder={t('collections.collectionsPage.filtrerDansLaSelection')}
                 aria-label={t('collections.collectionsPage.filtrerDansLaSelection')}
-                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                    className="w-full h-control-md pl-9 pr-3 text-xs rounded-control bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -489,11 +487,10 @@ export const CollectionsPage: React.FC = () => {
               {isLoading ? (
                 <div className="flex gap-3 sm:gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
                   {Array.from({ length: 8 }).map((_, idx) => (
-                    <div key={idx} className="w-listing-card shrink-0 bg-white rounded-2xl p-3 border border-border-base space-y-3">
-                      <Skeleton className="aspect-[4/3] w-full rounded-xl" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-5 w-1/3" />
-                    </div>
+                    <ListingCardSkeleton
+                      key={idx}
+                      className="w-listing-card shrink-0 rounded-2xl border border-border-base bg-white p-3"
+                    />
                   ))}
                 </div>
               ) : displayedListings.length > 0 ? (
@@ -517,7 +514,7 @@ export const CollectionsPage: React.FC = () => {
                       setActiveTag(null);
                       setInCollectionSearch('');
                     }}
-                    className="h-9 px-4 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
+                    className="h-control-md px-4 rounded-control bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
                   >{t('collections.collectionsPage.reinitialiserLesFiltres')}</button>
                 </div>
               )}
@@ -568,7 +565,7 @@ export const CollectionsPage: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </Container>
     </div>
   );
 };

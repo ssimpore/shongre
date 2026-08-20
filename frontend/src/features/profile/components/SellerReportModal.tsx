@@ -107,7 +107,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
             onChange={(e) => setComment(e.target.value)}
             placeholder={t('profile.sellerReportModal.decrivezPrecisementLesFaitsConstates')}
             rows={3}
-            className="w-full p-3 bg-bg-base border border-border-base rounded-xl text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary"
+            className="w-full p-3 bg-bg-base border border-border-base rounded-control text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary min-h-control-touch"
           />
         </div>
 

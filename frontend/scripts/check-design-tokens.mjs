@@ -49,6 +49,38 @@ const BANNED = [
     re: /\b(?:[a-z-]+:)*text-\[[0-9.]+(?:px|rem|em)\]/,
     hint: 'a named step — text-micro / text-xs / text-sm / text-card-title / text-hero',
   },
+  {
+    re: /\b(?:[a-z0-9-]+:)*(?:bg|text|border|ring|outline|fill|stroke)-\[#[0-9a-f]{3,8}\]/i,
+    hint: 'a semantic --color-* token declared in src/index.css',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*rounded(?:-[trbl]{1,2})?-\[[^\]]+\]/,
+    hint: 'rounded-{xs|sm|md|lg|xl|2xl|3xl|card|overlay|pill}',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*shadow-\[[^\]]+\]/,
+    hint: 'shadow-{xs|sm|md|lg|dropdown|overlay|sticky}',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*z-(?:\[[^\]]+\]|[0-9]+)\b/,
+    hint: 'z-{base|raised|sticky|dropdown|popover|header|drawer|modal|toast|tooltip}',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*duration-(?:\[[^\]]+\]|[0-9]+)\b/,
+    hint: 'duration-{fast|normal|slow}',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*stroke-\[[^\]]+\]/,
+    hint: 'the Icon primitive weight or a named stroke utility',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*opacity-\[[^\]]+\]/,
+    hint: 'an owned opacity step',
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*(?:min-)?h-\[(?:32|36|40|42|44|48|52|56)px\]/,
+    hint: 'h-control-{sm|md|touch|lg|fab}',
+  },
 ];
 
 /* ---------------------------------------------------------------------------
@@ -105,7 +137,7 @@ function walk(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
     if (e.isDirectory()) walk(p, out);
-    else if (p.endsWith('.tsx')) out.push(p);
+    else if (/\.tsx?$/.test(p)) out.push(p);
   }
   return out;
 }
@@ -137,7 +169,7 @@ if (undeclared.length > 0) {
 }
 
 if (violations.length === 0 && undeclared.length === 0) {
-  console.log('✔ design tokens: no raw status palettes, no off-scale type sizes, no undeclared tokens in src/**/*.tsx');
+  console.log('✔ design system: semantic colors, type, radii, elevation, motion and stacking checks passed');
   process.exit(0);
 }
 

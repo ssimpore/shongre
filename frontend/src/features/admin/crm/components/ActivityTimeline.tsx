@@ -80,7 +80,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             onChange={(e) => setNewNote(e.target.value)}
             placeholder={t('admin.activityTimeline.ajouterUneNoteCommercialeCompte')}
             rows={2}
-            className="w-full text-xs p-2.5 bg-white border border-stone-200 rounded-xl placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+            className="w-full text-xs p-2.5 bg-white border border-stone-200 rounded-control placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors min-h-control-touch"
           />
           <div className="flex justify-end">
             <Button

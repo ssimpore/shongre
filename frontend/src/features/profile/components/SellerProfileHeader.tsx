@@ -312,7 +312,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
                   {isMenuOpen && (
                     <div
-                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200/60 py-2 z-30 animate-in fade-in zoom-in-95 duration-fast"
+                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200/60 py-2 z-dropdown animate-in fade-in zoom-in-95 duration-fast"
                       onMouseLeave={() => setIsMenuOpen(false)}
                     >
                       <button

@@ -27,7 +27,7 @@ import { crmService } from '../../../domains/crm/crm.service';
 import { ActivityTimeline } from './components/ActivityTimeline';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { formatDate } from '../../../utilities/formatters';
-import { Skeleton } from '../../../design-system/primitives/UIComponents';
+import { Skeleton } from '../../../design-system';
 import { useTranslation } from '../../../i18n/I18nProvider';
 import { usePageMeta } from '../../../hooks/usePageMeta';
 

@@ -8,9 +8,33 @@ import { typography, type Typography } from './typography';
 import { spacing, type Spacing } from './spacing';
 import { radii, calculateNestedRadius, type Radii } from './radii';
 import { shadows, transitions, type Shadows, type Transitions } from './shadows';
-import { theme, type Theme } from './theme';
+import {
+  theme,
+  themeBreakpoints,
+  themeContainers,
+  themeMotion,
+  themeShadows,
+  themeSpacing,
+  themeZIndex,
+  type Theme,
+} from './theme';
 
-export { colors, typography, spacing, radii, shadows, transitions, calculateNestedRadius, theme };
+export {
+  colors,
+  typography,
+  spacing,
+  radii,
+  shadows,
+  transitions,
+  calculateNestedRadius,
+  theme,
+  themeBreakpoints as breakpoints,
+  themeContainers as containers,
+  themeMotion as motion,
+  themeShadows as elevation,
+  themeSpacing as sizes,
+  themeZIndex as zIndex,
+};
 export type { Colors, Typography, Spacing, Radii, Shadows, Transitions, Theme };
 
 export const tokens = {

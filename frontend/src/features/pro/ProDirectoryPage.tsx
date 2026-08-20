@@ -4,7 +4,7 @@ import {  Search    } from 'lucide-react';
 import { userRepository } from '../../repositories/user.repository';
 import { UserProfile } from '../../types';
 import { SellerCard } from '../../design-system/primitives/SellerCard';
-import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
+import { Breadcrumbs } from '../../design-system';
 import { Button } from '../../design-system/primitives/Button';
 import { NoResultsFound } from '../../design-system/primitives/NoResultsFound';
 import { usePageMeta } from '../../hooks/usePageMeta';
@@ -67,7 +67,7 @@ export const ProDirectoryPage: React.FC = () => {
             aria-label={t('proDirectory.rechercherUneBoutiqueProfessionnelle')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
         {/* Live, so filtering announces its own result. The count also stops

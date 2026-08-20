@@ -514,7 +514,7 @@ export const PublishWizard: React.FC = () => {
                 aria-label={t('publishing.publishWizard.rechercherUneCategorie')}
                 value={categorySearchQuery}
                 onChange={(e) => setCategorySearchQuery(e.target.value)}
-                className="w-full h-10 pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
+                className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
               />
             </div>
 
@@ -651,7 +651,7 @@ export const PublishWizard: React.FC = () => {
                         <select
                           value={value}
                           onChange={(e) => updateAttribute(attr.code, e.target.value)}
-                          className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                          className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
                         >
                           <option value="">{t('publishing.publishWizard.selectionnerUneOption')}</option>
                           {attr.options?.map((opt) => (
@@ -679,7 +679,7 @@ export const PublishWizard: React.FC = () => {
                           min={attr.validation?.min}
                           max={attr.validation?.max}
                           onChange={(e) => updateAttribute(attr.code, e.target.value ? Number(e.target.value) : '')}
-                          className="h-10 text-xs"
+                          className="h-control-md text-xs"
                         />
                       </FormField>
                     );
@@ -705,7 +705,7 @@ export const PublishWizard: React.FC = () => {
                         placeholder={attr.validation?.placeholder || ''}
                         value={value}
                         onChange={(e) => updateAttribute(attr.code, e.target.value)}
-                        className="h-10 text-xs"
+                        className="h-control-md text-xs"
                       />
                     </FormField>
                   );
@@ -1573,7 +1573,7 @@ export const PublishWizard: React.FC = () => {
           — the user had to scroll to the bottom after every field group to
           advance. It now stays on screen, clears the home indicator via the
           safe-area inset, and keeps the step's one primary action reachable. */}
-      <div className="sticky bottom-0 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)] pt-3 bg-bg-base/95 backdrop-blur-sm border-t border-border-base z-30">
+      <div className="sticky bottom-0 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)] pt-3 bg-bg-base/95 backdrop-blur-sm border-t border-border-base z-sticky">
       <div className="bg-white p-3 sm:p-4 rounded-2xl border border-border-base shadow-xs flex items-center justify-between gap-3">
         <Button
           variant="outline"

@@ -22,7 +22,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { useToast } from '../../app/providers/ToastProvider';
 import { Image } from '../../design-system/primitives/Image';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
-import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
+import { Tabs, TabPanel } from '../../design-system';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
 

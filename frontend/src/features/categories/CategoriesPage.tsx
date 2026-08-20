@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Home as HomeIcon,
   ChevronRight,
   Search
   
@@ -15,6 +14,7 @@ import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { Breadcrumbs, Button, Container, EmptyState, Heading, Input } from '../../design-system';
 
 interface CategoryMeta {
   itemCountLabel: string;
@@ -169,46 +169,46 @@ export const CategoriesPage: React.FC = () => {
     <div className="min-h-screen bg-bg-base pb-20">
       {/* 1. Breadcrumbs */}
       <div className="border-b border-border-base bg-bg-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs text-stone-500">
-            <Link to="/" className="hover:text-stone-900 transition-colors inline-flex items-center gap-1 min-h-6">
-              <HomeIcon className="w-3.5 h-3.5" />
-              <span>Accueil</span>
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
-            <span className="font-bold text-stone-900">{t('categories.categoriesPage.toutesLesCategories')}</span>
-          </nav>
-        </div>
+        <Container className="py-3">
+          <Breadcrumbs
+            items={[
+              { label: 'Accueil', href: '/' },
+              { label: t('categories.categoriesPage.toutesLesCategories') },
+            ]}
+          />
+        </Container>
       </div>
 
       {/* 2. Hero Header */}
-      <section className="relative bg-[#FAF8F5] pt-8 pb-10 sm:py-14 border-b border-border-base">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-bg-base pt-8 pb-10 sm:py-14 border-b border-border-base">
+        <Container>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="max-w-3xl space-y-3">
-              <h1 className="font-display text-3xl sm:text-5xl font-bold text-stone-900 tracking-tight leading-tight">{t('categories.categoriesPage.toutesNosCategories')}</h1>
+              <Heading as="h1" size="display-md" family="display">
+                {t('categories.categoriesPage.toutesNosCategories')}
+              </Heading>
 
               <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">{t('categories.categoriesPage.explorezLEnsembleDesCategories')}</p>
             </div>
 
             {/* In-page Category Search */}
             <div className="relative w-full sm:w-80 shrink-0">
-              <Search className="w-4.5 h-4.5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
+              <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('categories.categoriesPage.filtrerUneCategorieSousCategorie')}
                 aria-label={t('categories.categoriesPage.filtrerUneCategorieSousCategorie')}
-                className="w-full h-11 pl-10 pr-4 text-xs sm:text-sm rounded-2xl bg-white border border-stone-200 shadow-2xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                leftIcon={<Search aria-hidden="true" className="h-icon-md w-icon-md" />}
+                className="h-control-touch bg-white shadow-2xs"
               />
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* 3. Categories Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
+      <Container className="mt-8 sm:mt-12">
         <div className="flex items-center justify-between gap-4 mb-6">
           <span className="text-xs sm:text-sm text-stone-500 font-medium">{t('categories.categoriesPage.affichageDe')}<strong>{filteredCategories.length} univers</strong>
             {searchQuery && ` pour "${searchQuery}"`}
@@ -311,22 +311,19 @@ export const CategoriesPage: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-stone-200 p-10 text-center max-w-md mx-auto space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
-              <Search className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-stone-900">{t('categories.categoriesPage.aucuneCategorieTrouvee')}</h3>
-            <p className="text-xs text-stone-500">
-              Aucune catégorie ne correspond à votre recherche "{searchQuery}".
-            </p>
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="h-9 px-4 rounded-xl bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-            >{t('categories.categoriesPage.afficherToutesLesCategories')}</button>
-          </div>
+          <EmptyState
+            icon={<Search aria-hidden="true" className="h-icon-xl w-icon-xl" />}
+            title={t('categories.categoriesPage.aucuneCategorieTrouvee')}
+            description={`Aucune catégorie ne correspond à votre recherche "${searchQuery}".`}
+            action={
+              <Button variant="pro" size="sm" onClick={() => setSearchQuery('')}>
+                {t('categories.categoriesPage.afficherToutesLesCategories')}
+              </Button>
+            }
+            className="mx-auto max-w-md"
+          />
         )}
-      </div>
+      </Container>
     </div>
   );
 };

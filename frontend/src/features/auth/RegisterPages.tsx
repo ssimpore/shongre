@@ -87,7 +87,7 @@ export const RegisterChoicePage: React.FC = () => {
             <Button
               type="button"
               variant={selectedType === 'professional' ? 'pro' : 'primary'}
-              size="lg"
+              size="md"
               className="w-full sm:w-auto"
               onClick={handleContinue}
               rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -206,7 +206,7 @@ export const RegisterIndividualPage: React.FC = () => {
               placeholder="ex: Thomas Laurent"
               required
               autoComplete="name"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
             <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
@@ -225,7 +225,7 @@ export const RegisterIndividualPage: React.FC = () => {
               placeholder="thomas.laurent@exemple.fr"
               required
               autoComplete="email"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
             <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
@@ -240,7 +240,7 @@ export const RegisterIndividualPage: React.FC = () => {
               id="reg-country"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             >
               {Object.values(SUPPORTED_MARKETS).map((m) => (
                 <option key={m.code} value={m.code}>
@@ -260,7 +260,7 @@ export const RegisterIndividualPage: React.FC = () => {
               onChange={(e) => setPostalCode(e.target.value)}
               placeholder={market.postalCodePlaceholder}
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
           </div>
 
@@ -274,7 +274,7 @@ export const RegisterIndividualPage: React.FC = () => {
               onChange={(e) => setCity(e.target.value)}
               placeholder="ex: Paris"
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
           </div>
         </div>
@@ -323,7 +323,7 @@ export const RegisterIndividualPage: React.FC = () => {
         <Button
           type="submit"
           variant="primary"
-          size="lg"
+          size="md"
           className="w-full mt-2"
           isLoading={isLoading}
           rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -489,7 +489,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ex: Sophie Marchand"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                   <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -506,7 +506,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="contact@boutiquedeco.fr"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                   <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -520,7 +520,7 @@ export const RegisterProPage: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="01 42 68 90 12"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                   <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -541,7 +541,7 @@ export const RegisterProPage: React.FC = () => {
                 <Button
                   type="submit"
                   variant="primary"
-                  size="lg"
+                  size="md"
                   className="w-full"
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >{t('auth.registerPages.continuerVersLesInformationsEntreprise')}</Button>
@@ -557,7 +557,7 @@ export const RegisterProPage: React.FC = () => {
                   <select id="reg-pays-d-immatriculation"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   >
                     {Object.values(SUPPORTED_MARKETS).map((m) => (
                       <option key={m.code} value={m.code}>
@@ -574,7 +574,7 @@ export const RegisterProPage: React.FC = () => {
                   <select id="reg-forme-juridique"
                     value={legalForm}
                     onChange={(e) => setLegalForm(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   >
                     {currentMarket.supportedLegalForms.map((f) => (
                       <option key={f} value={f}>
@@ -596,7 +596,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="ex: Atelier Nordique SAS"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                   <Building2 className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -613,7 +613,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setSirenSiret(e.target.value)}
                     placeholder={currentMarket.businessIdentifierFormatPlaceholder}
                     required
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                 </div>
 
@@ -626,7 +626,7 @@ export const RegisterProPage: React.FC = () => {
                     value={vatNumber}
                     onChange={(e) => setVatNumber(e.target.value)}
                     placeholder={currentMarket.vatNumberFormatPlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                 </div>
               </div>
@@ -641,7 +641,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setBusinessAddress(e.target.value)}
                     placeholder={t('auth.registerPages.14RueDesAntiquaires')}
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                   <MapPin className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -658,7 +658,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder={currentMarket.postalCodePlaceholder}
                     required
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                 </div>
 
@@ -672,7 +672,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Bordeaux"
                     required
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
                 </div>
               </div>
@@ -699,7 +699,7 @@ export const RegisterProPage: React.FC = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  size="lg"
+                  size="md"
                   onClick={() => setStep(1)}
                   disabled={isLoading}
                 >
@@ -708,7 +708,7 @@ export const RegisterProPage: React.FC = () => {
                 <Button
                   type="submit"
                   variant="pro"
-                  size="lg"
+                  size="md"
                   className="flex-1"
                   isLoading={isLoading}
                   rightIcon={<ArrowRight className="w-4 h-4" />}

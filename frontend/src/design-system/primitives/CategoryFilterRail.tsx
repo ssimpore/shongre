@@ -141,7 +141,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             type="button"
             onClick={() => handleScroll('left')}
             aria-label={t('ui.categoryFilterRail.faireDefilerLesCategoriesVers')}
-            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -ml-2"
+            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised w-8 h-control-sm items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -ml-2"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -227,7 +227,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             type="button"
             onClick={() => handleScroll('right')}
             aria-label={t('ui.categoryFilterRail.faireDefilerLesCategoriesVers2')}
-            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -mr-2"
+            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised w-8 h-control-sm items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -mr-2"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

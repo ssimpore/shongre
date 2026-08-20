@@ -22,7 +22,7 @@ import { newsletterTopicsService } from '../../domains/newsletter/newsletter.top
 import { useToast } from '../../app/providers/ToastProvider';
 import { formatDate } from '../../utilities/formatters';
 import { NewsletterPreviewModal } from '../newsletter/components/NewsletterPreviewModal';
-import { Skeleton, EmptyState } from '../../design-system/primitives/UIComponents';
+import { Skeleton, EmptyState } from '../../design-system';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
 

@@ -96,7 +96,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   variant = 'header',
   idPrefix = 'lang-selector',
 }) => {
-  const { currentLocale, setLocale, activeMarket, currentCurrency, openPreferencesModal } = useMarketLocation();
+  const { currentLocale, setLocale, openPreferencesModal } = useMarketLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [alignRight, setAlignRight] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -111,11 +111,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   /**
    * Opens the panel inward when there is not room to open it outward.
    *
-   * The panel is 240px and was always anchored to the trigger's left edge. In
-   * the footer the trigger sits well right of centre, so on a phone the panel
-   * ran past the right edge — far enough to widen the document, which is the one
-   * thing the responsive suite is built to catch and could not, because nothing
-   * in it opens a dropdown.
+   * The panel opens inward when its intrinsic content width would cross the
+   * viewport edge. Measuring the rendered menu keeps this calculation aligned
+   * with its content instead of coupling it to a fixed width.
    *
    * Measured on open rather than guessed from a breakpoint: the trigger's
    * position depends on the copyright text beside it, which changes length with
@@ -127,9 +125,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     if (!trigger) return;
 
     const { left } = trigger.getBoundingClientRect();
-    const PANEL_WIDTH = 240;
+    const panelWidth = trigger.querySelector<HTMLElement>('[role="menu"]')?.getBoundingClientRect().width ?? 0;
     const MARGIN = 12;
-    setAlignRight(left + PANEL_WIDTH > window.innerWidth - MARGIN);
+    setAlignRight(left + panelWidth > window.innerWidth - MARGIN);
   }, [isOpen]);
 
   // Close on Escape or click outside
@@ -170,10 +168,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   const buttonClasses =
     variant === 'footer'
-      ? `flex items-center gap-1.5 text-xs font-bold text-stone-300 hover:text-white px-2.5 py-1.5 rounded-lg bg-stone-800/80 hover:bg-stone-800 border border-stone-700/80 hover:border-stone-600 transition-colors cursor-pointer select-none ${
+      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-300 hover:text-white bg-stone-800/80 hover:bg-stone-800 border border-stone-700/80 hover:border-stone-600 transition-colors cursor-pointer select-none ${
           isOpen ? 'bg-stone-800 text-white border-stone-600 ring-1 ring-stone-600' : ''
         }`
-      : `flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-stone-950 px-2.5 py-1.5 rounded-lg hover:bg-bg-subtle transition-colors cursor-pointer select-none border border-transparent hover:border-border-base ${
+      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors cursor-pointer select-none border border-transparent hover:border-border-base ${
           isOpen ? 'bg-bg-subtle border-border-base text-stone-950' : ''
         }`;
 
@@ -212,7 +210,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           role="menu"
           aria-orientation="vertical"
           aria-labelledby={`${idPrefix}-button`}
-          className={`absolute ${dropdownPlacement} w-60 max-w-[calc(100vw-1.5rem)] ${DROPDOWN_PANEL_CLASSES}`}
+          className={`absolute ${dropdownPlacement} w-max min-w-44 max-w-[calc(100vw-1.5rem)] ${DROPDOWN_PANEL_CLASSES}`}
         >
           <div className={DROPDOWN_HEADER_CLASSES}>
             <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
@@ -261,10 +259,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                 <Settings2 className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span>{t('language.preferences')}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-micro font-bold text-stone-500">
-                <span>{activeMarket.flag} {activeMarket.code}</span>
-                <span>•</span>
-                <span>{currentCurrency}</span>
+              <div className="flex items-center text-stone-500">
                 <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </button>

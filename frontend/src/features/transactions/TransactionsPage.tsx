@@ -26,7 +26,7 @@ import { routes } from '../../configuration/routes';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Image } from '../../design-system/primitives/Image';
 import { Button } from '../../design-system/primitives/Button';
-import { EmptyState } from '../../design-system/primitives/UIComponents';
+import { EmptyState } from '../../design-system';
 import { TransactionDetailModal } from './components/TransactionDetailModal';
 import { SellerPayoutModal } from './components/SellerPayoutModal';
 import { useTranslation } from '../../i18n/I18nProvider';

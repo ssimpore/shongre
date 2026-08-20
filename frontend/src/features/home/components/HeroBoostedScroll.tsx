@@ -1,17 +1,16 @@
 import { isProSeller } from '../../../domains/user/user.domain';
-import { routes } from '../../../configuration/routes';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Sparkle,
+  ChevronLeft,
   ChevronRight,
   MapPin,
   Truck,
   ShieldCheck,
-  Check,
 } from 'lucide-react';
 import { Listing } from '../../../types';
 import { FavoriteButton } from '../../../design-system/primitives/FavoriteButton';
+import { IconButton } from '../../../design-system/primitives/IconButton';
 import { listingRepository } from '../../../repositories/listing.repository';
 import { Image } from '../../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../../design-system/primitives/responsiveImage';
@@ -20,11 +19,8 @@ import { useMarketLocation } from '../../../app/providers/MarketLocationProvider
 import { formatPrice } from '../../../utilities/formatters';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
-/* Rail geometry: 2 cards perfectly filling the compact viewport without clipping or scrollbars. */
-const RAIL_CARD_H = 108; // px - compact height
-const RAIL_GAP = 8; // px
-const RAIL_CARD_MOBILE_H = 120;
-const VISIBLE = 2; // exactly 2 listings visible at once
+const MAX_FEATURED_LISTINGS = 8;
+const STEP_MS = 4500;
 
 interface HeroBoostedScrollProps {
   onListingClick?: (listing: Listing) => void;
@@ -36,12 +32,14 @@ function getListingPhotoUrl(photo: any): string {
   return 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&auto=format&fit=crop&q=80';
 }
 
-export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
+export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingClick }) => {
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
   const [isPaused, setIsPaused] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const railRef = useRef<HTMLDivElement>(null);
 
   /* Scoped to the active market, and re-run when it changes. The rail is the
      most prominent inventory on the page, so a market-blind query here put
@@ -86,48 +84,54 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
   const scrollSequence = useMemo(() => {
     const fallbackList = allListings.filter((l) => l && l.status === 'active').slice(0, 8);
     const list = promotedListings.length > 0 ? promotedListings : fallbackList;
-    if (!list || list.length === 0) return [];
-
-    let res = [...list];
-    while (res.length < 4) {
-      res = [...res, ...list];
-    }
-    return res;
+    return list.slice(0, MAX_FEATURED_LISTINGS);
   }, [promotedListings, allListings]);
 
-  const isDesktopRail = useMediaQuery('(min-width: 640px)');
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
-  const STEP_MS = 4500;
-  const [step, setStep] = useState(0);
-  const [animate, setAnimate] = useState(true);
-
-  const loopItems = useMemo(
-    () => (scrollSequence.length ? [...scrollSequence, ...scrollSequence.slice(0, VISIBLE)] : []),
-    [scrollSequence]
-  );
+  useEffect(() => {
+    setActiveIndex(0);
+    railRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+  }, [activeMarket.code, scrollSequence.length]);
 
   useEffect(() => {
-    setStep(0);
-  }, [scrollSequence.length]);
+    if (isPaused || prefersReducedMotion || scrollSequence.length <= 1) return;
 
-  useEffect(() => {
-    if (!isDesktopRail || isPaused || prefersReducedMotion) return;
-    if (scrollSequence.length <= VISIBLE) return;
-    const id = setInterval(() => setStep((s) => s + 1), STEP_MS);
+    const id = window.setInterval(() => {
+      setActiveIndex((currentIndex) => {
+        const nextIndex = (currentIndex + 1) % scrollSequence.length;
+        const rail = railRef.current;
+        rail?.scrollTo({
+          left: nextIndex * rail.clientWidth,
+          behavior: 'smooth',
+        });
+        return nextIndex;
+      });
+    }, STEP_MS);
+
     return () => clearInterval(id);
-  }, [isDesktopRail, isPaused, prefersReducedMotion, scrollSequence.length]);
+  }, [isPaused, prefersReducedMotion, scrollSequence.length]);
 
-  // Reaching the cloned tail means loop resets smoothly
-  useEffect(() => {
-    if (step !== scrollSequence.length || scrollSequence.length === 0) return;
-    const id = setTimeout(() => {
-      setAnimate(false);
-      setStep(0);
-      requestAnimationFrame(() => requestAnimationFrame(() => setAnimate(true)));
-    }, 600);
-    return () => clearTimeout(id);
-  }, [step, scrollSequence.length]);
+  const scrollToIndex = (index: number) => {
+    const total = scrollSequence.length;
+    if (total === 0) return;
+
+    const nextIndex = (index + total) % total;
+    const rail = railRef.current;
+    rail?.scrollTo({
+      left: nextIndex * rail.clientWidth,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    });
+    setActiveIndex(nextIndex);
+  };
+
+  const handleScroll = () => {
+    const rail = railRef.current;
+    if (!rail || rail.clientWidth === 0) return;
+
+    const nextIndex = Math.round(rail.scrollLeft / rail.clientWidth);
+    setActiveIndex(Math.min(Math.max(nextIndex, 0), scrollSequence.length - 1));
+  };
 
   const handleToggleFavorite = async (e: React.MouseEvent, listingId: string) => {
     e.preventDefault();
@@ -136,160 +140,133 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
     setFavorites((prev) => (isFav ? [...prev, listingId] : prev.filter((id) => id !== listingId)));
   };
 
-  /* Now that the rail is scoped to the active market it can legitimately have
-     nothing to show — a market that has just opened has no boosted listings.
-     The shell is a header, a fixed-height viewport and a reassurance strip, so
-     rendering it empty leaves a ~250px blank panel under the headline that
-     reads as a broken component. Collapsing instead lets the hero fall back to
-     a single column. */
+  /* A newly opened market may have no eligible featured listing. Collapsing
+     the gallery avoids leaving an empty media well beside the hero copy. */
   if (scrollSequence.length === 0) return null;
 
   return (
     <section
-      className="relative w-full max-w-full rounded-2xl sm:rounded-3xl bg-white border border-stone-200/80 p-3 sm:p-4 shadow-lg shadow-stone-200/40 flex flex-col justify-between overflow-hidden"
-      aria-labelledby="hero-boosted-heading"
+      className="relative flex w-full max-w-full flex-1 flex-col justify-between"
+      aria-label={t('home.heroBoostedScroll.carouselLabel')}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
     >
-      {/* 1. Header with Vedettes and Voir plus > */}
-      <div className="shrink-0 mb-2.5 sm:mb-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-light border border-primary-border text-primary text-micro sm:text-xs font-bold shrink-0 shadow-2xs">
-              <Sparkle className="w-3 h-3 fill-primary text-primary" />
-              <h2 id="hero-boosted-heading" className="text-micro sm:text-xs font-bold text-primary">
-                Vedettes
-              </h2>
-            </div>
-          </div>
-
-          <Link
-            to={routes.search()}
-            className="inline-flex items-center gap-0.5 h-7 px-2.5 rounded-full border border-stone-200/90 bg-white hover:bg-stone-50 hover:border-stone-300 text-micro sm:text-xs font-semibold text-stone-700 hover:text-stone-900 transition-colors shrink-0 shadow-2xs"
-          >{t('home.heroBoostedScroll.voirPlus')}<ChevronRight className="w-3 h-3 text-stone-400" />
-          </Link>
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-sm">
+        <div
+          id="hero-boosted-track"
+          ref={railRef}
+          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth scrollbar-none"
+          aria-label={t('home.heroBoostedScroll.carouselLabel')}
+          onScroll={handleScroll}
+        >
+          {scrollSequence.map((item, index) => renderItemCard(item, index))}
         </div>
-      </div>
 
-      {/* 2. Listings Track Section */}
-      <div
-        className="relative mb-2.5 overflow-hidden w-full max-w-full sm:h-(--rail-viewport) min-h-(--rail-card-mobile-h) sm:min-h-(--rail-viewport) shrink-0"
-        style={
-          {
-            '--rail-card-h': `${RAIL_CARD_H}px`,
-            '--rail-card-mobile-h': `${RAIL_CARD_MOBILE_H}px`,
-            '--rail-gap': `${RAIL_GAP}px`,
-            '--rail-viewport': `${VISIBLE * RAIL_CARD_H + (VISIBLE - 1) * RAIL_GAP}px`,
-          } as React.CSSProperties
-        }
-      >
-        {isDesktopRail ? (
-          <div
-            className={`flex flex-col gap-(--rail-gap) will-change-transform w-full max-w-full ${
-              animate ? 'transition-transform duration-slow ease-out-soft' : ''
-            }`}
-            style={{ transform: `translate3d(0, -${step * (RAIL_CARD_H + RAIL_GAP)}px, 0)` }}
-          >
-            {loopItems.map((item, index) => renderItemCard(item, `vert-${item.id}-${index}`))}
-          </div>
-        ) : (
-          <div className="flex gap-2.5 overflow-x-auto overscroll-x-contain pb-1 snap-x snap-mandatory scrollbar-none">
-            {scrollSequence.map((item, index) => renderItemCard(item, `horiz-${item.id}-${index}`))}
-          </div>
+        {scrollSequence.length > 1 && (
+          <>
+            <IconButton
+              variant="ghost"
+              size="md"
+              ariaLabel={t('home.heroBoostedScroll.previous')}
+              aria-controls="hero-boosted-track"
+              onClick={() => scrollToIndex(activeIndex - 1)}
+              className="absolute left-3 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white"
+            >
+              <ChevronLeft className="h-icon-lg w-icon-lg" />
+            </IconButton>
+            <IconButton
+              variant="ghost"
+              size="md"
+              ariaLabel={t('home.heroBoostedScroll.next')}
+              aria-controls="hero-boosted-track"
+              onClick={() => scrollToIndex(activeIndex + 1)}
+              className="absolute right-3 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white"
+            >
+              <ChevronRight className="h-icon-lg w-icon-lg" />
+            </IconButton>
+          </>
         )}
+
+        <div className="absolute bottom-3 right-4 z-raised flex items-center gap-1.5" aria-hidden="true">
+          {scrollSequence.map((item, index) => (
+            <span
+              key={item.id}
+              className={`h-2 rounded-full shadow-2xs transition-all duration-normal ${
+                index === activeIndex ? 'w-4 bg-primary' : 'w-2 bg-white/70'
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* 3. Reassurance strip with checkmark shield badge */}
-      <div className="shrink-0 relative overflow-hidden rounded-xl bg-[#FAF8F5] border border-stone-200/70 px-3 py-2 flex items-center justify-between">
-        <div className="relative z-10 min-w-0">
-          <p className="flex items-center gap-1.5 text-micro sm:text-xs font-bold text-stone-900">
-            <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0" />{t('home.heroBoostedScroll.annoncesControlees')}</p>
-          <p className="text-micro sm:text-micro text-stone-500 mt-0.5 ml-5 font-medium">{t('home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees')}</p>
-        </div>
-
-        {/* Soft orange check watermark badge */}
-        <div className="relative z-10 shrink-0 ml-2">
-          <div className="w-7.5 h-7.5 rounded-lg bg-gradient-to-br from-orange-100/90 to-orange-50/50 border border-orange-200/80 flex items-center justify-center text-primary shadow-2xs">
-            <Check className="w-4 h-4 text-primary stroke-[2.5]" />
-          </div>
-        </div>
+      <div className="mt-3 flex min-h-6 items-center px-1">
+        <p className="flex min-w-0 items-center gap-2 text-xs text-stone-600 sm:text-sm">
+          <ShieldCheck className="h-icon-lg w-icon-lg shrink-0 text-success" />
+          <span className="font-bold text-stone-800">{t('home.heroBoostedScroll.annoncesControlees')}</span>
+          <span className="hidden truncate font-medium sm:inline">
+            · {t('home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees')}
+          </span>
+        </p>
+        <span className="sr-only" aria-live="polite">
+          {activeIndex + 1} / {scrollSequence.length}
+        </span>
       </div>
     </section>
   );
 
-  function renderItemCard(item: Listing, key: string) {
+  function renderItemCard(item: Listing, index: number) {
     const isFav = favorites.includes(item.id);
     const photoUrl = getListingPhotoUrl(item.coverImageUrl || item.photos?.[0]);
 
     return (
-      /* The favourite control is a sibling of the link, not a child of it.
-         `<a>` may not contain interactive content: nesting the button gave
-         screen readers two overlapping controls for one card and left Enter
-         and Space ambiguous. The wrapper carries the rail geometry so the
-         link still fills the whole card. */
-      <div
-        key={key}
-        className="group relative w-[290px] sm:w-full max-w-full shrink-0 h-(--rail-card-mobile-h) sm:h-(--rail-card-h) snap-start"
+      <article
+        key={item.id}
+        className="group relative h-full w-full shrink-0 snap-center overflow-hidden bg-stone-200"
+        aria-label={`${index + 1} / ${scrollSequence.length}`}
       >
         <Link
           to={`/annonce/${item.id}`}
-          className="flex items-stretch gap-3 sm:gap-3.5 p-1 sm:p-1.5 rounded-xl hover:bg-stone-50/90 transition-colors duration-normal w-full h-full overflow-hidden box-border"
+          onClick={() => onListingClick?.(item)}
+          className="absolute inset-0 block focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus"
         >
-          {/* Left Photo Thumbnail */}
-          <div className="relative w-24 sm:w-32 h-full rounded-xl overflow-hidden shrink-0 bg-stone-100">
-            <Image
-              src={photoUrl}
-              alt={item.title}
-              sizes={IMAGE_SIZES.compact}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          </div>
+          <Image
+            src={photoUrl}
+            alt={item.title}
+            sizes={IMAGE_SIZES.gallery}
+            className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.025]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />
 
-          {/* Right Info Box */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 overflow-hidden">
-            <div className="min-w-0">
-              {/* Category tag */}
-              <div className="pr-8 mb-0.5">
-                <span className="block text-micro sm:text-micro font-bold uppercase tracking-wider text-primary truncate">
-                  {item.categoryLabel || 'Mode & Accessoires'}
-                </span>
-              </div>
+          <div className="absolute inset-x-0 bottom-0 p-4 pb-5 text-white sm:p-5 sm:pb-5 sm:pr-32">
+            <p className="mb-1.5 truncate text-micro font-bold uppercase tracking-wider text-orange-200 sm:text-xs">
+              {item.categoryLabel || 'Mode & Accessoires'}
+            </p>
+            <h3 title={item.title} className="line-clamp-2 font-display text-base font-bold leading-snug sm:text-lg">
+              {item.title}
+            </h3>
 
-              {/* Title */}
-              <h3
-                title={item.title}
-                className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2 group-hover:text-primary transition-colors leading-snug pr-8"
-              >
-                {item.title}
-              </h3>
-            </div>
-
-            <div className="min-w-0">
-              {/* Price line with strikethrough if original price */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-xs sm:text-sm font-extrabold text-stone-900">
-                  {formatPrice(item.price)}
-                </span>
+                <span className="text-base font-extrabold sm:text-lg">{formatPrice(item.price)}</span>
                 {item.originalPrice && item.originalPrice > item.price && (
-                  <span className="text-micro sm:text-xs text-stone-500 line-through font-normal">
+                  <span className="text-xs font-medium text-white/70 line-through sm:text-sm">
                     {formatPrice(item.originalPrice)}
                   </span>
                 )}
               </div>
 
-              {/* Location & Delivery */}
-              <div className="flex items-center gap-2.5 mt-0.5 text-micro sm:text-micro text-stone-500 flex-wrap">
-                <span className="flex items-center gap-1 font-medium truncate">
-                  <MapPin className="w-3 h-3 shrink-0 text-stone-400" />
-                  {item.city || 'Lyon 2e'}
+              <span className="inline-flex items-center gap-1 truncate text-xs font-medium text-white/85 sm:text-sm">
+                <MapPin className="h-icon-sm w-icon-sm shrink-0" />
+                {item.city || 'Lyon 2e'}
+              </span>
+              {item.deliveryOptions?.some((o) => o.available && o.type !== 'hand_delivery') && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-white/85 sm:text-sm">
+                  <Truck className="h-icon-sm w-icon-sm" />
+                  {t('home.heroBoostedScroll.livraison')}
                 </span>
-                {item.deliveryOptions?.some((o) => o.available && o.type !== 'hand_delivery') && (
-                  <span className="inline-flex items-center gap-1 font-medium text-stone-500">
-                    <Truck className="w-3 h-3 text-stone-400" />{t('home.heroBoostedScroll.livraison')}</span>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </Link>
@@ -297,12 +274,11 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = () => {
         <FavoriteButton
           isFavorite={isFav}
           onToggle={(e) => handleToggleFavorite(e, item.id)}
-          size="sm"
+          size="lg"
           variant="floating"
-          className="absolute top-1.5 right-1.5 z-10"
+          className="absolute left-4 top-4 z-raised"
         />
-      </div>
+      </article>
     );
   }
 };
-

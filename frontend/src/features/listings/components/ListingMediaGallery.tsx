@@ -84,7 +84,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
   if (!hasPhotos) {
     return (
       <div className={`bg-stone-100 rounded-2xl border border-border-base aspect-16/10 flex flex-col items-center justify-center text-stone-500 gap-2 ${className}`}>
-        <ImageIcon className="w-12 h-12 stroke-[1.5]" />
+        <ImageIcon className="w-12 h-12" />
         <span className="text-xs font-semibold">Aucune photo fournie</span>
       </div>
     );
@@ -143,7 +143,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 handlePrev();
               }}
               aria-label={t('listings.listingMediaGallery.photoPrecedente')}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-10"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -154,7 +154,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 handleNext();
               }}
               aria-label="Photo suivante"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -163,7 +163,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
 
         {/* Mobile Pagination Dots Indicator (if multiple photos) */}
         {photoList.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 sm:hidden bg-stone-900/70 backdrop-blur-xs px-2.5 py-1 rounded-full pointer-events-none">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-raised sm:hidden bg-stone-900/70 backdrop-blur-xs px-2.5 py-1 rounded-full pointer-events-none">
             {photoList.map((_, idx) => (
               <span
                 key={idx}
@@ -176,7 +176,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
         )}
 
         {/* Bottom controls bar: Counter & Fullscreen trigger */}
-        <div className="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
+        <div className="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none z-raised">
           <span className="hidden sm:inline-flex bg-stone-900/80 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full items-center gap-1.5 font-bold shadow-xs">
             <Camera className="w-3.5 h-3.5" />
             <span>
@@ -225,10 +225,10 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
           aria-modal="true"
           aria-labelledby={lightboxTitleId}
           tabIndex={-1}
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-between p-4 sm:p-6 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-modal bg-black/95 flex flex-col justify-between p-4 sm:p-6 backdrop-blur-md animate-fade-in"
         >
           {/* Top bar */}
-          <div className="flex items-center justify-between text-white z-10">
+          <div className="flex items-center justify-between text-white z-raised">
             <span id={lightboxTitleId} className="text-xs sm:text-sm font-bold text-stone-300">
               {title} ({activeIndex + 1} / {photoList.length})
             </span>
@@ -258,7 +258,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handlePrev}
                   aria-label={t('listings.listingMediaGallery.photoPrecedente')}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -266,7 +266,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handleNext}
                   aria-label="Photo suivante"
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -276,7 +276,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
 
           {/* Lightbox Thumbnails Bottom */}
           {photoList.length > 1 && (
-            <div className="flex justify-center gap-2 overflow-x-auto py-2 z-10">
+            <div className="flex justify-center gap-2 overflow-x-auto py-2 z-raised">
               {photoList.map((imgUrl, idx) => (
                 <button
                   key={idx}

@@ -9,7 +9,7 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Button } from '../../design-system/primitives/Button';
-import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
+import { EmptyState, Skeleton } from '../../design-system';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
 

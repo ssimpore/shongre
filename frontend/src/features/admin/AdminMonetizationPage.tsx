@@ -147,7 +147,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       updated[idx].maxActiveListings = parseInt(e.target.value) || 0;
                       setPlans(updated);
                     }}
-                    className="w-full text-xs p-2 border border-stone-200 rounded-lg font-mono focus:ring-1 focus:ring-primary"
+                    className="w-full text-xs p-2 border border-stone-200 rounded-control font-mono focus:ring-1 focus:ring-primary h-control-touch"
                   />
                 </div>
 
@@ -166,7 +166,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       updated[idx].commissionRate = parseFloat(e.target.value) || 0;
                       setPlans(updated);
                     }}
-                    className="w-full text-xs p-2 border border-stone-200 rounded-lg font-mono focus:ring-1 focus:ring-primary"
+                    className="w-full text-xs p-2 border border-stone-200 rounded-control font-mono focus:ring-1 focus:ring-primary h-control-touch"
                   />
                 </div>
 

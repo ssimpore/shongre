@@ -1,149 +1,31 @@
 /**
- * Shongre Design System - Color Palette Tokens
- * Features warm neutrals, artisanal terracotta primary, pine accent, and accessible WCAG AA semantic states.
+ * Programmatic colour tokens.
+ *
+ * Values are declared once in `src/index.css` and parity-checked through the
+ * canonical mirror in `theme.ts`. Feature components must not add local hex
+ * palettes; taxonomy accent colours remain domain data by design.
  */
+import { themeColors } from './theme';
 
 export const colors = {
-  // Brand / Primary: Terracotta
-  // Kept in step with `--color-primary` in index.css (and its mirror in
-  // theme.ts), which was darkened to clear WCAG AA. This file previously still
-  // carried the pre-AA ramp, so the two token modules disagreed about the brand.
-  primary: {
-    DEFAULT: '#C4431F',
-    hover: '#AB3919',
-    active: '#932F13',
-    light: '#FFF3EF',
-    lighter: '#FFF8F6',
-    border: '#FED7CC',
-    borderLight: '#FEE5DE',
-    dark: '#9A2E14',
-    contrastText: '#FFFFFF',
-  },
-
-  // Secondary Accent: Deep Pine / Forest
-  secondary: {
-    DEFAULT: '#2A5C55',
-    hover: '#224B45',
-    active: '#1A3B36',
-    light: '#EFF7F5',
-    border: '#BFE0DA',
-    dark: '#14312D',
-    contrastText: '#FFFFFF',
-  },
-
-  // Warm Neutrals (Stone/Ecru palette)
-  neutral: {
-    background: '#FAF8F5',
-    surface: '#FFFFFF',
-    surfaceSubtle: '#F4F1EA',
-    surfaceMuted: '#EAE6DD',
-    border: '#E8E4DC',
-    borderSubtle: '#F0ECE4',
-    borderDark: '#D6D1C7',
-    textPrimary: '#1C1917',     // Stone 900
-    textSecondary: '#57534E',   // Stone 600
-    textMuted: '#78716C',       // Stone 500
-    textSubtle: '#A8A29E',      // Stone 400
-    textInverted: '#FAF8F5',
-    white: '#FFFFFF',
-    black: '#121110',
-  },
-
-  // Semantic Status Colors
-  success: {
-    DEFAULT: '#16A34A',
-    hover: '#15803D',
-    light: '#F0FDF4',
-    border: '#BBF7D0',
-    text: '#15803D',
-    contrastText: '#FFFFFF',
-  },
-  warning: {
-    DEFAULT: '#D97706',
-    hover: '#B45309',
-    light: '#FFFBEB',
-    border: '#FDE68A',
-    text: '#B45309',
-    contrastText: '#FFFFFF',
-  },
-  danger: {
-    DEFAULT: '#DC2626',
-    hover: '#B91C1C',
-    light: '#FEF2F2',
-    border: '#FECACA',
-    text: '#B91C1C',
-    contrastText: '#FFFFFF',
-  },
-  error: {
-    DEFAULT: '#DC2626',
-    hover: '#B91C1C',
-    light: '#FEF2F2',
-    border: '#FECACA',
-    text: '#B91C1C',
-    contrastText: '#FFFFFF',
-  },
-  info: {
-    DEFAULT: '#0284C7',
-    hover: '#0369A1',
-    light: '#F0F9FF',
-    border: '#BAE6FD',
-    text: '#0369A1',
-    contrastText: '#FFFFFF',
-  },
-
-  // Pro & Verification Accents
-  pro: {
-    badge: '#3B82F6',
-    badgeLight: '#EFF6FF',
-    badgeBorder: '#BFDBFE',
-    badgeText: '#1D4ED8',
-    gold: '#D97706',
-    goldLight: '#FEF3C7',
-  },
-
-  // Marketplace & Boost Tones
-  boost: {
-    urgent: '#EA580C',
-    urgentLight: '#FFF7ED',
-    urgentBorder: '#FED7AA',
-    highlight: '#7C3AED',
-    highlightLight: '#F5F3FF',
-    highlightBorder: '#DDD6FE',
-    top: '#0284C7',
-    topLight: '#F0F9FF',
-    topBorder: '#BAE6FD',
-  },
-
-  /**
-   * Category accent hues.
-   *
-   * These 16 values lived as 66 raw hex literals inside `CategoryIcon.tsx`,
-   * where nothing could reach them: not the theme, not the contrast checks,
-   * not a future dark mode. They are data about the taxonomy's visual
-   * identity, so they belong with the other colour tokens and are referenced
-   * by name from the component.
-   *
-   * Named after what they colour, not after the hue — `vehicles`, not `red` —
-   * so re-hueing a family is a one-line change here.
-   */
+  ...themeColors,
   category: {
-    vehicles: '#C4431F',
-    realEstate: '#0284C7',
-    jobs: '#059669',
-    multimedia: '#6366F1',
-    homeGarden: '#D97706',
-    fashion: '#DB2777',
-    leisure: '#8B5CF6',
-    services: '#0D9488',
-    tech: '#4F46E5',
-    baby: '#EC4899',
-    pets: '#EAB308',
-    sport: '#EA580C',
-    trades: '#DC2626',
-    agriculture: '#65A30D',
-    neutral: '#57534E',
-    neutralSoft: '#78716C',
+    vehicles: themeColors['category-vehicles'],
+    realEstate: themeColors['category-real-estate'],
+    jobs: themeColors['category-jobs'],
+    multimedia: themeColors['category-multimedia'],
+    homeGarden: themeColors['category-home-garden'],
+    fashion: themeColors['category-fashion'],
+    leisure: themeColors['category-leisure'],
+    services: themeColors['category-services'],
+    tech: themeColors['category-tech'],
+    baby: themeColors['category-baby'],
+    pets: themeColors['category-pets'],
+    sport: themeColors['category-sport'],
+    trades: themeColors['category-trades'],
+    agriculture: themeColors['category-agriculture'],
+    neutral: themeColors['category-neutral'],
+    neutralSoft: themeColors['category-neutral-soft'],
   },
 } as const;
-
 export type Colors = typeof colors;

@@ -25,7 +25,7 @@ import { SellerReviewsTab } from './components/SellerReviewsTab';
 import { ProBusinessInfo } from './components/ProBusinessInfo';
 import { SellerReportModal } from './components/SellerReportModal';
 import { Button } from '../../design-system/primitives/Button';
-import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
+import { Tabs, TabPanel } from '../../design-system';
 import { useTranslation } from '../../i18n/I18nProvider';
 
 export const SellerPublicPage: React.FC = () => {

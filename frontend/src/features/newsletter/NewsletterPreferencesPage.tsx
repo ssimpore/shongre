@@ -10,7 +10,7 @@ import { newsletterTopicsService } from '../../domains/newsletter/newsletter.top
 import { newsletterCapabilitiesService } from '../../domains/newsletter/newsletter.capabilities';
 import { newsletterRepository } from '../../repositories/newsletter.repository';
 import { NewsletterTopicSelector } from './components/NewsletterTopicSelector';
-import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { Skeleton } from '../../design-system';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
 

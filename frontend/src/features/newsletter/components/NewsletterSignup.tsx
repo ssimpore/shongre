@@ -106,17 +106,19 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               aria-label={t('newsletter.newsletterSignup.votreAdresseEmail')}
               autoComplete="email"
               disabled={isSubmitting}
-              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-xl placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20-on-dark transition-colors"
+              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20-on-dark transition-colors"
             />
           </div>
-          <button
+          <Button
             type="submit"
-            disabled={isSubmitting}
-            className="relative h-control-touch w-full px-4 bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center disabled:opacity-50 cursor-pointer shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            variant="primary"
+            size="md"
+            fullWidth
+            isLoading={isSubmitting}
+            rightIcon={<ArrowRight className="w-4 h-4" />}
           >
             <span>{isSubmitting ? 'Inscription…' : 'S\'inscrire'}</span>
-            {!isSubmitting && <ArrowRight className="w-4 h-4 absolute right-4" />}
-          </button>
+          </Button>
         </div>
         {errorMessage && (
           <p className="text-micro text-rose-400 font-medium">{errorMessage}</p>
@@ -157,7 +159,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   aria-label={t('newsletter.newsletterSignup.votreAdresseEmail')}
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-2xl placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                 />
               </div>
 

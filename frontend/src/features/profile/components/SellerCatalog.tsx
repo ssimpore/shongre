@@ -177,7 +177,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
     return (
       <div className="bg-white rounded-2xl border border-border-base p-10 sm:p-14 text-center">
         <div className="w-16 h-16 rounded-2xl bg-bg-base border border-border-base text-stone-400 flex items-center justify-center mx-auto mb-4">
-          <PackageOpen className="w-8 h-8 stroke-[1.5]" />
+          <PackageOpen className="w-8 h-8" />
         </div>
         <h3 className="text-lg font-black text-stone-900 mb-1">
           {isPro ? 'Aucune annonce disponible en vitrine' : 'Aucune annonce en ligne'}
@@ -220,7 +220,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Rechercher parmi les annonces de ${seller.companyName || seller.name}...`}
               aria-label={`Rechercher parmi les annonces de ${seller.companyName || seller.name}`}
-              className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-xl text-xs sm:text-sm text-stone-900 placeholder:text-stone-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-control text-xs sm:text-sm text-stone-900 placeholder:text-stone-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-control-touch"
             />
             {searchQuery && (
               <button
@@ -293,7 +293,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 placeholder="Min €"
                 aria-label={t('profile.sellerCatalog.prixMinimum')}
                 min="0"
-                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-lg text-xs focus:bg-white focus:outline-hidden focus:border-primary"
+                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-white focus:outline-hidden focus:border-primary h-control-touch"
               />
               <span className="text-stone-500 text-xs">—</span>
               <input
@@ -303,7 +303,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 placeholder="Max €"
                 aria-label={t('profile.sellerCatalog.prixMaximum')}
                 min="0"
-                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-lg text-xs focus:bg-white focus:outline-hidden focus:border-primary"
+                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-white focus:outline-hidden focus:border-primary h-control-touch"
               />
             </div>
             {(minPrice || maxPrice) && (

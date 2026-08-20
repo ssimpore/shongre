@@ -78,7 +78,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
         id={`${id}-icon-container`}
         className="w-14 h-14 rounded-2xl bg-bg-subtle border border-border-base flex items-center justify-center text-stone-500 mb-4 transition-transform duration-normal hover:scale-105"
       >
-        {icon || <SearchX className="w-7 h-7 text-stone-600 stroke-[1.75]" />}
+        {icon || <SearchX className="w-7 h-7 text-stone-600" />}
       </div>
 
       {/* Headings */}

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { SavedSearch } from '../../types';
 import { storageService } from '../../services/storage.service';
 import { Button } from '../../design-system/primitives/Button';
-import { EmptyState } from '../../design-system/primitives/UIComponents';
+import { EmptyState } from '../../design-system';
 import { formatRelativeDate, plural } from '../../utilities/formatters';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';

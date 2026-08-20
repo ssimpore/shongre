@@ -160,7 +160,7 @@ export const ProviderHealthSimulator: React.FC<ProviderHealthSimulatorProps> = (
             <select
               value={selectedScenario}
               onChange={(e) => setSelectedScenario(e.target.value as any)}
-              className="w-full py-2 px-3 text-xs rounded-lg border border-stone-200 bg-stone-50 text-stone-800 font-medium"
+              className="w-full py-2 px-3 text-xs rounded-control border border-stone-200 bg-stone-50 text-stone-800 font-medium h-control-touch"
             >
               <option value="healthy">{t('admin.providerHealthSimulator.succesNominalReponseValideHttps')}</option>
               <option value="missing_credentials">{t('admin.providerHealthSimulator.identifiantsOuCleSecreteNon')}</option>

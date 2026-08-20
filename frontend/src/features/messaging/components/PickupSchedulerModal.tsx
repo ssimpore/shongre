@@ -58,7 +58,7 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
           <select
             value={timeSlot}
             onChange={(e) => setTimeSlot(e.target.value)}
-            className="w-full h-10 px-3 border border-border-base rounded-xl bg-white text-xs font-semibold"
+            className="w-full h-control-md px-3 border border-border-base rounded-control bg-white text-xs font-semibold"
           >
             <option value="10h00 - 12h00">{t('messaging.pickupSchedulerModal.matinee10h0012h00')}</option>
             <option value="12h00 - 14h00">Pause midi (12h00 - 14h00)</option>

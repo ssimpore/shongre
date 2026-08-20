@@ -25,6 +25,7 @@ import { LanguageSelector } from '../../design-system/primitives/LanguageSelecto
 import { NewsletterSignup } from '../../features/newsletter/components/NewsletterSignup';
 import { useConsent } from '../providers/ConsentProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { Container } from '../../design-system';
 
 /* -----------------------------------------------------------------------------
    Shared surface recipes.
@@ -224,7 +225,7 @@ export const Footer: React.FC = () => {
     // row: the copyright and the CGU / privacy / cookie links, which are exactly
     // the ones that have to stay reachable.
     <footer className="bg-stone-950 text-stone-300 pt-12 pb-36 lg:pb-10 border-t border-stone-800 text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <Container className="space-y-6">
         {/* Value props & trust badges.
             These are reassurance statements, not document sections: rendering
             them as headings injected an h1 → h4 jump into every single page of
@@ -517,7 +518,7 @@ export const Footer: React.FC = () => {
             </ul>
           </nav>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 };

@@ -127,7 +127,7 @@ export const LoginPage: React.FC = () => {
               placeholder={t('auth.loginPage.ex123456Ou84921049')}
               autoFocus
               required
-              className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
+              className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
             />
             <p className="mt-1.5 text-micro text-stone-500 text-center">{t('auth.loginPage.pourLeTestVousPouvez')}<code>123456</code>.
             </p>
@@ -136,20 +136,22 @@ export const LoginPage: React.FC = () => {
           <Button
             type="submit"
             variant="primary"
-            size="lg"
+            size="md"
             className="w-full"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
           >{t('auth.loginPage.validerEtContinuer')}</Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               setRequiresMfa(false);
               setTempMfaToken(null);
             }}
-            className="w-full text-center text-xs font-semibold text-stone-500 hover:text-stone-900 py-1"
-          >{t('auth.loginPage.retourALEcranDe')}</button>
+            className="w-full text-stone-500"
+          >{t('auth.loginPage.retourALEcranDe')}</Button>
         </form>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -166,7 +168,7 @@ export const LoginPage: React.FC = () => {
                 placeholder={t('auth.loginPage.votreEmailExempleFr')}
                 required
                 autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
               <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -208,7 +210,7 @@ export const LoginPage: React.FC = () => {
           <Button
             type="submit"
             variant="primary"
-            size="lg"
+            size="md"
             className="w-full mt-2"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -229,7 +231,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleQuickDemoLogin('buyer_thomas', 'thomas.laurent@example.fr')}
-            className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-primary flex items-center gap-1">
               <User className="w-3.5 h-3.5 text-info shrink-0" />
@@ -241,7 +243,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleQuickDemoLogin('pro_atelier', 'contact@atelier-nordique.fr')}
-            className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-primary flex items-center gap-1">
               <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -253,7 +255,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleQuickDemoLogin('pro_pending_sophie', 'sophie.marchand@boutiquedeco.fr')}
-            className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-warning flex items-center gap-1">
               <Briefcase className="w-3.5 h-3.5 text-warning shrink-0" />
@@ -265,7 +267,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleQuickDemoLogin('admin_antoine', 'antoine.fabre@shongre.fr')}
-            className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
           >
             <div className="font-bold text-stone-900 group-hover:text-success flex items-center gap-1">
               <Shield className="w-3.5 h-3.5 text-success shrink-0" />

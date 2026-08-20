@@ -43,6 +43,18 @@ export const messagesFr = {
   'nav.openMenu': 'Ouvrir le menu',
   'nav.closeMenu': 'Fermer le menu',
   'nav.mobileLabel': 'Navigation mobile',
+  'nav.categoryNavigation': 'Navigation par catégorie',
+  'nav.category.immobilier': 'Immobilier',
+  'nav.category.vehicules': 'Véhicules',
+  'nav.category.materielPro': 'Matériel pro',
+  'nav.category.emploi': 'Emploi',
+  'nav.category.mode': 'Mode',
+  'nav.category.maisonJardin': 'Maison & Jardin',
+  'nav.category.famille': 'Famille',
+  'nav.category.electronique': 'Électronique',
+  'nav.category.loisirs': 'Loisirs',
+  'nav.category.autres': 'Autres',
+  'nav.category.bonsPlans': 'Bons plans !',
   'nav.unreadMessages_one': '{count} message non lu',
   'nav.unreadMessages_other': '{count} messages non lus',
 
@@ -267,7 +279,6 @@ export const messagesFr = {
 
   // --- home.homePage ---
   'home.homePage.ceMarcheVientDOuvrir': "Ce marché vient d'ouvrir. Publiez la première annonce, ou changez de marché depuis l'en-tête pour explorer les autres pays.",
-  'home.homePage.leMarcheLocalFrancaisDe': "Le marché local français de confiance",
   'home.homePage.explorerLeCatalogue': "Explorer le catalogue",
   'home.homePage.toutesLesNouveautes': "Toutes les nouveautés",
   'home.homePage.voirTout': "Voir tout",
@@ -293,8 +304,6 @@ export const messagesFr = {
   'home.homeCollectionsSection.toutesLesCollections': "Toutes les collections",
   'home.homeCollectionsSection.voirTout': "Voir tout",
 
-  // --- home.homeTrustStrip ---
-  'home.homeTrustStrip.engagementsEtGarantiesShongre': "Engagements et garanties Shongre",
 
   // --- legal.legalPages ---
   'legal.legalPages.conditionsGeneralesDUtilisationCgu': "Conditions Générales d'Utilisation (CGU)",
@@ -1721,6 +1730,10 @@ export const messagesFr = {
   'home.homePage.trouvezLaPerleRare': "Trouvez la perle rare,",
   'home.homePage.sansTracas': "sans tracas.",
   'home.homePage.achetezEtVendezEnToute': "Achetez et vendez en toute sérénité : paiements sécurisés, livraison intégrée et vendeurs vérifiés.",
+  'home.homePage.garantiesShongre': "Garanties Shongre",
+  'home.homePage.paiementsSecurises': "Paiements sécurisés",
+  'home.homePage.livraisonIntegree': "Livraison intégrée",
+  'home.homePage.vendeursVerifies': "Vendeurs vérifiés",
   'home.homePage.annoncesRecentes': "Annonces récentes",
   'home.homePage.lesDernieresOffresPublieesPres': "Les dernières offres publiées près de chez vous",
   'home.homePage.reprendreOuVousEnEtiez': "Reprendre où vous en étiez",
@@ -1734,7 +1747,9 @@ export const messagesFr = {
   'home.homePage.creerMonComptePro': "Créer mon compte Pro",
 
   // --- home.heroBoostedScroll ---
-  'home.heroBoostedScroll.voirPlus': "Voir plus",
+  'home.heroBoostedScroll.carouselLabel': "Annonces vedettes",
+  'home.heroBoostedScroll.previous': "Annonce précédente",
+  'home.heroBoostedScroll.next': "Annonce suivante",
   'home.heroBoostedScroll.annoncesControlees': "Annonces contrôlées",
   'home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees': "Sécurité, fiabilité et qualité assurées.",
   'home.heroBoostedScroll.livraison': "Livraison",
@@ -2210,12 +2225,6 @@ export const messagesFr = {
   'publishCta.becomeSellerShort': "Vendre",
 
   // --- home.trust ---
-  'home.trust.escrowTitle': "Paiement 100% sécurisé",
-  'home.trust.escrowBody': "Fonds sous séquestre jusqu’à la validation de votre achat.",
-  'home.trust.deliveryTitle': "Livraison intégrée & suivie",
-  'home.trust.deliveryBody': "Envois Mondial Relay, Colissimo ou remise en main propre.",
-  'home.trust.verifiedTitle': "Vendeurs & SIRET vérifiés",
-  'home.trust.verifiedBody': "Profils certifiés, vérification d’identité et modération active.",
 
   /* --- Page metadata ---------------------------------------------------
      Document title and meta description for each routed page. Kept in the

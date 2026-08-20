@@ -140,7 +140,7 @@ export const AdminUsersPage: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('admin.adminUsersPage.rechercherUnNomEmailEntreprise')}
               aria-label={t('admin.adminUsersPage.rechercherUnUtilisateur')}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
             />
           </div>
 
@@ -148,7 +148,7 @@ export const AdminUsersPage: React.FC = () => {
             aria-label={t('admin.adminUsersPage.filtrerParTypeDeCompte')}
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
+            className="py-2 px-3 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
           >
             <option value="all">{t('admin.adminUsersPage.tousLesTypesDeCompte')}</option>
             <option value="individual">Particulier</option>
@@ -160,7 +160,7 @@ export const AdminUsersPage: React.FC = () => {
             aria-label={t('admin.adminUsersPage.filtrerParRolePlateforme')}
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="py-2 px-3 text-xs border border-border-base rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base"
+            className="py-2 px-3 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
           >
             <option value="all">Tous les rôles ({ALL_PLATFORM_ROLES.length})</option>
             {ALL_PLATFORM_ROLES.map((r) => (

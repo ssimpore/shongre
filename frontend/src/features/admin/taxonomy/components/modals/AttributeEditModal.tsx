@@ -186,7 +186,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
             <select
               value={dataType}
               onChange={(e) => setDataType(e.target.value as AttributeDataType)}
-              className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="text">Texte libre (String)</option>
               <option value="number">{t('admin.attributeEditModal.nombreNumerique')}</option>
@@ -210,7 +210,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
             <select
               value={publicationGroup}
               onChange={(e) => setPublicationGroup(e.target.value as any)}
-              className="w-full h-10 px-3 bg-bg-base border border-border-base rounded-xl text-xs font-semibold"
+              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="general">{t('admin.attributeEditModal.general')}</option>
               <option value="specifications">{t('admin.attributeEditModal.specificationsTechniques')}</option>

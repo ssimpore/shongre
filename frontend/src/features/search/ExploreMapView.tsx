@@ -139,7 +139,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       // Custom HTML Marker Pill
       const customHtml = `
         <div class="shongre-map-marker-wrapper transition-all duration-normal transform ${
-          isSelected ? 'scale-115 z-50' : isHovered ? 'scale-110 z-40' : 'z-10'
+          isSelected ? 'scale-115 z-dropdown' : isHovered ? 'scale-110 z-sticky' : 'z-raised'
         }">
           <div class="px-2.5 py-1 rounded-full font-bold text-xs shadow-md border flex items-center gap-1 cursor-pointer select-none transition-colors ${
             isSelected
@@ -222,7 +222,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   return (
     <div className="relative w-full h-[680px] sm:h-[720px] rounded-2xl overflow-hidden border border-border-base bg-bg-base shadow-xs flex flex-col">
       {/* Top Quick Filters Bar */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-20 shrink-0">
+      <div className="bg-white/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           <span className="text-xs font-bold text-stone-500 flex items-center gap-1 shrink-0">
             <Compass className="w-3.5 h-3.5 text-primary" />
@@ -293,7 +293,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             Placed before the map in the DOM as well as visually, so tab order
             follows what is on screen rather than jumping the map first. */}
         {isSidebarOpen && (
-          <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-white/95 backdrop-blur-md border-r border-border-base z-20 shrink-0">
+          <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-white/95 backdrop-blur-md border-r border-border-base z-sticky shrink-0">
             <div className="p-3 border-b border-border-base flex items-center justify-between">
               <span className="text-xs font-bold text-stone-800 truncate">
                 {plural(listings.length, 'annonce')} sur la carte
@@ -362,11 +362,11 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
         )}
 
         {/* Leaflet Container */}
-        <div ref={mapContainerRef} className="w-full h-full z-10" />
+        <div ref={mapContainerRef} className="w-full h-full z-raised" />
 
         {/* Floating Active Listing Preview Card */}
         {activeListing && (
-          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:w-96 z-30 bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-normal">
+          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:w-96 z-dropdown bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-normal">
             <button
               type="button"
               onClick={() => setActiveListing(null)}
@@ -426,7 +426,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       {/* Floating status count. Anchored right: the listing panel now occupies
           the left edge, and this badge belongs over the map. */}
-      <div className="absolute top-14 right-4 z-20 pointer-events-none">
+      <div className="absolute top-14 right-4 z-sticky pointer-events-none">
         <div className="bg-stone-900/85 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
           <Navigation className="w-3.5 h-3.5 text-primary" />
           <span>{plural(listings.length, 'annonce géolocalisée', 'annonces géolocalisées')}</span>

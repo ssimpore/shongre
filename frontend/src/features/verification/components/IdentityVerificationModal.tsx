@@ -112,7 +112,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -205,7 +205,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Jean"
                   required
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-emerald-600 h-control-touch"
                 />
               </div>
               <div>
@@ -217,7 +217,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Dupont"
                   required
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-emerald-600 h-control-touch"
                 />
               </div>
             </div>
@@ -231,7 +231,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                   value={birthDate}
                   onChange={(e) => setBirthDate(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-emerald-600 h-control-touch"
                 />
               </div>
               <div>
@@ -239,7 +239,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 <select
                   value={issuingCountry}
                   onChange={(e) => setIssuingCountry(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-emerald-600 h-control-touch"
                 >
                   <option value="FR">🇫🇷 France</option>
                   <option value="BE">🇧🇪 Belgique</option>
@@ -336,7 +336,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 value={documentNumber}
                 onChange={(e) => setDocumentNumber(e.target.value)}
                 placeholder="Ex: 190475102934"
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-emerald-600"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-emerald-600 h-control-touch"
               />
             </div>
 

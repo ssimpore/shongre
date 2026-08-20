@@ -18,7 +18,7 @@ import { crmRepository } from '../../../repositories/crm.repository';
 import { CrmContact } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { useToast } from '../../../app/providers/ToastProvider';
-import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';
+import { Skeleton, EmptyState } from '../../../design-system';
 import { useTranslation } from '../../../i18n/I18nProvider';
 import { usePageMeta } from '../../../hooks/usePageMeta';
 
@@ -145,7 +145,7 @@ export const CrmContactsPage: React.FC = () => {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
                 aria-label={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
-            className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
 

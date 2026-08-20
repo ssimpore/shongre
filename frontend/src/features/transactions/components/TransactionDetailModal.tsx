@@ -402,7 +402,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     placeholder="ex: 849201"
                     value={sellerInputPin}
                     onChange={(e) => setSellerInputPin(e.target.value)}
-                    className="flex-1 h-control-touch px-3.5 bg-stone-800 text-white font-mono text-lg font-bold tracking-widest rounded-xl border border-stone-700 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="flex-1 h-control-touch px-3.5 bg-stone-800 text-white font-mono text-lg font-bold tracking-widest rounded-control border border-stone-700 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   <Button
                     type="button"
@@ -442,7 +442,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     placeholder="ex: MR-984021984FR"
                     value={trackingInput}
                     onChange={(e) => setTrackingInput(e.target.value)}
-                    className="flex-1 h-10 px-3 bg-white text-stone-900 rounded-xl border border-stone-200 font-mono text-xs"
+                    className="flex-1 h-control-md px-3 bg-white text-stone-900 rounded-control border border-stone-200 font-mono text-xs"
                   />
                   <Button
                     type="button"
@@ -518,7 +518,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     value={meetingDate}
                     onChange={(e) => setMeetingDate(e.target.value)}
                     placeholder={t('transactions.transactionDetailModal.exSamedi22AoutA')}
-                    className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg"
+                    className="w-full h-control-sm px-2.5 bg-white border border-stone-200 rounded-control"
                   />
                 </div>
                 <div>
@@ -528,7 +528,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     value={meetingPlace}
                     onChange={(e) => setMeetingPlace(e.target.value)}
                     placeholder={t('transactions.transactionDetailModal.ex12RueDesRemparts')}
-                    className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg"
+                    className="w-full h-control-sm px-2.5 bg-white border border-stone-200 rounded-control"
                   />
                 </div>
                 <div>
@@ -538,7 +538,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     value={meetingPhone}
                     onChange={(e) => setMeetingPhone(e.target.value)}
                     placeholder="ex: 06 12 34 56 78"
-                    className="w-full h-8 px-2.5 bg-white border border-stone-200 rounded-lg"
+                    className="w-full h-control-sm px-2.5 bg-white border border-stone-200 rounded-control"
                   />
                 </div>
                 <Button

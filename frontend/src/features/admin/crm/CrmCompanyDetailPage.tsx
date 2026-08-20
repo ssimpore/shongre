@@ -32,7 +32,7 @@ import { crmService } from '../../../domains/crm/crm.service';
 import { ActivityTimeline } from './components/ActivityTimeline';
 import { EnrichmentDiffModal } from './components/EnrichmentDiffModal';
 import { useToast } from '../../../app/providers/ToastProvider';
-import { Skeleton } from '../../../design-system/primitives/UIComponents';
+import { Skeleton } from '../../../design-system';
 import { useTranslation } from '../../../i18n/I18nProvider';
 import { usePageMeta } from '../../../hooks/usePageMeta';
 

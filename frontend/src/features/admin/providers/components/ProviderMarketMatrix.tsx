@@ -55,7 +55,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="py-1.5 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-700 font-medium"
+            className="py-1.5 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-700 font-medium h-control-touch"
           >
             <option value="ALL">Tous les domaines ({matrixRows.length})</option>
             {Object.values(PROVIDER_CATEGORIES).map((cat) => (

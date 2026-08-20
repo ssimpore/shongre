@@ -127,7 +127,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('admin.adminAuditLogsPage.rechercherParActeurActionCible')}
             aria-label={t('admin.adminAuditLogsPage.rechercherDansLeRegistreD')}
-            className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary h-control-touch"
           />
         </div>
 
@@ -135,7 +135,7 @@ export const AdminAuditLogsPage: React.FC = () => {
           aria-label={t('admin.adminAuditLogsPage.filtrerLeJournalParType')}
           value={selectedAction}
           onChange={(e) => setSelectedAction(e.target.value)}
-          className="py-2 px-3 text-xs border border-stone-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+          className="py-2 px-3 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary bg-white h-control-touch"
         >
           <option value="all">Toutes les actions d'audit ({logs.length})</option>
           {uniqueActions.map((act) => (

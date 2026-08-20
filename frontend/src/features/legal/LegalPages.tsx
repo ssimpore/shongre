@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldCheck,  AlertTriangle,    Tag } from 'lucide-react';
-import { Breadcrumbs } from '../../design-system/primitives/UIComponents';
+import { Breadcrumbs } from '../../design-system';
 import { storageService } from '../../services/storage.service';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { usePageMeta } from '../../hooks/usePageMeta';

@@ -111,7 +111,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               placeholder={t('admin.providerCatalogTable.rechercherParNomCapaciteEx')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-transparent bg-stone-50/50"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-transparent bg-stone-50/50 h-control-touch"
             />
             {searchQuery && (
               <button
@@ -129,7 +129,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
             <select
               value={selectedCategory || 'ALL'}
               onChange={(e) => onSelectCategory(e.target.value)}
-              className="w-full py-2 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700"
+              className="w-full py-2 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700 h-control-touch"
             >
               <option value="ALL">{t('admin.providerCatalogTable.toutesLesCategories')}</option>
               {Object.values(PROVIDER_CATEGORIES).map((cat) => (
@@ -145,7 +145,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full py-2 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700"
+              className="w-full py-2 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700 h-control-touch"
             >
               <option value="all">{t('admin.providerCatalogTable.tousLesStatuts')}</option>
               <option value="active">Actif uniquement</option>
@@ -159,7 +159,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
             <select
               value={healthFilter}
               onChange={(e) => setHealthFilter(e.target.value as any)}
-              className="w-full py-2 px-2.5 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700"
+              className="w-full py-2 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700 h-control-touch"
             >
               <option value="all">{t('admin.providerCatalogTable.toutesLesSantes')}</option>
               <option value="healthy">{t('admin.providerCatalogTable.operationnel')}</option>

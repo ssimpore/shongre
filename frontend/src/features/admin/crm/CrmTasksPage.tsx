@@ -16,7 +16,7 @@ import { FormField, Input, Select } from '../../../design-system/primitives/Form
 import { crmRepository } from '../../../repositories/crm.repository';
 import { CrmTask, TaskPriority } from '../../../domains/crm/crm.types';
 import { useToast } from '../../../app/providers/ToastProvider';
-import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';
+import { Skeleton, EmptyState } from '../../../design-system';
 import { useTranslation } from '../../../i18n/I18nProvider';
 import { usePageMeta } from '../../../hooks/usePageMeta';
 

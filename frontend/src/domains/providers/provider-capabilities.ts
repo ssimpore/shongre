@@ -31,7 +31,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'Paiements',
     description: 'Encaissement par carte, portefeuilles électroniques, autorisations et séquestre sécurisé.',
     iconName: 'CreditCard',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    badgeClass: 'bg-success-surface text-success border-success-border',
     isCore: true,
   },
   PAYOUT: {
@@ -49,7 +49,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'Livraison',
     description: 'Points relais, livraison à domicile, express, volumineux, devis et suivi de colis.',
     iconName: 'Truck',
-    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+    badgeClass: 'bg-info-surface text-info border-info-border',
     isCore: true,
   },
   AUTHENTICATION: {
@@ -94,7 +94,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'IA Générative',
     description: 'Assistance à la rédaction d\'annonces, scoring anti-fraude, et recherche de prospects CRM.',
     iconName: 'Sparkles',
-    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+    badgeClass: 'bg-warning-surface text-warning border-warning-border',
     isCore: true,
   },
   SEARCH: {
@@ -121,7 +121,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'Géocodage',
     description: 'Résolution des adresses postales, autocomplétion des villes et calcul des distances.',
     iconName: 'MapPin',
-    badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+    badgeClass: 'bg-success-surface text-success border-success-border',
     isCore: true,
   },
   IDENTITY_VERIFICATION: {
@@ -139,7 +139,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'KYB Entreprise',
     description: 'Interrogation des registres officiels d\'entreprises (INSEE, SIRENE, TVA VIES).',
     iconName: 'Building2',
-    badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
+    badgeClass: 'bg-info-surface text-info border-info-border',
     isCore: true,
   },
   STORAGE: {
@@ -157,7 +157,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'CDN & Cache',
     description: 'Accélération globale de la distribution des assets et réduction de la latence.',
     iconName: 'Zap',
-    badgeClass: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    badgeClass: 'bg-warning-surface text-warning border-warning-border',
     isCore: false,
   },
   IMAGE_PROCESSING: {
@@ -166,7 +166,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'Images',
     description: 'Compression WebP/AVIF, génération automatique de miniatures et filigranes.',
     iconName: 'Image',
-    badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+    badgeClass: 'bg-primary-light text-primary border-primary-border',
     isCore: false,
   },
   ANALYTICS: {
@@ -184,7 +184,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'Monitoring',
     description: 'Détection en temps réel des exceptions frontend et métriques Core Web Vitals.',
     iconName: 'Activity',
-    badgeClass: 'bg-red-50 text-red-700 border-red-200',
+    badgeClass: 'bg-danger-surface text-danger border-danger-border',
     isCore: false,
   },
   FRAUD_RISK: {
@@ -193,7 +193,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     shortLabel: 'Anti-Fraude',
     description: 'Détection des comportements frauduleux et analyse des risques de transaction.',
     iconName: 'ShieldAlert',
-    badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+    badgeClass: 'bg-warning-surface text-warning border-warning-border',
     isCore: false,
   },
   CAPTCHA: {

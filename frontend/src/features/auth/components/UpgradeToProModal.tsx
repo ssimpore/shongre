@@ -3,6 +3,7 @@ import { Briefcase,  ShieldCheck,  AlertCircle, X, ArrowRight } from 'lucide-rea
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { Button } from '../../../design-system/primitives/Button';
+import { IconButton } from '../../../design-system/primitives/IconButton';
 import { SUPPORTED_MARKETS, validateBusinessIdentifier } from '../../../configuration/market.config';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
@@ -74,7 +75,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
   // bypassed the shared Modal primitive and had none of them.
   const { containerRef, titleId } = useDialogBehavior(true, onClose);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
+    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto"
@@ -84,14 +85,15 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <button
-          type="button"
+        <IconButton
+          size="sm"
+          variant="ghost"
           onClick={onClose}
-          aria-label="Fermer"
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+          ariaLabel="Fermer"
+          className="absolute top-4 right-4"
         >
           <X className="w-5 h-5" />
-        </button>
+        </IconButton>
 
         <div className="w-12 h-12 rounded-xl bg-primary-light text-primary flex items-center justify-center mb-4">
           <Briefcase className="w-6 h-6" />
@@ -118,7 +120,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder={t('auth.upgradeToProModal.exAtelierEbenisterieDupont')}
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
           </div>
 
@@ -133,7 +135,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 onChange={(e) => setSirenSiret(e.target.value)}
                 placeholder={currentMarket.businessIdentifierFormatPlaceholder}
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
             </div>
 
@@ -144,7 +146,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               <select
                 value={legalForm}
                 onChange={(e) => setLegalForm(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               >
                 {currentMarket.supportedLegalForms.map((f) => (
                   <option key={f} value={f}>
@@ -163,7 +165,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 value={vatNumber}
                 onChange={(e) => setVatNumber(e.target.value)}
                 placeholder={currentMarket.vatNumberFormatPlaceholder}
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
             </div>
 
@@ -174,7 +176,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="01 23 45 67 89"
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
             </div>
           </div>
@@ -188,7 +190,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(e) => setBusinessAddress(e.target.value)}
               placeholder={t('auth.upgradeToProModal.12RueDuCommerce75011')}
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
           </div>
 

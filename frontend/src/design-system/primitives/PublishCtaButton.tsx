@@ -1,14 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
 import { usePublishCta } from '../../security/usePublishCta';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { Button } from './Button';
 
 export interface PublishCtaButtonProps {
   /** Fills its container; the drawer and the hero's mobile stack both want this. */
   fullWidth?: boolean;
   /** Runs before navigation — the mobile drawer uses it to close itself. */
   onNavigate?: () => void;
+  size?: 'md' | 'lg';
   className?: string;
 }
 
@@ -33,21 +34,23 @@ export interface PublishCtaButtonProps {
 export const PublishCtaButton: React.FC<PublishCtaButtonProps> = ({
   fullWidth = false,
   onNavigate,
+  size = 'md',
   className = '',
 }) => {
   const publishCta = usePublishCta();
   const { t } = useTranslation();
 
   return (
-    <Link
+    <Button
       to={publishCta.to}
       onClick={onNavigate}
-      className={`h-control-touch px-5 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-black text-white font-bold text-xs sm:text-sm shadow-sm inline-flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap transition-all ${
-        fullWidth ? 'w-full' : 'w-full sm:w-auto'
-      } ${className}`}
+      variant="pro"
+      size={size}
+      fullWidth={fullWidth}
+      leftIcon={<PlusCircle className="w-4.5 h-4.5 text-primary" />}
+      className={`${fullWidth ? '' : 'w-full sm:w-auto'} ${className}`}
     >
-      <PlusCircle className="w-4.5 h-4.5 text-primary shrink-0" />
-      <span>{t(publishCta.labelKey)}</span>
-    </Link>
+      {t(publishCta.labelKey)}
+    </Button>
   );
 };

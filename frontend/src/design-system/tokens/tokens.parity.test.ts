@@ -6,9 +6,17 @@ import {
   themeColors,
   themeRadii,
   themeText,
+  themeFontFamilies,
+  themeFontWeights,
+  themeLineHeights,
+  themeLetterSpacing,
+  themeSpacing,
   themeControlSizes,
   themeContainers,
+  themeBreakpoints,
+  themeShadows,
   themeMotion,
+  themeZIndex,
 } from './theme';
 import { radii } from './radii';
 
@@ -38,13 +46,22 @@ for (const match of themeBlock.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
   declaredVars.set(match[1], match[2].trim());
 }
 
+/** Variables outside @theme, notably semantic stacking tiers in :root. */
+const allDeclaredVars = new Map<string, string>();
+for (const match of indexCss.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) {
+  allDeclaredVars.set(match[1], match[2].trim());
+}
+
 function expectVar(name: string, expected: string) {
   const actual = declaredVars.get(name);
   expect(
     actual,
     `index.css @theme is missing ${name} — it is declared in design-system/tokens/theme.ts`
   ).toBeDefined();
-  expect(actual, `${name} drifted between index.css and tokens/theme.ts`).toBe(expected);
+  const normalize = (value: string) => value.replace(/\s+/g, ' ').trim();
+  expect(normalize(actual as string), `${name} drifted between index.css and tokens/theme.ts`).toBe(
+    normalize(expected),
+  );
 }
 
 describe('design tokens ↔ index.css parity', () => {
@@ -66,6 +83,31 @@ describe('design tokens ↔ index.css parity', () => {
     }
   });
 
+  it('declares every owned font family', () => {
+    for (const [name, value] of Object.entries(themeFontFamilies)) {
+      expectVar(`--font-${name}`, value);
+    }
+  });
+
+  it('declares font weights, line heights and tracking', () => {
+    for (const [name, value] of Object.entries(themeFontWeights)) {
+      expectVar(`--font-weight-${name}`, value);
+    }
+    for (const [name, value] of Object.entries(themeLineHeights)) {
+      expectVar(`--leading-${name}`, value);
+    }
+    for (const [name, value] of Object.entries(themeLetterSpacing)) {
+      expectVar(`--tracking-${name}`, value);
+    }
+  });
+
+  it('declares the complete semantic spacing vocabulary', () => {
+    expectVar('--spacing', themeSpacing.base);
+    for (const [name, value] of Object.entries(themeSpacing)) {
+      if (name !== 'base') expectVar(`--spacing-${name}`, value);
+    }
+  });
+
   it('declares shared control heights and container widths', () => {
     for (const [name, value] of Object.entries(themeControlSizes)) {
       expectVar(`--spacing-${name}`, value);
@@ -75,9 +117,24 @@ describe('design tokens ↔ index.css parity', () => {
     }
   });
 
+  it('owns breakpoints and elevation instead of inheriting framework defaults', () => {
+    for (const [name, value] of Object.entries(themeBreakpoints)) {
+      expectVar(`--breakpoint-${name}`, value);
+    }
+    for (const [name, value] of Object.entries(themeShadows)) {
+      expectVar(`--shadow-${name}`, value);
+    }
+  });
+
   it('declares the motion vocabulary', () => {
     for (const [name, value] of Object.entries(themeMotion)) {
       expectVar(`--${name}`, value);
+    }
+  });
+
+  it('declares every semantic stacking tier', () => {
+    for (const [name, value] of Object.entries(themeZIndex)) {
+      expect(allDeclaredVars.get(`--z-${name}`)).toBe(String(value));
     }
   });
 });
@@ -88,8 +145,8 @@ describe('radius scale is coherent', () => {
     // to named tokens is what stops components inventing their own corners —
     // `card` and `modal` map to the shell radii rather than to numbered steps,
     // because the 20px/28px shells are not steps on the numbered scale.
-    expect(radii.button).toBe(themeRadii.xl);
-    expect(radii.input).toBe(themeRadii.xl);
+    expect(radii.button).toBe(themeRadii.control);
+    expect(radii.input).toBe(themeRadii.control);
     expect(radii.card).toBe(themeRadii.card);
     expect(radii.modal).toBe(themeRadii.overlay);
   });

@@ -3,6 +3,7 @@ import { Smartphone, CheckCircle2, AlertCircle, RefreshCw, X } from 'lucide-reac
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { authService } from '../../../domains/auth/auth.service';
 import { Button } from '../../../design-system/primitives/Button';
+import { IconButton } from '../../../design-system/primitives/IconButton';
 import { SUPPORTED_MARKETS } from '../../../configuration/market.config';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
@@ -111,7 +112,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   // bypassed the shared Modal primitive and had none of them.
   const { containerRef, titleId } = useDialogBehavior(true, onClose);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
+    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 relative"
@@ -121,14 +122,15 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <button
-          type="button"
+        <IconButton
+          size="sm"
+          variant="ghost"
           onClick={onClose}
-          aria-label="Fermer"
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+          ariaLabel="Fermer"
+          className="absolute top-4 right-4"
         >
           <X className="w-5 h-5" />
-        </button>
+        </IconButton>
 
         <div className="w-12 h-12 rounded-xl bg-primary-light text-primary flex items-center justify-center mb-4">
           <Smartphone className="w-6 h-6" />
@@ -166,7 +168,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                 >
                   {Object.values(SUPPORTED_MARKETS).map((m) => (
                     <option key={m.code} value={m.code}>
@@ -180,7 +182,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={currentMarket.phonePlaceholder}
                   required
-                  className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                 />
               </div>
             </div>
@@ -205,7 +207,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                 placeholder="123456"
                 autoFocus
                 required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
+                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
               />
             </div>
 
@@ -218,24 +220,28 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
             >{t('auth.phoneVerificationModal.confirmerLeNumero')}</Button>
 
             <div className="flex items-center justify-between text-xs pt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setStep('input')}
-                className="text-stone-500 hover:text-stone-900 font-semibold"
-              >{t('auth.phoneVerificationModal.changerDeNumero')}</button>
-              <button
+                className="text-stone-500"
+              >{t('auth.phoneVerificationModal.changerDeNumero')}</Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleResend}
                 disabled={countdown > 0}
-                className={`flex items-center gap-1 font-bold ${
+                className={
                   countdown > 0
-                    ? 'text-stone-500 cursor-not-allowed'
-                    : 'text-primary hover:underline cursor-pointer'
-                }`}
+                    ? 'text-stone-500'
+                    : 'text-primary'
+                }
+                leftIcon={<RefreshCw className="w-3 h-3" />}
               >
-                <RefreshCw className="w-3 h-3" />
                 {countdown > 0 ? `Renvoyer (${countdown}s)` : 'Renvoyer le code'}
-              </button>
+              </Button>
             </div>
           </form>
         )}

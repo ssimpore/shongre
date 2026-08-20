@@ -24,7 +24,7 @@ import { formatPrice, formatRelativeDate } from '../../utilities/formatters';
 import { Button } from '../../design-system/primitives/Button';
 import { Badge } from '../../design-system/primitives/Badge';
 import { Image } from '../../design-system/primitives/Image';
-import { Tabs, TabPanel, EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
+import { Tabs, TabPanel, EmptyState, Skeleton } from '../../design-system';
 import { Modal } from '../../design-system/primitives/Modal';
 import { DataTable } from '../../design-system/primitives/DataTable';
 import { BulkImportModal } from './components/BulkImportModal';

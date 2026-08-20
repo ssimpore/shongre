@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
 import { useNotifications } from '../providers/NotificationProvider';
-import { Avatar, Badge } from '../../design-system/primitives/Badge';
+import { Avatar, Badge, Container } from '../../design-system';
 import { storageService } from '../../services/storage.service';
 import { useTranslation } from '../../i18n/I18nProvider';
 
@@ -65,7 +65,7 @@ export const AccountLayout: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <Container className="py-6 sm:py-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
         
         {/* Mobile & Tablet Navigation Header (< lg).
@@ -256,6 +256,6 @@ export const AccountLayout: React.FC = () => {
           <Outlet />
         </section>
       </div>
-    </div>
+    </Container>
   );
 };

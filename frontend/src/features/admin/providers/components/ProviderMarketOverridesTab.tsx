@@ -213,7 +213,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
                 max={10}
                 value={overridePriority}
                 onChange={(e) => setOverridePriority(parseInt(e.target.value, 10) || 1)}
-                className="w-20 py-1 px-2 text-xs rounded border border-stone-200 font-bold text-stone-800 text-center"
+                className="w-20 py-1 px-2 text-xs rounded border border-stone-200 font-bold text-stone-800 text-center h-control-touch"
               />
             </div>
 
@@ -225,7 +225,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
                 value={customNotes}
                 placeholder={t('admin.providerMarketOverridesTab.exTransporteurDedieZoneFrontaliere')}
                 onChange={(e) => setCustomNotes(e.target.value)}
-                className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-white"
+                className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-white h-control-touch"
               />
             </div>
           </div>

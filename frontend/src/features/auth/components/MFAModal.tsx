@@ -3,6 +3,7 @@ import { ShieldCheck,   Copy, Check, X, AlertCircle } from 'lucide-react';
 import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
 import { authService } from '../../../domains/auth/auth.service';
 import { Button } from '../../../design-system/primitives/Button';
+import { IconButton } from '../../../design-system/primitives/IconButton';
 import { Image } from '../../../design-system/primitives/Image';
 import { useTranslation } from '../../../i18n/I18nProvider';
 
@@ -69,7 +70,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
   // bypassed the shared Modal primitive and had none of them.
   const { containerRef, titleId } = useDialogBehavior(true, onClose);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
+    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto"
@@ -79,14 +80,15 @@ export const MFAModal: React.FC<MFAModalProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <button
-          type="button"
+        <IconButton
+          size="sm"
+          variant="ghost"
           onClick={onClose}
-          aria-label="Fermer"
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+          ariaLabel="Fermer"
+          className="absolute top-4 right-4"
         >
           <X className="w-5 h-5" />
-        </button>
+        </IconButton>
 
         <div className="w-12 h-12 rounded-xl bg-success-surface text-success flex items-center justify-center mb-4">
           <ShieldCheck className="w-6 h-6" />
@@ -119,14 +121,14 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                   <code className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 text-xs font-mono font-bold text-stone-900 select-all">
                     {setupData.secret}
                   </code>
-                  <button
-                    type="button"
+                  <IconButton
+                    size="sm"
+                    variant="outline"
                     onClick={handleCopySecret}
-                    className="p-1.5 rounded-lg border border-stone-300 hover:bg-stone-100 text-stone-700 transition-colors cursor-pointer"
-                    title={t('auth.mFAModal.copierLaCleSecrete')}
+                    ariaLabel={t('auth.mFAModal.copierLaCleSecrete')}
                   >
                     {copiedSecret ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
-                  </button>
+                  </IconButton>
                 </div>
               </div>
             </div>
@@ -136,15 +138,17 @@ export const MFAModal: React.FC<MFAModalProps> = ({
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-stone-900">{t('auth.mFAModal.2CodesDeSecoursA')}</span>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleCopyBackupCodes}
                 aria-label={t('auth.mFAModal.copierLesCodesDeSecours')}
-                className="text-micro font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-primary"
+                leftIcon={copiedBackup ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
               >
-                {copiedBackup ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
                 {copiedBackup ? 'Copiés' : 'Copier les 8 codes'}
-              </button>
+              </Button>
             </div>
             <p className="text-micro text-stone-500 mb-2.5">{t('auth.mFAModal.conservezCesCodesDansUn')}</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -170,7 +174,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                 onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="123456"
                 required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-xl text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white"
+                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
               />
             </div>
 

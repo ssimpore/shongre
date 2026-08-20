@@ -21,7 +21,7 @@ import { supportService } from '../../domains/support/support.service';
 import { supportRepository } from '../../repositories/support.repository';
 import { formatDate } from '../../utilities/formatters';
 import { SupportContextCard } from './components/SupportContextCard';
-import { Skeleton } from '../../design-system/primitives/UIComponents';
+import { Skeleton } from '../../design-system';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
 
