@@ -27,6 +27,13 @@ const classesOf = (element: React.ReactElement): string => {
   return walk(rendered);
 };
 
+const renderButton = (
+  element: React.ReactElement,
+): React.ReactElement<Record<string, unknown>> =>
+  (Button as unknown as (
+    props: unknown,
+  ) => React.ReactElement<Record<string, unknown>>)(element.props);
+
 describe('Button display utilities', () => {
   it('drops its own inline-flex when the caller sets a display', () => {
     const classes = classesOf(<Button className="hidden sm:inline-flex">Suivre</Button>);
@@ -53,5 +60,22 @@ describe('Button display utilities', () => {
   it('keeps inline-flex when the caller sets unrelated classes', () => {
     const classes = classesOf(<Button className="flex-1 min-w-0 font-bold">Label</Button>);
     expect(classes.split(/\s+/)).toContain('inline-flex');
+  });
+});
+
+describe('Button form behavior', () => {
+  it('does not submit an enclosing form unless submission is explicit', () => {
+    expect(renderButton(<Button>Continuer</Button>).props.type).toBe('button');
+  });
+
+  it('preserves an explicit submit type', () => {
+    expect(renderButton(<Button type="submit">Publier</Button>).props.type).toBe('submit');
+  });
+
+  it('announces its loading state and disables repeat submission', () => {
+    const rendered = renderButton(<Button isLoading>Publier</Button>);
+
+    expect(rendered.props.disabled).toBe(true);
+    expect(rendered.props['aria-busy']).toBe(true);
   });
 });

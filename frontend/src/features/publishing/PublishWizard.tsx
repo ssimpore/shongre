@@ -1294,32 +1294,42 @@ export const PublishWizard: React.FC = () => {
                 const isSelected = (draft.selectedMarkets || ['FR']).includes(m.code);
                 const isPrimary = m.isDefault || m.code === 'FR';
                 const effectiveCfg = marketService.getEffectiveConfig(m.code);
+                const isUnavailable = !isCatEnabled && !isSelected;
+
+                const toggleMarket = () => {
+                  if (isUnavailable) {
+                    toast.error(
+                      `La catégorie "${schema?.node?.name || 'actuelle'}" n'est pas encore ouverte sur le marché ${m.name}.`
+                    );
+                    return;
+                  }
+                  if (isPrimary && isSelected) {
+                    toast.info('Le marché France est le marché de référence obligatoire pour cette annonce.');
+                    return;
+                  }
+
+                  const currentSelected = draft.selectedMarkets || ['FR'];
+                  const next = isSelected
+                    ? currentSelected.filter((c) => c !== m.code)
+                    : [...currentSelected, m.code];
+
+                  updateDraft({ selectedMarkets: next.length === 0 ? ['FR'] : next });
+                };
 
                 return (
                   <div
                     key={m.code}
-                    onClick={() => {
-                      if (!isCatEnabled && !isSelected) {
-                        toast.error(
-                          `La catégorie "${schema?.node?.name || 'actuelle'}" n'est pas encore ouverte sur le marché ${m.name}.`
-                        );
-                        return;
-                      }
-                      if (isPrimary && isSelected) {
-                        toast.info('Le marché France est le marché de référence obligatoire pour cette annonce.');
-                        return;
-                      }
-
-                      const currentSelected = draft.selectedMarkets || ['FR'];
-                      const next = isSelected
-                        ? currentSelected.filter((c) => c !== m.code)
-                        : [...currentSelected, m.code];
-
-                      // Ensure at least France remains
-                      const finalMarkets = next.length === 0 ? ['FR'] : next;
-                      updateDraft({ selectedMarkets: finalMarkets });
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    aria-disabled={isUnavailable || isPrimary || undefined}
+                    tabIndex={0}
+                    onClick={toggleMarket}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' && event.key !== ' ') return;
+                      event.preventDefault();
+                      toggleMarket();
                     }}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-4 rounded-xl border transition-all duration-fast cursor-pointer flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                       isSelected
                         ? 'border-primary bg-primary-light/40 ring-1 ring-primary shadow-xs'
                         : isCatEnabled
@@ -1342,13 +1352,16 @@ export const PublishWizard: React.FC = () => {
                           </div>
                         </div>
 
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={!isCatEnabled || isPrimary}
-                          onChange={() => {}} // Handled by container click
-                          className="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary cursor-pointer"
-                        />
+                        <span
+                          aria-hidden="true"
+                          className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors duration-fast ${
+                            isSelected
+                              ? 'border-primary bg-primary text-white'
+                              : 'border-stone-300 bg-white text-transparent'
+                          }`}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
                       </div>
 
                       {/* Market Badges & Rules */}

@@ -114,6 +114,7 @@ export const AdminProvidersPage: React.FC = () => {
       {/* Main Tab Navigation Bar */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
+          type="button"
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'overview'
@@ -126,6 +127,7 @@ export const AdminProvidersPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('catalog')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'catalog'
@@ -138,6 +140,7 @@ export const AdminProvidersPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('matrix')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'matrix'
@@ -150,6 +153,7 @@ export const AdminProvidersPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('routing')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'routing'
@@ -162,6 +166,7 @@ export const AdminProvidersPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('audit')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'audit'

@@ -307,6 +307,7 @@ export const ProviderOverviewDashboard: React.FC<ProviderOverviewDashboardProps>
                 const count = providers.filter((p) => p.category === cat.id).length;
                 return (
                   <button
+                    type="button"
                     key={cat.id}
                     onClick={() => {
                       onSelectCategory(cat.id);

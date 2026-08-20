@@ -214,6 +214,39 @@ test.describe('admin console', () => {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     }
   });
+
+  test('CRM universal search exposes keyboard-operable results and an empty state', async ({ page }) => {
+    await usePersona(page, 'admin');
+    await page.goto('/admin/crm');
+    await waitForStableLayout(page);
+
+    const search = page.getByRole('combobox', { name: /recherche universelle crm/i });
+    await search.fill('Atelier');
+
+    const result = page.getByRole('button', { name: /Atelier Nordique/i }).first();
+    await expect(result).toBeVisible();
+    await result.focus();
+    await result.press('Enter');
+    await expect(page).toHaveURL(/\/admin\/crm\/entreprises\//);
+
+    await page.goto('/admin/crm');
+    await page.getByRole('combobox', { name: /recherche universelle crm/i }).fill(
+      'aucun-resultat-shongre-xyz',
+    );
+    await expect(page.getByText(/aucun contact, entreprise ou opportunité/i)).toBeVisible();
+  });
+
+  test('taxonomy nodes can be selected without a pointer', async ({ page }) => {
+    await usePersona(page, 'admin');
+    await page.goto('/admin/taxonomie');
+    await waitForStableLayout(page);
+
+    const node = page.getByRole('button', { name: /^Véhicules/i }).first();
+    await expect(node).toBeVisible();
+    await node.focus();
+    await node.press('Enter');
+    await expect(node).toHaveAttribute('aria-pressed', 'true');
+  });
 });
 
 test.describe('honest product surfaces', () => {

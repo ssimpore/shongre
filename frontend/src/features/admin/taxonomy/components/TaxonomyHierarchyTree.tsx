@@ -80,8 +80,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
     return (
       <div key={node.id} className="space-y-1">
         <div
-          onClick={() => onSelectNode(node)}
-          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs cursor-pointer transition-all duration-fast border ${
+          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-fast border ${
             isSelected
               ? 'bg-primary-light/80 border-primary text-primary font-bold shadow-xs'
               : 'border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle'
@@ -117,29 +116,38 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <span className="w-5.5" />
             )}
 
-            <CategoryIcon category={node} size="xs" />
+            <button
+              type="button"
+              onClick={() => onSelectNode(node)}
+              aria-pressed={isSelected}
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <CategoryIcon category={node} size="xs" />
 
-            <div className="flex items-center gap-1.5 truncate">
-              <span className="truncate">{node.name}</span>
+              <span className="flex min-w-0 items-center gap-1.5 truncate">
+                <span className="truncate">{node.name}</span>
 
-              {/* shortLabel pill if exists */}
-              {node.shortLabel && node.shortLabel !== node.name && (
-                <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.2 rounded-full font-normal">
-                  {node.shortLabel}
+                {/* shortLabel pill if exists */}
+                {node.shortLabel && node.shortLabel !== node.name && (
+                  <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.2 rounded-full font-normal">
+                    {node.shortLabel}
+                  </span>
+                )}
+              </span>
+
+              {/* Status indicators */}
+              {node.status === 'draft' && (
+                <span className="shrink-0 text-micro bg-stone-100 text-stone-600 px-1.5 py-0.2 rounded font-bold uppercase">
+                  Brouillon
                 </span>
               )}
-            </div>
-
-            {/* Status indicators */}
-            {node.status === 'draft' && (
-              <span className="shrink-0 text-micro bg-stone-100 text-stone-600 px-1.5 py-0.2 rounded font-bold uppercase">
-                Brouillon
-              </span>
-            )}
-            {node.status === 'deprecated' && (
-              <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
-                <Archive className="w-2.5 h-2.5" />{t('admin.taxonomyHierarchyTree.deprecie')}</span>
-            )}
+              {node.status === 'deprecated' && (
+                <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
+                  <Archive className="w-2.5 h-2.5" />
+                  {t('admin.taxonomyHierarchyTree.deprecie')}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Right: Quick actions (Reorder, Add Child, Count).

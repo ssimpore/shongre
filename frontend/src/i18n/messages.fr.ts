@@ -922,6 +922,14 @@ export const messagesFr = {
   'admin.crmAiProspectingPage.compteShongreOuFicheCrm': "Compte Shongre ou fiche CRM existante détectée",
   'admin.crmAiProspectingPage.importe': "Importé",
 
+  // --- admin.crmUniversalSearch ---
+  'admin.crmUniversalSearch.label': "Recherche universelle CRM",
+  'admin.crmUniversalSearch.clear': "Effacer la recherche CRM",
+  'admin.crmUniversalSearch.loading': "Recherche en cours…",
+  'admin.crmUniversalSearch.results': "Résultats CRM ({count})",
+  'admin.crmUniversalSearch.noResults': "Aucun contact, entreprise ou opportunité ne correspond à cette recherche.",
+  'admin.crmUniversalSearch.resultsList': "Résultats de la recherche CRM",
+
   // --- admin.crmCompaniesPage ---
   'admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur': "Rechercher une entreprise, domaine, secteur...",
   'admin.crmCompaniesPage.filtrerLesEntreprisesParCycle': "Filtrer les entreprises par cycle de vie",

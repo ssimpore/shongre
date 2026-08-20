@@ -189,6 +189,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                     </td>
                     <td className="p-3 text-right">
                       <button
+                        type="button"
                         onClick={() => setSelectedLog(log)}
                         className="text-stone-500 hover:text-stone-900 p-1 rounded-sm"
                         aria-label={t('admin.adminAuditLogsPage.voirLePayloadDe', { action: auditActionLabel(log.action) })}

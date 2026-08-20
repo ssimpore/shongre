@@ -168,9 +168,19 @@ export const Button: React.FC<ButtonProps> = (props) => {
     );
   }
 
-  const { disabled, ...buttonProps } = rest as Omit<NativeButtonProps, keyof ButtonVisualProps>;
+  const {
+    disabled,
+    type = 'button',
+    ...buttonProps
+  } = rest as Omit<NativeButtonProps, keyof ButtonVisualProps>;
   return (
-    <button className={classes} disabled={disabled || isLoading} {...buttonProps}>
+    <button
+      type={type}
+      className={classes}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading || undefined}
+      {...buttonProps}
+    >
       {content}
     </button>
   );

@@ -21,7 +21,6 @@ import { Drawer } from '../../design-system/primitives/Modal';
 import { plural } from '../../utilities/formatters';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { NoResultsFound } from '../../design-system/primitives/NoResultsFound';
-import { ExploreMapView } from './ExploreMapView';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { useToast } from '../../app/providers/ToastProvider';
 import { storageService } from '../../services/storage.service';
@@ -32,6 +31,13 @@ import { DropdownMenu, DropdownOption } from '../../design-system/primitives/Dro
 import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
 import { ViewModeToggle } from '../../design-system/primitives/ViewModeToggle';
 import { useTranslation } from '../../i18n/I18nProvider';
+
+// Leaflet is the heaviest optional frontend dependency. Keep it outside the
+// normal search bundle so grid/list browsing does not download a map engine or
+// its stylesheet until the visitor explicitly chooses the map view.
+const ExploreMapView = React.lazy(() =>
+  import('./ExploreMapView').then((module) => ({ default: module.ExploreMapView }))
+);
 
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
@@ -787,11 +793,23 @@ export const SearchPage: React.FC = () => {
             </div>
           ) : listings.length > 0 ? (
             viewMode === 'map' ? (
-              <ExploreMapView
-                listings={listings}
-                selectedCity={city || undefined}
-                onSelectCity={(selected) => updateFilter('city', selected)}
-              />
+              <React.Suspense
+                fallback={
+                  <div
+                    role="status"
+                    aria-label={t('common.loading')}
+                    className="h-[680px] overflow-hidden rounded-2xl border border-border-base bg-bg-surface p-3 lg:h-[720px]"
+                  >
+                    <Skeleton className="h-full w-full rounded-xl" />
+                  </div>
+                }
+              >
+                <ExploreMapView
+                  listings={listings}
+                  selectedCity={city || undefined}
+                  onSelectCity={(selected) => updateFilter('city', selected)}
+                />
+              </React.Suspense>
             ) : (
               viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card),1fr))] gap-3 sm:gap-4">

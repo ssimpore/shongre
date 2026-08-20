@@ -191,6 +191,7 @@ export const AdminProviderDetailPage: React.FC = () => {
       {/* Detail Tab Navigation */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
+          type="button"
           onClick={() => setActiveTab('configuration')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'configuration'
@@ -203,6 +204,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('markets')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'markets'
@@ -215,6 +217,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('health')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'health'
@@ -227,6 +230,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('dependencies')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'dependencies'
@@ -239,6 +243,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('audit')}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === 'audit'

@@ -115,6 +115,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600"
               >
@@ -174,6 +175,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
           </span>
           {(searchQuery || selectedCategory !== 'ALL' || statusFilter !== 'all' || envFilter !== 'all' || healthFilter !== 'all') && (
             <button
+              type="button"
               onClick={resetFilters}
               className="flex items-center gap-1 text-primary hover:underline font-medium text-xs"
             >

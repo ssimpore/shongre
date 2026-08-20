@@ -105,6 +105,7 @@ export const ProviderMarketOverridesTab: React.FC<ProviderMarketOverridesTabProp
 
             return (
               <button
+                type="button"
                 key={m.code}
                 onClick={() => handleSelectMarket(m.code)}
                 className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 border transition-all ${
