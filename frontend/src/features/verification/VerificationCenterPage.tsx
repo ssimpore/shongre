@@ -28,9 +28,17 @@ import { Button } from '../../design-system/primitives/Button';
 import { verificationService } from '../../domains/verification/verification.service';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const VerificationCenterPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.verificationCenter.title'),
+    description: t('meta.verificationCenter.description'),
+    canonicalPath: '/compte/verification',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const {
     currentUser,

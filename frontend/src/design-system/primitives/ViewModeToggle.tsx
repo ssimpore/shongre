@@ -38,7 +38,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         aria-pressed={viewMode === 'grid'}
         onClick={() => onChange('grid')}
         className={`${
-          isSm ? 'h-full px-1.5 sm:px-2 text-[11px]' : 'h-full px-2 sm:px-2.5 text-xs'
+          isSm ? 'h-full px-1.5 sm:px-2 text-micro' : 'h-full px-2 sm:px-2.5 text-xs'
         } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
           viewMode === 'grid'
             ? 'bg-primary text-white shadow-xs'
@@ -55,7 +55,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         aria-pressed={viewMode === 'list'}
         onClick={() => onChange('list')}
         className={`${
-          isSm ? 'h-full px-1.5 sm:px-2 text-[11px]' : 'h-full px-2 sm:px-2.5 text-xs'
+          isSm ? 'h-full px-1.5 sm:px-2 text-micro' : 'h-full px-2 sm:px-2.5 text-xs'
         } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
           viewMode === 'list'
             ? 'bg-primary text-white shadow-xs'
@@ -73,7 +73,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           aria-pressed={viewMode === 'map'}
           onClick={() => onChange('map')}
           className={`${
-            isSm ? 'h-full px-1.5 sm:px-2 text-[11px]' : 'h-full px-2 sm:px-2.5 text-xs'
+            isSm ? 'h-full px-1.5 sm:px-2 text-micro' : 'h-full px-2 sm:px-2.5 text-xs'
           } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
             viewMode === 'map'
               ? 'bg-primary text-white shadow-xs'

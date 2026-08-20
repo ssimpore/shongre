@@ -44,6 +44,7 @@ import {
   Tv,
   LucideIcon,
 } from 'lucide-react';
+import { colors } from '../tokens/colors';
 import { TaxonomyNode } from '../../domains/taxonomy/taxonomy.types';
 import { Category } from '../../types';
 
@@ -106,101 +107,101 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
 // Fallback mapping by category slug or code
 export const CATEGORY_SLUG_ICON_MAP: Record<string, { icon: LucideIcon; color: string }> = {
   // 1. Véhicules
-  vehicules: { icon: Car, color: '#C4431F' },
-  vehicles: { icon: Car, color: '#C4431F' },
-  'vehicles.cars': { icon: Car, color: '#C4431F' },
-  'vehicles.motorcycles': { icon: Bike, color: '#C4431F' },
-  'vehicles.utility': { icon: Truck, color: '#C4431F' },
-  'vehicles.caravaning': { icon: Compass, color: '#C4431F' },
-  'vehicles.nautism': { icon: Anchor, color: '#C4431F' },
-  'vehicles.parts': { icon: Wrench, color: '#C4431F' },
+  vehicules: { icon: Car, color: colors.category.vehicles },
+  vehicles: { icon: Car, color: colors.category.vehicles },
+  'vehicles.cars': { icon: Car, color: colors.category.vehicles },
+  'vehicles.motorcycles': { icon: Bike, color: colors.category.vehicles },
+  'vehicles.utility': { icon: Truck, color: colors.category.vehicles },
+  'vehicles.caravaning': { icon: Compass, color: colors.category.vehicles },
+  'vehicles.nautism': { icon: Anchor, color: colors.category.vehicles },
+  'vehicles.parts': { icon: Wrench, color: colors.category.vehicles },
 
   // 2. Immobilier
-  immobilier: { icon: Building2, color: '#0284C7' },
-  real_estate: { icon: Building2, color: '#0284C7' },
-  'real_estate.sales': { icon: Home, color: '#0284C7' },
-  'real_estate.rentals': { icon: Key, color: '#0284C7' },
-  'real_estate.commercial': { icon: Store, color: '#0284C7' },
+  immobilier: { icon: Building2, color: colors.category.realEstate },
+  real_estate: { icon: Building2, color: colors.category.realEstate },
+  'real_estate.sales': { icon: Home, color: colors.category.realEstate },
+  'real_estate.rentals': { icon: Key, color: colors.category.realEstate },
+  'real_estate.commercial': { icon: Store, color: colors.category.realEstate },
 
   // 3. Emploi
-  emploi: { icon: Briefcase, color: '#4F46E5' },
-  jobs: { icon: Briefcase, color: '#4F46E5' },
-  'jobs.tech': { icon: Code, color: '#4F46E5' },
-  'jobs.sales': { icon: Briefcase, color: '#4F46E5' },
+  emploi: { icon: Briefcase, color: colors.category.tech },
+  jobs: { icon: Briefcase, color: colors.category.tech },
+  'jobs.tech': { icon: Code, color: colors.category.tech },
+  'jobs.sales': { icon: Briefcase, color: colors.category.tech },
 
   // 4. Services
-  'services-prestations': { icon: Wrench, color: '#0D9488' },
-  services: { icon: Wrench, color: '#0D9488' },
-  'services.home': { icon: Hammer, color: '#0D9488' },
-  'services.tutoring': { icon: GraduationCap, color: '#0D9488' },
+  'services-prestations': { icon: Wrench, color: colors.category.services },
+  services: { icon: Wrench, color: colors.category.services },
+  'services.home': { icon: Hammer, color: colors.category.services },
+  'services.tutoring': { icon: GraduationCap, color: colors.category.services },
 
   // 5. Maison & Jardin
-  'maison-deco': { icon: Layers, color: '#D97706' },
-  home_garden: { icon: Layers, color: '#D97706' },
-  'home_garden.furniture': { icon: Armchair, color: '#D97706' },
-  'home_garden.appliances': { icon: Tv, color: '#D97706' },
-  'home_garden.decoration': { icon: Sparkles, color: '#D97706' },
-  'home_garden.gardening': { icon: Sun, color: '#D97706' },
-  'home_garden.diy': { icon: Hammer, color: '#D97706' },
+  'maison-deco': { icon: Layers, color: colors.category.homeGarden },
+  home_garden: { icon: Layers, color: colors.category.homeGarden },
+  'home_garden.furniture': { icon: Armchair, color: colors.category.homeGarden },
+  'home_garden.appliances': { icon: Tv, color: colors.category.homeGarden },
+  'home_garden.decoration': { icon: Sparkles, color: colors.category.homeGarden },
+  'home_garden.gardening': { icon: Sun, color: colors.category.homeGarden },
+  'home_garden.diy': { icon: Hammer, color: colors.category.homeGarden },
 
   // 6. Multimédia & Électronique
-  multimedia: { icon: Smartphone, color: '#6366F1' },
-  electronics: { icon: Smartphone, color: '#6366F1' },
-  'electronics.telephony': { icon: Smartphone, color: '#6366F1' },
-  'electronics.computers': { icon: Laptop, color: '#6366F1' },
-  'electronics.audio_video': { icon: Headphones, color: '#6366F1' },
-  'electronics.photo': { icon: Camera, color: '#6366F1' },
-  'electronics.gaming': { icon: Gamepad2, color: '#6366F1' },
+  multimedia: { icon: Smartphone, color: colors.category.multimedia },
+  electronics: { icon: Smartphone, color: colors.category.multimedia },
+  'electronics.telephony': { icon: Smartphone, color: colors.category.multimedia },
+  'electronics.computers': { icon: Laptop, color: colors.category.multimedia },
+  'electronics.audio_video': { icon: Headphones, color: colors.category.multimedia },
+  'electronics.photo': { icon: Camera, color: colors.category.multimedia },
+  'electronics.gaming': { icon: Gamepad2, color: colors.category.multimedia },
 
   // 7. Mode & Beauté
-  'mode-beaute': { icon: Shirt, color: '#DB2777' },
-  fashion: { icon: Shirt, color: '#DB2777' },
-  'fashion.clothing': { icon: Shirt, color: '#DB2777' },
-  'fashion.shoes': { icon: Footprints, color: '#DB2777' },
-  'fashion.accessories': { icon: Watch, color: '#DB2777' },
+  'mode-beaute': { icon: Shirt, color: colors.category.fashion },
+  fashion: { icon: Shirt, color: colors.category.fashion },
+  'fashion.clothing': { icon: Shirt, color: colors.category.fashion },
+  'fashion.shoes': { icon: Footprints, color: colors.category.fashion },
+  'fashion.accessories': { icon: Watch, color: colors.category.fashion },
 
   // 8. Famille & Bébé
-  'famille-enfant': { icon: Baby, color: '#EC4899' },
-  family_baby: { icon: Baby, color: '#EC4899' },
+  'famille-enfant': { icon: Baby, color: colors.category.baby },
+  family_baby: { icon: Baby, color: colors.category.baby },
 
   // 9. Culture & Loisirs
-  'culture-musique': { icon: BookOpen, color: '#8B5CF6' },
-  culture_leisure: { icon: BookOpen, color: '#8B5CF6' },
-  'culture_leisure.books': { icon: BookOpen, color: '#8B5CF6' },
-  'culture_leisure.music': { icon: Music, color: '#8B5CF6' },
-  'culture_leisure.gaming': { icon: Gamepad2, color: '#8B5CF6' },
+  'culture-musique': { icon: BookOpen, color: colors.category.leisure },
+  culture_leisure: { icon: BookOpen, color: colors.category.leisure },
+  'culture_leisure.books': { icon: BookOpen, color: colors.category.leisure },
+  'culture_leisure.music': { icon: Music, color: colors.category.leisure },
+  'culture_leisure.gaming': { icon: Gamepad2, color: colors.category.leisure },
 
   // 10. Sports & Plein Air
-  'loisirs-sport': { icon: Bike, color: '#059669' },
-  'sports-hobbies': { icon: Trophy, color: '#059669' },
-  sports_outdoors: { icon: Trophy, color: '#059669' },
-  'sports_outdoors.cycling': { icon: Bike, color: '#059669' },
-  'sports_outdoors.fitness': { icon: Dumbbell, color: '#059669' },
+  'loisirs-sport': { icon: Bike, color: colors.category.jobs },
+  'sports-hobbies': { icon: Trophy, color: colors.category.jobs },
+  sports_outdoors: { icon: Trophy, color: colors.category.jobs },
+  'sports_outdoors.cycling': { icon: Bike, color: colors.category.jobs },
+  'sports_outdoors.fitness': { icon: Dumbbell, color: colors.category.jobs },
 
   // 11. Animaux
-  animaux: { icon: Dog, color: '#EA580C' },
-  animals_pets: { icon: Dog, color: '#EA580C' },
+  animaux: { icon: Dog, color: colors.category.sport },
+  animals_pets: { icon: Dog, color: colors.category.sport },
 
   // 12. Matériel Professionnel
-  'materiel-professionnel': { icon: HardHat, color: '#57534E' },
-  pro_equipment: { icon: HardHat, color: '#57534E' },
+  'materiel-professionnel': { icon: HardHat, color: colors.category.neutral },
+  pro_equipment: { icon: HardHat, color: colors.category.neutral },
 
   // 13. Agriculture & BTP
-  'agriculture-materiaux': { icon: Tractor, color: '#65A30D' },
-  agriculture_materials: { icon: Tractor, color: '#65A30D' },
+  'agriculture-materiaux': { icon: Tractor, color: colors.category.agriculture },
+  agriculture_materials: { icon: Tractor, color: colors.category.agriculture },
 
   // 14. Vacances
-  vacances: { icon: Palmtree, color: '#EAB308' },
-  vacation_rentals: { icon: Palmtree, color: '#EAB308' },
+  vacances: { icon: Palmtree, color: colors.category.pets },
+  vacation_rentals: { icon: Palmtree, color: colors.category.pets },
 
   // 15. Numérique & Digital
-  'digital-services': { icon: Server, color: '#0284C7' },
-  digital_goods: { icon: Server, color: '#0284C7' },
+  'digital-services': { icon: Server, color: colors.category.realEstate },
+  digital_goods: { icon: Server, color: colors.category.realEstate },
 
   // 16. Dons & Divers
-  'dons-divers': { icon: Gift, color: '#DC2626' },
-  other_community: { icon: Gift, color: '#DC2626' },
-  divers: { icon: Tag, color: '#78716C' },
+  'dons-divers': { icon: Gift, color: colors.category.trades },
+  other_community: { icon: Gift, color: colors.category.trades },
+  divers: { icon: Tag, color: colors.category.neutralSoft },
 };
 
 export interface CategoryIconProps {
@@ -240,7 +241,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
   let IconComponent: LucideIcon = Tag;
   // The brand terracotta, matching `--color-primary` in index.css. Every
   // unmapped category falls back to it, so it must not drift from the ramp.
-  let defaultColor = '#C4431F';
+  let defaultColor: string = colors.category.vehicles;
 
   // Check explicit iconName first
   const resolvedIconName =

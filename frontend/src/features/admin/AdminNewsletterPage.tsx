@@ -24,9 +24,17 @@ import { formatDate } from '../../utilities/formatters';
 import { NewsletterPreviewModal } from '../newsletter/components/NewsletterPreviewModal';
 import { Skeleton, EmptyState } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminNewsletterPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminNewsletter.title'),
+    description: t('meta.adminNewsletter.description'),
+    canonicalPath: '/admin/newsletter',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [loading, setLoading] = useState(true);

@@ -19,9 +19,17 @@ import { SecurityAuditLog, auditActionLabel } from '../../types';
 import { roleLabel } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminAuditLogsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminAuditLogs.title'),
+    description: t('meta.adminAuditLogs.description'),
+    canonicalPath: '/admin/audit',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [logs, setLogs] = useState<SecurityAuditLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -144,12 +152,12 @@ export const AdminAuditLogsPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-stone-100 text-stone-700 font-bold border-b border-stone-200">
               <tr>
-                <th className="p-3">Horodatage (UTC)</th>
-                <th className="p-3">Acteur (Initiateur)</th>
-                <th className="p-3">{t('admin.adminAuditLogsPage.actionSysteme')}</th>
-                <th className="p-3">Cible / Ressource</th>
-                <th className="p-3">{t('admin.adminAuditLogsPage.detailsMotif')}</th>
-                <th className="p-3 text-right">{t('admin.adminAuditLogsPage.detail')}</th>
+                <th scope="col" className="p-3">Horodatage (UTC)</th>
+                <th scope="col" className="p-3">Acteur (Initiateur)</th>
+                <th scope="col" className="p-3">{t('admin.adminAuditLogsPage.actionSysteme')}</th>
+                <th scope="col" className="p-3">Cible / Ressource</th>
+                <th scope="col" className="p-3">{t('admin.adminAuditLogsPage.detailsMotif')}</th>
+                <th scope="col" className="p-3 text-right">{t('admin.adminAuditLogsPage.detail')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
@@ -183,7 +191,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       <button
                         onClick={() => setSelectedLog(log)}
                         className="text-stone-500 hover:text-stone-900 p-1 rounded-sm"
-                        title={t('admin.adminAuditLogsPage.voirLePayloadComplet')}
+                        aria-label={t('admin.adminAuditLogsPage.voirLePayloadDe', { action: auditActionLabel(log.action) })}
                       >
                         <Eye className="w-4 h-4" />
                       </button>

@@ -84,10 +84,10 @@ export const AccountLayout: React.FC = () => {
                 isPro={isPro}
               />
               <div className="min-w-0">
-                <div className="font-bold text-xs sm:text-sm text-stone-900 truncate">
+                <div className="font-bold text-xs sm:text-sm text-stone-900 truncate" title={currentUser?.name}>
                   {currentUser?.companyName || currentUser?.name || 'Mon Compte'}
                 </div>
-                <div className="text-xs text-stone-500 truncate">{currentUser?.email}</div>
+                <div className="text-xs text-stone-500 truncate" title={currentUser?.email}>{currentUser?.email}</div>
               </div>
             </div>
             <div>
@@ -161,10 +161,10 @@ export const AccountLayout: React.FC = () => {
                 isPro={isPro}
               />
               <div className="min-w-0 flex-1">
-                <div className="font-bold text-stone-900 truncate">
+                <div className="font-bold text-stone-900 truncate" title={currentUser?.name}>
                   {currentUser?.companyName || currentUser?.name || 'Mon Compte'}
                 </div>
-                <div className="text-xs text-stone-500 truncate">{currentUser?.email}</div>
+                <div className="text-xs text-stone-500 truncate" title={currentUser?.email}>{currentUser?.email}</div>
                 <div className="mt-1">
                   {isPro ? (
                     <Badge variant="pro" size="sm">{t('shell.accountLayout.comptePro')}</Badge>

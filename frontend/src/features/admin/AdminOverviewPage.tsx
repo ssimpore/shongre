@@ -21,9 +21,17 @@ import { ROLE_DEFINITIONS, roleLabel } from '../../security/roles.config';
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminOverviewPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminOverview.title'),
+    description: t('meta.adminOverview.description'),
+    canonicalPath: '/admin',
+    noIndex: true,
+  });
+
   const { currentUser, platformRole, can } = useAuth();
   const [usersCount, setUsersCount] = useState(0);
   const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);

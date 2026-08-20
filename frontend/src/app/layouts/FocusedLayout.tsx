@@ -5,6 +5,7 @@ import { routes } from '../../configuration/routes';
 import { AppScrollRestoration } from '../router/AppScrollRestoration';
 import { DemoRoleSwitcher } from './DemoRoleSwitcher';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { SkipLink } from '../../design-system/primitives/SkipLink';
 
 /**
  * Shell for task-completion flows: publication, checkout, verification.
@@ -22,6 +23,7 @@ export const FocusedLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-base text-stone-900">
+      <SkipLink />
       <AppScrollRestoration />
       <DemoRoleSwitcher />
 
@@ -63,7 +65,7 @@ export const FocusedLayout: React.FC = () => {
 
       {/* No marketplace footer and no bottom tab bar: the flow's own primary
           action owns the bottom of the screen. */}
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <Outlet />
       </main>
     </div>

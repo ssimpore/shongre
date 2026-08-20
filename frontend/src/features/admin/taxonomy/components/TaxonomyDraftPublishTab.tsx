@@ -182,12 +182,12 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-border-subtle text-stone-500 uppercase tracking-wider text-micro">
-                <th className="py-2.5 px-3">Version</th>
-                <th className="py-2.5 px-3">Statut</th>
-                <th className="py-2.5 px-3">Changements</th>
-                <th className="py-2.5 px-3">Description</th>
-                <th className="py-2.5 px-3">{t('admin.taxonomyDraftPublishTab.publiePar')}</th>
-                <th className="py-2.5 px-3">Date</th>
+                <th scope="col" className="py-2.5 px-3">Version</th>
+                <th scope="col" className="py-2.5 px-3">Statut</th>
+                <th scope="col" className="py-2.5 px-3">Changements</th>
+                <th scope="col" className="py-2.5 px-3">Description</th>
+                <th scope="col" className="py-2.5 px-3">{t('admin.taxonomyDraftPublishTab.publiePar')}</th>
+                <th scope="col" className="py-2.5 px-3">Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">

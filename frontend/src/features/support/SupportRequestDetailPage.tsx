@@ -23,9 +23,16 @@ import { formatDate } from '../../utilities/formatters';
 import { SupportContextCard } from './components/SupportContextCard';
 import { Skeleton } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const SupportRequestDetailPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.supportRequestDetail.title'),
+    description: t('meta.supportRequestDetail.description'),
+    noIndex: true,
+  });
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();

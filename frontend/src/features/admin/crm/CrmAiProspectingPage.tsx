@@ -28,6 +28,7 @@ import { DuplicateConflictModal } from './components/DuplicateConflictModal';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { plural } from '../../../utilities/formatters';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 const EXAMPLE_PROMPTS = [
   'Boutiques de mobilier design vintage en Île-de-France',
@@ -38,6 +39,13 @@ const EXAMPLE_PROMPTS = [
 
 export const CrmAiProspectingPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.crmAiProspecting.title'),
+    description: t('meta.crmAiProspecting.description'),
+    canonicalPath: '/admin/crm/prospection',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -165,6 +173,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('admin.crmAiProspectingPage.decrivezLesProspectsQueVous')}
+                aria-label={t('admin.crmAiProspectingPage.decrivezLesProspectsQueVous')}
                   disabled={isSearching}
                   className="w-full h-12 pl-11 pr-4 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-2xl placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 />

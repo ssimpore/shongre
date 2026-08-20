@@ -188,12 +188,12 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
           <table className="w-full text-left text-xs text-stone-700">
             <thead className="bg-stone-50 text-stone-500 uppercase tracking-wider font-semibold border-b border-stone-200">
               <tr>
-                <th className="py-3 px-4">Fournisseur & Code</th>
-                <th className="py-3 px-3">Domaine</th>
-                <th className="py-3 px-3">{t('admin.providerCatalogTable.capacitesPrisesEnCharge')}</th>
-                <th className="py-3 px-3">{t('admin.providerCatalogTable.statutSante')}</th>
-                <th className="py-3 px-3">{t('admin.providerCatalogTable.marchesSupportes')}</th>
-                <th className="py-3 px-3 text-right">Actions</th>
+                <th scope="col" className="py-3 px-4">Fournisseur & Code</th>
+                <th scope="col" className="py-3 px-3">Domaine</th>
+                <th scope="col" className="py-3 px-3">{t('admin.providerCatalogTable.capacitesPrisesEnCharge')}</th>
+                <th scope="col" className="py-3 px-3">{t('admin.providerCatalogTable.statutSante')}</th>
+                <th scope="col" className="py-3 px-3">{t('admin.providerCatalogTable.marchesSupportes')}</th>
+                <th scope="col" className="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 font-medium">

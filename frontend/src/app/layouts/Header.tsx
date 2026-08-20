@@ -1,8 +1,9 @@
 import { routes } from '../../configuration/routes';
 import { isProSeller } from '../../domains/user/user.domain';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Link,  useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { CategoryFilterRail } from '../../design-system/primitives/CategoryFilterRail';
 import {
   
   PlusCircle,
@@ -50,6 +51,68 @@ export const Header: React.FC = () => {
   const isSearchRoute = location.pathname === '/recherche';
   const { currentUser, isAuthenticated, logout } = useAuth();
   const { activeMarket } = useMarketLocation();
+
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Smart category bar visibility across pages
+  const shouldShowCategoryBar = useMemo(() => {
+    const path = location.pathname;
+    // Always show on homepage
+    if (path === '/') return true;
+    // Show on search and taxonomy exploration
+    if (path === '/recherche' || path === '/categories' || path.startsWith('/categorie/')) return true;
+    // Show on collections and deals
+    if (path.startsWith('/collections') || path === '/bons-plans') return true;
+
+    // Smartly hide on specialized, focused, transactional, and admin routes
+    return false;
+  }, [location.pathname]);
+
+  const activeCategorySlug = useMemo(() => {
+    if (location.pathname === '/recherche') {
+      return searchParams.get('category') || undefined;
+    }
+    if (location.pathname.startsWith('/categorie/')) {
+      const parts = location.pathname.split('/');
+      return parts[2] || undefined;
+    }
+    return undefined;
+  }, [location.pathname, searchParams]);
+
+  const handleCategorySelect = (slug: string | undefined) => {
+    if (location.pathname === '/recherche') {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (slug) {
+          next.set('category', slug);
+        } else {
+          next.delete('category');
+        }
+        next.delete('subCategory');
+        return next;
+      });
+    } else {
+      if (slug) {
+        navigate(`/recherche?category=${slug}`);
+      } else {
+        navigate('/recherche');
+      }
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (location.pathname === '/recherche') {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('category');
+        next.delete('subCategory');
+        return next;
+      });
+    } else {
+      navigate('/recherche');
+    }
+  };
 
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -360,6 +423,21 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
+      {/* Category Sub-Header Bar (Smartly shown on Home and Discovery surfaces) */}
+      {shouldShowCategoryBar && (
+        <nav aria-label={t('ui.categoryFilterRail.filtresParCategorie')} className="border-t border-border-base/70 bg-white/95 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2">
+            <CategoryFilterRail
+              idPrefix="header-category-rail"
+              selectedCategorySlug={activeCategorySlug}
+              onSelectCategory={handleCategorySelect}
+              onSelectAll={handleSelectAll}
+              showSubCategories={false}
+            />
+          </div>
+        </nav>
+      )}
+
       {/* Mobile Drawer Navigation (rendered via Portal to prevent sticky header
           clipping).
 
@@ -402,7 +480,7 @@ export const Header: React.FC = () => {
                   <span id={drawerTitleId} className="text-lg font-black text-stone-900 tracking-tight leading-none">
                     Shongre<span className="text-primary">.</span>
                   </span>
-                  <span className="text-[10px] font-bold text-stone-500 tracking-wider uppercase mt-0.5">
+                  <span className="text-micro font-bold text-stone-500 tracking-wider uppercase mt-0.5">
                     {activeMarket.name}
                   </span>
                 </div>

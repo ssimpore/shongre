@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface FilterChipProps {
   /** Human-readable filter value, e.g. `Véhicules` or `"vélo gravel"`. */
@@ -45,6 +46,8 @@ export const FilterChip: React.FC<FilterChipProps> = ({
   label,
   className = '',
 }) => {
+  const { t } = useTranslation();
+
   return (
     <span
       className={`inline-flex items-center gap-1 max-w-full text-xs font-semibold pl-2.5 ${
@@ -56,8 +59,15 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Retirer le filtre ${label ?? (typeof children === 'string' ? children : '')}`.trim()}
-          className="shrink-0 w-4 h-4 inline-flex items-center justify-center rounded-full hover:bg-black/10 transition-colors cursor-pointer"
+          aria-label={t('common.removeFilter', {
+            name: label ?? (typeof children === 'string' ? children : ''),
+          }).trim()}
+          /* The glyph stays 12px so the chip keeps its size, but the control
+             itself must clear the 24px WCAG 2.5.8 floor — it was 16x16. The
+             negative margin lets the larger box overlap the chip's padding
+             instead of widening every chip on the page, and coarse pointers get
+             the full 44px target. */
+          className="shrink-0 w-6 h-6 -my-1 -mr-1 pointer-coarse:w-control-touch pointer-coarse:h-control-touch inline-flex items-center justify-center rounded-full hover:bg-black/10 transition-colors cursor-pointer"
         >
           <X className="w-3 h-3" />
         </button>

@@ -52,7 +52,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
           <div className="flex items-center gap-2 mt-1 text-xs text-stone-600">
             <Link
               to={`${profileUrl}?tab=reviews`}
-              className="flex items-center gap-1 font-semibold text-stone-900 hover:text-primary"
+              className="inline-flex items-center gap-1 min-h-6 font-semibold text-stone-900 hover:text-primary"
             >
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               {user.rating.toFixed(1)}
@@ -85,7 +85,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
       <div className="mt-3 pt-2 flex items-center justify-between gap-2">
         <Link
           to={profileUrl}
-          className="text-xs font-bold text-primary hover:underline flex items-center gap-1 min-w-0 truncate"
+          className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-w-0 min-h-6 truncate"
         >
           {isPro ? (
             <>

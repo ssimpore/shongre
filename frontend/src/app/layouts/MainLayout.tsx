@@ -8,6 +8,7 @@ import { LocationPickerModal } from './LocationPickerModal';
 import { PreferencesModal } from './PreferencesModal';
 import { CookieConsent } from './CookieConsent';
 import { AppScrollRestoration } from '../router/AppScrollRestoration';
+import { SkipLink } from '../../design-system/primitives/SkipLink';
 
 export const MainLayout: React.FC = () => {
   return (
@@ -17,13 +18,14 @@ export const MainLayout: React.FC = () => {
        footer is a sibling of `<main>`, so page-level padding cannot clear it —
        four footer legal links sat underneath the action bar at full scroll. */
     <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-[var(--page-bottom-inset,0px)]">
+      <SkipLink />
       <AppScrollRestoration />
       <DemoRoleSwitcher />
       <Header />
       {/* Clearance for the fixed tab bar comes from the same token the bar
           is built from, so it tracks the bar (and the iOS home indicator,
           which the old flat 80px ignored) instead of guessing at it. */}
-      <main className="flex-1 pb-[var(--mobile-nav-total-h)] md:pb-0">
+      <main id="main-content" tabIndex={-1} className="flex-1 pb-[var(--mobile-nav-total-h)] md:pb-0">
         <Outlet />
       </main>
       <Footer />

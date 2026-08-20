@@ -35,9 +35,17 @@ import { useDialogBehavior } from '../../design-system/primitives/useDialogBehav
 import { Button } from '../../design-system/primitives/Button';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const MessagingPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.messaging.title'),
+    description: t('meta.messaging.description'),
+    canonicalPath: '/compte/messages',
+    noIndex: true,
+  });
+
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser, isPro } = useAuth();
   const toast = useToast();
@@ -373,11 +381,18 @@ export const MessagingPage: React.FC = () => {
           list. One panel, one message, one way forward. */}
       {hasNoConversations ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center text-primary">
+          {/* The visible H1 lives in `ConversationList`, which this branch does
+              not render — so an inbox with nothing in it produced a route with
+              no H1 at all, and the empty-state message was a `<p>`. A screen
+              reader jumping by heading found nothing on the page. The heading is
+              visually hidden because the empty state is its own composition and
+              a second large title above the message would just be noise. */}
+          <h1 className="sr-only">{t('messaging.conversationList.messagerie')}</h1>
+          <div className="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center text-primary" aria-hidden="true">
             <MessageSquare className="w-7 h-7" />
           </div>
           <div className="space-y-1.5">
-            <p className="text-base font-black text-stone-800">{t('messaging.messagingPage.aucunMessagePourLeMoment')}</p>
+            <h2 className="text-base font-black text-stone-800">{t('messaging.messagingPage.aucunMessagePourLeMoment')}</h2>
             <p className="text-xs text-stone-500 max-w-sm leading-relaxed">{t('messaging.messagingPage.vosEchangesAvecLesAcheteurs')}</p>
           </div>
           <Button

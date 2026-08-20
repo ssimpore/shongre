@@ -91,7 +91,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. General Operational Controls */}
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-        <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement')}</h4>
+        <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement')}</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable Toggle */}
@@ -114,9 +114,14 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
 
           {/* Environment selector */}
           <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
-            <span className="text-xs font-bold text-stone-900">Environnement</span>
+            {/* These headings were `<span>`s, so the controls under them had no
+                accessible name at all — on the screen that holds a payment
+                provider's routing priority and environment. Promoted to real
+                labels wired by `htmlFor`. */}
+            <label htmlFor="provider-environment" className="text-xs font-bold text-stone-900">Environnement</label>
             <p className="text-micro text-stone-500 mb-2">{t('admin.providerConfigurationForm.contexteDExecution')}</p>
             <select
+              id="provider-environment"
               value={environment}
               onChange={(e) => setEnvironment(e.target.value as any)}
               className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-medium text-stone-800"
@@ -129,11 +134,12 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
 
           {/* Priority */}
           <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
-            <span className="text-xs font-bold text-stone-900">{t('admin.providerConfigurationForm.prioriteDeRoutage')}</span>
+            <label htmlFor="provider-priority" className="text-xs font-bold text-stone-900">{t('admin.providerConfigurationForm.prioriteDeRoutage')}</label>
             <p className="text-micro text-stone-500 mb-2">
               1 = Primaire, 2 = Secours
             </p>
             <input
+              id="provider-priority"
               type="number"
               min={1}
               max={10}
@@ -149,7 +155,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div>
-            <h4 className="text-sm font-bold text-stone-900">{t('admin.providerConfigurationForm.parametresTechniquesClesDApi')}</h4>
+            <h2 className="text-sm font-bold text-stone-900">{t('admin.providerConfigurationForm.parametresTechniquesClesDApi')}</h2>
             <p className="text-xs text-stone-500">{t('admin.providerConfigurationForm.lesClesSecretesSontGerees')}</p>
           </div>
 
@@ -170,7 +176,10 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
               return (
                 <div key={field.key} className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                    <label
+                      htmlFor={`provider-field-${field.key}`}
+                      className="text-xs font-bold text-stone-800 flex items-center gap-1.5"
+                    >
                       {field.label}
                       {field.required && <span className="text-danger">*</span>}
                     </label>
@@ -186,6 +195,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-stone-600">{t('admin.providerConfigurationForm.statutDesIdentifiants')}</span>
                         <select
+                          aria-label={t('admin.providerConfigurationForm.statutDesIdentifiants')}
                           value={credentialStatus}
                           onChange={(e) => setCredentialStatus(e.target.value as any)}
                           className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning"
@@ -201,6 +211,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                         <input
                           type="text"
                           disabled
+                          aria-label={field.label}
                           value="••••••••••••••••••••••••••••••••"
                           className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-stone-100/80 text-stone-500 font-mono"
                         />
@@ -219,6 +230,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                   ) : field.type === 'boolean' ? (
                     <label className="flex items-center gap-2 cursor-pointer pt-1">
                       <input
+                        id={`provider-field-${field.key}`}
                         type="checkbox"
                         checked={Boolean(val)}
                         onChange={(e) => handleFieldChange(field.key, e.target.checked)}
@@ -228,6 +240,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                     </label>
                   ) : field.type === 'select' && field.options ? (
                     <select
+                      id={`provider-field-${field.key}`}
                       value={val}
                       onChange={(e) => handleFieldChange(field.key, e.target.value)}
                       className="w-full py-2 px-3 text-xs rounded-lg border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50"
@@ -240,6 +253,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                     </select>
                   ) : (
                     <input
+                      id={`provider-field-${field.key}`}
                       type={field.type === 'number' ? 'number' : 'text'}
                       value={val}
                       placeholder={field.placeholder}

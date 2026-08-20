@@ -11,6 +11,7 @@ import {
 import {  LISTING_BOOSTS } from '../../configuration/plans.config';
 import { Button } from '../../design-system/primitives/Button';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 interface AdminPlanConfig {
   id: string;
@@ -70,6 +71,13 @@ const INITIAL_PLANS: AdminPlanConfig[] = [
 
 export const AdminMonetizationPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminMonetization.title'),
+    description: t('meta.adminMonetization.description'),
+    canonicalPath: '/admin/monetisation',
+    noIndex: true,
+  });
+
   const [plans, setPlans] = useState<AdminPlanConfig[]>(INITIAL_PLANS);
   const [] = useState(LISTING_BOOSTS);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);

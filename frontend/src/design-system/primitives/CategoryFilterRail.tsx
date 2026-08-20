@@ -204,7 +204,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                   <CategoryIcon
                     category={cat}
                     size="xs"
-                    className={isSelected ? 'text-white' : 'text-stone-600'}
+                    className={isSelected ? 'text-white' : ''}
                   />
                 </span>
                 <span className="whitespace-nowrap pointer-events-none">{compactLabel}</span>

@@ -50,11 +50,11 @@ export const TaxonomyAuditTab: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-bg-subtle/60 border-b border-border-subtle text-stone-500 uppercase tracking-wider text-micro">
-                <th className="py-3 px-4">Date & Heure</th>
-                <th className="py-3 px-4">Rubrique Cible</th>
-                <th className="py-3 px-4">Action</th>
-                <th className="py-3 px-4">{t('admin.taxonomyAuditTab.operateur')}</th>
-                <th className="py-3 px-4">{t('admin.taxonomyAuditTab.details')}</th>
+                <th scope="col" className="py-3 px-4">Date & Heure</th>
+                <th scope="col" className="py-3 px-4">Rubrique Cible</th>
+                <th scope="col" className="py-3 px-4">Action</th>
+                <th scope="col" className="py-3 px-4">{t('admin.taxonomyAuditTab.operateur')}</th>
+                <th scope="col" className="py-3 px-4">{t('admin.taxonomyAuditTab.details')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">

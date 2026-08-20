@@ -24,9 +24,17 @@ import { Image } from '../../design-system/primitives/Image';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Tabs, TabPanel } from '../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminVerificationsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminVerifications.title'),
+    description: t('meta.adminVerifications.description'),
+    canonicalPath: '/admin/verifications',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [activeTab, setActiveTab] = useState<'kyc' | 'kyb' | 'bank' | 'audit'>('kyc');

@@ -20,11 +20,19 @@ import { Modal } from '../../../design-system/primitives/Modal';
 import { Button } from '../../../design-system/primitives/Button';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 type MainTab = 'overview' | 'catalog' | 'matrix' | 'routing' | 'audit';
 
 export const AdminProvidersPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminProviders.title'),
+    description: t('meta.adminProviders.description'),
+    canonicalPath: '/admin/fournisseurs',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<MainTab>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');

@@ -70,8 +70,17 @@ export const ProDirectoryPage: React.FC = () => {
             className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-xl border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
-        <span className="text-xs text-stone-500 font-semibold">
-          {filtered.length} boutique{filtered.length > 1 ? 's' : ''} disponible{filtered.length > 1 ? 's' : ''}
+        {/* Live, so filtering announces its own result. The count also stops
+            pluralising by hand: `> 1 ? 's' : ''` puts 0 in the plural, which is
+            wrong in French ("0 boutique disponible"), and cannot express the
+            few/many categories other locales need. */}
+        <span
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="text-xs text-stone-500 font-semibold"
+        >
+          {t('proDirectory.boutiquesDisponibles', { count: filtered.length })}
         </span>
       </div>
 

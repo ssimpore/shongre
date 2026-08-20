@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from '../../i18n/I18nProvider';
 
 export interface ScrollRailProps {
   children: React.ReactNode;
@@ -50,6 +51,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
   label = 'contenu',
   snap = false,
 }) => {
+  const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
   const [overflow, setOverflow] = useState({ left: false, right: false });
 
@@ -86,9 +88,17 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
 
   return (
     <div className="relative min-w-0">
+      {/* The track is focusable only while it actually overflows. A scroll
+          region that fits its content is not a region a keyboard user needs to
+          enter, and giving it a permanent tab stop adds a dead stop to every
+          page that uses a rail. When it does overflow, arrow keys work here and
+          the two nudge buttons are reachable by Tab. */}
       <div
         ref={trackRef}
-        className={`overflow-x-auto no-scrollbar ${
+        tabIndex={overflow.left || overflow.right ? 0 : -1}
+        role={overflow.left || overflow.right ? 'region' : undefined}
+        aria-label={overflow.left || overflow.right ? label : undefined}
+        className={`overflow-x-auto no-scrollbar focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
           snap ? 'snap-x snap-mandatory scroll-px-4 sm:scroll-px-0' : ''
         } ${className}`}
       >
@@ -104,7 +114,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
         <button
           type="button"
           onClick={() => nudge(-1)}
-          aria-label={`Faire défiler les ${label} vers la gauche`}
+          aria-label={t('common.scrollRailLeft', { label })}
           className="absolute left-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-20"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -115,7 +125,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
         <button
           type="button"
           onClick={() => nudge(1)}
-          aria-label={`Faire défiler les ${label} vers la droite`}
+          aria-label={t('common.scrollRailRight', { label })}
           className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-20"
         >
           <ChevronRight className="w-5 h-5" />

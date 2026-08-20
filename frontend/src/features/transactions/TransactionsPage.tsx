@@ -30,12 +30,20 @@ import { EmptyState } from '../../design-system/primitives/UIComponents';
 import { TransactionDetailModal } from './components/TransactionDetailModal';
 import { SellerPayoutModal } from './components/SellerPayoutModal';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 type TabMode = 'purchases' | 'sales';
 type StatusFilter = 'all' | 'pending' | 'in_progress' | 'completed' | 'disputed';
 
 export const TransactionsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.transactions.title'),
+    description: t('meta.transactions.description'),
+    canonicalPath: '/compte/achats',
+    noIndex: true,
+  });
+
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<TabMode>('purchases');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');

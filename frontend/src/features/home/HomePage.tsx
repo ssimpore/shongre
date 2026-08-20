@@ -32,20 +32,17 @@ import {
   
 } from 'lucide-react';
 import { listingRepository } from '../../repositories/listing.repository';
-import { userRepository } from '../../repositories/user.repository';
-import { Listing, UserProfile } from '../../types';
+import { Listing } from '../../types';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
-import { SellerCard } from '../../design-system/primitives/SellerCard';
+import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Button } from '../../design-system/primitives/Button';
 import { EmptyState, Skeleton } from '../../design-system/primitives/UIComponents';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
 import { HomeTrustStrip } from './components/HomeTrustStrip';
+import { HomeRecentSearches } from './components/HomeRecentSearches';
 import { HomeCollectionsSection } from './components/HomeCollectionsSection';
-import { HomeCategoryExplorer } from './components/HomeCategoryExplorer';
-import { storageService } from '../../services/storage.service';
 import { usePublishCta } from '../../security/usePublishCta';
-import { ViewModeToggle, ListingViewMode } from '../../design-system/primitives/ViewModeToggle';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
@@ -60,9 +57,6 @@ import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButto
  */
 const RECENT_COUNT = 12;
 const DEALS_COUNT = 8;
-const PRO_SELLER_COUNT = 3;
-/** Enough to be a useful shortcut, short enough to stay one row on desktop. */
-const RECENTLY_VIEWED_COUNT = 6;
 
 /**
  * Hero quick-search chips. Each carries a glyph so the row reads as a set of
@@ -95,9 +89,6 @@ export const HomePage: React.FC = () => {
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [proSellers, setProSellers] = useState<UserProfile[]>([]);
-  const [recentlyViewed, setRecentlyViewed] = useState<Listing[]>([]);
-  const [listingsViewMode, setListingsViewMode] = useState<ListingViewMode>('grid');
 
   /**
    * Every listing rail here is scoped to the active market, and the effect
@@ -122,34 +113,11 @@ export const HomePage: React.FC = () => {
     Promise.all([
       listingRepository.getListings({ marketCode, limit: RECENT_COUNT, sortBy: 'date_desc' }),
       listingRepository.getListings({ marketCode, onlyDeals: true, limit: DEALS_COUNT, sortBy: 'date_desc' }),
-      userRepository.getAllProSellers(),
-      /* Resolve the viewing history against the catalogue rather than trusting
-         the stored ids: a listing may since have been sold, withdrawn or moved
-         to another market, and a "continue where you left off" rail that opens
-         onto a dead listing is worse than no rail. Order follows the history,
-         not the query, because recency is the entire point of the section. */
-      Promise.all(
-        storageService
-          .getRecentlyViewed()
-          .slice(0, RECENTLY_VIEWED_COUNT)
-          .map((listingId) => listingRepository.getListingById(listingId)),
-      ).then((items) =>
-        items.filter(
-          (item): item is Listing =>
-            Boolean(item) &&
-            item!.status === 'active' &&
-            (item!.marketCodes ?? [item!.marketCode]).includes(marketCode),
-        ),
-      ),
     ])
-      .then(([listingsRes, dealsRes, sellers, viewed]) => {
+      .then(([listingsRes, dealsRes]) => {
         if (!isMounted) return;
         setRecentListings(listingsRes.listings);
         setDealsListings(dealsRes.listings);
-        if (Array.isArray(sellers)) {
-          setProSellers(sellers.slice(0, PRO_SELLER_COUNT));
-        }
-        setRecentlyViewed(viewed);
       })
       .catch((err) => {
         console.warn('Failed to load homepage data', err);
@@ -178,7 +146,7 @@ export const HomePage: React.FC = () => {
                   <span>{t('home.homePage.leMarcheLocalFrancaisDe')}</span>
                 </div>
 
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-[44px] font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">{t('home.homePage.trouvezLaPerleRare')}<br className="hidden sm:inline" />
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-hero font-bold text-stone-900 tracking-[-0.02em] leading-[1.08]">{t('home.homePage.trouvezLaPerleRare')}<br className="hidden sm:inline" />
                   <span className="text-primary relative inline-block">{t('home.homePage.sansTracas')}<svg
                       aria-hidden="true"
                       className="absolute left-0 -bottom-1 sm:-bottom-1.5 w-full h-2.5 sm:h-3.5 text-primary/60 overflow-visible pointer-events-none"
@@ -200,7 +168,7 @@ export const HomePage: React.FC = () => {
 
               {/* Quick search suggestions */}
               <div className="w-full">
-                <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-stone-600 mb-1.5 sm:mb-2">
+                <p className="flex items-center gap-1.5 text-micro sm:text-xs font-semibold text-stone-600 mb-1.5 sm:mb-2">
                   <TrendingUp className="w-3.5 h-3.5 text-primary shrink-0" />
                   <span>Recherches populaires</span>
                 </p>
@@ -210,7 +178,7 @@ export const HomePage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => navigate(routes.search(term))}
-                        className="group inline-flex items-center gap-1.5 h-7.5 px-3 rounded-full bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-700 hover:text-stone-900 transition-all cursor-pointer font-medium text-[11px] sm:text-xs shadow-2xs active:scale-95"
+                        className="group inline-flex items-center gap-1.5 h-7.5 px-3 rounded-full bg-white hover:bg-stone-50 border border-stone-200/90 text-stone-700 hover:text-stone-900 transition-all cursor-pointer font-medium text-micro sm:text-xs shadow-2xs active:scale-95"
                       >
                         <Icon className="w-3.5 h-3.5 shrink-0 text-stone-400 group-hover:text-primary transition-colors" />
                         <span>{term}</span>
@@ -248,8 +216,11 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. Category explorer — the main browse route, straight after the hero */}
-      <HomeCategoryExplorer />
+      {/* 2. Recent searches — quick resume for visitor queries */}
+      <HomeRecentSearches />
+
+      {/* 3. Curated thematic collections — editorial browse */}
+      <HomeCollectionsSection />
 
       {/* 3. Fresh listings — the first browsable inventory */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
@@ -259,50 +230,27 @@ export const HomePage: React.FC = () => {
             <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.lesDernieresOffresPublieesPres')}</p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 mb-0.5">
-            <ViewModeToggle
-              viewMode={listingsViewMode}
-              onChange={(mode) => setListingsViewMode(mode)}
-              size="sm"
-            />
-
-            <Link
-              to="/recherche?sortBy=date_desc"
-              className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap"
-            >
-              <span className="hidden sm:inline">{t('home.homePage.toutesLesNouveautes')}</span>
-              <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
-              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
-            </Link>
-          </div>
+          <Link
+            to="/recherche?sortBy=date_desc"
+            className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
+          >
+            <span className="hidden sm:inline">{t('home.homePage.toutesLesNouveautes')}</span>
+            <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
+          </Link>
         </div>
 
         {isLoading ? (
-          listingsViewMode === 'grid' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-              {Array.from({ length: RECENT_COUNT }).map((_, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
-                  <Skeleton className="h-44 w-full rounded-xl" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-5 w-1/3" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base flex gap-3">
-                  <Skeleton className="h-32 w-32 rounded-xl shrink-0" />
-                  <div className="flex-1 space-y-2 py-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-5 w-1/3" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            {Array.from({ length: RECENT_COUNT }).map((_, idx) => (
+              <div key={idx} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
+                <Skeleton className="h-44 w-full rounded-xl" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-5 w-1/3" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))}
+          </div>
         ) : recentListings.length === 0 ? (
           /* Scoping the rails to the active market means a market with no
              inventory yet now renders nothing rather than another market's
@@ -318,41 +266,15 @@ export const HomePage: React.FC = () => {
               </Button>
             }
           />
-        ) : listingsViewMode === 'grid' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        ) : (
+          <ListingRail label={t('home.homePage.annoncesRecentes')}>
             {recentListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} variant="grid" />
             ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 sm:gap-4">
-            {recentListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} variant="list" />
-            ))}
-          </div>
+          </ListingRail>
         )}
       </section>
 
-      {/* 3b. Resume where you left off.
-             Rendered only when the visitor actually has a history — an empty
-             "Vus récemment" rail is worse than no rail, and the section list
-             above is deliberately free of placeholders. */}
-      {recentlyViewed.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
-            <div className="min-w-0">
-              <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('home.homePage.reprendreOuVousEnEtiez')}</h2>
-              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.lesAnnoncesQueVousAvez')}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 auto-rows-fr gap-3 sm:gap-4">
-            {recentlyViewed.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* 4. Trust reassurance — after the visitor has seen real goods */}
       <HomeTrustStrip />
@@ -364,7 +286,7 @@ export const HomePage: React.FC = () => {
             <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
               <div className="min-w-0 space-y-1">
                 <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                  Meilleures offres
+                  {t('home.homePage.meilleuresOffres')}
                 </h2>
                 <p className="text-xs sm:text-sm text-stone-600 mt-0.5 hidden sm:block font-medium">{t('home.homePage.desReductionsJusquA50')}</p>
               </div>
@@ -378,51 +300,16 @@ export const HomePage: React.FC = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 auto-rows-fr gap-3 sm:gap-4">
+            <ListingRail label={t('home.homePage.meilleuresOffres')}>
               {dealsListings.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} />
               ))}
-            </div>
+            </ListingRail>
           </div>
         </section>
       )}
 
-      {/* 6. Curated thematic collections — editorial browse */}
-      <HomeCollectionsSection />
 
-      {/* 7. Pro storefronts — supply-side discovery.
-             `getAllProSellers()` was already called on every homepage load and
-             the result dropped on the floor: `proSellers` was set and never
-             read, and `SellerCard` was imported and never used. The platform
-             has storefronts, a pro directory and verified badges, none of which
-             the homepage surfaced. */}
-      {proSellers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
-            <div className="min-w-0">
-              <h2 className="text-xl sm:text-3xl font-black text-stone-900 tracking-tight">
-                Boutiques Pro
-              </h2>
-              <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.desProfessionnelsVerifiesAvecCatalogue')}</p>
-            </div>
-
-            <Link
-              to="/professionnels"
-              className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
-            >
-              <span className="hidden sm:inline">{t('home.homePage.tousLesProfessionnels')}</span>
-              <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
-              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {proSellers.map((seller) => (
-              <SellerCard key={seller.id} user={seller} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* 8. Pro banner CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

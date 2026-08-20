@@ -18,9 +18,17 @@ import { CrmTask, TaskPriority } from '../../../domains/crm/crm.types';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { Skeleton, EmptyState } from '../../../design-system/primitives/UIComponents';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 export const CrmTasksPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.crmTasks.title'),
+    description: t('meta.crmTasks.description'),
+    canonicalPath: '/admin/crm/taches',
+    noIndex: true,
+  });
+
   const toast = useToast();
   const [tasks, setTasks] = useState<CrmTask[]>([]);
   const [loading, setLoading] = useState(true);

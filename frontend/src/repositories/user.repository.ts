@@ -1,4 +1,4 @@
-import { isProSeller } from '../domains/user/user.domain';
+import { isProSeller, isPubliclyListableProSeller } from '../domains/user/user.domain';
 import { UserProfile, UserRole, PlatformRole, ReviewItem } from '../types';
 import { storageService } from '../services/storage.service';
 import { DEMO_USERS, INITIAL_REVIEWS } from '../mocks/initialDemoData';
@@ -290,9 +290,19 @@ export class MockUserRepository implements IUserRepository {
     return newReview;
   }
 
+  /**
+   * Professional accounts that may be shown publicly — the `/professionnels`
+   * directory and the homepage shop rail both read from here.
+   *
+   * The previous filter was `isProSeller(u) || u.role === 'pro_seller'`, which
+   * matched Shongre's own staff: internal personas carry `sellerType: 'pro'`,
+   * so the public directory listed them by name with their internal role in the
+   * label. Publicity is a decision of its own, so it gets its own predicate
+   * rather than reusing the account-type check.
+   */
   async getAllProSellers(): Promise<UserProfile[]> {
     const all = Object.values(storageService.getUsers());
-    return all.filter((u) => isProSeller(u) || u.role === 'pro_seller');
+    return all.filter((u) => isPubliclyListableProSeller(u));
   }
 
   isFollowing(sellerId: string): boolean {

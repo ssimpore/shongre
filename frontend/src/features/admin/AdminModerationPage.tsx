@@ -29,9 +29,17 @@ import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminModeration.title'),
+    description: t('meta.adminModeration.description'),
+    canonicalPath: '/admin/moderation',
+    noIndex: true,
+  });
+
   const toast = useToast();
 
   const [activeTab, setActiveTab] = useState<'reports' | 'listings' | 'users'>('reports');
@@ -248,11 +256,11 @@ export const AdminModerationPage: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
                 <tr>
-                  <th className="p-3.5">{t('admin.adminModerationPage.annonce')}</th>
-                  <th className="p-3.5">{t('admin.adminModerationPage.vendeur')}</th>
-                  <th className="p-3.5">Prix</th>
-                  <th className="p-3.5">Statut</th>
-                  <th className="p-3.5 text-right">{t('admin.adminModerationPage.actionsDeModeration')}</th>
+                  <th scope="col" className="p-3.5">{t('admin.adminModerationPage.annonce')}</th>
+                  <th scope="col" className="p-3.5">{t('admin.adminModerationPage.vendeur')}</th>
+                  <th scope="col" className="p-3.5">Prix</th>
+                  <th scope="col" className="p-3.5">Statut</th>
+                  <th scope="col" className="p-3.5 text-right">{t('admin.adminModerationPage.actionsDeModeration')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">

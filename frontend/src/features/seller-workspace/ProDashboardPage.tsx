@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom';
 import { BillingHistoryModal } from './components/BillingHistoryModal';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === 'string') return photo;
@@ -30,6 +31,13 @@ function getPhotoUrl(photo: any): string {
 
 export const ProDashboardPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.proDashboard.title'),
+    description: t('meta.proDashboard.description'),
+    canonicalPath: '/compte/pro/tableau-de-bord',
+    noIndex: true,
+  });
+
   const { currentUser } = useAuth();
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -44,6 +52,24 @@ export const ProDashboardPage: React.FC = () => {
   }, [currentUser?.id]);
 
   const totalViews = listings.reduce((acc, l) => acc + (l.viewsCount ?? l.viewCount ?? 0), 0);
+
+  /**
+   * A catalogue with nothing in it has no performance to report.
+   *
+   * `totalViews` is real — it is summed from the seller's own listings — while
+   * the growth badge, the three KPI cards beside it and the weekly chart are
+   * fixed sample figures. On an account with zero listings that produced
+   * "Vues totales catalogue: 0" sitting under "+18.4% cette semaine", beside a
+   * chart headed "Total : 3 320 vues uniques". Three numbers, three different
+   * stories, on a page sold as performance tracking.
+   *
+   * Until the analytics service exists, the honest behaviour is to show the
+   * figures only where there is a catalogue to have produced them.
+   *
+   * TODO(analytics): replace `weeklyStats` and the three fixed KPIs with the
+   * seller analytics endpoint, and drop this flag.
+   */
+  const hasCatalogue = listings.length > 0;
 
   const weeklyStats = [
     { day: 'Lun', views: 240, leads: 12 },
@@ -94,9 +120,13 @@ export const ProDashboardPage: React.FC = () => {
             <Eye className="w-4 h-4 text-primary" />
           </div>
           <div className="text-2xl font-black text-stone-900">{totalViews.toLocaleString()}</div>
-          <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-            <TrendingUp className="w-3 h-3" /> +18.4% cette semaine
-          </div>
+          {hasCatalogue ? (
+            <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
+              <TrendingUp className="w-3 h-3" aria-hidden="true" /> +18.4% cette semaine
+            </div>
+          ) : (
+            <div className="text-xs text-stone-500 mt-1">{t('sellerworkspace.proDashboardPage.pasEncoreDeDonnees')}</div>
+          )}
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
@@ -104,10 +134,14 @@ export const ProDashboardPage: React.FC = () => {
             <span>Demandes & Contacts</span>
             <MessageSquare className="w-4 h-4 text-info" />
           </div>
-          <div className="text-2xl font-black text-stone-900">194</div>
-          <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-            <TrendingUp className="w-3 h-3" /> +12.1%
-          </div>
+          <div className="text-2xl font-black text-stone-900">{hasCatalogue ? '194' : '0'}</div>
+          {hasCatalogue ? (
+            <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
+              <TrendingUp className="w-3 h-3" aria-hidden="true" /> +12.1%
+            </div>
+          ) : (
+            <div className="text-xs text-stone-500 mt-1">{t('sellerworkspace.proDashboardPage.pasEncoreDeDonnees')}</div>
+          )}
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
@@ -115,8 +149,12 @@ export const ProDashboardPage: React.FC = () => {
             <span>{t('sellerworkspace.proDashboardPage.tauxDeConversion')}</span>
             <BarChart2 className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-black text-stone-900">5.8%</div>
-          <div className="text-xs text-stone-500 mt-1">{t('sellerworkspace.proDashboardPage.surLesFichesArticles')}</div>
+          <div className="text-2xl font-black text-stone-900">{hasCatalogue ? '5.8%' : '—'}</div>
+          <div className="text-xs text-stone-500 mt-1">
+            {hasCatalogue
+              ? t('sellerworkspace.proDashboardPage.surLesFichesArticles')
+              : t('sellerworkspace.proDashboardPage.pasEncoreDeDonnees')}
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
@@ -124,8 +162,12 @@ export const ProDashboardPage: React.FC = () => {
             <span>{t('sellerworkspace.proDashboardPage.volumeDeVentesEstime')}</span>
             <DollarSign className="w-4 h-4 text-success" />
           </div>
-          <div className="text-2xl font-black text-stone-900">{formatPrice(14250)}</div>
-          <div className="text-xs text-stone-500 mt-1">{t('sellerworkspace.proDashboardPage.ceMoisCi')}</div>
+          <div className="text-2xl font-black text-stone-900">{hasCatalogue ? formatPrice(14250) : formatPrice(0)}</div>
+          <div className="text-xs text-stone-500 mt-1">
+            {hasCatalogue
+              ? t('sellerworkspace.proDashboardPage.ceMoisCi')
+              : t('sellerworkspace.proDashboardPage.pasEncoreDeDonnees')}
+          </div>
         </div>
       </div>
 
@@ -133,7 +175,13 @@ export const ProDashboardPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm sm:text-base font-bold text-stone-900">{t('sellerworkspace.proDashboardPage.evolutionDeLAudience7')}</h2>
-          <span className="text-xs text-stone-500">Total : 3 320 vues uniques</span>
+          {/* Summed from the series rendered below rather than written out
+              again, so the caption cannot drift from the bars it describes. */}
+          <span className="text-xs text-stone-500">
+            {t('sellerworkspace.proDashboardPage.totalVuesUniques', {
+              count: weeklyStats.reduce((sum, d) => sum + d.views, 0),
+            })}
+          </span>
         </div>
 
         <div className="grid grid-cols-7 gap-2 items-end h-44 pt-4 border-b border-border-subtle">

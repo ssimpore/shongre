@@ -27,7 +27,6 @@ import { useToast } from '../../app/providers/ToastProvider';
 import { storageService } from '../../services/storage.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { FilterChip } from '../../design-system/primitives/FilterChip';
-import { CategoryFilterRail } from '../../design-system/primitives/CategoryFilterRail';
 import { GlobalSearchBar } from '../../design-system/primitives/GlobalSearchBar';
 import { DropdownMenu, DropdownOption } from '../../design-system/primitives/DropdownMenu';
 import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
@@ -420,49 +419,6 @@ export const SearchPage: React.FC = () => {
         )}
       </div>
 
-      {/* Horizontal Scrollable Category Filter Chips Rail */}
-      <div className="mb-6">
-        <CategoryFilterRail
-          selectedCategorySlug={categorySlug || undefined}
-          onSelectAll={clearAllFilters}
-          onSelectCategory={(slug) => {
-            setSearchParams((prev) => {
-              const next = new URLSearchParams(prev);
-              if (slug) {
-                next.set('category', slug);
-              } else {
-                next.delete('category');
-              }
-              next.delete('subCategory');
-              if (!slug) {
-                for (const key of Array.from(next.keys())) {
-                  if (key.startsWith('attr_')) {
-                    next.delete(key);
-                  }
-                }
-              }
-              next.delete('page');
-              return next;
-            });
-          }}
-          selectedSubCategorySlug={subCategorySlug || undefined}
-          onSelectSubCategory={(subSlug) => {
-            setSearchParams((prev) => {
-              const next = new URLSearchParams(prev);
-              if (subSlug) {
-                next.set('subCategory', subSlug);
-              } else {
-                next.delete('subCategory');
-              }
-              next.delete('page');
-              return next;
-            });
-          }}
-          showAllOption={true}
-          showSubCategories={true}
-          idPrefix="search-category-rail"
-        />
-      </div>
 
       {/* Main Content Layout: Sidebar + Grid */}
       <div className={showDesktopFilters ? "grid grid-cols-1 lg:grid-cols-4 gap-6" : "w-full space-y-4"}>
@@ -530,7 +486,7 @@ export const SearchPage: React.FC = () => {
                     <div className="pt-1">
                       <label
                         htmlFor="desktop-subcategory-select"
-                        className="text-[11px] font-semibold text-stone-600 block mb-1.5"
+                        className="text-micro font-semibold text-stone-600 block mb-1.5"
                       >{t('search.searchPage.sousCategorie')}</label>
                       <DropdownMenu
                         id="desktop-subcategory-select"
@@ -702,7 +658,16 @@ export const SearchPage: React.FC = () => {
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
           <div className="bg-white p-4 rounded-2xl border border-stone-200/60 shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4">
             <div className="flex items-center gap-3 min-w-0 shrink">
-              <span className="text-sm font-bold text-stone-900 shrink-0">
+              {/* The result count is the only feedback a filter change gives on
+                  this page — the grid below simply rewrites itself. Announced so
+                  a screen-reader user hears "42 annonces" after applying a
+                  filter instead of silence. */}
+              <span
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                className="text-sm font-bold text-stone-900 shrink-0"
+              >
                 {plural(totalCount, 'annonce')}
               </span>
 
@@ -808,18 +773,15 @@ export const SearchPage: React.FC = () => {
 
           {/* Results Display (Grid / List / Map) */}
           {isLoading ? (
-            <div
-              className={
-                showDesktopFilters
-                  ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[900px]'
-                  : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[900px]'
-              }
-            >
-              {[...Array(showDesktopFilters ? 12 : 15)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl p-3 border border-border-base space-y-3">
-                  <Skeleton className="h-44 w-full rounded-xl" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-5 w-1/3" />
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card),1fr))] gap-3 sm:gap-4">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="bg-white rounded-card p-2 border border-stone-200 space-y-2.5 flex flex-col">
+                  <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+                  <div className="p-1 space-y-2 flex-1 flex flex-col justify-between">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-5 w-1/2" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -831,19 +793,19 @@ export const SearchPage: React.FC = () => {
                 onSelectCity={(selected) => updateFilter('city', selected)}
               />
             ) : (
-              <div
-                className={
-                  viewMode === 'grid'
-                    ? showDesktopFilters
-                      ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'
-                      : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4'
-                    : 'flex flex-col gap-3'
-                }
-              >
-                {listings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} variant={viewMode} />
-                ))}
-              </div>
+              viewMode === 'grid' ? (
+                <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card),1fr))] gap-3 sm:gap-4">
+                  {listings.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} variant="grid" />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {listings.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} variant="list" />
+                  ))}
+                </div>
+              )
             )
           ) : (
             <NoResultsFound
@@ -889,7 +851,7 @@ export const SearchPage: React.FC = () => {
             {/* Subcategory dropdown if active category has children */}
             {subcategoryDropdownOptions.length > 0 && (
               <div className="pt-3">
-                <label className="text-[11px] font-semibold text-stone-600 block mb-1.5">{t('search.searchPage.sousCategorie')}</label>
+                <label className="text-micro font-semibold text-stone-600 block mb-1.5">{t('search.searchPage.sousCategorie')}</label>
                 <DropdownMenu
                   id="mobile-subcategory-select"
                   ariaLabel="Filtrer par sous-catégorie"

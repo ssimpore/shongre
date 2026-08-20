@@ -6,9 +6,17 @@ import { Input, Textarea, FormField } from '../../design-system/primitives/FormF
 import { Avatar } from '../../design-system/primitives/Badge';
 import { Check,  Building2, MapPin, Globe, Phone } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const ProStorefrontEditorPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.proStorefrontEditor.title'),
+    description: t('meta.proStorefrontEditor.description'),
+    canonicalPath: '/compte/pro/vitrine',
+    noIndex: true,
+  });
+
   const { currentUser, updateProfile } = useAuth();
   const toast = useToast();
 

@@ -19,9 +19,17 @@ import { CrmOpportunity, CrmTask } from '../../../domains/crm/crm.types';
 import { crmService } from '../../../domains/crm/crm.service';
 import { CrmUniversalSearch } from './components/CrmUniversalSearch';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { usePageMeta } from '../../../hooks/usePageMeta';
 
 export const CrmOverviewPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.crmOverview.title'),
+    description: t('meta.crmOverview.description'),
+    canonicalPath: '/admin/crm',
+    noIndex: true,
+  });
+
   const [stats, setStats] = useState<CrmOverviewStats | null>(null);
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
   const [tasks, setTasks] = useState<CrmTask[]>([]);

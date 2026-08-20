@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserRole } from '../../types';
 import { useAuth } from '../providers/AuthProvider';
-import { normalizePlatformRole } from '../../security/roles.config';
+import { normalizePlatformRole, roleLabel } from '../../security/roles.config';
 import { Shield, Sparkles, User, Briefcase, ChevronDown, Check } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
 
@@ -54,8 +54,25 @@ export const DemoRoleSwitcher: React.FC = () => {
   // 'seller'`, so a direct comparison never matched and the switcher fell back
   // to entry zero — it reported "Visiteur non connecté" while signed in as
   // Camille, the one thing this control exists to tell you.
-  const currentRoleObj =
-    roles.find((r) => normalizePlatformRole(r.role) === platformRole) || roles[0];
+  /**
+   * The six entries above are the demo *personas*, not the full role set. The
+   * platform has fourteen roles, so signing in as `super_admin`, `support`,
+   * `finance`, `commercial`, `content_manager`, `operations` or `market_manager`
+   * matched nothing — and `|| roles[0]` then displayed "1. Visiteur non
+   * connecté" while the session was an authenticated super administrator. The
+   * one thing this control exists to report, it got wrong, in front of whoever
+   * the demo was for.
+   *
+   * Falling back to the real role's own label is honest and needs no new entry
+   * each time a role is added.
+   */
+  const matchedRole = roles.find((r) => normalizePlatformRole(r.role) === platformRole);
+  const currentRoleObj = matchedRole ?? {
+    role: platformRole,
+    label: roleLabel(platformRole),
+    desc: t('shell.demoRoleSwitcher.roleHorsPersonasDemo'),
+    icon: <Shield className="w-4 h-4 text-stone-400" />,
+  };
 
   return (
     /* `z-45` follows the same tier as the mobile drawer: above page chrome

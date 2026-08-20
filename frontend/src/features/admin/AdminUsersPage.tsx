@@ -26,9 +26,18 @@ import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
 import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import type { MessageKey } from '../../i18n/messages.fr';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.adminUsers.title'),
+    description: t('meta.adminUsers.description'),
+    canonicalPath: '/admin/utilisateurs',
+    noIndex: true,
+  });
+
   const { can, switchDemoUser } = useAuth();
   const toast = useToast();
 
@@ -162,8 +171,18 @@ export const AdminUsersPage: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs text-stone-500 font-semibold shrink-0">
-          {filteredUsers.length} utilisateur(s) trouvé(s)
+        {/* Announced, because it is the only feedback a filter gives. Typing in
+            the search box or changing a select silently rewrote this number and
+            the table beneath it; a screen-reader user got no indication that
+            anything had happened. `aria-atomic` makes the whole sentence read,
+            not just the digit that changed. */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="text-xs text-stone-500 font-semibold shrink-0"
+        >
+          {t('admin.adminUsersPage.utilisateursTrouves', { count: filteredUsers.length })}
         </div>
       </div>
 
@@ -173,11 +192,11 @@ export const AdminUsersPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
               <tr>
-                <th className="p-3.5">Utilisateur</th>
-                <th className="p-3.5">{t('admin.adminUsersPage.typeRole')}</th>
-                <th className="p-3.5">{t('admin.adminUsersPage.statutVerification')}</th>
-                <th className="p-3.5">{t('admin.adminUsersPage.marcheVille')}</th>
-                <th className="p-3.5 text-right">Actions</th>
+                <th scope="col" className="p-3.5">Utilisateur</th>
+                <th scope="col" className="p-3.5">{t('admin.adminUsersPage.typeRole')}</th>
+                <th scope="col" className="p-3.5">{t('admin.adminUsersPage.statutVerification')}</th>
+                <th scope="col" className="p-3.5">{t('admin.adminUsersPage.marcheVille')}</th>
+                <th scope="col" className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
@@ -218,8 +237,15 @@ export const AdminUsersPage: React.FC = () => {
                         <span className={`text-micro font-bold px-2 py-1 rounded-full border ${roleDef.badgeColor}`}>
                           {roleDef.title}
                         </span>
-                        <span className="text-micro text-stone-500 font-mono">
-                          {u.accountType || 'individual'}
+                        {/* This rendered the raw stored enum — `individual`,
+                            `professional`, `internal` — in monospace directly
+                            under the translated role badge above it. Two labels
+                            for the same fact, one of them a backend key. The
+                            account type is worth showing (a professional account
+                            with an individual role is a real state), so it stays
+                            — as words. */}
+                        <span className="text-micro text-stone-500">
+                          {t(`admin.accountType.${u.accountType || 'individual'}` as MessageKey)}
                         </span>
                       </div>
                     </td>

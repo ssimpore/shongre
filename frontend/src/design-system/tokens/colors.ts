@@ -113,6 +113,37 @@ export const colors = {
     topLight: '#F0F9FF',
     topBorder: '#BAE6FD',
   },
+
+  /**
+   * Category accent hues.
+   *
+   * These 16 values lived as 66 raw hex literals inside `CategoryIcon.tsx`,
+   * where nothing could reach them: not the theme, not the contrast checks,
+   * not a future dark mode. They are data about the taxonomy's visual
+   * identity, so they belong with the other colour tokens and are referenced
+   * by name from the component.
+   *
+   * Named after what they colour, not after the hue — `vehicles`, not `red` —
+   * so re-hueing a family is a one-line change here.
+   */
+  category: {
+    vehicles: '#C4431F',
+    realEstate: '#0284C7',
+    jobs: '#059669',
+    multimedia: '#6366F1',
+    homeGarden: '#D97706',
+    fashion: '#DB2777',
+    leisure: '#8B5CF6',
+    services: '#0D9488',
+    tech: '#4F46E5',
+    baby: '#EC4899',
+    pets: '#EAB308',
+    sport: '#EA580C',
+    trades: '#DC2626',
+    agriculture: '#65A30D',
+    neutral: '#57534E',
+    neutralSoft: '#78716C',
+  },
 } as const;
 
 export type Colors = typeof colors;

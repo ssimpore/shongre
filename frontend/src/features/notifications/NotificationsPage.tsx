@@ -18,9 +18,17 @@ import { Button } from '../../design-system/primitives/Button';
 import { NotificationItemCard } from './components/NotificationItemCard';
 import { NotificationDemoToolbar } from './components/NotificationDemoToolbar';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { usePageMeta } from '../../hooks/usePageMeta';
 
 export const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
+  usePageMeta({
+    title: t('meta.notifications.title'),
+    description: t('meta.notifications.description'),
+    canonicalPath: '/compte/notifications',
+    noIndex: true,
+  });
+
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const currentUserId = currentUser ? currentUser.id : 'user-thomas';
