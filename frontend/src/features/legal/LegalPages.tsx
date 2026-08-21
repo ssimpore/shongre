@@ -11,6 +11,7 @@ import { Breadcrumbs } from "../../design-system";
 import { storageService } from "../../services/storage.service";
 import { Button } from "../../design-system/primitives/Button";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
+import { ListingGrid } from "../../design-system/primitives/ListingGrid";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 
@@ -295,11 +296,11 @@ export const DealsPage: React.FC = () => {
           role="region"
           aria-label={t("legal.legalPages.annoncesEnPromotion")}
         >
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <ListingGrid>
             {visibleDeals.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
-          </div>
+          </ListingGrid>
         </div>
 
         {pageCount > 1 && (

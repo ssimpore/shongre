@@ -11,6 +11,7 @@ import { ListingRail } from "../../../design-system/primitives/ListingRail";
 import {
   Container,
   Heading,
+  ListingGrid,
   ListingCardSkeleton,
 } from "../../../design-system";
 import { HomeSectionHeading } from "./HomeSectionHeading";
@@ -41,14 +42,14 @@ function TrendingLoading(): React.ReactElement {
             <div className="h-7 w-44 animate-pulse rounded-control bg-bg-muted" />
             <div className="h-4 w-64 animate-pulse rounded-control bg-bg-muted" />
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <ListingGrid>
             {Array.from({ length: TOPIC_LISTINGS }).map((__, index) => (
               <ListingCardSkeleton
                 key={index}
                 className="rounded-card border border-border-base bg-bg-surface p-2"
               />
             ))}
-          </div>
+          </ListingGrid>
         </div>
       ))}
     </div>

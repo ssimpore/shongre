@@ -22,7 +22,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { Input, Checkbox } from "../../design-system/primitives/FormField";
 import { Drawer } from "../../design-system/primitives/Modal";
 import { plural } from "../../utilities/formatters";
-import { ListingCardSkeleton, Skeleton } from "../../design-system";
+import { ListingCardSkeleton, ListingGrid, Skeleton } from "../../design-system";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -1077,14 +1077,14 @@ export const SearchPage: React.FC = () => {
 
           {/* Results Display (Grid / List / Map) */}
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))] gap-3 sm:gap-4">
+            <ListingGrid>
               {[...Array(12)].map((_, i) => (
                 <ListingCardSkeleton
                   key={i}
                   className="rounded-card border border-stone-200 bg-white p-2"
                 />
               ))}
-            </div>
+            </ListingGrid>
           ) : listings.length > 0 ? (
             viewMode === "map" ? (
               <React.Suspense
@@ -1105,7 +1105,7 @@ export const SearchPage: React.FC = () => {
                 />
               </React.Suspense>
             ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))] gap-3 sm:gap-4">
+              <ListingGrid>
                 {listings.map((listing) => (
                   <ListingCard
                     key={listing.id}
@@ -1113,7 +1113,7 @@ export const SearchPage: React.FC = () => {
                     variant="grid"
                   />
                 ))}
-              </div>
+              </ListingGrid>
             ) : (
               <div className="flex flex-col gap-3">
                 {listings.map((listing) => (

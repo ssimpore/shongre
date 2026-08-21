@@ -42,6 +42,7 @@ export * from "./primitives/FavoriteButton";
 export * from "./primitives/GlobalSearchBar";
 export * from "./primitives/LanguageSelector";
 export * from "./primitives/ListingCard";
+export * from "./primitives/ListingGrid";
 export * from "./primitives/ListingRail";
 export * from "./primitives/NoResultsFound";
 export * from "./primitives/PriceRangeSlider";

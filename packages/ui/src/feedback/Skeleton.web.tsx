@@ -48,7 +48,7 @@ export const SearchResultsSkeleton: React.FC<{
   <div
     aria-hidden="true"
     className={cn(
-      "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4",
+      "listing-grid grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))] sm:gap-4",
       className,
     )}
   >

@@ -46,6 +46,27 @@ test.describe('design-token runtime contracts', () => {
     }
   });
 
+  test('keeps every standard listing rail cell and card on the shared width token', async ({ page }) => {
+    const contract = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const cells = [...document.querySelectorAll<HTMLElement>('.listing-rail-cell')];
+      return {
+        tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
+        cells: cells.map((cell) => ({
+          cell: cell.getBoundingClientRect().width,
+          card: cell.querySelector<HTMLElement>('article')?.getBoundingClientRect().width ?? null,
+        })),
+      };
+    });
+
+    expect(contract.cells.length, 'no standard listing rails rendered').toBeGreaterThanOrEqual(6);
+    expect(contract.tokenWidth).toBe('11.75rem');
+    for (const item of contract.cells) {
+      expect(item.cell).toBeCloseTo(188, 0);
+      expect(item.card).toBeCloseTo(188, 0);
+    }
+  });
+
   test('resolves the representative color, type, size, radius, elevation and motion tokens', async ({ page }) => {
     const styles = await page.evaluate(() => {
       const probe = document.createElement('div');

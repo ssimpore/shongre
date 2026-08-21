@@ -345,6 +345,21 @@
 .z-tooltip { z-index: var(--z-tooltip, 70); }
 .w-listing-card { width: var(--spacing-listing-card, 11.75rem); }
 
+/* Listing rails own their width through the design-token utility above. The
+   cell is a flex column so a wrapped card (analytics, tracking, or a future
+   badge wrapper) still fills the same rail height as its siblings. */
+.listing-rail-cell {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 var(--spacing-listing-card, 11.75rem);
+  min-width: var(--spacing-listing-card, 11.75rem);
+}
+
+.listing-rail-cell > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 /* Smooth Infinite Marquee Animations */
 @keyframes vertical-scroll-up {
   0% {

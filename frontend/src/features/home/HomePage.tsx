@@ -20,6 +20,7 @@ import {
   EmptyState,
   Heading,
   ListingCardSkeleton,
+  ListingGrid,
   StatePanel,
 } from "../../design-system";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -245,14 +246,14 @@ export const HomePage: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <ListingGrid>
             {Array.from({ length: RECENT_COUNT }).map((_, idx) => (
               <ListingCardSkeleton
                 key={idx}
                 className="rounded-2xl border border-border-base bg-white p-3"
               />
             ))}
-          </div>
+          </ListingGrid>
         ) : loadError ? (
           <StatePanel
             variant="offline"

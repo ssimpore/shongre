@@ -537,14 +537,18 @@ export const CollectionsPage: React.FC = () => {
               </div>
 
               {isLoading ? (
-                <div className="flex gap-3 sm:gap-4 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+                <ListingRail
+                  label={t(
+                    "collections.collectionsPage.annoncesDeLaCollection",
+                  )}
+                >
                   {Array.from({ length: 8 }).map((_, idx) => (
                     <ListingCardSkeleton
                       key={idx}
-                      className="w-listing-card shrink-0 rounded-2xl border border-border-base bg-white p-3"
+                      className="rounded-2xl border border-border-base bg-white p-3"
                     />
                   ))}
-                </div>
+                </ListingRail>
               ) : displayedListings.length > 0 ? (
                 <ListingRail
                   label={t(
