@@ -25,7 +25,36 @@ export interface ConditionOption {
 }
 
 export type AttributeDataType =
-  "select" | "multi_select" | "number" | "text" | "boolean" | "range" | "year";
+  | "select"
+  | "multi_select"
+  | "number"
+  | "text"
+  | "long_text"
+  | "boolean"
+  | "range"
+  | "year"
+  | "date"
+  | "date_time"
+  | "money"
+  | "autocomplete"
+  | "location";
+
+/**
+ * Field roles are deliberately separate from `required`: a recommended field
+ * can be highlighted in publication without blocking a seller, while a
+ * computed/system field is never rendered as an input.
+ */
+export type TaxonomyAttributeFieldRole =
+  | "required"
+  | "recommended"
+  | "optional"
+  | "computed"
+  | "system";
+
+export type TaxonomyAttributeVisibility =
+  | "public"
+  | "seller_only"
+  | "moderator_only";
 
 export interface AttributeOption {
   value: string;
@@ -45,6 +74,9 @@ export interface AttributeValidation {
   pattern?: string;
   step?: number;
   placeholder?: string;
+  minLength?: number;
+  maxLength?: number;
+  integer?: boolean;
 }
 
 export interface TaxonomyAttribute {
@@ -55,11 +87,18 @@ export interface TaxonomyAttribute {
   helpText?: string;
   dataType: AttributeDataType;
   unit?: string;
+  fieldRole?: TaxonomyAttributeFieldRole;
+  privacy?: TaxonomyAttributeVisibility;
   required?: boolean;
   filterable?: boolean;
   searchable?: boolean;
   sortable?: boolean;
+  comparable?: boolean;
+  seoRelevant?: boolean;
+  deprecated?: boolean;
   options?: AttributeOption[];
+  displayPrefix?: string;
+  displayOptionLabels?: Record<string, string>;
   dependencies?: AttributeDependency[];
   validation?: AttributeValidation;
   publicationGroup?:
@@ -98,6 +137,27 @@ export interface TaxonomySeoMeta {
   metaDescriptionTemplate?: string;
   canonicalPath?: string;
   indexable?: boolean;
+}
+
+export interface TaxonomyPresentationRules {
+  /** Attributes shown first on cards, in priority order. */
+  cardAttributeIds?: string[];
+  /** Detail-page group order, using the attribute publication groups. */
+  detailGroupOrder?: Array<
+    "general" | "specifications" | "dimensions" | "performance" | "legal"
+  >;
+  /** Comparable fields available when a user selects listings to compare. */
+  comparisonAttributeIds?: string[];
+  /** Allowed sort keys for this branch, in UI order. */
+  sortOptions?: Array<
+    "relevance" | "recent" | "price_asc" | "price_desc" | "distance"
+  >;
+}
+
+export interface TaxonomyMediaGuidance {
+  minimumPhotoCount?: number;
+  recommendedViews?: string[];
+  maxPhotoCount?: number;
 }
 
 export interface TaxonomyMarketOverride {
@@ -171,6 +231,9 @@ export interface TaxonomyNode extends TaxonomyNodeBase {
   filterFacetIds?: string[]; // Attributes to render as search facets
   marketOverrides?: Record<string, TaxonomyMarketOverride>;
   seo?: TaxonomySeoMeta;
+  presentation?: TaxonomyPresentationRules;
+  mediaGuidance?: TaxonomyMediaGuidance;
+  taxonomyVersion?: number;
   synonyms?: string[];
   aliases?: string[];
   replacedById?: string; // For deprecated categories: successor node ID
@@ -187,6 +250,8 @@ export interface ResolvedPublicationSchema {
   capabilities: TaxonomyCapabilities;
   sellerEligibility: SellerEligibilityRules;
   summaryAttributeIds: string[];
+  presentation?: TaxonomyPresentationRules;
+  mediaGuidance?: TaxonomyMediaGuidance;
 }
 
 export interface SearchFacetDefinition {
@@ -288,8 +353,13 @@ export interface CreateTaxonomyNodeInput {
   publishable?: boolean;
   status?: TaxonomyNodeStatus;
   conditionScheme?: ConditionSchemeId;
+  listingFamily?: ListingFamily;
+  supportedIntents?: string[];
   attributeIds?: string[];
   capabilities?: Partial<TaxonomyCapabilities>;
+  sellerEligibility?: Partial<SellerEligibilityRules>;
+  presentation?: TaxonomyPresentationRules;
+  mediaGuidance?: TaxonomyMediaGuidance;
 }
 
 export interface UpdateTaxonomyNodeInput {
@@ -304,6 +374,8 @@ export interface UpdateTaxonomyNodeInput {
   status?: TaxonomyNodeStatus;
   sortOrder?: number;
   conditionScheme?: ConditionSchemeId;
+  listingFamily?: ListingFamily;
+  supportedIntents?: string[];
   attributeIds?: string[];
   summaryAttributeIds?: string[];
   filterFacetIds?: string[];
@@ -313,4 +385,6 @@ export interface UpdateTaxonomyNodeInput {
   aliases?: string[];
   synonyms?: string[];
   replacedById?: string;
+  presentation?: TaxonomyPresentationRules;
+  mediaGuidance?: TaxonomyMediaGuidance;
 }

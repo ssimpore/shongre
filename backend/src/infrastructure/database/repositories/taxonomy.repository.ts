@@ -1,16 +1,13 @@
 import { Category } from '../../../shared/types/index.js';
+import type { TaxonomyAttribute as ContractTaxonomyAttribute } from '@shongre/contracts/taxonomy';
 import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
 import { logger } from '../../logging/logger.js';
 
-export interface TaxonomyAttribute {
-  id: string;
-  name: string;
-  label: string;
-  type: 'text' | 'number' | 'select' | 'boolean' | 'range';
-  options?: Array<{ label: string; value: string }>;
-  unit?: string;
-  required?: boolean;
-}
+/** Shared taxonomy field shape with legacy aliases retained for old adapters. */
+export type TaxonomyAttribute = ContractTaxonomyAttribute & {
+  name?: string;
+  type?: ContractTaxonomyAttribute['dataType'];
+};
 
 export interface TaxonomyNode {
   id: string;
@@ -193,26 +190,26 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
 
   async getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]> {
     const commonAttributes: TaxonomyAttribute[] = [
-      { id: 'condition', name: 'condition', label: 'État général', type: 'select', required: true },
-      { id: 'brand', name: 'brand', label: 'Marque', type: 'text' },
-      { id: 'color', name: 'color', label: 'Couleur', type: 'text' },
+      { id: 'condition', code: 'condition', name: 'condition', label: 'État général', dataType: 'select', type: 'select', required: true },
+      { id: 'brand', code: 'brand', name: 'brand', label: 'Marque', dataType: 'text', type: 'text' },
+      { id: 'color', code: 'color', name: 'color', label: 'Couleur', dataType: 'text', type: 'text' },
     ];
 
     if (categoryId.includes('car') || categoryId === 'vehicles') {
       return [
         ...commonAttributes,
-        { id: 'mileage', name: 'mileage', label: 'Kilométrage', type: 'number', unit: 'km', required: true },
-        { id: 'fuel', name: 'fuel', label: 'Carburant', type: 'select', required: true },
-        { id: 'year', name: 'year', label: 'Année modèle', type: 'number', required: true },
-        { id: 'transmission', name: 'transmission', label: 'Boîte de vitesse', type: 'select' },
+        { id: 'mileage', code: 'mileage', name: 'mileage', label: 'Kilométrage', dataType: 'number', type: 'number', unit: 'km', required: true },
+        { id: 'fuel', code: 'fuel', name: 'fuel', label: 'Carburant', dataType: 'select', type: 'select', required: true },
+        { id: 'year', code: 'year', name: 'year', label: 'Année modèle', dataType: 'year', type: 'year', required: true },
+        { id: 'transmission', code: 'transmission', name: 'transmission', label: 'Boîte de vitesse', dataType: 'select', type: 'select' },
       ];
     }
 
     if (categoryId.includes('real-estate')) {
       return [
-        { id: 'surface', name: 'surface', label: 'Surface habitable', type: 'number', unit: 'm²', required: true },
-        { id: 'rooms', name: 'rooms', label: 'Nombre de pièces', type: 'number', required: true },
-        { id: 'dpe', name: 'dpe', label: 'Classe énergétique (DPE)', type: 'select' },
+        { id: 'surface', code: 'surface', name: 'surface', label: 'Surface habitable', dataType: 'number', type: 'number', unit: 'm²', required: true },
+        { id: 'rooms', code: 'rooms', name: 'rooms', label: 'Nombre de pièces', dataType: 'number', type: 'number', required: true },
+        { id: 'dpe', code: 'energy_class', name: 'energy_class', label: 'Classe énergétique (DPE)', dataType: 'select', type: 'select' },
       ];
     }
 
@@ -346,13 +343,21 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
       }
 
       return data.map((a: any) => ({
-        id: a.name,
+        id: a.attribute_id || a.name,
+        code: a.code || a.name,
         name: a.name,
         label: a.label,
-        type: a.type,
+        dataType: a.data_type || a.type || 'text',
+        type: a.data_type || a.type || 'text',
         options: a.options || undefined,
         unit: a.unit || undefined,
         required: Boolean(a.is_required),
+        filterable: Boolean(a.is_filterable),
+        searchable: Boolean(a.is_searchable),
+        sortable: Boolean(a.is_sortable),
+        comparable: Boolean(a.is_comparable),
+        publicationGroup: a.publication_group || undefined,
+        displayOrder: a.display_order || a.sort_order || undefined,
       }));
     } catch {
       const demoRepo = new DemoTaxonomyRepository();

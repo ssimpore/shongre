@@ -7,7 +7,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./account": "./src/schemas/account.ts"
+    "./account": "./src/schemas/account.ts",
+    "./taxonomy": "./src/schemas/taxonomy.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

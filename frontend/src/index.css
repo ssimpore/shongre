@@ -345,6 +345,24 @@
 .z-tooltip { z-index: var(--z-tooltip, 70); }
 .w-listing-card { width: var(--spacing-listing-card, 11.75rem); }
 
+/* Standard listing cards own their vertical footprint. The rule is kept
+   outside Tailwind's layers so page-level utility classes cannot make one
+   section's cards taller or shorter than another. The mobile grid may still
+   narrow the card horizontally; its height stays tokenized. List cards are
+   intentionally excluded because their horizontal layout is content-driven. */
+.listing-card-standard,
+.listing-card-skeleton {
+  height: var(--spacing-listing-card-height, 22.75rem);
+}
+
+@media (min-width: 40rem) {
+  .listing-card-standard {
+    width: var(--spacing-listing-card, 11.75rem);
+    min-width: var(--spacing-listing-card, 11.75rem);
+    max-width: var(--spacing-listing-card, 11.75rem);
+  }
+}
+
 /* Listing rails own their width through the design-token utility above. The
    cell is a flex column so a wrapped card (analytics, tracking, or a future
    badge wrapper) still fills the same rail height as its siblings. */

@@ -67,6 +67,34 @@ test.describe('design-token runtime contracts', () => {
     }
   });
 
+  test('keeps desktop listing grids on the same width and height tokens as rails', async ({ page }) => {
+    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    const contract = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const grid = document.querySelector<HTMLElement>('.listing-grid');
+      const card = grid?.querySelector<HTMLElement>('article');
+      const gridStyle = grid ? getComputedStyle(grid) : null;
+      const cardStyle = card ? getComputedStyle(card) : null;
+      return {
+        tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
+        tokenHeight: root.getPropertyValue('--spacing-listing-card-height').trim(),
+        gridColumns: gridStyle?.gridTemplateColumns ?? '',
+        cardWidth: card?.getBoundingClientRect().width ?? null,
+        cardHeight: card?.getBoundingClientRect().height ?? null,
+        cardHeightToken: cardStyle?.height ?? '',
+      };
+    });
+
+    expect(contract.tokenWidth).toBe('11.75rem');
+    expect(contract.tokenHeight).toBe('22.75rem');
+    expect(contract.gridColumns.split(' ').every((column) => column === '188px')).toBe(true);
+    expect(contract.cardWidth).toBeCloseTo(188, 0);
+    expect(contract.cardHeight).toBeCloseTo(364, 0);
+    expect(contract.cardHeightToken).toBe('364px');
+  });
+
   test('resolves the representative color, type, size, radius, elevation and motion tokens', async ({ page }) => {
     const styles = await page.evaluate(() => {
       const probe = document.createElement('div');

@@ -7,6 +7,7 @@ import {
 } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
 import { taxonomyService } from "../domains/taxonomy/taxonomy.service";
+import { TaxonomyMigration } from "../domains/taxonomy/taxonomy.migration";
 import {
   normalizeSearchText,
   searchTextIncludes,
@@ -116,135 +117,39 @@ export class MockListingRepository implements IListingRepository {
     // Category with taxonomy normalization and alias resolution
     if (filters.categorySlug && filters.categorySlug !== "all") {
       const catSlugOrId = filters.categorySlug.toLowerCase();
-      const matchedSlugs = new Set<string>([catSlugOrId]);
-
-      const catNode =
-        taxonomyService.getNodeBySlug(catSlugOrId) ||
-        taxonomyService.getNode(catSlugOrId);
-      if (catNode) {
-        matchedSlugs.add(catNode.slug.toLowerCase());
-        matchedSlugs.add(catNode.id.toLowerCase());
-        catNode.children?.forEach((child) => {
-          matchedSlugs.add(child.slug.toLowerCase());
-          matchedSlugs.add(child.id.toLowerCase());
-        });
-      }
-
-      // Alias mapping
-      if (
-        matchedSlugs.has("maison-jardin") ||
-        matchedSlugs.has("home_garden") ||
-        matchedSlugs.has("maison-deco")
-      ) {
-        matchedSlugs.add("maison-jardin");
-        matchedSlugs.add("maison-deco");
-        matchedSlugs.add("home_garden");
-      }
-      if (
-        matchedSlugs.has("multimedia-electronique") ||
-        matchedSlugs.has("multimedia")
-      ) {
-        matchedSlugs.add("multimedia-electronique");
-        matchedSlugs.add("multimedia");
-      }
-      if (
-        matchedSlugs.has("mode-accessoires") ||
-        matchedSlugs.has("mode") ||
-        matchedSlugs.has("fashion") ||
-        matchedSlugs.has("mode-beaute")
-      ) {
-        matchedSlugs.add("mode-accessoires");
-        matchedSlugs.add("mode");
-        matchedSlugs.add("mode-beaute");
-        matchedSlugs.add("fashion");
-      }
-      if (
-        matchedSlugs.has("loisirs-culture") ||
-        matchedSlugs.has("loisirs-sport") ||
-        matchedSlugs.has("sports") ||
-        matchedSlugs.has("leisure_culture")
-      ) {
-        matchedSlugs.add("loisirs-culture");
-        matchedSlugs.add("loisirs-sport");
-        matchedSlugs.add("leisure_culture");
-        matchedSlugs.add("sports");
-      }
-      if (
-        matchedSlugs.has("bebe-puericulture-enfants") ||
-        matchedSlugs.has("bebe-puericulture") ||
-        matchedSlugs.has("baby_kids")
-      ) {
-        matchedSlugs.add("bebe-puericulture-enfants");
-        matchedSlugs.add("bebe-puericulture");
-        matchedSlugs.add("baby_kids");
-      }
-      if (
-        matchedSlugs.has("vehicules") ||
-        matchedSlugs.has("vehicles") ||
-        matchedSlugs.has("auto-moto")
-      ) {
-        matchedSlugs.add("vehicules");
-        matchedSlugs.add("vehicles");
-      }
-      if (matchedSlugs.has("immobilier") || matchedSlugs.has("real_estate")) {
-        matchedSlugs.add("immobilier");
-        matchedSlugs.add("real_estate");
-      }
+      const catNode = TaxonomyMigration.resolveCanonicalNode(catSlugOrId);
+      const matchedNodeIds = new Set(
+        catNode
+          ? [catNode.id, ...taxonomyService.getDescendants(catNode.id).map((node) => node.id)]
+          : [],
+      );
 
       list = list.filter((item) => {
         const itemCat = (item.categorySlug || "").toLowerCase();
         const itemSubCat = (item.subCategorySlug || "").toLowerCase();
-        return matchedSlugs.has(itemCat) || matchedSlugs.has(itemSubCat);
+        const itemNode =
+          TaxonomyMigration.resolveCanonicalNode(itemSubCat) ||
+          TaxonomyMigration.resolveCanonicalNode(itemCat);
+        if (itemNode && matchedNodeIds.size > 0) return matchedNodeIds.has(itemNode.id);
+        return itemCat === catSlugOrId || itemSubCat === catSlugOrId;
       });
     }
 
     // Subcategory with alias normalization
     if (filters.subCategorySlug) {
       const subSlugOrId = filters.subCategorySlug.toLowerCase();
-      const matchedSubSlugs = new Set<string>([subSlugOrId]);
-
-      const subNode =
-        taxonomyService.getNodeBySlug(subSlugOrId) ||
-        taxonomyService.getNode(subSlugOrId);
-      if (subNode) {
-        matchedSubSlugs.add(subNode.slug.toLowerCase());
-        matchedSubSlugs.add(subNode.id.toLowerCase());
-      }
-
-      if (
-        matchedSubSlugs.has("smartphones-telephones") ||
-        matchedSubSlugs.has("smartphones")
-      ) {
-        matchedSubSlugs.add("smartphones-telephones");
-        matchedSubSlugs.add("smartphones");
-      }
-      if (
-        matchedSubSlugs.has("voitures") ||
-        matchedSubSlugs.has("cars") ||
-        matchedSubSlugs.has("vehicles.cars")
-      ) {
-        matchedSubSlugs.add("voitures");
-        matchedSubSlugs.add("cars");
-        matchedSubSlugs.add("vehicles.cars");
-      }
-      if (
-        matchedSubSlugs.has("velos-trottinettes") ||
-        matchedSubSlugs.has("velos")
-      ) {
-        matchedSubSlugs.add("velos-trottinettes");
-        matchedSubSlugs.add("velos");
-      }
-      if (
-        matchedSubSlugs.has("bricolage-outillage-jardin") ||
-        matchedSubSlugs.has("bricolage-jardin")
-      ) {
-        matchedSubSlugs.add("bricolage-outillage-jardin");
-        matchedSubSlugs.add("bricolage-jardin");
-      }
+      const subNode = TaxonomyMigration.resolveCanonicalNode(subSlugOrId);
+      const matchedNodeIds = new Set(
+        subNode
+          ? [subNode.id, ...taxonomyService.getDescendants(subNode.id).map((node) => node.id)]
+          : [],
+      );
 
       list = list.filter((item) => {
         const itemSubCat = (item.subCategorySlug || "").toLowerCase();
-        return matchedSubSlugs.has(itemSubCat);
+        const itemNode = TaxonomyMigration.resolveCanonicalNode(itemSubCat);
+        if (itemNode && matchedNodeIds.size > 0) return matchedNodeIds.has(itemNode.id);
+        return itemSubCat === subSlugOrId;
       });
     }
 
@@ -333,6 +238,42 @@ export class MockListingRepository implements IListingRepository {
       list = list.filter((item) =>
         filters.conditions!.includes(item.condition),
       );
+    }
+
+    // Dynamic taxonomy facets use the same attribute keys as publication and
+    // detail pages. Arrays are treated as overlap filters; range objects use
+    // inclusive bounds and scalar values use exact matching.
+    if (filters.attributes) {
+      Object.entries(filters.attributes).forEach(([key, criterion]) => {
+        const attribute = taxonomyService.getAttribute(key);
+        const attributeValue = (item: Listing) => {
+          const code = attribute?.code || key;
+          return item.attributes?.[code] ?? item.attributes?.[key];
+        };
+
+        list = list.filter((item) => {
+          const actual = attributeValue(item);
+          if (actual === undefined || actual === null) return false;
+          if (Array.isArray(criterion)) {
+            const actualValues = Array.isArray(actual) ? actual : [actual];
+            return criterion.some((value) => actualValues.includes(value));
+          }
+          if (
+            typeof criterion === "object" &&
+            criterion !== null &&
+            !Array.isArray(criterion)
+          ) {
+            const range = criterion as { min?: number; max?: number };
+            const numericActual = Number(actual);
+            return (
+              Number.isFinite(numericActual) &&
+              (range.min === undefined || numericActual >= range.min) &&
+              (range.max === undefined || numericActual <= range.max)
+            );
+          }
+          return String(actual) === String(criterion);
+        });
+      });
     }
 
     // Sorting

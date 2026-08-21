@@ -73,7 +73,7 @@ export function ListingCard({
       listing={toListingCardView(listing)}
       href={href}
       variant={variant}
-      className={`w-full ${variant === "grid" ? "h-full" : ""} ${className ?? ""}`}
+      className={`w-full ${className ?? ""}`}
       image={
         <Image
           src={listing.coverImageUrl}

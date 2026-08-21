@@ -132,6 +132,18 @@ class TaxonomyService {
     return target.children.map((c) => this.nodesMap.get(c.id) || c);
   }
 
+  getDescendants(nodeId: string): TaxonomyNode[] {
+    const descendants: TaxonomyNode[] = [];
+    const visit = (id: string) => {
+      this.getChildren(id).forEach((child) => {
+        descendants.push(child);
+        visit(child.id);
+      });
+    };
+    visit(nodeId);
+    return descendants;
+  }
+
   getAncestors(nodeId: string): TaxonomyNode[] {
     const node = this.nodesMap.get(nodeId);
     if (!node || !node.ancestorIds) return [];
@@ -390,6 +402,8 @@ class TaxonomyService {
       capabilities,
       sellerEligibility,
       summaryAttributeIds: summaryIds || [],
+      presentation: node.presentation,
+      mediaGuidance: node.mediaGuidance,
     };
   }
 
@@ -493,6 +507,30 @@ class TaxonomyService {
             errors.push(
               `Node ${node.id} references unknown attribute ${attrId}`,
             );
+          }
+        });
+      }
+
+      // Card, comparison and filter metadata must never point at an unknown
+      // registry field. These checks catch incomplete admin edits before they
+      // reach publication or search.
+      [...(node.summaryAttributeIds || []), ...(node.filterFacetIds || [])].forEach(
+        (attrId) => {
+          if (!ATTRIBUTE_REGISTRY[attrId]) {
+            errors.push(`Node ${node.id} references unknown presentation attribute ${attrId}`);
+          }
+        },
+      );
+      (node.filterFacetIds || []).forEach((attrId) => {
+        if (ATTRIBUTE_REGISTRY[attrId] && !ATTRIBUTE_REGISTRY[attrId].filterable) {
+          errors.push(`Node ${node.id} exposes non-filterable attribute ${attrId} as a facet`);
+        }
+      });
+
+      if (node.presentation?.cardAttributeIds) {
+        node.presentation.cardAttributeIds.forEach((attrId) => {
+          if (!ATTRIBUTE_REGISTRY[attrId]) {
+            errors.push(`Node ${node.id} references unknown card attribute ${attrId}`);
           }
         });
       }

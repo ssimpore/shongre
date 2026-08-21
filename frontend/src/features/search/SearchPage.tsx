@@ -16,6 +16,7 @@ import {
   taxonomyService,
   getTaxonomyLabel,
 } from "../../domains/taxonomy/taxonomy.service";
+import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { Button } from "../../design-system/primitives/Button";
@@ -151,6 +152,29 @@ export const SearchPage: React.FC = () => {
   const marketCode =
     searchParams.get("market") || storageService.getActiveMarketCode() || "FR";
 
+  const dynamicAttributeFilters = useMemo(() => {
+    const values: SearchFilters["attributes"] = {};
+    const keys = new Set(
+      [...searchParams.keys()]
+        .filter((param) => param.startsWith("attr_"))
+        .map((param) => param.replace(/^attr_/, "").replace(/_(min|max)$/, "")),
+    );
+    keys.forEach((key) => {
+      const min = searchParams.get(`attr_${key}_min`);
+      const max = searchParams.get(`attr_${key}_max`);
+      const value = searchParams.get(`attr_${key}`);
+      if (min !== null || max !== null) {
+        values[key] = {
+          min: min ? Number(min) : undefined,
+          max: max ? Number(max) : undefined,
+        };
+      } else if (value !== null && value !== "") {
+        values[key] = value.includes(",") ? value.split(",").filter(Boolean) : value;
+      }
+    });
+    return values;
+  }, [searchParams]);
+
   // Temporary filter state for mobile drawer / inputs
   const [, setTempQuery] = useState(query);
 
@@ -174,6 +198,10 @@ export const SearchPage: React.FC = () => {
       onlinePaymentAvailable: onlinePayment || undefined,
       onlyDeals: onlyDeals || undefined,
       conditions: conditions.length > 0 ? conditions : undefined,
+      attributes:
+        Object.keys(dynamicAttributeFilters).length > 0
+          ? dynamicAttributeFilters
+          : undefined,
       sortBy,
       marketCode,
       page: 1,
@@ -202,6 +230,7 @@ export const SearchPage: React.FC = () => {
     onlinePayment,
     onlyDeals,
     conditions.join(","),
+    JSON.stringify(dynamicAttributeFilters),
     sortBy,
     marketCode,
   ]);
@@ -270,13 +299,16 @@ export const SearchPage: React.FC = () => {
     );
   };
 
+  const activeCanonicalNode = TaxonomyMigration.resolveCanonicalNode(
+    subCategorySlug || categorySlug,
+  );
   const activeCategory = TAXONOMY.find(
     (c) => c.slug === categorySlug || c.id === categorySlug,
   );
   const activeSubCat = activeCategory?.subCategories.find(
     (s) => s.slug === subCategorySlug || s.id === subCategorySlug,
   );
-  const activeNodeId = activeSubCat?.id || activeCategory?.id;
+  const activeNodeId = activeCanonicalNode?.id || activeSubCat?.id || activeCategory?.id;
 
   // A search is useful on the home page only if it can be resumed with the
   // same criteria. Store the structured URL after every meaningful search or
@@ -361,7 +393,7 @@ export const SearchPage: React.FC = () => {
 
   const subcategoryDropdownOptions: DropdownOption[] = useMemo(() => {
     const activeNode = categorySlug
-      ? taxonomyService.getNodeBySlug(categorySlug)
+      ? TaxonomyMigration.resolveCanonicalNode(categorySlug)
       : undefined;
     const children = activeNode
       ? taxonomyService.getChildren(activeNode.id)
@@ -843,7 +875,11 @@ export const SearchPage: React.FC = () => {
                     const currentValue =
                       searchParams.get(`attr_${attr.code}`) || "";
 
-                    if (facet.facetType === "select" && attr.options) {
+                    if (
+                      (facet.facetType === "select" ||
+                        facet.facetType === "multi_select") &&
+                      attr.options
+                    ) {
                       const facetOptions: DropdownOption[] = [
                         { value: "", label: "Tous / Toutes" },
                         ...attr.options.map((opt) => ({
@@ -915,6 +951,22 @@ export const SearchPage: React.FC = () => {
                             />
                           </div>
                         </div>
+                      );
+                    }
+
+                    if (facet.facetType === "boolean") {
+                      return (
+                        <Checkbox
+                          key={attr.id}
+                          label={attr.label}
+                          checked={currentValue === "true"}
+                          onChange={(event) =>
+                            updateFilter(
+                              `attr_${attr.code}`,
+                              event.target.checked ? "true" : undefined,
+                            )
+                          }
+                        />
                       );
                     }
 
@@ -1274,7 +1326,11 @@ export const SearchPage: React.FC = () => {
                 const currentValue =
                   searchParams.get(`attr_${attr.code}`) || "";
 
-                if (facet.facetType === "select" && attr.options) {
+                if (
+                  (facet.facetType === "select" ||
+                    facet.facetType === "multi_select") &&
+                  attr.options
+                ) {
                   const facetOptions: DropdownOption[] = [
                     { value: "", label: "Tous / Toutes" },
                     ...attr.options.map((opt) => ({
@@ -1341,6 +1397,22 @@ export const SearchPage: React.FC = () => {
                         />
                       </div>
                     </div>
+                  );
+                }
+
+                if (facet.facetType === "boolean") {
+                  return (
+                    <Checkbox
+                      key={attr.id}
+                      label={attr.label}
+                      checked={currentValue === "true"}
+                      onChange={(event) =>
+                        updateFilter(
+                          `attr_${attr.code}`,
+                          event.target.checked ? "true" : undefined,
+                        )
+                      }
+                    />
                   );
                 }
 

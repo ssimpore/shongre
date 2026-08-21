@@ -30,6 +30,7 @@ import { userRepository } from "../../repositories/user.repository";
 import { messagingRepository } from "../../repositories/messaging.repository";
 import { Listing, UserProfile, Transaction } from "../../types";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
 import { marketService } from "../../domains/market/market.service";
 import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
 import { listingDisplayResolver } from "../../domains/listing/listing.display";
@@ -140,8 +141,12 @@ export const ListingDetailPage: React.FC = () => {
   const taxonomyNode = useMemo(() => {
     if (!listing) return null;
     return (
+      TaxonomyMigration.resolveCanonicalNode(listing.subCategorySlug) ||
+      TaxonomyMigration.resolveCanonicalNode(listing.categorySlug) ||
       taxonomyService.getNode(listing.subCategorySlug) ||
-      taxonomyService.getNode(listing.categorySlug)
+      taxonomyService.getNodeBySlug(listing.subCategorySlug) ||
+      taxonomyService.getNode(listing.categorySlug) ||
+      taxonomyService.getNodeBySlug(listing.categorySlug)
     );
   }, [listing]);
 
@@ -166,7 +171,8 @@ export const ListingDetailPage: React.FC = () => {
         defaultModes: ["CONTACT_ONLY" as const],
       };
     return transactionCapabilitiesService.resolve({
-      taxonomyNodeId: listing.subCategorySlug || listing.categorySlug,
+      taxonomyNodeId:
+        taxonomyNode?.id || listing.subCategorySlug || listing.categorySlug,
       marketCode: listing.marketCode,
       sellerType: listing.sellerType,
       sellerIsVerified: listing.sellerIsVerified,

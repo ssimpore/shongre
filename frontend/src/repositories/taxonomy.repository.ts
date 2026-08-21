@@ -140,7 +140,9 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       TaxonomyAttribute
     > | null>(STORAGE_KEYS.ATTRIBUTES, null);
     if (storedAttributes && Object.keys(storedAttributes).length > 0) {
-      this.attributes = storedAttributes;
+      // Preserve admin edits while ensuring a newly shipped registry field is
+      // available to persisted demo/admin state immediately.
+      this.attributes = { ...ATTRIBUTE_REGISTRY, ...storedAttributes };
     } else {
       this.attributes = JSON.parse(JSON.stringify(ATTRIBUTE_REGISTRY));
       this.persistAttributes();
@@ -369,7 +371,13 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       conditionScheme:
         input.conditionScheme ||
         (parent?.conditionScheme ?? "consumer_product"),
+      listingFamily: input.listingFamily || parent?.listingFamily || "physical_product",
+      supportedIntents: input.supportedIntents,
       attributeIds: input.attributeIds || [],
+      sellerEligibility: input.sellerEligibility || parent?.sellerEligibility,
+      presentation: input.presentation,
+      mediaGuidance: input.mediaGuidance,
+      taxonomyVersion: 2,
       capabilities:
         input.capabilities ||
         (parent?.capabilities ?? {
@@ -471,6 +479,10 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     if (updates.sortOrder !== undefined) node.sortOrder = updates.sortOrder;
     if (updates.conditionScheme !== undefined)
       node.conditionScheme = updates.conditionScheme;
+    if (updates.listingFamily !== undefined)
+      node.listingFamily = updates.listingFamily;
+    if (updates.supportedIntents !== undefined)
+      node.supportedIntents = updates.supportedIntents;
     if (updates.attributeIds !== undefined)
       node.attributeIds = updates.attributeIds;
     if (updates.summaryAttributeIds !== undefined)
@@ -486,6 +498,10 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     if (updates.synonyms !== undefined) node.synonyms = updates.synonyms;
     if (updates.replacedById !== undefined)
       node.replacedById = updates.replacedById;
+    if (updates.presentation !== undefined)
+      node.presentation = updates.presentation;
+    if (updates.mediaGuidance !== undefined)
+      node.mediaGuidance = updates.mediaGuidance;
 
     node.updatedAt = new Date().toISOString();
 
@@ -842,6 +858,15 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     attr: TaxonomyAttribute,
     actor?: { id: string; name: string; role: string },
   ): Promise<TaxonomyAttribute> {
+    if (!attr.id.trim() || !attr.code.trim() || !attr.label.trim()) {
+      throw new Error("Un attribut doit avoir un ID, un code et un libellé.");
+    }
+    if (
+      ["select", "multi_select"].includes(attr.dataType) &&
+      (!attr.options || attr.options.length === 0)
+    ) {
+      throw new Error(`L'attribut "${attr.label}" doit définir ses options.`);
+    }
     const isNew = !this.attributes[attr.id];
     this.attributes[attr.id] = { ...attr };
     this.persistAttributes();
@@ -863,6 +888,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
   ): Promise<void> {
     const attr = this.attributes[attrId];
     if (!attr) return;
+    attr.deprecated = true;
+    this.persistAttributes();
     this.logAudit(
       attrId,
       attr.label,
@@ -1037,6 +1064,41 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
         });
       }
 
+      const presentationAttributeIds = [
+        ...(node.summaryAttributeIds || []),
+        ...(node.filterFacetIds || []),
+        ...(node.presentation?.cardAttributeIds || []),
+        ...(node.presentation?.comparisonAttributeIds || []),
+      ];
+      presentationAttributeIds.forEach((attrId) => {
+        if (!this.attributes[attrId]) {
+          issues.push({
+            id: `val_presentation_attr_${node.id}_${attrId}`,
+            nodeId: node.id,
+            nodeLabel: node.name,
+            severity: "error",
+            code: "UNKNOWN_PRESENTATION_ATTRIBUTE",
+            message: `La présentation référence l'attribut inconnu "${attrId}".`,
+            field: "presentation",
+            remediation: "Ajoutez l'attribut au registre ou retirez sa référence.",
+          });
+        }
+      });
+      (node.filterFacetIds || []).forEach((attrId) => {
+        if (this.attributes[attrId] && !this.attributes[attrId].filterable) {
+          issues.push({
+            id: `val_facet_${node.id}_${attrId}`,
+            nodeId: node.id,
+            nodeLabel: node.name,
+            severity: "error",
+            code: "NON_FILTERABLE_FACET",
+            message: `L'attribut "${attrId}" n'est pas déclaré filtrable.`,
+            field: "filterFacetIds",
+            remediation: "Activez le filtrage sur l'attribut ou retirez-le des facettes.",
+          });
+        }
+      });
+
       // 5. Capability sanity checks
       if (node.capabilities) {
         const modes = node.capabilities.fulfillmentModes || [];
@@ -1116,6 +1178,36 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           field: "shortLabel",
           remediation:
             "Ajoutez un nom court pour améliorer le rendu sur mobile et filtres compacts.",
+        });
+      }
+    });
+
+    const seenAttributeCodes = new Set<string>();
+    Object.values(this.attributes).forEach((attribute) => {
+      if (seenAttributeCodes.has(attribute.code)) {
+        issues.push({
+          id: `val_attr_code_${attribute.id}`,
+          nodeLabel: attribute.label,
+          severity: "error",
+          code: "DUPLICATE_ATTRIBUTE_CODE",
+          message: `Le code d'attribut "${attribute.code}" est dupliqué.`,
+          field: "code",
+          remediation: "Conservez un code unique et stable pour chaque attribut.",
+        });
+      }
+      seenAttributeCodes.add(attribute.code);
+      if (
+        ["select", "multi_select"].includes(attribute.dataType) &&
+        (!attribute.options || attribute.options.length === 0)
+      ) {
+        issues.push({
+          id: `val_attr_options_${attribute.id}`,
+          nodeLabel: attribute.label,
+          severity: "error",
+          code: "MISSING_ATTRIBUTE_OPTIONS",
+          message: `L'attribut "${attribute.label}" n'a pas d'options déclarées.`,
+          field: "options",
+          remediation: "Ajoutez les options localisées ou utilisez un type texte.",
         });
       }
     });

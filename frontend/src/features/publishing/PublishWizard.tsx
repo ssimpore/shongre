@@ -818,6 +818,11 @@ export const PublishWizard: React.FC = () => {
                   if (!field.isVisiblyMet) return null;
                   const attr = field.attribute;
                   const value = draft.attributes?.[attr.code] ?? "";
+                  const hint =
+                    attr.helpText ||
+                    (field.fieldRole === "recommended"
+                      ? "Champ recommandé"
+                      : undefined);
 
                   if (attr.dataType === "select") {
                     return (
@@ -825,7 +830,7 @@ export const PublishWizard: React.FC = () => {
                         key={attr.id}
                         label={attr.label}
                         required={field.isRequired}
-                        hint={attr.helpText}
+                        hint={hint}
                       >
                         <select
                           value={value}
@@ -849,13 +854,47 @@ export const PublishWizard: React.FC = () => {
                     );
                   }
 
-                  if (attr.dataType === "number" || attr.dataType === "year") {
+                  if (attr.dataType === "multi_select") {
+                    const selectedValues = Array.isArray(value) ? value : [];
+                    return (
+                      <FormField
+                        key={attr.id}
+                        label={attr.label}
+                        required={field.isRequired}
+                        hint={hint}
+                      >
+                        <div className="grid grid-cols-1 gap-2 rounded-control border border-border-base bg-bg-base p-3 sm:grid-cols-2">
+                          {(attr.options || []).map((option) => (
+                            <Checkbox
+                              key={option.value}
+                              label={option.label}
+                              checked={selectedValues.includes(option.value)}
+                              onChange={(event) => {
+                                const next = event.target.checked
+                                  ? [...selectedValues, option.value]
+                                  : selectedValues.filter(
+                                      (selected) => selected !== option.value,
+                                    );
+                                updateAttribute(attr.code, next);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </FormField>
+                    );
+                  }
+
+                  if (
+                    attr.dataType === "number" ||
+                    attr.dataType === "year" ||
+                    attr.dataType === "money"
+                  ) {
                     return (
                       <FormField
                         key={attr.id}
                         label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
                         required={field.isRequired}
-                        hint={attr.helpText}
+                        hint={hint}
                       >
                         <Input
                           type="number"
@@ -866,6 +905,7 @@ export const PublishWizard: React.FC = () => {
                           value={value}
                           min={attr.validation?.min}
                           max={attr.validation?.max}
+                          step={attr.validation?.step || (attr.dataType === "year" ? 1 : undefined)}
                           onChange={(e) =>
                             updateAttribute(
                               attr.code,
@@ -878,12 +918,51 @@ export const PublishWizard: React.FC = () => {
                     );
                   }
 
+                  if (attr.dataType === "range") {
+                    const rangeValue =
+                      value && typeof value === "object" && !Array.isArray(value)
+                        ? value
+                        : { min: "", max: "" };
+                    return (
+                      <FormField
+                        key={attr.id}
+                        label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
+                        required={field.isRequired}
+                        hint={hint}
+                      >
+                        <div className="grid grid-cols-2 gap-2">
+                          {(["min", "max"] as const).map((bound) => (
+                            <Input
+                              key={bound}
+                              type="number"
+                              aria-label={bound === "min" ? "Minimum" : "Maximum"}
+                              placeholder={bound === "min" ? "Min" : "Max"}
+                              value={rangeValue[bound] ?? ""}
+                              min={attr.validation?.min}
+                              max={attr.validation?.max}
+                              step={attr.validation?.step}
+                              onChange={(event) =>
+                                updateAttribute(attr.code, {
+                                  ...rangeValue,
+                                  [bound]: event.target.value
+                                    ? Number(event.target.value)
+                                    : "",
+                                })
+                              }
+                              className="h-control-md text-xs"
+                            />
+                          ))}
+                        </div>
+                      </FormField>
+                    );
+                  }
+
                   if (attr.dataType === "boolean") {
                     return (
                       <div key={attr.id} className="flex items-center pt-6">
                         <Checkbox
-                          label={attr.label}
-                          description={attr.helpText}
+                        label={attr.label}
+                        description={attr.helpText}
                           checked={!!value}
                           onChange={(e) =>
                             updateAttribute(attr.code, e.target.checked)
@@ -893,12 +972,53 @@ export const PublishWizard: React.FC = () => {
                     );
                   }
 
+                  if (attr.dataType === "long_text") {
+                    return (
+                      <FormField
+                        key={attr.id}
+                        label={attr.label}
+                        required={field.isRequired}
+                        hint={hint}
+                      >
+                        <Textarea
+                          value={value}
+                          maxLength={attr.validation?.maxLength}
+                          placeholder={attr.validation?.placeholder || ""}
+                          onChange={(event) =>
+                            updateAttribute(attr.code, event.target.value)
+                          }
+                          className="min-h-24 text-xs"
+                        />
+                      </FormField>
+                    );
+                  }
+
+                  if (attr.dataType === "date" || attr.dataType === "date_time") {
+                    return (
+                      <FormField
+                        key={attr.id}
+                        label={attr.label}
+                        required={field.isRequired}
+                        hint={hint}
+                      >
+                        <Input
+                          type={attr.dataType === "date" ? "date" : "datetime-local"}
+                          value={value}
+                          onChange={(event) =>
+                            updateAttribute(attr.code, event.target.value)
+                          }
+                          className="h-control-md text-xs"
+                        />
+                      </FormField>
+                    );
+                  }
+
                   return (
                     <FormField
                       key={attr.id}
                       label={attr.label}
                       required={field.isRequired}
-                      hint={attr.helpText}
+                      hint={hint}
                     >
                       <Input
                         type="text"

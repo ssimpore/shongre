@@ -213,12 +213,10 @@ export const themeSpacing = {
   /* Fixed width of a card in a horizontal rail. Compact on purpose: a rail is
      scrolled, so showing more inventory per screen is the point. */
   "listing-card": "11.75rem",
-  /* Minimum column for the `auto-fill` listing *grids*, which is a different
-     problem: at the rail width a 1280px window produced six 188px columns and
-     every card truncated its category, city, seller and condition — 27 clipped
-     fields on one screen. 15rem gives four to five columns, which is what the
-     grid already looked like with the filter sidebar open. */
-  "listing-grid-min": "15rem",
+  /* Standard vertical footprint for grid and rail cards. Keeping this in the
+     token sheet prevents content length from changing the rhythm between
+     listing sections while the list variant remains content-driven. */
+  "listing-card-height": "22.75rem",
   "collection-card": "9.6875rem",
   "collection-card-wide": "11.875rem",
   "recent-search-card": "17rem",

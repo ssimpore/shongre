@@ -2,6 +2,7 @@ import React from "react";
 import { MapPin, Package, Truck, Store } from "lucide-react";
 import { Listing } from "../../../types";
 import { fulfillmentResolver } from "../../../domains/fulfillment/fulfillment.resolver";
+import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface ListingFulfillmentSummaryProps {
@@ -14,7 +15,10 @@ export const ListingFulfillmentSummary: React.FC<
 > = ({ listing, className = "" }) => {
   const { t } = useTranslation();
   const caps = fulfillmentResolver.resolveCapabilities({
-    taxonomyNodeId: listing.subCategorySlug || listing.categorySlug,
+    taxonomyNodeId:
+      TaxonomyMigration.resolveCanonicalNode(
+        listing.subCategorySlug || listing.categorySlug,
+      )?.id || listing.subCategorySlug || listing.categorySlug,
     sellerType: listing.sellerType,
     price: listing.price,
   });

@@ -33,7 +33,10 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 export const ListingCardSkeleton: React.FC<{ className?: string }> = ({
   className,
 }) => (
-  <div aria-hidden="true" className={cn("space-y-2", className)}>
+  <div
+    aria-hidden="true"
+    className={cn("listing-card-skeleton h-listing-card-height space-y-2", className)}
+  >
     <Skeleton shape="media" className="w-full" />
     <Skeleton shape="line" className="w-3/4" />
     <Skeleton shape="line" className="h-5 w-1/3" />
@@ -48,7 +51,7 @@ export const SearchResultsSkeleton: React.FC<{
   <div
     aria-hidden="true"
     className={cn(
-      "listing-grid grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))] sm:gap-4",
+      "listing-grid grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))] sm:justify-start sm:gap-4",
       className,
     )}
   >

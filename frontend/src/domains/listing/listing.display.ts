@@ -8,9 +8,9 @@ import { Listing, UserProfile } from "../../types";
 import {
   TaxonomyNode,
   TaxonomyAttribute,
-  ListingFamily,
 } from "../taxonomy/taxonomy.types";
 import { taxonomyService } from "../taxonomy/taxonomy.service";
+import { TaxonomyMigration } from "../taxonomy/taxonomy.migration";
 import { ATTRIBUTE_REGISTRY } from "../taxonomy/attribute.registry";
 import { CONDITION_SCHEMES } from "../taxonomy/condition.schemes";
 import { CONDITION_OPTIONS } from "../../configuration/market.config";
@@ -52,105 +52,35 @@ export class ListingDisplayResolver {
     const attrs = listing.attributes || {};
     const effectiveNode =
       node ||
+      TaxonomyMigration.resolveCanonicalNode(listing.subCategorySlug) ||
+      TaxonomyMigration.resolveCanonicalNode(listing.categorySlug) ||
       taxonomyService.getNode(listing.subCategorySlug) ||
-      taxonomyService.getNode(listing.categorySlug);
-    const family: ListingFamily = effectiveNode
-      ? taxonomyService.getFamily(effectiveNode.id)
-      : "physical_product";
+      taxonomyService.getNodeBySlug(listing.subCategorySlug) ||
+      taxonomyService.getNode(listing.categorySlug) ||
+      taxonomyService.getNodeBySlug(listing.categorySlug);
 
-    // 1. Domain-specific prioritizations
-    if (family === "vehicle") {
-      if (attrs.year) summary.push(`${attrs.year}`);
-      if (attrs.mileage !== undefined) {
-        const formattedKm = String(attrs.mileage).replace(
-          /\B(?=(\d{3})+(?!\d))/g,
-          " ",
-        );
-        summary.push(`${formattedKm} km`);
+    // Card priorities are taxonomy metadata. New branches therefore work
+    // without another domain-specific conditional in the UI.
+    const summaryIds = Array.from(
+      new Set([
+        ...(effectiveNode?.presentation?.cardAttributeIds || []),
+        ...(effectiveNode?.summaryAttributeIds || []),
+        ...(effectiveNode?.filterFacetIds || []),
+        ...(effectiveNode?.attributeIds || []),
+      ]),
+    );
+    summaryIds.forEach((attrId) => {
+      const attrDef = ATTRIBUTE_REGISTRY[attrId];
+      const code = attrDef?.code || attrId.split(".").pop() || attrId;
+      const val = attrs[code] ?? attrs[attrId];
+      if (val !== undefined && val !== null && val !== "") {
+        summary.push(this.formatAttributeValue(attrDef, val));
       }
-      if (attrs.fuel) summary.push(this.formatOptionLabel("fuel", attrs.fuel));
-      if (attrs.gearbox)
-        summary.push(this.formatOptionLabel("gearbox", attrs.gearbox));
-      if (attrs.critair) summary.push(`Crit'Air ${attrs.critair}`);
-    } else if (family === "real_estate") {
-      if (attrs.property_type)
-        summary.push(
-          this.formatOptionLabel("property_type", attrs.property_type),
-        );
-      if (attrs.surface !== undefined) summary.push(`${attrs.surface} m²`);
-      if (attrs.rooms !== undefined)
-        summary.push(`${attrs.rooms} pièce${attrs.rooms > 1 ? "s" : ""}`);
-      if (attrs.bedrooms !== undefined) summary.push(`${attrs.bedrooms} ch.`);
-      if (attrs.energy_class)
-        summary.push(`DPE ${String(attrs.energy_class).toUpperCase()}`);
-    } else if (family === "service") {
-      if (attrs.service_type)
-        summary.push(
-          this.formatOptionLabel("service_type", attrs.service_type),
-        );
-      if (attrs.location_type)
-        summary.push(
-          this.formatOptionLabel("location_type", attrs.location_type),
-        );
-      if (attrs.experience_years)
-        summary.push(`${attrs.experience_years} ans d'exp.`);
-    } else if (family === "job") {
-      if (attrs.contract_type)
-        summary.push(
-          this.formatOptionLabel("contract_type", attrs.contract_type),
-        );
-      if (attrs.work_rhythm)
-        summary.push(this.formatOptionLabel("work_rhythm", attrs.work_rhythm));
-      if (attrs.remote_policy)
-        summary.push(
-          this.formatOptionLabel("remote_policy", attrs.remote_policy),
-        );
-    } else {
-      // Physical Products (Smartphones, Furniture, Fashion, Appliances)
-      if (attrs.storage_capacity) {
-        const optLabel = this.formatOptionLabel(
-          "storage_capacity",
-          attrs.storage_capacity,
-        );
-        summary.push(
-          optLabel.includes("Go") || optLabel.includes("To")
-            ? optLabel
-            : `${optLabel} Go`,
-        );
-      }
-      if (attrs.material)
-        summary.push(this.formatOptionLabel("material", attrs.material));
-      if (attrs.size) summary.push(`Taille ${attrs.size}`);
-      if (attrs.dimensions) summary.push(String(attrs.dimensions));
-      if (attrs.color)
-        summary.push(this.formatOptionLabel("color", attrs.color));
-    }
+    });
 
-    // 2. Condition fallback if not yet full and condition exists
-    if (
-      listing.condition &&
-      family === "physical_product" &&
-      summary.length < 3
-    ) {
-      const conditionLabel = this.resolveConditionLabel(
-        listing.condition,
-        effectiveNode,
-      );
-      if (conditionLabel && !summary.includes(conditionLabel)) {
-        summary.push(conditionLabel);
-      }
-    }
-
-    // 3. Fallback to node's summaryAttributeIds if summary is still empty
-    if (summary.length === 0 && effectiveNode?.summaryAttributeIds) {
-      effectiveNode.summaryAttributeIds.forEach((attrId) => {
-        const attrDef = ATTRIBUTE_REGISTRY[attrId];
-        const code = attrDef ? attrDef.code : attrId.split(".").pop() || attrId;
-        const val = attrs[code] ?? attrs[attrId];
-        if (val !== undefined && val !== null && val !== "") {
-          summary.push(this.formatAttributeValue(attrDef, val));
-        }
-      });
+    if (listing.condition && summary.length < 3) {
+      const conditionLabel = this.resolveConditionLabel(listing.condition, effectiveNode);
+      if (conditionLabel && !summary.includes(conditionLabel)) summary.push(conditionLabel);
     }
 
     return summary.slice(0, 5);
@@ -167,8 +97,12 @@ export class ListingDisplayResolver {
     const attrs = listing.attributes || {};
     const effectiveNode =
       node ||
+      TaxonomyMigration.resolveCanonicalNode(listing.subCategorySlug) ||
+      TaxonomyMigration.resolveCanonicalNode(listing.categorySlug) ||
       taxonomyService.getNode(listing.subCategorySlug) ||
-      taxonomyService.getNode(listing.categorySlug);
+      taxonomyService.getNodeBySlug(listing.subCategorySlug) ||
+      taxonomyService.getNode(listing.categorySlug) ||
+      taxonomyService.getNodeBySlug(listing.categorySlug);
     const groupsMap = new Map<string, FormattedCharacteristicItem[]>();
 
     const getOrCreateGroup = (groupKey: string) => {
@@ -204,6 +138,8 @@ export class ListingDisplayResolver {
           (a) => a.code === key || a.id === key || a.id.endsWith(`.${key}`),
         ) || taxonomyService.getAttribute(key);
 
+      if (attrDef?.privacy === "moderator_only") return;
+
       const groupKey = attrDef?.publicationGroup || this.inferGroupKey(key);
       const label = attrDef?.label || this.formatFallbackLabel(key);
       const formattedValue = this.formatAttributeValue(attrDef, rawValue);
@@ -231,18 +167,23 @@ export class ListingDisplayResolver {
       employment: "Conditions du Poste",
       compliance: "Conformité & Normes",
       logistics: "Logistique & Conditionnement",
+      legal: "Conformité & Informations légales",
     };
 
     const result: GroupedCharacteristics[] = [];
-    const orderedGroupKeys = [
+    const configuredGroupOrder = effectiveNode?.presentation?.detailGroupOrder || [
       "general",
-      "performance",
-      "engine",
       "specifications",
+      "dimensions",
+      "performance",
+      "legal",
+    ];
+    const orderedGroupKeys = [
+      ...configuredGroupOrder,
+      "engine",
       "technical",
       "property",
       "energy",
-      "dimensions",
       "employment",
       "compliance",
       "logistics",
@@ -334,16 +275,40 @@ export class ListingDisplayResolver {
       return val ? "Oui" : "Non";
     }
 
+    if (Array.isArray(val) && attrDef?.options) {
+      return val
+        .map((entry) =>
+          attrDef.options?.find(
+            (option) =>
+              option.value === entry ||
+              String(option.value).toLowerCase() === String(entry).toLowerCase(),
+          )?.label || String(entry),
+        )
+        .join(", ");
+    }
+
     if (attrDef?.options) {
+      const displayOptionLabel = Object.entries(
+        attrDef.displayOptionLabels || {},
+      ).find(
+        ([key]) => key.toLowerCase() === String(val).toLowerCase(),
+      )?.[1];
+      if (displayOptionLabel) {
+        return `${attrDef.displayPrefix || ""}${displayOptionLabel}`;
+      }
       const opt = attrDef.options.find(
         (o) =>
           o.value === val ||
           String(o.value).toLowerCase() === String(val).toLowerCase(),
       );
-      if (opt) return opt.label;
+      if (opt) return `${attrDef.displayPrefix || ""}${opt.label}`;
     }
 
     if (typeof val === "number") {
+      if (attrDef?.dataType === "year") return String(val);
+      if (attrDef?.code === "rooms") {
+        return `${val} pièce${val > 1 ? "s" : ""}`;
+      }
       const formattedNum = val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
       return attrDef?.unit ? `${formattedNum} ${attrDef.unit}` : formattedNum;
     }
@@ -357,7 +322,8 @@ export class ListingDisplayResolver {
       if (label !== val) return label;
     }
 
-    return this.formatOptionLabel(attrDef?.id || "", val);
+    const formatted = this.formatOptionLabel(attrDef?.id || "", val);
+    return attrDef?.displayPrefix ? `${attrDef.displayPrefix}${formatted}` : formatted;
   }
 
   private formatOptionLabel(attributeId: string, value: any): string {

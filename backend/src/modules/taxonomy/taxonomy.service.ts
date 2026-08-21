@@ -35,9 +35,13 @@ export class TaxonomyService {
 
   async resolveSearchFilters(nodeId?: string): Promise<Array<{ attribute: TaxonomyAttribute; facetType: string }>> {
     const attrs = await this.getAttributesForCategory(nodeId || 'root');
-    return attrs.map((attribute) => ({
+    return attrs.filter((attribute) => attribute.filterable !== false).map((attribute) => ({
       attribute,
-      facetType: attribute.type === 'select' ? 'multi_select' : attribute.type === 'number' ? 'range' : 'keyword',
+      facetType: attribute.dataType === 'select' || attribute.dataType === 'multi_select'
+        ? 'multi_select'
+        : attribute.dataType === 'number' || attribute.dataType === 'year' || attribute.dataType === 'range'
+          ? 'range'
+          : attribute.dataType === 'boolean' ? 'boolean' : 'keyword',
     }));
   }
 }

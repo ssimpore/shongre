@@ -469,11 +469,14 @@ export interface SubCategory {
 export type AttributeInputType =
   | "select"
   | "text"
+  | "textarea"
+  | "multi_select"
   | "number"
   | "radio"
   | "checkbox_group"
   | "boolean"
-  | "year";
+  | "year"
+  | "date";
 
 export interface CategoryAttributeSchema {
   key: string;
@@ -485,6 +488,7 @@ export interface CategoryAttributeSchema {
   unit?: string;
   min?: number;
   max?: number;
+  step?: number;
   dependsOn?: { key: string; value: string };
   showInFilters: boolean;
   showInCardPreview?: boolean;
@@ -514,7 +518,14 @@ export interface SearchFilters {
   onlinePaymentAvailable?: boolean;
   onlyDeals?: boolean;
   publishedToday?: boolean;
-  attributes?: Record<string, string | string[] | number | boolean>;
+  attributes?: Record<
+    string,
+    | string
+    | string[]
+    | number
+    | boolean
+    | { min?: number; max?: number }
+  >;
   sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
   marketCode?: string; // Scopes search to active market (e.g. 'FR', 'BE', 'ES', 'CH')
   page?: number;

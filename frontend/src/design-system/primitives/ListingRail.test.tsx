@@ -16,7 +16,7 @@ describe("listing layout primitives", () => {
     expect(html).toContain("listing-rail-track");
   });
 
-  it("uses the shared tokenized grid minimum", () => {
+  it("uses the shared listing-card width token for desktop grid columns", () => {
     const html = renderToStaticMarkup(
       <ListingGrid>
         <div>card</div>
@@ -24,7 +24,7 @@ describe("listing layout primitives", () => {
     );
 
     expect(html).toContain(
-      "sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))]",
+      "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))]",
     );
   });
 });

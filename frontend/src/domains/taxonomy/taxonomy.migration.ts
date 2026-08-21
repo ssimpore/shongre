@@ -17,6 +17,7 @@ export const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
   locations: "real_estate.rentals",
   multimedia: "electronics",
   smartphones: "electronics.smartphones",
+  "electronics.telephony.smartphones": "electronics.smartphones",
   informatique: "electronics.computers",
   "consoles-jeux": "electronics.gaming",
   "maison-deco": "home_garden",

@@ -3,6 +3,8 @@ import { AppError } from '../../shared/errors/app-error.js';
 import { IListingRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { IAIProvider, providers } from '../../integrations/providers/index.js';
 import { logger } from '../../infrastructure/logging/logger.js';
+import { randomUUID } from 'node:crypto';
+import { taxonomyValidationService, TaxonomyValidationService } from '../taxonomy/taxonomy.validation.js';
 
 export interface PublicationDraftInput {
   title?: string;
@@ -24,7 +26,8 @@ export interface PublicationDraftInput {
 export class ListingsService {
   constructor(
     private listingRepo: IListingRepository = repositories.listings,
-    private ai: IAIProvider = providers.ai
+    private ai: IAIProvider = providers.ai,
+    private taxonomyValidation: TaxonomyValidationService = taxonomyValidationService,
   ) {}
 
   async getListings(filter?: SearchFilters): Promise<{ listings: Listing[]; total: number }> {
@@ -49,10 +52,35 @@ export class ListingsService {
   }
 
   async publishListing(draft: PublicationDraftInput, sellerId: string): Promise<Listing> {
-    if (!draft.title || !draft.price || !draft.categoryId) {
+    if (!draft.title || draft.price === undefined || !draft.categoryId) {
       throw new AppError({
         code: 'VALIDATION_ERROR',
         message: 'Titre, prix et catégorie obligatoires pour publier une annonce.',
+      });
+    }
+
+    if (!Number.isFinite(Number(draft.price)) || Number(draft.price) < 0) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'Le prix doit être un montant positif ou nul.',
+      });
+    }
+
+    const taxonomyValidation = await this.taxonomyValidation.validateListingAttributes(
+      draft.categoryId,
+      {
+        ...(draft.attributes || {}),
+        // `condition` was historically a top-level publication field. Feed it
+        // into the canonical validator without forcing legacy adapters to
+        // duplicate it inside their JSON attributes payload.
+        ...(draft.condition ? { condition: draft.condition } : {}),
+      },
+    );
+    if (!taxonomyValidation.isValid) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: taxonomyValidation.issues[0]?.message || 'Les caractéristiques de l’annonce sont invalides.',
+        details: { issues: taxonomyValidation.issues },
       });
     }
 
@@ -62,7 +90,7 @@ export class ListingsService {
       draft.price
     );
 
-    const newId = `list_${Math.random().toString(36).substring(2, 12)}`;
+    const newId = `list_${randomUUID()}`;
 
     const listing: Listing = {
       id: newId,

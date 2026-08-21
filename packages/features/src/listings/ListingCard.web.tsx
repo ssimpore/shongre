@@ -170,7 +170,7 @@ export function ListingCard({
       as="article"
       padding="none"
       elevation="xs"
-      className={`group relative overflow-hidden ${horizontal ? "flex min-h-32" : "flex h-full flex-col"} ${className ?? ""}`}
+      className={`group relative overflow-hidden ${horizontal ? "listing-card-list flex min-h-32" : "listing-card-standard flex flex-col"} ${className ?? ""}`}
     >
       {renderLink ? (
         renderLink({

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { taxonomyService } from "./taxonomy.service";
 import { TaxonomyMigration } from "./taxonomy.migration";
+import { publicationResolver } from "../publication/publication.resolver";
 
 describe("Taxonomy Service & Integrity", () => {
   it("passes full structural integrity check without orphans or cycle errors", () => {
@@ -67,6 +68,36 @@ describe("Taxonomy Service & Integrity", () => {
         (s) => s.id === "vehicle.year" || s.id === "vehicle.mileage",
       ),
     ).toBe(true);
+  });
+
+  it("provides a non-empty, searchable schema for every publishable leaf", () => {
+    const leaves = taxonomyService.getPublishableLeaves();
+    expect(leaves.length).toBeGreaterThanOrEqual(40);
+
+    leaves.forEach((leaf) => {
+      const schema = taxonomyService.resolvePublicationSchema(leaf.id);
+      expect(schema?.attributes.length, leaf.id).toBeGreaterThan(0);
+      expect(schema?.mediaGuidance?.minimumPhotoCount, leaf.id).toBeGreaterThan(0);
+      expect(
+        taxonomyService.resolveSearchFilters(leaf.id).every((facet) => facet.attribute.filterable),
+        leaf.id,
+      ).toBe(true);
+    });
+  });
+
+  it("resolves dependent publication fields and nested descendants from metadata", () => {
+    const descendants = taxonomyService.getDescendants("vehicles");
+    expect(descendants.some((node) => node.id === "vehicles.cars.citadines")).toBe(true);
+
+    const electricSchema = publicationResolver.resolve({
+      taxonomyNodeId: "vehicles.cars",
+      currentValues: { fuel: "electric" },
+    });
+    const connector = electricSchema?.fields.find(
+      (field) => field.attribute.id === "vehicle.charging_connector",
+    );
+    expect(connector?.isVisiblyMet).toBe(true);
+    expect(connector?.fieldRole).toBe("optional");
   });
 
   it("migrates legacy category slugs cleanly", () => {

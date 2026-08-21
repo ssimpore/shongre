@@ -23,6 +23,7 @@ export interface ResolvedPublicationField {
   isVisiblyMet: boolean;
   isRequired: boolean;
   isDisabled: boolean;
+  fieldRole: NonNullable<TaxonomyAttribute["fieldRole"]>;
 }
 
 export interface ResolvedPublicationEngineSchema {
@@ -45,6 +46,8 @@ export interface ResolvedPublicationEngineSchema {
   };
   supportedPriceModels: PriceModel[];
   defaultPriceModel: PriceModel;
+  presentation: TaxonomyNode["presentation"];
+  mediaGuidance: TaxonomyNode["mediaGuidance"];
 }
 
 export interface ResolvePublicationParams {
@@ -194,6 +197,7 @@ export class PublicationResolver {
         isVisiblyMet,
         isRequired: isVisiblyMet ? isRequired : false,
         isDisabled,
+        fieldRole: attr.fieldRole || (isRequired ? "required" : "optional"),
       };
     });
 
@@ -268,6 +272,8 @@ export class PublicationResolver {
       currency,
       supportedPriceModels,
       defaultPriceModel,
+      presentation: node.presentation,
+      mediaGuidance: node.mediaGuidance,
     };
   }
 }

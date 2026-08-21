@@ -19,7 +19,7 @@ import { themeColors } from "@shongre/design-tokens";
 export { ATTRIBUTE_REGISTRY } from "./attribute.registry";
 export { CONDITION_SCHEMES } from "./condition.schemes";
 
-export const CANONICAL_TAXONOMY: TaxonomyNode[] = [
+const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
   // =========================================================================
   // 1. VÉHICULES & MOBILITÉ
   // =========================================================================
@@ -1723,6 +1723,229 @@ export const CANONICAL_TAXONOMY: TaxonomyNode[] = [
 ];
 
 /**
+ * Metadata additions for branches that historically relied on a generic
+ * parent schema. Keeping this as a data enrichment pass makes the hierarchy
+ * above easy to audit while guaranteeing every node uses the same resolver.
+ */
+const TAXONOMY_DOMAIN_ATTRIBUTES: Record<string, string[]> = {
+  vehicles: [
+    "vehicle.registration_date",
+    "vehicle.engine_displacement",
+    "vehicle.service_history",
+    "vehicle.owners_count",
+    "vehicle.technical_inspection_date",
+    "vehicle.emissions_g_km",
+  ],
+  "vehicles.cars": ["vehicle.charging_connector"],
+  "vehicles.motos": ["vehicle.engine_displacement", "vehicle.service_history"],
+  real_estate: [
+    "real_estate.heating_source",
+    "real_estate.outdoor_space",
+    "real_estate.parking",
+  ],
+  "real_estate.rentals": [
+    "real_estate.monthly_rent",
+    "real_estate.charges_amount",
+    "real_estate.deposit_amount",
+    "real_estate.availability_date",
+  ],
+  jobs: [
+    "job.profession",
+    "job.engagement_duration",
+    "job.start_date",
+    "job.work_schedule",
+    "job.skills",
+  ],
+  services: [
+    "service.subject",
+    "service.audience_level",
+    "service.delivery_mode",
+    "service.travel_radius_km",
+    "service.session_duration_minutes",
+    "service.languages",
+  ],
+  "services.home_repairs": ["service.travel_radius_km", "service.delivery_mode"],
+  "services.tutoring": ["service.subject", "service.audience_level", "service.languages"],
+  "services.events": ["service.delivery_mode", "service.travel_radius_km"],
+  home_garden: [
+    "product.brand",
+    "product.material",
+    "product.condition_cosmetic",
+    "product.condition_functional",
+    "product.dimensions",
+    "product.weight_kg",
+    "product.included_accessories",
+  ],
+  "home_garden.furniture": ["product.dimensions", "product.material"],
+  "home_garden.furniture.sofas": ["product.dimensions", "product.material"],
+  "home_garden.furniture.tables": ["product.dimensions", "product.material"],
+  "home_garden.furniture.beds": ["product.dimensions", "product.material"],
+  electronics: [
+    "tech.generation",
+    "tech.connectivity",
+    "tech.operating_system",
+    "product.condition_cosmetic",
+    "product.condition_functional",
+    "product.purchase_date",
+    "product.invoice_available",
+    "product.defects",
+    "product.included_accessories",
+  ],
+  "electronics.smartphones": ["tech.storage_capacity", "tech.network_lock"],
+  "electronics.computers": ["tech.processor", "tech.ram_memory"],
+  "electronics.gaming": ["tech.connectivity", "product.included_accessories"],
+  fashion: [
+    "fashion.size_system",
+    "fashion.fit",
+    "fashion.authenticity",
+    "product.condition_cosmetic",
+    "product.purchase_date",
+    "product.invoice_available",
+  ],
+  "fashion.women": ["fashion.size_system", "fashion.fit"],
+  "fashion.men": ["fashion.size_system", "fashion.fit"],
+  "fashion.shoes": ["fashion.size_system", "fashion.authenticity"],
+  "fashion.jewelry": ["fashion.authenticity", "product.material"],
+  baby_kids: [
+    "product.condition_cosmetic",
+    "product.condition_functional",
+    "product.dimensions",
+    "product.included_accessories",
+  ],
+  leisure_culture: ["product.condition_cosmetic", "product.condition_functional"],
+  "leisure_culture.instruments": ["leisure.instrument_type", "leisure.level"],
+  "leisure_culture.books": ["product.purchase_date", "product.condition_cosmetic"],
+  sports_outdoors: ["product.condition_cosmetic", "product.dimensions"],
+  "sports_outdoors.fitness": ["sport.activity", "sport.size"],
+  "sports_outdoors.outdoor": ["sport.activity", "sport.size"],
+  pets: ["pets.species", "pets.age_years", "pets.breed", "pets.gender"],
+  "pets.accessories": [
+    "product.brand",
+    "product.material",
+    "product.condition_cosmetic",
+    "product.dimensions",
+  ],
+  professional_btp: [
+    "product.brand",
+    "product.condition_functional",
+    "product.purchase_date",
+    "product.invoice_available",
+  ],
+  "professional_btp.machinery": ["pro.operating_hours", "pro.tonnage_t", "pro.ce_certified"],
+  agriculture: [
+    "product.brand",
+    "product.condition_functional",
+    "agriculture.hours",
+    "agriculture.power",
+  ],
+  "agriculture.tractors": ["agriculture.hours", "agriculture.power"],
+  energy_transition: [
+    "energy.installation_type",
+    "energy.compatibility",
+    "product.condition_functional",
+  ],
+  "energy_transition.solar": ["energy.power_watts", "energy.battery_capacity_kwh"],
+  "energy_transition.ev_charging": ["energy.power_watts", "energy.compatibility"],
+  pro_it_telecom: [
+    "tech.generation",
+    "tech.connectivity",
+    "product.condition_functional",
+    "product.invoice_available",
+  ],
+  deals_donations: [
+    "product.condition_cosmetic",
+    "product.condition_functional",
+    "product.quantity",
+    "product.included_accessories",
+  ],
+};
+
+const TAXONOMY_FAMILIES: Record<string, TaxonomyNode["listingFamily"]> = {
+  vehicles: "vehicle",
+  real_estate: "real_estate",
+  jobs: "job",
+  services: "service",
+  professional_btp: "professional_equipment",
+  agriculture: "professional_equipment",
+  energy_transition: "professional_equipment",
+  pro_it_telecom: "professional_equipment",
+  deals_donations: "physical_product",
+};
+
+function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
+  const children = node.children?.map((child) => enrichTaxonomyNode(child, rootId));
+  const attributeIds = Array.from(
+    new Set([
+      ...(node.attributeIds || []),
+      ...(TAXONOMY_DOMAIN_ATTRIBUTES[rootId] || []),
+      ...(TAXONOMY_DOMAIN_ATTRIBUTES[node.id] || []),
+    ]),
+  );
+  const summaryAttributeIds =
+    node.summaryAttributeIds && node.summaryAttributeIds.length > 0
+      ? node.summaryAttributeIds
+      : attributeIds
+          .map((id) => ATTRIBUTE_REGISTRY[id])
+          .filter((attribute) => attribute && attribute.dataType !== "long_text")
+          .slice(0, 3)
+          .map((attribute) => attribute!.id);
+  const filterFacetIds =
+    node.filterFacetIds && node.filterFacetIds.length > 0
+      ? node.filterFacetIds
+      : attributeIds.filter((id) => ATTRIBUTE_REGISTRY[id]?.filterable);
+  const cardAttributeIds = Array.from(
+    new Set([
+      ...(node.presentation?.cardAttributeIds || []),
+      ...summaryAttributeIds,
+      ...filterFacetIds,
+      ...attributeIds,
+    ]),
+  );
+  const isLeaf = !children || children.length === 0;
+  const listingFamily = node.listingFamily || TAXONOMY_FAMILIES[rootId] || "physical_product";
+
+  return {
+    ...node,
+    children,
+    listingFamily,
+    taxonomyVersion: node.taxonomyVersion || 2,
+    publishable: node.publishable ?? isLeaf,
+    attributeIds,
+    summaryAttributeIds,
+    filterFacetIds,
+    presentation: {
+      ...node.presentation,
+      cardAttributeIds,
+      comparisonAttributeIds:
+        node.presentation?.comparisonAttributeIds ||
+        attributeIds.filter((id) => ATTRIBUTE_REGISTRY[id]?.comparable),
+      detailGroupOrder: node.presentation?.detailGroupOrder || [
+        "general",
+        "specifications",
+        "dimensions",
+        "performance",
+        "legal",
+      ],
+      sortOptions: node.presentation?.sortOptions || [
+        "relevance",
+        "recent",
+        "price_asc",
+        "price_desc",
+      ],
+    },
+    mediaGuidance: node.mediaGuidance || {
+      minimumPhotoCount: listingFamily === "real_estate" ? 5 : 3,
+      maxPhotoCount: 12,
+      recommendedViews: ["front", "detail", "context"],
+    },
+  };
+}
+
+export const CANONICAL_TAXONOMY: TaxonomyNode[] = BASE_CANONICAL_TAXONOMY.map((root) =>
+  enrichTaxonomyNode(root, root.id),
+);
+
+/**
  * Standard condition options for consumer products
  */
 export const CONDITION_OPTIONS = CONDITION_SCHEMES.consumer_product.map(
@@ -1743,9 +1966,13 @@ const buildLegacyAttributes = (
     .map((attr) => {
       let type: AttributeInputType = "text";
       if (attr.dataType === "select") type = "select";
+      else if (attr.dataType === "multi_select") type = "multi_select";
       else if (attr.dataType === "number") type = "number";
+      else if (attr.dataType === "range" || attr.dataType === "money") type = "number";
+      else if (attr.dataType === "long_text") type = "textarea";
       else if (attr.dataType === "boolean") type = "boolean";
       else if (attr.dataType === "year") type = "year";
+      else if (attr.dataType === "date" || attr.dataType === "date_time") type = "date";
 
       return {
         key: attr.code,
@@ -1761,6 +1988,7 @@ const buildLegacyAttributes = (
         unit: attr.unit,
         min: attr.validation?.min,
         max: attr.validation?.max,
+        step: attr.validation?.step,
         placeholder: attr.validation?.placeholder || attr.helpText,
       };
     });
