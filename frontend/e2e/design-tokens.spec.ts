@@ -88,11 +88,113 @@ test.describe('design-token runtime contracts', () => {
     });
 
     expect(contract.tokenWidth).toBe('11.75rem');
-    expect(contract.tokenHeight).toBe('22.75rem');
+    expect(contract.tokenHeight).toBe('25rem');
     expect(contract.gridColumns.split(' ').every((column) => column === '188px')).toBe(true);
     expect(contract.cardWidth).toBeCloseTo(188, 0);
-    expect(contract.cardHeight).toBeCloseTo(364, 0);
-    expect(contract.cardHeightToken).toBe('364px');
+    expect(contract.cardHeight).toBeCloseTo(400, 0);
+    expect(contract.cardHeightToken).toBe('400px');
+  });
+
+  test('keeps list cards uniform and scales their image slot with the viewport', async ({ page }) => {
+    const route = '/recherche?view=list';
+    await page.goto(route, { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    const desktop = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const cards = [...document.querySelectorAll<HTMLElement>('article.listing-card-list')];
+      return {
+        tokenHeight: root.getPropertyValue('--spacing-listing-card-list-height').trim(),
+        tokenImage: root.getPropertyValue('--spacing-listing-card-list-image-lg').trim(),
+        cards: cards.map((card) => ({
+          height: card.getBoundingClientRect().height,
+          imageWidth: card.querySelector<HTMLElement>('.listing-card-list-image')?.getBoundingClientRect().width ?? null,
+        })),
+      };
+    });
+
+    expect(desktop.cards.length, 'no list cards rendered').toBeGreaterThanOrEqual(3);
+    expect(desktop.tokenHeight).toBe('15rem');
+    expect(desktop.tokenImage).toBe('14rem');
+    expect(new Set(desktop.cards.map((card) => card.height)).size).toBe(1);
+    expect(new Set(desktop.cards.map((card) => card.imageWidth)).size).toBe(1);
+    expect(desktop.cards[0]?.height).toBeCloseTo(240, 0);
+    expect(desktop.cards[0]?.imageWidth).toBeCloseTo(224, 0);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(route, { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+    const mobile = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll<HTMLElement>('article.listing-card-list')];
+      return {
+        imageWidths: cards.map(
+          (card) => card.querySelector<HTMLElement>('.listing-card-list-image')?.getBoundingClientRect().width ?? null,
+        ),
+        heights: cards.map((card) => card.getBoundingClientRect().height),
+      };
+    });
+
+    expect(new Set(mobile.heights).size).toBe(1);
+    expect(new Set(mobile.imageWidths).size).toBe(1);
+    expect(mobile.heights[0]).toBeCloseTo(240, 0);
+    expect(mobile.imageWidths[0]).toBeCloseTo(144, 0);
+    await expectNoHorizontalOverflow(page, 'listing list cards');
+  });
+
+  test('keeps listing metadata readable without horizontal truncation', async ({ page }) => {
+    await page.goto('/recherche', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    const metadata = await page.locator('article.min-w-0 .border-t').evaluateAll((rows) =>
+      rows.map((row) => ({
+        text: row.textContent?.trim() ?? '',
+        overflow: row.scrollWidth > row.clientWidth,
+        overflowingDescendants: [...row.querySelectorAll('span')]
+          .filter((span) => span.scrollWidth > span.clientWidth)
+          .map((span) => span.textContent?.trim() ?? ''),
+      })),
+    );
+
+    expect(metadata.length, 'no listing metadata rows rendered').toBeGreaterThan(0);
+    expect(metadata.every((row) => !row.overflow && row.overflowingDescendants.length === 0)).toBe(true);
+    expect(await page.locator('article.min-w-0 .border-t .lucide-calendar').count()).toBeGreaterThan(0);
+  });
+
+  test('fits the active view toggle corner to its segmented container', async ({ page }) => {
+    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    const geometry = await page.evaluate(() => {
+      const group = document.querySelector<HTMLElement>(
+        '[role="group"][aria-label="Mode d\'affichage des annonces"]',
+      );
+      const active = group?.querySelector<HTMLElement>('[aria-pressed="true"]');
+      if (!group || !active) return null;
+
+      const groupStyle = getComputedStyle(group);
+      const activeStyle = getComputedStyle(active);
+      const groupRect = group.getBoundingClientRect();
+      const activeRect = active.getBoundingClientRect();
+
+      return {
+        groupRadius: groupStyle.borderRadius,
+        activeRadius: activeStyle.borderRadius,
+        groupPadding: groupStyle.padding,
+        insetLeft: activeRect.left - groupRect.left,
+        insetTop: activeRect.top - groupRect.top,
+        insetRight: groupRect.right - activeRect.right,
+        insetBottom: groupRect.bottom - activeRect.bottom,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.groupRadius).toBe('10px');
+    expect(geometry?.activeRadius).toBe('8px');
+    expect(geometry?.groupPadding).toBe('2px');
+    expect(geometry?.insetLeft).toBeGreaterThanOrEqual(2);
+    expect(geometry?.insetTop).toBeGreaterThanOrEqual(2);
+    expect(geometry?.insetRight).toBeGreaterThanOrEqual(2);
+    expect(geometry?.insetBottom).toBeGreaterThanOrEqual(2);
   });
 
   test('resolves the representative color, type, size, radius, elevation and motion tokens', async ({ page }) => {

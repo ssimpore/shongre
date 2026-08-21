@@ -1,6 +1,7 @@
 import {
   Bell,
   Camera,
+  Calendar,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +25,7 @@ import { cn } from "../utils/variants";
 export type IconName =
   | "bell"
   | "camera"
+  | "calendar"
   | "check"
   | "chevron-left"
   | "chevron-right"
@@ -58,6 +60,7 @@ const icons: Record<
 > = {
   bell: Bell,
   camera: Camera,
+  calendar: Calendar,
   check: Check,
   "chevron-left": ChevronLeft,
   "chevron-right": ChevronRight,

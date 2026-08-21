@@ -52,7 +52,7 @@ export function ListingCard({
   const linkContent = (
     <>
       <div
-        className={`${horizontal ? "w-32 shrink-0 sm:w-40" : "aspect-[4/3] w-full"} relative overflow-hidden bg-bg-muted`}
+        className={`${horizontal ? "listing-card-list-image" : "aspect-[4/3] w-full"} relative overflow-hidden bg-bg-muted`}
       >
         {image ??
           (listing.imageUrl ? (
@@ -76,7 +76,9 @@ export function ListingCard({
           </span>
         ) : null}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col p-3">
+      <div
+        className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col p-3`}
+      >
         {badges.length ? (
           <div className="mb-2 flex flex-wrap gap-1">
             {badges.map((badge) => (
@@ -147,19 +149,22 @@ export function ListingCard({
         <Text as="div" size="caption" tone="muted" className="mt-1">
           {listing.conditionLabel}
         </Text>
-        <div className="mt-auto flex min-w-0 items-center justify-between gap-2 border-t border-border-subtle pt-2 text-micro text-text-muted">
-          <span className="inline-flex min-w-0 items-center gap-1 truncate">
+        <div className="mt-auto grid min-w-0 gap-1 border-t border-border-subtle pt-2 text-micro text-text-muted">
+          <span className="inline-flex min-w-0 items-center gap-1">
             <SemanticIcon name="map-pin" size="xs" />
-            <span className="truncate">{listing.city}</span>
+            <span className="min-w-0 break-words">{listing.city}</span>
           </span>
-          <span className="inline-flex shrink-0 items-center gap-2">
+          <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
             {listing.deliveryAvailable ? (
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex shrink-0 items-center gap-1">
                 <SemanticIcon name="truck" size="xs" />
                 Livraison
               </span>
             ) : null}
-            <span>{published}</span>
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <SemanticIcon name="calendar" size="xs" />
+              <span className="min-w-0 break-words">{published}</span>
+            </span>
           </span>
         </div>
       </div>

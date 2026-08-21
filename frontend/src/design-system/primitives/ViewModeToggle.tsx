@@ -95,12 +95,12 @@ const ViewModeButton: React.FC<ViewModeButtonProps> = ({
     onClick={onClick}
     className={cn(
       "h-full flex items-center gap-1.5 font-bold cursor-pointer",
-      "rounded-sm px-1.5 sm:px-2 text-micro sm:text-xs",
+      "px-1.5 sm:px-2 text-micro sm:text-xs",
       CONTROL_MOTION_CLASS,
       CONTROL_FOCUS_CLASS,
       active
-        ? "bg-primary text-white shadow-xs"
-        : "bg-transparent text-stone-600 hover:text-stone-900 hover:bg-bg-surface/70",
+        ? "rounded-lg bg-primary text-white shadow-xs"
+        : "rounded-sm bg-transparent text-stone-600 hover:text-stone-900 hover:bg-bg-surface/70",
       size === "md" && "sm:px-2.5",
     )}
   >

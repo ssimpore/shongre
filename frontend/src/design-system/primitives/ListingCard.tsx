@@ -79,9 +79,11 @@ export function ListingCard({
           src={listing.coverImageUrl}
           alt=""
           sizes={
-            variant === "list" || variant === "compact"
-              ? IMAGE_SIZES.compact
-              : IMAGE_SIZES.card
+            variant === "list"
+              ? IMAGE_SIZES.thumbnail
+              : variant === "compact"
+                ? IMAGE_SIZES.compact
+                : IMAGE_SIZES.card
           }
           className="h-full w-full object-cover motion-surface group-hover:scale-105"
         />

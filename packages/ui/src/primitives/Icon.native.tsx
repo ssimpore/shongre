@@ -1,6 +1,7 @@
 import {
   Bell,
   Camera,
+  Calendar,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -42,6 +43,7 @@ const icons: Record<
 > = {
   bell: Bell,
   camera: Camera,
+  calendar: Calendar,
   check: Check,
   "chevron-left": ChevronLeft,
   "chevron-right": ChevronRight,

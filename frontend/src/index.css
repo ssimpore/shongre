@@ -345,14 +345,56 @@
 .z-tooltip { z-index: var(--z-tooltip, 70); }
 .w-listing-card { width: var(--spacing-listing-card, 11.75rem); }
 
-/* Standard listing cards own their vertical footprint. The rule is kept
+/* Standard listing cards own their vertical footprint. The rules are kept
    outside Tailwind's layers so page-level utility classes cannot make one
    section's cards taller or shorter than another. The mobile grid may still
-   narrow the card horizontally; its height stays tokenized. List cards are
-   intentionally excluded because their horizontal layout is content-driven. */
+   narrow the card horizontally; its height stays tokenized. */
 .listing-card-standard,
 .listing-card-skeleton {
-  height: var(--spacing-listing-card-height, 22.75rem);
+  height: var(--spacing-listing-card-height, 25rem);
+}
+
+/* Horizontal results use a fixed shared footprint so cards stay aligned when
+   titles, badges or metadata differ. The image is deliberately a semantic
+   token-backed slot rather than an ad-hoc width utility: it grows on larger
+   screens while preserving enough copy width on phones. */
+.listing-card-list {
+  height: var(--spacing-listing-card-list-height, 15rem);
+  min-height: var(--spacing-listing-card-list-height, 15rem);
+  max-height: var(--spacing-listing-card-list-height, 15rem);
+}
+
+.listing-card-list > a {
+  height: 100%;
+  min-width: 0;
+}
+
+.listing-card-list-image {
+  width: var(--spacing-listing-card-list-image, 9rem);
+  min-width: var(--spacing-listing-card-list-image, 9rem);
+  height: 100%;
+  flex: 0 0 var(--spacing-listing-card-list-image, 9rem);
+}
+
+.listing-card-list-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 40rem) {
+  .listing-card-list-image {
+    width: var(--spacing-listing-card-list-image-md, 12rem);
+    min-width: var(--spacing-listing-card-list-image-md, 12rem);
+    flex-basis: var(--spacing-listing-card-list-image-md, 12rem);
+  }
+}
+
+@media (min-width: 64rem) {
+  .listing-card-list-image {
+    width: var(--spacing-listing-card-list-image-lg, 14rem);
+    min-width: var(--spacing-listing-card-list-image-lg, 14rem);
+    flex-basis: var(--spacing-listing-card-list-image-lg, 14rem);
+  }
 }
 
 @media (min-width: 40rem) {
