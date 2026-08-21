@@ -3,7 +3,7 @@ import { usePersona } from './personas';
 import { waitForStableLayout } from './overflow';
 
 test.describe('account identity badges', () => {
-  test('shows the compact Pro badge and omits redundant verification for administrators', async ({ page }) => {
+  test('keeps the account hero free of a redundant Pro badge for administrators', async ({ page }) => {
     await usePersona(page, 'admin');
     await page.setViewportSize({ width: 1408, height: 795 });
     await page.goto('/compte', { waitUntil: 'networkidle' });
@@ -12,7 +12,7 @@ test.describe('account identity badges', () => {
     const hero = page.locator('[data-account-hero]');
     const sidebar = page.locator('aside');
 
-    await expect(hero.getByText('Pro', { exact: true })).toBeVisible();
+    await expect(hero.getByText('Pro', { exact: true })).toHaveCount(0);
     await expect(hero.getByText('Vérifié', { exact: true })).toHaveCount(0);
     await expect(sidebar.getByText('Pro', { exact: true })).toBeVisible();
     await expect(sidebar.getByText('Compte Pro', { exact: true })).toHaveCount(0);
@@ -25,7 +25,13 @@ test.describe('account identity badges', () => {
     await waitForStableLayout(page);
 
     const hero = page.locator('[data-account-hero]');
-    await expect(hero.getByText('Pro', { exact: true })).toBeVisible();
+    await expect(hero.getByText('Pro', { exact: true })).toHaveCount(0);
     await expect(hero.getByText('Vérifié', { exact: true })).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Niveaux de sécurité', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: '(KYC / KYB / IBAN) →', exact: true }),
+    ).toBeVisible();
   });
 });

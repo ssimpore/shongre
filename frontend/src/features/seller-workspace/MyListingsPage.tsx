@@ -89,6 +89,7 @@ function getPhotoUrl(photo: any): string {
 
 export const MyListingsPage: React.FC = () => {
   const { t } = useTranslation();
+  const publishLabel = t("sellerworkspace.myListingsPage.deposerUneAnnonce");
   usePageMeta({
     title: t("meta.myListings.title"),
     description: t("meta.myListings.description"),
@@ -278,10 +279,15 @@ export const MyListingsPage: React.FC = () => {
 
           <Link
             to={publishCta.to}
-            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-xs"
+            aria-label={publishLabel}
+            title={publishLabel}
+            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm h-control-sm w-control-sm sm:w-auto sm:px-3 rounded-control transition-colors flex items-center justify-center gap-1.5 shadow-xs shrink-0"
           >
-            <PlusCircle className="w-4 h-4" />
-            {t("sellerworkspace.myListingsPage.deposerUneAnnonce")}
+            <PlusCircle
+              className="w-icon-sm h-icon-sm shrink-0"
+              aria-hidden="true"
+            />
+            <span className="sr-only sm:not-sr-only">{publishLabel}</span>
           </Link>
         </div>
       </div>

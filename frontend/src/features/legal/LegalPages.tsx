@@ -1,11 +1,20 @@
 import React from "react";
-import { ShieldCheck, AlertTriangle, Tag } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import {
+  ShieldCheck,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Tag,
+} from "lucide-react";
 import { Breadcrumbs } from "../../design-system";
 import { storageService } from "../../services/storage.service";
+import { Button } from "../../design-system/primitives/Button";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
-import { ListingRail } from "../../design-system/primitives/ListingRail";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+
+const DEALS_PER_PAGE = 8;
 
 export const TermsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -207,6 +216,8 @@ export const HelpSafetyPage: React.FC = () => {
 
 export const DealsPage: React.FC = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const dealsSectionRef = React.useRef<HTMLElement>(null);
   usePageMeta({
     title: "Bons plans & baisses de prix",
     description:
@@ -217,6 +228,37 @@ export const DealsPage: React.FC = () => {
   const deals = storageService
     .getListings()
     .filter((l) => l.originalPrice && l.originalPrice > l.price);
+  const pageCount = Math.max(1, Math.ceil(deals.length / DEALS_PER_PAGE));
+  const requestedPage = Number(searchParams.get("page") ?? "1");
+  const currentPage =
+    Number.isInteger(requestedPage) && requestedPage > 0
+      ? Math.min(requestedPage, pageCount)
+      : 1;
+  const previousPageRef = React.useRef(currentPage);
+  const firstDealIndex = (currentPage - 1) * DEALS_PER_PAGE;
+  const visibleDeals = deals.slice(
+    firstDealIndex,
+    firstDealIndex + DEALS_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    if (previousPageRef.current === currentPage) return;
+
+    previousPageRef.current = currentPage;
+    dealsSectionRef.current?.scrollIntoView({ block: "start" });
+  }, [currentPage]);
+
+  const setPage = (page: number) => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+
+    if (page <= 1) {
+      nextSearchParams.delete("page");
+    } else {
+      nextSearchParams.set("page", String(page));
+    }
+
+    setSearchParams(nextSearchParams);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -241,15 +283,61 @@ export const DealsPage: React.FC = () => {
 
       {/* The card titles are h3, so the results grid needs its own section
           heading rather than jumping straight from the page h1. */}
-      <section aria-labelledby="deals-results-heading">
+      <section
+        ref={dealsSectionRef}
+        aria-labelledby="deals-results-heading"
+        className="scroll-mt-40"
+      >
         <h2 id="deals-results-heading" className="sr-only">
           {t("legal.legalPages.annoncesEnPromotion")}
         </h2>
-        <ListingRail label={t("legal.legalPages.annoncesEnPromotion")}>
-          {deals.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
-        </ListingRail>
+        <div
+          role="region"
+          aria-label={t("legal.legalPages.annoncesEnPromotion")}
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {visibleDeals.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </div>
+
+        {pageCount > 1 && (
+          <nav
+            aria-label={t("legal.legalPages.paginationLabel")}
+            className="mt-6 flex flex-wrap items-center justify-center gap-3"
+          >
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setPage(currentPage - 1)}
+              leftIcon={<ChevronLeft className="h-icon-sm w-icon-sm" />}
+            >
+              {t("legal.legalPages.previousPage")}
+            </Button>
+            <span
+              aria-live="polite"
+              className="min-w-24 text-center text-xs font-semibold text-stone-600"
+            >
+              {t("legal.legalPages.pageStatus", {
+                current: currentPage,
+                total: pageCount,
+              })}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={currentPage === pageCount}
+              onClick={() => setPage(currentPage + 1)}
+              rightIcon={<ChevronRight className="h-icon-sm w-icon-sm" />}
+            >
+              {t("legal.legalPages.nextPage")}
+            </Button>
+          </nav>
+        )}
       </section>
     </div>
   );

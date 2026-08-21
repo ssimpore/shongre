@@ -1930,6 +1930,10 @@ export const messagesEn: MessageCatalogue = {
   "legal.legalPages.articlesDontLePrixA":
     "Items whose price the seller recently lowered",
   "legal.legalPages.annoncesEnPromotion": "Discounted listings",
+  "legal.legalPages.paginationLabel": "Discounted listings pagination",
+  "legal.legalPages.previousPage": "Previous",
+  "legal.legalPages.nextPage": "Next",
+  "legal.legalPages.pageStatus": "Page {current} of {total}",
   "listings.listingDetailPage.explorerLesAnnoncesSimilaires":
     "Browse similar listings",
   "listings.listingDetailPage.retourALAccueil": "Back home",
@@ -2192,9 +2196,9 @@ export const messagesEn: MessageCatalogue = {
     "Manage your listings, sales, messages and favourites in one place.",
   "sellerworkspace.accountOverviewPage.deposerUneAnnonce": "Post a listing",
   "sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu":
-    "Security levels & account verifications",
+    "Security levels",
   "sellerworkspace.accountOverviewPage.centreDeVerificationKycKyb":
-    "Verification centre (KYC / KYB / IBAN) →",
+    "(KYC / KYB / IBAN) →",
   "sellerworkspace.accountOverviewPage.nonVerifie": "Not verified",
   "sellerworkspace.accountOverviewPage.desactive": "Disabled",
   "sellerworkspace.accountOverviewPage.protectionRenforceeGoogleMicrosoftAuth":

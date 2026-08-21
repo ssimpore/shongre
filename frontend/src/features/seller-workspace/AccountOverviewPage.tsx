@@ -202,11 +202,6 @@ export const AccountOverviewPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {isProSeller(currentUser) && (
-                <Badge variant="pro" size="md" icon>
-                  {t("shell.accountLayout.proBadge")}
-                </Badge>
-              )}
               {!isAdmin && showsVerifiedBadge(currentUser) && (
                 <Badge variant="verified" size="md" icon>
                   {t("sellerworkspace.accountOverviewPage.verifie")}

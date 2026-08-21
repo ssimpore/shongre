@@ -2435,6 +2435,10 @@ export const messagesFr = {
   "legal.legalPages.articlesDontLePrixA":
     "Articles dont le prix a été baissé récemment par leur vendeur",
   "legal.legalPages.annoncesEnPromotion": "Annonces en promotion",
+  "legal.legalPages.paginationLabel": "Pagination des annonces en promotion",
+  "legal.legalPages.previousPage": "Précédent",
+  "legal.legalPages.nextPage": "Suivant",
+  "legal.legalPages.pageStatus": "Page {current} sur {total}",
 
   // --- listings.listingDetailPage ---
   "listings.listingDetailPage.explorerLesAnnoncesSimilaires":
@@ -2769,9 +2773,9 @@ export const messagesFr = {
   "sellerworkspace.accountOverviewPage.deposerUneAnnonce":
     "Déposer une annonce",
   "sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu":
-    "Niveaux de sécurité & Vérifications du compte",
+    "Niveaux de sécurité",
   "sellerworkspace.accountOverviewPage.centreDeVerificationKycKyb":
-    "Centre de Vérification (KYC / KYB / IBAN) →",
+    "(KYC / KYB / IBAN) →",
   "sellerworkspace.accountOverviewPage.nonVerifie": "Non vérifié",
   "sellerworkspace.accountOverviewPage.desactive": "Désactivé",
   "sellerworkspace.accountOverviewPage.protectionRenforceeGoogleMicrosoftAuth":
