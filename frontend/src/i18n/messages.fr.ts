@@ -339,6 +339,8 @@ export const messagesFr = {
   "home.trendingNow.kicker": "Ce qui bouge",
   "home.trendingNow.explorerTout": "Tout explorer",
   "home.trendingNow.topics": "Tendances du moment",
+  "home.trendingNow.topicsAnnouncement_one": "{count} tendance mise à jour",
+  "home.trendingNow.topicsAnnouncement_other": "{count} tendances mises à jour",
   "home.trendingNow.voirTout": "Voir tout",
   "home.trendingNow.annonces": "annonces",
   "home.trendingNow.topicPosition": "thématique {position}",
@@ -709,6 +711,8 @@ export const messagesFr = {
     "Lancez une recherche puis cliquez sur 'Sauvegarder la recherche' pour être prévenu des nouvelles annonces.",
 
   // --- search.exploreMapView ---
+  "search.searchPage.etat": "État",
+  "search.resultsHeading": "Résultats de recherche",
   "search.exploreMapView.recadrerSurLesAnnonces": "Recadrer sur les annonces",
   "search.exploreMapView.changerLeStyleDeCarte": "Changer le style de carte",
   "search.exploreMapView.fermerLaPrevisualisation":
@@ -2287,7 +2291,7 @@ export const messagesFr = {
     "Nom et prénom du responsable / contact",
   "auth.registerPages.telephoneCommercial": "Téléphone commercial",
   "auth.registerPages.continuerVersLesInformationsEntreprise":
-    "Continuer vers les informations entreprise",
+    "Continuer",
   "auth.registerPages.adresseDuSiegeSocialMagasin":
     "Adresse du siège social / magasin",
   "auth.registerPages.conditionsGeneralesDeVenteProfessionnelles":

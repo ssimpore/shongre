@@ -10,7 +10,7 @@ import {
   Layers,
 } from "lucide-react";
 import { listingRepository } from "../../repositories/listing.repository";
-import { Listing, SearchFilters } from "../../types";
+import { Listing, SearchFilters, ListingCondition } from "../../types";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import {
   taxonomyService,
@@ -50,6 +50,18 @@ const ExploreMapView = React.lazy(() =>
     default: module.ExploreMapView,
   })),
 );
+
+/* The tiers that actually appear on goods listings. `not_applicable` is left
+   out on purpose: it is a storage value for services, jobs and rentals, and it
+   is no longer shown to buyers anywhere. */
+const CONDITION_FILTER_OPTIONS: { value: ListingCondition; label: string }[] = [
+  { value: "new_with_tag", label: "Neuf avec étiquette" },
+  { value: "new_without_tag", label: "Neuf sans étiquette" },
+  { value: "very_good", label: "Très bon état" },
+  { value: "good", label: "Bon état" },
+  { value: "fair", label: "État correct" },
+  { value: "for_parts", label: "Pour pièces" },
+];
 
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
@@ -128,6 +140,13 @@ export const SearchPage: React.FC = () => {
   const delivery = searchParams.get("delivery") === "true";
   const onlinePayment = searchParams.get("onlinePayment") === "true";
   const onlyDeals = searchParams.get("onlyDeals") === "true";
+  /* Condition is printed on every result card and is a top-three facet for a
+     marketplace, but nothing exposed it — the repository has honoured
+     `filters.conditions` all along. Comma-separated so one param carries a
+     multi-select and the URL stays shareable. */
+  const conditions = (searchParams.get("condition") || "")
+    .split(",")
+    .filter(Boolean) as ListingCondition[];
   const sortBy = (searchParams.get("sortBy") as any) || "date_desc";
   const marketCode =
     searchParams.get("market") || storageService.getActiveMarketCode() || "FR";
@@ -154,6 +173,7 @@ export const SearchPage: React.FC = () => {
       deliveryAvailable: delivery || undefined,
       onlinePaymentAvailable: onlinePayment || undefined,
       onlyDeals: onlyDeals || undefined,
+      conditions: conditions.length > 0 ? conditions : undefined,
       sortBy,
       marketCode,
       page: 1,
@@ -181,9 +201,17 @@ export const SearchPage: React.FC = () => {
     delivery,
     onlinePayment,
     onlyDeals,
+    conditions.join(","),
     sortBy,
     marketCode,
   ]);
+
+  const toggleCondition = (value: ListingCondition) => {
+    const next = conditions.includes(value)
+      ? conditions.filter((c) => c !== value)
+      : [...conditions, value];
+    updateFilter("condition", next.length > 0 ? next.join(",") : undefined);
+  };
 
   const updateFilter = (key: string, value: string | undefined) => {
     setSearchParams((prev) => {
@@ -605,21 +633,16 @@ export const SearchPage: React.FC = () => {
         {showDesktopFilters && (
           <aside className="hidden lg:block lg:col-span-1 space-y-6">
             <div className="bg-bg-surface rounded-card border border-border-base p-6 space-y-6 shadow-sm">
-              {/* Header with collapse button */}
+              {/* One control owns the panel: the toggle in the results toolbar,
+                  beside the count. This header used to carry a second
+                  "Masquer" — with the toolbar toggle also reading "Masquer"
+                  once open, the page showed two identically-labelled buttons
+                  for the same action. */}
               <div className="flex items-center justify-between pb-4 border-b border-stone-100">
-                <span className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                   <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
                   Filtres
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowDesktopFilters(false)}
-                  className={`text-xs font-semibold text-stone-500 hover:text-stone-700 flex items-center gap-1 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer px-2 py-1 rounded-control hover:bg-bg-subtle`}
-                  title={t("search.searchPage.masquerLePanneauDeFiltres")}
-                >
-                  <PanelLeftClose className="w-3.5 h-3.5" />
-                  <span>Masquer</span>
-                </button>
+                </h2>
               </div>
 
               {/* Categories */}
@@ -724,6 +747,31 @@ export const SearchPage: React.FC = () => {
                         className="w-4 h-4 shrink-0 text-primary focus:ring-primary"
                       />
                       <span>{s.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Condition. The data layer has always supported
+                  `filters.conditions`; nothing ever exposed it, so the one facet
+                  printed on every card was the one you could not filter by. */}
+              <div className="pt-4 border-t border-border-subtle">
+                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
+                  {t("search.searchPage.etat")}
+                </h2>
+                <div className="space-y-2">
+                  {CONDITION_FILTER_OPTIONS.map((option) => (
+                    <label
+                      key={option.value}
+                      className="touch-row gap-2 min-h-6 text-xs font-medium text-stone-700 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={conditions.includes(option.value)}
+                        onChange={() => toggleCondition(option.value)}
+                        className="w-4 h-4 shrink-0"
+                      />
+                      <span>{option.label}</span>
                     </label>
                   ))}
                 </div>
@@ -1021,9 +1069,15 @@ export const SearchPage: React.FC = () => {
             </div>
           </div>
 
+          {/* The card titles are `h3`, so without this the outline jumped
+              straight from the page `h1` to `h3`. The count is already shown
+              in the toolbar, so the heading is visually hidden rather than
+              repeated on screen. */}
+          <h2 className="sr-only">{t("search.resultsHeading")}</h2>
+
           {/* Results Display (Grid / List / Map) */}
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card),1fr))] gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))] gap-3 sm:gap-4">
               {[...Array(12)].map((_, i) => (
                 <ListingCardSkeleton
                   key={i}
@@ -1051,7 +1105,7 @@ export const SearchPage: React.FC = () => {
                 />
               </React.Suspense>
             ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card),1fr))] gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-grid-min),1fr))] gap-3 sm:gap-4">
                 {listings.map((listing) => (
                   <ListingCard
                     key={listing.id}

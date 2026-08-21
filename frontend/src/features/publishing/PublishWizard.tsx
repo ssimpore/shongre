@@ -359,31 +359,64 @@ export const PublishWizard: React.FC = () => {
   const showsPanel = (panel: number) =>
     Boolean(PHASES[currentStep - 1]?.panels.includes(panel));
 
-  // Phase validation. Requirements are unchanged — they are just enforced once
-  // per phase now instead of once per screen.
+  /* Phase validation. Requirements are unchanged — they are just enforced once
+     per phase now instead of once per screen.
+
+     This is a pure function rather than inline checks because the stepper needs
+     the same answer: it used to call `setCurrentStep` directly, so clicking
+     "3 Remise & livraison" on an empty draft jumped straight to the publish
+     button and marked the two skipped phases done. */
+  const getPhaseError = (phase: number): string | null => {
+    if (phase === 1) {
+      if (!draft.taxonomyNodeId)
+        return "Veuillez sélectionner une catégorie finale pour continuer.";
+      if (draft.photos.length === 0)
+        return "Veuillez ajouter au moins une photo pour illustrer votre annonce.";
+    } else if (phase === 2) {
+      if (!draft.title.trim())
+        return "Veuillez renseigner un titre pour votre annonce.";
+      if (!draft.description.trim())
+        return "Veuillez renseigner une description détaillée.";
+    }
+    return null;
+  };
+
+  const isPhaseComplete = (phase: number) => getPhaseError(phase) === null;
+
+  /** Every phase before `target` has to be satisfied before it can be opened. */
+  const firstBlockingPhase = (target: number): number | null => {
+    for (let phase = 1; phase < target; phase += 1) {
+      if (!isPhaseComplete(phase)) return phase;
+    }
+    return null;
+  };
+
+  const goToPhase = (target: number) => {
+    // Backwards is always allowed — people need to revise what they entered.
+    if (target < currentStep) {
+      setCurrentStep(target);
+      scrollToTop();
+      return;
+    }
+    if (target === currentStep) return;
+
+    const blocking = firstBlockingPhase(target);
+    if (blocking !== null) {
+      toast.error(getPhaseError(blocking) as string);
+      setCurrentStep(blocking);
+      scrollToTop();
+      return;
+    }
+
+    setCurrentStep(target);
+    scrollToTop();
+  };
+
   const handleNextStep = () => {
-    if (currentStep === 1) {
-      if (!draft.taxonomyNodeId) {
-        toast.error(
-          "Veuillez sélectionner une catégorie finale pour continuer.",
-        );
-        return;
-      }
-      if (draft.photos.length === 0) {
-        toast.error(
-          "Veuillez ajouter au moins une photo pour illustrer votre annonce.",
-        );
-        return;
-      }
-    } else if (currentStep === 2) {
-      if (!draft.title.trim()) {
-        toast.error("Veuillez renseigner un titre pour votre annonce.");
-        return;
-      }
-      if (!draft.description.trim()) {
-        toast.error("Veuillez renseigner une description détaillée.");
-        return;
-      }
+    const error = getPhaseError(currentStep);
+    if (error) {
+      toast.error(error);
+      return;
     }
 
     setCurrentStep((prev) => Math.min(prev + 1, PHASES.length));
@@ -480,19 +513,26 @@ export const PublishWizard: React.FC = () => {
         <ol className="grid grid-cols-3 gap-1.5 text-xs">
           {PHASES.map((p) => {
             const isCurrent = currentStep === p.id;
-            const isDone = currentStep > p.id;
+            /* Derived from the draft, not from `currentStep > p.id`: the index
+               comparison claimed a phase was finished simply because the user
+               had moved past it. */
+            const isDone = !isCurrent && p.id < currentStep && isPhaseComplete(p.id);
+            const isLocked = p.id > currentStep && firstBlockingPhase(p.id) !== null;
             return (
               <li key={p.id}>
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(p.id)}
+                  onClick={() => goToPhase(p.id)}
                   aria-current={isCurrent ? "step" : undefined}
+                  aria-disabled={isLocked || undefined}
                   className={`w-full text-left flex items-start gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors cursor-pointer ${
                     isCurrent
                       ? "bg-primary-light text-primary ring-1 ring-primary"
                       : isDone
                         ? "text-success hover:bg-stone-50"
-                        : "text-stone-500 hover:text-stone-700"
+                        : isLocked
+                          ? "text-stone-400"
+                          : "text-stone-500 hover:text-stone-700"
                   }`}
                 >
                   <span

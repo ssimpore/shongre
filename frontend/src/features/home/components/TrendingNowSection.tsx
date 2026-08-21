@@ -243,10 +243,15 @@ export const TrendingNowSection: React.FC = () => {
             </Link>
           </div>
 
-          <div
-            className="mt-7 divide-y divide-border-subtle sm:mt-8"
-            aria-live="polite"
-          >
+          {/* The status line is the live region, not the content. Announcing
+              the container meant every render pushed ~2 000 characters of topic
+              names, badges and seller lines into the screen-reader queue. */}
+          <span className="sr-only" role="status" aria-live="polite">
+            {t("home.trendingNow.topicsAnnouncement_other", {
+              count: data.topics.length,
+            })}
+          </span>
+          <div className="mt-7 divide-y divide-border-subtle sm:mt-8">
             {data.topics.map((topic, position) => (
               <TrendingTopicSection
                 key={topic.id}

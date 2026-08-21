@@ -200,9 +200,21 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     if (!isCategoryMenuOpen && !isAutocompleteOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key !== "Escape") return;
+
+      /* Focus has to go back to whatever opened the popover. Closing without
+         restoring it dropped the user on `<body>`, which means re-tabbing the
+         whole header to get back to where they were. The dialog primitives
+         already do this — the popovers never did. */
+      if (isCategoryMenuOpen) {
         setIsCategoryMenuOpen(false);
+        document
+          .getElementById(`${idPrefix}-header-category-button`)
+          ?.focus();
+      }
+      if (isAutocompleteOpen) {
         setIsAutocompleteOpen(false);
+        searchInputRef.current?.focus();
       }
     };
 
@@ -228,7 +240,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [isCategoryMenuOpen, isAutocompleteOpen]);
+  }, [isCategoryMenuOpen, isAutocompleteOpen, idPrefix]);
 
   // Find active category
   const activeCategory = TAXONOMY.find(
@@ -478,7 +490,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
                 aria-expanded={isCategoryMenuOpen}
-                aria-haspopup="menu"
+                aria-haspopup="dialog"
+                aria-controls={`${idPrefix}-header-category-menu`}
                 aria-label={t("ui.globalSearchBar.selectionnerUneCategorie")}
                 className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer rounded-l-control focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset min-w-0 w-full ${
                   selectedCategorySlug
@@ -491,7 +504,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 ) : (
                   <Layers className="w-3.5 h-3.5 text-stone-500" />
                 )}
-                <span className="max-w-[76px] xl:max-w-[110px] truncate">
+                <span className="max-w-[56px] xl:max-w-[104px] truncate">
                   {activeCategoryLabel}
                 </span>
                 <ChevronDown
@@ -505,7 +518,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               {isCategoryMenuOpen && (
                 <div
                   id={`${idPrefix}-header-category-menu`}
-                  role="menu"
+                  /* A `group`, not a `menu`: it holds a filter textbox, and
+                     `menu` forbids that. The choices below carry the listbox
+                     semantics instead. */
+                  role="group"
+                  aria-label={t("ui.globalSearchBar.filtrerParCategorie")}
                   className={`absolute top-full left-0 mt-1.5 w-72 ${DROPDOWN_PANEL_CLASSES}`}
                 >
                   <div className={DROPDOWN_HEADER_CLASSES}>
@@ -569,8 +586,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             </div>
           )}
 
-          {/* Search Keyword Input with Autocomplete */}
-          <div className="flex-1 min-w-[60px] relative flex items-center pl-3">
+          {/* Search Keyword Input with Autocomplete.
+
+              The floor is a real one, not a token gesture: at `lg` the category
+              and location triggers appear, and a `min-w-[60px]` field was
+              squeezed down to a 32px sliver showing a single letter of its own
+              placeholder. The triggers shrink before the field does now. */}
+          <div className="flex-1 min-w-[9rem] relative flex items-center pl-3">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
               ref={searchInputRef}
@@ -580,6 +602,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
+              /* Focus stays on the input while the arrows move the highlight, so
+                 this is the only channel a screen reader has to say which
+                 suggestion is active. Without it the list was silent. */
+              aria-activedescendant={
+                isAutocompleteOpen && selectedIndex >= 0
+                  ? `${idPrefix}-autocomplete-item-${selectedIndex}`
+                  : undefined
+              }
               aria-controls={`${idPrefix}-autocomplete-dropdown`}
               placeholder={resolvedPlaceholder}
               value={query}
@@ -617,7 +647,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               type="button"
               onClick={openLocationModal}
               aria-label={`Localisation : ${city || userLocation.label}`}
-              className={`hidden lg:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink min-w-0 max-w-[150px] xl:max-w-[200px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
+              className={`hidden xl:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink min-w-0 max-w-[110px] 2xl:max-w-[180px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
             >
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
               <span className="truncate whitespace-nowrap">
@@ -681,6 +711,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
+              /* Focus stays on the input while the arrows move the highlight, so
+                 this is the only channel a screen reader has to say which
+                 suggestion is active. Without it the list was silent. */
+              aria-activedescendant={
+                isAutocompleteOpen && selectedIndex >= 0
+                  ? `${idPrefix}-autocomplete-item-${selectedIndex}`
+                  : undefined
+              }
               aria-controls={`${idPrefix}-autocomplete-dropdown`}
               aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
               placeholder={resolvedPlaceholder}
@@ -835,7 +873,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
                 aria-expanded={isCategoryMenuOpen}
-                aria-haspopup="menu"
+                aria-haspopup="dialog"
                 className={`h-control-touch px-3.5 rounded-control border text-xs font-semibold flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                   selectedCategorySlug
                     ? "bg-primary-light border-primary-border text-primary font-bold"
@@ -863,7 +901,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               {isCategoryMenuOpen && (
                 <div
                   id={`${idPrefix}-page-category-menu`}
-                  role="menu"
+                  /* A `group`, not a `menu`: it holds a filter textbox, and
+                     `menu` forbids that. The choices below carry the listbox
+                     semantics instead. */
+                  role="group"
+                  aria-label={t("ui.globalSearchBar.filtrerParCategorie")}
                   className={`absolute top-full left-0 mt-1.5 w-72 ${DROPDOWN_PANEL_CLASSES}`}
                 >
                   <div className={DROPDOWN_HEADER_CLASSES}>
@@ -939,6 +981,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
+              /* Focus stays on the input while the arrows move the highlight, so
+                 this is the only channel a screen reader has to say which
+                 suggestion is active. Without it the list was silent. */
+              aria-activedescendant={
+                isAutocompleteOpen && selectedIndex >= 0
+                  ? `${idPrefix}-autocomplete-item-${selectedIndex}`
+                  : undefined
+              }
               aria-controls={`${idPrefix}-autocomplete-dropdown`}
               placeholder={resolvedPlaceholder}
               value={query}
@@ -1011,7 +1061,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               aria-label={t("ui.globalSearchBar.lancerLaRecherche")}
             >
               <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">Filtrer</span>
+              {/* Was "Filtrer" — on a submit button whose accessible name is
+                  "Lancer la recherche". Two problems in one word: it read as a
+                  third filter control beside the real ones, and a voice-control
+                  user saying "click Filtrer" hit nothing, because the visible
+                  label was absent from the accessible name (WCAG 2.5.3). */}
+              <span className="hidden sm:inline">
+                {t("ui.globalSearchBar.lancerLaRecherche")}
+              </span>
             </button>
           </div>
         </form>
@@ -1060,7 +1117,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               type="button"
               onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
               aria-expanded={isCategoryMenuOpen}
-              aria-haspopup="menu"
+              aria-haspopup="dialog"
               aria-label={t("ui.globalSearchBar.filtrerParCategorie")}
               className={`w-full md:w-auto h-control-touch px-3.5 rounded-control border text-xs font-bold flex items-center justify-between md:justify-start gap-2 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                 selectedCategorySlug
@@ -1089,7 +1146,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             {isCategoryMenuOpen && (
               <div
                 id={`${idPrefix}-hero-category-menu`}
-                role="menu"
+                role="group"
+                aria-label={t("ui.globalSearchBar.categories")}
                 className={`absolute top-full left-0 mt-1.5 w-80 ${DROPDOWN_PANEL_CLASSES}`}
               >
                 <div className={DROPDOWN_HEADER_CLASSES}>

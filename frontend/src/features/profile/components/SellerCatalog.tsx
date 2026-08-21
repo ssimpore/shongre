@@ -264,7 +264,10 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Filtres prix</span>
+              {/* `hidden` would take the only label out of the accessibility
+                  tree below `sm`, leaving an icon-only button with no name —
+                  the same defect the focused-layout back button had. */}
+              <span className="sr-only sm:not-sr-only">Filtres prix</span>
               {(minPrice || maxPrice) && (
                 <span className="w-2 h-2 rounded-full bg-primary" />
               )}

@@ -274,6 +274,8 @@ export const messagesEn: MessageCatalogue = {
   "home.trendingNow.kicker": "What's moving",
   "home.trendingNow.explorerTout": "Explore all",
   "home.trendingNow.topics": "Trending topics",
+  "home.trendingNow.topicsAnnouncement_one": "{count} trend updated",
+  "home.trendingNow.topicsAnnouncement_other": "{count} trends updated",
   "home.trendingNow.voirTout": "See all",
   "home.trendingNow.annonces": "listings",
   "home.trendingNow.topicPosition": "topic {position}",
@@ -558,6 +560,8 @@ export const messagesEn: MessageCatalogue = {
     "No saved searches",
   "savedsearches.savedSearchesPage.lancezUneRecherchePuisCliquez":
     "Run a search, then tap 'Save this search' to be alerted about new listings.",
+  "search.searchPage.etat": "Condition",
+  "search.resultsHeading": "Search results",
   "search.exploreMapView.recadrerSurLesAnnonces": "Recentre on the listings",
   "search.exploreMapView.changerLeStyleDeCarte": "Change map style",
   "search.exploreMapView.fermerLaPrevisualisation": "Close preview",
@@ -1817,8 +1821,7 @@ export const messagesEn: MessageCatalogue = {
   "auth.registerPages.nomEtPrenomDuResponsable":
     "Full name of the manager / contact",
   "auth.registerPages.telephoneCommercial": "Business phone",
-  "auth.registerPages.continuerVersLesInformationsEntreprise":
-    "Continue to company details",
+  "auth.registerPages.continuerVersLesInformationsEntreprise": "Continue",
   "auth.registerPages.adresseDuSiegeSocialMagasin":
     "Registered office / store address",
   "auth.registerPages.conditionsGeneralesDeVenteProfessionnelles":

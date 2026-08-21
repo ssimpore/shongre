@@ -259,6 +259,10 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           {/* 3. Direct Search Action with Current Query */}
           <div className="p-2">
             <div
+              /* Was the one option without an `id`, so it could never be the
+                 target of `aria-activedescendant` — arrowing onto it announced
+                 nothing at all. */
+              id={`${idPrefix}-item-${currentIndexTracker}`}
               role="option"
               aria-selected={selectedIndex === currentIndexTracker}
               onMouseDown={(e) => {

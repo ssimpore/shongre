@@ -9,6 +9,25 @@
     width: 100%;
   }
 
+  /* --- Colour scheme ------------------------------------------------------
+     Shongre is a light-only design today, and saying so is not a formality:
+     left undeclared, `color-scheme` resolves to `normal`, and a browser on a
+     dark-preferring system applies its own heuristics to native controls —
+     select popups, date pickers, scrollbars, autofill backgrounds — so those
+     rendered dark inside a light page. Declaring `light` makes the intent
+     explicit and keeps the native chrome consistent with the design.
+
+     A real dark theme is not a token swap here. The neutral ramp is used two
+     different ways: as theme-following neutrals (~3.4k utilities), and as
+     deliberately dark surfaces that must stay dark in either theme — 28 photo
+     scrims (`bg-stone-950/55` under white text) and ~52 files with dark
+     buttons and panels. Flipping the ramp would turn those into light scrims
+     under white text. Separating the two is a scoped migration, not a
+     redefinition, and it needs to happen before `dark` can be honoured. */
+  :root {
+    color-scheme: light;
+  }
+
   body {
     background-color: var(--color-bg-base);
     color: var(--color-text-main);
@@ -120,6 +139,38 @@
     input[type='radio'] {
       min-width: var(--spacing-control-target);
       min-height: var(--spacing-control-target);
+    }
+  }
+
+  /* --- Touch target floor -------------------------------------------------
+     `.touch-row` raises a control to the 44px comfortable target when a finger
+     is doing the aiming, and leaves it alone for a cursor. Native checkboxes
+     and radios get this automatically above; this is for the composed rows —
+     drawer navigation, popover items, sheet actions — where the height comes
+     from padding and type size rather than from a control token.
+
+     Scoped to a class rather than applied to every `a`/`button`: inline links
+     inside a sentence are explicitly exempt from WCAG 2.5.8, and inflating
+     them would wreck body copy. */
+  .touch-row,
+  .touch-square {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Square variant, for icon-only controls where width matters too. */
+  .touch-square {
+    justify-content: center;
+  }
+
+  @media (pointer: coarse) {
+    .touch-row,
+    .touch-square {
+      min-height: var(--spacing-control-touch);
+    }
+
+    .touch-square {
+      min-width: var(--spacing-control-touch);
     }
   }
 
@@ -366,6 +417,23 @@
   select {
     font-size: var(--text-base);
     line-height: var(--leading-snug);
+  }
+}
+
+/* =============================================================================
+   Control size floor on touch
+   The compact tokens are a desktop density: `control-sm` is 32px and
+   `control-md` is 40px, both below the 44px a finger wants. Rather than
+   restating that at every call site, the two tokens resolve to the touch size
+   when a coarse pointer is driving — so `h-control-sm`, `min-h-control-md` and
+   every primitive built on them grow together, and nothing has to remember.
+
+   Deliberately unlayered, for the same cascade reason as the block above.
+   ============================================================================= */
+@media (pointer: coarse) {
+  :root {
+    --spacing-control-sm: var(--spacing-control-touch);
+    --spacing-control-md: var(--spacing-control-touch);
   }
 }
 

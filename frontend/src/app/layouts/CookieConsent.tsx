@@ -7,6 +7,7 @@ import { useConsent } from "../providers/ConsentProvider";
 import { CONSENT_CATEGORIES } from "../../domains/consent/consent.service";
 import { ConsentCategories } from "../../domains/consent/consent.types";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 /**
  * First-layer consent banner.
@@ -32,6 +33,9 @@ const CookieBanner: React.FC = () => {
   const { needsDecision, acceptAll, rejectOptional, openPreferences } =
     useConsent();
   const { t } = useTranslation();
+  /* Touch pointers get the 44px control size. These are the first buttons a
+     first-time mobile visitor has to hit, and they were 32px tall. */
+  const isCompact = useMediaQuery("(pointer: coarse)");
 
   if (!needsDecision) return null;
 
@@ -75,7 +79,7 @@ const CookieBanner: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Button
                 variant="primary"
-                size="sm"
+                size={isCompact ? "md" : "sm"}
                 onClick={acceptAll}
                 className="font-bold"
               >
@@ -83,13 +87,13 @@ const CookieBanner: React.FC = () => {
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                size={isCompact ? "md" : "sm"}
                 onClick={rejectOptional}
                 className="font-bold"
               >
                 {t("consent.rejectAll")}
               </Button>
-              <Button variant="ghost" size="sm" onClick={openPreferences}>
+              <Button variant="ghost" size={isCompact ? "md" : "sm"} onClick={openPreferences}>
                 {t("consent.customise")}
               </Button>
             </div>
@@ -117,6 +121,7 @@ const CookiePreferencesModal: React.FC = () => {
     acceptAll,
   } = useConsent();
   const { t } = useTranslation();
+  const isCompact = useMediaQuery("(pointer: coarse)");
   const [draft, setDraft] = useState<ConsentCategories>(categories);
 
   // Re-sync each time it opens; the stored decision may have changed since.
@@ -170,7 +175,7 @@ const CookiePreferencesModal: React.FC = () => {
                     [category.id]: e.target.checked,
                   }))
                 }
-                className="mt-1 shrink-0 w-5 h-5 rounded accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-1 shrink-0 w-control-target h-control-target rounded accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               />
               <span
                 id={`consent-${category.id}-description`}
@@ -186,14 +191,14 @@ const CookiePreferencesModal: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:justify-end gap-2 p-5 sm:p-6 border-t border-border-subtle">
         <Button
           variant="outline"
-          size="sm"
+          size={isCompact ? "md" : "sm"}
           onClick={() => savePreferences(draft)}
         >
           {t("consent.saveChoices")}
         </Button>
         <Button
           variant="primary"
-          size="sm"
+          size={isCompact ? "md" : "sm"}
           onClick={acceptAll}
           className="font-bold"
         >

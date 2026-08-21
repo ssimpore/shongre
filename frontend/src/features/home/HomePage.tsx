@@ -185,14 +185,14 @@ export const HomePage: React.FC = () => {
                     />
                     {t("home.homePage.paiementsSecurises")}
                   </li>
-                  <li className="inline-flex items-center gap-2 border-l border-border-base pl-4">
+                  <li className="inline-flex items-center gap-2 sm:border-l sm:border-border-base sm:pl-4">
                     <Truck
                       className="h-icon-lg w-icon-lg shrink-0 text-primary"
                       aria-hidden="true"
                     />
                     {t("home.homePage.livraisonIntegree")}
                   </li>
-                  <li className="inline-flex items-center gap-2 border-l border-border-base pl-4">
+                  <li className="inline-flex items-center gap-2 sm:border-l sm:border-border-base sm:pl-4">
                     <BadgeCheck
                       className="h-icon-lg w-icon-lg shrink-0 text-primary"
                       aria-hidden="true"

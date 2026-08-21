@@ -280,6 +280,12 @@ export class ListingDisplayResolver {
     conditionValue: string,
     node?: TaxonomyNode | null,
   ): string {
+    /* Services, jobs and rentals carry `not_applicable`, which is a storage
+       value, not something to show a buyer. Printing "Non applicable" where the
+       condition goes made a piano lesson look like a defective product — and it
+       landed in the card's accessible name too. Returning empty lets every call
+       site's existing `if (conditionLabel)` guard drop the row. */
+    if (!conditionValue || conditionValue === "not_applicable") return "";
     /* Condition tiers already ship `labels: { 'fr-FR', 'en-US' }`; only the flat
        `label` was ever read, so the English strings sat in the data unused.
        Preferring the map costs nothing and duplicates nothing. */

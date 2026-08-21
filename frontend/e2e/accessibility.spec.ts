@@ -36,6 +36,87 @@ test.describe('accessibility', () => {
   }
 });
 
+/**
+ * Naming, checked at phone width.
+ *
+ * The axe sweep above runs at the project's desktop viewport, where a label
+ * hidden behind `hidden sm:inline` is still on screen and still in the
+ * accessibility tree. Below `sm` that same span is `display: none`, and a
+ * button whose only other child is an `aria-hidden` icon is left with no
+ * accessible name at all — which is exactly how the "Retour" control on every
+ * auth route and on the publish wizard shipped nameless.
+ */
+test.describe('accessible names at phone width', () => {
+  const PHONE = { width: 375, height: 812 };
+  const ROUTES_WITH_COLLAPSING_LABELS = [
+    { path: '/connexion', persona: 'guest' },
+    { path: '/inscription', persona: 'guest' },
+    { path: '/inscription/particulier', persona: 'guest' },
+    { path: '/mot-de-passe-oublie', persona: 'guest' },
+    { path: '/deposer', persona: 'individual_seller' },
+    { path: '/', persona: 'guest' },
+    { path: '/recherche', persona: 'guest' },
+    { path: '/annonce/list-117', persona: 'guest' },
+  ] as const;
+
+  for (const route of ROUTES_WITH_COLLAPSING_LABELS) {
+    test(`${route.path} names every control at ${PHONE.width}px`, async ({ page }) => {
+      await usePersona(page, route.persona);
+      await page.setViewportSize(PHONE);
+      await page.goto(route.path, { waitUntil: 'networkidle' });
+      await waitForStableLayout(page);
+
+      const unnamed = await page.evaluate(() => {
+        const nameOf = (el: Element): string => {
+          const aria = el.getAttribute('aria-label');
+          if (aria?.trim()) return aria.trim();
+
+          const labelledby = el.getAttribute('aria-labelledby');
+          if (labelledby) {
+            const text = labelledby
+              .split(/\s+/)
+              .map((id) => document.getElementById(id)?.textContent ?? '')
+              .join(' ')
+              .trim();
+            if (text) return text;
+          }
+
+          const labels = (el as HTMLInputElement).labels;
+          if (labels?.length) {
+            const text = [...labels].map((l) => l.textContent ?? '').join(' ').trim();
+            if (text) return text;
+          }
+
+          // `innerText` is what a sighted user reads: it excludes display:none.
+          // `sr-only` text stays visible to it, which is the distinction we want.
+          const own = (el as HTMLElement).innerText?.trim();
+          if (own) return own;
+
+          const title = el.getAttribute('title')?.trim();
+          if (title) return title;
+
+          return el.querySelector('img')?.getAttribute('alt')?.trim() ?? '';
+        };
+
+        const offenders: string[] = [];
+        document
+          .querySelectorAll('a[href], button, [role="button"]')
+          .forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) return;
+            if (getComputedStyle(el).visibility === 'hidden') return;
+            if (!nameOf(el)) {
+              offenders.push(`${el.tagName} .${(el.className || '').toString().slice(0, 70)}`);
+            }
+          });
+        return offenders;
+      });
+
+      expect(unnamed, `controls with no accessible name at ${PHONE.width}px:\n  ${unnamed.join('\n  ')}`).toEqual([]);
+    });
+  }
+});
+
 test.describe('keyboard and focus', () => {
   test('every interactive control in the header is reachable and shows focus', async ({ page }) => {
     await usePersona(page, 'individual_buyer');
@@ -52,16 +133,38 @@ test.describe('keyboard and focus', () => {
     const missingIndicator: string[] = [];
     for (let i = 0; i < 15; i += 1) {
       await page.keyboard.press('Tab');
+      /* `motion-interactive` transitions box-shadow over 150ms, so reading the
+         computed style immediately catches the ring part-way in — around 0.35px
+         at 17% alpha — and the stricter check above would call that missing. */
+      await page.waitForTimeout(250);
       const info = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
         if (!el || el === document.body) return null;
 
+        /* Both of the loose checks here used to pass a control that painted
+           nothing at all:
+           - `boxShadow !== 'none'` counted Tailwind's ring *placeholder*,
+             which computes to `rgba(0, 0, 0, 0) 0px 0px 0px 0px` — a fully
+             transparent shadow — as a visible ring;
+           - `borderColor !== 'rgb(0, 0, 0)'` passed every element that simply
+             has a normal grey border, focused or not.
+           The ring now has to be opaque enough and wide enough to see. */
         const paintsFocus = (node: Element) => {
           const style = getComputedStyle(node);
-          const hasOutline = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
-          const hasRing = style.boxShadow !== 'none';
-          const hasBorderShift = style.borderColor !== 'rgb(0, 0, 0)' && parseFloat(style.borderWidth) > 0;
-          return hasOutline || hasRing || hasBorderShift;
+          const hasOutline =
+            style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
+
+          const hasRing = style.boxShadow
+            .split(/,(?![^(]*\))/)
+            .some((shadow) => {
+              const alpha = shadow.match(/rgba?\([^)]*?,\s*([\d.]+)\s*\)/);
+              if (alpha && parseFloat(alpha[1]) < 0.25) return false;
+              // Spread or blur has to be big enough to register as a ring.
+              const lengths = shadow.match(/-?[\d.]+px/g) ?? [];
+              return lengths.some((l) => Math.abs(parseFloat(l)) >= 1);
+            });
+
+          return hasOutline || hasRing;
         };
 
         let node: Element | null = el;

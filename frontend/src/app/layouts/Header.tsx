@@ -455,7 +455,11 @@ export const Header: React.FC = () => {
                   type="button"
                   onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
                   aria-expanded={isAccountMenuOpen}
-                  aria-haspopup="menu"
+                  /* The panel is a labelled group of links, not a `menu`, and
+                     it now says so on both ends — the trigger used to promise
+                     `menu` while the container carried no role at all. */
+                  aria-haspopup="dialog"
+                  aria-controls="header-account-menu"
                   aria-label={`Menu du compte de ${currentUser.name}`}
                   className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${isAccountMenuOpen ? "bg-bg-muted border-border-hover shadow-inner" : "bg-bg-surface border-border-base hover:bg-bg-subtle hover:border-border-hover hover:shadow-2xs"}`}
                 >
@@ -488,6 +492,9 @@ export const Header: React.FC = () => {
               {/* Account Dropdown */}
               {isAccountMenuOpen && isAuthenticated && currentUser && (
                 <div
+                  id="header-account-menu"
+                  role="group"
+                  aria-label={`Menu du compte de ${currentUser.name}`}
                   className={`absolute right-0 mt-2 w-64 ${DROPDOWN_PANEL_CLASSES}`}
                 >
                   <div className="px-4 py-2.5 border-b border-border-subtle">
@@ -702,7 +709,7 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`h-control-sm w-control-sm rounded-pill text-stone-500 hover:text-stone-900 hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
+                  className={`h-control-sm w-control-sm touch-square rounded-pill text-stone-500 hover:text-stone-900 hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
                   aria-label={t("shell.header.fermerLeMenuMobile")}
                 >
                   <X className="w-4 h-4" />
@@ -797,7 +804,7 @@ export const Header: React.FC = () => {
                   <Link
                     to="/recherche?view=map"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
+                    className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
                   >
                     <span className="flex items-center gap-2.5">
                       <MapIcon className="w-4 h-4 text-primary" />
@@ -810,7 +817,7 @@ export const Header: React.FC = () => {
                   <Link
                     to="/bons-plans"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
+                    className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
                   >
                     <span className="flex items-center gap-2.5">
                       <Sparkles className="w-4 h-4 text-amber-500" />
@@ -823,7 +830,7 @@ export const Header: React.FC = () => {
                   <Link
                     to="/professionnels"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                    className="touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                   >
                     <span className="flex items-center gap-2.5">
                       <Briefcase className="w-4 h-4 text-primary" />
@@ -839,7 +846,7 @@ export const Header: React.FC = () => {
                       onClick={() =>
                         setIsMobileCategoriesOpen(!isMobileCategoriesOpen)
                       }
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
+                      className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2.5">
                         <Layers className="w-4 h-4 text-primary" />
@@ -884,7 +891,7 @@ export const Header: React.FC = () => {
                       <Link
                         to="/compte"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
                         <User className="w-4 h-4 text-stone-500" />
                         {t("shell.header.tableauDeBord")}
@@ -892,7 +899,7 @@ export const Header: React.FC = () => {
                       <Link
                         to="/compte/annonces"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
                         <List className="w-4 h-4 text-stone-500" />
                         {t("shell.header.mesAnnonces")}
@@ -900,7 +907,7 @@ export const Header: React.FC = () => {
                       <Link
                         to="/compte/favoris"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
                         <Heart className="w-4 h-4 text-stone-500" />
                         Mes favoris ({favCount})
@@ -908,7 +915,7 @@ export const Header: React.FC = () => {
                       <Link
                         to="/compte/achats"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
                         <ShoppingBag className="w-4 h-4 text-stone-500" />
                         Achats & Transactions
@@ -916,7 +923,7 @@ export const Header: React.FC = () => {
                       <Link
                         to="/solutions-pro"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-warning hover:bg-warning-surface transition-colors"
+                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-warning hover:bg-warning-surface transition-colors"
                       >
                         <Sparkles className="w-4 h-4 text-amber-500" />
                         Solutions Pro
@@ -927,7 +934,7 @@ export const Header: React.FC = () => {
                           logout();
                           setIsMobileMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
+                        className="w-full touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                       >
                         <LogOut className="w-4 h-4 text-danger" />
                         {t("shell.header.deconnexion")}

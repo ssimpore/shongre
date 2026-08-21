@@ -7,6 +7,10 @@ import {
 } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
 import { taxonomyService } from "../domains/taxonomy/taxonomy.service";
+import {
+  normalizeSearchText,
+  searchTextIncludes,
+} from "../utilities/search-text";
 
 export interface IListingRepository {
   getListings(filters?: SearchFilters): Promise<{
@@ -72,14 +76,16 @@ export class MockListingRepository implements IListingRepository {
 
     // Query text
     if (filters.query && filters.query.trim()) {
-      const q = filters.query.toLowerCase().trim();
+      // Accent-folded on both sides: "velo" has to find "Vélo", and "cafe" has
+      // to find "Machine à Café". See utilities/search-text.
+      const q = normalizeSearchText(filters.query);
       list = list.filter(
         (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.categoryLabel.toLowerCase().includes(q) ||
-          item.subCategoryLabel.toLowerCase().includes(q) ||
-          item.city.toLowerCase().includes(q),
+          searchTextIncludes(item.title, q) ||
+          searchTextIncludes(item.description, q) ||
+          searchTextIncludes(item.categoryLabel, q) ||
+          searchTextIncludes(item.subCategoryLabel, q) ||
+          searchTextIncludes(item.city, q),
       );
     }
 

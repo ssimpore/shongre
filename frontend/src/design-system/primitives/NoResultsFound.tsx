@@ -72,10 +72,14 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
   return (
     <div
       id={id}
-      role="status"
-      aria-live="polite"
       className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-card bg-bg-surface border border-border-base shadow-xs ${className}`}
     >
+      {/* Only the outcome is announced. With `role="status"` on the panel
+          itself, a screen reader read the heading, all four suggestions and
+          both button labels as one status message. */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {displayTitle}
+      </span>
       {/* Icon Badge */}
       <div
         id={`${id}-icon-container`}

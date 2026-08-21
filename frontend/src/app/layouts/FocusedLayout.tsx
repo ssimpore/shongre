@@ -32,13 +32,18 @@ export const FocusedLayout: React.FC = () => {
           width="task"
           className="h-14 flex items-center justify-between gap-3"
         >
+          {/* `hidden sm:inline` on the only label left this button with no
+              accessible name at all below `sm` — the icon is aria-hidden, so a
+              screen-reader user on a phone heard "button" on every auth route
+              and on the publish wizard. `sr-only` keeps the word in the
+              accessibility tree at every width and only hides it visually. */}
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 h-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex items-center justify-center gap-1.5 h-control-touch min-w-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Retour</span>
+            <span className="sr-only sm:not-sr-only">Retour</span>
           </button>
 
           <Link

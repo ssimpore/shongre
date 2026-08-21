@@ -63,6 +63,9 @@ export function resolveTitle(title?: string): string {
   // en dash, em dash.
   if (new RegExp(`[|\\-–—]\\s*${SITE_NAME}\\s*$`, "i").test(trimmed))
     return trimmed;
+  // The homepage title already opens with the brand, so appending it produced
+  // "Shongre - Petites Annonces… | Shongre" on the one page that matters most.
+  if (new RegExp(`^${SITE_NAME}\\b`, "i").test(trimmed)) return trimmed;
   return `${trimmed} | ${SITE_NAME}`;
 }
 

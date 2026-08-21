@@ -17,6 +17,10 @@ export { getTaxonomyLabel } from "./taxonomy.labels";
 import { ATTRIBUTE_REGISTRY } from "./attribute.registry";
 import { CONDITION_SCHEMES } from "./condition.schemes";
 import { activeDataLocale } from "../../i18n/localized";
+import {
+  normalizeSearchText,
+  searchTextIncludes,
+} from "../../utilities/search-text";
 
 export type { TaxonomyLabelMode, TaxonomyLabelOptions };
 
@@ -207,7 +211,11 @@ class TaxonomyService {
   }
 
   searchTaxonomy(query: string, limit: number = 8): TaxonomyNode[] {
-    const clean = query.toLowerCase().trim();
+    /* Folded the same way the listing search folds, so a suggestion can never
+       promise a category the results page then fails to match. Before, "velo"
+       only scored here because it fell through to the slug, which is already
+       ASCII — names, synonyms and aliases all missed. */
+    const clean = normalizeSearchText(query);
     if (!clean) return this.getRootCategories().slice(0, limit);
 
     const matches: { node: TaxonomyNode; score: number }[] = [];
@@ -215,8 +223,8 @@ class TaxonomyService {
     this.nodesMap.forEach((node) => {
       if (node.status === "disabled") return;
       let score = 0;
-      const name = node.name.toLowerCase();
-      const slug = node.slug.toLowerCase();
+      const name = normalizeSearchText(node.name);
+      const slug = normalizeSearchText(node.slug);
 
       if (name === clean) score += 100;
       else if (name.startsWith(clean)) score += 50;
@@ -224,7 +232,7 @@ class TaxonomyService {
 
       // Match shortLabel
       if (node.shortLabel) {
-        const shortClean = node.shortLabel.toLowerCase();
+        const shortClean = normalizeSearchText(node.shortLabel);
         if (shortClean === clean) score += 95;
         else if (shortClean.startsWith(clean)) score += 45;
         else if (shortClean.includes(clean)) score += 20;
@@ -232,10 +240,10 @@ class TaxonomyService {
 
       if (slug.includes(clean)) score += 15;
 
-      if (node.synonyms?.some((s) => s.toLowerCase().includes(clean))) {
+      if (node.synonyms?.some((s) => searchTextIncludes(s, clean))) {
         score += 30;
       }
-      if (node.aliases?.some((a) => a.toLowerCase().includes(clean))) {
+      if (node.aliases?.some((a) => searchTextIncludes(a, clean))) {
         score += 35;
       }
 

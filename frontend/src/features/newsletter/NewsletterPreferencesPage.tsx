@@ -180,9 +180,12 @@ export const NewsletterPreferencesPage: React.FC = () => {
             <Mail className="w-5 h-5" />
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-stone-900">
+          {/* `min-w-0` on both the column and the address, plus a wrap on the
+              row: an email is one unbreakable token, so beside a `nowrap` badge
+              it pushed the page 56px wider than a 320px screen. */}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="min-w-0 max-w-full truncate text-sm font-black text-stone-900">
                 {currentUser?.email}
               </span>
               <Badge variant={statusInfo.variant} size="sm">

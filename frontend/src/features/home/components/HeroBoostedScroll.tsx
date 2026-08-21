@@ -23,9 +23,46 @@ import { getListingCategoryLabel } from "../../../domains/taxonomy/taxonomy.disp
 
 const MAX_FEATURED_LISTINGS = 8;
 const STEP_MS = 4500;
+/** Upper bound on a smooth rail scroll, after which snapping is restored. */
+const SCROLL_SETTLE_MS = 700;
 
 interface HeroBoostedScrollProps {
   onListingClick?: (listing: Listing) => void;
+}
+
+/**
+ * Moves a snap rail to an exact offset.
+ *
+ * `scroll-snap-type: mandatory` is what makes swiping the rail feel right on
+ * touch, but it also lets the browser veto programmatic scrolls: once the rail
+ * is resting off-grid, both `scrollTo` and a direct `scrollLeft` assignment are
+ * refused and the carousel is stuck for good. Suspending snapping for the
+ * duration of the move — the same thing that unblocks it by hand in the console
+ * — lets the offset land, and restoring it afterwards re-snaps to the boundary
+ * we just scrolled to, so touch behaviour is unchanged.
+ */
+function scrollRailTo(rail: HTMLElement, left: number, smooth: boolean): void {
+  const previousSnapType = rail.style.scrollSnapType;
+  rail.style.scrollSnapType = "none";
+  rail.scrollTo({ left, behavior: smooth ? "smooth" : "auto" });
+
+  const restore = () => {
+    rail.style.scrollSnapType = previousSnapType;
+  };
+
+  if (!smooth) {
+    restore();
+    return;
+  }
+
+  // `scrollend` is not implemented everywhere yet, so the timeout is the floor.
+  const done = () => {
+    window.clearTimeout(timer);
+    rail.removeEventListener("scrollend", done);
+    restore();
+  };
+  const timer = window.setTimeout(done, SCROLL_SETTLE_MS);
+  rail.addEventListener("scrollend", done, { once: true });
 }
 
 function getListingPhotoUrl(photo: any): string {
@@ -44,6 +81,9 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   const [favorites, setFavorites] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const railRef = useRef<HTMLDivElement>(null);
+  // Read by the resize observer, which must not re-subscribe on every slide.
+  const activeIndexRef = useRef(0);
+  activeIndexRef.current = activeIndex;
 
   /* Scoped to the active market, and re-run when it changes. The rail is the
      most prominent inventory on the page, so a market-blind query here put
@@ -104,7 +144,8 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
   useEffect(() => {
     setActiveIndex(0);
-    railRef.current?.scrollTo({ left: 0, behavior: "auto" });
+    const rail = railRef.current;
+    if (rail) scrollRailTo(rail, 0, false);
   }, [activeMarket.code, scrollSequence.length]);
 
   useEffect(() => {
@@ -114,10 +155,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
       setActiveIndex((currentIndex) => {
         const nextIndex = (currentIndex + 1) % scrollSequence.length;
         const rail = railRef.current;
-        rail?.scrollTo({
-          left: nextIndex * rail.clientWidth,
-          behavior: "smooth",
-        });
+        if (rail) scrollRailTo(rail, nextIndex * rail.clientWidth, true);
         return nextIndex;
       });
     }, STEP_MS);
@@ -125,19 +163,39 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     return () => clearInterval(id);
   }, [isPaused, prefersReducedMotion, scrollSequence.length]);
 
+  /* A resize changes the slide pitch, so the pixel offset that used to sit on a
+     slide boundary no longer does. Nothing re-aligned the rail, which left it
+     resting between two slides — clipping the featured listing and, because a
+     mandatory snap container then refuses further programmatic scrolls, killing
+     the arrows and the autoplay with it. Re-anchor to the active slide instead. */
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const realign = () => {
+      const width = rail.clientWidth;
+      if (width === 0) return;
+      scrollRailTo(rail, activeIndexRef.current * width, false);
+    };
+
+    const observer = new ResizeObserver(realign);
+    observer.observe(rail);
+    return () => observer.disconnect();
+  }, []);
+
   const scrollToIndex = (index: number) => {
     const total = scrollSequence.length;
     if (total === 0) return;
 
     const nextIndex = (index + total) % total;
     const rail = railRef.current;
-    rail?.scrollTo({
-      left: nextIndex * rail.clientWidth,
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-    });
+    if (rail)
+      scrollRailTo(rail, nextIndex * rail.clientWidth, !prefersReducedMotion);
     setActiveIndex(nextIndex);
   };
 
+  /* The rail is the source of truth for which slide is showing. Deriving the
+     dots from state alone let the indicator advance while the DOM stood still. */
   const handleScroll = () => {
     const rail = railRef.current;
     if (!rail || rail.clientWidth === 0) return;
@@ -171,11 +229,15 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
     >
+      {/* The slide titles are `h3`, so the homepage outline went h1 -> h3 with
+          nothing in between. Hidden visually — the rail is self-evident. */}
+      <h2 className="sr-only">{t("home.heroBoostedScroll.carouselLabel")}</h2>
+
       <div className="relative overflow-hidden rounded-card shadow-sm">
         <div
           id="hero-boosted-track"
           ref={railRef}
-          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth scrollbar-none"
+          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scrollbar-none"
           aria-label={t("home.heroBoostedScroll.carouselLabel")}
           onScroll={handleScroll}
         >
@@ -192,7 +254,10 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.previous")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex - 1)}
-              className="absolute left-3 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white"
+              /* Hidden on phones: the card is short enough there that a
+                 vertically centred arrow lands on top of the title overlay, and
+                 the rail already swipes. */
+              className="absolute left-3 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white sm:inline-flex"
             >
               <ChevronLeft className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -202,7 +267,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.next")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex + 1)}
-              className="absolute right-3 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white"
+              className="absolute right-3 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white sm:inline-flex"
             >
               <ChevronRight className="h-icon-lg w-icon-lg" />
             </IconButton>
