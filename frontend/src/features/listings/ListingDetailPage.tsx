@@ -471,7 +471,7 @@ export const ListingDetailPage: React.FC = () => {
                 </div>
 
                 {/* Main H1 Title */}
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 leading-[1.1] tracking-[-0.01em]">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 leading-tight tracking-tight">
                   {listing.title}
                 </h1>
               </div>
@@ -534,7 +534,7 @@ export const ListingDetailPage: React.FC = () => {
               Description
             </h2>
             <div
-              className={`text-sm text-stone-600 leading-[1.7] whitespace-pre-line font-medium ${
+              className={`text-sm text-stone-600 leading-loose whitespace-pre-line font-medium ${
                 !isDescriptionExpanded && listing.description.length > 450 ? 'line-clamp-6 relative' : ''
               }`}
             >

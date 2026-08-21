@@ -174,7 +174,7 @@ export const MFAModal: React.FC<MFAModalProps> = ({
                 onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="123456"
                 required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+                className="w-full px-4 py-3 text-center tracking-code text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
               />
             </div>
 

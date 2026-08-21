@@ -39,7 +39,19 @@ export const themeColors = {
   overlay: 'rgb(28 25 23 / 0.6)',
   scrollbar: '#D6D3CD',
   'scrollbar-hover': '#A8A29E',
+  'stone-50': '#FAFAF9',
+  'stone-100': '#F5F5F4',
+  'stone-200': '#E7E5E4',
+  'stone-300': '#D6D3D1',
+  'stone-400': '#A8A29E',
+  'stone-500': '#736C66',
+  'stone-600': '#57534E',
+  'stone-700': '#44403C',
+  'stone-800': '#292524',
   'stone-900': '#1C1917',
+  'stone-950': '#0C0A09',
+  white: '#FFFFFF',
+  black: '#000000',
 
   success: '#15803D',
   'success-surface': '#F0FDF4',
@@ -159,6 +171,7 @@ export const themeLetterSpacing = {
   normal: '0',
   wide: '0.025em',
   wider: '0.05em',
+  code: '0.5em',
 } as const;
 
 /** Owned 4px spacing base plus semantic component dimensions. */

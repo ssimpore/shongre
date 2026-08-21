@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { usePersona } from './personas';
 import { expectNoHorizontalOverflow, waitForStableLayout } from './overflow';
+import { ALL_ROUTES } from './routes';
 
 const seedConsentDecision = async (page: Page) => {
   await page.addInitScript(() => {
@@ -121,6 +122,39 @@ test.describe('design-token runtime contracts', () => {
     expect(font.family).toContain('Inter Variable');
     expect(font.synthesis).toBe('none');
     expect(font.loaded).toBe(true);
+  });
+
+  test('keeps every routed surface on token-backed typography', async ({ page }) => {
+    // This is deliberately a route-wide audit (public, account, Pro, admin
+    // and CRM), so it needs more time than a single-surface contract while
+    // remaining bounded in CI.
+    test.setTimeout(120_000);
+    for (const route of ALL_ROUTES) {
+      await usePersona(page, route.persona);
+      await page.goto(route.path, { waitUntil: 'networkidle' });
+      await waitForStableLayout(page);
+
+      const audit = await page.evaluate(() => {
+        const arbitraryTypography = [...document.querySelectorAll<HTMLElement>('[class]')]
+          .flatMap((element) => String(element.className).split(/\s+/))
+          .filter((className) => /^(?:[a-z-]+:)*(?:text|leading|tracking|font)-\[[^\]]+\]$/.test(className));
+        const inlineTypography = [...document.querySelectorAll<HTMLElement>('[style]')]
+          .filter((element) => /(?:font-family|font-size|font-weight|line-height|letter-spacing)/i.test(element.getAttribute('style') || ''))
+          .map((element) => element.outerHTML.slice(0, 180));
+        const body = getComputedStyle(document.body);
+        return {
+          arbitraryTypography,
+          inlineTypography,
+          bodyFontFamily: body.fontFamily,
+          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        };
+      });
+
+      expect(audit.arbitraryTypography, `${route.name} contains arbitrary typography`).toEqual([]);
+      expect(audit.inlineTypography, `${route.name} contains inline typography`).toEqual([]);
+      expect(audit.bodyFontFamily, `${route.name} lost the bundled UI font`).toContain('Inter Variable');
+      expect(audit.overflow, `${route.name} overflows horizontally`).toBe(false);
+    }
   });
 
   test('keeps native registration fields on the touch size and control radius', async ({ page }) => {

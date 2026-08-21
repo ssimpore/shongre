@@ -207,7 +207,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
                 placeholder="123456"
                 autoFocus
                 required
-                className="w-full px-4 py-3 text-center tracking-[0.5em] text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+                className="w-full px-4 py-3 text-center tracking-code text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
               />
             </div>
 

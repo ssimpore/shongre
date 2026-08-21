@@ -50,6 +50,18 @@ const BANNED = [
     hint: 'a named step — text-micro / text-xs / text-sm / text-card-title / text-hero',
   },
   {
+    re: /\b(?:[a-z-]+:)*leading-\[[^\]]+\]/,
+    hint: 'leading-{none|tight|snug|normal|relaxed|loose} or a named semantic token',
+  },
+  {
+    re: /\b(?:[a-z-]+:)*tracking-\[[^\]]+\]/,
+    hint: 'tracking-{tighter|tight|normal|wide|wider|code} or a named semantic token',
+  },
+  {
+    re: /\b(?:[a-z-]+:)*font-\[[^\]]+\]/,
+    hint: 'font-{normal|medium|semibold|bold|extrabold|black} or a named font token',
+  },
+  {
     re: /\b(?:[a-z0-9-]+:)*(?:bg|text|border|ring|outline|fill|stroke)-\[#[0-9a-f]{3,8}\]/i,
     hint: 'a semantic --color-* token declared in src/index.css',
   },
@@ -157,6 +169,32 @@ for (const file of walk(ROOT)) {
   });
 }
 
+/* Typography must be expressed through classes backed by @theme. Inline
+   typography bypasses responsive variants, the shared font stack and the
+   accessibility floor, so keep it out of feature components. Token mirrors
+   are the one intentional exception and are already covered by parity tests. */
+const inlineTypography = [];
+for (const file of walk(ROOT)) {
+  if (!file.endsWith('.tsx')) continue;
+  if (file.includes('/design-system/tokens/')) continue;
+  const source = readFileSync(file, 'utf8');
+  const pattern = /style\s*=\s*\{\{[^}]*\b(fontFamily|fontSize|fontWeight|lineHeight|letterSpacing)\b[^}]*\}\}/g;
+  for (const match of source.matchAll(pattern)) {
+    const line = source.slice(0, match.index).split('\n').length;
+    inlineTypography.push({ file: relative('.', file), line, found: match[0].slice(0, 120) });
+  }
+}
+
+if (inlineTypography.length > 0) {
+  console.error(`\n✘ design tokens: ${inlineTypography.length} inline typography style(s).\n`);
+  console.error('  Use Typography/Text primitives or token-backed utility classes so type remains responsive and consistent.\n');
+  for (const v of inlineTypography.slice(0, 40)) {
+    console.error(`  ${v.file}:${v.line}\n      ${v.found}`);
+  }
+  if (inlineTypography.length > 40) console.error(`\n  …and ${inlineTypography.length - 40} more.`);
+  console.error('');
+}
+
 if (undeclared.length > 0) {
   console.error(`\n✘ design tokens: ${undeclared.length} class(es) name an undeclared token.\n`);
   console.error(`  Tailwind emits no CSS for these, so they are silently inert.`);
@@ -168,12 +206,12 @@ if (undeclared.length > 0) {
   console.error('');
 }
 
-if (violations.length === 0 && undeclared.length === 0) {
+if (violations.length === 0 && undeclared.length === 0 && inlineTypography.length === 0) {
   console.log('✔ design system: semantic colors, type, radii, elevation, motion and stacking checks passed');
   process.exit(0);
 }
 
-if (violations.length === 0) process.exit(1);
+if (violations.length === 0 && inlineTypography.length > 0) process.exit(1);
 
 console.error(`\n✘ design tokens: ${violations.length} off-scale value(s).\n`);
 console.error('  These have exact semantic equivalents — see the ramp and type-scale comments in src/index.css.\n');

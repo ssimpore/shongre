@@ -42,7 +42,16 @@
   --color-overlay: rgb(28 25 23 / 0.6);
   --color-scrollbar: #D6D3CD;
   --color-scrollbar-hover: #A8A29E;
-  --color-stone-900: #1C1917;
+  /* The feature layer still uses the Tailwind stone vocabulary in many dense
+     legacy compositions. Declare the complete ramp here so those utilities
+     resolve through Shongre's theme instead of silently depending on a
+     framework default. The values preserve the existing rendered palette;
+     semantic aliases remain preferred for new UI. */
+  --color-stone-50: #FAFAF9;
+  --color-stone-100: #F5F5F4;
+  --color-stone-200: #E7E5E4;
+  --color-stone-300: #D6D3D1;
+  --color-stone-400: #A8A29E;
 
   /* `stone-500` is the platform's secondary-text weight (the codebase uses the
      stone-* vocabulary rather than the semantic aliases above). Tailwind's own
@@ -50,6 +59,13 @@
      failed AA on the tinted surfaces Shongre actually uses. This is the smallest
      darkening that clears 4.5:1 on white, bg-base, bg-subtle and primary-light. */
   --color-stone-500: #736C66;
+  --color-stone-600: #57534E;
+  --color-stone-700: #44403C;
+  --color-stone-800: #292524;
+  --color-stone-900: #1C1917;
+  --color-stone-950: #0C0A09;
+  --color-white: #FFFFFF;
+  --color-black: #000000;
 
   /* --- Semantic status ---------------------------------------------------
      Use these instead of reaching into raw emerald/amber/red/sky palettes so
@@ -232,6 +248,7 @@
   --tracking-normal: 0;
   --tracking-wide: 0.025em;
   --tracking-wider: 0.05em;
+  --tracking-code: 0.5em;
 
   /* --- Spacing & component metrics ---------------------------------------
      Declaring the base makes the familiar p-1/gap-4 scale an owned 4px system,

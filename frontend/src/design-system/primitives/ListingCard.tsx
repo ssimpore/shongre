@@ -321,7 +321,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
               price sits at the same height on every card in a row.
 
               The reservation is `2.8em` — exactly the two clamped lines at
-              `leading-[1.4]` — and not a fixed rem. A hard `2.75rem` was 44px
+              `leading-snug` — and not a fixed rem. A hard `2.75rem` was 44px
               against a 39.2px clamp, so the box was 2.24 line-heights tall and
               the extra quarter-line painted the sliced top of line three under
               the ellipsis on every card. An em-based reservation also stays
