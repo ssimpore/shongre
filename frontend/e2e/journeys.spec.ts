@@ -31,7 +31,11 @@ test.describe('public browsing', () => {
     await page.goto('/');
     await waitForStableLayout(page);
 
-    const card = page.locator('div.w-listing-card article.group.h-full').first();
+    const card = page
+      .locator('div.w-listing-card')
+      .filter({ has: page.locator('[aria-label$="photos"]') })
+      .getByRole('article')
+      .first();
     await expect(card).toBeVisible();
     await expect(card.locator('[aria-label^="Note "]')).toBeVisible();
     await expect(card.locator('[aria-label$="photos"]')).toHaveCount(1);

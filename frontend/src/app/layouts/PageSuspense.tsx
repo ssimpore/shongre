@@ -1,5 +1,5 @@
-import React from 'react';
-import { Skeleton } from '../../design-system';
+import React from "react";
+import { Skeleton } from "../../design-system";
 
 export const PageSuspense: React.FC = () => {
   return (

@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollRestoration } from 'react-router-dom';
+import React from "react";
+import { ScrollRestoration } from "react-router-dom";
 
 /**
  * Scroll behaviour for the whole application.

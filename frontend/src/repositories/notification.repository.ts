@@ -8,10 +8,10 @@ import {
   NotificationPreferences,
   NotificationQuery,
   NotificationPageResult,
-} from '../domains/notifications/notification.types';
-import { notificationService } from '../domains/notifications/notification.service';
-import { storageService } from '../services/storage.service';
-import { notificationRealtimeClient } from '../domains/notifications/notification.realtime';
+} from "../domains/notifications/notification.types";
+import { notificationService } from "../domains/notifications/notification.service";
+import { storageService } from "../services/storage.service";
+import { notificationRealtimeClient } from "../domains/notifications/notification.realtime";
 
 export interface INotificationRepository {
   getNotifications(query?: NotificationQuery): Promise<NotificationPageResult>;
@@ -19,42 +19,63 @@ export interface INotificationRepository {
   markAsRead(id: string): Promise<void>;
   markAllAsRead(userId: string): Promise<void>;
   getPreferences(userId: string): Promise<NotificationPreferences>;
-  updatePreferences(userId: string, preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences>;
+  updatePreferences(
+    userId: string,
+    preferences: Partial<NotificationPreferences>,
+  ): Promise<NotificationPreferences>;
   createNotification(notification: Notification): Promise<Notification>;
   deleteNotification(id: string): Promise<void>;
 }
 
 export class MockNotificationRepository implements INotificationRepository {
-  async getNotifications(query?: NotificationQuery): Promise<NotificationPageResult> {
+  async getNotifications(
+    query?: NotificationQuery,
+  ): Promise<NotificationPageResult> {
     const rawList = storageService.getNotifications();
     const recipientId = query?.recipientId;
 
     // Filter by recipient if provided
     let list = recipientId
-      ? rawList.filter((n: any) => !n.recipientId || n.recipientId === recipientId || n.userId === recipientId)
+      ? rawList.filter(
+          (n: any) =>
+            !n.recipientId ||
+            n.recipientId === recipientId ||
+            n.userId === recipientId,
+        )
       : rawList;
 
     // Normalization to canonical Notification
     let normalized: Notification[] = list.map((item: any) => ({
       id: item.id,
-      type: item.type || 'system',
-      category: item.category || 'system',
-      recipientId: item.recipientId || item.userId || recipientId || 'user-thomas',
+      type: item.type || "system",
+      category: item.category || "system",
+      recipientId:
+        item.recipientId || item.userId || recipientId || "user-thomas",
       title: item.title,
-      body: item.body || item.message || '',
+      body: item.body || item.message || "",
       createdAt: item.createdAt || new Date().toISOString(),
       readAt: item.readAt || (item.isRead ? item.createdAt : null),
-      priority: item.priority || 'normal',
+      priority: item.priority || "normal",
       context: item.context,
-      actions: item.actions || (item.linkUrl || item.link ? [{ id: 'act-1', label: 'Voir', destination: item.linkUrl || item.link }] : undefined),
-      status: item.isRead ? 'read' : 'unread',
+      actions:
+        item.actions ||
+        (item.linkUrl || item.link
+          ? [
+              {
+                id: "act-1",
+                label: "Voir",
+                destination: item.linkUrl || item.link,
+              },
+            ]
+          : undefined),
+      status: item.isRead ? "read" : "unread",
       isRead: !!item.isRead,
     }));
 
     // Status filter
-    if (query?.status === 'unread') {
+    if (query?.status === "unread") {
       normalized = normalized.filter((n) => !n.isRead);
-    } else if (query?.status === 'read') {
+    } else if (query?.status === "read") {
       normalized = normalized.filter((n) => n.isRead);
     }
 
@@ -64,7 +85,10 @@ export class MockNotificationRepository implements INotificationRepository {
     }
 
     // Sort most recent first
-    normalized.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    normalized.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 
     const total = normalized.length;
     const unreadCount = normalized.filter((n) => !n.isRead).length;
@@ -82,7 +106,10 @@ export class MockNotificationRepository implements INotificationRepository {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const res = await this.getNotifications({ recipientId: userId, status: 'unread' });
+    const res = await this.getNotifications({
+      recipientId: userId,
+      status: "unread",
+    });
     return res.unreadCount;
   }
 
@@ -92,8 +119,8 @@ export class MockNotificationRepository implements INotificationRepository {
     const found = rawList.find((n: any) => n.id === id);
     if (found) {
       notificationRealtimeClient.broadcast({
-        type: 'notification.read',
-        recipientId: (found as any).recipientId || found.userId || '',
+        type: "notification.read",
+        recipientId: (found as any).recipientId || found.userId || "",
         payload: { id },
         timestamp: new Date().toISOString(),
       });
@@ -103,7 +130,7 @@ export class MockNotificationRepository implements INotificationRepository {
   async markAllAsRead(userId: string): Promise<void> {
     storageService.markAllNotificationsRead();
     notificationRealtimeClient.broadcast({
-      type: 'notification.all_read',
+      type: "notification.all_read",
       recipientId: userId,
       payload: {},
       timestamp: new Date().toISOString(),
@@ -111,14 +138,17 @@ export class MockNotificationRepository implements INotificationRepository {
   }
 
   async getPreferences(userId: string): Promise<NotificationPreferences> {
-    const saved = storageService.getNotificationPreferences<NotificationPreferences>(userId);
+    const saved =
+      storageService.getNotificationPreferences<NotificationPreferences>(
+        userId,
+      );
     if (saved) return saved;
     return notificationService.getDefaultPreferences(userId);
   }
 
   async updatePreferences(
     userId: string,
-    preferences: Partial<NotificationPreferences>
+    preferences: Partial<NotificationPreferences>,
   ): Promise<NotificationPreferences> {
     const current = await this.getPreferences(userId);
     const updated: NotificationPreferences = {
@@ -143,7 +173,7 @@ export class MockNotificationRepository implements INotificationRepository {
       type: notification.type,
       category: notification.category,
       priority: notification.priority,
-      linkUrl: notification.actions?.[0]?.destination || '',
+      linkUrl: notification.actions?.[0]?.destination || "",
       actions: notification.actions,
       context: notification.context,
       isRead: false,
@@ -153,7 +183,7 @@ export class MockNotificationRepository implements INotificationRepository {
     storageService.saveNotifications(currentList);
 
     notificationRealtimeClient.broadcast({
-      type: 'notification.created',
+      type: "notification.created",
       recipientId: notification.recipientId,
       payload: notification,
       timestamp: notification.createdAt,
@@ -169,4 +199,5 @@ export class MockNotificationRepository implements INotificationRepository {
   }
 }
 
-export const notificationRepository: INotificationRepository = new MockNotificationRepository();
+export const notificationRepository: INotificationRepository =
+  new MockNotificationRepository();

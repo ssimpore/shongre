@@ -23,21 +23,39 @@
  *
  * Run: node scripts/check-design-tokens.mjs
  */
-import { readdirSync, readFileSync } from 'fs';
-import { join, relative } from 'path';
+import { readdirSync, readFileSync } from "fs";
+import { join, relative } from "path";
 
-const ROOT = 'src';
-const THEME_SOURCE = 'src/index.css';
+const ROOT = "src";
+const THEME_SOURCE = "../packages/design-tokens/dist/tokens.css";
 
 /** Utility+shade combinations that have an exact semantic token equivalent. */
 const BANNED = [
-  { re: /\b(?:[a-z-]+:)*bg-(emerald|green|red|rose|amber|yellow|sky|blue)-(?:50|100)\b/, hint: 'bg-{success|warning|danger|info}-surface' },
-  { re: /\b(?:[a-z-]+:)*(?:border|ring|divide|outline)-(emerald|green|red|rose|amber|yellow|sky|blue)-(?:100|200|300)\b/, hint: 'border-{…}-border' },
-  { re: /\b(?:[a-z-]+:)*(?:text|fill|stroke)-(emerald|green|red|rose|sky|blue)-(?:500|600|700|800|900|950)\b/, hint: 'text-{success|danger|info}' },
-  { re: /\b(?:[a-z-]+:)*(?:text|fill|stroke)-(amber|yellow)-(?:600|700|800|900|950)\b/, hint: 'text-warning' },
-  { re: /\b(?:[a-z-]+:)*bg-(emerald|green|red|rose|sky|blue)-(?:500|600|700)\b/, hint: 'bg-{success|danger|info}' },
+  {
+    re: /\b(?:[a-z-]+:)*bg-(emerald|green|red|rose|amber|yellow|sky|blue)-(?:50|100)\b/,
+    hint: "bg-{success|warning|danger|info}-surface",
+  },
+  {
+    re: /\b(?:[a-z-]+:)*(?:border|ring|divide|outline)-(emerald|green|red|rose|amber|yellow|sky|blue)-(?:100|200|300)\b/,
+    hint: "border-{…}-border",
+  },
+  {
+    re: /\b(?:[a-z-]+:)*(?:text|fill|stroke)-(emerald|green|red|rose|sky|blue)-(?:500|600|700|800|900|950)\b/,
+    hint: "text-{success|danger|info}",
+  },
+  {
+    re: /\b(?:[a-z-]+:)*(?:text|fill|stroke)-(amber|yellow)-(?:600|700|800|900|950)\b/,
+    hint: "text-warning",
+  },
+  {
+    re: /\b(?:[a-z-]+:)*bg-(emerald|green|red|rose|sky|blue)-(?:500|600|700)\b/,
+    hint: "bg-{success|danger|info}",
+  },
   // Error-state borders are unambiguous, unlike amber's 400/500 accent range.
-  { re: /\b(?:[a-z-]+:)*border-(red|rose)-(?:400|500)\b/, hint: 'border-danger' },
+  {
+    re: /\b(?:[a-z-]+:)*border-(red|rose)-(?:400|500)\b/,
+    hint: "border-danger",
+  },
   /* Arbitrary type sizes. The scale in src/index.css documents `micro` (11px)
      as the smallest size allowed anywhere — "for badges, counters and dense
      metadata only, never for body copy". 45 call sites ignored it, including
@@ -47,51 +65,51 @@ const BANNED = [
      `--text-hero`), not a bracket. */
   {
     re: /\b(?:[a-z-]+:)*text-\[[0-9.]+(?:px|rem|em)\]/,
-    hint: 'a named step — text-micro / text-xs / text-sm / text-card-title / text-hero',
+    hint: "a named step — text-micro / text-xs / text-sm / text-card-title / text-hero",
   },
   {
     re: /\b(?:[a-z-]+:)*leading-\[[^\]]+\]/,
-    hint: 'leading-{none|tight|snug|normal|relaxed|loose} or a named semantic token',
+    hint: "leading-{none|tight|snug|normal|relaxed|loose} or a named semantic token",
   },
   {
     re: /\b(?:[a-z-]+:)*tracking-\[[^\]]+\]/,
-    hint: 'tracking-{tighter|tight|normal|wide|wider|code} or a named semantic token',
+    hint: "tracking-{tighter|tight|normal|wide|wider|code} or a named semantic token",
   },
   {
     re: /\b(?:[a-z-]+:)*font-\[[^\]]+\]/,
-    hint: 'font-{normal|medium|semibold|bold|extrabold|black} or a named font token',
+    hint: "font-{normal|medium|semibold|bold|extrabold|black} or a named font token",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*(?:bg|text|border|ring|outline|fill|stroke)-\[#[0-9a-f]{3,8}\]/i,
-    hint: 'a semantic --color-* token declared in src/index.css',
+    hint: "a semantic --color-* token declared in src/index.css",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*rounded(?:-[trbl]{1,2})?-\[[^\]]+\]/,
-    hint: 'rounded-{xs|sm|md|lg|xl|2xl|3xl|card|overlay|pill}',
+    hint: "rounded-{xs|sm|md|lg|xl|2xl|3xl|card|overlay|pill}",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*shadow-\[[^\]]+\]/,
-    hint: 'shadow-{xs|sm|md|lg|dropdown|overlay|sticky}',
+    hint: "shadow-{xs|sm|md|lg|dropdown|overlay|sticky}",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*z-(?:\[[^\]]+\]|[0-9]+)\b/,
-    hint: 'z-{base|raised|sticky|dropdown|popover|header|drawer|modal|toast|tooltip}',
+    hint: "z-{base|raised|sticky|dropdown|popover|header|drawer|modal|toast|tooltip}",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*duration-(?:\[[^\]]+\]|[0-9]+)\b/,
-    hint: 'duration-{fast|normal|slow}',
+    hint: "duration-{fast|normal|slow}",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*stroke-\[[^\]]+\]/,
-    hint: 'the Icon primitive weight or a named stroke utility',
+    hint: "the Icon primitive weight or a named stroke utility",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*opacity-\[[^\]]+\]/,
-    hint: 'an owned opacity step',
+    hint: "an owned opacity step",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*(?:min-)?h-\[(?:32|36|40|42|44|48|52|56)px\]/,
-    hint: 'h-control-{sm|md|touch|lg|fab}',
+    hint: "h-control-{sm|md|touch|lg|fab}",
   },
 ];
 
@@ -109,32 +127,37 @@ const BANNED = [
    class in one of those families can only resolve through `@theme` — which
    makes the check exact, with no built-in palette to produce false positives.
    --------------------------------------------------------------------------- */
-const OWNED_FAMILIES = ['primary', 'danger', 'success', 'warning', 'info'];
+const OWNED_FAMILIES = ["primary", "danger", "success", "warning", "info"];
 
 /** Colour utilities whose value resolves from the `--color-*` namespace. */
 const COLOR_UTILITIES =
-  'bg|text|border|ring|outline|divide|fill|stroke|shadow|accent|caret|decoration|placeholder|from|via|to';
+  "bg|text|border|ring|outline|divide|fill|stroke|shadow|accent|caret|decoration|placeholder|from|via|to";
 
 function declaredColorTokens() {
-  const css = readFileSync(THEME_SOURCE, 'utf8');
-  const start = css.indexOf('@theme {');
+  const css = readFileSync(THEME_SOURCE, "utf8");
+  const start = css.indexOf("@theme {");
   if (start === -1) throw new Error(`${THEME_SOURCE} declares no @theme block`);
   let depth = 0;
   let end = css.length;
-  for (let i = css.indexOf('{', start); i < css.length; i++) {
-    if (css[i] === '{') depth++;
-    else if (css[i] === '}' && --depth === 0) { end = i; break; }
+  for (let i = css.indexOf("{", start); i < css.length; i++) {
+    if (css[i] === "{") depth++;
+    else if (css[i] === "}" && --depth === 0) {
+      end = i;
+      break;
+    }
   }
   const block = css.slice(start, end);
-  return new Set(Array.from(block.matchAll(/--color-([a-z0-9-]+)\s*:/gi), (m) => m[1]));
+  return new Set(
+    Array.from(block.matchAll(/--color-([a-z0-9-]+)\s*:/gi), (m) => m[1]),
+  );
 }
 
 const declared = declaredColorTokens();
 
 // e.g. `hover:bg-danger-hover`, `md:border-t-primary-border`, `shadow-primary/20`
 const OWNED_CLASS = new RegExp(
-  `(?:^|[\\s"'\`{])(?:[a-z0-9-]+:)*(?:${COLOR_UTILITIES})(?:-[trblxyse])?-((?:${OWNED_FAMILIES.join('|')})(?:-[a-z0-9-]+)?)(?:/[^\\s"'\`]+)?(?=$|[\\s"'\`}])`,
-  'g',
+  `(?:^|[\\s"'\`{])(?:[a-z0-9-]+:)*(?:${COLOR_UTILITIES})(?:-[trblxyse])?-((?:${OWNED_FAMILIES.join("|")})(?:-[a-z0-9-]+)?)(?:/[^\\s"'\`]+)?(?=$|[\\s"'\`}])`,
+  "g",
 );
 
 function findUndeclaredTokens(line) {
@@ -157,14 +180,20 @@ function walk(dir, out = []) {
 const violations = [];
 const undeclared = [];
 for (const file of walk(ROOT)) {
-  const lines = readFileSync(file, 'utf8').split('\n');
+  const lines = readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
     for (const { re, hint } of BANNED) {
       const m = line.match(re);
-      if (m) violations.push({ file: relative('.', file), line: i + 1, found: m[0], hint });
+      if (m)
+        violations.push({
+          file: relative(".", file),
+          line: i + 1,
+          found: m[0],
+          hint,
+        });
     }
     for (const token of findUndeclaredTokens(line)) {
-      undeclared.push({ file: relative('.', file), line: i + 1, token });
+      undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
   });
 }
@@ -175,49 +204,77 @@ for (const file of walk(ROOT)) {
    are the one intentional exception and are already covered by parity tests. */
 const inlineTypography = [];
 for (const file of walk(ROOT)) {
-  if (!file.endsWith('.tsx')) continue;
-  if (file.includes('/design-system/tokens/')) continue;
-  const source = readFileSync(file, 'utf8');
-  const pattern = /style\s*=\s*\{\{[^}]*\b(fontFamily|fontSize|fontWeight|lineHeight|letterSpacing)\b[^}]*\}\}/g;
+  if (!file.endsWith(".tsx")) continue;
+  if (file.includes("/design-system/tokens/")) continue;
+  const source = readFileSync(file, "utf8");
+  const pattern =
+    /style\s*=\s*\{\{[^}]*\b(fontFamily|fontSize|fontWeight|lineHeight|letterSpacing)\b[^}]*\}\}/g;
   for (const match of source.matchAll(pattern)) {
-    const line = source.slice(0, match.index).split('\n').length;
-    inlineTypography.push({ file: relative('.', file), line, found: match[0].slice(0, 120) });
+    const line = source.slice(0, match.index).split("\n").length;
+    inlineTypography.push({
+      file: relative(".", file),
+      line,
+      found: match[0].slice(0, 120),
+    });
   }
 }
 
 if (inlineTypography.length > 0) {
-  console.error(`\n✘ design tokens: ${inlineTypography.length} inline typography style(s).\n`);
-  console.error('  Use Typography/Text primitives or token-backed utility classes so type remains responsive and consistent.\n');
+  console.error(
+    `\n✘ design tokens: ${inlineTypography.length} inline typography style(s).\n`,
+  );
+  console.error(
+    "  Use Typography/Text primitives or token-backed utility classes so type remains responsive and consistent.\n",
+  );
   for (const v of inlineTypography.slice(0, 40)) {
     console.error(`  ${v.file}:${v.line}\n      ${v.found}`);
   }
-  if (inlineTypography.length > 40) console.error(`\n  …and ${inlineTypography.length - 40} more.`);
-  console.error('');
+  if (inlineTypography.length > 40)
+    console.error(`\n  …and ${inlineTypography.length - 40} more.`);
+  console.error("");
 }
 
 if (undeclared.length > 0) {
-  console.error(`\n✘ design tokens: ${undeclared.length} class(es) name an undeclared token.\n`);
-  console.error(`  Tailwind emits no CSS for these, so they are silently inert.`);
-  console.error(`  Declare the token in ${THEME_SOURCE} (and mirror it in tokens/theme.ts), or use one that exists.\n`);
+  console.error(
+    `\n✘ design tokens: ${undeclared.length} class(es) name an undeclared token.\n`,
+  );
+  console.error(
+    `  Tailwind emits no CSS for these, so they are silently inert.`,
+  );
+  console.error(
+    `  Declare the token in ${THEME_SOURCE} (and mirror it in tokens/theme.ts), or use one that exists.\n`,
+  );
   for (const u of undeclared.slice(0, 40)) {
-    console.error(`  ${u.file}:${u.line}\n      --color-${u.token} is not declared`);
+    console.error(
+      `  ${u.file}:${u.line}\n      --color-${u.token} is not declared`,
+    );
   }
-  if (undeclared.length > 40) console.error(`\n  …and ${undeclared.length - 40} more.`);
-  console.error('');
+  if (undeclared.length > 40)
+    console.error(`\n  …and ${undeclared.length - 40} more.`);
+  console.error("");
 }
 
-if (violations.length === 0 && undeclared.length === 0 && inlineTypography.length === 0) {
-  console.log('✔ design system: semantic colors, type, radii, elevation, motion and stacking checks passed');
+if (
+  violations.length === 0 &&
+  undeclared.length === 0 &&
+  inlineTypography.length === 0
+) {
+  console.log(
+    "✔ design system: semantic colors, type, radii, elevation, motion and stacking checks passed",
+  );
   process.exit(0);
 }
 
 if (violations.length === 0 && inlineTypography.length > 0) process.exit(1);
 
 console.error(`\n✘ design tokens: ${violations.length} off-scale value(s).\n`);
-console.error('  These have exact semantic equivalents — see the ramp and type-scale comments in src/index.css.\n');
+console.error(
+  "  These have exact semantic equivalents — see the ramp and type-scale comments in src/index.css.\n",
+);
 for (const v of violations.slice(0, 40)) {
   console.error(`  ${v.file}:${v.line}\n      ${v.found}  →  ${v.hint}`);
 }
-if (violations.length > 40) console.error(`\n  …and ${violations.length - 40} more.`);
-console.error('');
+if (violations.length > 40)
+  console.error(`\n  …and ${violations.length - 40} more.`);
+console.error("");
 process.exit(1);

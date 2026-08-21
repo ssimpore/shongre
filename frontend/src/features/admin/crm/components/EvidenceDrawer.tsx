@@ -1,9 +1,14 @@
-import React from 'react';
-import { ExternalLink, ShieldCheck,  CheckCircle2, AlertTriangle } from 'lucide-react';
-import { Drawer } from '../../../../design-system/primitives/Modal';
-import { Badge } from '../../../../design-system/primitives/Badge';
-import { ProspectResearchCandidate } from '../../../../domains/crm/crm.types';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React from "react";
+import {
+  ExternalLink,
+  ShieldCheck,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
+import { Drawer } from "../../../../design-system/primitives/Modal";
+import { Badge } from "../../../../design-system/primitives/Badge";
+import { ProspectResearchCandidate } from "../../../../domains/crm/crm.types";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface EvidenceDrawerProps {
   isOpen: boolean;
@@ -31,7 +36,9 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
         {/* Fit Score Header */}
         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-stone-900 text-xs">{t('admin.evidenceDrawer.fitShongreEstime')}</span>
+            <span className="font-bold text-stone-900 text-xs">
+              {t("admin.evidenceDrawer.fitShongreEstime")}
+            </span>
             <span className="text-base font-black text-primary">
               {candidate.fit.score} / 100
             </span>
@@ -47,12 +54,19 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
 
         {/* Reasons & Signals */}
         <div className="space-y-2">
-          <h4 className="font-black text-stone-900 text-xs uppercase tracking-wider">{t('admin.evidenceDrawer.pourquoiCetteEntrepriseCorrespond')}</h4>
+          <h4 className="font-black text-stone-900 text-xs uppercase tracking-wider">
+            {t("admin.evidenceDrawer.pourquoiCetteEntrepriseCorrespond")}
+          </h4>
           <div className="space-y-2">
             {candidate.fit.reasons.map((reason, idx) => (
-              <div key={idx} className="flex items-start gap-2 p-2.5 bg-stone-50 rounded-xl">
+              <div
+                key={idx}
+                className="flex items-start gap-2 p-2.5 bg-stone-50 rounded-xl"
+              >
                 <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                <span className="text-stone-800 leading-relaxed text-xs">{reason}</span>
+                <span className="text-stone-800 leading-relaxed text-xs">
+                  {reason}
+                </span>
               </div>
             ))}
           </div>
@@ -80,7 +94,10 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
 
           <div className="space-y-3">
             {candidate.sources.map((src) => (
-              <div key={src.id} className="p-3.5 border border-stone-200 rounded-2xl bg-white space-y-2 shadow-xs">
+              <div
+                key={src.id}
+                className="p-3.5 border border-stone-200 rounded-2xl bg-white space-y-2 shadow-xs"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="neutral" size="sm">
                     {src.sourceType}
@@ -91,12 +108,14 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
                     rel="noopener noreferrer"
                     className="text-primary hover:underline flex items-center gap-1 font-bold text-micro"
                   >
-                    <span>{t('admin.evidenceDrawer.consulterLaSource')}</span>
+                    <span>{t("admin.evidenceDrawer.consulterLaSource")}</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
 
-                <h5 className="font-bold text-stone-900 text-xs">{src.title}</h5>
+                <h5 className="font-bold text-stone-900 text-xs">
+                  {src.title}
+                </h5>
 
                 {src.snippet && (
                   <p className="text-micro text-stone-600 bg-stone-50 p-2 rounded-lg font-mono leading-relaxed">
@@ -105,7 +124,10 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
                 )}
 
                 <div className="text-micro text-stone-500">
-                  URL : <span className="font-mono text-stone-600 truncate">{src.url}</span>
+                  URL :{" "}
+                  <span className="font-mono text-stone-600 truncate">
+                    {src.url}
+                  </span>
                 </div>
               </div>
             ))}
@@ -115,7 +137,9 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
         {/* Transparency Notice */}
         <div className="p-3.5 bg-stone-100 rounded-xl flex items-start gap-2.5 text-micro text-stone-500">
           <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-          <span>{t('admin.evidenceDrawer.cesInformationsSontIssuesExclusivement')}</span>
+          <span>
+            {t("admin.evidenceDrawer.cesInformationsSontIssuesExclusivement")}
+          </span>
         </div>
       </div>
     </Drawer>

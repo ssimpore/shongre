@@ -1,10 +1,13 @@
-import React from 'react';
-import { Search, MessageSquare,     X } from 'lucide-react';
-import { ConversationPreview, InboxFilterTab } from '../../../domains/messaging/messaging.types';
-import { formatRelativeDate, formatPrice } from '../../../utilities/formatters';
-import { Badge, Avatar } from '../../../design-system/primitives/Badge';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
+import React from "react";
+import { Search, MessageSquare, X } from "lucide-react";
+import {
+  ConversationPreview,
+  InboxFilterTab,
+} from "../../../domains/messaging/messaging.types";
+import { formatRelativeDate, formatPrice } from "../../../utilities/formatters";
+import { Badge, Avatar } from "../../../design-system/primitives/Badge";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
@@ -28,14 +31,17 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   isLoading = false,
 }) => {
   const { t } = useTranslation();
-  const unreadTotal = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+  const unreadTotal = conversations.reduce(
+    (acc, c) => acc + (c.unreadCount || 0),
+    0,
+  );
 
   const tabs: { id: InboxFilterTab; label: string; count?: number }[] = [
-    { id: 'all', label: 'Tous' },
-    { id: 'unread', label: 'Non lus', count: unreadTotal },
-    { id: 'purchases', label: 'Achats' },
-    { id: 'sales', label: 'Ventes' },
-    { id: 'transactions', label: 'Commandes' },
+    { id: "all", label: "Tous" },
+    { id: "unread", label: "Non lus", count: unreadTotal },
+    { id: "purchases", label: "Achats" },
+    { id: "sales", label: "Ventes" },
+    { id: "transactions", label: "Commandes" },
   ];
 
   return (
@@ -49,7 +55,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           </h1>
           {unreadTotal > 0 && (
             <Badge variant="primary" size="sm">
-              {unreadTotal} non lu{unreadTotal > 1 ? 's' : ''}
+              {unreadTotal} non lu{unreadTotal > 1 ? "s" : ""}
             </Badge>
           )}
         </div>
@@ -59,8 +65,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder={t('messaging.conversationList.rechercherParNomOuAnnonce')}
-            aria-label={t('messaging.conversationList.rechercherParNomOuAnnonce')}
+            placeholder={t(
+              "messaging.conversationList.rechercherParNomOuAnnonce",
+            )}
+            aria-label={t(
+              "messaging.conversationList.rechercherParNomOuAnnonce",
+            )}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-stone-50 border border-border-base rounded-control focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400"
@@ -68,9 +78,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           {searchQuery && (
             <button
               type="button"
-              onClick={() => onSearchChange('')}
+              onClick={() => onSearchChange("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-0.5"
-              aria-label={t('messaging.conversationList.effacerLaRecherche')}
+              aria-label={t("messaging.conversationList.effacerLaRecherche")}
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -85,7 +95,10 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             it read as absent rather than as scrollable. `ScrollRail` shows a
             scroll control on whichever side actually has more content, and
             renders like the bare rail when everything fits. */}
-        <ScrollRail label={t('messaging.conversationList.filtres')} className="pb-1">
+        <ScrollRail
+          label={t("messaging.conversationList.filtres")}
+          className="pb-1"
+        >
           {tabs.map((tab) => {
             const isActive = selectedFilter === tab.id;
             return (
@@ -95,15 +108,17 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 onClick={() => onSelectFilter(tab.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900'
+                    ? "bg-stone-900 text-white shadow-xs"
+                    : "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900"
                 }`}
               >
                 <span>{tab.label}</span>
                 {tab.count !== undefined && tab.count > 0 && (
                   <span
                     className={`px-1.5 py-0.2 rounded-full text-micro font-extrabold ${
-                      isActive ? 'bg-primary text-white' : 'bg-primary/20 text-primary'
+                      isActive
+                        ? "bg-primary text-white"
+                        : "bg-primary/20 text-primary"
                     }`}
                   >
                     {tab.count}
@@ -138,11 +153,13 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm font-bold text-stone-800">{t('messaging.conversationList.aucuneConversationTrouvee')}</p>
+              <p className="text-sm font-bold text-stone-800">
+                {t("messaging.conversationList.aucuneConversationTrouvee")}
+              </p>
               <p className="text-xs text-stone-500 mt-1">
                 {searchQuery
-                  ? 'Aucun résultat ne correspond à votre recherche.'
-                  : 'Vos échanges avec les acheteurs et vendeurs apparaîtront ici.'}
+                  ? "Aucun résultat ne correspond à votre recherche."
+                  : "Vos échanges avec les acheteurs et vendeurs apparaîtront ici."}
               </p>
             </div>
           </div>
@@ -151,7 +168,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           conversations.map((conv) => {
             const isSelected = conv.id === activeConversationId;
             const hasUnread = conv.unreadCount > 0;
-            const listingContext = conv.context?.type === 'listing' ? conv.context : null;
+            const listingContext =
+              conv.context?.type === "listing" ? conv.context : null;
 
             return (
               <button
@@ -160,8 +178,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 onClick={() => onSelectConversation(conv.id)}
                 className={`w-full p-3.5 text-left flex gap-3 transition-colors cursor-pointer relative ${
                   isSelected
-                    ? 'bg-primary/5 border-l-4 border-primary'
-                    : 'hover:bg-stone-50 bg-white'
+                    ? "bg-primary/5 border-l-4 border-primary"
+                    : "hover:bg-stone-50 bg-white"
                 }`}
               >
                 {/* Counterpart Avatar */}
@@ -179,7 +197,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1 mb-0.5">
-                    <span className={`text-xs truncate ${hasUnread ? 'font-black text-stone-950' : 'font-bold text-stone-800'}`}>
+                    <span
+                      className={`text-xs truncate ${hasUnread ? "font-black text-stone-950" : "font-bold text-stone-800"}`}
+                    >
                       {conv.counterpart.name}
                     </span>
                     <span className="text-micro text-stone-500 shrink-0 font-medium">
@@ -190,14 +210,17 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   {/* Listing Title Context */}
                   {listingContext && (
                     <div className="text-micro font-semibold text-primary truncate mb-1">
-                      {listingContext.listingTitle} ({formatPrice(listingContext.listingPrice)})
+                      {listingContext.listingTitle} (
+                      {formatPrice(listingContext.listingPrice)})
                     </div>
                   )}
 
                   {/* Last Message Preview */}
                   <div className="flex items-center justify-between gap-2">
-                    <p className={`text-xs truncate ${hasUnread ? 'font-bold text-stone-900' : 'text-stone-500 font-medium'}`}>
-                      {conv.lastMessageText || 'Nouvelle conversation'}
+                    <p
+                      className={`text-xs truncate ${hasUnread ? "font-bold text-stone-900" : "text-stone-500 font-medium"}`}
+                    >
+                      {conv.lastMessageText || "Nouvelle conversation"}
                     </p>
 
                     {hasUnread && (

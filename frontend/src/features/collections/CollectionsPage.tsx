@@ -1,56 +1,54 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
 import {
   Sparkles,
-  
   ChevronRight,
   Filter,
   Layers,
   ArrowLeft,
   Search,
-  
   Home,
   Tag,
   TrendingUp,
   Shirt,
   Bike,
   MapPin,
-  Heart
-  
-  
-  
-} from 'lucide-react';
-import { collectionService } from '../../domains/collection/collection.service';
-import { Collection, CollectionPillarId } from '../../domains/collection/collection.types';
-import { listingRepository } from '../../repositories/listing.repository';
-import { Listing } from '../../types';
-import { ListingCard } from '../../design-system/primitives/ListingCard';
-import { ListingRail } from '../../design-system/primitives/ListingRail';
+  Heart,
+} from "lucide-react";
+import { collectionService } from "../../domains/collection/collection.service";
+import {
+  Collection,
+  CollectionPillarId,
+} from "../../domains/collection/collection.types";
+import { listingRepository } from "../../repositories/listing.repository";
+import { Listing } from "../../types";
+import { ListingCard } from "../../design-system/primitives/ListingCard";
+import { ListingRail } from "../../design-system/primitives/ListingRail";
 import {
   Breadcrumbs,
   Container,
   Heading,
   Input,
   ListingCardSkeleton,
-} from '../../design-system';
-import { Image } from '../../design-system/primitives/Image';
-import { IMAGE_SIZES } from '../../design-system/primitives/responsiveImage';
-import { ScrollRail } from '../../design-system/primitives/ScrollRail';
-import { usePageMeta } from '../../hooks/usePageMeta';
-import { useTranslation } from '../../i18n/I18nProvider';
+} from "../../design-system";
+import { Image } from "../../design-system/primitives/Image";
+import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
+import { ScrollRail } from "../../design-system/primitives/ScrollRail";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const BADGE_STYLES: Record<string, string> = {
-  terracotta: 'bg-primary-light text-primary border-primary-border',
-  emerald: 'bg-success-surface text-success border-success-border',
-  sky: 'bg-info-surface text-info border-info-border',
-  amber: 'bg-warning-surface text-warning border-warning-border',
-  purple: 'bg-purple-50 text-purple-700 border-purple-200',
-  rose: 'bg-danger-surface text-danger border-danger-border',
-  indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  success: 'bg-success-surface text-success border-success-border',
-  info: 'bg-info-surface text-info border-info-border',
-  warning: 'bg-warning-surface text-warning border-warning-border',
-  danger: 'bg-danger-surface text-danger border-danger-border',
+  terracotta: "bg-primary-light text-primary border-primary-border",
+  emerald: "bg-success-surface text-success border-success-border",
+  sky: "bg-info-surface text-info border-info-border",
+  amber: "bg-warning-surface text-warning border-warning-border",
+  purple: "bg-purple-50 text-purple-700 border-purple-200",
+  rose: "bg-danger-surface text-danger border-danger-border",
+  indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  success: "bg-success-surface text-success border-success-border",
+  info: "bg-info-surface text-info border-info-border",
+  warning: "bg-warning-surface text-warning border-warning-border",
+  danger: "bg-danger-surface text-danger border-danger-border",
 };
 
 const PILLAR_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -72,13 +70,13 @@ export const CollectionsPage: React.FC = () => {
     return slug ? collectionService.getCollection(slug) : undefined;
   }, [slug]);
 
-  const [activePillar, setActivePillar] = useState<CollectionPillarId>('all');
-  const [collectionSearch, setCollectionSearch] = useState('');
+  const [activePillar, setActivePillar] = useState<CollectionPillarId>("all");
+  const [collectionSearch, setCollectionSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [, setAllListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [inCollectionSearch, setInCollectionSearch] = useState('');
+  const [inCollectionSearch, setInCollectionSearch] = useState("");
 
   const pillars = useMemo(() => collectionService.getPillars(), []);
 
@@ -89,18 +87,19 @@ export const CollectionsPage: React.FC = () => {
     selectedCollection
       ? {
           title: selectedCollection.title,
-          description: selectedCollection.subtitle || selectedCollection.description,
+          description:
+            selectedCollection.subtitle || selectedCollection.description,
           canonicalPath: `/collections/${selectedCollection.slug}`,
           image: selectedCollection.coverImageUrl,
         }
       : slug
-        ? { title: 'Collection introuvable', noIndex: true }
+        ? { title: "Collection introuvable", noIndex: true }
         : {
-            title: 'Collections & sélections',
+            title: "Collections & sélections",
             description:
-              'Les sélections Shongre : rentrée, maison, mobilité, seconde main, ' +
-              'bonnes affaires et matériel professionnel, mises à jour au fil des saisons.',
-            canonicalPath: '/collections',
+              "Les sélections Shongre : rentrée, maison, mobilité, seconde main, " +
+              "bonnes affaires et matériel professionnel, mises à jour au fil des saisons.",
+            canonicalPath: "/collections",
           },
   );
 
@@ -110,16 +109,20 @@ export const CollectionsPage: React.FC = () => {
     setIsLoading(true);
 
     listingRepository
-      .getListings({ limit: 60, sortBy: 'date_desc' })
+      .getListings({ limit: 60, sortBy: "date_desc" })
       .then((res) => {
         if (!isMounted) return;
         const fetched = res.listings || [];
         setAllListings(fetched);
 
         if (selectedCollection) {
-          const matched = collectionService.filterListingsForCollection(selectedCollection, fetched, {
-            allowFallback: true,
-          });
+          const matched = collectionService.filterListingsForCollection(
+            selectedCollection,
+            fetched,
+            {
+              allowFallback: true,
+            },
+          );
           setListings(matched);
         } else {
           setListings(fetched.slice(0, 12));
@@ -150,7 +153,7 @@ export const CollectionsPage: React.FC = () => {
           c.title.toLowerCase().includes(q) ||
           c.subtitle.toLowerCase().includes(q) ||
           c.description.toLowerCase().includes(q) ||
-          c.tags.some((t) => t.toLowerCase().includes(q))
+          c.tags.some((t) => t.toLowerCase().includes(q)),
       );
     }
     return list;
@@ -165,13 +168,15 @@ export const CollectionsPage: React.FC = () => {
         (l) =>
           l.title.toLowerCase().includes(tagLower) ||
           l.description?.toLowerCase().includes(tagLower) ||
-          l.categoryLabel?.toLowerCase().includes(tagLower)
+          l.categoryLabel?.toLowerCase().includes(tagLower),
       );
     }
     if (inCollectionSearch.trim()) {
       const q = inCollectionSearch.toLowerCase().trim();
       res = res.filter(
-        (l) => l.title.toLowerCase().includes(q) || l.description?.toLowerCase().includes(q)
+        (l) =>
+          l.title.toLowerCase().includes(q) ||
+          l.description?.toLowerCase().includes(q),
       );
     }
     return res;
@@ -184,11 +189,13 @@ export const CollectionsPage: React.FC = () => {
         <Container className="py-3">
           <Breadcrumbs
             items={[
-              { label: 'Accueil', href: '/' },
+              { label: "Accueil", href: "/" },
               selectedCollection
-                ? { label: 'Collections', href: '/collections' }
-                : { label: 'Collections' },
-              ...(selectedCollection ? [{ label: selectedCollection.title }] : []),
+                ? { label: "Collections", href: "/collections" }
+                : { label: "Collections" },
+              ...(selectedCollection
+                ? [{ label: selectedCollection.title }]
+                : []),
             ]}
           />
         </Container>
@@ -208,13 +215,16 @@ export const CollectionsPage: React.FC = () => {
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors mb-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>{t('collections.collectionsPage.toutesLesCollections')}</span>
+                  <span>
+                    {t("collections.collectionsPage.toutesLesCollections")}
+                  </span>
                 </Link>
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border shadow-xs ${
-                      BADGE_STYLES[selectedCollection.badge.variant] || BADGE_STYLES.terracotta
+                      BADGE_STYLES[selectedCollection.badge.variant] ||
+                      BADGE_STYLES.terracotta
                     }`}
                   >
                     {selectedCollection.badge.label}
@@ -225,7 +235,12 @@ export const CollectionsPage: React.FC = () => {
                   </span>
                 </div>
 
-                <Heading as="h1" size="display-md" family="display" tone="inverse">
+                <Heading
+                  as="h1"
+                  size="display-md"
+                  family="display"
+                  tone="inverse"
+                >
                   {selectedCollection.title}
                 </Heading>
 
@@ -237,7 +252,9 @@ export const CollectionsPage: React.FC = () => {
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-start gap-3 max-w-xl">
                   <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <div className="text-xs text-stone-300 space-y-0.5">
-                    <p className="font-bold text-white">{t('collections.collectionsPage.leMotDeLaRedaction')}</p>
+                    <p className="font-bold text-white">
+                      {t("collections.collectionsPage.leMotDeLaRedaction")}
+                    </p>
                     <p>{selectedCollection.curatorNote}</p>
                   </div>
                 </div>
@@ -264,10 +281,14 @@ export const CollectionsPage: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
               <div className="max-w-3xl space-y-3">
                 <Heading as="h1" size="display-md" family="display">
-                  {t('collections.collectionsPage.toutesNosCollections')}
+                  {t("collections.collectionsPage.toutesNosCollections")}
                 </Heading>
 
-                <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">{t('collections.collectionsPage.decouvrezDesUniversThematiquesPenses')}</p>
+                <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">
+                  {t(
+                    "collections.collectionsPage.decouvrezDesUniversThematiquesPenses",
+                  )}
+                </p>
               </div>
 
               {/* Search collections bar */}
@@ -276,9 +297,18 @@ export const CollectionsPage: React.FC = () => {
                   type="text"
                   value={collectionSearch}
                   onChange={(e) => setCollectionSearch(e.target.value)}
-                  placeholder={t('collections.collectionsPage.chercherUneThematique')}
-                  aria-label={t('collections.collectionsPage.chercherUneThematique')}
-                  leftIcon={<Search aria-hidden="true" className="h-icon-md w-icon-md" />}
+                  placeholder={t(
+                    "collections.collectionsPage.chercherUneThematique",
+                  )}
+                  aria-label={t(
+                    "collections.collectionsPage.chercherUneThematique",
+                  )}
+                  leftIcon={
+                    <Search
+                      aria-hidden="true"
+                      className="h-icon-md w-icon-md"
+                    />
+                  }
                   className="h-control-touch bg-white shadow-2xs"
                 />
               </div>
@@ -296,11 +326,15 @@ export const CollectionsPage: React.FC = () => {
           <div className="space-y-8">
             {/* Pillar Navigation Tabs */}
             <div className="bg-white rounded-2xl border border-stone-200/80 p-2 shadow-2xs">
-              <ScrollRail label="piliers" className="-mx-2 px-2 sm:mx-0 sm:px-0">
+              <ScrollRail
+                label="piliers"
+                className="-mx-2 px-2 sm:mx-0 sm:px-0"
+              >
                 <div className="flex gap-2 min-w-max">
                   {pillars.map((pillar) => {
                     const isSelected = activePillar === pillar.id;
-                    const IconComponent = PILLAR_ICONS[pillar.iconName] || Sparkles;
+                    const IconComponent =
+                      PILLAR_ICONS[pillar.iconName] || Sparkles;
 
                     return (
                       <button
@@ -309,11 +343,13 @@ export const CollectionsPage: React.FC = () => {
                         onClick={() => setActivePillar(pillar.id)}
                         className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer select-none ${
                           isSelected
-                            ? 'bg-stone-900 text-white shadow-xs'
-                            : 'bg-stone-50 hover:bg-stone-100 text-stone-700 hover:text-stone-900'
+                            ? "bg-stone-900 text-white shadow-xs"
+                            : "bg-stone-50 hover:bg-stone-100 text-stone-700 hover:text-stone-900"
                         }`}
                       >
-                        <IconComponent className={`w-4 h-4 ${isSelected ? 'text-primary' : 'text-stone-400'}`} />
+                        <IconComponent
+                          className={`w-4 h-4 ${isSelected ? "text-primary" : "text-stone-400"}`}
+                        />
                         <span>{pillar.label}</span>
                       </button>
                     );
@@ -325,10 +361,11 @@ export const CollectionsPage: React.FC = () => {
             {/* Active Pillar Description */}
             <div className="flex items-center justify-between gap-4 text-xs text-stone-500 font-medium px-1">
               <span>
-                {pillars.find((p) => p.id === activePillar)?.description || ''}
+                {pillars.find((p) => p.id === activePillar)?.description || ""}
               </span>
               <span className="font-bold text-stone-700 shrink-0">
-                {visibleCollections.length} collection{visibleCollections.length > 1 ? 's' : ''}
+                {visibleCollections.length} collection
+                {visibleCollections.length > 1 ? "s" : ""}
               </span>
             </div>
 
@@ -354,7 +391,8 @@ export const CollectionsPage: React.FC = () => {
                       <div className="absolute top-3 left-3 z-raised">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border shadow-xs backdrop-blur-xs ${
-                            BADGE_STYLES[col.badge.variant] || BADGE_STYLES.terracotta
+                            BADGE_STYLES[col.badge.variant] ||
+                            BADGE_STYLES.terracotta
                           }`}
                         >
                           {col.badge.label}
@@ -405,18 +443,23 @@ export const CollectionsPage: React.FC = () => {
                 <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
                   <Search className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-stone-900">{t('collections.collectionsPage.aucuneCollectionTrouvee')}</h3>
+                <h3 className="text-base font-bold text-stone-900">
+                  {t("collections.collectionsPage.aucuneCollectionTrouvee")}
+                </h3>
                 <p className="text-xs text-stone-500">
-                  Aucune collection ne correspond à votre recherche "{collectionSearch}".
+                  Aucune collection ne correspond à votre recherche "
+                  {collectionSearch}".
                 </p>
                 <button
                   type="button"
                   onClick={() => {
-                    setCollectionSearch('');
-                    setActivePillar('all');
+                    setCollectionSearch("");
+                    setActivePillar("all");
                   }}
                   className="h-control-md px-4 rounded-control bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-                >{t('collections.collectionsPage.voirToutesLesCollections')}</button>
+                >
+                  {t("collections.collectionsPage.voirToutesLesCollections")}
+                </button>
               </div>
             )}
           </div>
@@ -436,8 +479,8 @@ export const CollectionsPage: React.FC = () => {
                     onClick={() => setActiveTag(null)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       activeTag === null
-                        ? 'bg-stone-900 text-white shadow-xs'
-                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                        ? "bg-stone-900 text-white shadow-xs"
+                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                     }`}
                   >
                     Tout ({listings.length})
@@ -446,11 +489,13 @@ export const CollectionsPage: React.FC = () => {
                     <button
                       key={tag}
                       type="button"
-                      onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                      onClick={() =>
+                        setActiveTag(activeTag === tag ? null : tag)
+                      }
                       className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                         activeTag === tag
-                          ? 'bg-primary text-white font-bold shadow-xs'
-                          : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                          ? "bg-primary text-white font-bold shadow-xs"
+                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                       }`}
                     >
                       {tag}
@@ -465,8 +510,12 @@ export const CollectionsPage: React.FC = () => {
                     type="text"
                     value={inCollectionSearch}
                     onChange={(e) => setInCollectionSearch(e.target.value)}
-                    placeholder={t('collections.collectionsPage.filtrerDansLaSelection')}
-                aria-label={t('collections.collectionsPage.filtrerDansLaSelection')}
+                    placeholder={t(
+                      "collections.collectionsPage.filtrerDansLaSelection",
+                    )}
+                    aria-label={t(
+                      "collections.collectionsPage.filtrerDansLaSelection",
+                    )}
                     className="w-full h-control-md pl-9 pr-3 text-xs rounded-control bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
                   />
                 </div>
@@ -477,9 +526,12 @@ export const CollectionsPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between gap-2 mb-4">
                 <h3 className="text-base sm:text-lg font-bold text-stone-900">
-                  {activeTag ? `Sélection filtrée par "${activeTag}"` : 'Pièces sélectionnées'}
+                  {activeTag
+                    ? `Sélection filtrée par "${activeTag}"`
+                    : "Pièces sélectionnées"}
                   <span className="text-xs text-stone-400 font-normal ml-2">
-                    ({displayedListings.length} annonce{displayedListings.length > 1 ? 's' : ''})
+                    ({displayedListings.length} annonce
+                    {displayedListings.length > 1 ? "s" : ""})
                   </span>
                 </h3>
               </div>
@@ -494,7 +546,11 @@ export const CollectionsPage: React.FC = () => {
                   ))}
                 </div>
               ) : displayedListings.length > 0 ? (
-                <ListingRail label={t('collections.collectionsPage.annoncesDeLaCollection')}>
+                <ListingRail
+                  label={t(
+                    "collections.collectionsPage.annoncesDeLaCollection",
+                  )}
+                >
                   {displayedListings.map((listing) => (
                     <ListingCard key={listing.id} listing={listing} />
                   ))}
@@ -505,17 +561,25 @@ export const CollectionsPage: React.FC = () => {
                     <Filter className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-base font-bold text-stone-900">{t('collections.collectionsPage.aucuneAnnonceTrouvee')}</h4>
-                    <p className="text-xs text-stone-500">{t('collections.collectionsPage.aucuneAnnonceNeCorrespondAux')}</p>
+                    <h4 className="text-base font-bold text-stone-900">
+                      {t("collections.collectionsPage.aucuneAnnonceTrouvee")}
+                    </h4>
+                    <p className="text-xs text-stone-500">
+                      {t(
+                        "collections.collectionsPage.aucuneAnnonceNeCorrespondAux",
+                      )}
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTag(null);
-                      setInCollectionSearch('');
+                      setInCollectionSearch("");
                     }}
                     className="h-control-md px-4 rounded-control bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-                  >{t('collections.collectionsPage.reinitialiserLesFiltres')}</button>
+                  >
+                    {t("collections.collectionsPage.reinitialiserLesFiltres")}
+                  </button>
                 </div>
               )}
             </div>
@@ -523,16 +587,24 @@ export const CollectionsPage: React.FC = () => {
             {/* Other Collections Rail */}
             <div className="pt-10 border-t border-border-base space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-stone-900">{t('collections.collectionsPage.decouvrirDAutresCollections')}</h3>
-                <Link to="/collections" className="text-xs font-bold text-primary hover:underline">
-                  Voir tout ({collectionService.getCollections('all').length})
+                <h3 className="text-lg font-bold text-stone-900">
+                  {t("collections.collectionsPage.decouvrirDAutresCollections")}
+                </h3>
+                <Link
+                  to="/collections"
+                  className="text-xs font-bold text-primary hover:underline"
+                >
+                  Voir tout ({collectionService.getCollections("all").length})
                 </Link>
               </div>
 
-              <ScrollRail label="autres collections" className="-mx-4 px-4 sm:mx-0 sm:px-0">
+              <ScrollRail
+                label="autres collections"
+                className="-mx-4 px-4 sm:mx-0 sm:px-0"
+              >
                 <div className="flex gap-4">
                   {collectionService
-                    .getCollections('all')
+                    .getCollections("all")
                     .filter((c) => c.id !== selectedCollection.id)
                     .slice(0, 6)
                     .map((c) => (
@@ -556,7 +628,9 @@ export const CollectionsPage: React.FC = () => {
                           <h4 className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
                             {c.title}
                           </h4>
-                          <p className="text-micro text-stone-400 mt-0.5">{c.itemCountLabel}</p>
+                          <p className="text-micro text-stone-400 mt-0.5">
+                            {c.itemCountLabel}
+                          </p>
                         </div>
                       </Link>
                     ))}

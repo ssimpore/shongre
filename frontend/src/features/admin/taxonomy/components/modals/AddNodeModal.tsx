@@ -1,13 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { TaxonomyNode, TaxonomyLevel, ConditionSchemeId } from '../../../../../domains/taxonomy/taxonomy.types';
-import { taxonomyAdminRepository } from '../../../../../repositories/taxonomy.repository';
-import { Modal } from '../../../../../design-system/primitives/Modal';
-import { Button } from '../../../../../design-system/primitives/Button';
-import { Input, FormField, Textarea, Checkbox } from '../../../../../design-system/primitives/FormField';
-import { CategoryIcon } from '../../../../../design-system/primitives/CategoryIcon';
-import { useToast } from '../../../../../app/providers/ToastProvider';
-import { useAuth } from '../../../../../app/providers/AuthProvider';
-import { useTranslation } from '../../../../../i18n/I18nProvider';
+import React, { useState, useEffect } from "react";
+import {
+  TaxonomyNode,
+  TaxonomyLevel,
+  ConditionSchemeId,
+} from "../../../../../domains/taxonomy/taxonomy.types";
+import { taxonomyAdminRepository } from "../../../../../repositories/taxonomy.repository";
+import { Modal } from "../../../../../design-system/primitives/Modal";
+import { Button } from "../../../../../design-system/primitives/Button";
+import {
+  Input,
+  FormField,
+  Textarea,
+  Checkbox,
+} from "../../../../../design-system/primitives/FormField";
+import { CategoryIcon } from "../../../../../design-system/primitives/CategoryIcon";
+import { useToast } from "../../../../../app/providers/ToastProvider";
+import { useAuth } from "../../../../../app/providers/AuthProvider";
+import { useTranslation } from "../../../../../i18n/I18nProvider";
 
 export interface AddNodeModalProps {
   isOpen: boolean;
@@ -28,33 +37,35 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
 
   // Infer target level based on parent
   const targetLevel: TaxonomyLevel = !parentNode
-    ? 'category'
-    : parentNode.level === 'category'
-    ? 'subcategory'
-    : parentNode.level === 'subcategory'
-    ? 'type'
-    : 'subtype';
+    ? "category"
+    : parentNode.level === "category"
+      ? "subcategory"
+      : parentNode.level === "subcategory"
+        ? "type"
+        : "subtype";
 
-  const [name, setName] = useState('');
-  const [shortLabel, setShortLabel] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
-  const [publishable, setPublishable] = useState(targetLevel === 'type' || targetLevel === 'subtype');
-  const [conditionScheme, setConditionScheme] = useState<ConditionSchemeId>(
-    parentNode?.conditionScheme || 'consumer_product'
+  const [name, setName] = useState("");
+  const [shortLabel, setShortLabel] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [publishable, setPublishable] = useState(
+    targetLevel === "type" || targetLevel === "subtype",
   );
-  const [status, setStatus] = useState<'draft' | 'active'>('draft');
+  const [conditionScheme, setConditionScheme] = useState<ConditionSchemeId>(
+    parentNode?.conditionScheme || "consumer_product",
+  );
+  const [status, setStatus] = useState<"draft" | "active">("draft");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName('');
-      setShortLabel('');
-      setSlug('');
-      setDescription('');
-      setPublishable(targetLevel === 'type' || targetLevel === 'subtype');
-      setConditionScheme(parentNode?.conditionScheme || 'consumer_product');
-      setStatus('draft');
+      setName("");
+      setShortLabel("");
+      setSlug("");
+      setDescription("");
+      setPublishable(targetLevel === "type" || targetLevel === "subtype");
+      setConditionScheme(parentNode?.conditionScheme || "consumer_product");
+      setStatus("draft");
     }
   }, [isOpen, parentNode, targetLevel]);
 
@@ -63,28 +74,32 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
     setName(val);
     const generatedSlug = val
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
     setSlug(generatedSlug);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error('Le nom complet est obligatoire.');
+      toast.error("Le nom complet est obligatoire.");
       return;
     }
     if (!slug.trim()) {
-      toast.error('Le slug URL est obligatoire.');
+      toast.error("Le slug URL est obligatoire.");
       return;
     }
 
     try {
       setIsSubmitting(true);
       const actor = currentUser
-        ? { id: currentUser.id, name: currentUser.name || 'Admin', role: currentUser.role }
+        ? {
+            id: currentUser.id,
+            name: currentUser.name || "Admin",
+            role: currentUser.role,
+          }
         : undefined;
 
       const created = await taxonomyAdminRepository.createNode(
@@ -100,14 +115,16 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
           status,
           conditionScheme,
         },
-        actor
+        actor,
       );
 
-      toast.success(`Catégorie "${created.name}" créée avec succès (Brouillon).`);
+      toast.success(
+        `Catégorie "${created.name}" créée avec succès (Brouillon).`,
+      );
       onSuccess(created);
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || 'Erreur lors de la création du nœud.');
+      toast.error(err?.message || "Erreur lors de la création du nœud.");
     } finally {
       setIsSubmitting(false);
     }
@@ -120,9 +137,9 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
       title={
         parentNode
           ? `Ajouter une sous-rubrique sous "${parentNode.name}"`
-          : 'Créer une nouvelle catégorie racine'
+          : "Créer une nouvelle catégorie racine"
       }
-      description={t('admin.addNodeModal.cetteOperationAjouteUnNouveau')}
+      description={t("admin.addNodeModal.cetteOperationAjouteUnNouveau")}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -143,14 +160,16 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
         </div>
 
         <FormField
-          label={t('admin.addNodeModal.nomCompletCanoniqueFrancais')}
+          label={t("admin.addNodeModal.nomCompletCanoniqueFrancais")}
           required
           hint="Nom complet faisant autorité (ex: Voitures d'occasion, Matériel Professionnel & BTP)"
         >
           <Input
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
-            placeholder={t('admin.addNodeModal.exEquipementsDeProtectionIndividuelle')}
+            placeholder={t(
+              "admin.addNodeModal.exEquipementsDeProtectionIndividuelle",
+            )}
             autoFocus
           />
         </FormField>
@@ -162,20 +181,30 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
           <Input
             value={shortLabel}
             onChange={(e) => setShortLabel(e.target.value)}
-            placeholder={t('admin.addNodeModal.exEquipementsPro')}
+            placeholder={t("admin.addNodeModal.exEquipementsPro")}
           />
         </FormField>
 
         {/* Live UI Rendering Preview */}
         <div className="p-3 bg-bg-base rounded-xl border border-border-base text-xs space-y-1">
-          <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">{t('admin.addNodeModal.apercuDuRenduUi')}</div>
-          <div className="flex items-center justify-between">
-            <span className="text-stone-500">{t('admin.addNodeModal.renduStandardDetailleSeo')}</span>
-            <span className="font-bold text-stone-900">{name || 'Nom complet'}</span>
+          <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">
+            {t("admin.addNodeModal.apercuDuRenduUi")}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-stone-500">Rendu compact (mobile/filtres) :</span>
-            <span className="font-bold text-primary">{shortLabel.trim() || name || 'Nom compact'}</span>
+            <span className="text-stone-500">
+              {t("admin.addNodeModal.renduStandardDetailleSeo")}
+            </span>
+            <span className="font-bold text-stone-900">
+              {name || "Nom complet"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-stone-500">
+              Rendu compact (mobile/filtres) :
+            </span>
+            <span className="font-bold text-primary">
+              {shortLabel.trim() || name || "Nom compact"}
+            </span>
           </div>
         </div>
 
@@ -196,7 +225,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('admin.addNodeModal.descriptionInterneOuSeoPour')}
+            placeholder={t("admin.addNodeModal.descriptionInterneOuSeoPour")}
           />
         </FormField>
 
@@ -207,19 +236,23 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
               onChange={(e) => setStatus(e.target.value as any)}
               className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
-              <option value="draft">Brouillon (non visible publiquement)</option>
+              <option value="draft">
+                Brouillon (non visible publiquement)
+              </option>
               <option value="active">Actif</option>
             </select>
           </FormField>
 
-          <FormField label={t('admin.addNodeModal.schemaDEtat')}>
+          <FormField label={t("admin.addNodeModal.schemaDEtat")}>
             <select
               value={conditionScheme}
               onChange={(e) => setConditionScheme(e.target.value as any)}
               className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="consumer_product">Produit standard</option>
-              <option value="vehicle">{t('admin.addNodeModal.vehicule')}</option>
+              <option value="vehicle">
+                {t("admin.addNodeModal.vehicule")}
+              </option>
               <option value="real_estate">Immobilier</option>
               <option value="professional">Professionnel</option>
               <option value="job">Emploi</option>
@@ -234,7 +267,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
               checked={publishable}
               onChange={(e) => setPublishable(e.target.checked)}
             />
-            <span>{t('admin.addNodeModal.nUdPubliableAutoriseLa')}</span>
+            <span>{t("admin.addNodeModal.nUdPubliableAutoriseLa")}</span>
           </label>
         </div>
 
@@ -242,8 +275,13 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
           <Button variant="ghost" size="sm" type="button" onClick={onClose}>
             Annuler
           </Button>
-          <Button variant="primary" size="sm" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Création en cours...' : 'Créer la catégorie'}
+          <Button
+            variant="primary"
+            size="sm"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Création en cours..." : "Créer la catégorie"}
           </Button>
         </div>
       </form>

@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { createServiceRegistry, services } from './service-registry.js';
-import { isDemoMode } from './api-client.config.js';
+import { describe, it, expect } from "vitest";
+import { createServiceRegistry, services } from "./service-registry";
+import { isDemoMode } from "./api-client.config";
 import {
   HttpListingsService,
   HttpSearchService,
@@ -16,7 +16,7 @@ import {
   HttpWorkspaceService,
   HttpAdminService,
   HttpReviewsService,
-} from '../adapters/http/index.js';
+} from "../adapters/http";
 import {
   DemoListingsService,
   DemoSearchService,
@@ -32,12 +32,12 @@ import {
   DemoWorkspaceService,
   DemoAdminService,
   DemoReviewsService,
-} from '../adapters/demo/index.js';
+} from "../adapters/demo";
 
-describe('Service Registry & API Adapter Boundary', () => {
-  it('instantiates the service registry in demo mode by default', () => {
+describe("Service Registry & API Adapter Boundary", () => {
+  it("instantiates the service registry in demo mode by default", () => {
     expect(isDemoMode()).toBe(true);
-    const registry = createServiceRegistry('demo');
+    const registry = createServiceRegistry("demo");
     expect(registry).toBeDefined();
     expect(registry.listings instanceof DemoListingsService).toBe(true);
     expect(registry.search instanceof DemoSearchService).toBe(true);
@@ -45,7 +45,9 @@ describe('Service Registry & API Adapter Boundary', () => {
     expect(registry.markets instanceof DemoMarketsService).toBe(true);
     expect(registry.taxonomy instanceof DemoTaxonomyService).toBe(true);
     expect(registry.messaging instanceof DemoMessagingService).toBe(true);
-    expect(registry.notifications instanceof DemoNotificationsService).toBe(true);
+    expect(registry.notifications instanceof DemoNotificationsService).toBe(
+      true,
+    );
     expect(registry.orders instanceof DemoOrdersService).toBe(true);
     expect(registry.payments instanceof DemoPaymentsService).toBe(true);
     expect(registry.promotions instanceof DemoPromotionsService).toBe(true);
@@ -55,8 +57,8 @@ describe('Service Registry & API Adapter Boundary', () => {
     expect(registry.reviews instanceof DemoReviewsService).toBe(true);
   });
 
-  it('instantiates the service registry in api mode when configured', () => {
-    const apiRegistry = createServiceRegistry('api');
+  it("instantiates the service registry in api mode when configured", () => {
+    const apiRegistry = createServiceRegistry("api");
     expect(apiRegistry).toBeDefined();
     expect(apiRegistry.listings instanceof HttpListingsService).toBe(true);
     expect(apiRegistry.search instanceof HttpSearchService).toBe(true);
@@ -64,17 +66,21 @@ describe('Service Registry & API Adapter Boundary', () => {
     expect(apiRegistry.markets instanceof HttpMarketsService).toBe(true);
     expect(apiRegistry.taxonomy instanceof HttpTaxonomyService).toBe(true);
     expect(apiRegistry.messaging instanceof HttpMessagingService).toBe(true);
-    expect(apiRegistry.notifications instanceof HttpNotificationsService).toBe(true);
+    expect(apiRegistry.notifications instanceof HttpNotificationsService).toBe(
+      true,
+    );
     expect(apiRegistry.orders instanceof HttpOrdersService).toBe(true);
     expect(apiRegistry.payments instanceof HttpPaymentsService).toBe(true);
     expect(apiRegistry.promotions instanceof HttpPromotionsService).toBe(true);
-    expect(apiRegistry.verification instanceof HttpVerificationService).toBe(true);
+    expect(apiRegistry.verification instanceof HttpVerificationService).toBe(
+      true,
+    );
     expect(apiRegistry.workspace instanceof HttpWorkspaceService).toBe(true);
     expect(apiRegistry.admin instanceof HttpAdminService).toBe(true);
     expect(apiRegistry.reviews instanceof HttpReviewsService).toBe(true);
   });
 
-  it('exposes asynchronous Promise-based APIs on all domain services in demo mode', async () => {
+  it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {
     const categories = await services.taxonomy.getRootCategories();
     expect(Array.isArray(categories)).toBe(true);
     expect(categories.length).toBeGreaterThan(0);
@@ -88,13 +94,14 @@ describe('Service Registry & API Adapter Boundary', () => {
     expect(proPlans.length).toBeGreaterThan(0);
   });
 
-  it('provides deterministic demo verification status without backend calls', async () => {
-    const status = await services.verification.getUserVerificationStatus('demo-user');
+  it("provides deterministic demo verification status without backend calls", async () => {
+    const status =
+      await services.verification.getUserVerificationStatus("demo-user");
     expect(status).toBeDefined();
     expect(status.state).toBeDefined();
-    expect(typeof status.isPhoneVerified).toBe('boolean');
-    expect(typeof status.isIdentityVerified).toBe('boolean');
-    expect(typeof status.isBusinessVerified).toBe('boolean');
-    expect(typeof status.isBankPayoutConfigured).toBe('boolean');
+    expect(typeof status.isPhoneVerified).toBe("boolean");
+    expect(typeof status.isIdentityVerified).toBe("boolean");
+    expect(typeof status.isBusinessVerified).toBe("boolean");
+    expect(typeof status.isBankPayoutConfigured).toBe("boolean");
   });
 });

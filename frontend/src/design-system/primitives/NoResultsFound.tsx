@@ -1,8 +1,8 @@
-import React from 'react';
-import { SearchX, RotateCcw, Lightbulb, BookmarkPlus } from 'lucide-react';
-import { Button } from './Button';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+import React from "react";
+import { SearchX, RotateCcw, Lightbulb, BookmarkPlus } from "lucide-react";
+import { Button } from "./Button";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { CONTROL_MOTION_CLASS } from "../utils/controlMetrics";
 
 export interface NoResultsFoundProps {
   /** Main heading */
@@ -35,9 +35,9 @@ export interface NoResultsFoundProps {
 
 const DEFAULT_SUGGESTIONS = [
   "Vérifiez l'orthographe des mots-clés saisis",
-  'Élargissez le rayon géographique ou choisissez « Toute la France »',
-  'Supprimez ou élargissez vos filtres de prix et de catégorie',
-  'Désactivez les critères restrictifs (livraison seule, bons plans)',
+  "Élargissez le rayon géographique ou choisissez « Toute la France »",
+  "Supprimez ou élargissez vos filtres de prix et de catégorie",
+  "Désactivez les critères restrictifs (livraison seule, bons plans)",
 ];
 
 /**
@@ -49,23 +49,25 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
   description,
   query,
   onClearFilters,
-  clearFiltersLabel = 'Effacer les filtres',
+  clearFiltersLabel = "Effacer les filtres",
   onSaveSearch,
-  saveSearchLabel = 'Créer une alerte',
+  saveSearchLabel = "Créer une alerte",
   secondaryAction,
   suggestions = DEFAULT_SUGGESTIONS,
   showSuggestions = true,
   icon,
-  className = '',
-  id = 'no-results-found-state',
+  className = "",
+  id = "no-results-found-state",
 }) => {
   const { t } = useTranslation();
-  const displayTitle = title || (query ? `Aucun résultat pour « ${query} »` : 'Aucune annonce trouvée');
+  const displayTitle =
+    title ||
+    (query ? `Aucun résultat pour « ${query} »` : "Aucune annonce trouvée");
   const displayDescription =
     description ||
     (query
-      ? 'Nous n’avons trouvé aucune annonce correspondant exactement à votre recherche.'
-      : 'Aucune annonce ne correspond aux filtres actuellement sélectionnés.');
+      ? "Nous n’avons trouvé aucune annonce correspondant exactement à votre recherche."
+      : "Aucune annonce ne correspond aux filtres actuellement sélectionnés.");
 
   return (
     <div
@@ -105,7 +107,9 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
         >
           <div className="flex items-center gap-1.5 text-xs font-bold text-text-main mb-2">
             <Lightbulb className="w-3.5 h-3.5 text-warning shrink-0" />
-            <span>{t('ui.noResultsFound.conseilsPourTrouverVotreBonheur')}</span>
+            <span>
+              {t("ui.noResultsFound.conseilsPourTrouverVotreBonheur")}
+            </span>
           </div>
           <ul className="space-y-1.5 text-xs text-text-secondary">
             {suggestions.map((tip, idx) => (

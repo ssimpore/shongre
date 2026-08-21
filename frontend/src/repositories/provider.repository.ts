@@ -14,17 +14,16 @@ import {
   EffectiveProviderResolution,
   CapabilityHealthResult,
   ProviderImpactAnalysis,
-  ProviderCapability
-  
-} from '../domains/providers/provider.types';
+  ProviderCapability,
+} from "../domains/providers/provider.types";
 import {
   CANONICAL_PROVIDER_REGISTRY,
   getProviderById,
-} from '../domains/providers/provider.registry';
-import { providerResolver } from '../domains/providers/provider.resolver';
-import { providerValidator } from '../domains/providers/provider-validation';
-import { storageService } from '../services/storage.service';
-import { auditService } from '../security/audit.service';
+} from "../domains/providers/provider.registry";
+import { providerResolver } from "../domains/providers/provider.resolver";
+import { providerValidator } from "../domains/providers/provider-validation";
+import { storageService } from "../services/storage.service";
+import { auditService } from "../security/audit.service";
 
 export interface IProviderRepository {
   getProviders(): Provider[];
@@ -34,58 +33,66 @@ export interface IProviderRepository {
   saveConfiguration(
     providerId: string,
     updates: Partial<ProviderConfiguration>,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration>;
   setMarketOverride(
     providerId: string,
     marketCode: string,
     override: ProviderMarketOverride,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration>;
   resetMarketOverride(
     providerId: string,
     marketCode: string,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration>;
   setProviderHealth(
     providerId: string,
     health: ProviderHealthStatus,
     message?: string,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration>;
   testProvider(
     providerId: string,
-    scenario?: 'healthy' | 'missing_credentials' | 'timeout' | 'invalid_config' | 'unsupported_market'
+    scenario?:
+      | "healthy"
+      | "missing_credentials"
+      | "timeout"
+      | "invalid_config"
+      | "unsupported_market",
   ): Promise<ProviderTestResult>;
   resolveEffectiveProviders(
     capability: ProviderCapability,
-    marketCode?: string
+    marketCode?: string,
   ): EffectiveProviderResolution;
   resolveCapabilityHealth(
     capability: ProviderCapability,
-    marketCode?: string
+    marketCode?: string,
   ): CapabilityHealthResult;
   analyzeImpact(
     providerId: string,
-    targetMarketCode?: string
+    targetMarketCode?: string,
   ): ProviderImpactAnalysis;
   getAuditHistory(providerId?: string): ProviderAuditEvent[];
 }
 
-export const INITIAL_PROVIDER_CONFIGURATIONS: Record<string, ProviderConfiguration> = {
+export const INITIAL_PROVIDER_CONFIGURATIONS: Record<
+  string,
+  ProviderConfiguration
+> = {
   mangopay: {
-    providerId: 'mangopay',
+    providerId: "mangopay",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-10T10:00:00Z',
-    credentialKeyHint: '•••• •••• •••• 4242 (Géré côté serveur)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-10T10:00:00Z",
+    credentialKeyHint: "•••• •••• •••• 4242 (Géré côté serveur)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      clientId: 'shongre_master_eu',
-      walletIdPlatform: 'wlt_shongre_escrow_master_01',
+      clientId: "shongre_master_eu",
+      walletIdPlatform: "wlt_shongre_escrow_master_01",
       enable3DSecureV2: true,
       sandboxMode: false,
     },
@@ -93,384 +100,384 @@ export const INITIAL_PROVIDER_CONFIGURATIONS: Record<string, ProviderConfigurati
       BE: {
         enabled: true,
         priority: 1,
-        customNotes: 'Marché Belge — Séquestre SEPA transfrontalier actif',
+        customNotes: "Marché Belge — Séquestre SEPA transfrontalier actif",
       },
     },
-    updatedAt: '2026-08-10T10:00:00Z',
+    updatedAt: "2026-08-10T10:00:00Z",
     version: 1,
   },
   stripe: {
-    providerId: 'stripe',
+    providerId: "stripe",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 2, // Secondary for payments, primary for subscriptions
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-11T12:00:00Z',
-    credentialKeyHint: 'pk_live_••••••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-11T12:00:00Z",
+    credentialKeyHint: "pk_live_••••••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      publishableKey: 'pk_live_51ShongreSecuredKey2026',
+      publishableKey: "pk_live_51ShongreSecuredKey2026",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-11T12:00:00Z',
+    updatedAt: "2026-08-11T12:00:00Z",
     version: 1,
   },
   mondial_relay: {
-    providerId: 'mondial_relay',
+    providerId: "mondial_relay",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-12T14:00:00Z',
-    credentialKeyHint: 'BDTEST13 (Configuré)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
+    credentialKeyHint: "BDTEST13 (Configuré)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      enseigneCode: 'BDTEST13',
+      enseigneCode: "BDTEST13",
       defaultWeightGrams: 1000,
     },
     marketOverrides: {},
-    updatedAt: '2026-08-12T14:00:00Z',
+    updatedAt: "2026-08-12T14:00:00Z",
     version: 1,
   },
   colissimo: {
-    providerId: 'colissimo',
+    providerId: "colissimo",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-12T14:00:00Z',
-    credentialKeyHint: 'Contrat 999999 (Actif)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
+    credentialKeyHint: "Contrat 999999 (Actif)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      contractNumber: '999999',
+      contractNumber: "999999",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-12T14:00:00Z',
+    updatedAt: "2026-08-12T14:00:00Z",
     version: 1,
   },
   chronopost: {
-    providerId: 'chronopost',
+    providerId: "chronopost",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-12T14:00:00Z',
-    credentialKeyHint: 'Compte 12345678 (Actif)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
+    credentialKeyHint: "Compte 12345678 (Actif)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      accountNumber: '12345678',
+      accountNumber: "12345678",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-12T14:00:00Z',
+    updatedAt: "2026-08-12T14:00:00Z",
     version: 1,
   },
   cocolis: {
-    providerId: 'cocolis',
+    providerId: "cocolis",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-12T14:00:00Z',
-    credentialKeyHint: 'App shongre_bulky_01',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
+    credentialKeyHint: "App shongre_bulky_01",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      apiAppId: 'shongre_bulky_01',
+      apiAppId: "shongre_bulky_01",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-12T14:00:00Z',
+    updatedAt: "2026-08-12T14:00:00Z",
     version: 1,
   },
   google_identity: {
-    providerId: 'google_identity',
+    providerId: "google_identity",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: '123456-shongre.apps.googleusercontent.com',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "123456-shongre.apps.googleusercontent.com",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      clientId: '1234567890-shongre.apps.googleusercontent.com',
+      clientId: "1234567890-shongre.apps.googleusercontent.com",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   apple_id: {
-    providerId: 'apple_id',
+    providerId: "apple_id",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'com.shongre.platform.signin',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "com.shongre.platform.signin",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      servicesId: 'com.shongre.platform.signin',
-      teamId: 'A1B2C3D4E5',
+      servicesId: "com.shongre.platform.signin",
+      teamId: "A1B2C3D4E5",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   resend: {
-    providerId: 'resend',
+    providerId: "resend",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-05T09:00:00Z',
-    credentialKeyHint: 're_••••••••••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-05T09:00:00Z",
+    credentialKeyHint: "re_••••••••••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      fromEmail: 'notifications@shongre.com',
+      fromEmail: "notifications@shongre.com",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-05T09:00:00Z',
+    updatedAt: "2026-08-05T09:00:00Z",
     version: 1,
   },
   brevo: {
-    providerId: 'brevo',
+    providerId: "brevo",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-05T09:00:00Z',
-    credentialKeyHint: 'xkeysib-••••••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-05T09:00:00Z",
+    credentialKeyHint: "xkeysib-••••••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      defaultSenderName: 'L\'équipe Shongre',
+      defaultSenderName: "L'équipe Shongre",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-05T09:00:00Z',
+    updatedAt: "2026-08-05T09:00:00Z",
     version: 1,
   },
   twilio: {
-    providerId: 'twilio',
+    providerId: "twilio",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-08T11:00:00Z',
-    credentialKeyHint: 'ACxxxxxxxx••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-08T11:00:00Z",
+    credentialKeyHint: "ACxxxxxxxx••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      accountSid: 'AC9876543210shongretwilioaccount',
+      accountSid: "AC9876543210shongretwilioaccount",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-08T11:00:00Z',
+    updatedAt: "2026-08-08T11:00:00Z",
     version: 1,
   },
   google_gemini: {
-    providerId: 'google_gemini',
+    providerId: "google_gemini",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'AIzaSy••••••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "AIzaSy••••••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      modelName: 'gemini-2.5-flash',
+      modelName: "gemini-2.5-flash",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   openai: {
-    providerId: 'openai',
+    providerId: "openai",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 2,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'sk-proj-••••••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "sk-proj-••••••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      model: 'gpt-4o-mini',
+      model: "gpt-4o-mini",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   tavily: {
-    providerId: 'tavily',
+    providerId: "tavily",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'tvly-••••••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "tvly-••••••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {},
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   meilisearch: {
-    providerId: 'meilisearch',
+    providerId: "meilisearch",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'search_key_••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "search_key_••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      hostUrl: 'https://search.shongre.internal',
-      searchApiKey: 'search_key_public_2026_shongre',
+      hostUrl: "https://search.shongre.internal",
+      searchApiKey: "search_key_public_2026_shongre",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   osm_nominatim: {
-    providerId: 'osm_nominatim',
+    providerId: "osm_nominatim",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'not_required',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "not_required",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      userAgent: 'ShongrePlatform/2.0 (contact@shongre.com)',
+      userAgent: "ShongrePlatform/2.0 (contact@shongre.com)",
       preferBanInFrance: true,
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   insee_sirene: {
-    providerId: 'insee_sirene',
+    providerId: "insee_sirene",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'Pappers API (Connecté)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "Pappers API (Connecté)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {},
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   veriff: {
-    providerId: 'veriff',
+    providerId: "veriff",
     enabled: true,
-    environment: 'sandbox',
+    environment: "sandbox",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'veriff_pub_••••••••',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "veriff_pub_••••••••",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      apiKey: 'veriff_pub_live_demo_01',
+      apiKey: "veriff_pub_live_demo_01",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   cloudflare_r2: {
-    providerId: 'cloudflare_r2',
+    providerId: "cloudflare_r2",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'Bucket shongre-media-public',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "Bucket shongre-media-public",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      accountId: 'cf_acc_shongre_prod_01',
-      bucketMediaName: 'shongre-media-public',
+      accountId: "cf_acc_shongre_prod_01",
+      bucketMediaName: "shongre-media-public",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   plausible: {
-    providerId: 'plausible',
+    providerId: "plausible",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'not_required',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "not_required",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      domain: 'shongre.com',
-      scriptSource: 'https://plausible.io/js/script.js',
+      domain: "shongre.com",
+      scriptSource: "https://plausible.io/js/script.js",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   sentry: {
-    providerId: 'sentry',
+    providerId: "sentry",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'DSN Configuré',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "DSN Configuré",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      dsn: 'https://o123456@sentry.shongre.internal/1',
+      dsn: "https://o123456@sentry.shongre.internal/1",
       tracesSampleRate: 0.1,
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   pennylane: {
-    providerId: 'pennylane',
+    providerId: "pennylane",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: 'Pennylane Token (Actif)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "Pennylane Token (Actif)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      companyId: 'shongre_sas_01',
+      companyId: "shongre_sas_01",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
   cloudflare_turnstile: {
-    providerId: 'cloudflare_turnstile',
+    providerId: "cloudflare_turnstile",
     enabled: true,
-    environment: 'demo',
+    environment: "demo",
     priority: 1,
-    credentialStatus: 'configured',
-    credentialLastUpdatedAt: '2026-08-01T08:00:00Z',
-    credentialKeyHint: '0x4AAAAAA•••••••• (Actif)',
-    health: 'healthy',
-    healthLastCheckedAt: '2026-08-17T02:00:00Z',
+    credentialStatus: "configured",
+    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
+    credentialKeyHint: "0x4AAAAAA•••••••• (Actif)",
+    health: "healthy",
+    healthLastCheckedAt: "2026-08-17T02:00:00Z",
     settings: {
-      siteKey: '0x4AAAAAAAJkL1234567890',
+      siteKey: "0x4AAAAAAAJkL1234567890",
     },
     marketOverrides: {},
-    updatedAt: '2026-08-01T08:00:00Z',
+    updatedAt: "2026-08-01T08:00:00Z",
     version: 1,
   },
 };
@@ -483,12 +490,15 @@ export class DemoProviderRepository implements IProviderRepository {
   }
 
   private initStorage(): void {
-    const existing = storageService.get<Record<string, ProviderConfiguration> | null>(
-      'shongre_provider_configs_v1',
-      null
-    );
+    const existing = storageService.get<Record<
+      string,
+      ProviderConfiguration
+    > | null>("shongre_provider_configs_v1", null);
     if (!existing) {
-      storageService.set('shongre_provider_configs_v1', INITIAL_PROVIDER_CONFIGURATIONS);
+      storageService.set(
+        "shongre_provider_configs_v1",
+        INITIAL_PROVIDER_CONFIGURATIONS,
+      );
     }
   }
 
@@ -503,8 +513,8 @@ export class DemoProviderRepository implements IProviderRepository {
   public getConfigurations(): Record<string, ProviderConfiguration> {
     return (
       storageService.get<Record<string, ProviderConfiguration>>(
-        'shongre_provider_configs_v1',
-        INITIAL_PROVIDER_CONFIGURATIONS
+        "shongre_provider_configs_v1",
+        INITIAL_PROVIDER_CONFIGURATIONS,
       ) || INITIAL_PROVIDER_CONFIGURATIONS
     );
   }
@@ -517,21 +527,23 @@ export class DemoProviderRepository implements IProviderRepository {
   public async saveConfiguration(
     providerId: string,
     updates: Partial<ProviderConfiguration>,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration> {
     const provider = this.getProvider(providerId);
     if (!provider) {
-      throw new Error(`Prestataire "${providerId}" introuvable dans le registre.`);
+      throw new Error(
+        `Prestataire "${providerId}" introuvable dans le registre.`,
+      );
     }
 
     const configs = this.getConfigurations();
     const current = configs[providerId] || {
       providerId,
       enabled: false,
-      environment: 'demo',
+      environment: "demo",
       priority: 1,
-      credentialStatus: 'not_configured',
-      health: 'unknown',
+      credentialStatus: "not_configured",
+      health: "unknown",
       settings: {},
       marketOverrides: {},
       updatedAt: new Date().toISOString(),
@@ -543,29 +555,35 @@ export class DemoProviderRepository implements IProviderRepository {
       ...updates,
       providerId,
       updatedAt: new Date().toISOString(),
-      updatedBy: actor?.name || 'Administrateur',
+      updatedBy: actor?.name || "Administrateur",
       version: current.version + 1,
     };
 
     // Validate
-    const validation = providerValidator.validateConfiguration(provider, newConfig);
+    const validation = providerValidator.validateConfiguration(
+      provider,
+      newConfig,
+    );
     if (!validation.isValid) {
-      throw new Error(validation.errors.join(' '));
+      throw new Error(validation.errors.join(" "));
     }
 
     configs[providerId] = newConfig;
-    storageService.set('shongre_provider_configs_v1', configs);
+    storageService.set("shongre_provider_configs_v1", configs);
 
     // Audit log
     this.recordAuditEvent({
-      actorId: actor?.id || 'admin-1',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: actor?.role || 'admin',
+      actorId: actor?.id || "admin-1",
+      actorName: actor?.name || "Administrateur",
+      actorRole: actor?.role || "admin",
       providerId,
       providerName: provider.name,
-      action: updates.enabled !== undefined && updates.enabled !== current.enabled
-        ? updates.enabled ? 'enabled' : 'disabled'
-        : 'configured',
+      action:
+        updates.enabled !== undefined && updates.enabled !== current.enabled
+          ? updates.enabled
+            ? "enabled"
+            : "disabled"
+          : "configured",
       details: `Configuration mise à jour pour ${provider.name} (v${newConfig.version}).`,
       previousValue: current,
       newValue: newConfig,
@@ -578,27 +596,32 @@ export class DemoProviderRepository implements IProviderRepository {
     providerId: string,
     marketCode: string,
     override: ProviderMarketOverride,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration> {
     const provider = this.getProvider(providerId);
     if (!provider) throw new Error(`Prestataire "${providerId}" introuvable.`);
 
     const normMarket = marketCode.toUpperCase();
-    const validation = providerValidator.validateMarketOverride(provider, normMarket, override);
+    const validation = providerValidator.validateMarketOverride(
+      provider,
+      normMarket,
+      override,
+    );
     if (!validation.isValid) {
-      throw new Error(validation.errors.join(' '));
+      throw new Error(validation.errors.join(" "));
     }
 
     const configs = this.getConfigurations();
     const current = configs[providerId];
-    if (!current) throw new Error(`Configuration introuvable pour "${providerId}".`);
+    if (!current)
+      throw new Error(`Configuration introuvable pour "${providerId}".`);
 
     const updatedOverrides = {
       ...current.marketOverrides,
       [normMarket]: {
         ...override,
         updatedAt: new Date().toISOString(),
-        updatedBy: actor?.name || 'Administrateur',
+        updatedBy: actor?.name || "Administrateur",
       },
     };
 
@@ -606,20 +629,20 @@ export class DemoProviderRepository implements IProviderRepository {
       ...current,
       marketOverrides: updatedOverrides,
       updatedAt: new Date().toISOString(),
-      updatedBy: actor?.name || 'Administrateur',
+      updatedBy: actor?.name || "Administrateur",
       version: current.version + 1,
     };
 
     configs[providerId] = newConfig;
-    storageService.set('shongre_provider_configs_v1', configs);
+    storageService.set("shongre_provider_configs_v1", configs);
 
     this.recordAuditEvent({
-      actorId: actor?.id || 'admin-1',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: actor?.role || 'admin',
+      actorId: actor?.id || "admin-1",
+      actorName: actor?.name || "Administrateur",
+      actorRole: actor?.role || "admin",
       providerId,
       providerName: provider.name,
-      action: 'market_override_set',
+      action: "market_override_set",
       marketCode: normMarket,
       details: `Surcharge de marché configurée pour ${normMarket} sur ${provider.name}.`,
     });
@@ -630,7 +653,7 @@ export class DemoProviderRepository implements IProviderRepository {
   public async resetMarketOverride(
     providerId: string,
     marketCode: string,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration> {
     const provider = this.getProvider(providerId);
     if (!provider) throw new Error(`Prestataire "${providerId}" introuvable.`);
@@ -638,7 +661,8 @@ export class DemoProviderRepository implements IProviderRepository {
     const normMarket = marketCode.toUpperCase();
     const configs = this.getConfigurations();
     const current = configs[providerId];
-    if (!current) throw new Error(`Configuration introuvable pour "${providerId}".`);
+    if (!current)
+      throw new Error(`Configuration introuvable pour "${providerId}".`);
 
     const updatedOverrides = { ...current.marketOverrides };
     delete updatedOverrides[normMarket];
@@ -647,20 +671,20 @@ export class DemoProviderRepository implements IProviderRepository {
       ...current,
       marketOverrides: updatedOverrides,
       updatedAt: new Date().toISOString(),
-      updatedBy: actor?.name || 'Administrateur',
+      updatedBy: actor?.name || "Administrateur",
       version: current.version + 1,
     };
 
     configs[providerId] = newConfig;
-    storageService.set('shongre_provider_configs_v1', configs);
+    storageService.set("shongre_provider_configs_v1", configs);
 
     this.recordAuditEvent({
-      actorId: actor?.id || 'admin-1',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: actor?.role || 'admin',
+      actorId: actor?.id || "admin-1",
+      actorName: actor?.name || "Administrateur",
+      actorRole: actor?.role || "admin",
       providerId,
       providerName: provider.name,
-      action: 'market_override_reset',
+      action: "market_override_reset",
       marketCode: normMarket,
       details: `Surcharge réinitialisée pour ${normMarket} sur ${provider.name} (hérite désormais de la France).`,
     });
@@ -672,14 +696,15 @@ export class DemoProviderRepository implements IProviderRepository {
     providerId: string,
     health: ProviderHealthStatus,
     message?: string,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration> {
     const provider = this.getProvider(providerId);
     if (!provider) throw new Error(`Prestataire "${providerId}" introuvable.`);
 
     const configs = this.getConfigurations();
     const current = configs[providerId];
-    if (!current) throw new Error(`Configuration introuvable pour "${providerId}".`);
+    if (!current)
+      throw new Error(`Configuration introuvable pour "${providerId}".`);
 
     const newConfig: ProviderConfiguration = {
       ...current,
@@ -690,16 +715,16 @@ export class DemoProviderRepository implements IProviderRepository {
     };
 
     configs[providerId] = newConfig;
-    storageService.set('shongre_provider_configs_v1', configs);
+    storageService.set("shongre_provider_configs_v1", configs);
 
     this.recordAuditEvent({
-      actorId: actor?.id || 'admin-1',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: actor?.role || 'admin',
+      actorId: actor?.id || "admin-1",
+      actorName: actor?.name || "Administrateur",
+      actorRole: actor?.role || "admin",
       providerId,
       providerName: provider.name,
-      action: 'health_simulated',
-      details: `État de santé simulé : ${health} ${message ? `(${message})` : ''}`,
+      action: "health_simulated",
+      details: `État de santé simulé : ${health} ${message ? `(${message})` : ""}`,
     });
 
     return newConfig;
@@ -707,7 +732,12 @@ export class DemoProviderRepository implements IProviderRepository {
 
   public async testProvider(
     providerId: string,
-    scenario: 'healthy' | 'missing_credentials' | 'timeout' | 'invalid_config' | 'unsupported_market' = 'healthy'
+    scenario:
+      | "healthy"
+      | "missing_credentials"
+      | "timeout"
+      | "invalid_config"
+      | "unsupported_market" = "healthy",
   ): Promise<ProviderTestResult> {
     const provider = this.getProvider(providerId);
     if (!provider) {
@@ -718,7 +748,7 @@ export class DemoProviderRepository implements IProviderRepository {
         latencyMs: 15,
         message: `Prestataire ${providerId} introuvable.`,
         testedAt: new Date().toISOString(),
-        diagnostics: { error: 'PROVIDER_NOT_FOUND' },
+        diagnostics: { error: "PROVIDER_NOT_FOUND" },
       };
     }
 
@@ -727,46 +757,52 @@ export class DemoProviderRepository implements IProviderRepository {
 
     const config = this.getConfiguration(providerId);
 
-    if (scenario === 'missing_credentials' || config?.credentialStatus === 'not_configured') {
+    if (
+      scenario === "missing_credentials" ||
+      config?.credentialStatus === "not_configured"
+    ) {
       return {
         providerId,
         success: false,
-        scenario: 'missing_credentials',
+        scenario: "missing_credentials",
         latencyMs: 120,
-        message: 'Échec du test : Identifiants ou clé secrète serveur non configurés.',
+        message:
+          "Échec du test : Identifiants ou clé secrète serveur non configurés.",
         testedAt: new Date().toISOString(),
         diagnostics: {
-          code: 'PROVIDER_CREDENTIALS_MISSING',
-          credentialStatus: config?.credentialStatus || 'not_configured',
+          code: "PROVIDER_CREDENTIALS_MISSING",
+          credentialStatus: config?.credentialStatus || "not_configured",
         },
       };
     }
 
-    if (scenario === 'timeout') {
+    if (scenario === "timeout") {
       return {
         providerId,
         success: false,
-        scenario: 'timeout',
+        scenario: "timeout",
         latencyMs: 5000,
-        message: 'Échec du test : Délai d\'attente dépassé (HTTP 504 Gateway Timeout).',
+        message:
+          "Échec du test : Délai d'attente dépassé (HTTP 504 Gateway Timeout).",
         testedAt: new Date().toISOString(),
         diagnostics: {
-          code: 'PROVIDER_TIMEOUT',
-          endpoint: provider.metadata.website || 'api.provider.internal',
+          code: "PROVIDER_TIMEOUT",
+          endpoint: provider.metadata.website || "api.provider.internal",
         },
       };
     }
 
-    if (scenario === 'invalid_config') {
+    if (scenario === "invalid_config") {
       return {
         providerId,
         success: false,
-        scenario: 'invalid_config',
+        scenario: "invalid_config",
         latencyMs: 180,
-        message: 'Échec du test : Paramètres de configuration rejetés par l\'API partenaire.',
+        message:
+          "Échec du test : Paramètres de configuration rejetés par l'API partenaire.",
         testedAt: new Date().toISOString(),
         diagnostics: {
-          code: 'PROVIDER_CONFIGURATION_INVALID',
+          code: "PROVIDER_CONFIGURATION_INVALID",
         },
       };
     }
@@ -774,22 +810,22 @@ export class DemoProviderRepository implements IProviderRepository {
     return {
       providerId,
       success: true,
-      scenario: 'healthy',
+      scenario: "healthy",
       latencyMs: 85,
       message: `Connexion au prestataire ${provider.name} établie avec succès. Tous les endpoints répondent normalement.`,
       testedAt: new Date().toISOString(),
       diagnostics: {
-        code: 'OK',
-        environment: config?.environment || 'demo',
+        code: "OK",
+        environment: config?.environment || "demo",
         capabilitiesVerified: provider.capabilities,
-        protocol: 'HTTPS / TLS 1.3',
+        protocol: "HTTPS / TLS 1.3",
       },
     };
   }
 
   public resolveEffectiveProviders(
     capability: ProviderCapability,
-    marketCode = 'FR'
+    marketCode = "FR",
   ): EffectiveProviderResolution {
     const configs = this.getConfigurations();
     return providerResolver.resolveEffectiveProviders({
@@ -801,7 +837,7 @@ export class DemoProviderRepository implements IProviderRepository {
 
   public resolveCapabilityHealth(
     capability: ProviderCapability,
-    marketCode = 'FR'
+    marketCode = "FR",
   ): CapabilityHealthResult {
     const configs = this.getConfigurations();
     return providerResolver.resolveCapabilityHealth({
@@ -813,7 +849,7 @@ export class DemoProviderRepository implements IProviderRepository {
 
   public analyzeImpact(
     providerId: string,
-    targetMarketCode = 'FR'
+    targetMarketCode = "FR",
   ): ProviderImpactAnalysis {
     const configs = this.getConfigurations();
     return providerResolver.analyzeProviderImpact({
@@ -824,7 +860,10 @@ export class DemoProviderRepository implements IProviderRepository {
   }
 
   public getAuditHistory(providerId?: string): ProviderAuditEvent[] {
-    const stored = storageService.get<ProviderAuditEvent[]>('shongre_provider_audit_logs_v1', []);
+    const stored = storageService.get<ProviderAuditEvent[]>(
+      "shongre_provider_audit_logs_v1",
+      [],
+    );
     const merged = [...stored, ...this.auditEvents];
     if (providerId) {
       return merged.filter((e) => e.providerId === providerId);
@@ -832,7 +871,9 @@ export class DemoProviderRepository implements IProviderRepository {
     return merged;
   }
 
-  private recordAuditEvent(event: Omit<ProviderAuditEvent, 'id' | 'timestamp'>): void {
+  private recordAuditEvent(
+    event: Omit<ProviderAuditEvent, "id" | "timestamp">,
+  ): void {
     const newEvent: ProviderAuditEvent = {
       ...event,
       id: `p-aud-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -840,9 +881,12 @@ export class DemoProviderRepository implements IProviderRepository {
     };
     this.auditEvents.unshift(newEvent);
 
-    const stored = storageService.get<ProviderAuditEvent[]>('shongre_provider_audit_logs_v1', []);
+    const stored = storageService.get<ProviderAuditEvent[]>(
+      "shongre_provider_audit_logs_v1",
+      [],
+    );
     stored.unshift(newEvent);
-    storageService.set('shongre_provider_audit_logs_v1', stored.slice(0, 100)); // Keep last 100
+    storageService.set("shongre_provider_audit_logs_v1", stored.slice(0, 100)); // Keep last 100
 
     // Also bridge to security audit log
     auditService.logEvent({
@@ -851,10 +895,11 @@ export class DemoProviderRepository implements IProviderRepository {
       actorRole: event.actorRole,
       targetId: event.providerId,
       targetName: event.providerName,
-      action: 'provider_configured',
+      action: "provider_configured",
       details: event.details,
     });
   }
 }
 
-export const providerRepository: IProviderRepository = new DemoProviderRepository();
+export const providerRepository: IProviderRepository =
+  new DemoProviderRepository();

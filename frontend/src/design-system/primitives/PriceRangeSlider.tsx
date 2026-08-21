@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 /**
  * The scale is a list of stops, not a linear span.
@@ -56,8 +56,8 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   min,
   max,
   onChange,
-  currencySymbol = '€',
-  className = '',
+  currencySymbol = "€",
+  className = "",
 }) => {
   const { t } = useTranslation();
   /**
@@ -87,10 +87,10 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   const highIndex = draft.high;
 
   const format = (value: number) =>
-    `${value.toLocaleString('fr-FR')} ${currencySymbol}`;
+    `${value.toLocaleString("fr-FR")} ${currencySymbol}`;
 
   const label = useMemo(() => {
-    if (lowIndex === 0 && highIndex === LAST) return 'Tous les prix';
+    if (lowIndex === 0 && highIndex === LAST) return "Tous les prix";
     if (lowIndex === 0) return `Jusqu'à ${format(STOPS[highIndex])}`;
     if (highIndex === LAST) return `À partir de ${format(STOPS[lowIndex])}`;
     return `${format(STOPS[lowIndex])} – ${format(STOPS[highIndex])}`;
@@ -123,27 +123,31 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   const rightPct = (highIndex / LAST) * 100;
 
   const thumb =
-    'pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 w-full appearance-none bg-transparent ' +
-    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none ' +
-    '[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full ' +
-    '[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary ' +
-    '[&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-grab ' +
-    '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 ' +
-    '[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 ' +
-    '[&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-grab ' +
-    'focus-visible:outline-none [&:focus-visible::-webkit-slider-thumb]:outline-2 ' +
-    '[&:focus-visible::-webkit-slider-thumb]:outline-offset-2 [&:focus-visible::-webkit-slider-thumb]:outline-primary';
+    "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 w-full appearance-none bg-transparent " +
+    "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none " +
+    "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full " +
+    "[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary " +
+    "[&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-grab " +
+    "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 " +
+    "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 " +
+    "[&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-grab " +
+    "focus-visible:outline-none [&:focus-visible::-webkit-slider-thumb]:outline-2 " +
+    "[&:focus-visible::-webkit-slider-thumb]:outline-offset-2 [&:focus-visible::-webkit-slider-thumb]:outline-primary";
 
   return (
     <div className={className}>
       <div className="flex items-center justify-between gap-2 mb-2.5">
-        <span className="text-xs font-bold text-stone-900 tabular-nums">{label}</span>
+        <span className="text-xs font-bold text-stone-900 tabular-nums">
+          {label}
+        </span>
         {(lowIndex !== 0 || highIndex !== LAST) && (
           <button
             type="button"
             onClick={() => commit(0, LAST)}
             className="text-micro font-semibold text-stone-500 hover:text-primary transition-colors cursor-pointer shrink-0"
-          >{t('ui.priceRangeSlider.reinitialiser')}</button>
+          >
+            {t("ui.priceRangeSlider.reinitialiser")}
+          </button>
         )}
       </div>
 
@@ -168,7 +172,9 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           onKeyUp={release}
           onBlur={release}
           aria-label="Prix minimum"
-          aria-valuetext={lowIndex === 0 ? 'Aucun minimum' : format(STOPS[lowIndex])}
+          aria-valuetext={
+            lowIndex === 0 ? "Aucun minimum" : format(STOPS[lowIndex])
+          }
           className={thumb}
         />
         <input
@@ -183,7 +189,9 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           onKeyUp={release}
           onBlur={release}
           aria-label="Prix maximum"
-          aria-valuetext={highIndex === LAST ? 'Aucun maximum' : format(STOPS[highIndex])}
+          aria-valuetext={
+            highIndex === LAST ? "Aucun maximum" : format(STOPS[highIndex])
+          }
           className={thumb}
         />
       </div>

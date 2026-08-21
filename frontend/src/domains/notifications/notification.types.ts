@@ -5,80 +5,80 @@
  */
 
 export type NotificationCategory =
-  | 'messages'
-  | 'transactions'
-  | 'listings'
-  | 'delivery'
-  | 'reviews'
-  | 'monetization'
-  | 'account'
-  | 'security'
-  | 'moderation'
-  | 'system';
+  | "messages"
+  | "transactions"
+  | "listings"
+  | "delivery"
+  | "reviews"
+  | "monetization"
+  | "account"
+  | "security"
+  | "moderation"
+  | "system";
 
-export type NotificationPriority = 'low' | 'normal' | 'high' | 'critical';
+export type NotificationPriority = "low" | "normal" | "high" | "critical";
 
-export type NotificationStatus = 'unread' | 'read' | 'archived';
+export type NotificationStatus = "unread" | "read" | "archived";
 
-export type NotificationChannel = 'in_app' | 'email' | 'push';
+export type NotificationChannel = "in_app" | "email" | "push";
 
 export type NotificationType =
   // Messaging
-  | 'message.received'
+  | "message.received"
   // Listing lifecycle
-  | 'listing.published'
-  | 'listing.requires_changes'
-  | 'listing.rejected'
-  | 'listing.expiring'
-  | 'listing.expired'
-  | 'listing.sold'
-  | 'favorite.price_dropped'
-  | 'saved_search.match'
+  | "listing.published"
+  | "listing.requires_changes"
+  | "listing.rejected"
+  | "listing.expiring"
+  | "listing.expired"
+  | "listing.sold"
+  | "favorite.price_dropped"
+  | "saved_search.match"
   // Reservation lifecycle
-  | 'reservation.requested'
-  | 'reservation.accepted'
-  | 'reservation.rejected'
-  | 'reservation.expiring'
-  | 'reservation.cancelled'
+  | "reservation.requested"
+  | "reservation.accepted"
+  | "reservation.rejected"
+  | "reservation.expiring"
+  | "reservation.cancelled"
   // Direct Purchase & Order lifecycle
-  | 'order.created'
-  | 'order.confirmed'
-  | 'order.cancelled'
-  | 'order.completed'
+  | "order.created"
+  | "order.confirmed"
+  | "order.cancelled"
+  | "order.completed"
   // Escrow & Payments
-  | 'payment.secured'
-  | 'payment.failed'
-  | 'payment.released'
-  | 'payment.refunded'
+  | "payment.secured"
+  | "payment.failed"
+  | "payment.released"
+  | "payment.refunded"
   // Delivery & Pickup
-  | 'fulfillment.pickup_scheduled'
-  | 'fulfillment.shipped'
-  | 'fulfillment.delivered'
-  | 'fulfillment.receipt_required'
+  | "fulfillment.pickup_scheduled"
+  | "fulfillment.shipped"
+  | "fulfillment.delivered"
+  | "fulfillment.receipt_required"
   // Reviews
-  | 'review.available'
-  | 'review.received'
+  | "review.available"
+  | "review.received"
   // Seller verification & Pro
-  | 'seller.verification_required'
-  | 'seller.verified'
-  | 'subscription.started'
-  | 'subscription.renewal_upcoming'
-  | 'subscription.payment_failed'
-  | 'subscription.cancelled'
+  | "seller.verification_required"
+  | "seller.verified"
+  | "subscription.started"
+  | "subscription.renewal_upcoming"
+  | "subscription.payment_failed"
+  | "subscription.cancelled"
   // Promotions
-  | 'promotion.started'
-  | 'promotion.expiring'
-  | 'promotion.ended'
+  | "promotion.started"
+  | "promotion.expiring"
+  | "promotion.ended"
   // Account & Security
-  | 'security.password_changed'
-  | 'security.new_login'
+  | "security.password_changed"
+  | "security.new_login"
   // Moderation
-  | 'moderation.report_assigned'
-  | 'moderation.listing_flagged'
-  | 'moderation.action_required';
+  | "moderation.report_assigned"
+  | "moderation.listing_flagged"
+  | "moderation.action_required";
 
 export interface ListingNotificationContext {
-  type: 'listing';
+  type: "listing";
   listingId: string;
   listingTitle?: string;
   listingPhotoUrl?: string;
@@ -87,7 +87,7 @@ export interface ListingNotificationContext {
 }
 
 export interface ConversationNotificationContext {
-  type: 'conversation';
+  type: "conversation";
   conversationId: string;
   senderId?: string;
   senderName?: string;
@@ -98,7 +98,7 @@ export interface ConversationNotificationContext {
 }
 
 export interface TransactionNotificationContext {
-  type: 'transaction';
+  type: "transaction";
   transactionId: string;
   orderNumber?: string;
   listingId?: string;
@@ -106,11 +106,11 @@ export interface TransactionNotificationContext {
   listingPhotoUrl?: string;
   amount?: number;
   currency?: string;
-  flowType?: 'direct_purchase' | 'reservation';
+  flowType?: "direct_purchase" | "reservation";
 }
 
 export interface SubscriptionNotificationContext {
-  type: 'subscription';
+  type: "subscription";
   planId: string;
   planName: string;
   amount?: number;
@@ -118,13 +118,13 @@ export interface SubscriptionNotificationContext {
 }
 
 export interface AccountNotificationContext {
-  type: 'account';
+  type: "account";
   userId: string;
   reason?: string;
 }
 
 export interface ModerationNotificationContext {
-  type: 'moderation';
+  type: "moderation";
   reportId?: string;
   targetType?: string;
   targetId?: string;
@@ -142,7 +142,7 @@ export interface NotificationAction {
   id: string;
   label: string;
   destination: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: "primary" | "secondary" | "outline" | "ghost";
   isExternal?: boolean;
 }
 
@@ -183,11 +183,12 @@ export interface NotificationPreferences {
   updatedAt: string;
 }
 
-export type NotificationFilterTab = 'all' | 'unread' | 'messages' | 'transactions' | 'listings' | 'account';
+export type NotificationFilterTab =
+  "all" | "unread" | "messages" | "transactions" | "listings" | "account";
 
 export interface NotificationQuery {
   recipientId?: string;
-  status?: 'unread' | 'read' | 'all';
+  status?: "unread" | "read" | "all";
   category?: NotificationCategory;
   limit?: number;
   offset?: number;
@@ -201,10 +202,16 @@ export interface NotificationPageResult {
 }
 
 export interface RealtimeNotificationEvent {
-  type: 'notification.created' | 'notification.read' | 'notification.all_read' | 'notification.deleted';
+  type:
+    | "notification.created"
+    | "notification.read"
+    | "notification.all_read"
+    | "notification.deleted";
   recipientId: string;
   payload: any;
   timestamp: string;
 }
 
-export type NotificationRealtimeHandler = (event: RealtimeNotificationEvent) => void;
+export type NotificationRealtimeHandler = (
+  event: RealtimeNotificationEvent,
+) => void;

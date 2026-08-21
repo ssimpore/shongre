@@ -1,10 +1,12 @@
-import { isProSeller, showsVerifiedBadge } from '../../../domains/user/user.domain';
-import React, { useState } from 'react';
+import {
+  isProSeller,
+  showsVerifiedBadge,
+} from "../../../domains/user/user.domain";
+import React, { useState } from "react";
 
 import {
   MapPin,
   Star,
-  
   Calendar,
   MessageSquare,
   Share2,
@@ -12,28 +14,25 @@ import {
   MoreVertical,
   Flag,
   Ban,
-  
   Building2,
-  
   Edit3,
-  List
-  
-} from 'lucide-react';
-import { UserProfile } from '../../../types';
-import { Avatar, Badge } from '../../../design-system/primitives/Badge';
-import { Button } from '../../../design-system/primitives/Button';
-import { IconButton } from '../../../design-system/primitives/IconButton';
-import { useAuth } from '../../../app/providers/AuthProvider';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { userRepository } from '../../../repositories/user.repository';
-import { Image } from '../../../design-system/primitives/Image';
-import { useTranslation } from '../../../i18n/I18nProvider';
+  List,
+} from "lucide-react";
+import { UserProfile } from "../../../types";
+import { Avatar, Badge } from "../../../design-system/primitives/Badge";
+import { Button } from "../../../design-system/primitives/Button";
+import { IconButton } from "../../../design-system/primitives/IconButton";
+import { useAuth } from "../../../app/providers/AuthProvider";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { userRepository } from "../../../repositories/user.repository";
+import { Image } from "../../../design-system/primitives/Image";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface SellerProfileHeaderProps {
   seller: UserProfile;
   activeListingsCount: number;
-  activeTab: 'catalog' | 'reviews' | 'about';
-  onTabChange: (tab: 'catalog' | 'reviews' | 'about') => void;
+  activeTab: "catalog" | "reviews" | "about";
+  onTabChange: (tab: "catalog" | "reviews" | "about") => void;
   isOwnProfile: boolean;
   onContactClick: () => void;
   onOpenReportModal: () => void;
@@ -52,25 +51,35 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   const { isAuthenticated } = useAuth();
   const toast = useToast();
 
-  const [isFollowing, setIsFollowing] = useState(() => userRepository.isFollowing(seller.id));
-  const [isBlocked, setIsBlocked] = useState(() => userRepository.isBlocked(seller.id));
+  const [isFollowing, setIsFollowing] = useState(() =>
+    userRepository.isFollowing(seller.id),
+  );
+  const [isBlocked, setIsBlocked] = useState(() =>
+    userRepository.isBlocked(seller.id),
+  );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isPro = isProSeller(seller);
   const displayName = isPro ? seller.companyName || seller.name : seller.name;
-  
+
   // Format member seniority
-  const memberYear = seller.createdAt ? new Date(seller.createdAt).getFullYear() : '2024';
+  const memberYear = seller.createdAt
+    ? new Date(seller.createdAt).getFullYear()
+    : "2024";
 
   const handleFollowToggle = () => {
     if (!isAuthenticated) {
-      toast.info('Connectez-vous pour suivre ce vendeur et recevoir ses nouveautés.');
+      toast.info(
+        "Connectez-vous pour suivre ce vendeur et recevoir ses nouveautés.",
+      );
       return;
     }
     const nextState = userRepository.toggleFollow(seller.id);
     setIsFollowing(nextState);
     if (nextState) {
-      toast.success(`Vous suivez désormais ${displayName}. Vous serez notifié de ses nouvelles annonces.`);
+      toast.success(
+        `Vous suivez désormais ${displayName}. Vous serez notifié de ses nouvelles annonces.`,
+      );
     } else {
       toast.info(`Vous ne suivez plus ${displayName}.`);
     }
@@ -95,7 +104,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
     } else {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        toast.success('Lien du profil copié dans le presse-papier !');
+        toast.success("Lien du profil copié dans le presse-papier !");
       } catch {
         toast.info(shareUrl);
       }
@@ -104,14 +113,16 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
   const handleBlockToggle = () => {
     if (!isAuthenticated) {
-      toast.info('Connectez-vous pour bloquer un utilisateur.');
+      toast.info("Connectez-vous pour bloquer un utilisateur.");
       return;
     }
     const nextBlocked = userRepository.toggleBlock(seller.id);
     setIsBlocked(nextBlocked);
     setIsMenuOpen(false);
     if (nextBlocked) {
-      toast.warning(`${displayName} a été bloqué. Ses messages et offres seront masqués.`);
+      toast.warning(
+        `${displayName} a été bloqué. Ses messages et offres seront masqués.`,
+      );
     } else {
       toast.success(`${displayName} a été débloqué.`);
     }
@@ -127,7 +138,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
               src={seller.storeBannerUrl}
               alt={`Bannière de ${displayName}`}
               sizes="100vw"
-                className="w-full h-full object-cover opacity-80 mix-blend-overlay"
+              className="w-full h-full object-cover opacity-80 mix-blend-overlay"
               referrerPolicy="no-referrer"
             />
           ) : (
@@ -136,7 +147,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
-          
+
           <div className="absolute top-4 right-4 flex items-center gap-2 flex-wrap">
             <Badge variant="pro" size="md">
               Boutique Professionnelle
@@ -167,7 +178,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           overlap is the avatar's alone. */}
       <div className="p-6 sm:p-8 relative">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-8">
-
           {/* Avatar & Main Identity */}
           <div className="flex items-start gap-5 w-full md:w-auto">
             <div className="relative shrink-0 -mt-16 sm:-mt-20">
@@ -187,14 +197,18 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   {displayName}
                 </h1>
                 {isPro ? (
-                  <Badge variant="pro" size="sm">Pro</Badge>
+                  <Badge variant="pro" size="sm">
+                    Pro
+                  </Badge>
                 ) : (
                   <span className="text-xs font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-full">
                     Particulier
                   </span>
                 )}
                 {showsVerifiedBadge(seller) && (
-                  <Badge variant="verified" size="sm" icon>{t('profile.sellerProfileHeader.verifie')}</Badge>
+                  <Badge variant="verified" size="sm" icon>
+                    {t("profile.sellerProfileHeader.verifie")}
+                  </Badge>
                 )}
               </div>
 
@@ -203,7 +217,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 {/* Rating trigger */}
                 <button
                   type="button"
-                  onClick={() => onTabChange('reviews')}
+                  onClick={() => onTabChange("reviews")}
                   className="flex shrink-0 items-center gap-1.5 font-bold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
@@ -219,7 +233,10 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 {/* Location */}
                 <span className="flex shrink-0 items-center gap-1.5 text-stone-600">
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-stone-400 sm:h-4 sm:w-4" />
-                  {seller.city} {seller.postalCode ? `(${seller.postalCode.slice(0, 2)})` : ''}
+                  {seller.city}{" "}
+                  {seller.postalCode
+                    ? `(${seller.postalCode.slice(0, 2)})`
+                    : ""}
                 </span>
 
                 <span className="shrink-0 text-stone-300">•</span>
@@ -228,7 +245,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 <span className="flex shrink-0 items-center gap-1.5 text-stone-500">
                   <Calendar className="h-3.5 w-3.5 shrink-0 text-stone-400 sm:h-4 sm:w-4" />
                   <span className="sm:hidden">Depuis {memberYear}</span>
-                  <span className="hidden sm:inline">Membre depuis {memberYear}</span>
+                  <span className="hidden sm:inline">
+                    Membre depuis {memberYear}
+                  </span>
                 </span>
               </div>
             </div>
@@ -239,7 +258,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             {isOwnProfile ? (
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button
-                  to={isPro ? '/compte/pro/vitrine' : '/compte'}
+                  to={isPro ? "/compte/pro/vitrine" : "/compte"}
                   variant="outline"
                   size="md"
                   fullWidth
@@ -255,7 +274,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   fullWidth
                   leftIcon={<List className="w-4 h-4" />}
                   className="flex-1 sm:flex-initial"
-                >{t('profile.sellerProfileHeader.gererMesAnnonces')}</Button>
+                >
+                  {t("profile.sellerProfileHeader.gererMesAnnonces")}
+                </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -277,25 +298,29 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                       for the full label beside the share and overflow controls. */}
                   <span className="sm:hidden">Contacter</span>
                   <span className="hidden sm:inline truncate">
-                    {isPro ? 'Contacter la boutique' : 'Contacter le vendeur'}
+                    {isPro ? "Contacter la boutique" : "Contacter le vendeur"}
                   </span>
                 </Button>
 
                 <Button
-                  variant={isFollowing ? 'secondary' : 'outline'}
+                  variant={isFollowing ? "secondary" : "outline"}
                   size="md"
                   onClick={handleFollowToggle}
-                  leftIcon={<Heart className={`w-4 h-4 ${isFollowing ? 'fill-primary text-primary' : ''}`} />}
+                  leftIcon={
+                    <Heart
+                      className={`w-4 h-4 ${isFollowing ? "fill-primary text-primary" : ""}`}
+                    />
+                  }
                   className="hidden sm:inline-flex"
                 >
-                  {isFollowing ? 'Abonné' : 'Suivre'}
+                  {isFollowing ? "Abonné" : "Suivre"}
                 </Button>
 
                 <IconButton
                   variant="outline"
                   size="md"
                   onClick={handleShare}
-                  ariaLabel={t('profile.sellerProfileHeader.partagerCeProfil')}
+                  ariaLabel={t("profile.sellerProfileHeader.partagerCeProfil")}
                   className="!h-control-touch !w-control-touch shrink-0"
                 >
                   <Share2 className="w-5 h-5" />
@@ -307,7 +332,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     variant="outline"
                     size="md"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    ariaLabel={t('profile.sellerProfileHeader.optionsSupplementaires')}
+                    ariaLabel={t(
+                      "profile.sellerProfileHeader.optionsSupplementaires",
+                    )}
                     className="!h-control-touch !w-control-touch"
                   >
                     <MoreVertical className="w-5 h-5" />
@@ -323,15 +350,19 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         onClick={handleFollowToggle}
                         className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
                       >
-                        <Heart className={`w-4 h-4 ${isFollowing ? 'fill-primary text-primary' : ''}`} />
-                        {isFollowing ? 'Ne plus suivre' : 'Suivre ce vendeur'}
+                        <Heart
+                          className={`w-4 h-4 ${isFollowing ? "fill-primary text-primary" : ""}`}
+                        />
+                        {isFollowing ? "Ne plus suivre" : "Suivre ce vendeur"}
                       </button>
                       <button
                         type="button"
                         onClick={handleShare}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
                       >
-                        <Share2 className="w-4 h-4 text-stone-400" />{t('profile.sellerProfileHeader.partagerCeProfil2')}</button>
+                        <Share2 className="w-4 h-4 text-stone-400" />
+                        {t("profile.sellerProfileHeader.partagerCeProfil2")}
+                      </button>
                       <div className="border-t border-stone-100 my-1" />
                       <button
                         type="button"
@@ -341,14 +372,18 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-warning hover:bg-warning-surface text-left"
                       >
-                        <Flag className="w-4 h-4 text-warning" />{t('profile.sellerProfileHeader.signalerCeProfil')}</button>
+                        <Flag className="w-4 h-4 text-warning" />
+                        {t("profile.sellerProfileHeader.signalerCeProfil")}
+                      </button>
                       <button
                         type="button"
                         onClick={handleBlockToggle}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-danger hover:bg-danger-surface text-left"
                       >
                         <Ban className="w-4 h-4 text-danger" />
-                        {isBlocked ? 'Débloquer cet utilisateur' : 'Bloquer cet utilisateur'}
+                        {isBlocked
+                          ? "Débloquer cet utilisateur"
+                          : "Bloquer cet utilisateur"}
                       </button>
                     </div>
                   )}
@@ -368,22 +403,34 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
         )}
 
         {/* Fast Key Metrics Row */}
-        <div className={`border-t border-stone-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-stone-500 ${!seller.bio ? 'mt-4 pt-5' : 'pt-5'}`}>
+        <div
+          className={`border-t border-stone-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-stone-500 ${!seller.bio ? "mt-4 pt-5" : "pt-5"}`}
+        >
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-black block text-stone-900 text-lg mb-0.5">{activeListingsCount}</span>
-            <span className="text-xs">Annonce{activeListingsCount > 1 ? 's' : ''} en ligne</span>
+            <span className="font-black block text-stone-900 text-lg mb-0.5">
+              {activeListingsCount}
+            </span>
+            <span className="text-xs">
+              Annonce{activeListingsCount > 1 ? "s" : ""} en ligne
+            </span>
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-black block text-stone-900 text-lg mb-0.5">{seller.responseRatePercent}%</span>
-            <span className="text-xs">{t('profile.sellerProfileHeader.tauxDeReponse')}</span>
+            <span className="font-black block text-stone-900 text-lg mb-0.5">
+              {seller.responseRatePercent}%
+            </span>
+            <span className="text-xs">
+              {t("profile.sellerProfileHeader.tauxDeReponse")}
+            </span>
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
             <span className="font-black block text-stone-900 text-lg truncate mb-0.5">
-              {seller.responseTimeText || 'Rapide'}
+              {seller.responseTimeText || "Rapide"}
             </span>
-            <span className="text-xs">{t('profile.sellerProfileHeader.delaiMoyen')}</span>
+            <span className="text-xs">
+              {t("profile.sellerProfileHeader.delaiMoyen")}
+            </span>
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
@@ -393,7 +440,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             <span className="text-xs">{seller.reviewCount} avis clients</span>
           </div>
         </div>
-
       </div>
     </div>
   );

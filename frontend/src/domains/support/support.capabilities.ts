@@ -3,8 +3,11 @@
  * Authoritative determination of available support categories and actions per user/role.
  */
 
-import { UserProfile } from '../../types';
-import { SUPPORT_CATEGORIES, SupportCategoryDefinition } from './support.categories';
+import { UserProfile } from "../../types";
+import {
+  SUPPORT_CATEGORIES,
+  SupportCategoryDefinition,
+} from "./support.categories";
 
 export interface SupportCapabilities {
   canSubmit: boolean;
@@ -15,17 +18,20 @@ export interface SupportCapabilities {
 }
 
 export class SupportCapabilitiesService {
-  resolve(params: { viewer: UserProfile | null; marketCode?: string }): SupportCapabilities {
+  resolve(params: {
+    viewer: UserProfile | null;
+    marketCode?: string;
+  }): SupportCapabilities {
     const { viewer } = params;
-    const isPro = viewer?.sellerType === 'pro' || viewer?.role === 'pro_seller';
-    const isSuspended = viewer?.status === 'suspended';
+    const isPro = viewer?.sellerType === "pro" || viewer?.role === "pro_seller";
+    const isSuspended = viewer?.status === "suspended";
 
     // Filter categories if needed
     let categories = [...SUPPORT_CATEGORIES];
 
     if (!isPro) {
       // Non-pro users don't see pro_account category prominently
-      categories = categories.filter((c) => c.id !== 'pro_account');
+      categories = categories.filter((c) => c.id !== "pro_account");
     }
 
     return {

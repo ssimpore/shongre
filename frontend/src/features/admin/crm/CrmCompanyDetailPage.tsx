@@ -1,25 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  
   Sparkles,
   ExternalLink,
-  
   TrendingUp,
-  
-  
-  
-  
-  
-  Users
-} from 'lucide-react';
-import { Button } from '../../../design-system/primitives/Button';
-import { StatePanel } from '../../../design-system/primitives/StatePanel';
-import { Badge } from '../../../design-system/primitives/Badge';
-import { Select } from '../../../design-system/primitives/FormField';
-import { crmRepository } from '../../../repositories/crm.repository';
-import { prospectResearchService } from '../../../services/prospect-research.service';
+  Users,
+} from "lucide-react";
+import { Button } from "../../../design-system/primitives/Button";
+import { StatePanel } from "../../../design-system/primitives/StatePanel";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { Select } from "../../../design-system/primitives/FormField";
+import { crmRepository } from "../../../repositories/crm.repository";
+import { prospectResearchService } from "../../../services/prospect-research.service";
 import {
   CrmCompany,
   CrmContact,
@@ -27,20 +20,20 @@ import {
   CrmActivity,
   CompanyLifecycle,
   CompanyEnrichmentDiff,
-} from '../../../domains/crm/crm.types';
-import { crmService } from '../../../domains/crm/crm.service';
-import { ActivityTimeline } from './components/ActivityTimeline';
-import { EnrichmentDiffModal } from './components/EnrichmentDiffModal';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { Skeleton } from '../../../design-system';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { usePageMeta } from '../../../hooks/usePageMeta';
+} from "../../../domains/crm/crm.types";
+import { crmService } from "../../../domains/crm/crm.service";
+import { ActivityTimeline } from "./components/ActivityTimeline";
+import { EnrichmentDiffModal } from "./components/EnrichmentDiffModal";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { Skeleton } from "../../../design-system";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 
 export const CrmCompanyDetailPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.crmCompanyDetail.title'),
-    description: t('meta.crmCompanyDetail.description'),
+    title: t("meta.crmCompanyDetail.title"),
+    description: t("meta.crmCompanyDetail.description"),
     noIndex: true,
   });
 
@@ -56,7 +49,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
   // Enrichment Modal
   const [isEnrichModalOpen, setIsEnrichModalOpen] = useState(false);
-  const [enrichDiff, setEnrichDiff] = useState<CompanyEnrichmentDiff | null>(null);
+  const [enrichDiff, setEnrichDiff] = useState<CompanyEnrichmentDiff | null>(
+    null,
+  );
   const [isEnriching, setIsEnriching] = useState(false);
 
   const fetchCompanyData = async () => {
@@ -69,9 +64,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
         const [allContacts, allOpps, acts] = await Promise.all([
           crmRepository.listContacts(),
           crmRepository.listOpportunities(),
-          crmRepository.listActivities('company', comp.id),
+          crmRepository.listActivities("company", comp.id),
         ]);
-        setContacts(allContacts.filter((c) => c.companyId === comp.id || c.companyName === comp.name));
+        setContacts(
+          allContacts.filter(
+            (c) => c.companyId === comp.id || c.companyName === comp.name,
+          ),
+        );
         setOpportunities(allOpps.filter((o) => o.companyId === comp.id));
         setActivities(acts);
       }
@@ -89,12 +88,12 @@ export const CrmCompanyDetailPage: React.FC = () => {
     try {
       const updated = await crmRepository.updateCompany(company.id, {
         lifecycle: newLifecycle,
-        doNotContact: newLifecycle === 'do_not_contact',
+        doNotContact: newLifecycle === "do_not_contact",
       });
       setCompany(updated);
-      toast.success('Statut mis à jour.', 'Entreprise actualisée');
+      toast.success("Statut mis à jour.", "Entreprise actualisée");
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la mise à jour.');
+      toast.error(err.message || "Erreur lors de la mise à jour.");
     }
   };
 
@@ -106,7 +105,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
       setEnrichDiff(diff);
       setIsEnrichModalOpen(true);
     } catch (err: any) {
-      toast.error('Impossible d\'enrichir cette entreprise.');
+      toast.error("Impossible d'enrichir cette entreprise.");
     } finally {
       setIsEnriching(false);
     }
@@ -118,34 +117,38 @@ export const CrmCompanyDetailPage: React.FC = () => {
     setCompany(updated);
 
     await crmRepository.addActivity({
-      entityType: 'company',
+      entityType: "company",
       entityId: company.id,
-      type: 'enrichment_applied',
-      title: 'Données enrichies via l\'IA',
-      description: 'Champs mis à jour à partir de l\'analyse des sources web publiques officielles.',
-      authorName: 'Shongre AI Intelligence',
+      type: "enrichment_applied",
+      title: "Données enrichies via l'IA",
+      description:
+        "Champs mis à jour à partir de l'analyse des sources web publiques officielles.",
+      authorName: "Shongre AI Intelligence",
       isAiGenerated: true,
     });
 
-    const acts = await crmRepository.listActivities('company', company.id);
+    const acts = await crmRepository.listActivities("company", company.id);
     setActivities(acts);
-    toast.success('Données de l\'entreprise enrichies avec succès.', 'Enrichissement appliqué');
+    toast.success(
+      "Données de l'entreprise enrichies avec succès.",
+      "Enrichissement appliqué",
+    );
   };
 
   const handleAddNote = async (noteText: string) => {
     if (!company) return;
     await crmRepository.addActivity({
-      entityType: 'company',
+      entityType: "company",
       entityId: company.id,
-      type: 'note',
-      title: 'Note commerciale',
+      type: "note",
+      title: "Note commerciale",
       description: noteText,
-      authorName: 'Antoine Fabre',
-      authorRole: 'Admin',
+      authorName: "Antoine Fabre",
+      authorRole: "Admin",
     });
-    const updated = await crmRepository.listActivities('company', company.id);
+    const updated = await crmRepository.listActivities("company", company.id);
     setActivities(updated);
-    toast.success('Note enregistrée.');
+    toast.success("Note enregistrée.");
   };
 
   if (loading) {
@@ -162,9 +165,15 @@ export const CrmCompanyDetailPage: React.FC = () => {
       <StatePanel
         variant="notFound"
         title="Entreprise introuvable"
-        description={t('admin.crmCompanyDetailPage.cetteEntrepriseNExistePlus')}
+        description={t("admin.crmCompanyDetailPage.cetteEntrepriseNExistePlus")}
         action={
-          <Button variant="primary" size="sm" onClick={() => navigate('/admin/crm/entreprises')}>{t('admin.crmCompanyDetailPage.retourAuxEntreprises')}</Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate("/admin/crm/entreprises")}
+          >
+            {t("admin.crmCompanyDetailPage.retourAuxEntreprises")}
+          </Button>
         }
       />
     );
@@ -181,7 +190,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           className="text-xs font-bold text-stone-500 hover:text-stone-900 flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{t('admin.crmCompanyDetailPage.toutesLesEntreprises')}</span>
+          <span>{t("admin.crmCompanyDetailPage.toutesLesEntreprises")}</span>
         </Link>
       </div>
 
@@ -195,12 +204,16 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-black text-stone-900">{company.name}</h1>
+                <h1 className="text-xl font-black text-stone-900">
+                  {company.name}
+                </h1>
                 <Badge variant={lifecycleInfo.variant} size="sm">
                   {lifecycleInfo.label}
                 </Badge>
                 {company.linkedSellerId && (
-                  <Badge variant="pro" size="sm">{t('admin.crmCompanyDetailPage.vendeurProActif')}</Badge>
+                  <Badge variant="pro" size="sm">
+                    {t("admin.crmCompanyDetailPage.vendeurProActif")}
+                  </Badge>
                 )}
                 {company.aiFitScore && (
                   <span className="text-micro px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold flex items-center gap-1">
@@ -245,7 +258,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               className="font-bold"
             >
               <Sparkles className="w-4 h-4 text-purple-600" />
-              <span>{isEnriching ? 'Analyse...' : 'Enrichir avec l\'IA'}</span>
+              <span>{isEnriching ? "Analyse..." : "Enrichir avec l'IA"}</span>
             </Button>
           </div>
         </div>
@@ -253,23 +266,28 @@ export const CrmCompanyDetailPage: React.FC = () => {
         {/* Lifecycle Switcher */}
         <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-stone-500">{t('admin.crmCompanyDetailPage.changerDeStatut')}</span>
+            <span className="font-bold text-stone-500">
+              {t("admin.crmCompanyDetailPage.changerDeStatut")}
+            </span>
             <Select
-              aria-label={t('admin.crmCompanyDetailPage.cycleDeVieDeL')}
+              aria-label={t("admin.crmCompanyDetailPage.cycleDeVieDeL")}
               value={company.lifecycle}
-              onChange={(e) => handleUpdateLifecycle(e.target.value as CompanyLifecycle)}
+              onChange={(e) =>
+                handleUpdateLifecycle(e.target.value as CompanyLifecycle)
+              }
               options={[
-                { value: 'prospect', label: 'Prospect' },
-                { value: 'qualified', label: 'Qualifié' },
-                { value: 'customer', label: 'Client / Pro Shongre' },
-                { value: 'partner', label: 'Partenaire' },
-                { value: 'do_not_contact', label: 'Ne pas contacter' },
+                { value: "prospect", label: "Prospect" },
+                { value: "qualified", label: "Qualifié" },
+                { value: "customer", label: "Client / Pro Shongre" },
+                { value: "partner", label: "Partenaire" },
+                { value: "do_not_contact", label: "Ne pas contacter" },
               ]}
             />
           </div>
 
           <span className="text-stone-500 text-micro">
-            Responsable : <strong>{company.ownerName || 'Non assigné'}</strong> • Marché : {company.marketCode}
+            Responsable : <strong>{company.ownerName || "Non assigné"}</strong>{" "}
+            • Marché : {company.marketCode}
           </span>
         </div>
       </div>
@@ -279,7 +297,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
         <div className="bg-purple-50/70 border border-purple-200 rounded-3xl p-5 shadow-xs flex items-start gap-3.5 text-xs text-purple-950">
           <Sparkles className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold block">{t('admin.crmCompanyDetailPage.syntheseCommercialeIa')}</span>
+            <span className="font-bold block">
+              {t("admin.crmCompanyDetailPage.syntheseCommercialeIa")}
+            </span>
             <p className="text-purple-900 leading-relaxed text-micro">
               {company.aiSummary}
             </p>
@@ -295,28 +315,45 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                <h2 className="text-base font-black text-stone-900">{t('admin.crmCompanyDetailPage.opportunitesAssociees')}</h2>
+                <h2 className="text-base font-black text-stone-900">
+                  {t("admin.crmCompanyDetailPage.opportunitesAssociees")}
+                </h2>
               </div>
-              <Link to="/admin/crm/pipeline" className="text-xs font-bold text-primary hover:underline">
+              <Link
+                to="/admin/crm/pipeline"
+                className="text-xs font-bold text-primary hover:underline"
+              >
                 Pipeline
               </Link>
             </div>
 
             {opportunities.length === 0 ? (
-              <p className="text-xs text-stone-500 py-4 text-center">{t('admin.crmCompanyDetailPage.aucuneOpportuniteOuverte')}</p>
+              <p className="text-xs text-stone-500 py-4 text-center">
+                {t("admin.crmCompanyDetailPage.aucuneOpportuniteOuverte")}
+              </p>
             ) : (
               <div className="divide-y divide-border-subtle">
                 {opportunities.map((opp) => (
-                  <div key={opp.id} className="py-3 flex items-center justify-between gap-4 text-xs">
+                  <div
+                    key={opp.id}
+                    className="py-3 flex items-center justify-between gap-4 text-xs"
+                  >
                     <div>
-                      <span className="font-bold text-stone-900 block">{opp.title}</span>
+                      <span className="font-bold text-stone-900 block">
+                        {opp.title}
+                      </span>
                       <span className="text-micro text-stone-500">
                         {crmService.getOpportunityTypeLabel(opp.type)}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <strong className="font-mono">{crmService.formatCrmMoney(opp.estimatedValue)}</strong>
-                      <Badge variant={opp.stage === 'won' ? 'success' : 'primary'} size="sm">
+                      <strong className="font-mono">
+                        {crmService.formatCrmMoney(opp.estimatedValue)}
+                      </strong>
+                      <Badge
+                        variant={opp.stage === "won" ? "success" : "primary"}
+                        size="sm"
+                      >
                         {opp.stage}
                       </Badge>
                     </div>
@@ -328,8 +365,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
           {/* Activity Timeline */}
           <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-black text-stone-900">Historique & Notes</h2>
-            <ActivityTimeline activities={activities} onAddNote={handleAddNote} />
+            <h2 className="text-base font-black text-stone-900">
+              Historique & Notes
+            </h2>
+            <ActivityTimeline
+              activities={activities}
+              onAddNote={handleAddNote}
+            />
           </div>
         </div>
 
@@ -339,12 +381,16 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-stone-700" />
-                <h3 className="text-sm font-black text-stone-900">Interlocuteurs</h3>
+                <h3 className="text-sm font-black text-stone-900">
+                  Interlocuteurs
+                </h3>
               </div>
             </div>
 
             {contacts.length === 0 ? (
-              <p className="text-xs text-stone-500 text-center py-4">{t('admin.crmCompanyDetailPage.aucunContactRattache')}</p>
+              <p className="text-xs text-stone-500 text-center py-4">
+                {t("admin.crmCompanyDetailPage.aucunContactRattache")}
+              </p>
             ) : (
               <div className="space-y-2.5">
                 {contacts.map((c) => (

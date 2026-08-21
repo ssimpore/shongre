@@ -1,10 +1,10 @@
 # Shongre Frontend — Architecture & Developer Guide
 
-The Shongre frontend is a multi-market, multi-category marketplace interface supporting both individual (*Particuliers*) and professional sellers (*Professionnels*).
+The Shongre frontend is a Next.js App Router marketplace interface supporting both individual (*Particuliers*) and professional sellers (*Professionnels*).
 
 It features a dual-mode service architecture that allows running either:
-1. **Standalone Demo Mode** (`VITE_DATA_MODE=demo`): Fully deterministic, in-memory local fixtures, no backend or database required.
-2. **Live HTTP API Mode** (`VITE_DATA_MODE=api`): Connects over HTTP REST to `backend/` (`http://localhost:4000/api/v1` or staging/production API).
+1. **Standalone Demo Mode** (`NEXT_PUBLIC_DATA_MODE=demo`): Fully deterministic, in-memory local fixtures, no backend or database required.
+2. **Live HTTP API Mode** (`NEXT_PUBLIC_DATA_MODE=api`): Connects over HTTP REST to the environment-defined backend URL.
 
 ---
 
@@ -35,6 +35,7 @@ Deterministic Fixtures  Shongre Backend API
 
 ```text
 frontend/
+├── app/                          # Next server shell, metadata, robots, sitemap, manifest
 ├── src/
 │   ├── api/                      # Service contracts, demo/http adapters, error normalizer
 │   │   ├── contracts/            # TypeScript interfaces for all marketplace domains
@@ -45,7 +46,7 @@ frontend/
 │   │
 │   ├── app/                      # Router, root layouts, top-level providers
 │   ├── configuration/            # Market configs, routes, plans & boosts, coordinates
-│   ├── design-system/            # Tokens, primitives (Button, Modal, ListingCard, FormField...)
+│   ├── design-system/            # Compatibility entrypoints over shared packages + Web composites
 │   ├── domains/                  # Pure business rules (Taxonomy, Escrow, KYC, Multi-market)
 │   ├── features/                 # User-facing pages (Home, Search, Publish, Admin, Workspaces)
 │   ├── mocks/                    # Deterministic baseline fixtures
@@ -59,30 +60,25 @@ frontend/
 
 ## 3. Environment & Data Mode Configuration
 
-Create `frontend/.env` from template:
+Initialize the repository environment from the root:
 ```bash
-cp frontend/.env.example frontend/.env
-# or via make from monorepo root:
-make frontend-env
+make env-init
 ```
 
 The application runtime mode is configured centrally in `src/api/client/api-client.config.ts` and `frontend/.env`:
 
 ```env
-# Server Port
-PORT=3000
-
 # Central Data Mode: "demo" (default) | "api"
-VITE_DATA_MODE=demo
+NEXT_PUBLIC_DATA_MODE=demo
 
-# Backend API Endpoint (Used when VITE_DATA_MODE=api)
-VITE_API_URL=http://localhost:4000/api/v1
+# Backend API Endpoint (Used when NEXT_PUBLIC_DATA_MODE=api)
+NEXT_PUBLIC_API_URL=<environment-defined API origin and prefix>
 ```
 
 ### Switching Modes
 
-- **Demo Mode**: `VITE_DATA_MODE=demo` — runs entirely in-browser, no backend required.
-- **API Mode**: `VITE_DATA_MODE=api` — calls backend REST API over HTTP with request IDs and token transport.
+- **Demo Mode**: `NEXT_PUBLIC_DATA_MODE=demo` — runs entirely in-browser, no backend required.
+- **API Mode**: `NEXT_PUBLIC_DATA_MODE=api` — calls backend REST API over HTTP with request IDs and token transport.
 
 ---
 
@@ -94,7 +90,7 @@ From `/frontend`:
 # Install dependencies
 npm install
 
-# Start local Vite development server
+# Start local Next.js development server
 npm run dev
 
 # Run TypeScript typecheck
@@ -117,5 +113,9 @@ npm run check
 All contributions must pass the continuous verification pipeline:
 1. `npm run lint` (`tsc --noEmit` — 0 type errors).
 2. `npm test` (`vitest run` — 100% test suites passing).
-3. `npm run build` (`vite build` — clean production bundle).
+3. `npm run build` (`next build` — server metadata and production bundle).
 4. `make check-boundary` (0 server secrets leaked into frontend).
+
+The shared UI and token architecture is documented in
+`docs/architecture/cross-platform-ui.md`. Run `make ui-check` after changing a
+shared primitive and `make cross-platform-check` before merging it.

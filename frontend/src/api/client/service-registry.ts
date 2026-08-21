@@ -1,4 +1,4 @@
-import { apiClientConfig, DataMode } from './api-client.config.js';
+import { apiClientConfig, DataMode } from "./api-client.config";
 import {
   demoListingsService,
   demoSearchService,
@@ -16,7 +16,7 @@ import {
   demoReviewsService,
   demoAiService,
   demoTrendingService,
-} from '../adapters/demo/index.js';
+} from "../adapters/demo";
 
 import {
   httpListingsService,
@@ -35,7 +35,7 @@ import {
   httpReviewsService,
   httpAiService,
   httpTrendingService,
-} from '../adapters/http/index.js';
+} from "../adapters/http";
 
 import {
   ListingsServiceContract,
@@ -54,7 +54,7 @@ import {
   ReviewsServiceContract,
   AiServiceContract,
   TrendingServiceContract,
-} from '../contracts/index.js';
+} from "../contracts";
 
 export interface ServiceRegistry {
   listings: ListingsServiceContract;
@@ -75,8 +75,10 @@ export interface ServiceRegistry {
   trending: TrendingServiceContract;
 }
 
-export function createServiceRegistry(mode: DataMode = apiClientConfig.dataMode): ServiceRegistry {
-  const useDemo = mode === 'demo';
+export function createServiceRegistry(
+  mode: DataMode = apiClientConfig.dataMode,
+): ServiceRegistry {
+  const useDemo = mode === "demo";
 
   return {
     listings: useDemo ? demoListingsService : httpListingsService,
@@ -85,7 +87,9 @@ export function createServiceRegistry(mode: DataMode = apiClientConfig.dataMode)
     markets: useDemo ? demoMarketsService : httpMarketsService,
     taxonomy: useDemo ? demoTaxonomyService : httpTaxonomyService,
     messaging: useDemo ? demoMessagingService : httpMessagingService,
-    notifications: useDemo ? demoNotificationsService : httpNotificationsService,
+    notifications: useDemo
+      ? demoNotificationsService
+      : httpNotificationsService,
     orders: useDemo ? demoOrdersService : httpOrdersService,
     payments: useDemo ? demoPaymentsService : httpPaymentsService,
     promotions: useDemo ? demoPromotionsService : httpPromotionsService,

@@ -1,28 +1,23 @@
-import {    UserProfile } from './index';
+import { UserProfile } from "./index";
 
 export type AccountStatus =
-  | 'pending'
-  | 'active'
-  | 'restricted'
-  | 'limited'
-  | 'suspended'
-  | 'disabled'
-  | 'deleted';
+  | "pending"
+  | "active"
+  | "restricted"
+  | "limited"
+  | "suspended"
+  | "disabled"
+  | "deleted";
 
 export type VerificationState =
-  | 'none'
-  | 'pending'
-  | 'verified'
-  | 'rejected'
-  | 'requires_action'
-  | 'expired';
+  "none" | "pending" | "verified" | "rejected" | "requires_action" | "expired";
 
 export interface ProfessionalVerification {
   status: VerificationState;
   submittedAt?: string;
   reviewedAt?: string;
   reviewedBy?: string;
-  documentType?: 'kbis' | 'insee_sirene' | 'id_card' | 'passport' | 'other';
+  documentType?: "kbis" | "insee_sirene" | "id_card" | "passport" | "other";
   rejectionReason?: string;
   notes?: string;
   siret?: string;
@@ -30,7 +25,7 @@ export interface ProfessionalVerification {
   companyName?: string;
   legalForm?: string;
   vatNumber?: string;
-  kycLevel?: 'basic' | 'standard' | 'advanced';
+  kycLevel?: "basic" | "standard" | "advanced";
 }
 
 export interface IdentityVerification {
@@ -39,7 +34,8 @@ export interface IdentityVerification {
   submittedAt?: string;
   reviewedAt?: string;
   reviewedBy?: string;
-  documentType?: 'national_id' | 'passport' | 'residence_permit' | 'driving_license';
+  documentType?:
+    "national_id" | "passport" | "residence_permit" | "driving_license";
   documentNumber?: string;
   issuingCountry?: string;
   firstName?: string;
@@ -81,7 +77,7 @@ export interface UserSession {
   userAgent: string;
   browser: string;
   os: string;
-  deviceType: 'desktop' | 'mobile' | 'tablet';
+  deviceType: "desktop" | "mobile" | "tablet";
   locationText: string;
   isCurrent?: boolean;
 }
@@ -91,23 +87,23 @@ export interface AuthSecurityEvent {
   timestamp: string;
   userId: string;
   eventType:
-    | 'account_created'
-    | 'login_succeeded'
-    | 'login_failed'
-    | 'logout'
-    | 'password_changed'
-    | 'password_reset_requested'
-    | 'password_reset_completed'
-    | 'email_verified'
-    | 'email_changed'
-    | 'phone_verified'
-    | 'mfa_enabled'
-    | 'mfa_disabled'
-    | 'session_revoked'
-    | 'all_sessions_revoked'
-    | 'account_type_upgraded_to_pro'
-    | 'account_type_downgraded'
-    | 'account_deleted';
+    | "account_created"
+    | "login_succeeded"
+    | "login_failed"
+    | "logout"
+    | "password_changed"
+    | "password_reset_requested"
+    | "password_reset_completed"
+    | "email_verified"
+    | "email_changed"
+    | "phone_verified"
+    | "mfa_enabled"
+    | "mfa_disabled"
+    | "session_revoked"
+    | "all_sessions_revoked"
+    | "account_type_upgraded_to_pro"
+    | "account_type_downgraded"
+    | "account_deleted";
   ipAddress?: string;
   userAgent?: string;
   details?: string;
@@ -131,24 +127,24 @@ export interface LegalConsent {
 }
 
 export type AuthErrorCode =
-  | 'INVALID_CREDENTIALS'
-  | 'ACCOUNT_SUSPENDED'
-  | 'ACCOUNT_DISABLED'
-  | 'ACCOUNT_DELETED'
-  | 'EMAIL_NOT_VERIFIED'
-  | 'MFA_REQUIRED'
-  | 'INVALID_MFA_CODE'
-  | 'EMAIL_ALREADY_EXISTS'
-  | 'INVALID_TOKEN'
-  | 'TOKEN_EXPIRED'
-  | 'TOKEN_ALREADY_USED'
-  | 'RATE_LIMITED'
-  | 'SESSION_EXPIRED'
-  | 'WEAK_PASSWORD'
-  | 'PASSWORD_MISMATCH'
-  | 'PRO_VERIFICATION_REQUIRED'
-  | 'UNRESOLVED_TRANSACTIONS'
-  | 'GENERIC_ERROR';
+  | "INVALID_CREDENTIALS"
+  | "ACCOUNT_SUSPENDED"
+  | "ACCOUNT_DISABLED"
+  | "ACCOUNT_DELETED"
+  | "EMAIL_NOT_VERIFIED"
+  | "MFA_REQUIRED"
+  | "INVALID_MFA_CODE"
+  | "EMAIL_ALREADY_EXISTS"
+  | "INVALID_TOKEN"
+  | "TOKEN_EXPIRED"
+  | "TOKEN_ALREADY_USED"
+  | "RATE_LIMITED"
+  | "SESSION_EXPIRED"
+  | "WEAK_PASSWORD"
+  | "PASSWORD_MISMATCH"
+  | "PRO_VERIFICATION_REQUIRED"
+  | "UNRESOLVED_TRANSACTIONS"
+  | "GENERIC_ERROR";
 
 export interface AuthResult {
   success: boolean;

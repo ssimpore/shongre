@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   Sliders,
   ShieldAlert,
@@ -17,74 +17,81 @@ import {
   Rocket,
   Settings2,
   BarChart3,
-} from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { Modal } from '../../design-system/primitives/Modal';
-import { Badge } from '../../design-system/primitives/Badge';
-import { marketService } from '../../domains/market/market.service';
-import {  MarketStatus } from '../../domains/market/market.types';
-import {  plural } from '../../utilities/formatters';
-import { getTaxonomyLabel, taxonomyService } from '../../domains/taxonomy/taxonomy.service';
-import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
-import { useToast } from '../../app/providers/ToastProvider';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+} from "lucide-react";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { Button } from "../../design-system/primitives/Button";
+import { Modal } from "../../design-system/primitives/Modal";
+import { Badge } from "../../design-system/primitives/Badge";
+import { marketService } from "../../domains/market/market.service";
+import { MarketStatus } from "../../domains/market/market.types";
+import { plural } from "../../utilities/formatters";
+import {
+  getTaxonomyLabel,
+  taxonomyService,
+} from "../../domains/taxonomy/taxonomy.service";
+import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
+import { useToast } from "../../app/providers/ToastProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import {
   normalizeRecentSearchesLimit,
   RECENT_SEARCHES_LIMIT_DEFAULT,
   RECENT_SEARCHES_LIMIT_MAX,
   RECENT_SEARCHES_LIMIT_MIN,
-} from '../../domains/market/market.constants';
+} from "../../domains/market/market.constants";
 
-type AdminTab = 'overview' | 'editor' | 'matrix';
+type AdminTab = "overview" | "editor" | "matrix";
 type DomainTab =
-  | 'general'
-  | 'localization'
-  | 'taxonomy'
-  | 'listings'
-  | 'payments'
-  | 'reservation'
-  | 'delivery'
-  | 'pro'
-  | 'taxes'
-  | 'monetization'
-  | 'features';
+  | "general"
+  | "localization"
+  | "taxonomy"
+  | "listings"
+  | "payments"
+  | "reservation"
+  | "delivery"
+  | "pro"
+  | "taxes"
+  | "monetization"
+  | "features";
 
 export const AdminMarketsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminMarkets.title'),
-    description: t('meta.adminMarkets.description'),
-    canonicalPath: '/admin/marches',
+    title: t("meta.adminMarkets.title"),
+    description: t("meta.adminMarkets.description"),
+    canonicalPath: "/admin/marches",
     noIndex: true,
   });
 
   const { can, currentUser } = useAuth();
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
-  const [selectedMarketCode, setSelectedMarketCode] = useState<string>('BE');
-  const [activeDomainTab, setActiveDomainTab] = useState<DomainTab>('payments');
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const [selectedMarketCode, setSelectedMarketCode] = useState<string>("BE");
+  const [activeDomainTab, setActiveDomainTab] = useState<DomainTab>("payments");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Modals state
   const [isAddMarketModalOpen, setIsAddMarketModalOpen] = useState(false);
   const [isEditOverrideModalOpen, setIsEditOverrideModalOpen] = useState(false);
-  const [activeEditingPath, setActiveEditingPath] = useState<string | null>(null);
-  const [editingValueInput, setEditingValueInput] = useState<string>('');
-  const [editingFieldLabel, setEditingFieldLabel] = useState<string>('');
-  const [editingValueType, setEditingValueType] = useState<'string' | 'number' | 'boolean'>('string');
+  const [activeEditingPath, setActiveEditingPath] = useState<string | null>(
+    null,
+  );
+  const [editingValueInput, setEditingValueInput] = useState<string>("");
+  const [editingFieldLabel, setEditingFieldLabel] = useState<string>("");
+  const [editingValueType, setEditingValueType] = useState<
+    "string" | "number" | "boolean"
+  >("string");
 
   // New market form state
-  const [newMarketCode, setNewMarketCode] = useState('');
-  const [newMarketName, setNewMarketName] = useState('');
-  const [newMarketFlag, setNewMarketFlag] = useState('🌐');
-  const [newMarketLocale, setNewMarketLocale] = useState('fr-FR');
-  const [newMarketCurrency, setNewMarketCurrency] = useState('EUR');
-  const [newMarketStatus, setNewMarketStatus] = useState<MarketStatus>('draft');
+  const [newMarketCode, setNewMarketCode] = useState("");
+  const [newMarketName, setNewMarketName] = useState("");
+  const [newMarketFlag, setNewMarketFlag] = useState("🌐");
+  const [newMarketLocale, setNewMarketLocale] = useState("fr-FR");
+  const [newMarketCurrency, setNewMarketCurrency] = useState("EUR");
+  const [newMarketStatus, setNewMarketStatus] = useState<MarketStatus>("draft");
 
-  const canManageMarkets = can('market.manage');
-  const canConfigureMarkets = can('market.configure');
+  const canManageMarkets = can("market.manage");
+  const canConfigureMarkets = can("market.configure");
 
   // Load live markets
   const markets = useMemo(() => {
@@ -122,17 +129,23 @@ export const AdminMarketsPage: React.FC = () => {
           currency: newMarketCurrency.toUpperCase().trim(),
           status: newMarketStatus,
         },
-        currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : undefined
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : undefined,
       );
 
       setIsAddMarketModalOpen(false);
-      setNewMarketCode('');
-      setNewMarketName('');
+      setNewMarketCode("");
+      setNewMarketName("");
       setSelectedMarketCode(created.code);
-      setActiveTab('editor');
+      setActiveTab("editor");
       handleRefresh();
     } catch (err: any) {
-      alert(err.message || 'Erreur lors de la création du marché');
+      alert(err.message || "Erreur lors de la création du marché");
     }
   };
 
@@ -141,7 +154,13 @@ export const AdminMarketsPage: React.FC = () => {
       marketService.updateMarketStatus(
         code,
         newStatus,
-        currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : undefined
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : undefined,
       );
       handleRefresh();
     } catch (err: any) {
@@ -154,7 +173,13 @@ export const AdminMarketsPage: React.FC = () => {
       marketService.resetMarketOverride(
         selectedMarket.code,
         path,
-        currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : undefined
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : undefined,
       );
       handleRefresh();
     } catch (err: any) {
@@ -165,7 +190,7 @@ export const AdminMarketsPage: React.FC = () => {
   const handleResetAllToFrance = (code: string) => {
     if (
       !window.confirm(
-        `Êtes-vous sûr de vouloir réinitialiser toutes les surcharges pour le marché [${selectedMarket.name}] ? Toutes ses configurations hériteront à 100% de la France.`
+        `Êtes-vous sûr de vouloir réinitialiser toutes les surcharges pour le marché [${selectedMarket.name}] ? Toutes ses configurations hériteront à 100% de la France.`,
       )
     ) {
       return;
@@ -173,7 +198,13 @@ export const AdminMarketsPage: React.FC = () => {
     try {
       marketService.resetAllOverridesToFrance(
         code,
-        currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : undefined
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : undefined,
       );
       handleRefresh();
     } catch (err: any) {
@@ -185,12 +216,12 @@ export const AdminMarketsPage: React.FC = () => {
     path: string,
     label: string,
     currentVal: any,
-    type: 'string' | 'number' | 'boolean'
+    type: "string" | "number" | "boolean",
   ) => {
     setActiveEditingPath(path);
     setEditingFieldLabel(label);
     setEditingValueType(type);
-    setEditingValueInput(String(currentVal ?? ''));
+    setEditingValueInput(String(currentVal ?? ""));
     setIsEditOverrideModalOpen(true);
   };
 
@@ -198,13 +229,13 @@ export const AdminMarketsPage: React.FC = () => {
     if (!activeEditingPath) return;
 
     let parsedVal: any = editingValueInput;
-    if (editingValueType === 'number') {
+    if (editingValueType === "number") {
       parsedVal = Number(editingValueInput);
-      if (activeEditingPath === 'features.recentSearchesLimit') {
+      if (activeEditingPath === "features.recentSearchesLimit") {
         parsedVal = normalizeRecentSearchesLimit(parsedVal);
       }
-    } else if (editingValueType === 'boolean') {
-      parsedVal = editingValueInput === 'true';
+    } else if (editingValueType === "boolean") {
+      parsedVal = editingValueInput === "true";
     }
 
     try {
@@ -212,7 +243,13 @@ export const AdminMarketsPage: React.FC = () => {
         selectedMarket.code,
         activeEditingPath,
         parsedVal,
-        currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : undefined
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : undefined,
       );
       setIsEditOverrideModalOpen(false);
       handleRefresh();
@@ -223,16 +260,22 @@ export const AdminMarketsPage: React.FC = () => {
 
   const renderStatusBadge = (status: MarketStatus) => {
     switch (status) {
-      case 'active':
+      case "active":
         return <Badge variant="success">Actif</Badge>;
-      case 'coming_soon':
-        return <Badge variant="warning">{t('admin.adminMarketsPage.bientotDisponible')}</Badge>;
-      case 'draft':
+      case "coming_soon":
+        return (
+          <Badge variant="warning">
+            {t("admin.adminMarketsPage.bientotDisponible")}
+          </Badge>
+        );
+      case "draft":
         return <Badge variant="neutral">Brouillon</Badge>;
-      case 'paused':
+      case "paused":
         return <Badge variant="urgent">En pause</Badge>;
-      case 'archived':
-        return <Badge variant="neutral">{t('admin.adminMarketsPage.archive')}</Badge>;
+      case "archived":
+        return (
+          <Badge variant="neutral">{t("admin.adminMarketsPage.archive")}</Badge>
+        );
       default:
         return <Badge variant="neutral">{status}</Badge>;
     }
@@ -245,14 +288,18 @@ export const AdminMarketsPage: React.FC = () => {
     path: string,
     label: string,
     description: string,
-    type: 'string' | 'number' | 'boolean' = 'string',
-    formatter?: (val: any) => string
+    type: "string" | "number" | "boolean" = "string",
+    formatter?: (val: any) => string,
   ) => {
     const resolution = marketService.resolveSetting(selectedMarket.code, path);
-    const isFR = selectedMarket.isDefault || selectedMarket.code === 'FR';
+    const isFR = selectedMarket.isDefault || selectedMarket.code === "FR";
     const isOverridden = resolution.overrideDefined;
-    const displayValue = formatter ? formatter(resolution.value) : String(resolution.value);
-    const frenchRefDisplay = formatter ? formatter(resolution.frenchReferenceValue) : String(resolution.frenchReferenceValue);
+    const displayValue = formatter
+      ? formatter(resolution.value)
+      : String(resolution.value);
+    const frenchRefDisplay = formatter
+      ? formatter(resolution.frenchReferenceValue)
+      : String(resolution.frenchReferenceValue);
 
     // If editing France, calculate how many other markets currently inherit this setting
     const impactedMarkets = isFR ? marketService.getImpactedMarkets(path) : [];
@@ -262,16 +309,22 @@ export const AdminMarketsPage: React.FC = () => {
         <div className="flex-1 space-y-0.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-stone-900">{label}</span>
-            <span className="text-micro font-mono text-stone-500">({path})</span>
+            <span className="text-micro font-mono text-stone-500">
+              ({path})
+            </span>
 
             {isFR ? (
-              <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-full border border-stone-200">{t('admin.adminMarketsPage.valeurCanoniqueFranceDefaut')}</span>
+              <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-full border border-stone-200">
+                {t("admin.adminMarketsPage.valeurCanoniqueFranceDefaut")}
+              </span>
             ) : isOverridden ? (
               <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-full border border-warning-border">
                 ✏️ Surcharge Locale ({selectedMarket.code})
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full border border-success-border">{t('admin.adminMarketsPage.heriteDeFrance')}</span>
+              <span className="inline-flex items-center gap-1 text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full border border-success-border">
+                {t("admin.adminMarketsPage.heriteDeFrance")}
+              </span>
             )}
           </div>
           <p className="text-micro text-stone-500">{description}</p>
@@ -284,7 +337,9 @@ export const AdminMarketsPage: React.FC = () => {
               {displayValue}
             </div>
             {!isFR && !isOverridden && (
-              <div className="text-micro text-stone-500">{t('admin.adminMarketsPage.identiqueAFrance')}</div>
+              <div className="text-micro text-stone-500">
+                {t("admin.adminMarketsPage.identiqueAFrance")}
+              </div>
             )}
             {!isFR && isOverridden && (
               <div className="text-micro text-warning">
@@ -293,7 +348,7 @@ export const AdminMarketsPage: React.FC = () => {
             )}
             {isFR && impactedMarkets.length > 0 && (
               <div className="text-micro text-info font-medium">
-                Hérité par {impactedMarkets.join(', ')}
+                Hérité par {impactedMarkets.join(", ")}
               </div>
             )}
           </div>
@@ -305,9 +360,15 @@ export const AdminMarketsPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="text-micro h-control-sm px-2.5"
-                onClick={() => openEditOverride(path, label, resolution.value, type)}
+                onClick={() =>
+                  openEditOverride(path, label, resolution.value, type)
+                }
               >
-                {isFR ? 'Modifier' : isOverridden ? 'Modifier' : 'Personnaliser'}
+                {isFR
+                  ? "Modifier"
+                  : isOverridden
+                    ? "Modifier"
+                    : "Personnaliser"}
               </Button>
             )}
 
@@ -316,10 +377,14 @@ export const AdminMarketsPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 className="text-micro h-control-sm px-2 text-stone-500 hover:text-danger hover:bg-danger-surface"
-                title={t('admin.adminMarketsPage.supprimerLaSurchargeEtReactiver')}
+                title={t(
+                  "admin.adminMarketsPage.supprimerLaSurchargeEtReactiver",
+                )}
                 onClick={() => handleResetOverride(path)}
               >
-                <RefreshCw className="w-3 h-3 text-stone-400 mr-1" />{t('admin.adminMarketsPage.reinitialiserSurFrance')}</Button>
+                <RefreshCw className="w-3 h-3 text-stone-400 mr-1" />
+                {t("admin.adminMarketsPage.reinitialiserSurFrance")}
+              </Button>
             )}
           </div>
         </div>
@@ -333,12 +398,20 @@ export const AdminMarketsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-base pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900">{t('admin.adminMarketsPage.gestionMultiMarchesTerritoires')}</h1>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900">
+              {t("admin.adminMarketsPage.gestionMultiMarchesTerritoires")}
+            </h1>
             <span className="text-xs bg-primary-light text-primary font-bold px-2 py-0.5 rounded-full">
               Architecture Canonique FR
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('admin.adminMarketsPage.gerezLesPaysActivesDevises')}<strong> {t('admin.adminMarketsPage.franceFrEstLeMarche')}</strong> dont héritent automatiquement toutes les valeurs non surchargées.
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            {t("admin.adminMarketsPage.gerezLesPaysActivesDevises")}
+            <strong>
+              {" "}
+              {t("admin.adminMarketsPage.franceFrEstLeMarche")}
+            </strong>{" "}
+            dont héritent automatiquement toutes les valeurs non surchargées.
           </p>
         </div>
 
@@ -350,7 +423,7 @@ export const AdminMarketsPage: React.FC = () => {
               onClick={() => setIsAddMarketModalOpen(true)}
             >
               <Plus className="w-4 h-4" />
-              <span>{t('admin.adminMarketsPage.ajouterUnMarche')}</span>
+              <span>{t("admin.adminMarketsPage.ajouterUnMarche")}</span>
             </Button>
           )}
         </div>
@@ -360,50 +433,62 @@ export const AdminMarketsPage: React.FC = () => {
       <div className="flex items-center gap-2 border-b border-border-base overflow-x-auto no-scrollbar">
         <button
           type="button"
-          onClick={() => setActiveTab('overview')}
+          onClick={() => setActiveTab("overview")}
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'overview'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-stone-500 hover:text-stone-900'
+            activeTab === "overview"
+              ? "border-primary text-primary"
+              : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
-          Vue d'ensemble ({plural(markets.length, 'marché')})
+          Vue d'ensemble ({plural(markets.length, "marché")})
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab('editor')}
+          onClick={() => setActiveTab("editor")}
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'editor'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-stone-500 hover:text-stone-900'
+            activeTab === "editor"
+              ? "border-primary text-primary"
+              : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
-          <Settings2 className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
+          <Settings2
+            className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"
+            aria-hidden="true"
+          />
           Éditeur d'Héritage & Surcharges ({selectedMarket.name})
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab('matrix')}
+          onClick={() => setActiveTab("matrix")}
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
-            activeTab === 'matrix'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-stone-500 hover:text-stone-900'
+            activeTab === "matrix"
+              ? "border-primary text-primary"
+              : "border-transparent text-stone-500 hover:text-stone-900"
           }`}
         >
-          <BarChart3 className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
+          <BarChart3
+            className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"
+            aria-hidden="true"
+          />
           Matrice Comparative Multi-Pays
         </button>
       </div>
 
       {/* TAB 1: OVERVIEW */}
-      {activeTab === 'overview' && (
+      {activeTab === "overview" && (
         <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Informational Banner */}
           <div className="p-4 rounded-2xl bg-warning-surface/80 border border-warning-border/80 flex items-start gap-3">
             <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="text-xs text-warning space-y-1">
-              <span className="font-bold">{t('admin.adminMarketsPage.moteurDHeritageHierarchiqueEn')}</span>
-              <p>{t('admin.adminMarketsPage.chaqueParametreNonExplicitementConfigure')}</p>
+              <span className="font-bold">
+                {t("admin.adminMarketsPage.moteurDHeritageHierarchiqueEn")}
+              </span>
+              <p>
+                {t(
+                  "admin.adminMarketsPage.chaqueParametreNonExplicitementConfigure",
+                )}
+              </p>
             </div>
           </div>
 
@@ -411,15 +496,15 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {markets.map((m) => {
               const metrics = marketService.getInheritanceMetrics(m.code);
-              const isDefault = m.isDefault || m.code === 'FR';
+              const isDefault = m.isDefault || m.code === "FR";
 
               return (
                 <div
                   key={m.code}
                   className={`p-4 rounded-2xl border transition-all relative flex flex-col justify-between ${
                     isDefault
-                      ? 'border-primary/50 bg-gradient-to-b from-white to-primary-light/10 shadow-sm'
-                      : 'border-border-base bg-white hover:border-border-hover'
+                      ? "border-primary/50 bg-gradient-to-b from-white to-primary-light/10 shadow-sm"
+                      : "border-border-base bg-white hover:border-border-hover"
                   }`}
                 >
                   <div className="space-y-3">
@@ -429,21 +514,30 @@ export const AdminMarketsPage: React.FC = () => {
                         <div className="min-w-0">
                           <div className="font-bold text-sm text-stone-900 flex items-center gap-1.5 min-w-0">
                             <span className="truncate">{m.name}</span>
-                            <span className="font-mono text-xs text-stone-500 shrink-0">({m.code})</span>
+                            <span className="font-mono text-xs text-stone-500 shrink-0">
+                              ({m.code})
+                            </span>
                           </div>
                           <div className="text-micro text-stone-500 font-medium truncate">
-                            {m.currency} ({m.currencySymbol}) • {m.defaultLocale}
+                            {m.currency} ({m.currencySymbol}) •{" "}
+                            {m.defaultLocale}
                           </div>
                         </div>
                       </div>
-                      <span className="shrink-0">{renderStatusBadge(m.status)}</span>
+                      <span className="shrink-0">
+                        {renderStatusBadge(m.status)}
+                      </span>
                     </div>
 
                     {/* Inheritance Metrics Bar */}
                     <div className="space-y-1 pt-2 border-t border-border-subtle">
                       <div className="flex justify-between text-micro font-bold">
                         {isDefault ? (
-                          <span className="text-primary">{t('admin.adminMarketsPage.marcheSourceCanonique100')}</span>
+                          <span className="text-primary">
+                            {t(
+                              "admin.adminMarketsPage.marcheSourceCanonique100",
+                            )}
+                          </span>
                         ) : (
                           <>
                             <span className="text-success">
@@ -482,7 +576,7 @@ export const AdminMarketsPage: React.FC = () => {
                       className="w-full text-xs"
                       onClick={() => {
                         setSelectedMarketCode(m.code);
-                        setActiveTab('editor');
+                        setActiveTab("editor");
                       }}
                     >
                       <Sliders className="w-3.5 h-3.5 mr-1 text-primary" />
@@ -494,14 +588,23 @@ export const AdminMarketsPage: React.FC = () => {
                       <select
                         aria-label={`Statut du marché ${m.name}`}
                         value={m.status}
-                        onChange={(e) => handleStatusChange(m.code, e.target.value as MarketStatus)}
+                        onChange={(e) =>
+                          handleStatusChange(
+                            m.code,
+                            e.target.value as MarketStatus,
+                          )
+                        }
                         className="text-micro bg-bg-base border border-border-base rounded-control px-2 py-1 font-semibold text-stone-700 focus:outline-none h-control-touch"
                       >
                         <option value="active">Actif</option>
-                        <option value="coming_soon">{t('admin.adminMarketsPage.bientot')}</option>
+                        <option value="coming_soon">
+                          {t("admin.adminMarketsPage.bientot")}
+                        </option>
                         <option value="paused">En pause</option>
                         <option value="draft">Brouillon</option>
-                        <option value="archived">{t('admin.adminMarketsPage.archive')}</option>
+                        <option value="archived">
+                          {t("admin.adminMarketsPage.archive")}
+                        </option>
                       </select>
                     )}
                   </div>
@@ -513,7 +616,7 @@ export const AdminMarketsPage: React.FC = () => {
       )}
 
       {/* TAB 2: INHERITANCE & OVERRIDE EDITOR */}
-      {activeTab === 'editor' && (
+      {activeTab === "editor" && (
         <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Market Picker Selector for Editor */}
           <div className="p-4 rounded-2xl bg-white border border-border-base flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -522,23 +625,28 @@ export const AdminMarketsPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-bold text-stone-900">
-                    Configuration de {selectedMarket.name} ({selectedMarket.code})
+                    Configuration de {selectedMarket.name} (
+                    {selectedMarket.code})
                   </h2>
                   {renderStatusBadge(selectedMarket.status)}
                   {selectedMarket.isDefault && (
-                    <span className="text-micro bg-primary-light text-primary font-bold px-2 py-0.5 rounded-full">{t('admin.adminMarketsPage.referenceCanonique')}</span>
+                    <span className="text-micro bg-primary-light text-primary font-bold px-2 py-0.5 rounded-full">
+                      {t("admin.adminMarketsPage.referenceCanonique")}
+                    </span>
                   )}
                 </div>
                 <p className="text-xs text-stone-500">
                   {selectedMarket.isDefault
-                    ? 'Toutes les modifications sur ce marché constituent la base de référence pour l\'ensemble des pays.'
+                    ? "Toutes les modifications sur ce marché constituent la base de référence pour l'ensemble des pays."
                     : `${inheritanceMetrics.percentInherited}% hérité de France • ${inheritanceMetrics.percentOverridden}% surchargé localement`}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-stone-500">{t('admin.adminMarketsPage.selectionnerUnMarche')}</span>
+              <span className="text-xs font-semibold text-stone-500">
+                {t("admin.adminMarketsPage.selectionnerUnMarche")}
+              </span>
               <select
                 value={selectedMarketCode}
                 onChange={(e) => setSelectedMarketCode(e.target.value)}
@@ -558,7 +666,9 @@ export const AdminMarketsPage: React.FC = () => {
                   className="text-xs text-stone-600 hover:text-danger"
                   onClick={() => handleResetAllToFrance(selectedMarket.code)}
                 >
-                  <RefreshCw className="w-3.5 h-3.5 mr-1" />{t('admin.adminMarketsPage.toutReinitialiserSurFrance')}</Button>
+                  <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                  {t("admin.adminMarketsPage.toutReinitialiserSurFrance")}
+                </Button>
               )}
             </div>
           </div>
@@ -568,8 +678,16 @@ export const AdminMarketsPage: React.FC = () => {
             <div className="p-4 rounded-2xl bg-info-surface border border-info-border flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-info shrink-0 mt-0.5" />
               <div className="text-xs text-info space-y-1">
-                <span className="font-bold">Avertissement d'impact global :</span>
-                <p>{t('admin.adminMarketsPage.vousEditezActuellementLa')}<strong>configuration canonique France</strong>. Toute modification de valeur sur cette page se propagera automatiquement et instantanément à tous les marchés dépendants (Belgique, Espagne, Suisse, etc.) qui n'ont pas défini de surcharge explicite sur le paramètre concerné.
+                <span className="font-bold">
+                  Avertissement d'impact global :
+                </span>
+                <p>
+                  {t("admin.adminMarketsPage.vousEditezActuellementLa")}
+                  <strong>configuration canonique France</strong>. Toute
+                  modification de valeur sur cette page se propagera
+                  automatiquement et instantanément à tous les marchés
+                  dépendants (Belgique, Espagne, Suisse, etc.) qui n'ont pas
+                  défini de surcharge explicite sur le paramètre concerné.
                 </p>
               </div>
             </div>
@@ -578,27 +696,35 @@ export const AdminMarketsPage: React.FC = () => {
           {/* Domain Subtabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border-subtle">
             {[
-              { id: 'general', label: 'Général', Icon: Tag },
-              { id: 'localization', label: 'Localisation', Icon: Globe },
-              { id: 'taxonomy', label: 'Taxonomie & Catégories', Icon: FolderTree },
-              { id: 'listings', label: 'Annonces', Icon: Package },
-              { id: 'payments', label: 'Paiements & Séquestre', Icon: CreditCard },
-              { id: 'reservation', label: 'Réservation', Icon: Handshake },
-              { id: 'delivery', label: 'Livraison', Icon: Truck },
-              { id: 'pro', label: 'Professionnels', Icon: Briefcase },
-              { id: 'taxes', label: 'Fiscalité & TVA', Icon: Landmark },
-              { id: 'monetization', label: 'Monétisation', Icon: Rocket },
-              { id: 'features', label: 'Fonctionnalités', Icon: Settings2 },
+              { id: "general", label: "Général", Icon: Tag },
+              { id: "localization", label: "Localisation", Icon: Globe },
+              {
+                id: "taxonomy",
+                label: "Taxonomie & Catégories",
+                Icon: FolderTree,
+              },
+              { id: "listings", label: "Annonces", Icon: Package },
+              {
+                id: "payments",
+                label: "Paiements & Séquestre",
+                Icon: CreditCard,
+              },
+              { id: "reservation", label: "Réservation", Icon: Handshake },
+              { id: "delivery", label: "Livraison", Icon: Truck },
+              { id: "pro", label: "Professionnels", Icon: Briefcase },
+              { id: "taxes", label: "Fiscalité & TVA", Icon: Landmark },
+              { id: "monetization", label: "Monétisation", Icon: Rocket },
+              { id: "features", label: "Fonctionnalités", Icon: Settings2 },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveDomainTab(tab.id as DomainTab)}
-                aria-current={activeDomainTab === tab.id ? 'true' : undefined}
+                aria-current={activeDomainTab === tab.id ? "true" : undefined}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
                   activeDomainTab === tab.id
-                    ? 'bg-stone-900 text-white'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    ? "bg-stone-900 text-white"
+                    : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                 }`}
               >
                 <tab.Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
@@ -609,60 +735,130 @@ export const AdminMarketsPage: React.FC = () => {
 
           {/* DOMAIN CONFIGURATION CONTENT */}
           <div className="space-y-3">
-            {activeDomainTab === 'general' && (
+            {activeDomainTab === "general" && (
               <>
-                {renderSettingRow('general.name', 'Nom du Marché', 'Nom public affiché aux utilisateurs')}
-                {renderSettingRow('general.tagline', 'Slogan du Marché', 'Accroche commerciale pour ce pays')}
-                {renderSettingRow('general.supportEmail', 'Email du Support', 'Adresse email dédiée au service client local')}
-                {renderSettingRow('general.supportPhone', 'Téléphone Support', 'Numéro de téléphone d\'assistance locale')}
-                {renderSettingRow('general.launchState', 'Mode de Déploiement', 'National complet ou villes ciblées uniquement')}
+                {renderSettingRow(
+                  "general.name",
+                  "Nom du Marché",
+                  "Nom public affiché aux utilisateurs",
+                )}
+                {renderSettingRow(
+                  "general.tagline",
+                  "Slogan du Marché",
+                  "Accroche commerciale pour ce pays",
+                )}
+                {renderSettingRow(
+                  "general.supportEmail",
+                  "Email du Support",
+                  "Adresse email dédiée au service client local",
+                )}
+                {renderSettingRow(
+                  "general.supportPhone",
+                  "Téléphone Support",
+                  "Numéro de téléphone d'assistance locale",
+                )}
+                {renderSettingRow(
+                  "general.launchState",
+                  "Mode de Déploiement",
+                  "National complet ou villes ciblées uniquement",
+                )}
               </>
             )}
 
-            {activeDomainTab === 'localization' && (
+            {activeDomainTab === "localization" && (
               <>
-                {renderSettingRow('localization.defaultLocale', 'Locale par Défaut', 'Format des dates et nombres (ex: fr-FR, fr-BE, es-ES)')}
-                {renderSettingRow('localization.defaultCurrency', 'Devise Standard', 'Code ISO de la devise (ex: EUR, CHF)')}
-                {renderSettingRow('localization.currencySymbol', 'Symbole Devise', 'Symbole monétaire (ex: €, CHF)')}
-                {renderSettingRow('localization.timezone', 'Fuseau Horaire', 'Identifiant IANA (ex: Europe/Paris, Europe/Brussels)')}
-                {renderSettingRow('localization.phonePrefix', 'Préfixe Téléphonique', 'Indicatif international (ex: +33, +32, +34, +41)')}
-                {renderSettingRow('localization.phonePlaceholder', 'Exemple Numéro Téléphone', 'Format d\'aide affiché dans les formulaires')}
-                {renderSettingRow('localization.postalCodePlaceholder', 'Exemple Code Postal', 'Format d\'aide dans le champ ville')}
-                {renderSettingRow('localization.postalCodeRegex', 'Regex Code Postal', 'Expression régulière validant les codes postaux')}
+                {renderSettingRow(
+                  "localization.defaultLocale",
+                  "Locale par Défaut",
+                  "Format des dates et nombres (ex: fr-FR, fr-BE, es-ES)",
+                )}
+                {renderSettingRow(
+                  "localization.defaultCurrency",
+                  "Devise Standard",
+                  "Code ISO de la devise (ex: EUR, CHF)",
+                )}
+                {renderSettingRow(
+                  "localization.currencySymbol",
+                  "Symbole Devise",
+                  "Symbole monétaire (ex: €, CHF)",
+                )}
+                {renderSettingRow(
+                  "localization.timezone",
+                  "Fuseau Horaire",
+                  "Identifiant IANA (ex: Europe/Paris, Europe/Brussels)",
+                )}
+                {renderSettingRow(
+                  "localization.phonePrefix",
+                  "Préfixe Téléphonique",
+                  "Indicatif international (ex: +33, +32, +34, +41)",
+                )}
+                {renderSettingRow(
+                  "localization.phonePlaceholder",
+                  "Exemple Numéro Téléphone",
+                  "Format d'aide affiché dans les formulaires",
+                )}
+                {renderSettingRow(
+                  "localization.postalCodePlaceholder",
+                  "Exemple Code Postal",
+                  "Format d'aide dans le champ ville",
+                )}
+                {renderSettingRow(
+                  "localization.postalCodeRegex",
+                  "Regex Code Postal",
+                  "Expression régulière validant les codes postaux",
+                )}
               </>
             )}
 
-            {activeDomainTab === 'taxonomy' && (
+            {activeDomainTab === "taxonomy" && (
               <div className="space-y-4">
                 <div className="p-4 bg-warning-surface/70 border border-warning-border rounded-2xl flex items-start gap-3">
                   <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                   <div className="text-xs text-warning space-y-1">
-                    <span className="font-bold">{t('admin.adminMarketsPage.gestionDesCategoriesParMarche')}</span>
+                    <span className="font-bold">
+                      {t(
+                        "admin.adminMarketsPage.gestionDesCategoriesParMarche",
+                      )}
+                    </span>
                     <p>
-                      Par défaut, tous les marchés héritent des catégories de la France. Vous pouvez activer ou désactiver spécifiquement des catégories ou sous-catégories pour {selectedMarket.name} ({selectedMarket.code}).
+                      Par défaut, tous les marchés héritent des catégories de la
+                      France. Vous pouvez activer ou désactiver spécifiquement
+                      des catégories ou sous-catégories pour{" "}
+                      {selectedMarket.name} ({selectedMarket.code}).
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {taxonomyService.getRootCategories().map((rootCat) => {
-                    const isRootEnabled = marketService.isCategoryEnabledInMarket(selectedMarket.code, rootCat.slug);
+                    const isRootEnabled =
+                      marketService.isCategoryEnabledInMarket(
+                        selectedMarket.code,
+                        rootCat.slug,
+                      );
 
                     return (
                       <div
                         key={rootCat.id}
                         className={`p-4 rounded-2xl border transition-all ${
                           isRootEnabled
-                            ? 'bg-white border-border-base shadow-xs'
-                            : 'bg-stone-50/80 border-stone-200 opacity-75'
+                            ? "bg-white border-border-base shadow-xs"
+                            : "bg-stone-50/80 border-stone-200 opacity-75"
                         }`}
                       >
                         <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
                           <div className="flex items-center gap-2.5">
-                            <CategoryIcon iconName={rootCat.iconName || 'tag'} className="w-5 h-5 text-primary" />
+                            <CategoryIcon
+                              iconName={rootCat.iconName || "tag"}
+                              className="w-5 h-5 text-primary"
+                            />
                             <div>
-                              <div className="text-xs font-bold text-stone-900">{getTaxonomyLabel(rootCat, 'compact')}</div>
-                              <div className="text-micro text-stone-500">Slug: {rootCat.slug}</div>
+                              <div className="text-xs font-bold text-stone-900">
+                                {getTaxonomyLabel(rootCat, "compact")}
+                              </div>
+                              <div className="text-micro text-stone-500">
+                                Slug: {rootCat.slug}
+                              </div>
                             </div>
                           </div>
 
@@ -670,11 +866,11 @@ export const AdminMarketsPage: React.FC = () => {
                             <span
                               className={`text-micro font-bold px-2 py-0.5 rounded-full ${
                                 isRootEnabled
-                                  ? 'bg-success-surface text-success'
-                                  : 'bg-stone-200 text-stone-700'
+                                  ? "bg-success-surface text-success"
+                                  : "bg-stone-200 text-stone-700"
                               }`}
                             >
-                              {isRootEnabled ? 'Ouverte' : 'Fermée'}
+                              {isRootEnabled ? "Ouverte" : "Fermée"}
                             </span>
 
                             {canConfigureMarkets && (
@@ -686,20 +882,20 @@ export const AdminMarketsPage: React.FC = () => {
                                     rootCat.slug,
                                     !isRootEnabled,
                                     false,
-                                    currentUser
+                                    currentUser ?? undefined,
                                   );
                                   setRefreshTrigger((prev) => prev + 1);
                                   toast.success(
-                                            `Catégorie [${getTaxonomyLabel(rootCat, 'compact')}] ${!isRootEnabled ? 'ouverte' : 'désactivée'} sur ${selectedMarket.name}.`
+                                    `Catégorie [${getTaxonomyLabel(rootCat, "compact")}] ${!isRootEnabled ? "ouverte" : "désactivée"} sur ${selectedMarket.name}.`,
                                   );
                                 }}
                                 className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors cursor-pointer ${
                                   isRootEnabled
-                                    ? 'border-danger-border text-danger hover:bg-danger-surface'
-                                    : 'border-success-border text-success hover:bg-success-surface'
+                                    ? "border-danger-border text-danger hover:bg-danger-surface"
+                                    : "border-success-border text-success hover:bg-success-surface"
                                 }`}
                               >
-                                {isRootEnabled ? 'Désactiver' : 'Activer'}
+                                {isRootEnabled ? "Désactiver" : "Activer"}
                               </button>
                             )}
                           </div>
@@ -713,17 +909,24 @@ export const AdminMarketsPage: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                               {rootCat.children.map((sub) => {
-                                const isSubEnabled = isRootEnabled && marketService.isCategoryEnabledInMarket(selectedMarket.code, sub.slug);
+                                const isSubEnabled =
+                                  isRootEnabled &&
+                                  marketService.isCategoryEnabledInMarket(
+                                    selectedMarket.code,
+                                    sub.slug,
+                                  );
                                 return (
                                   <div
                                     key={sub.id}
                                     className={`p-2 rounded-xl border flex items-center justify-between text-xs ${
                                       isSubEnabled
-                                        ? 'bg-bg-base/40 border-border-subtle text-stone-800'
-                                        : 'bg-stone-100 border-stone-200 text-stone-500 line-through'
+                                        ? "bg-bg-base/40 border-border-subtle text-stone-800"
+                                        : "bg-stone-100 border-stone-200 text-stone-500 line-through"
                                     }`}
                                   >
-                                    <span className="truncate pr-1 font-medium">{getTaxonomyLabel(sub, 'compact')}</span>
+                                    <span className="truncate pr-1 font-medium">
+                                      {getTaxonomyLabel(sub, "compact")}
+                                    </span>
                                     {canConfigureMarkets && isRootEnabled && (
                                       <button
                                         type="button"
@@ -733,16 +936,16 @@ export const AdminMarketsPage: React.FC = () => {
                                             sub.slug,
                                             !isSubEnabled,
                                             true,
-                                            currentUser
+                                            currentUser ?? undefined,
                                           );
                                           setRefreshTrigger((prev) => prev + 1);
                                           toast.success(
-                                            `Sous-catégorie [${getTaxonomyLabel(sub, 'compact')}] ${!isSubEnabled ? 'ouverte' : 'désactivée'} sur ${selectedMarket.name}.`
+                                            `Sous-catégorie [${getTaxonomyLabel(sub, "compact")}] ${!isSubEnabled ? "ouverte" : "désactivée"} sur ${selectedMarket.name}.`,
                                           );
                                         }}
                                         className="text-micro font-bold text-primary hover:underline ml-1"
                                       >
-                                        {isSubEnabled ? 'Fermer' : 'Ouvrir'}
+                                        {isSubEnabled ? "Fermer" : "Ouvrir"}
                                       </button>
                                     )}
                                   </div>
@@ -758,100 +961,372 @@ export const AdminMarketsPage: React.FC = () => {
               </div>
             )}
 
-            {activeDomainTab === 'listings' && (
+            {activeDomainTab === "listings" && (
               <>
-                {renderSettingRow('listings.maxActiveListingsIndividual', 'Annonces Max (Particulier)', 'Nombre max d\'annonces actives simultanées', 'number')}
-                {renderSettingRow('listings.maxPhotosIndividual', 'Photos Max (Particulier)', 'Nombre maximum de photos par annonce', 'number')}
-                {renderSettingRow('listings.maxPhotosPro', 'Photos Max (Professionnel)', 'Nombre de photos autorisées pour les comptes Pro', 'number')}
-                {renderSettingRow('listings.expirationDays', 'Durée de Validité (Jours)', 'Délai avant expiration automatique d\'une annonce', 'number')}
-                {renderSettingRow('listings.allowFreeDonations', 'Autoriser les Dons / Gratuit', 'Permet la publication d\'annonces à 0€', 'boolean', (v) => (v ? 'Activé (Oui)' : 'Désactivé (Non)'))}
-                {renderSettingRow('listings.allowPriceNegotiation', 'Négociation de Prix', 'Permet aux acheteurs de faire des propositions d\'offres', 'boolean', (v) => (v ? 'Activé (Oui)' : 'Désactivé (Non)'))}
-                {renderSettingRow('listings.allowInstantBuy', 'Achat Immédiat Direct', 'Permet le paiement sans validation préalable du vendeur', 'boolean', (v) => (v ? 'Activé (Oui)' : 'Désactivé (Non)'))}
-              </>
-            )}
-
-            {activeDomainTab === 'payments' && (
-              <>
-                {renderSettingRow('payments.enabled', 'Paiement Sécurisé Marketplace', 'Active la passerelle et le séquestre sur ce marché', 'boolean', (v) => (v ? 'Activé (Oui)' : 'Désactivé (Non)'))}
-                {renderSettingRow('payments.provider', 'Passerelle / Séquestre', 'Fournisseur tiers (ex: mangopay_escrow, stripe_connect)')}
-                {renderSettingRow('payments.buyerProtectionFeePercent', 'Taux Protection Acheteur (%)', 'Pourcentage appliqué sur le prix de l\'article', 'number', (v) => `${(v * 100).toFixed(1)} %`)}
-                {renderSettingRow('payments.buyerProtectionFixedFee', 'Frais Fixes Protection Acheteur', 'Frais fixes en devise locale par transaction', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('payments.minTransactionAmount', 'Montant Minimum Transaction', 'Montant minimal en devise locale', 'number', (v) => `${v} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('payments.maxTransactionAmount', 'Montant Maximum Transaction', 'Plafond maximal en devise locale', 'number', (v) => `${v} ${effectiveConfig.localization.currencySymbol}`)}
-              </>
-            )}
-
-            {activeDomainTab === 'reservation' && (
-              <>
-                {renderSettingRow('reservation.enabled', 'Réservation d\'Annonce', 'Permet de bloquer une annonce avec séquestre', 'boolean', (v) => (v ? 'Activé (Oui)' : 'Désactivé (Non)'))}
-                {renderSettingRow('reservation.sellerConfirmationTimeoutHours', 'Délai Confirmation Vendeur (Heures)', 'Temps alloué au vendeur pour accepter la réservation', 'number', (v) => `${v} heures`)}
-                {renderSettingRow('reservation.buyerInspectionTimeoutHours', 'Délai Inspection Acheteur (Heures)', 'Temps alloué à l\'acheteur après réception pour valider ou contester', 'number', (v) => `${v} heures`)}
-                {renderSettingRow('reservation.requirePinForHandDelivery', 'Code PIN Remise en Main Propre', 'Code OTP à 6 chiffres pour sécuriser la remise physique', 'boolean', (v) => (v ? 'Requis (Oui)' : 'Facultatif (Non)'))}
-              </>
-            )}
-
-            {activeDomainTab === 'delivery' && (
-              <>
-                {renderSettingRow('delivery.enabled', 'Livraison Activée', 'Active les options de transport et d\'expédition', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('delivery.handDeliveryEnabled', 'Remise en Main Propre', 'Autorise la remise physique sans transporteur', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('delivery.carriers.mondialRelay.enabled', 'Mondial Relay (Point Relais)', 'Transporteur relais standard', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('delivery.carriers.mondialRelay.defaultFee', 'Tarif Moyen Mondial Relay', 'Estimation tarifaire par défaut', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('delivery.carriers.colissimo.enabled', 'Colissimo (Domicile)', 'Livraison standard à domicile', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('delivery.carriers.colissimo.defaultFee', 'Tarif Moyen Colissimo', 'Estimation tarifaire par défaut', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('delivery.carriers.chronopost.enabled', 'Chronopost Express 24h', 'Livraison express prioritaire', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('delivery.carriers.chronopost.defaultFee', 'Tarif Moyen Chronopost', 'Estimation tarifaire par défaut', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-              </>
-            )}
-
-            {activeDomainTab === 'pro' && (
-              <>
-                {renderSettingRow('pro.businessIdentifierLabel', 'Libellé Identifiant Entreprise', 'Intitulé légal (SIRET en FR, BCE en BE, NIF en ES, IDE en CH)')}
-                {renderSettingRow('pro.businessIdentifierHelper', 'Aide à la Saisie Identifiant', 'Texte explicatif pour les pros lors de l\'inscription')}
-                {renderSettingRow('pro.businessIdentifierRegex', 'Regex Validation Identifiant', 'Expression régulière contrôlant le format')}
-                {renderSettingRow('pro.businessIdentifierFormatPlaceholder', 'Placeholder Identifiant', 'Exemple affiché dans le champ de saisie')}
-                {renderSettingRow('pro.vatNumberFormatPlaceholder', 'Format Numéro de TVA', 'Exemple de numéro de TVA intracommunautaire')}
-                {renderSettingRow('pro.vatNumberRegex', 'Regex Numéro de TVA', 'Expression de contrôle du numéro de TVA')}
-                {renderSettingRow('pro.requireKbis', 'Justificatif d\'Immatriculation Requis', 'Exige un Kbis, attestation BCE ou équivalent', 'boolean', (v) => (v ? 'Requis' : 'Optionnel'))}
-              </>
-            )}
-
-            {activeDomainTab === 'taxes' && (
-              <>
-                {renderSettingRow('taxes.taxEnabled', 'Gestion Fiscale Activée', 'Active le calcul et l\'affichage de la TVA', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('taxes.vatRateStandard', 'Taux de TVA Standard', 'Taux légal normal (20% FR, 21% BE/ES, 8.1% CH)', 'number', (v) => `${(v * 100).toFixed(1)} %`)}
-                {renderSettingRow('taxes.pricesTaxInclusive', 'Prix Affichés TTC', 'Tous les prix sont affichés toutes taxes comprises', 'boolean', (v) => (v ? 'TTC' : 'HT'))}
-              </>
-            )}
-
-            {activeDomainTab === 'monetization' && (
-              <>
-                {renderSettingRow('monetization.proCommissionRate', 'Commission Ventes Pros (%)', 'Commission prélevée sur les ventes des professionnels', 'number', (v) => `${(v * 100).toFixed(1)} %`)}
-                {renderSettingRow('monetization.individualCommissionRate', 'Commission Particuliers (%)', 'Commission sur les ventes entre particuliers', 'number', (v) => `${(v * 100).toFixed(1)} %`)}
-                {renderSettingRow('monetization.payoutInstantFeePercent', 'Taux Virement Instantané (%)', 'Frais variables pour virement bancaire instantané', 'number', (v) => `${(v * 100).toFixed(1)} %`)}
-                {renderSettingRow('monetization.payoutInstantFixedFee', 'Frais Fixes Virement Instantané', 'Frais fixes pour virement bancaire rapide', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('monetization.boostPricing.urgent', 'Pack Boost Urgent', 'Prix de l\'option logo urgent 7 jours', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('monetization.boostPricing.highlight', 'Pack Boost En Vedette', 'Prix de l\'option encadré coloré', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-                {renderSettingRow('monetization.boostPricing.top_of_list', 'Pack Boost Remontée en Tête', 'Prix de l\'option tête de liste quotidienne', 'number', (v) => `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`)}
-              </>
-            )}
-
-            {activeDomainTab === 'features' && (
-              <>
-                {renderSettingRow('features.reviewsEnabled', 'Système d\'Avis & Évaluations', 'Permet aux utilisateurs de se noter', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('features.aiAssistantEnabled', 'Assistant IA Gemini', 'Active la génération de descriptions et filtres IA', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('features.aiSafetyAuditEnabled', 'Audit Sécurité & Anti-Fraude IA', 'Modération automatique préventive', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
-                {renderSettingRow('features.savedSearchesEnabled', 'Recherches Sauvegardées & Alertes', 'Notifications email/push sur nouveaux objets', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
                 {renderSettingRow(
-                  'features.recentSearchesLimit',
-                  'Recherches récentes affichées',
+                  "listings.maxActiveListingsIndividual",
+                  "Annonces Max (Particulier)",
+                  "Nombre max d'annonces actives simultanées",
+                  "number",
+                )}
+                {renderSettingRow(
+                  "listings.maxPhotosIndividual",
+                  "Photos Max (Particulier)",
+                  "Nombre maximum de photos par annonce",
+                  "number",
+                )}
+                {renderSettingRow(
+                  "listings.maxPhotosPro",
+                  "Photos Max (Professionnel)",
+                  "Nombre de photos autorisées pour les comptes Pro",
+                  "number",
+                )}
+                {renderSettingRow(
+                  "listings.expirationDays",
+                  "Durée de Validité (Jours)",
+                  "Délai avant expiration automatique d'une annonce",
+                  "number",
+                )}
+                {renderSettingRow(
+                  "listings.allowFreeDonations",
+                  "Autoriser les Dons / Gratuit",
+                  "Permet la publication d'annonces à 0€",
+                  "boolean",
+                  (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
+                )}
+                {renderSettingRow(
+                  "listings.allowPriceNegotiation",
+                  "Négociation de Prix",
+                  "Permet aux acheteurs de faire des propositions d'offres",
+                  "boolean",
+                  (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
+                )}
+                {renderSettingRow(
+                  "listings.allowInstantBuy",
+                  "Achat Immédiat Direct",
+                  "Permet le paiement sans validation préalable du vendeur",
+                  "boolean",
+                  (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "payments" && (
+              <>
+                {renderSettingRow(
+                  "payments.enabled",
+                  "Paiement Sécurisé Marketplace",
+                  "Active la passerelle et le séquestre sur ce marché",
+                  "boolean",
+                  (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
+                )}
+                {renderSettingRow(
+                  "payments.provider",
+                  "Passerelle / Séquestre",
+                  "Fournisseur tiers (ex: mangopay_escrow, stripe_connect)",
+                )}
+                {renderSettingRow(
+                  "payments.buyerProtectionFeePercent",
+                  "Taux Protection Acheteur (%)",
+                  "Pourcentage appliqué sur le prix de l'article",
+                  "number",
+                  (v) => `${(v * 100).toFixed(1)} %`,
+                )}
+                {renderSettingRow(
+                  "payments.buyerProtectionFixedFee",
+                  "Frais Fixes Protection Acheteur",
+                  "Frais fixes en devise locale par transaction",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "payments.minTransactionAmount",
+                  "Montant Minimum Transaction",
+                  "Montant minimal en devise locale",
+                  "number",
+                  (v) => `${v} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "payments.maxTransactionAmount",
+                  "Montant Maximum Transaction",
+                  "Plafond maximal en devise locale",
+                  "number",
+                  (v) => `${v} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "reservation" && (
+              <>
+                {renderSettingRow(
+                  "reservation.enabled",
+                  "Réservation d'Annonce",
+                  "Permet de bloquer une annonce avec séquestre",
+                  "boolean",
+                  (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
+                )}
+                {renderSettingRow(
+                  "reservation.sellerConfirmationTimeoutHours",
+                  "Délai Confirmation Vendeur (Heures)",
+                  "Temps alloué au vendeur pour accepter la réservation",
+                  "number",
+                  (v) => `${v} heures`,
+                )}
+                {renderSettingRow(
+                  "reservation.buyerInspectionTimeoutHours",
+                  "Délai Inspection Acheteur (Heures)",
+                  "Temps alloué à l'acheteur après réception pour valider ou contester",
+                  "number",
+                  (v) => `${v} heures`,
+                )}
+                {renderSettingRow(
+                  "reservation.requirePinForHandDelivery",
+                  "Code PIN Remise en Main Propre",
+                  "Code OTP à 6 chiffres pour sécuriser la remise physique",
+                  "boolean",
+                  (v) => (v ? "Requis (Oui)" : "Facultatif (Non)"),
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "delivery" && (
+              <>
+                {renderSettingRow(
+                  "delivery.enabled",
+                  "Livraison Activée",
+                  "Active les options de transport et d'expédition",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "delivery.handDeliveryEnabled",
+                  "Remise en Main Propre",
+                  "Autorise la remise physique sans transporteur",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "delivery.carriers.mondialRelay.enabled",
+                  "Mondial Relay (Point Relais)",
+                  "Transporteur relais standard",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "delivery.carriers.mondialRelay.defaultFee",
+                  "Tarif Moyen Mondial Relay",
+                  "Estimation tarifaire par défaut",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "delivery.carriers.colissimo.enabled",
+                  "Colissimo (Domicile)",
+                  "Livraison standard à domicile",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "delivery.carriers.colissimo.defaultFee",
+                  "Tarif Moyen Colissimo",
+                  "Estimation tarifaire par défaut",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "delivery.carriers.chronopost.enabled",
+                  "Chronopost Express 24h",
+                  "Livraison express prioritaire",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "delivery.carriers.chronopost.defaultFee",
+                  "Tarif Moyen Chronopost",
+                  "Estimation tarifaire par défaut",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "pro" && (
+              <>
+                {renderSettingRow(
+                  "pro.businessIdentifierLabel",
+                  "Libellé Identifiant Entreprise",
+                  "Intitulé légal (SIRET en FR, BCE en BE, NIF en ES, IDE en CH)",
+                )}
+                {renderSettingRow(
+                  "pro.businessIdentifierHelper",
+                  "Aide à la Saisie Identifiant",
+                  "Texte explicatif pour les pros lors de l'inscription",
+                )}
+                {renderSettingRow(
+                  "pro.businessIdentifierRegex",
+                  "Regex Validation Identifiant",
+                  "Expression régulière contrôlant le format",
+                )}
+                {renderSettingRow(
+                  "pro.businessIdentifierFormatPlaceholder",
+                  "Placeholder Identifiant",
+                  "Exemple affiché dans le champ de saisie",
+                )}
+                {renderSettingRow(
+                  "pro.vatNumberFormatPlaceholder",
+                  "Format Numéro de TVA",
+                  "Exemple de numéro de TVA intracommunautaire",
+                )}
+                {renderSettingRow(
+                  "pro.vatNumberRegex",
+                  "Regex Numéro de TVA",
+                  "Expression de contrôle du numéro de TVA",
+                )}
+                {renderSettingRow(
+                  "pro.requireKbis",
+                  "Justificatif d'Immatriculation Requis",
+                  "Exige un Kbis, attestation BCE ou équivalent",
+                  "boolean",
+                  (v) => (v ? "Requis" : "Optionnel"),
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "taxes" && (
+              <>
+                {renderSettingRow(
+                  "taxes.taxEnabled",
+                  "Gestion Fiscale Activée",
+                  "Active le calcul et l'affichage de la TVA",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "taxes.vatRateStandard",
+                  "Taux de TVA Standard",
+                  "Taux légal normal (20% FR, 21% BE/ES, 8.1% CH)",
+                  "number",
+                  (v) => `${(v * 100).toFixed(1)} %`,
+                )}
+                {renderSettingRow(
+                  "taxes.pricesTaxInclusive",
+                  "Prix Affichés TTC",
+                  "Tous les prix sont affichés toutes taxes comprises",
+                  "boolean",
+                  (v) => (v ? "TTC" : "HT"),
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "monetization" && (
+              <>
+                {renderSettingRow(
+                  "monetization.proCommissionRate",
+                  "Commission Ventes Pros (%)",
+                  "Commission prélevée sur les ventes des professionnels",
+                  "number",
+                  (v) => `${(v * 100).toFixed(1)} %`,
+                )}
+                {renderSettingRow(
+                  "monetization.individualCommissionRate",
+                  "Commission Particuliers (%)",
+                  "Commission sur les ventes entre particuliers",
+                  "number",
+                  (v) => `${(v * 100).toFixed(1)} %`,
+                )}
+                {renderSettingRow(
+                  "monetization.payoutInstantFeePercent",
+                  "Taux Virement Instantané (%)",
+                  "Frais variables pour virement bancaire instantané",
+                  "number",
+                  (v) => `${(v * 100).toFixed(1)} %`,
+                )}
+                {renderSettingRow(
+                  "monetization.payoutInstantFixedFee",
+                  "Frais Fixes Virement Instantané",
+                  "Frais fixes pour virement bancaire rapide",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "monetization.boostPricing.urgent",
+                  "Pack Boost Urgent",
+                  "Prix de l'option logo urgent 7 jours",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "monetization.boostPricing.highlight",
+                  "Pack Boost En Vedette",
+                  "Prix de l'option encadré coloré",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+                {renderSettingRow(
+                  "monetization.boostPricing.top_of_list",
+                  "Pack Boost Remontée en Tête",
+                  "Prix de l'option tête de liste quotidienne",
+                  "number",
+                  (v) =>
+                    `${v.toFixed(2)} ${effectiveConfig.localization.currencySymbol}`,
+                )}
+              </>
+            )}
+
+            {activeDomainTab === "features" && (
+              <>
+                {renderSettingRow(
+                  "features.reviewsEnabled",
+                  "Système d'Avis & Évaluations",
+                  "Permet aux utilisateurs de se noter",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "features.aiAssistantEnabled",
+                  "Assistant IA Gemini",
+                  "Active la génération de descriptions et filtres IA",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "features.aiSafetyAuditEnabled",
+                  "Audit Sécurité & Anti-Fraude IA",
+                  "Modération automatique préventive",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "features.savedSearchesEnabled",
+                  "Recherches Sauvegardées & Alertes",
+                  "Notifications email/push sur nouveaux objets",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
+                {renderSettingRow(
+                  "features.recentSearchesLimit",
+                  "Recherches récentes affichées",
                   `Nombre de recherches visibles sur l'accueil (de ${RECENT_SEARCHES_LIMIT_MIN} à ${RECENT_SEARCHES_LIMIT_MAX}, ${RECENT_SEARCHES_LIMIT_DEFAULT} par défaut)`,
-                  'number',
+                  "number",
                   (v) => {
                     const limit = normalizeRecentSearchesLimit(v);
-                    return `${limit} recherche${limit > 1 ? 's' : ''}`;
+                    return `${limit} recherche${limit > 1 ? "s" : ""}`;
                   },
                 )}
-                {renderSettingRow('features.proStorefrontsEnabled', 'Boutiques Pros Personnalisées', 'Pages vitrines dédiées avec bannière', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
+                {renderSettingRow(
+                  "features.proStorefrontsEnabled",
+                  "Boutiques Pros Personnalisées",
+                  "Pages vitrines dédiées avec bannière",
+                  "boolean",
+                  (v) => (v ? "Activé" : "Désactivé"),
+                )}
               </>
             )}
           </div>
@@ -859,15 +1334,21 @@ export const AdminMarketsPage: React.FC = () => {
       )}
 
       {/* TAB 3: COMPARATIVE MATRIX */}
-      {activeTab === 'matrix' && (
+      {activeTab === "matrix" && (
         <div className="space-y-6 animate-in fade-in duration-fast">
           <div className="p-4 rounded-2xl bg-white border border-border-base overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border-base bg-stone-50">
-                  <th scope="col" className="p-3 font-bold text-stone-900">{t('admin.adminMarketsPage.parametreRegle')}</th>
+                  <th scope="col" className="p-3 font-bold text-stone-900">
+                    {t("admin.adminMarketsPage.parametreRegle")}
+                  </th>
                   {markets.map((m) => (
-                    <th scope="col" key={m.code} className="p-3 font-bold text-stone-900 min-w-[160px]">
+                    <th
+                      scope="col"
+                      key={m.code}
+                      className="p-3 font-bold text-stone-900 min-w-[160px]"
+                    >
                       <div className="flex items-center gap-1.5">
                         <span className="text-base">{m.flag}</span>
                         <span>{m.name}</span>
@@ -883,7 +1364,9 @@ export const AdminMarketsPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.statutDuMarche')}</td>
+                  <td className="p-3 font-bold text-stone-700">
+                    {t("admin.adminMarketsPage.statutDuMarche")}
+                  </td>
                   {markets.map((m) => (
                     <td key={m.code} className="p-3">
                       {renderStatusBadge(m.status)}
@@ -891,85 +1374,130 @@ export const AdminMarketsPage: React.FC = () => {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">Devise & Symbole</td>
+                  <td className="p-3 font-bold text-stone-700">
+                    Devise & Symbole
+                  </td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
-                    const res = marketService.resolveSetting(m.code, 'localization.defaultCurrency');
+                    const res = marketService.resolveSetting(
+                      m.code,
+                      "localization.defaultCurrency",
+                    );
                     return (
                       <td key={m.code} className="p-3">
                         <div className="font-mono font-bold text-stone-900">
-                          {cfg.localization.defaultCurrency} ({cfg.localization.currencySymbol})
+                          {cfg.localization.defaultCurrency} (
+                          {cfg.localization.currencySymbol})
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
+                          <span className="text-micro text-warning font-bold">
+                            {t("admin.adminMarketsPage.surcharge")}
+                          </span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.tauxDeTvaStandard')}</td>
+                  <td className="p-3 font-bold text-stone-700">
+                    {t("admin.adminMarketsPage.tauxDeTvaStandard")}
+                  </td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
-                    const res = marketService.resolveSetting(m.code, 'taxes.vatRateStandard');
+                    const res = marketService.resolveSetting(
+                      m.code,
+                      "taxes.vatRateStandard",
+                    );
                     return (
                       <td key={m.code} className="p-3">
                         <div className="font-mono font-bold text-stone-900">
                           {(cfg.taxes.vatRateStandard * 100).toFixed(1)} %
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
+                          <span className="text-micro text-warning font-bold">
+                            {t("admin.adminMarketsPage.surcharge")}
+                          </span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.fraisProtectionAcheteur')}</td>
+                  <td className="p-3 font-bold text-stone-700">
+                    {t("admin.adminMarketsPage.fraisProtectionAcheteur")}
+                  </td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
-                    const res = marketService.resolveSetting(m.code, 'payments.buyerProtectionFixedFee');
+                    const res = marketService.resolveSetting(
+                      m.code,
+                      "payments.buyerProtectionFixedFee",
+                    );
                     return (
                       <td key={m.code} className="p-3">
                         <div className="font-mono font-bold text-stone-900">
-                          {cfg.payments.buyerProtectionFixedFee.toFixed(2)} {cfg.localization.currencySymbol} + {(cfg.payments.buyerProtectionFeePercent * 100).toFixed(1)}%
+                          {cfg.payments.buyerProtectionFixedFee.toFixed(2)}{" "}
+                          {cfg.localization.currencySymbol} +{" "}
+                          {(
+                            cfg.payments.buyerProtectionFeePercent * 100
+                          ).toFixed(1)}
+                          %
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
+                          <span className="text-micro text-warning font-bold">
+                            {t("admin.adminMarketsPage.surcharge")}
+                          </span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">Identifiant Entreprise (Pro)</td>
+                  <td className="p-3 font-bold text-stone-700">
+                    Identifiant Entreprise (Pro)
+                  </td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
-                    const res = marketService.resolveSetting(m.code, 'pro.businessIdentifierLabel');
+                    const res = marketService.resolveSetting(
+                      m.code,
+                      "pro.businessIdentifierLabel",
+                    );
                     return (
                       <td key={m.code} className="p-3">
                         <div className="font-semibold text-stone-900">
                           {cfg.pro.businessIdentifierLabel}
                         </div>
                         {res.overrideDefined && (
-                          <span className="text-micro text-warning font-bold">{t('admin.adminMarketsPage.surcharge')}</span>
+                          <span className="text-micro text-warning font-bold">
+                            {t("admin.adminMarketsPage.surcharge")}
+                          </span>
                         )}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">{t('admin.adminMarketsPage.reservationAvecSequestre')}</td>
+                  <td className="p-3 font-bold text-stone-700">
+                    {t("admin.adminMarketsPage.reservationAvecSequestre")}
+                  </td>
                   {markets.map((m) => {
                     const cfg = marketService.getEffectiveConfig(m.code);
-                    const res = marketService.resolveSetting(m.code, 'reservation.enabled');
+                    const res = marketService.resolveSetting(
+                      m.code,
+                      "reservation.enabled",
+                    );
                     return (
                       <td key={m.code} className="p-3">
-                        <span className={`font-bold ${cfg.reservation.enabled ? 'text-success' : 'text-stone-500'}`}>
-                          {cfg.reservation.enabled ? '✓ Activée' : '✗ Désactivée'}
+                        <span
+                          className={`font-bold ${cfg.reservation.enabled ? "text-success" : "text-stone-500"}`}
+                        >
+                          {cfg.reservation.enabled
+                            ? "✓ Activée"
+                            : "✗ Désactivée"}
                         </span>
                         {res.overrideDefined && (
-                          <span className="block text-micro text-warning font-bold">✏️ Surchargé ({String(res.value)})</span>
+                          <span className="block text-micro text-warning font-bold">
+                            ✏️ Surchargé ({String(res.value)})
+                          </span>
                         )}
                       </td>
                     );
@@ -985,26 +1513,30 @@ export const AdminMarketsPage: React.FC = () => {
       <Modal
         isOpen={isAddMarketModalOpen}
         onClose={() => setIsAddMarketModalOpen(false)}
-        title={t('admin.adminMarketsPage.ajouterUnNouveauMarchePays')}
-        description={t('admin.adminMarketsPage.creezUnNouveauPaysQui')}
+        title={t("admin.adminMarketsPage.ajouterUnNouveauMarchePays")}
+        description={t("admin.adminMarketsPage.creezUnNouveauPaysQui")}
         maxWidth="md"
       >
         <form onSubmit={handleCreateMarket} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">Code ISO Pays (2 lettres)</label>
+              <label className="text-xs font-bold text-stone-700 uppercase">
+                Code ISO Pays (2 lettres)
+              </label>
               <input
                 type="text"
                 required
                 maxLength={2}
-                placeholder={t('admin.adminMarketsPage.exItPtDeUk')}
+                placeholder={t("admin.adminMarketsPage.exItPtDeUk")}
                 value={newMarketCode}
                 onChange={(e) => setNewMarketCode(e.target.value.toUpperCase())}
                 className="w-full h-control-md px-3 text-xs uppercase font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">Drapeau (Emoji)</label>
+              <label className="text-xs font-bold text-stone-700 uppercase">
+                Drapeau (Emoji)
+              </label>
               <input
                 type="text"
                 required
@@ -1017,7 +1549,9 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">{t('admin.adminMarketsPage.nomDuMarche')}</label>
+            <label className="text-xs font-bold text-stone-700 uppercase">
+              {t("admin.adminMarketsPage.nomDuMarche")}
+            </label>
             <input
               type="text"
               required
@@ -1030,48 +1564,69 @@ export const AdminMarketsPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">{t('admin.adminMarketsPage.localeParDefaut')}</label>
+              <label className="text-xs font-bold text-stone-700 uppercase">
+                {t("admin.adminMarketsPage.localeParDefaut")}
+              </label>
               <input
                 type="text"
                 required
-                placeholder={t('admin.adminMarketsPage.exItItPtPt')}
+                placeholder={t("admin.adminMarketsPage.exItItPtPt")}
                 value={newMarketLocale}
                 onChange={(e) => setNewMarketLocale(e.target.value)}
                 className="w-full h-control-md px-3 text-xs font-mono bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">Devise</label>
+              <label className="text-xs font-bold text-stone-700 uppercase">
+                Devise
+              </label>
               <input
                 type="text"
                 required
                 placeholder="ex: EUR, CHF, GBP"
                 value={newMarketCurrency}
-                onChange={(e) => setNewMarketCurrency(e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  setNewMarketCurrency(e.target.value.toUpperCase())
+                }
                 className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">Statut Initial</label>
+            <label className="text-xs font-bold text-stone-700 uppercase">
+              Statut Initial
+            </label>
             <select
               value={newMarketStatus}
-              onChange={(e) => setNewMarketStatus(e.target.value as MarketStatus)}
+              onChange={(e) =>
+                setNewMarketStatus(e.target.value as MarketStatus)
+              }
               className="w-full h-control-md px-3 text-xs bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none font-semibold"
             >
               <option value="draft">Brouillon (Non visible)</option>
-              <option value="coming_soon">{t('admin.adminMarketsPage.bientotDisponibleVitrine')}</option>
-              <option value="active">{t('admin.adminMarketsPage.actifOperationnel')}</option>
+              <option value="coming_soon">
+                {t("admin.adminMarketsPage.bientotDisponibleVitrine")}
+              </option>
+              <option value="active">
+                {t("admin.adminMarketsPage.actifOperationnel")}
+              </option>
               <option value="paused">En pause</option>
             </select>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
-            <Button variant="ghost" size="sm" type="button" onClick={() => setIsAddMarketModalOpen(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              onClick={() => setIsAddMarketModalOpen(false)}
+            >
               Annuler
             </Button>
-            <Button variant="primary" size="sm" type="submit">{t('admin.adminMarketsPage.creerAvecHeritageFrance')}</Button>
+            <Button variant="primary" size="sm" type="submit">
+              {t("admin.adminMarketsPage.creerAvecHeritageFrance")}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -1086,26 +1641,48 @@ export const AdminMarketsPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="space-y-1">
-            <label htmlFor="admin-edit-override-value" className="text-xs font-bold text-stone-700 uppercase">
+            <label
+              htmlFor="admin-edit-override-value"
+              className="text-xs font-bold text-stone-700 uppercase"
+            >
               Nouvelle Valeur pour {selectedMarket.name}
             </label>
 
-            {editingValueType === 'boolean' ? (
+            {editingValueType === "boolean" ? (
               <select
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
                 className="w-full h-control-md px-3 text-xs font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               >
-                <option value="true">{t('admin.adminMarketsPage.activeTrue')}</option>
-                <option value="false">{t('admin.adminMarketsPage.desactiveFalse')}</option>
+                <option value="true">
+                  {t("admin.adminMarketsPage.activeTrue")}
+                </option>
+                <option value="false">
+                  {t("admin.adminMarketsPage.desactiveFalse")}
+                </option>
               </select>
             ) : (
               <input
                 id="admin-edit-override-value"
-                type={editingValueType === 'number' ? 'number' : 'text'}
-                min={editingValueType === 'number' && activeEditingPath === 'features.recentSearchesLimit' ? RECENT_SEARCHES_LIMIT_MIN : undefined}
-                max={editingValueType === 'number' && activeEditingPath === 'features.recentSearchesLimit' ? RECENT_SEARCHES_LIMIT_MAX : undefined}
-                step={editingValueType === 'number' && activeEditingPath === 'features.recentSearchesLimit' ? 1 : undefined}
+                type={editingValueType === "number" ? "number" : "text"}
+                min={
+                  editingValueType === "number" &&
+                  activeEditingPath === "features.recentSearchesLimit"
+                    ? RECENT_SEARCHES_LIMIT_MIN
+                    : undefined
+                }
+                max={
+                  editingValueType === "number" &&
+                  activeEditingPath === "features.recentSearchesLimit"
+                    ? RECENT_SEARCHES_LIMIT_MAX
+                    : undefined
+                }
+                step={
+                  editingValueType === "number" &&
+                  activeEditingPath === "features.recentSearchesLimit"
+                    ? 1
+                    : undefined
+                }
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
                 className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
@@ -1114,15 +1691,23 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-micro text-stone-600 space-y-1">
-            <div className="font-bold text-stone-800">{t('admin.adminMarketsPage.regleDePersistance')}</div>
-            <p>{t('admin.adminMarketsPage.cetteValeurSeraEnregistreeEn')}</p>
+            <div className="font-bold text-stone-800">
+              {t("admin.adminMarketsPage.regleDePersistance")}
+            </div>
+            <p>{t("admin.adminMarketsPage.cetteValeurSeraEnregistreeEn")}</p>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
-            <Button variant="ghost" size="sm" onClick={() => setIsEditOverrideModalOpen(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditOverrideModalOpen(false)}
+            >
               Annuler
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSaveOverride}>{t('admin.adminMarketsPage.enregistrerLaSurcharge')}</Button>
+            <Button variant="primary" size="sm" onClick={handleSaveOverride}>
+              {t("admin.adminMarketsPage.enregistrerLaSurcharge")}
+            </Button>
           </div>
         </div>
       </Modal>

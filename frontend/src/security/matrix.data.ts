@@ -1,6 +1,6 @@
-import { PlatformRole } from '../types';
-import { ALL_PERMISSIONS, PermissionDefinition } from './permissions';
-import { ROLE_DEFINITIONS } from './roles.config';
+import { PlatformRole } from "../types";
+import { ALL_PERMISSIONS, PermissionDefinition } from "./permissions";
+import { ROLE_DEFINITIONS } from "./roles.config";
 
 export interface MatrixRow {
   permission: PermissionDefinition;
@@ -8,14 +8,14 @@ export interface MatrixRow {
 }
 
 export interface MatrixCategoryGroup {
-  category: PermissionDefinition['category'];
+  category: PermissionDefinition["category"];
   rows: MatrixRow[];
 }
 
 export function getRolePermissionMatrix(): MatrixCategoryGroup[] {
   const roles = Object.keys(ROLE_DEFINITIONS) as PlatformRole[];
 
-  const categoryMap = new Map<PermissionDefinition['category'], MatrixRow[]>();
+  const categoryMap = new Map<PermissionDefinition["category"], MatrixRow[]>();
 
   for (const perm of ALL_PERMISSIONS) {
     const roleGrants: Record<PlatformRole, boolean> = {} as any;
@@ -55,7 +55,9 @@ export function getRoleStats() {
       badgeColor: def.badgeColor,
       hierarchyLevel: def.hierarchyLevel,
       permissionsCount: def.defaultPermissions.length,
-      percentageOfAll: Math.round((def.defaultPermissions.length / ALL_PERMISSIONS.length) * 100),
+      percentageOfAll: Math.round(
+        (def.defaultPermissions.length / ALL_PERMISSIONS.length) * 100,
+      ),
       isInternalStaff: def.isInternalStaff,
     };
   });

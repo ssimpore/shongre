@@ -1,11 +1,10 @@
 import {
   Market,
   MarketConfiguration,
-  
   SettingResolution,
-  MarketInheritanceMetrics
-} from './market.types';
-import { FR_CANONICAL_CONFIG } from './market.defaults';
+  MarketInheritanceMetrics,
+} from "./market.types";
+import { FR_CANONICAL_CONFIG } from "./market.defaults";
 
 /**
  * Checks if a value is a plain JavaScript object (and not null, array, date, regex, etc.)
@@ -13,7 +12,7 @@ import { FR_CANONICAL_CONFIG } from './market.defaults';
 function isPlainObject(item: any): item is Record<string, any> {
   return (
     item !== null &&
-    typeof item === 'object' &&
+    typeof item === "object" &&
     !Array.isArray(item) &&
     !(item instanceof Date) &&
     !(item instanceof RegExp)
@@ -24,7 +23,7 @@ function isPlainObject(item: any): item is Record<string, any> {
  * Deep clones any serializable data structure
  */
 function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return obj;
   }
   if (Array.isArray(obj)) {
@@ -44,9 +43,9 @@ function deepClone<T>(obj: T): T {
  */
 export function deepMergeOverrides<T extends Record<string, any>>(
   base: T,
-  overrides?: Record<string, any> | null
+  overrides?: Record<string, any> | null,
 ): T {
-  if (!overrides || typeof overrides !== 'object') {
+  if (!overrides || typeof overrides !== "object") {
     return deepClone(base);
   }
 
@@ -78,11 +77,15 @@ export function deepMergeOverrides<T extends Record<string, any>>(
  * Retrieves a nested value by dot-path (e.g. 'payments.buyerProtectionFixedFee')
  */
 export function getNestedValue(obj: any, path: string): any {
-  if (!obj || typeof obj !== 'object' || !path) return undefined;
-  const parts = path.split('.');
+  if (!obj || typeof obj !== "object" || !path) return undefined;
+  const parts = path.split(".");
   let current = obj;
   for (const part of parts) {
-    if (current === null || current === undefined || typeof current !== 'object') {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== "object"
+    ) {
       return undefined;
     }
     current = current[part];
@@ -93,12 +96,16 @@ export function getNestedValue(obj: any, path: string): any {
 /**
  * Sets a nested value on an object by dot-path
  */
-export function setNestedValue(obj: Record<string, any>, path: string, value: any): void {
-  const parts = path.split('.');
+export function setNestedValue(
+  obj: Record<string, any>,
+  path: string,
+  value: any,
+): void {
+  const parts = path.split(".");
   let current = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (!current[part] || typeof current[part] !== 'object') {
+    if (!current[part] || typeof current[part] !== "object") {
       current[part] = {};
     }
     current = current[part];
@@ -109,13 +116,16 @@ export function setNestedValue(obj: Record<string, any>, path: string, value: an
 /**
  * Deletes a nested key by dot-path
  */
-export function deleteNestedValue(obj: Record<string, any>, path: string): boolean {
-  if (!obj || typeof obj !== 'object' || !path) return false;
-  const parts = path.split('.');
+export function deleteNestedValue(
+  obj: Record<string, any>,
+  path: string,
+): boolean {
+  if (!obj || typeof obj !== "object" || !path) return false;
+  const parts = path.split(".");
   let current = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (!current[part] || typeof current[part] !== 'object') {
+    if (!current[part] || typeof current[part] !== "object") {
       return false;
     }
     current = current[part];
@@ -138,14 +148,18 @@ export class MarketResolver {
    */
   public resolveEffectiveConfig(
     market: Market,
-    franceMarket?: Market | null
+    franceMarket?: Market | null,
   ): MarketConfiguration {
     // 1. Resolve France baseline configuration
-    const frOverrides = franceMarket?.overrides || (market.isDefault ? market.overrides : {});
-    const effectiveFrance = deepMergeOverrides(FR_CANONICAL_CONFIG, frOverrides);
+    const frOverrides =
+      franceMarket?.overrides || (market.isDefault ? market.overrides : {});
+    const effectiveFrance = deepMergeOverrides(
+      FR_CANONICAL_CONFIG,
+      frOverrides,
+    );
 
     // 2. If the requested market is France itself, return effective France
-    if (market.code === 'FR' || market.isDefault) {
+    if (market.code === "FR" || market.isDefault) {
       return effectiveFrance;
     }
 
@@ -159,20 +173,24 @@ export class MarketResolver {
   public resolveSetting<T = any>(
     market: Market,
     franceMarket: Market | null,
-    path: string
+    path: string,
   ): SettingResolution<T> {
-    const frOverrides = franceMarket?.overrides || (market.isDefault ? market.overrides : {});
-    const effectiveFrance = deepMergeOverrides(FR_CANONICAL_CONFIG, frOverrides);
+    const frOverrides =
+      franceMarket?.overrides || (market.isDefault ? market.overrides : {});
+    const effectiveFrance = deepMergeOverrides(
+      FR_CANONICAL_CONFIG,
+      frOverrides,
+    );
     const frenchValue = getNestedValue(effectiveFrance, path);
 
     // If market is France itself
-    if (market.code === 'FR' || market.isDefault) {
+    if (market.code === "FR" || market.isDefault) {
       const frSpecificOverride = getNestedValue(market.overrides, path);
       const isOverridden = frSpecificOverride !== undefined;
       return {
         value: (isOverridden ? frSpecificOverride : frenchValue) as T,
-        source: 'FR',
-        sourceMarketCode: 'FR',
+        source: "FR",
+        sourceMarketCode: "FR",
         isInherited: false,
         overrideDefined: isOverridden,
         frenchReferenceValue: frenchValue,
@@ -186,7 +204,7 @@ export class MarketResolver {
     if (hasLocalOverride) {
       return {
         value: localOverride as T,
-        source: 'LOCAL',
+        source: "LOCAL",
         sourceMarketCode: market.code,
         isInherited: false,
         overrideDefined: true,
@@ -197,8 +215,8 @@ export class MarketResolver {
     // Dynamic inheritance from France
     return {
       value: frenchValue as T,
-      source: 'FR',
-      sourceMarketCode: 'FR',
+      source: "FR",
+      sourceMarketCode: "FR",
       isInherited: true,
       overrideDefined: false,
       frenchReferenceValue: frenchValue,
@@ -208,7 +226,7 @@ export class MarketResolver {
   /**
    * Counts total leaf fields in an object
    */
-  private countLeafFields(obj: Record<string, any>, prefix = ''): string[] {
+  private countLeafFields(obj: Record<string, any>, prefix = ""): string[] {
     const paths: string[] = [];
     for (const key of Object.keys(obj)) {
       const currentPath = prefix ? `${prefix}.${key}` : key;
@@ -227,12 +245,12 @@ export class MarketResolver {
    */
   public getInheritanceMetrics(
     market: Market,
-    franceMarket?: Market | null
+    franceMarket?: Market | null,
   ): MarketInheritanceMetrics {
     const allPaths = this.countLeafFields(FR_CANONICAL_CONFIG);
     const totalFieldsCount = allPaths.length;
 
-    if (market.isDefault || market.code === 'FR') {
+    if (market.isDefault || market.code === "FR") {
       return {
         marketCode: market.code,
         totalFieldsCount,
@@ -251,7 +269,9 @@ export class MarketResolver {
     }
 
     const inheritedCount = totalFieldsCount - overriddenCount;
-    const percentInherited = Math.round((inheritedCount / totalFieldsCount) * 100);
+    const percentInherited = Math.round(
+      (inheritedCount / totalFieldsCount) * 100,
+    );
     const percentOverridden = 100 - percentInherited;
 
     return {
@@ -268,10 +288,13 @@ export class MarketResolver {
    * Identifies which other markets currently inherit a specific French setting
    * (useful for impact analysis when an administrator modifies France).
    */
-  public getImpactedMarkets(settingPath: string, allMarkets: Market[]): string[] {
+  public getImpactedMarkets(
+    settingPath: string,
+    allMarkets: Market[],
+  ): string[] {
     const impactedCodes: string[] = [];
     for (const m of allMarkets) {
-      if (m.code !== 'FR' && !m.isDefault) {
+      if (m.code !== "FR" && !m.isDefault) {
         const localVal = getNestedValue(m.overrides, settingPath);
         if (localVal === undefined) {
           impactedCodes.push(m.code);

@@ -9,10 +9,7 @@ export function getSupabaseAnonClient(): SupabaseClient<Database> {
   const anonKey = process.env.SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
-    return createClient<Database>(
-      url || 'http://127.0.0.1:54321',
-      anonKey || 'dummy-anon-key'
-    );
+    throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY are required when a Supabase client is used.');
   }
 
   if (!anonClientInstance) {
@@ -26,16 +23,7 @@ export function getSupabaseAdminClient(): SupabaseClient<Database> {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceRoleKey) {
-    return createClient<Database>(
-      url || 'http://127.0.0.1:54321',
-      serviceRoleKey || 'dummy-service-role-key',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required when the admin client is used.');
   }
 
   if (!adminClientInstance) {

@@ -1,6 +1,9 @@
-import { ReviewsServiceContract, SubmitReviewInput } from '../../contracts/reviews.contract';
-import { httpClient } from './http-client';
-import { ReviewItem } from '../../../types';
+import {
+  ReviewsServiceContract,
+  SubmitReviewInput,
+} from "../../contracts/reviews.contract";
+import { httpClient } from "./http-client";
+import { ReviewItem } from "../../../types";
 
 export class HttpReviewsService implements ReviewsServiceContract {
   async getUserReviews(userId: string): Promise<ReviewItem[]> {
@@ -8,7 +11,7 @@ export class HttpReviewsService implements ReviewsServiceContract {
   }
 
   async submitReview(input: SubmitReviewInput): Promise<ReviewItem> {
-    return httpClient.post<ReviewItem>('/reviews/submit', input);
+    return httpClient.post<ReviewItem>("/reviews/submit", input);
   }
 }
 

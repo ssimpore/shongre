@@ -1,7 +1,7 @@
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { cn } from '../utils/variants';
+import React from "react";
+import { ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { cn } from "../utils/variants";
 
 export interface BreadcrumbItem {
   label: string;
@@ -13,13 +13,22 @@ export interface BreadcrumbsProps {
   className?: string;
 }
 
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className }) => (
-  <nav aria-label="Fil d'Ariane" className={cn('flex items-center text-xs text-stone-500', className)}>
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
+  items,
+  className,
+}) => (
+  <nav
+    aria-label="Fil d'Ariane"
+    className={cn("flex items-center text-xs text-stone-500", className)}
+  >
     <ol className="flex flex-wrap items-center gap-1.5">
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
-          <li key={`${item.label}-${index}`} className="flex items-center gap-1.5">
+          <li
+            key={`${item.label}-${index}`}
+            className="flex items-center gap-1.5"
+          >
             {item.href && !isLast ? (
               <Link
                 to={item.href}
@@ -29,15 +38,22 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className }) =>
               </Link>
             ) : (
               <span
-                className={isLast ? 'max-w-60 truncate font-bold text-stone-900' : 'font-medium'}
+                className={
+                  isLast
+                    ? "max-w-60 truncate font-bold text-stone-900"
+                    : "font-medium"
+                }
                 title={isLast ? item.label : undefined}
-                aria-current={isLast ? 'page' : undefined}
+                aria-current={isLast ? "page" : undefined}
               >
                 {item.label}
               </span>
             )}
             {!isLast && (
-              <ChevronRight aria-hidden="true" className="h-icon-sm w-icon-sm shrink-0 text-stone-400" />
+              <ChevronRight
+                aria-hidden="true"
+                className="h-icon-sm w-icon-sm shrink-0 text-stone-400"
+              />
             )}
           </li>
         );

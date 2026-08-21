@@ -1,54 +1,72 @@
-import { Listing, Conversation, Transaction, NotificationItem, SavedSearch, RecentSearch, UserProfile, UserRole } from '../types';
-import { INITIAL_LISTINGS, INITIAL_CONVERSATIONS, INITIAL_MESSAGES, INITIAL_TRANSACTIONS, INITIAL_NOTIFICATIONS, INITIAL_SAVED_SEARCHES, DEMO_USERS } from '../mocks/initialDemoData';
-import { Market } from '../domains/market/market.types';
-import { INITIAL_MARKETS } from '../domains/market/market.defaults';
+import {
+  Listing,
+  Conversation,
+  Transaction,
+  NotificationItem,
+  SavedSearch,
+  RecentSearch,
+  UserProfile,
+  UserRole,
+} from "../types";
+import {
+  INITIAL_LISTINGS,
+  INITIAL_CONVERSATIONS,
+  INITIAL_MESSAGES,
+  INITIAL_TRANSACTIONS,
+  INITIAL_NOTIFICATIONS,
+  INITIAL_SAVED_SEARCHES,
+  DEMO_USERS,
+} from "../mocks/initialDemoData";
+import { Market } from "../domains/market/market.types";
+import { INITIAL_MARKETS } from "../domains/market/market.defaults";
 
 /** The user key a signed-out visitor is stored under. */
-const GUEST_USER_KEY = 'guest';
+const GUEST_USER_KEY = "guest";
 
 /** Emitted after structured recent-search state changes in this browser tab. */
-export const RECENT_SEARCH_ITEMS_CHANGED_EVENT = 'shongre:recent-search-items-changed';
+export const RECENT_SEARCH_ITEMS_CHANGED_EVENT =
+  "shongre:recent-search-items-changed";
 /** Emitted after demo market configuration changes in this browser tab. */
-export const MARKETS_CHANGED_EVENT = 'shongre:markets-changed';
-export const MARKETS_STORAGE_KEY = 'shongre_markets_v2';
+export const MARKETS_CHANGED_EVENT = "shongre:markets-changed";
+export const MARKETS_STORAGE_KEY = "shongre_markets_v2";
 
 const KEYS = {
-  USERS: 'shongre_users_v1',
-  LISTINGS: 'shongre_listings_v1',
-  CURRENT_USER_ROLE: 'shongre_current_role_v1',
-  CONVERSATIONS: 'shongre_conversations_v1',
-  MESSAGES: 'shongre_messages_v1',
-  TRANSACTIONS: 'shongre_transactions_v1',
-  NOTIFICATIONS: 'shongre_notifications_v1',
+  USERS: "shongre_users_v1",
+  LISTINGS: "shongre_listings_v1",
+  CURRENT_USER_ROLE: "shongre_current_role_v1",
+  CONVERSATIONS: "shongre_conversations_v1",
+  MESSAGES: "shongre_messages_v1",
+  TRANSACTIONS: "shongre_transactions_v1",
+  NOTIFICATIONS: "shongre_notifications_v1",
   // v2: per-user map. v1 was a single shared array — see getFavorites below.
-  FAVORITES: 'shongre_favorites_v2',
-  FOLLOWED_SELLERS: 'shongre_followed_sellers_v1',
-  BLOCKED_USERS: 'shongre_blocked_users_v1',
-  USER_REPORTS: 'shongre_user_reports_v1',
-  SAVED_SEARCHES: 'shongre_saved_searches_v1',
-  RECENT_SEARCHES: 'shongre_recent_searches_v1',
-  RECENT_SEARCH_ITEMS: 'shongre_recent_search_items_v1',
-  RECENTLY_VIEWED: 'shongre_recently_viewed_v1',
-  LOCATION_PREF: 'shongre_location_preference_v1',
-  PUBLISH_DRAFT: 'shongre_publish_draft_v1',
+  FAVORITES: "shongre_favorites_v2",
+  FOLLOWED_SELLERS: "shongre_followed_sellers_v1",
+  BLOCKED_USERS: "shongre_blocked_users_v1",
+  USER_REPORTS: "shongre_user_reports_v1",
+  SAVED_SEARCHES: "shongre_saved_searches_v1",
+  RECENT_SEARCHES: "shongre_recent_searches_v1",
+  RECENT_SEARCH_ITEMS: "shongre_recent_search_items_v1",
+  RECENTLY_VIEWED: "shongre_recently_viewed_v1",
+  LOCATION_PREF: "shongre_location_preference_v1",
+  PUBLISH_DRAFT: "shongre_publish_draft_v1",
   MARKETS: MARKETS_STORAGE_KEY,
-  ACTIVE_MARKET: 'shongre_active_market_v1',
-  USER_LOCALE: 'shongre_user_locale_v1',
-  USER_CURRENCY: 'shongre_user_currency_v1',
+  ACTIVE_MARKET: "shongre_active_market_v1",
+  USER_LOCALE: "shongre_user_locale_v1",
+  USER_CURRENCY: "shongre_user_currency_v1",
 };
 
 class StorageService {
   private memoryStore = new Map<string, string>();
 
   private notifyRecentSearchItemsChanged(): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(new Event(RECENT_SEARCH_ITEMS_CHANGED_EVENT));
     }
   }
 
   get<T>(key: string, fallback: T): T {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== "undefined" && window.localStorage) {
         const item = window.localStorage.getItem(key);
         return item ? JSON.parse(item) : fallback;
       }
@@ -62,23 +80,23 @@ class StorageService {
   set<T>(key: string, value: T): void {
     try {
       const serialized = JSON.stringify(value);
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== "undefined" && window.localStorage) {
         window.localStorage.setItem(key, serialized);
       }
       this.memoryStore.set(key, serialized);
     } catch (e) {
-      console.warn('Storage write failed', e);
+      console.warn("Storage write failed", e);
     }
   }
 
   remove(key: string): void {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== "undefined" && window.localStorage) {
         window.localStorage.removeItem(key);
       }
       this.memoryStore.delete(key);
     } catch (e) {
-      console.warn('Storage remove failed', e);
+      console.warn("Storage remove failed", e);
     }
   }
 
@@ -87,29 +105,45 @@ class StorageService {
     const list = this.get<Listing[]>(KEYS.LISTINGS, INITIAL_LISTINGS);
     return list.map((l) => {
       let catSlug = l.categorySlug;
-      if (catSlug === 'maison-deco' || catSlug === 'home_garden') catSlug = 'maison-jardin';
-      if (catSlug === 'multimedia') catSlug = 'multimedia-electronique';
-      if (catSlug === 'mode' || catSlug === 'mode-beaute' || catSlug === 'fashion') catSlug = 'mode-accessoires';
-      if (catSlug === 'loisirs-sport' || catSlug === 'leisure_culture') catSlug = 'loisirs-culture';
-      if (catSlug === 'bebe-puericulture' || catSlug === 'baby_kids') catSlug = 'bebe-puericulture-enfants';
-      if (catSlug === 'vehicles') catSlug = 'vehicules';
-      if (catSlug === 'real_estate') catSlug = 'immobilier';
+      if (catSlug === "maison-deco" || catSlug === "home_garden")
+        catSlug = "maison-jardin";
+      if (catSlug === "multimedia") catSlug = "multimedia-electronique";
+      if (
+        catSlug === "mode" ||
+        catSlug === "mode-beaute" ||
+        catSlug === "fashion"
+      )
+        catSlug = "mode-accessoires";
+      if (catSlug === "loisirs-sport" || catSlug === "leisure_culture")
+        catSlug = "loisirs-culture";
+      if (catSlug === "bebe-puericulture" || catSlug === "baby_kids")
+        catSlug = "bebe-puericulture-enfants";
+      if (catSlug === "vehicles") catSlug = "vehicules";
+      if (catSlug === "real_estate") catSlug = "immobilier";
 
-      const primaryMarket = ((l as any).marketCode || 'FR').toUpperCase();
-      const rawCodes = (l as any).marketCodes && Array.isArray((l as any).marketCodes) && (l as any).marketCodes.length > 0
-        ? (l as any).marketCodes
-        : [primaryMarket];
-      const marketCodes: string[] = Array.from(new Set(rawCodes.map((c: string) => c.toUpperCase())));
+      const primaryMarket = ((l as any).marketCode || "FR").toUpperCase();
+      const rawCodes =
+        (l as any).marketCodes &&
+        Array.isArray((l as any).marketCodes) &&
+        (l as any).marketCodes.length > 0
+          ? (l as any).marketCodes
+          : [primaryMarket];
+      const marketCodes: string[] = Array.from(
+        new Set(rawCodes.map((c: string) => c.toUpperCase())),
+      );
 
       const marketPublications =
-        (l as any).marketPublications && Array.isArray((l as any).marketPublications) && (l as any).marketPublications.length > 0
+        (l as any).marketPublications &&
+        Array.isArray((l as any).marketPublications) &&
+        (l as any).marketPublications.length > 0
           ? (l as any).marketPublications
           : marketCodes.map((mCode) => ({
               marketCode: mCode,
-              status: (l.status === 'active' ? 'active' : 'draft') as 'active' | 'draft',
+              status: (l.status === "active" ? "active" : "draft") as
+                "active" | "draft",
               isPrimary: mCode === primaryMarket,
               publishedAt: l.createdAt,
-              currency: l.currency || (mCode === 'CH' ? 'CHF' : 'EUR'),
+              currency: l.currency || (mCode === "CH" ? "CHF" : "EUR"),
               complianceChecked: true,
             }));
 
@@ -138,7 +172,7 @@ class StorageService {
     this.saveListings(listings);
   }
 
-  updateListingStatus(id: string, status: Listing['status']): void {
+  updateListingStatus(id: string, status: Listing["status"]): void {
     const listings = this.getListings();
     const target = listings.find((l) => l.id === id);
     if (target) {
@@ -162,7 +196,7 @@ class StorageService {
   private getFavoritesByUser(): Record<string, string[]> {
     return this.get<Record<string, string[]>>(KEYS.FAVORITES, {
       // The seeded demo buyer keeps the two listings the fixtures assume.
-      buyer_thomas: ['list-101', 'list-105'],
+      buyer_thomas: ["list-101", "list-105"],
     });
   }
 
@@ -170,7 +204,10 @@ class StorageService {
     return this.getFavoritesByUser()[userKey] ?? [];
   }
 
-  toggleFavorite(listingId: string, userKey: string = this.getCurrentUserKey()): boolean {
+  toggleFavorite(
+    listingId: string,
+    userKey: string = this.getCurrentUserKey(),
+  ): boolean {
     const byUser = this.getFavoritesByUser();
     const current = byUser[userKey] ?? [];
     const exists = current.includes(listingId);
@@ -199,52 +236,58 @@ class StorageService {
     const guestSaved = byUser[GUEST_USER_KEY] ?? [];
     if (guestSaved.length === 0) return;
 
-    const merged = Array.from(new Set([...(byUser[userKey] ?? []), ...guestSaved]));
-    this.set(KEYS.FAVORITES, { ...byUser, [userKey]: merged, [GUEST_USER_KEY]: [] });
+    const merged = Array.from(
+      new Set([...(byUser[userKey] ?? []), ...guestSaved]),
+    );
+    this.set(KEYS.FAVORITES, {
+      ...byUser,
+      [userKey]: merged,
+      [GUEST_USER_KEY]: [],
+    });
   }
 
   // Role & Current User Selection
   getCurrentUserKey(): string {
-    return this.get<string>('shongre_current_user_key_v1', 'buyer_thomas');
+    return this.get<string>("shongre_current_user_key_v1", "buyer_thomas");
   }
 
   setCurrentUserKey(userKey: string): void {
-    this.set('shongre_current_user_key_v1', userKey);
+    this.set("shongre_current_user_key_v1", userKey);
   }
 
   getCurrentRole(): UserRole {
-    return this.get<UserRole>(KEYS.CURRENT_USER_ROLE, 'buyer');
+    return this.get<UserRole>(KEYS.CURRENT_USER_ROLE, "buyer");
   }
 
   setCurrentRole(role: UserRole): void {
     this.set(KEYS.CURRENT_USER_ROLE, role);
     // Find matching demo user key if possible
-    if (role === 'guest') {
+    if (role === "guest") {
       this.setCurrentUserKey(GUEST_USER_KEY);
-    } else if (role === 'buyer' || role === 'individual_buyer') {
-      this.setCurrentUserKey('buyer_thomas');
-    } else if (role === 'seller' || role === 'individual_seller') {
-      this.setCurrentUserKey('seller_camille');
-    } else if (role === 'pro_seller') {
-      this.setCurrentUserKey('pro_atelier');
-    } else if (role === 'moderator') {
-      this.setCurrentUserKey('moderator_claire');
-    } else if (role === 'support') {
-      this.setCurrentUserKey('support_hugo');
-    } else if (role === 'operations') {
-      this.setCurrentUserKey('ops_elena');
-    } else if (role === 'finance') {
-      this.setCurrentUserKey('finance_marc');
-    } else if (role === 'commercial') {
-      this.setCurrentUserKey('commercial_lea');
-    } else if (role === 'content_manager') {
-      this.setCurrentUserKey('content_julien');
-    } else if (role === 'market_manager') {
-      this.setCurrentUserKey('market_mgr_fr');
-    } else if (role === 'admin') {
-      this.setCurrentUserKey('admin_antoine');
-    } else if (role === 'super_admin') {
-      this.setCurrentUserKey('super_admin_alex');
+    } else if (role === "buyer" || role === "individual_buyer") {
+      this.setCurrentUserKey("buyer_thomas");
+    } else if (role === "seller" || role === "individual_seller") {
+      this.setCurrentUserKey("seller_camille");
+    } else if (role === "pro_seller") {
+      this.setCurrentUserKey("pro_atelier");
+    } else if (role === "moderator") {
+      this.setCurrentUserKey("moderator_claire");
+    } else if (role === "support") {
+      this.setCurrentUserKey("support_hugo");
+    } else if (role === "operations") {
+      this.setCurrentUserKey("ops_elena");
+    } else if (role === "finance") {
+      this.setCurrentUserKey("finance_marc");
+    } else if (role === "commercial") {
+      this.setCurrentUserKey("commercial_lea");
+    } else if (role === "content_manager") {
+      this.setCurrentUserKey("content_julien");
+    } else if (role === "market_manager") {
+      this.setCurrentUserKey("market_mgr_fr");
+    } else if (role === "admin") {
+      this.setCurrentUserKey("admin_antoine");
+    } else if (role === "super_admin") {
+      this.setCurrentUserKey("super_admin_alex");
     }
   }
 
@@ -268,18 +311,26 @@ class StorageService {
     }
 
     // 4. Role fallback
-    if (key === 'individual_buyer' || key === 'buyer') return users.buyer_thomas || DEMO_USERS.buyer_thomas;
-    if (key === 'individual_seller' || key === 'seller') return users.seller_camille || DEMO_USERS.seller_camille;
-    if (key === 'pro_seller') return users.pro_atelier || DEMO_USERS.pro_atelier;
-    if (key === 'moderator') return users.moderator_claire || DEMO_USERS.moderator_claire;
-    if (key === 'support') return users.support_hugo || DEMO_USERS.support_hugo;
-    if (key === 'operations') return users.ops_elena || DEMO_USERS.ops_elena;
-    if (key === 'finance') return users.finance_marc || DEMO_USERS.finance_marc;
-    if (key === 'commercial') return users.commercial_lea || DEMO_USERS.commercial_lea;
-    if (key === 'content_manager') return users.content_julien || DEMO_USERS.content_julien;
-    if (key === 'market_manager') return users.market_mgr_fr || DEMO_USERS.market_mgr_fr;
-    if (key === 'admin') return users.admin_antoine || DEMO_USERS.admin_antoine;
-    if (key === 'super_admin') return users.super_admin_alex || DEMO_USERS.super_admin_alex;
+    if (key === "individual_buyer" || key === "buyer")
+      return users.buyer_thomas || DEMO_USERS.buyer_thomas;
+    if (key === "individual_seller" || key === "seller")
+      return users.seller_camille || DEMO_USERS.seller_camille;
+    if (key === "pro_seller")
+      return users.pro_atelier || DEMO_USERS.pro_atelier;
+    if (key === "moderator")
+      return users.moderator_claire || DEMO_USERS.moderator_claire;
+    if (key === "support") return users.support_hugo || DEMO_USERS.support_hugo;
+    if (key === "operations") return users.ops_elena || DEMO_USERS.ops_elena;
+    if (key === "finance") return users.finance_marc || DEMO_USERS.finance_marc;
+    if (key === "commercial")
+      return users.commercial_lea || DEMO_USERS.commercial_lea;
+    if (key === "content_manager")
+      return users.content_julien || DEMO_USERS.content_julien;
+    if (key === "market_manager")
+      return users.market_mgr_fr || DEMO_USERS.market_mgr_fr;
+    if (key === "admin") return users.admin_antoine || DEMO_USERS.admin_antoine;
+    if (key === "super_admin")
+      return users.super_admin_alex || DEMO_USERS.super_admin_alex;
 
     return users.buyer_thomas || DEMO_USERS.buyer_thomas;
   }
@@ -308,13 +359,22 @@ class StorageService {
       .reduce((acc, c) => acc + (c.unreadCount || 0), 0);
   }
 
-  getMessages(conversationId: string): import('../types').Message[] {
-    const all = this.get<Record<string, import('../types').Message[]>>(KEYS.MESSAGES, INITIAL_MESSAGES);
+  getMessages(conversationId: string): import("../types").Message[] {
+    const all = this.get<Record<string, import("../types").Message[]>>(
+      KEYS.MESSAGES,
+      INITIAL_MESSAGES,
+    );
     return all[conversationId] || [];
   }
 
-  saveMessage(conversationId: string, message: import('../types').Message): void {
-    const all = this.get<Record<string, import('../types').Message[]>>(KEYS.MESSAGES, INITIAL_MESSAGES);
+  saveMessage(
+    conversationId: string,
+    message: import("../types").Message,
+  ): void {
+    const all = this.get<Record<string, import("../types").Message[]>>(
+      KEYS.MESSAGES,
+      INITIAL_MESSAGES,
+    );
     const list = all[conversationId] || [];
     list.push(message);
     all[conversationId] = list;
@@ -348,7 +408,10 @@ class StorageService {
 
   // Notifications
   getNotifications(): NotificationItem[] {
-    return this.get<NotificationItem[]>(KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
+    return this.get<NotificationItem[]>(
+      KEYS.NOTIFICATIONS,
+      INITIAL_NOTIFICATIONS,
+    );
   }
 
   saveNotifications(notifications: NotificationItem[]): void {
@@ -362,7 +425,9 @@ class StorageService {
   }
 
   markNotificationRead(id: string): void {
-    const list = this.getNotifications().map((n) => (n.id === id ? { ...n, isRead: true } : n));
+    const list = this.getNotifications().map((n) =>
+      n.id === id ? { ...n, isRead: true } : n,
+    );
     this.set(KEYS.NOTIFICATIONS, list);
   }
 
@@ -402,12 +467,19 @@ class StorageService {
 
   // Recent Searches
   getRecentSearches(): string[] {
-    return this.get<string[]>(KEYS.RECENT_SEARCHES, ['Vélo gravel', 'iPhone 15 Pro', 'Fauteuil vintage chêne', 'PS5']);
+    return this.get<string[]>(KEYS.RECENT_SEARCHES, [
+      "Vélo gravel",
+      "iPhone 15 Pro",
+      "Fauteuil vintage chêne",
+      "PS5",
+    ]);
   }
 
   addRecentSearch(query: string): void {
     if (!query.trim()) return;
-    const list = this.getRecentSearches().filter((q) => q.toLowerCase() !== query.toLowerCase());
+    const list = this.getRecentSearches().filter(
+      (q) => q.toLowerCase() !== query.toLowerCase(),
+    );
     list.unshift(query.trim());
     this.set(KEYS.RECENT_SEARCHES, list.slice(0, 8));
   }
@@ -416,36 +488,34 @@ class StorageService {
   getRecentSearchItems(): RecentSearch[] {
     return this.get<RecentSearch[]>(KEYS.RECENT_SEARCH_ITEMS, [
       {
-        id: 'recent-search-1',
-        title: 'Antiquités',
-        locationLabel: 'Toute la France',
-        categorySlug: 'antiquites',
-        to: '/recherche?category=antiquites',
+        id: "recent-search-1",
+        title: "Antiquités",
+        locationLabel: "Toute la France",
+        categorySlug: "antiquites",
+        to: "/recherche?category=antiquites",
         createdAt: new Date(Date.now() - 3600000).toISOString(),
       },
       {
-        id: 'recent-search-2',
-        title: 'Accessoires & bagagerie',
-        locationLabel: 'Toute la France',
-        categorySlug: 'accessoires-bagagerie',
-        to: '/recherche?category=accessoires-bagagerie',
+        id: "recent-search-2",
+        title: "Accessoires & bagagerie",
+        locationLabel: "Toute la France",
+        categorySlug: "accessoires-bagagerie",
+        to: "/recherche?category=accessoires-bagagerie",
         createdAt: new Date(Date.now() - 7200000).toISOString(),
       },
       {
-        id: 'recent-search-3',
-        title: 'Photo, audio & vidéo',
-        locationLabel: 'Bray-Dunes (59123)',
-        categorySlug: 'multimedia',
-        to: '/recherche?category=multimedia&location=Bray-Dunes',
+        id: "recent-search-3",
+        title: "Photo, audio & vidéo",
+        locationLabel: "Bray-Dunes (59123)",
+        categorySlug: "multimedia",
+        to: "/recherche?category=multimedia&location=Bray-Dunes",
         createdAt: new Date(Date.now() - 10800000).toISOString(),
       },
     ]);
   }
 
-  addRecentSearchItem(item: Omit<RecentSearch, 'id' | 'createdAt'>): void {
-    const list = this.getRecentSearchItems().filter(
-      (s) => s.to !== item.to,
-    );
+  addRecentSearchItem(item: Omit<RecentSearch, "id" | "createdAt">): void {
+    const list = this.getRecentSearchItems().filter((s) => s.to !== item.to);
     const newItem: RecentSearch = {
       ...item,
       id: `recent-search-${Date.now()}`,
@@ -469,7 +539,11 @@ class StorageService {
 
   // Recently Viewed
   getRecentlyViewed(): string[] {
-    return this.get<string[]>(KEYS.RECENTLY_VIEWED, ['list-101', 'list-103', 'list-102']);
+    return this.get<string[]>(KEYS.RECENTLY_VIEWED, [
+      "list-101",
+      "list-103",
+      "list-102",
+    ]);
   }
 
   addRecentlyViewed(listingId: string): void {
@@ -486,7 +560,9 @@ class StorageService {
   toggleFollowSeller(sellerId: string): boolean {
     const follows = this.getFollowedSellers();
     const exists = follows.includes(sellerId);
-    const updated = exists ? follows.filter((id) => id !== sellerId) : [...follows, sellerId];
+    const updated = exists
+      ? follows.filter((id) => id !== sellerId)
+      : [...follows, sellerId];
     this.set(KEYS.FOLLOWED_SELLERS, updated);
     return !exists;
   }
@@ -509,13 +585,18 @@ class StorageService {
 
   unblockUser(userId: string): void {
     const blocked = this.getBlockedUsers();
-    this.set(KEYS.BLOCKED_USERS, blocked.filter((id) => id !== userId));
+    this.set(
+      KEYS.BLOCKED_USERS,
+      blocked.filter((id) => id !== userId),
+    );
   }
 
   toggleBlockUser(userId: string): boolean {
     const blocked = this.getBlockedUsers();
     const exists = blocked.includes(userId);
-    const updated = exists ? blocked.filter((id) => id !== userId) : [...blocked, userId];
+    const updated = exists
+      ? blocked.filter((id) => id !== userId)
+      : [...blocked, userId];
     this.set(KEYS.BLOCKED_USERS, updated);
     return !exists;
   }
@@ -535,11 +616,11 @@ class StorageService {
 
   // Support Requests
   getSupportRequests<T>(defaultRequests: T): T {
-    return this.get<T>('shongre_support_requests', defaultRequests);
+    return this.get<T>("shongre_support_requests", defaultRequests);
   }
 
   saveSupportRequests<T>(requests: T): void {
-    this.set('shongre_support_requests', requests);
+    this.set("shongre_support_requests", requests);
   }
 
   // Reports
@@ -547,13 +628,18 @@ class StorageService {
     return this.get<any[]>(KEYS.USER_REPORTS, []);
   }
 
-  saveUserReport(report: { targetUserId: string; targetUserName?: string; reason: string; comment?: string }): void {
+  saveUserReport(report: {
+    targetUserId: string;
+    targetUserName?: string;
+    reason: string;
+    comment?: string;
+  }): void {
     const reports = this.getUserReports();
     reports.push({
       ...report,
       id: `report-${Date.now()}`,
       createdAt: new Date().toISOString(),
-      status: 'pending',
+      status: "pending",
     });
     this.set(KEYS.USER_REPORTS, reports);
   }
@@ -566,15 +652,25 @@ class StorageService {
   resolveUserReport(reportId: string, resolutionNote?: string): void {
     const reports = this.getUserReports().map((r) =>
       r.id === reportId
-        ? { ...r, status: 'resolved', resolvedAt: new Date().toISOString(), resolutionNote }
-        : r
+        ? {
+            ...r,
+            status: "resolved",
+            resolvedAt: new Date().toISOString(),
+            resolutionNote,
+          }
+        : r,
     );
     this.set(KEYS.USER_REPORTS, reports);
   }
 
-  updateUserReportStatus(reportId: string, status: 'pending' | 'resolved' | 'dismissed'): void {
+  updateUserReportStatus(
+    reportId: string,
+    status: "pending" | "resolved" | "dismissed",
+  ): void {
     const reports = this.getUserReports().map((r) =>
-      r.id === reportId ? { ...r, status, updatedAt: new Date().toISOString() } : r
+      r.id === reportId
+        ? { ...r, status, updatedAt: new Date().toISOString() }
+        : r,
     );
     this.set(KEYS.USER_REPORTS, reports);
   }
@@ -616,10 +712,10 @@ class StorageService {
   // Location preference
   getLocationPreference(): any {
     return this.get<any>(KEYS.LOCATION_PREF, {
-      city: 'Toute la France',
-      postalCode: '',
+      city: "Toute la France",
+      postalCode: "",
       radiusKm: 0,
-      label: 'Toute la France',
+      label: "Toute la France",
     });
   }
 
@@ -634,17 +730,17 @@ class StorageService {
 
   saveMarkets(markets: Market[]): void {
     this.set(KEYS.MARKETS, markets);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(new Event(MARKETS_CHANGED_EVENT));
     }
   }
 
   getActiveMarketCode(): string {
-    return this.get<string>(KEYS.ACTIVE_MARKET, 'FR');
+    return this.get<string>(KEYS.ACTIVE_MARKET, "FR");
   }
 
   saveActiveMarketCode(code: string): void {
-    this.set(KEYS.ACTIVE_MARKET, (code || 'FR').toUpperCase());
+    this.set(KEYS.ACTIVE_MARKET, (code || "FR").toUpperCase());
   }
 
   // User Local Preferences

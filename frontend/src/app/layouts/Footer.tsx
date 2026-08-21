@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ShieldCheck,
   IdCard,
@@ -17,15 +17,15 @@ import {
   Linkedin,
   Youtube,
   Twitter,
-} from 'lucide-react';
-import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
-import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
-import { MARKET_CONFIG } from '../../configuration/market.config';
-import { LanguageSelector } from '../../design-system/primitives/LanguageSelector';
-import { NewsletterSignup } from '../../features/newsletter/components/NewsletterSignup';
-import { useConsent } from '../providers/ConsentProvider';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { Container } from '../../design-system';
+} from "lucide-react";
+import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { MARKET_CONFIG } from "../../configuration/market.config";
+import { LanguageSelector } from "../../design-system/primitives/LanguageSelector";
+import { NewsletterSignup } from "../../features/newsletter/components/NewsletterSignup";
+import { useConsent } from "../providers/ConsentProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { Container } from "../../design-system";
 
 /* -----------------------------------------------------------------------------
    Shared surface recipes.
@@ -39,18 +39,38 @@ import { Container } from '../../design-system';
    one border weight and one fill; the previous version drifted across
    `bg-stone-900`, `bg-stone-800/50` and `bg-stone-800` for the same role.
    -------------------------------------------------------------------------- */
-const PANEL = 'rounded-card border border-stone-800/80 bg-stone-900/40';
-const INNER_PANEL = 'rounded-2xl border border-stone-800/70 bg-stone-950/40';
+const PANEL = "rounded-card border border-stone-800/80 bg-stone-900/40";
+const INNER_PANEL = "rounded-2xl border border-stone-800/70 bg-stone-950/40";
 const ICON_TILE =
-  'rounded-2xl bg-primary/10 border border-primary/25 text-primary-on-dark flex items-center justify-center shrink-0';
+  "rounded-2xl bg-primary/10 border border-primary/25 text-primary-on-dark flex items-center justify-center shrink-0";
 
 /* Copy lives as message keys because this strip renders inside the translated
    shell; the component resolves them at render time. */
 const TRUST_HIGHLIGHTS = [
-  { id: 'escrow', Icon: ShieldCheck, titleKey: 'footer.trust.escrowTitle', bodyKey: 'footer.trust.escrowBody' },
-  { id: 'delivery', Icon: Truck, titleKey: 'footer.trust.deliveryTitle', bodyKey: 'footer.trust.deliveryBody' },
-  { id: 'verified', Icon: IdCard, titleKey: 'footer.trust.verifiedTitle', bodyKey: 'footer.trust.verifiedBody' },
-  { id: 'support', Icon: Headphones, titleKey: 'footer.trust.supportTitle', bodyKey: 'footer.trust.supportBody' },
+  {
+    id: "escrow",
+    Icon: ShieldCheck,
+    titleKey: "footer.trust.escrowTitle",
+    bodyKey: "footer.trust.escrowBody",
+  },
+  {
+    id: "delivery",
+    Icon: Truck,
+    titleKey: "footer.trust.deliveryTitle",
+    bodyKey: "footer.trust.deliveryBody",
+  },
+  {
+    id: "verified",
+    Icon: IdCard,
+    titleKey: "footer.trust.verifiedTitle",
+    bodyKey: "footer.trust.verifiedBody",
+  },
+  {
+    id: "support",
+    Icon: Headphones,
+    titleKey: "footer.trust.supportTitle",
+    bodyKey: "footer.trust.supportBody",
+  },
 ] as const;
 
 /**
@@ -59,16 +79,33 @@ const TRUST_HIGHLIGHTS = [
  * logo. See the trademark note on APP_DOWNLOADS below.
  */
 const AppleMark: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 384 512" className={className} fill="currentColor" aria-hidden="true" focusable="false">
+  <svg
+    viewBox="0 0 384 512"
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+    focusable="false"
+  >
     <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
   </svg>
 );
 
 const GooglePlayMark: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 512 512" className={className} aria-hidden="true" focusable="false">
-    <path fill="#00A0FF" d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0z" />
+  <svg
+    viewBox="0 0 512 512"
+    className={className}
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      fill="#00A0FF"
+      d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0z"
+    />
     <path fill="#00E676" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z" />
-    <path fill="#FFCE00" d="M472.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60-34.1c18-14.3 18-46.5-1.1-60.8z" />
+    <path
+      fill="#FFCE00"
+      d="M472.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60-34.1c18-14.3 18-46.5-1.1-60.8z"
+    />
     <path fill="#FF3A44" d="M104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
   </svg>
 );
@@ -87,17 +124,17 @@ const GooglePlayMark: React.FC<{ className?: string }> = ({ className }) => (
  */
 const APP_DOWNLOADS = [
   {
-    id: 'ios',
+    id: "ios",
     Mark: () => <AppleMark className="w-6 h-6 shrink-0 text-white" />,
-    eyebrow: 'Télécharger sur',
-    store: 'l\u2019App Store',
+    eyebrow: "Télécharger sur",
+    store: "l\u2019App Store",
     url: null as string | null,
   },
   {
-    id: 'android',
+    id: "android",
     Mark: () => <GooglePlayMark className="w-6 h-6 shrink-0" />,
-    eyebrow: 'DISPONIBLE SUR',
-    store: 'Google Play',
+    eyebrow: "DISPONIBLE SUR",
+    store: "Google Play",
     url: null as string | null,
   },
 ] as const;
@@ -111,19 +148,24 @@ const APP_DOWNLOADS = [
  * at `#`, and nothing links to someone else's account on a handle we do not own.
  * Filling in a `url` upgrades the tile to a real link with no other change.
  */
-const SOCIAL_LINKS: { id: string; label: string; Icon: typeof Facebook; url: string | null }[] = [
-  { id: 'facebook', label: 'Facebook', Icon: Facebook, url: null },
-  { id: 'instagram', label: 'Instagram', Icon: Instagram, url: null },
-  { id: 'twitter', label: 'X', Icon: Twitter, url: null },
-  { id: 'linkedin', label: 'LinkedIn', Icon: Linkedin, url: null },
-  { id: 'youtube', label: 'YouTube', Icon: Youtube, url: null },
+const SOCIAL_LINKS: {
+  id: string;
+  label: string;
+  Icon: typeof Facebook;
+  url: string | null;
+}[] = [
+  { id: "facebook", label: "Facebook", Icon: Facebook, url: null },
+  { id: "instagram", label: "Instagram", Icon: Instagram, url: null },
+  { id: "twitter", label: "X", Icon: Twitter, url: null },
+  { id: "linkedin", label: "LinkedIn", Icon: Linkedin, url: null },
+  { id: "youtube", label: "YouTube", Icon: Youtube, url: null },
 ];
 
 const LEGAL_LINKS = [
-  { to: '/conditions-utilisation', labelKey: 'footer.terms' },
-  { to: '/confidentialite', labelKey: 'footer.privacy' },
-  { to: '/mentions-legales', labelKey: 'footer.legalNotices' },
-  { to: '/accessibilite', labelKey: 'footer.accessibility' },
+  { to: "/conditions-utilisation", labelKey: "footer.terms" },
+  { to: "/confidentialite", labelKey: "footer.privacy" },
+  { to: "/mentions-legales", labelKey: "footer.legalNotices" },
+  { to: "/accessibilite", labelKey: "footer.accessibility" },
 ] as const;
 
 /**
@@ -131,11 +173,11 @@ const LEGAL_LINKS = [
  * travel direction on hover. `justify-between` rather than a trailing margin so
  * the chevrons line up down the column whatever the label length.
  */
-const FooterLink: React.FC<{ to: string; title?: string; children: React.ReactNode }> = ({
-  to,
-  title,
-  children,
-}) => (
+const FooterLink: React.FC<{
+  to: string;
+  title?: string;
+  children: React.ReactNode;
+}> = ({ to, title, children }) => (
   <li>
     <Link
       to={to}
@@ -183,12 +225,15 @@ const FooterColumn: React.FC<{
           </span>
           <ChevronDown
             className={`w-4 h-4 shrink-0 md:hidden transition-transform duration-normal ${
-              isOpen ? 'rotate-180 text-primary-on-dark' : 'text-stone-400'
+              isOpen ? "rotate-180 text-primary-on-dark" : "text-stone-400"
             }`}
           />
         </button>
       </h2>
-      <ul id={panelId} className={`space-y-1 mt-3 md:mt-0 ${isOpen ? 'block' : 'hidden md:block'}`}>
+      <ul
+        id={panelId}
+        className={`space-y-1 mt-3 md:mt-0 ${isOpen ? "block" : "hidden md:block"}`}
+      >
         {children}
       </ul>
     </div>
@@ -230,7 +275,10 @@ export const Footer: React.FC = () => {
             These are reassurance statements, not document sections: rendering
             them as headings injected an h1 → h4 jump into every single page of
             the app. */}
-        <section aria-label="Garanties Shongre" className={`${PANEL} p-6 sm:p-8`}>
+        <section
+          aria-label="Garanties Shongre"
+          className={`${PANEL} p-6 sm:p-8`}
+        >
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
             {TRUST_HIGHLIGHTS.map(({ id, Icon, titleKey, bodyKey }) => (
               <li
@@ -241,8 +289,12 @@ export const Footer: React.FC = () => {
                   <Icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm mb-1.5">{t(titleKey)}</p>
-                  <p className="text-stone-400 text-xs leading-relaxed">{t(bodyKey)}</p>
+                  <p className="font-bold text-white text-sm mb-1.5">
+                    {t(titleKey)}
+                  </p>
+                  <p className="text-stone-400 text-xs leading-relaxed">
+                    {t(bodyKey)}
+                  </p>
                 </div>
               </li>
             ))}
@@ -259,21 +311,25 @@ export const Footer: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-0 divide-y divide-stone-800 md:divide-y-0">
                 <FooterColumn
                   id="categories"
-                  title={t('footer.sectionCategories')}
+                  title={t("footer.sectionCategories")}
                   Icon={LayoutGrid}
                   isOpen={openSections.categories}
                   onToggle={toggleSection}
                 >
                   {TAXONOMY.slice(0, 7).map((cat) => (
-                    <FooterLink key={cat.id} to={`/categorie/${cat.slug}`} title={getTaxonomyLabel(cat, 'compact')}>
-                      {getTaxonomyLabel(cat, 'compact')}
+                    <FooterLink
+                      key={cat.id}
+                      to={`/categorie/${cat.slug}`}
+                      title={getTaxonomyLabel(cat, "compact")}
+                    >
+                      {getTaxonomyLabel(cat, "compact")}
                     </FooterLink>
                   ))}
                 </FooterColumn>
 
                 <FooterColumn
                   id="cities"
-                  title={t('footer.sectionCities')}
+                  title={t("footer.sectionCities")}
                   Icon={MapPin}
                   isOpen={openSections.cities}
                   onToggle={toggleSection}
@@ -295,10 +351,16 @@ export const Footer: React.FC = () => {
                   isOpen={openSections.professionals}
                   onToggle={toggleSection}
                 >
-                  <FooterLink to="/solutions-pro">Solutions &amp; Tarifs Pro</FooterLink>
-                  <FooterLink to="/inscription/professionnel">{t('footer.createProAccount')}</FooterLink>
-                  <FooterLink to="/professionnels">{t('footer.storeDirectory')}</FooterLink>
-                  <FooterLink to="/tarifs">{t('footer.boostGrid')}</FooterLink>
+                  <FooterLink to="/solutions-pro">
+                    Solutions &amp; Tarifs Pro
+                  </FooterLink>
+                  <FooterLink to="/inscription/professionnel">
+                    {t("footer.createProAccount")}
+                  </FooterLink>
+                  <FooterLink to="/professionnels">
+                    {t("footer.storeDirectory")}
+                  </FooterLink>
+                  <FooterLink to="/tarifs">{t("footer.boostGrid")}</FooterLink>
                 </FooterColumn>
 
                 <FooterColumn
@@ -309,9 +371,15 @@ export const Footer: React.FC = () => {
                   onToggle={toggleSection}
                 >
                   <FooterLink to="/aide">Centre d’aide &amp; FAQ</FooterLink>
-                  <FooterLink to="/securite">{t('footer.safetyTips')}</FooterLink>
-                  <FooterLink to="/contact">{t('footer.contactSupport')}</FooterLink>
-                  <FooterLink to="/newsletter">Newsletter &amp; Bons plans</FooterLink>
+                  <FooterLink to="/securite">
+                    {t("footer.safetyTips")}
+                  </FooterLink>
+                  <FooterLink to="/contact">
+                    {t("footer.contactSupport")}
+                  </FooterLink>
+                  <FooterLink to="/newsletter">
+                    Newsletter &amp; Bons plans
+                  </FooterLink>
                   <li>
                     <Link
                       to="/bons-plans"
@@ -321,7 +389,9 @@ export const Footer: React.FC = () => {
                           it squeeze the label: at the column's width "Bons plans
                           du moment" and the pill do not share a line. */}
                       <span className="flex items-center flex-wrap gap-x-2 gap-y-1">
-                        <span className="whitespace-nowrap">{t('footer.currentDeals')}</span>
+                        <span className="whitespace-nowrap">
+                          {t("footer.currentDeals")}
+                        </span>
                         <span className="px-1.5 py-0.5 rounded-md bg-stone-800 border border-stone-700 text-micro font-bold uppercase tracking-wider text-stone-300">
                           Nouveau
                         </span>
@@ -331,7 +401,6 @@ export const Footer: React.FC = () => {
                   </li>
                 </FooterColumn>
               </div>
-
             </div>
 
             {/* Brand & newsletter.
@@ -347,16 +416,20 @@ export const Footer: React.FC = () => {
                 <div className="w-11 h-11 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shrink-0">
                   S
                 </div>
-                <span className="text-xl font-extrabold text-white tracking-tight">Shongre</span>
+                <span className="text-xl font-extrabold text-white tracking-tight">
+                  Shongre
+                </span>
               </div>
 
               <p className="text-stone-400 text-xs leading-relaxed mb-4">
-                {t('footer.newsletterPitch')}
+                {t("footer.newsletterPitch")}
               </p>
 
               <NewsletterSignup variant="footer" source="footer" />
 
-              <h2 className="text-xs font-bold text-white text-center mt-6 mb-3">Suivez-nous</h2>
+              <h2 className="text-xs font-bold text-white text-center mt-6 mb-3">
+                Suivez-nous
+              </h2>
               <ul className="flex items-center justify-between flex-wrap gap-1.5 sm:gap-2.5">
                 {SOCIAL_LINKS.map(({ id, label, Icon, url }) => (
                   <li key={id}>
@@ -372,11 +445,13 @@ export const Footer: React.FC = () => {
                       </a>
                     ) : (
                       <span
-                        title={t('footer.comingSoon', { name: label })}
+                        title={t("footer.comingSoon", { name: label })}
                         className={`${ICON_TILE} w-control-touch h-control-touch opacity-80 cursor-default select-none`}
                       >
                         <Icon className="w-5 h-5" />
-                        <span className="sr-only">{t('footer.comingSoon', { name: label })}</span>
+                        <span className="sr-only">
+                          {t("footer.comingSoon", { name: label })}
+                        </span>
                       </span>
                     )}
                   </li>
@@ -385,17 +460,23 @@ export const Footer: React.FC = () => {
 
               <ul className="grid grid-cols-2 mt-6 pt-5 border-t border-stone-800 divide-x divide-stone-800">
                 <li className="flex items-center gap-2.5 pr-3">
-                  <span aria-hidden="true" className="text-base leading-none shrink-0">
+                  <span
+                    aria-hidden="true"
+                    className="text-base leading-none shrink-0"
+                  >
                     🇫🇷
                   </span>
                   <span className="text-micro text-stone-400 leading-tight">
-                    {t('footer.hosted')}
+                    {t("footer.hosted")}
                     <br />
                     en France
                   </span>
                 </li>
                 <li className="flex items-center gap-2.5 pl-3">
-                  <Lock className="w-4 h-4 shrink-0 text-stone-400" aria-hidden="true" />
+                  <Lock
+                    className="w-4 h-4 shrink-0 text-stone-400"
+                    aria-hidden="true"
+                  />
                   <span className="text-micro text-stone-400 leading-tight">
                     100% conforme
                     <br />
@@ -406,23 +487,28 @@ export const Footer: React.FC = () => {
             </aside>
           </div>
 
-            {/* App downloads. Sits under the sitemap rather than in it: these
+          {/* App downloads. Sits under the sitemap rather than in it: these
                 are brand-level actions, not navigation. */}
-            <section aria-label="Applications mobiles Shongre" className={`${INNER_PANEL} mt-6 p-5`}>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className={`${ICON_TILE} w-12 h-12`}>
-                    <Smartphone className="w-6 h-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-sm font-bold text-white">L’application Shongre</h2>
-                    <p className="text-stone-400 text-xs mt-0.5">
-                      {t('footer.appPitch')}
-                    </p>
-                  </div>
+          <section
+            aria-label="Applications mobiles Shongre"
+            className={`${INNER_PANEL} mt-6 p-5`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className={`${ICON_TILE} w-12 h-12`}>
+                  <Smartphone className="w-6 h-6" />
                 </div>
+                <div className="min-w-0">
+                  <h2 className="text-sm font-bold text-white">
+                    L’application Shongre
+                  </h2>
+                  <p className="text-stone-400 text-xs mt-0.5">
+                    {t("footer.appPitch")}
+                  </p>
+                </div>
+              </div>
 
-                {/* A grid, so the badges are always the same width as each other
+              {/* A grid, so the badges are always the same width as each other
                     rather than each sizing to its own wording — "Télécharger sur
                     / l'App Store" is longer than "DISPONIBLE SUR / Google Play",
                     and an inline-flex row rendered them visibly mismatched.
@@ -433,69 +519,79 @@ export const Footer: React.FC = () => {
                     then the eyebrow — equal width bought at the price of the one
                     thing the badge exists to say. Stacked, they stay identical to
                     each other *and* readable; they pair up once there is room. */}
-                <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-md">
-                  {APP_DOWNLOADS.map(({ id, Mark, eyebrow, store, url }) => {
-                    const content = (
-                      <>
-                        <Mark />
-                        <span className="text-left leading-tight min-w-0">
-                          <span className="block text-micro tracking-wide text-stone-400 truncate">
-                            {eyebrow}
-                          </span>
-                          <span className="block text-sm font-bold text-white truncate">
-                            {store}
-                          </span>
+              <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-md">
+                {APP_DOWNLOADS.map(({ id, Mark, eyebrow, store, url }) => {
+                  const content = (
+                    <>
+                      <Mark />
+                      <span className="text-left leading-tight min-w-0">
+                        <span className="block text-micro tracking-wide text-stone-400 truncate">
+                          {eyebrow}
                         </span>
-                      </>
-                    );
+                        <span className="block text-sm font-bold text-white truncate">
+                          {store}
+                        </span>
+                      </span>
+                    </>
+                  );
 
-                    return (
-                      <li key={id}>
-                        {/* No listing yet: render a static badge rather than a
+                  return (
+                    <li key={id}>
+                      {/* No listing yet: render a static badge rather than a
                             link to nowhere, and say so, so the affordance is
                             not a dead end. */}
-                        {url ? (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full inline-flex items-center gap-2.5 h-control-lg px-3 sm:px-4 rounded-xl border border-stone-800 bg-stone-950 hover:border-stone-700 hover:bg-black transition-colors"
-                          >
-                            {content}
-                          </a>
-                        ) : (
-                          <span
-                            title={t('footer.comingSoon', { name: store })}
-                            className="w-full inline-flex items-center gap-2.5 h-control-lg px-3 sm:px-4 rounded-xl border border-stone-800 bg-stone-950 cursor-default select-none"
-                          >
-                            {content}
-                            <span className="sr-only">{t('footer.comingSoon', { name: store })}</span>
+                      {url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full inline-flex items-center gap-2.5 h-control-lg px-3 sm:px-4 rounded-xl border border-stone-800 bg-stone-950 hover:border-stone-700 hover:bg-black transition-colors"
+                        >
+                          {content}
+                        </a>
+                      ) : (
+                        <span
+                          title={t("footer.comingSoon", { name: store })}
+                          className="w-full inline-flex items-center gap-2.5 h-control-lg px-3 sm:px-4 rounded-xl border border-stone-800 bg-stone-950 cursor-default select-none"
+                        >
+                          {content}
+                          <span className="sr-only">
+                            {t("footer.comingSoon", { name: store })}
                           </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </section>
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </section>
         </div>
 
         {/* Legal bar. Deliberately outside the panels, directly on the page
             ground — it closes the document rather than belonging to any block. */}
         <div className="pt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs text-stone-400">
           <div className="flex items-center gap-4 flex-wrap">
-            <span>{t('footer.copyright', { year: new Date().getFullYear() })}</span>
+            <span>
+              {t("footer.copyright", { year: new Date().getFullYear() })}
+            </span>
             <LanguageSelector variant="footer" idPrefix="footer-lang" />
           </div>
 
-          <nav aria-label={t('footer.legalHeading')}>
+          <nav aria-label={t("footer.legalHeading")}>
             <ul className="flex flex-wrap items-center gap-y-1">
               {LEGAL_LINKS.map(({ to, labelKey }, index) => (
                 <li key={to} className="flex items-center">
                   {index > 0 && (
-                    <span aria-hidden="true" className="w-px h-3 bg-stone-800 mx-4" />
+                    <span
+                      aria-hidden="true"
+                      className="w-px h-3 bg-stone-800 mx-4"
+                    />
                   )}
-                  <Link to={to} className="py-1 hover:text-white transition-colors">
+                  <Link
+                    to={to}
+                    className="py-1 hover:text-white transition-colors"
+                  >
                     {t(labelKey)}
                   </Link>
                 </li>
@@ -506,13 +602,16 @@ export const Footer: React.FC = () => {
                   `/cookies`, which rendered the privacy policy — a page that
                   explains the cookies without letting anyone change them. */}
               <li className="flex items-center">
-                <span aria-hidden="true" className="w-px h-3 bg-stone-800 mx-4" />
+                <span
+                  aria-hidden="true"
+                  className="w-px h-3 bg-stone-800 mx-4"
+                />
                 <button
                   type="button"
                   onClick={openPreferences}
                   className="py-1 hover:text-white transition-colors cursor-pointer"
                 >
-                  {t('footer.cookies')}
+                  {t("footer.cookies")}
                 </button>
               </li>
             </ul>

@@ -1,0 +1,44 @@
+import { describe, expect, it } from "vitest";
+import { publicationInputSchema } from "@shongre/contracts";
+import { mapBackendListing } from "@/features/listings/listing.mapper";
+import { billingService } from "@/features/billing/billing.service";
+
+describe("mobile public contracts", () => {
+  it("maps backend major-unit prices into integer minor units", () => {
+    const listing = mapBackendListing({
+      id: "listing-1",
+      title: "Objet test",
+      price: 2.99,
+      city: "Paris",
+      marketCode: "FR",
+      condition: "Bon état",
+      createdAt: "2026-08-21T08:00:00.000Z",
+    });
+    expect(listing.price).toEqual({ amountMinor: 299, currency: "EUR" });
+  });
+
+  it("rejects non-integer publication amounts", () => {
+    const result = publicationInputSchema.safeParse({
+      title: "Objet test",
+      description: "",
+      amountMinor: 299.5,
+      currency: "EUR",
+      categoryId: "home",
+      marketCode: "FR",
+      city: "Paris",
+      postalCode: "75001",
+      condition: "Bon état",
+      images: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("keeps digital promotions behind a store-policy decision", () => {
+    expect(billingService.classify("digital-listing-promotion")).toBe(
+      "store-policy-review-required",
+    );
+    expect(billingService.classify("physical-marketplace-transaction")).toBe(
+      "external-payment-eligible",
+    );
+  });
+});

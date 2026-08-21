@@ -1,60 +1,52 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Layers,
   FolderTree,
-  
   ShieldCheck,
   History,
   Download,
   AlertOctagon,
-  
-  GitCommit
-  
-} from 'lucide-react';
-import { taxonomyAdminRepository } from '../../repositories/taxonomy.repository';
-import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
-import { TaxonomyNode } from '../../domains/taxonomy/taxonomy.types';
-import { Button } from '../../design-system/primitives/Button';
-import { ScrollRail } from '../../design-system/primitives/ScrollRail';
-import { TaxonomyTreeToolbar } from './taxonomy/components/TaxonomyTreeToolbar';
-import { TaxonomyHierarchyTree } from './taxonomy/components/TaxonomyHierarchyTree';
-import { TaxonomyNodeEditor } from './taxonomy/components/TaxonomyNodeEditor';
-import { TaxonomyAttributeRegistryTab } from './taxonomy/components/TaxonomyAttributeRegistryTab';
-import { TaxonomyValidationTab } from './taxonomy/components/TaxonomyValidationTab';
-import { TaxonomyDraftPublishTab } from './taxonomy/components/TaxonomyDraftPublishTab';
-import { TaxonomyImportExportTab } from './taxonomy/components/TaxonomyImportExportTab';
-import { TaxonomyAuditTab } from './taxonomy/components/TaxonomyAuditTab';
-import { AddNodeModal } from './taxonomy/components/modals/AddNodeModal';
-import { useToast } from '../../app/providers/ToastProvider';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+  GitCommit,
+} from "lucide-react";
+import { taxonomyAdminRepository } from "../../repositories/taxonomy.repository";
+import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
+import { Button } from "../../design-system/primitives/Button";
+import { ScrollRail } from "../../design-system/primitives/ScrollRail";
+import { TaxonomyTreeToolbar } from "./taxonomy/components/TaxonomyTreeToolbar";
+import { TaxonomyHierarchyTree } from "./taxonomy/components/TaxonomyHierarchyTree";
+import { TaxonomyNodeEditor } from "./taxonomy/components/TaxonomyNodeEditor";
+import { TaxonomyAttributeRegistryTab } from "./taxonomy/components/TaxonomyAttributeRegistryTab";
+import { TaxonomyValidationTab } from "./taxonomy/components/TaxonomyValidationTab";
+import { TaxonomyDraftPublishTab } from "./taxonomy/components/TaxonomyDraftPublishTab";
+import { TaxonomyImportExportTab } from "./taxonomy/components/TaxonomyImportExportTab";
+import { TaxonomyAuditTab } from "./taxonomy/components/TaxonomyAuditTab";
+import { AddNodeModal } from "./taxonomy/components/modals/AddNodeModal";
+import { useToast } from "../../app/providers/ToastProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const AdminTaxonomyPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminTaxonomy.title'),
-    description: t('meta.adminTaxonomy.description'),
-    canonicalPath: '/admin/taxonomie',
+    title: t("meta.adminTaxonomy.title"),
+    description: t("meta.adminTaxonomy.description"),
+    canonicalPath: "/admin/taxonomie",
     noIndex: true,
   });
 
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const currentTab = (searchParams.get('tab') || 'tree') as
-    | 'tree'
-    | 'attributes'
-    | 'validation'
-    | 'drafts'
-    | 'import_export'
-    | 'audit';
+  const currentTab = (searchParams.get("tab") || "tree") as
+    "tree" | "attributes" | "validation" | "drafts" | "import_export" | "audit";
 
-  const selectedNodeIdParam = searchParams.get('node') || 'vehicles';
+  const selectedNodeIdParam = searchParams.get("node") || "vehicles";
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [levelFilter, setLevelFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({
     vehicles: true,
@@ -69,20 +61,32 @@ export const AdminTaxonomyPage: React.FC = () => {
   // Trigger re-render whenever repository changes
   const [updateTick, setUpdateTick] = useState(0);
 
-  const treeNodes = useMemo(() => taxonomyAdminRepository.getTree(), [updateTick]);
-  const allNodes = useMemo(() => taxonomyAdminRepository.getAllNodes(), [updateTick]);
-  const draftChanges = useMemo(() => taxonomyAdminRepository.getDraftChanges(), [updateTick]);
-  const validationIssues = useMemo(() => taxonomyAdminRepository.validateTaxonomy(), [updateTick]);
+  const treeNodes = useMemo(
+    () => taxonomyAdminRepository.getTree(),
+    [updateTick],
+  );
+  const allNodes = useMemo(
+    () => taxonomyAdminRepository.getAllNodes(),
+    [updateTick],
+  );
+  const draftChanges = useMemo(
+    () => taxonomyAdminRepository.getDraftChanges(),
+    [updateTick],
+  );
+  const validationIssues = useMemo(
+    () => taxonomyAdminRepository.validateTaxonomy(),
+    [updateTick],
+  );
 
   const blockingErrors = useMemo(
-    () => validationIssues.filter((i) => i.severity === 'error'),
-    [validationIssues]
+    () => validationIssues.filter((i) => i.severity === "error"),
+    [validationIssues],
   );
 
   const selectedNode = useMemo(() => {
     return (
       taxonomyAdminRepository.getNode(selectedNodeIdParam) ||
-      allNodes.find((n) => n.id === 'vehicles') ||
+      allNodes.find((n) => n.id === "vehicles") ||
       treeNodes[0]
     );
   }, [selectedNodeIdParam, allNodes, treeNodes, updateTick]);
@@ -95,7 +99,7 @@ export const AdminTaxonomyPage: React.FC = () => {
   const handleSelectTab = (tabKey: string) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      next.set('tab', tabKey);
+      next.set("tab", tabKey);
       return next;
     });
   };
@@ -103,7 +107,7 @@ export const AdminTaxonomyPage: React.FC = () => {
   const handleSelectNode = (node: TaxonomyNode) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      next.set('node', node.id);
+      next.set("node", node.id);
       return next;
     });
   };
@@ -125,13 +129,17 @@ export const AdminTaxonomyPage: React.FC = () => {
     setExpandedNodes({});
   };
 
-  const handleReorder = async (nodeId: string, direction: 'up' | 'down', e: React.MouseEvent) => {
+  const handleReorder = async (
+    nodeId: string,
+    direction: "up" | "down",
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation();
     try {
       await taxonomyAdminRepository.reorderNode(nodeId, direction);
       setUpdateTick((t) => t + 1);
     } catch (err: any) {
-      toast.error(err?.message || 'Erreur lors de la réorganisation.');
+      toast.error(err?.message || "Erreur lors de la réorganisation.");
     }
   };
 
@@ -154,9 +162,13 @@ export const AdminTaxonomyPage: React.FC = () => {
             <div className="p-2 rounded-xl bg-primary-light text-primary">
               <Layers className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-black text-stone-900 tracking-tight">{t('admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie')}</h1>
+            <h1 className="text-xl font-black text-stone-900 tracking-tight">
+              {t("admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie")}
+            </h1>
           </div>
-          <p className="text-xs text-stone-500 mt-1.5 max-w-2xl">{t('admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL')}</p>
+          <p className="text-xs text-stone-500 mt-1.5 max-w-2xl">
+            {t("admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL")}
+          </p>
         </div>
 
         {/* Global Status Badges & Quick Action */}
@@ -164,7 +176,7 @@ export const AdminTaxonomyPage: React.FC = () => {
           {blockingErrors.length > 0 && (
             <button
               type="button"
-              onClick={() => handleSelectTab('validation')}
+              onClick={() => handleSelectTab("validation")}
               className="px-3 py-1.5 rounded-xl bg-danger-surface text-danger border border-danger-border text-xs font-bold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
             >
               <AlertOctagon className="w-4 h-4" />
@@ -176,7 +188,7 @@ export const AdminTaxonomyPage: React.FC = () => {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => handleSelectTab('drafts')}
+              onClick={() => handleSelectTab("drafts")}
               leftIcon={<GitCommit className="w-3.5 h-3.5" />}
             >
               {draftChanges.length} brouillon(s) à publier
@@ -184,7 +196,7 @@ export const AdminTaxonomyPage: React.FC = () => {
           ) : (
             <span className="px-3 py-1.5 rounded-xl bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-success" />
-              <span>{t('admin.adminTaxonomyPage.taxonomieSynchronisee')}</span>
+              <span>{t("admin.adminTaxonomyPage.taxonomieSynchronisee")}</span>
             </span>
           )}
         </div>
@@ -195,76 +207,85 @@ export const AdminTaxonomyPage: React.FC = () => {
           the last tab used to be clipped exactly at the boundary and read as
           missing entirely. */}
       <ScrollRail label="onglets" className="border-b border-border-base">
-      <div className="flex items-center gap-1 text-xs font-semibold w-max">
-        {[
-          { id: 'tree', label: 'Arborescence & Nœuds', icon: FolderTree, badge: undefined },
-          {
-            id: 'attributes',
-            label: 'Registre des Attributs',
-            icon: Layers,
-            badge: undefined,
-          },
-          {
-            id: 'validation',
-            label: 'Validation & Qualité',
-            icon: ShieldCheck,
-            badge: blockingErrors.length > 0 ? `${blockingErrors.length}` : undefined,
-            badgeClass: 'bg-danger text-white',
-          },
-          {
-            id: 'drafts',
-            label: 'Brouillons & Publication',
-            icon: GitCommit,
-            badge: draftChanges.length > 0 ? `${draftChanges.length}` : undefined,
-            badgeClass: 'bg-amber-500 text-white',
-          },
-          {
-            id: 'import_export',
-            label: 'Import / Export (JSON)',
-            icon: Download,
-            badge: undefined,
-          },
-          {
-            id: 'audit',
-            label: 'Historique & Audit',
-            icon: History,
-            badge: undefined,
-          },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = currentTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleSelectTab(tab.id)}
-              className={`flex items-center gap-2 py-3 px-4 border-b-2 whitespace-nowrap transition-all cursor-pointer ${
-                isActive
-                  ? 'border-primary text-primary font-bold bg-white'
-                  : 'border-transparent text-stone-500 hover:text-stone-900 hover:border-stone-300'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span
-                  className={`text-micro px-1.5 py-0.2 rounded-full font-bold ${
-                    tab.badgeClass || 'bg-stone-200 text-stone-700'
-                  }`}
-                >
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        <div className="flex items-center gap-1 text-xs font-semibold w-max">
+          {[
+            {
+              id: "tree",
+              label: "Arborescence & Nœuds",
+              icon: FolderTree,
+              badge: undefined,
+            },
+            {
+              id: "attributes",
+              label: "Registre des Attributs",
+              icon: Layers,
+              badge: undefined,
+            },
+            {
+              id: "validation",
+              label: "Validation & Qualité",
+              icon: ShieldCheck,
+              badge:
+                blockingErrors.length > 0
+                  ? `${blockingErrors.length}`
+                  : undefined,
+              badgeClass: "bg-danger text-white",
+            },
+            {
+              id: "drafts",
+              label: "Brouillons & Publication",
+              icon: GitCommit,
+              badge:
+                draftChanges.length > 0 ? `${draftChanges.length}` : undefined,
+              badgeClass: "bg-amber-500 text-white",
+            },
+            {
+              id: "import_export",
+              label: "Import / Export (JSON)",
+              icon: Download,
+              badge: undefined,
+            },
+            {
+              id: "audit",
+              label: "Historique & Audit",
+              icon: History,
+              badge: undefined,
+            },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleSelectTab(tab.id)}
+                className={`flex items-center gap-2 py-3 px-4 border-b-2 whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? "border-primary text-primary font-bold bg-white"
+                    : "border-transparent text-stone-500 hover:text-stone-900 hover:border-stone-300"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+                {tab.badge && (
+                  <span
+                    className={`text-micro px-1.5 py-0.2 rounded-full font-bold ${
+                      tab.badgeClass || "bg-stone-200 text-stone-700"
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </ScrollRail>
 
       {/* ========================================================================= */}
       {/* 1. HIERARCHICAL TREE & INSPECTOR TAB */}
       {/* ========================================================================= */}
-      {currentTab === 'tree' && (
+      {currentTab === "tree" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Toolbar + Tree View */}
           <div className="lg:col-span-5 space-y-4">
@@ -306,7 +327,9 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onSelectNode={handleSelectNode}
               />
             ) : (
-              <div className="bg-white rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">{t('admin.adminTaxonomyPage.selectionnezUneCategorieDansL')}</div>
+              <div className="bg-white rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">
+                {t("admin.adminTaxonomyPage.selectionnezUneCategorieDansL")}
+              </div>
             )}
           </div>
         </div>
@@ -315,15 +338,15 @@ export const AdminTaxonomyPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. ATTRIBUTE REGISTRY TAB */}
       {/* ========================================================================= */}
-      {currentTab === 'attributes' && <TaxonomyAttributeRegistryTab />}
+      {currentTab === "attributes" && <TaxonomyAttributeRegistryTab />}
 
       {/* ========================================================================= */}
       {/* 3. VALIDATION QUALITY GATE TAB */}
       {/* ========================================================================= */}
-      {currentTab === 'validation' && (
+      {currentTab === "validation" && (
         <TaxonomyValidationTab
           onNavigateToNode={(node) => {
-            handleSelectTab('tree');
+            handleSelectTab("tree");
             handleSelectNode(node);
           }}
         />
@@ -332,21 +355,21 @@ export const AdminTaxonomyPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 4. DRAFT PUBLICATION TAB */}
       {/* ========================================================================= */}
-      {currentTab === 'drafts' && (
+      {currentTab === "drafts" && (
         <TaxonomyDraftPublishTab onPublishSuccess={handleDataUpdated} />
       )}
 
       {/* ========================================================================= */}
       {/* 5. IMPORT / EXPORT TAB */}
       {/* ========================================================================= */}
-      {currentTab === 'import_export' && (
+      {currentTab === "import_export" && (
         <TaxonomyImportExportTab onImportSuccess={handleDataUpdated} />
       )}
 
       {/* ========================================================================= */}
       {/* 6. AUDIT HISTORY TAB */}
       {/* ========================================================================= */}
-      {currentTab === 'audit' && <TaxonomyAuditTab />}
+      {currentTab === "audit" && <TaxonomyAuditTab />}
 
       {/* Context-Aware Add Child / Category Modal */}
       <AddNodeModal

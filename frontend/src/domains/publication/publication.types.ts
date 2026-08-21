@@ -4,15 +4,10 @@
  * transaction modes, fulfillment capabilities, and draft lifecycles.
  */
 
-import {    ListingFamily, FulfillmentMode } from '../taxonomy/taxonomy.types';
+import { ListingFamily, FulfillmentMode } from "../taxonomy/taxonomy.types";
 
 export type ListingMarketStatus =
-  | 'active'
-  | 'pending'
-  | 'suspended'
-  | 'rejected'
-  | 'draft'
-  | 'paused';
+  "active" | "pending" | "suspended" | "rejected" | "draft" | "paused";
 
 export interface ListingMarketPublication {
   marketCode: string; // e.g. 'FR', 'BE', 'CH', 'ES'
@@ -70,34 +65,27 @@ export interface MultiMarketValidationResult {
 }
 
 export type ListingIntent =
-  | 'SELL'
-  | 'GIVE'
-  | 'EXCHANGE'
-  | 'RENT'
-  | 'OFFER_SERVICE'
-  | 'JOB_OFFER';
+  "SELL" | "GIVE" | "EXCHANGE" | "RENT" | "OFFER_SERVICE" | "JOB_OFFER";
 
 export type PriceModel =
-  | 'fixed'
-  | 'negotiable'
-  | 'free'
-  | 'on_request'
-  | 'hourly'
-  | 'daily'
-  | 'monthly'
-  | 'rent_plus_charges';
+  | "fixed"
+  | "negotiable"
+  | "free"
+  | "on_request"
+  | "hourly"
+  | "daily"
+  | "monthly"
+  | "rent_plus_charges";
 
 export type TransactionMode =
-  | 'CONTACT_ONLY'
-  | 'DIRECT_PURCHASE'
-  | 'RESERVATION';
+  "CONTACT_ONLY" | "DIRECT_PURCHASE" | "RESERVATION";
 
 export type PackageSizeTier =
-  | 'small' // < 500g (e.g. smartphone, jewelry, t-shirt)
-  | 'medium' // < 2kg (e.g. shoes, tablet, small decor)
-  | 'large' // < 5kg (e.g. coat, small appliances, laptop)
-  | 'xlarge' // < 30kg (e.g. large box, bike parts, audio amp)
-  | 'heavy'; // > 30kg (furniture, sofa, machine)
+  | "small" // < 500g (e.g. smartphone, jewelry, t-shirt)
+  | "medium" // < 2kg (e.g. shoes, tablet, small decor)
+  | "large" // < 5kg (e.g. coat, small appliances, laptop)
+  | "xlarge" // < 30kg (e.g. large box, bike parts, audio amp)
+  | "heavy"; // > 30kg (furniture, sofa, machine)
 
 export interface PackageSpecs {
   sizeTier: PackageSizeTier;
@@ -111,7 +99,7 @@ export interface SellerTransactionChoice {
   allowContact: boolean;
   allowDirectPurchase: boolean;
   allowReservation: boolean;
-  reservationType?: 'instant' | 'request';
+  reservationType?: "instant" | "request";
 }
 
 export interface SellerFulfillmentChoice {
@@ -135,7 +123,7 @@ export interface PublicationPriceConfig {
   isNegotiable: boolean;
   isFreeDonation: boolean;
   rentalCharges?: number;
-  unitTime?: 'hour' | 'day' | 'month' | 'year';
+  unitTime?: "hour" | "day" | "month" | "year";
 }
 
 export interface ProInventoryData {
@@ -207,11 +195,23 @@ export interface FulfillmentCapabilitiesResult {
 
 export interface DeliveryQuote {
   id: string;
-  provider: 'mondial_relay' | 'colissimo' | 'chronopost' | 'cocolis' | 'hand_delivery' | 'store_pickup' | 'seller_delivery';
+  provider:
+    | "mondial_relay"
+    | "colissimo"
+    | "chronopost"
+    | "cocolis"
+    | "hand_delivery"
+    | "store_pickup"
+    | "seller_delivery";
   code: string;
   title: string;
   description: string;
-  deliveryType: 'relay_point' | 'home_delivery' | 'express' | 'hand_delivery' | 'store_pickup';
+  deliveryType:
+    | "relay_point"
+    | "home_delivery"
+    | "express"
+    | "hand_delivery"
+    | "store_pickup";
   price: number;
   currency: string;
   estimatedDeliveryDays: string;

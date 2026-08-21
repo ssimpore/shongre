@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { TaxonomyAttribute } from '../../../../domains/taxonomy/taxonomy.types';
-import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
-import { Button } from '../../../../design-system/primitives/Button';
-import { Plus, Search, Filter, Layers, Edit2  } from 'lucide-react';
-import { AttributeEditModal } from './modals/AttributeEditModal';
-import { plural } from '../../../../utilities/formatters';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { TaxonomyAttribute } from "../../../../domains/taxonomy/taxonomy.types";
+import { taxonomyAdminRepository } from "../../../../repositories/taxonomy.repository";
+import { Button } from "../../../../design-system/primitives/Button";
+import { Plus, Search, Filter, Layers, Edit2 } from "lucide-react";
+import { AttributeEditModal } from "./modals/AttributeEditModal";
+import { plural } from "../../../../utilities/formatters";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 export const TaxonomyAttributeRegistryTab: React.FC = () => {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
-  const [dataTypeFilter, setDataTypeFilter] = useState<string>('all');
-  const [editingAttribute, setEditingAttribute] = useState<TaxonomyAttribute | null>(null);
+  const [search, setSearch] = useState("");
+  const [dataTypeFilter, setDataTypeFilter] = useState<string>("all");
+  const [editingAttribute, setEditingAttribute] =
+    useState<TaxonomyAttribute | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const attributes = taxonomyAdminRepository.getAllAttributes();
@@ -23,7 +24,8 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
   };
 
   const filteredAttributes = attributes.filter((attr) => {
-    if (dataTypeFilter !== 'all' && attr.dataType !== dataTypeFilter) return false;
+    if (dataTypeFilter !== "all" && attr.dataType !== dataTypeFilter)
+      return false;
     if (search.trim()) {
       const q = search.toLowerCase().trim();
       return (
@@ -52,10 +54,15 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <Layers className="w-5 h-5 text-primary" />
-            <span>{t('admin.taxonomyAttributeRegistryTab.registreCentralDesAttributsCanoniques')}</span>
+            <span>
+              {t(
+                "admin.taxonomyAttributeRegistryTab.registreCentralDesAttributsCanoniques",
+              )}
+            </span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
-            Gérez le dictionnaire des {attributes.length} attributs normalisés partagés entre les différentes catégories.
+            Gérez le dictionnaire des {attributes.length} attributs normalisés
+            partagés entre les différentes catégories.
           </p>
         </div>
 
@@ -75,8 +82,12 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder={t('admin.taxonomyAttributeRegistryTab.rechercherParLibelleIdOu')}
-            aria-label={t('admin.taxonomyAttributeRegistryTab.rechercherUnAttribut')}
+            placeholder={t(
+              "admin.taxonomyAttributeRegistryTab.rechercherParLibelleIdOu",
+            )}
+            aria-label={t(
+              "admin.taxonomyAttributeRegistryTab.rechercherUnAttribut",
+            )}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -90,14 +101,24 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             onChange={(e) => setDataTypeFilter(e.target.value)}
             className="h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
-            <option value="all">{t('admin.taxonomyAttributeRegistryTab.tousLesTypesDeDonnees')}</option>
+            <option value="all">
+              {t("admin.taxonomyAttributeRegistryTab.tousLesTypesDeDonnees")}
+            </option>
             <option value="text">Texte libre (String)</option>
-            <option value="number">{t('admin.taxonomyAttributeRegistryTab.nombreNumerique')}</option>
-            <option value="select">{t('admin.taxonomyAttributeRegistryTab.menuDeroulantSelect')}</option>
+            <option value="number">
+              {t("admin.taxonomyAttributeRegistryTab.nombreNumerique")}
+            </option>
+            <option value="select">
+              {t("admin.taxonomyAttributeRegistryTab.menuDeroulantSelect")}
+            </option>
             <option value="multi_select">Choix multiples (Multi-select)</option>
-            <option value="boolean">{t('admin.taxonomyAttributeRegistryTab.booleenOuiNon')}</option>
+            <option value="boolean">
+              {t("admin.taxonomyAttributeRegistryTab.booleenOuiNon")}
+            </option>
             <option value="range">Plage / Intervalle</option>
-            <option value="year">{t('admin.taxonomyAttributeRegistryTab.anneeMillesime')}</option>
+            <option value="year">
+              {t("admin.taxonomyAttributeRegistryTab.anneeMillesime")}
+            </option>
           </select>
         </div>
       </div>
@@ -114,7 +135,9 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             >
               <div className="space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-stone-900 text-xs">{attr.label}</span>
+                  <span className="font-bold text-stone-900 text-xs">
+                    {attr.label}
+                  </span>
                   <span className="text-micro bg-primary-light text-primary px-2 py-0.5 rounded-full font-mono font-bold shrink-0 uppercase">
                     {attr.dataType}
                   </span>
@@ -148,11 +171,13 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                     </span>
                   )}
                   {attr.searchable && (
-                    <span className="bg-success-surface text-success px-1.5 py-0.5 rounded font-semibold">{t('admin.taxonomyAttributeRegistryTab.moteurRecherche')}</span>
+                    <span className="bg-success-surface text-success px-1.5 py-0.5 rounded font-semibold">
+                      {t("admin.taxonomyAttributeRegistryTab.moteurRecherche")}
+                    </span>
                   )}
                   {attr.options && (
                     <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-semibold">
-                      {plural(attr.options.length, 'option')}
+                      {plural(attr.options.length, "option")}
                     </span>
                   )}
                 </div>
@@ -160,7 +185,10 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
 
               {/* Card Footer: Usage & Edit */}
               <div className="flex items-center justify-between pt-3 border-t border-border-subtle text-xs">
-                <span className="text-micro text-stone-500 font-medium">{t('admin.taxonomyAttributeRegistryTab.utilisePar')}<strong>{consumersCount}</strong> rubrique{consumersCount > 1 ? 's' : ''}
+                <span className="text-micro text-stone-500 font-medium">
+                  {t("admin.taxonomyAttributeRegistryTab.utilisePar")}
+                  <strong>{consumersCount}</strong> rubrique
+                  {consumersCount > 1 ? "s" : ""}
                 </span>
 
                 <Button
@@ -168,7 +196,9 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                   size="sm"
                   onClick={() => handleOpenEdit(attr)}
                   leftIcon={<Edit2 className="w-3 h-3" />}
-                >{t('admin.taxonomyAttributeRegistryTab.editer')}</Button>
+                >
+                  {t("admin.taxonomyAttributeRegistryTab.editer")}
+                </Button>
               </div>
             </div>
           );

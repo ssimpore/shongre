@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { useAuthorization } from './useAuthorization';
-import { MessageKey } from '../i18n/messages.fr';
+import { useMemo } from "react";
+import { useAuthorization } from "./useAuthorization";
+import { MessageKey } from "../i18n/messages.fr";
 
 export interface PublishCta {
   /** Where the button should actually take this user. */
@@ -43,34 +43,38 @@ export function usePublishCta(): PublishCtaKeys {
   return useMemo(() => {
     if (isSuspended || isDeactivated) {
       return {
-        to: '/compte',
-        labelKey: isSuspended ? 'publishCta.accountSuspended' : 'publishCta.accountInactive',
-        shortLabelKey: isSuspended ? 'publishCta.suspendedShort' : 'publishCta.inactiveShort',
+        to: "/compte",
+        labelKey: isSuspended
+          ? "publishCta.accountSuspended"
+          : "publishCta.accountInactive",
+        shortLabelKey: isSuspended
+          ? "publishCta.suspendedShort"
+          : "publishCta.inactiveShort",
       };
     }
 
-    if (can('listing.create')) {
+    if (can("listing.create")) {
       return {
-        to: '/deposer',
-        labelKey: 'publishCta.postListing',
-        shortLabelKey: 'publishCta.postListingShort',
+        to: "/deposer",
+        labelKey: "publishCta.postListing",
+        shortLabelKey: "publishCta.postListingShort",
       };
     }
 
     // Signed in but not a seller: the missing piece is a seller account, not auth.
     if (currentUser) {
       return {
-        to: '/inscription/particulier',
-        labelKey: 'publishCta.becomeSeller',
-        shortLabelKey: 'publishCta.becomeSellerShort',
+        to: "/inscription/particulier",
+        labelKey: "publishCta.becomeSeller",
+        shortLabelKey: "publishCta.becomeSellerShort",
       };
     }
 
     // Guest: "Déposer une annonce" leads them to the publish flow where auth/account is created.
     return {
-      to: '/deposer',
-      labelKey: 'publishCta.postListing',
-      shortLabelKey: 'publishCta.postListingShort',
+      to: "/deposer",
+      labelKey: "publishCta.postListing",
+      shortLabelKey: "publishCta.postListingShort",
     };
   }, [can, currentUser, isSuspended, isDeactivated]);
 }

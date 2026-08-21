@@ -20,19 +20,19 @@
  * Playwright instead.
  */
 
-export const SITE_NAME = 'Shongre';
+export const SITE_NAME = "Shongre";
 
 /** Must stay in step with the fallback description in `index.html`. */
 export const DEFAULT_DESCRIPTION =
-  'Plateforme moderne de petites annonces pour particuliers et professionnels ' +
-  'avec réservation sécurisée sous séquestre, paiement en ligne, remise en main ' +
-  'propre et livraison intégrée.';
+  "Plateforme moderne de petites annonces pour particuliers et professionnels " +
+  "avec réservation sécurisée sous séquestre, paiement en ligne, remise en main " +
+  "propre et livraison intégrée.";
 
-export const DEFAULT_TITLE = 'Shongre - Petites Annonces Particuliers & Pros';
+export const DEFAULT_TITLE = "Shongre - Petites Annonces Particuliers & Pros";
 
 export interface StructuredData {
-  '@context': string;
-  '@type': string;
+  "@context": string;
+  "@type": string;
   [key: string]: unknown;
 }
 
@@ -44,7 +44,7 @@ export interface PageMeta {
   canonicalPath?: string;
   /** Absolute URL. Omitted rather than faked when a page has no image. */
   image?: string;
-  type?: 'website' | 'article' | 'product' | 'profile';
+  type?: "website" | "article" | "product" | "profile";
   /** Keeps a page out of the index. Use for anything behind auth or transient. */
   noIndex?: boolean;
   structuredData?: StructuredData[];
@@ -57,11 +57,12 @@ export interface PageMeta {
  * append produced "… | Shongre | Shongre".
  */
 export function resolveTitle(title?: string): string {
-  const trimmed = (title ?? '').trim();
+  const trimmed = (title ?? "").trim();
   if (!trimmed) return DEFAULT_TITLE;
   // Any of the separators a title might use before the brand: pipe, hyphen,
   // en dash, em dash.
-  if (new RegExp(`[|\\-–—]\\s*${SITE_NAME}\\s*$`, 'i').test(trimmed)) return trimmed;
+  if (new RegExp(`[|\\-–—]\\s*${SITE_NAME}\\s*$`, "i").test(trimmed))
+    return trimmed;
   return `${trimmed} | ${SITE_NAME}`;
 }
 
@@ -76,10 +77,10 @@ export function resolveTitle(title?: string): string {
  * `canonicalPath` explicitly.
  */
 export function resolveCanonical(path: string, origin: string): string {
-  const cleanOrigin = origin.replace(/\/+$/, '');
-  const [bare] = (path || '/').split(/[?#]/);
-  const normalised = bare.startsWith('/') ? bare : `/${bare}`;
-  const trimmed = normalised.length > 1 ? normalised.replace(/\/+$/, '') : '/';
+  const cleanOrigin = origin.replace(/\/+$/, "");
+  const [bare] = (path || "/").split(/[?#]/);
+  const normalised = bare.startsWith("/") ? bare : `/${bare}`;
+  const trimmed = normalised.length > 1 ? normalised.replace(/\/+$/, "") : "/";
   return `${cleanOrigin}${trimmed}`;
 }
 
@@ -89,10 +90,10 @@ export function buildBreadcrumbSchema(
   origin: string,
 ): StructuredData {
   return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
     itemListElement: trail.map((crumb, index) => ({
-      '@type': 'ListItem',
+      "@type": "ListItem",
       position: index + 1,
       name: crumb.name,
       ...(crumb.path ? { item: resolveCanonical(crumb.path, origin) } : {}),
@@ -105,11 +106,16 @@ export function buildBreadcrumbSchema(
 /* -------------------------------------------------------------------------- */
 
 /** Marks tags this module created, so cleanup never removes static markup. */
-const MANAGED = 'data-seo-managed';
-const LD_MARKER = 'data-seo-ld';
+const MANAGED = "data-seo-managed";
+const LD_MARKER = "data-seo-ld";
 
-function upsertMeta(selector: string, attribute: 'name' | 'property', key: string, value?: string) {
-  if (typeof document === 'undefined') return;
+function upsertMeta(
+  selector: string,
+  attribute: "name" | "property",
+  key: string,
+  value?: string,
+) {
+  if (typeof document === "undefined") return;
   const existing = document.head.querySelector<HTMLMetaElement>(selector);
 
   if (!value) {
@@ -119,36 +125,40 @@ function upsertMeta(selector: string, attribute: 'name' | 'property', key: strin
   }
 
   if (existing) {
-    existing.setAttribute('content', value);
+    existing.setAttribute("content", value);
     return;
   }
 
-  const tag = document.createElement('meta');
+  const tag = document.createElement("meta");
   tag.setAttribute(attribute, key);
-  tag.setAttribute('content', value);
-  tag.setAttribute(MANAGED, '');
+  tag.setAttribute("content", value);
+  tag.setAttribute(MANAGED, "");
   document.head.appendChild(tag);
 }
 
 function upsertCanonical(url: string) {
-  if (typeof document === 'undefined') return;
-  let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (typeof document === "undefined") return;
+  let link = document.head.querySelector<HTMLLinkElement>(
+    'link[rel="canonical"]',
+  );
   if (!link) {
-    link = document.createElement('link');
-    link.setAttribute('rel', 'canonical');
-    link.setAttribute(MANAGED, '');
+    link = document.createElement("link");
+    link.setAttribute("rel", "canonical");
+    link.setAttribute(MANAGED, "");
     document.head.appendChild(link);
   }
-  link.setAttribute('href', url);
+  link.setAttribute("href", url);
 }
 
 function applyStructuredData(entries: StructuredData[]) {
-  if (typeof document === 'undefined') return;
-  document.head.querySelectorAll(`script[${LD_MARKER}]`).forEach((node) => node.remove());
+  if (typeof document === "undefined") return;
+  document.head
+    .querySelectorAll(`script[${LD_MARKER}]`)
+    .forEach((node) => node.remove());
   for (const entry of entries) {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute(LD_MARKER, '');
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute(LD_MARKER, "");
     script.textContent = JSON.stringify(entry);
     document.head.appendChild(script);
   }
@@ -156,43 +166,66 @@ function applyStructuredData(entries: StructuredData[]) {
 
 /** Writes one page's metadata over whatever the previous route left behind. */
 export function applyPageMeta(meta: PageMeta): void {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
 
   const origin = window.location.origin;
   const title = resolveTitle(meta.title);
   const description = meta.description?.trim() || DEFAULT_DESCRIPTION;
-  const canonical = resolveCanonical(meta.canonicalPath ?? window.location.pathname, origin);
+  const canonical = resolveCanonical(
+    meta.canonicalPath ?? window.location.pathname,
+    origin,
+  );
 
   document.title = title;
 
-  upsertMeta('meta[name="description"]', 'name', 'description', description);
+  upsertMeta('meta[name="description"]', "name", "description", description);
   upsertCanonical(canonical);
 
-  upsertMeta('meta[property="og:title"]', 'property', 'og:title', title);
-  upsertMeta('meta[property="og:description"]', 'property', 'og:description', description);
-  upsertMeta('meta[property="og:type"]', 'property', 'og:type', meta.type ?? 'website');
-  upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonical);
-  upsertMeta('meta[property="og:site_name"]', 'property', 'og:site_name', SITE_NAME);
-  upsertMeta('meta[property="og:locale"]', 'property', 'og:locale', 'fr_FR');
-  upsertMeta('meta[property="og:image"]', 'property', 'og:image', meta.image);
+  upsertMeta('meta[property="og:title"]', "property", "og:title", title);
+  upsertMeta(
+    'meta[property="og:description"]',
+    "property",
+    "og:description",
+    description,
+  );
+  upsertMeta(
+    'meta[property="og:type"]',
+    "property",
+    "og:type",
+    meta.type ?? "website",
+  );
+  upsertMeta('meta[property="og:url"]', "property", "og:url", canonical);
+  upsertMeta(
+    'meta[property="og:site_name"]',
+    "property",
+    "og:site_name",
+    SITE_NAME,
+  );
+  upsertMeta('meta[property="og:locale"]', "property", "og:locale", "fr_FR");
+  upsertMeta('meta[property="og:image"]', "property", "og:image", meta.image);
 
   // A `summary_large_image` card with no image renders as a blank panel, so the
   // card type follows whether this page actually has one.
   upsertMeta(
     'meta[name="twitter:card"]',
-    'name',
-    'twitter:card',
-    meta.image ? 'summary_large_image' : 'summary',
+    "name",
+    "twitter:card",
+    meta.image ? "summary_large_image" : "summary",
   );
-  upsertMeta('meta[name="twitter:title"]', 'name', 'twitter:title', title);
-  upsertMeta('meta[name="twitter:description"]', 'name', 'twitter:description', description);
-  upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', meta.image);
+  upsertMeta('meta[name="twitter:title"]', "name", "twitter:title", title);
+  upsertMeta(
+    'meta[name="twitter:description"]',
+    "name",
+    "twitter:description",
+    description,
+  );
+  upsertMeta('meta[name="twitter:image"]', "name", "twitter:image", meta.image);
 
   upsertMeta(
     'meta[name="robots"]',
-    'name',
-    'robots',
-    meta.noIndex ? 'noindex, nofollow' : undefined,
+    "name",
+    "robots",
+    meta.noIndex ? "noindex, nofollow" : undefined,
   );
 
   applyStructuredData(meta.structuredData ?? []);

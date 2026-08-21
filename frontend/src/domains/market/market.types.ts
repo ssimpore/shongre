@@ -3,23 +3,18 @@
  */
 
 export type MarketStatus =
-  | 'draft'
-  | 'configured'
-  | 'coming_soon'
-  | 'active'
-  | 'paused'
-  | 'archived';
+  "draft" | "configured" | "coming_soon" | "active" | "paused" | "archived";
 
-export type SettingSource = 'FR' | 'LOCAL' | 'PLATFORM_DEFAULT';
+export type SettingSource = "FR" | "LOCAL" | "PLATFORM_DEFAULT";
 
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? T[P]
     : T[P] extends readonly (infer U)[]
-    ? T[P]
-    : T[P] extends object
-    ? DeepPartial<T[P]>
-    : T[P];
+      ? T[P]
+      : T[P] extends object
+        ? DeepPartial<T[P]>
+        : T[P];
 };
 
 export interface MarketCity {
@@ -48,7 +43,7 @@ export interface GeneralMarketConfig {
   tagline: string;
   supportEmail: string;
   supportPhone?: string;
-  launchState: 'full' | 'selected_cities';
+  launchState: "full" | "selected_cities";
 }
 
 export interface LocalizationMarketConfig {
@@ -79,7 +74,7 @@ export interface ListingsMarketConfig {
 
 export interface PaymentsMarketConfig {
   enabled: boolean;
-  provider: 'mangopay_escrow' | 'stripe_connect' | 'none';
+  provider: "mangopay_escrow" | "stripe_connect" | "none";
   supportedMethods: {
     card: boolean;
     applePay: boolean;
@@ -236,10 +231,10 @@ export interface Market {
   currency: string;
   currencySymbol: string;
   timezone: string;
-  
+
   geography: MarketGeography;
   overrides: MarketOverrides; // Delta overrides relative to France
-  
+
   createdAt: string;
   updatedAt: string;
   version: number;

@@ -3,19 +3,21 @@
   "private": true,
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "mobile",
+    "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=frontend",
+    "dev": "make dev",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
-    "build": "npm run build --workspace=frontend && rm -rf dist && cp -r frontend/dist ./dist",
-    "build:frontend": "npm run build --workspace=frontend && rm -rf dist && cp -r frontend/dist ./dist",
+    "build": "make build",
+    "build:frontend": "make frontend-build",
     "build:backend": "npm run build --workspace=backend",
-    "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "lint": "make lint",
     "lint:frontend": "npm run lint --workspace=frontend",
     "lint:backend": "npm run lint --workspace=backend",
-    "test": "npm run test --workspace=frontend && npm run test --workspace=backend",
+    "test": "make test",
     "test:frontend": "npm run test --workspace=frontend",
     "test:backend": "npm run test --workspace=backend",
     "test:backend:unit": "npm run test:unit --workspace=backend",
@@ -27,10 +29,20 @@
     "check:boundary": "node backend/scripts/maintenance/check-boundary.js",
     "check:frontend": "npm run check --workspace=frontend",
     "check:backend": "npm run lint --workspace=backend && npm run test --workspace=backend && npm run build --workspace=backend && npm run benchmark --workspace=backend && npm run check:boundary",
-    "check": "npm run check --workspace=frontend && npm run test --workspace=backend && npm run build --workspace=backend && npm run check:boundary",
-    "preview": "npm run preview --workspace=frontend"
+    "check": "make check",
+    "tokens:check": "make tokens-check",
+    "ui:check": "make ui-check",
+    "cross-platform:check": "make cross-platform-check",
+    "preview": "npm run start --workspace=frontend"
+  },
+  "overrides": {
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^10.0.5",
+    "prettier": "^3.6.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   }
 }

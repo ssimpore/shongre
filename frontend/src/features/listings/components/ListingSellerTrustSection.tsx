@@ -1,10 +1,13 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Star, Clock, MapPin,  ChevronRight } from 'lucide-react';
-import { UserProfile, ReviewItem } from '../../../types';
-import { Avatar, Badge } from '../../../design-system/primitives/Badge';
-import { isProSeller, showsVerifiedBadge } from '../../../domains/user/user.domain';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React from "react";
+import { Link } from "react-router-dom";
+import { ShieldCheck, Star, Clock, MapPin, ChevronRight } from "lucide-react";
+import { UserProfile, ReviewItem } from "../../../types";
+import { Avatar, Badge } from "../../../design-system/primitives/Badge";
+import {
+  isProSeller,
+  showsVerifiedBadge,
+} from "../../../domains/user/user.domain";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface ListingSellerTrustSectionProps {
   seller: UserProfile;
@@ -12,25 +15,30 @@ export interface ListingSellerTrustSectionProps {
   className?: string;
 }
 
-export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps> = ({
-  seller,
-  reviews = [],
-  className = '',
-}) => {
+export const ListingSellerTrustSection: React.FC<
+  ListingSellerTrustSectionProps
+> = ({ seller, reviews = [], className = "" }) => {
   const { t } = useTranslation();
   const isPro = isProSeller(seller);
-  const profileUrl = isPro && seller.storeSlug ? `/boutique/${seller.storeSlug}` : `/profil/${seller.slug || seller.id}`;
+  const profileUrl =
+    isPro && seller.storeSlug
+      ? `/boutique/${seller.storeSlug}`
+      : `/profil/${seller.slug || seller.id}`;
 
   return (
-    <div className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}>
+    <div
+      className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-black text-stone-900">{t('listings.listingSellerTrustSection.aProposDuVendeur')}</h2>
+        <h2 className="text-base font-black text-stone-900">
+          {t("listings.listingSellerTrustSection.aProposDuVendeur")}
+        </h2>
         <Link
           to={profileUrl}
           className="text-sm font-bold text-primary hover:text-primary-hover hover:underline flex items-center gap-1 transition-colors"
         >
-          <span>{isPro ? 'Voir la boutique' : 'Voir le profil'}</span>
+          <span>{isPro ? "Voir la boutique" : "Voir le profil"}</span>
           <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -56,8 +64,16 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
             >
               {seller.companyName || seller.name}
             </Link>
-            {isPro && <Badge variant="pro" size="sm">{t('listings.listingSellerTrustSection.vendeurPro')}</Badge>}
-            {showsVerifiedBadge(seller) && <Badge variant="verified" size="sm" icon>{t('listings.listingSellerTrustSection.verifie')}</Badge>}
+            {isPro && (
+              <Badge variant="pro" size="sm">
+                {t("listings.listingSellerTrustSection.vendeurPro")}
+              </Badge>
+            )}
+            {showsVerifiedBadge(seller) && (
+              <Badge variant="verified" size="sm" icon>
+                {t("listings.listingSellerTrustSection.verifie")}
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-stone-600 flex-wrap">
@@ -66,8 +82,10 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
               className="flex items-center gap-1 font-bold text-stone-900 hover:text-primary"
             >
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>{seller.rating ? seller.rating.toFixed(1) : '5.0'}</span>
-              <span className="font-normal text-stone-500">({seller.reviewCount || 0} avis)</span>
+              <span>{seller.rating ? seller.rating.toFixed(1) : "5.0"}</span>
+              <span className="font-normal text-stone-500">
+                ({seller.reviewCount || 0} avis)
+              </span>
             </Link>
             <span>•</span>
             <span className="flex items-center gap-1 text-stone-500">
@@ -88,11 +106,15 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
       <div className="grid grid-cols-2 gap-2 text-xs text-stone-600 pt-2 border-t border-border-subtle">
         <div className="flex items-center gap-1.5 min-w-0">
           <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-          <span className="truncate">Répond {seller.responseTimeText || 'en quelques heures'}</span>
+          <span className="truncate">
+            Répond {seller.responseTimeText || "en quelques heures"}
+          </span>
         </div>
         <div className="flex items-center gap-1.5 min-w-0">
           <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0" />
-          <span className="truncate">Taux de réponse : {seller.responseRatePercent ?? 100}%</span>
+          <span className="truncate">
+            Taux de réponse : {seller.responseRatePercent ?? 100}%
+          </span>
         </div>
       </div>
 
@@ -104,21 +126,32 @@ export const ListingSellerTrustSection: React.FC<ListingSellerTrustSectionProps>
           </div>
           <div className="space-y-2">
             {reviews.slice(0, 2).map((rev) => (
-              <div key={rev.id} className="p-2.5 bg-bg-base/60 rounded-xl border border-border-base text-xs space-y-1">
+              <div
+                key={rev.id}
+                className="p-2.5 bg-bg-base/60 rounded-xl border border-border-base text-xs space-y-1"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-stone-800">{rev.authorName}</span>
+                  <span className="font-bold text-stone-800">
+                    {rev.authorName}
+                  </span>
                   <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
                         className={`w-3 h-3 ${
-                          i < rev.rating ? 'fill-amber-400 text-amber-400' : 'text-stone-300'
+                          i < rev.rating
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-stone-300"
                         }`}
                       />
                     ))}
                   </div>
                 </div>
-                {rev.comment && <p className="text-stone-600 text-micro italic">« {rev.comment} »</p>}
+                {rev.comment && (
+                  <p className="text-stone-600 text-micro italic">
+                    « {rev.comment} »
+                  </p>
+                )}
               </div>
             ))}
           </div>

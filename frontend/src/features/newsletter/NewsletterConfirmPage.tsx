@@ -1,35 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2,   ShieldCheck } from 'lucide-react';
-import { Button } from '../../design-system/primitives/Button';
-import { newsletterRepository } from '../../repositories/newsletter.repository';
-import { useToast } from '../../app/providers/ToastProvider';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { Button } from "../../design-system/primitives/Button";
+import { newsletterRepository } from "../../repositories/newsletter.repository";
+import { useToast } from "../../app/providers/ToastProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const NewsletterConfirmPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.newsletterConfirm.title'),
-    description: t('meta.newsletterConfirm.description'),
-    canonicalPath: '/newsletter/confirmer',
+    title: t("meta.newsletterConfirm.title"),
+    description: t("meta.newsletterConfirm.description"),
+    canonicalPath: "/newsletter/confirmer",
     noIndex: true,
   });
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const emailParam = searchParams.get('email') || 'thomas@example.fr';
+  const emailParam = searchParams.get("email") || "thomas@example.fr";
 
   const [, setConfirmed] = useState(false);
 
   useEffect(() => {
-    newsletterRepository.confirmSubscription(emailParam).then(() => {
-      setConfirmed(true);
-      toast.success('Votre adresse a bien été validée.', 'Inscription confirmée');
-    }).catch(() => {
-      setConfirmed(true);
-    });
+    newsletterRepository
+      .confirmSubscription(emailParam)
+      .then(() => {
+        setConfirmed(true);
+        toast.success(
+          "Votre adresse a bien été validée.",
+          "Inscription confirmée",
+        );
+      })
+      .catch(() => {
+        setConfirmed(true);
+      });
   }, [emailParam]);
 
   return (
@@ -40,26 +46,41 @@ export const NewsletterConfirmPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">{t('newsletter.newsletterConfirmPage.abonnementConfirme')}</h1>
+          <h1 className="text-2xl font-black text-stone-900">
+            {t("newsletter.newsletterConfirmPage.abonnementConfirme")}
+          </h1>
           <p className="text-xs sm:text-sm text-stone-600">
-            L'adresse <strong className="text-stone-900 font-mono">{emailParam}</strong> est désormais inscrite à la newsletter Shongre.
+            L'adresse{" "}
+            <strong className="text-stone-900 font-mono">{emailParam}</strong>{" "}
+            est désormais inscrite à la newsletter Shongre.
           </p>
         </div>
 
         <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-xs text-stone-500 text-left flex items-start gap-3">
           <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-          <span>{t('newsletter.newsletterConfirmPage.vousRecevrezChaqueSemaineLes')}</span>
+          <span>
+            {t("newsletter.newsletterConfirmPage.vousRecevrezChaqueSemaineLes")}
+          </span>
         </div>
 
         <div className="space-y-2 pt-2">
-          <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">{t('newsletter.newsletterConfirmPage.explorerLesAnnonces')}</Button>
+          <Button
+            variant="primary"
+            fullWidth
+            onClick={() => navigate("/")}
+            className="font-bold"
+          >
+            {t("newsletter.newsletterConfirmPage.explorerLesAnnonces")}
+          </Button>
           <Button
             to="/compte/newsletter"
             variant="outline"
             fullWidth
             size="sm"
             className="font-semibold"
-          >{t('newsletter.newsletterConfirmPage.gererMesThematiques')}</Button>
+          >
+            {t("newsletter.newsletterConfirmPage.gererMesThematiques")}
+          </Button>
         </div>
       </div>
     </div>

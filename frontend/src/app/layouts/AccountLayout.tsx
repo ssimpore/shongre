@@ -1,7 +1,7 @@
-import { routes } from '../../configuration/routes';
-import { isProSeller } from '../../domains/user/user.domain';
-import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { routes } from "../../configuration/routes";
+import { isProSeller } from "../../domains/user/user.domain";
+import React from "react";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
   User,
   List,
@@ -10,8 +10,6 @@ import {
   MessageSquare,
   Bell,
   ShoppingBag,
-  
-  
   Shield,
   ShieldCheck,
   Settings,
@@ -20,13 +18,13 @@ import {
   Sparkles,
   LogOut,
   Headphones,
-  Mail
-} from 'lucide-react';
-import { useAuth } from '../providers/AuthProvider';
-import { useNotifications } from '../providers/NotificationProvider';
-import { Avatar, Badge, Container } from '../../design-system';
-import { storageService } from '../../services/storage.service';
-import { useTranslation } from '../../i18n/I18nProvider';
+  Mail,
+} from "lucide-react";
+import { useAuth } from "../providers/AuthProvider";
+import { useNotifications } from "../providers/NotificationProvider";
+import { Avatar, Badge, Container } from "../../design-system";
+import { storageService } from "../../services/storage.service";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 function AdminRoleIcon({ label }: { label: string }): React.ReactElement {
   return (
@@ -48,45 +46,114 @@ export const AccountLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const isPro = isProSeller(currentUser);
-  const isAdmin = platformRole === 'admin' || platformRole === 'super_admin';
-  const adminRoleLabel = platformRole === 'super_admin'
-    ? t('shell.accountLayout.roleSuperAdministrateur')
-    : t('shell.accountLayout.roleAdministrateur');
-  const accountName = (currentUser?.companyName || currentUser?.name || 'Mon Compte').replace(/\s+\([^)]*\)\s*$/, '');
+  const isAdmin = platformRole === "admin" || platformRole === "super_admin";
+  const adminRoleLabel =
+    platformRole === "super_admin"
+      ? t("shell.accountLayout.roleSuperAdministrateur")
+      : t("shell.accountLayout.roleAdministrateur");
+  const accountName = (
+    currentUser?.companyName ||
+    currentUser?.name ||
+    "Mon Compte"
+  ).replace(/\s+\([^)]*\)\s*$/, "");
 
   // Every badge here must be scoped to the signed-in user — see
   // storageService.getUnreadMessageCount for why.
   const unreadMsgCount = storageService.getUnreadMessageCount(currentUser?.id);
   const favCount = currentUser ? storageService.getFavorites().length : 0;
-  const savedSearchCount = currentUser ? storageService.getSavedSearches().length : 0;
+  const savedSearchCount = currentUser
+    ? storageService.getSavedSearches().length
+    : 0;
   const myListingsCount = currentUser
-    ? storageService.getListings().filter((l) => l.sellerId === currentUser.id).length
+    ? storageService.getListings().filter((l) => l.sellerId === currentUser.id)
+        .length
     : 0;
 
   const navItems = [
-    { to: '/compte', label: 'Vue d\'ensemble', icon: <User className="w-4 h-4" />, end: true },
-    { to: '/compte/annonces', label: 'Mes annonces', icon: <List className="w-4 h-4" />, count: myListingsCount },
-    { to: '/compte/favoris', label: 'Mes favoris', icon: <Heart className="w-4 h-4" />, count: favCount },
-    { to: '/compte/recherches', label: 'Recherches sauvegardées', icon: <Search className="w-4 h-4" />, count: savedSearchCount },
-    { to: '/compte/messages', label: 'Messages & Offres', icon: <MessageSquare className="w-4 h-4" />, count: unreadMsgCount },
-    { to: '/compte/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" />, count: unreadNotifCount },
-    { to: '/compte/achats', label: 'Transactions & Séquestre', icon: <ShoppingBag className="w-4 h-4" /> },
-    { to: '/compte/verification', label: 'Sécurité & Vérification', icon: <Shield className="w-4 h-4 text-success" /> },
-    { to: '/compte/support', label: 'Aide & Assistance', icon: <Headphones className="w-4 h-4" /> },
-    { to: '/compte/newsletter', label: 'Newsletter & Alertes', icon: <Mail className="w-4 h-4" /> },
-    { to: '/compte/profil', label: 'Mon profil & Coordonnées', icon: <Settings className="w-4 h-4" /> },
+    {
+      to: "/compte",
+      label: "Vue d'ensemble",
+      icon: <User className="w-4 h-4" />,
+      end: true,
+    },
+    {
+      to: "/compte/annonces",
+      label: "Mes annonces",
+      icon: <List className="w-4 h-4" />,
+      count: myListingsCount,
+    },
+    {
+      to: "/compte/favoris",
+      label: "Mes favoris",
+      icon: <Heart className="w-4 h-4" />,
+      count: favCount,
+    },
+    {
+      to: "/compte/recherches",
+      label: "Recherches sauvegardées",
+      icon: <Search className="w-4 h-4" />,
+      count: savedSearchCount,
+    },
+    {
+      to: "/compte/messages",
+      label: "Messages & Offres",
+      icon: <MessageSquare className="w-4 h-4" />,
+      count: unreadMsgCount,
+    },
+    {
+      to: "/compte/notifications",
+      label: "Notifications",
+      icon: <Bell className="w-4 h-4" />,
+      count: unreadNotifCount,
+    },
+    {
+      to: "/compte/achats",
+      label: "Transactions & Séquestre",
+      icon: <ShoppingBag className="w-4 h-4" />,
+    },
+    {
+      to: "/compte/verification",
+      label: "Sécurité & Vérification",
+      icon: <Shield className="w-4 h-4 text-success" />,
+    },
+    {
+      to: "/compte/support",
+      label: "Aide & Assistance",
+      icon: <Headphones className="w-4 h-4" />,
+    },
+    {
+      to: "/compte/newsletter",
+      label: "Newsletter & Alertes",
+      icon: <Mail className="w-4 h-4" />,
+    },
+    {
+      to: "/compte/profil",
+      label: "Mon profil & Coordonnées",
+      icon: <Settings className="w-4 h-4" />,
+    },
   ];
 
   const proNavItems = [
-    { to: '/compte/pro/tableau-de-bord', label: 'Dashboard Pro', icon: <BarChart3 className="w-4 h-4 text-primary" /> },
-    { to: '/compte/pro/vitrine', label: 'Personnaliser ma vitrine', icon: <Briefcase className="w-4 h-4 text-primary" /> },
-    { to: '/compte/pro/abonnements', label: 'Mon forfait & Facturation', icon: <Sparkles className="w-4 h-4 text-amber-500" /> },
+    {
+      to: "/compte/pro/tableau-de-bord",
+      label: "Dashboard Pro",
+      icon: <BarChart3 className="w-4 h-4 text-primary" />,
+    },
+    {
+      to: "/compte/pro/vitrine",
+      label: "Personnaliser ma vitrine",
+      icon: <Briefcase className="w-4 h-4 text-primary" />,
+    },
+    {
+      to: "/compte/pro/abonnements",
+      label: "Mon forfait & Facturation",
+      icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+    },
   ];
 
   return (
     <Container className="py-5 sm:py-7">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 sm:gap-7">
-        
         {/* Mobile & Tablet Navigation Header (< lg).
             `min-w-0` is required: a grid item defaults to `min-width:auto`, so
             without it the nested `overflow-x-auto` rail stretches the whole
@@ -103,27 +170,42 @@ export const AccountLayout: React.FC = () => {
                 isPro={isPro}
               />
               <div className="min-w-0">
-                <div className="flex min-w-0 items-center gap-1.5" data-account-identity>
-                  <span className="min-w-0 truncate font-bold text-xs text-stone-900 sm:text-sm" title={accountName}>
+                <div
+                  className="flex min-w-0 items-center gap-1.5"
+                  data-account-identity
+                >
+                  <span
+                    className="min-w-0 truncate font-bold text-xs text-stone-900 sm:text-sm"
+                    title={accountName}
+                  >
                     {accountName}
                   </span>
                   {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
-                <div className="text-xs text-stone-500 truncate" title={currentUser?.email}>{currentUser?.email}</div>
+                <div
+                  className="text-xs text-stone-500 truncate"
+                  title={currentUser?.email}
+                >
+                  {currentUser?.email}
+                </div>
               </div>
             </div>
             <div>
               {isPro ? (
-                <Badge variant="pro" size="sm" icon>{t('shell.accountLayout.proBadge')}</Badge>
+                <Badge variant="pro" size="sm" icon>
+                  {t("shell.accountLayout.proBadge")}
+                </Badge>
               ) : (
-                <Badge variant="neutral" size="sm">Particulier</Badge>
+                <Badge variant="neutral" size="sm">
+                  Particulier
+                </Badge>
               )}
             </div>
           </div>
 
           {/* Horizontally scrollable navigation tabs */}
           <nav
-            aria-label={t('shell.accountLayout.navigationDuCompte')}
+            aria-label={t("shell.accountLayout.navigationDuCompte")}
             className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-1 -mx-1 px-1 no-scrollbar"
           >
             {navItems.map((item) => (
@@ -134,8 +216,8 @@ export const AccountLayout: React.FC = () => {
                 className={({ isActive }) =>
                   `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                     isActive
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-bg-subtle text-stone-700 hover:bg-bg-muted hover:text-stone-900'
+                      ? "bg-primary text-white shadow-xs"
+                      : "bg-bg-subtle text-stone-700 hover:bg-bg-muted hover:text-stone-900"
                   }`
                 }
               >
@@ -157,8 +239,8 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                       isActive
-                        ? 'bg-primary text-white shadow-xs'
-                        : 'bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface'
+                        ? "bg-primary text-white shadow-xs"
+                        : "bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface"
                     }`
                   }
                 >
@@ -172,29 +254,43 @@ export const AccountLayout: React.FC = () => {
         {/* Desktop Navigation Sidebar (>= lg) */}
         <aside className="hidden lg:block lg:col-span-1">
           <div className="bg-bg-surface rounded-card border border-border-base p-5 sticky top-20 shadow-xs">
-            
             {/* User Header */}
-          <div className="flex items-center gap-3 pb-4 border-b border-border-subtle">
-            <Avatar
-              src={currentUser?.avatarUrl}
-              name={accountName}
-              size="xl"
-              isVerified={currentUser?.isVerified}
-              isPro={isPro}
-            />
+            <div className="flex items-center gap-3 pb-4 border-b border-border-subtle">
+              <Avatar
+                src={currentUser?.avatarUrl}
+                name={accountName}
+                size="xl"
+                isVerified={currentUser?.isVerified}
+                isPro={isPro}
+              />
               <div className="min-w-0 flex-1">
-                <div className="flex min-w-0 items-center gap-1.5" data-account-identity>
-                  <span className="min-w-0 truncate font-bold text-stone-900" title={accountName}>
+                <div
+                  className="flex min-w-0 items-center gap-1.5"
+                  data-account-identity
+                >
+                  <span
+                    className="min-w-0 truncate font-bold text-stone-900"
+                    title={accountName}
+                  >
                     {accountName}
                   </span>
                   {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
-                <div className="text-xs text-stone-500 truncate" title={currentUser?.email}>{currentUser?.email}</div>
+                <div
+                  className="text-xs text-stone-500 truncate"
+                  title={currentUser?.email}
+                >
+                  {currentUser?.email}
+                </div>
                 <div className="mt-1.5">
                   {isPro ? (
-                    <Badge variant="pro" size="sm" icon>{t('shell.accountLayout.proBadge')}</Badge>
+                    <Badge variant="pro" size="sm" icon>
+                      {t("shell.accountLayout.proBadge")}
+                    </Badge>
                   ) : (
-                    <Badge variant="neutral" size="sm">Particulier</Badge>
+                    <Badge variant="neutral" size="sm">
+                      Particulier
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -213,8 +309,8 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                       isActive
-                        ? 'bg-primary-light text-primary'
-                        : 'text-stone-700 hover:bg-bg-subtle hover:text-stone-900'
+                        ? "bg-primary-light text-primary"
+                        : "text-stone-700 hover:bg-bg-subtle hover:text-stone-900"
                     }`
                   }
                 >
@@ -243,8 +339,8 @@ export const AccountLayout: React.FC = () => {
                       className={({ isActive }) =>
                         `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                           isActive
-                            ? 'bg-primary-light text-primary'
-                            : 'text-stone-700 hover:bg-bg-subtle hover:text-stone-900'
+                            ? "bg-primary-light text-primary"
+                            : "text-stone-700 hover:bg-bg-subtle hover:text-stone-900"
                         }`
                       }
                     >
@@ -268,7 +364,7 @@ export const AccountLayout: React.FC = () => {
                   className="w-full min-h-control-sm flex items-center gap-2.5 px-3 text-xs font-semibold text-danger hover:bg-danger-surface rounded-control motion-interactive cursor-pointer text-left"
                 >
                   <LogOut className="w-4 h-4 text-danger" />
-                  <span>{t('shell.accountLayout.seDeconnecter')}</span>
+                  <span>{t("shell.accountLayout.seDeconnecter")}</span>
                 </button>
               </div>
             </nav>

@@ -1,5 +1,5 @@
-import { activeDataLocale } from '../../i18n/localized';
-import { TaxonomyLabelMode, TaxonomyLabelOptions } from './taxonomy.types';
+import { activeDataLocale } from "../../i18n/localized";
+import { TaxonomyLabelMode, TaxonomyLabelOptions } from "./taxonomy.types";
 
 /**
  * Label resolution for taxonomy nodes.
@@ -19,13 +19,13 @@ export function getTaxonomyLabel(
     labels?: Record<string, string>;
     shortLabels?: Record<string, string>;
   } | null,
-  modeOrOptions: TaxonomyLabelMode | TaxonomyLabelOptions = 'full'
+  modeOrOptions: TaxonomyLabelMode | TaxonomyLabelOptions = "full",
 ): string {
-  if (!node) return '';
+  if (!node) return "";
 
   const isCompact =
-    typeof modeOrOptions === 'string'
-      ? modeOrOptions === 'compact'
+    typeof modeOrOptions === "string"
+      ? modeOrOptions === "compact"
       : Boolean(modeOrOptions.compact);
 
   /* Falls back to the visitor's locale, not to French.
@@ -35,7 +35,7 @@ export function getTaxonomyLabel(
      rendered the French label regardless of the interface language. The
      translations were present and unreachable. */
   const locale =
-    typeof modeOrOptions === 'object' && modeOrOptions.locale
+    typeof modeOrOptions === "object" && modeOrOptions.locale
       ? modeOrOptions.locale
       : activeDataLocale();
 
@@ -46,7 +46,7 @@ export function getTaxonomyLabel(
       if (locShort.length > 0) return locShort;
     }
     // 2. Direct shortLabel
-    if (node.shortLabel && typeof node.shortLabel === 'string') {
+    if (node.shortLabel && typeof node.shortLabel === "string") {
       const directShort = node.shortLabel.trim();
       if (directShort.length > 0) return directShort;
     }
@@ -59,6 +59,6 @@ export function getTaxonomyLabel(
   }
 
   // Fallback to canonical label / name
-  const canonical = (node.label ?? node.name ?? '').trim();
+  const canonical = (node.label ?? node.name ?? "").trim();
   return canonical;
 }

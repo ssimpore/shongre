@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ShieldCheck,
   FileText,
@@ -11,13 +11,13 @@ import {
   ArrowLeft,
   Sparkles,
   Lock,
-} from 'lucide-react';
-import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
-import { Button } from '../../../design-system/primitives/Button';
-import { KycDocumentType } from '../../../domains/verification/verification.types';
-import { useVerification } from '../../../domains/verification/useVerification';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { useTranslation } from '../../../i18n/I18nProvider';
+} from "lucide-react";
+import { useDialogBehavior } from "../../../design-system/primitives/useDialogBehavior";
+import { Button } from "../../../design-system/primitives/Button";
+import { KycDocumentType } from "../../../domains/verification/verification.types";
+import { useVerification } from "../../../domains/verification/useVerification";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface IdentityVerificationModalProps {
   isOpen: boolean;
@@ -25,22 +25,27 @@ export interface IdentityVerificationModalProps {
   onSuccess?: () => void;
 }
 
-export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess,
-}) => {
+export const IdentityVerificationModal: React.FC<
+  IdentityVerificationModalProps
+> = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const { currentUser, submitKyc } = useVerification();
   const toast = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [documentType, setDocumentType] = useState<KycDocumentType>('national_id');
-  const [issuingCountry, setIssuingCountry] = useState(currentUser?.country || 'FR');
-  const [firstName, setFirstName] = useState(currentUser?.name?.split(' ')[0] || '');
-  const [lastName, setLastName] = useState(currentUser?.name?.split(' ').slice(1).join(' ') || '');
-  const [birthDate, setBirthDate] = useState('1990-01-01');
-  const [documentNumber, setDocumentNumber] = useState('');
+  const [documentType, setDocumentType] =
+    useState<KycDocumentType>("national_id");
+  const [issuingCountry, setIssuingCountry] = useState(
+    currentUser?.country || "FR",
+  );
+  const [firstName, setFirstName] = useState(
+    currentUser?.name?.split(" ")[0] || "",
+  );
+  const [lastName, setLastName] = useState(
+    currentUser?.name?.split(" ").slice(1).join(" ") || "",
+  );
+  const [birthDate, setBirthDate] = useState("1990-01-01");
+  const [documentNumber, setDocumentNumber] = useState("");
   const [frontUploaded, setFrontUploaded] = useState(false);
   const [backUploaded, setBackUploaded] = useState(false);
   const [selfieCaptured, setSelfieCaptured] = useState(false);
@@ -55,7 +60,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() || !lastName.trim() || !birthDate) {
-      setError('Veuillez renseigner vos prénom, nom et date de naissance.');
+      setError("Veuillez renseigner vos prénom, nom et date de naissance.");
       return;
     }
     setError(null);
@@ -65,11 +70,11 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
   const handleStep2Submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!frontUploaded) {
-      setError('Veuillez téléverser le recto de votre pièce d\'identité.');
+      setError("Veuillez téléverser le recto de votre pièce d'identité.");
       return;
     }
-    if (documentType === 'national_id' && !backUploaded) {
-      setError('Veuillez téléverser le verso de votre carte d\'identité.');
+    if (documentType === "national_id" && !backUploaded) {
+      setError("Veuillez téléverser le verso de votre carte d'identité.");
       return;
     }
     setError(null);
@@ -89,11 +94,15 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
           lastName,
           birthDate,
           documentNumber: documentNumber.trim() || undefined,
-          frontDocumentUrl: 'blob:https://shongre.market/mock-id-front.jpg',
-          backDocumentUrl: backUploaded ? 'blob:https://shongre.market/mock-id-back.jpg' : undefined,
-          selfieUrl: selfieCaptured ? 'blob:https://shongre.market/mock-selfie.jpg' : undefined,
+          frontDocumentUrl: "blob:https://shongre.market/mock-id-front.jpg",
+          backDocumentUrl: backUploaded
+            ? "blob:https://shongre.market/mock-id-back.jpg"
+            : undefined,
+          selfieUrl: selfieCaptured
+            ? "blob:https://shongre.market/mock-selfie.jpg"
+            : undefined,
         },
-        instantApproval
+        instantApproval,
       );
 
       if (res.success) {
@@ -104,7 +113,7 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
         setError(res.message);
       }
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la vérification.');
+      setError(err.message || "Erreur lors de la vérification.");
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +149,14 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">{t('verification.identityVerificationModal.verificationDIdentiteOfficielleKyc')}</h3>
+            <h3
+              id={titleId}
+              className="text-lg font-black text-stone-900 leading-tight"
+            >
+              {t(
+                "verification.identityVerificationModal.verificationDIdentiteOfficielleKyc",
+              )}
+            </h3>
             <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
               <span>Étape {step} sur 3</span>
               <span>•</span>
@@ -170,13 +186,20 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
         {step === 1 && (
           <form onSubmit={handleStep1Submit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('verification.identityVerificationModal.typeDePieceDIdentite')}</label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                {t(
+                  "verification.identityVerificationModal.typeDePieceDIdentite",
+                )}
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: 'national_id', label: 'Carte Nationale d\'Identité (CNI)' },
-                  { id: 'passport', label: 'Passeport' },
-                  { id: 'residence_permit', label: 'Titre de séjour' },
-                  { id: 'driving_license', label: 'Permis de conduire' },
+                  {
+                    id: "national_id",
+                    label: "Carte Nationale d'Identité (CNI)",
+                  },
+                  { id: "passport", label: "Passeport" },
+                  { id: "residence_permit", label: "Titre de séjour" },
+                  { id: "driving_license", label: "Permis de conduire" },
                 ].map((doc) => (
                   <button
                     key={doc.id}
@@ -184,8 +207,8 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                     onClick={() => setDocumentType(doc.id as KycDocumentType)}
                     className={`p-3 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
                       documentType === doc.id
-                        ? 'border-emerald-600 bg-success-surface/50 text-success ring-2 ring-emerald-600/20'
-                        : 'border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700'
+                        ? "border-emerald-600 bg-success-surface/50 text-success ring-2 ring-emerald-600/20"
+                        : "border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700"
                     }`}
                   >
                     <FileText className="w-4 h-4 mb-1.5 text-stone-500" />
@@ -197,7 +220,9 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.identityVerificationModal.prenomS')}<span className="text-primary">*</span>
+                <label className="block text-xs font-bold text-stone-800 mb-1">
+                  {t("verification.identityVerificationModal.prenomS")}
+                  <span className="text-primary">*</span>
                 </label>
                 <input
                   type="text"
@@ -209,7 +234,9 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.identityVerificationModal.nomDeFamille')}<span className="text-primary">*</span>
+                <label className="block text-xs font-bold text-stone-800 mb-1">
+                  {t("verification.identityVerificationModal.nomDeFamille")}
+                  <span className="text-primary">*</span>
                 </label>
                 <input
                   type="text"
@@ -224,7 +251,9 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.identityVerificationModal.dateDeNaissance')}<span className="text-primary">*</span>
+                <label className="block text-xs font-bold text-stone-800 mb-1">
+                  {t("verification.identityVerificationModal.dateDeNaissance")}
+                  <span className="text-primary">*</span>
                 </label>
                 <input
                   type="date"
@@ -235,7 +264,9 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.identityVerificationModal.paysEmetteur')}</label>
+                <label className="block text-xs font-bold text-stone-800 mb-1">
+                  {t("verification.identityVerificationModal.paysEmetteur")}
+                </label>
                 <select
                   value={issuingCountry}
                   onChange={(e) => setIssuingCountry(e.target.value)}
@@ -257,7 +288,11 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 variant="primary"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-              >{t('verification.identityVerificationModal.continuerVersLesDocuments')}</Button>
+              >
+                {t(
+                  "verification.identityVerificationModal.continuerVersLesDocuments",
+                )}
+              </Button>
             </div>
           </form>
         )}
@@ -265,7 +300,11 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
         {/* Step 2: Upload Documents */}
         {step === 2 && (
           <form onSubmit={handleStep2Submit} className="space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed">{t('verification.identityVerificationModal.televersezUnePhotoNetteEt')}</p>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              {t(
+                "verification.identityVerificationModal.televersezUnePhotoNetteEt",
+              )}
+            </p>
 
             {/* Front Upload */}
             <button
@@ -273,64 +312,93 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               onClick={() => setFrontUploaded(true)}
               className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 frontUploaded
-                  ? 'border-success bg-success-surface text-success'
-                  : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
+                  ? "border-success bg-success-surface text-success"
+                  : "border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    frontUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
+                    frontUploaded
+                      ? "bg-success text-white"
+                      : "bg-stone-200 text-stone-600"
                   }`}
                 >
-                  {frontUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+                  {frontUploaded ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <Upload className="w-5 h-5" />
+                  )}
                 </div>
                 <div>
                   <div className="text-xs font-bold">
-                    {frontUploaded ? 'Recto du document chargé' : 'Téléverser le recto (face photo)'}
+                    {frontUploaded
+                      ? "Recto du document chargé"
+                      : "Téléverser le recto (face photo)"}
                   </div>
-                  <div className="text-micro text-stone-500">{t('verification.identityVerificationModal.formatsAcceptesJpgPngPdf')}</div>
+                  <div className="text-micro text-stone-500">
+                    {t(
+                      "verification.identityVerificationModal.formatsAcceptesJpgPngPdf",
+                    )}
+                  </div>
                 </div>
               </div>
               <span className="text-xs font-bold text-success">
-                {frontUploaded ? 'Remplacer' : 'Sélectionner'}
+                {frontUploaded ? "Remplacer" : "Sélectionner"}
               </span>
             </button>
 
             {/* Back Upload (for CNI & Driving License) */}
-            {(documentType === 'national_id' || documentType === 'driving_license') && (
+            {(documentType === "national_id" ||
+              documentType === "driving_license") && (
               <button
                 type="button"
                 onClick={() => setBackUploaded(true)}
                 className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   backUploaded
-                    ? 'border-success bg-success-surface text-success'
-                    : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
+                    ? "border-success bg-success-surface text-success"
+                    : "border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      backUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
+                      backUploaded
+                        ? "bg-success text-white"
+                        : "bg-stone-200 text-stone-600"
                     }`}
                   >
-                    {backUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+                    {backUploaded ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : (
+                      <Upload className="w-5 h-5" />
+                    )}
                   </div>
                   <div>
                     <div className="text-xs font-bold">
-                      {backUploaded ? 'Verso du document chargé' : 'Téléverser le verso (bande MRZ)'}
+                      {backUploaded
+                        ? "Verso du document chargé"
+                        : "Téléverser le verso (bande MRZ)"}
                     </div>
-                    <div className="text-micro text-stone-500">{t('verification.identityVerificationModal.requisPourLaValidationOptique')}</div>
+                    <div className="text-micro text-stone-500">
+                      {t(
+                        "verification.identityVerificationModal.requisPourLaValidationOptique",
+                      )}
+                    </div>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-success">
-                  {backUploaded ? 'Remplacer' : 'Sélectionner'}
+                  {backUploaded ? "Remplacer" : "Sélectionner"}
                 </span>
               </button>
             )}
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.identityVerificationModal.numeroDuDocumentFacultatifLu')}</label>
+              <label className="block text-xs font-bold text-stone-800 mb-1">
+                {t(
+                  "verification.identityVerificationModal.numeroDuDocumentFacultatifLu",
+                )}
+              </label>
               <input
                 type="text"
                 value={documentNumber}
@@ -355,7 +423,11 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 variant="primary"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-              >{t('verification.identityVerificationModal.verificationBiometrique')}</Button>
+              >
+                {t(
+                  "verification.identityVerificationModal.verificationBiometrique",
+                )}
+              </Button>
             </div>
           </form>
         )}
@@ -363,7 +435,11 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
         {/* Step 3: Biometric / Selfie Liveness Check */}
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed">{t('verification.identityVerificationModal.unRapideControleDePresence')}</p>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              {t(
+                "verification.identityVerificationModal.unRapideControleDePresence",
+              )}
+            </p>
 
             <div className="bg-stone-900 rounded-2xl p-6 text-center text-white relative overflow-hidden shadow-inner">
               <div className="w-24 h-24 mx-auto rounded-full border-4 border-emerald-400/80 flex items-center justify-center mb-3 relative bg-stone-800">
@@ -376,9 +452,15 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               </div>
 
               <h4 className="text-sm font-bold mb-1">
-                {selfieCaptured ? 'Contrôle biométrique validé' : 'Positionnez votre visage au centre'}
+                {selfieCaptured
+                  ? "Contrôle biométrique validé"
+                  : "Positionnez votre visage au centre"}
               </h4>
-              <p className="text-micro text-stone-400 max-w-xs mx-auto mb-4">{t('verification.identityVerificationModal.regardezLObjectifSansLunettes')}</p>
+              <p className="text-micro text-stone-400 max-w-xs mx-auto mb-4">
+                {t(
+                  "verification.identityVerificationModal.regardezLObjectifSansLunettes",
+                )}
+              </p>
 
               <button
                 type="button"
@@ -386,7 +468,11 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
                 className="px-4 py-2 bg-success hover:bg-success text-white text-xs font-bold rounded-xl transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
               >
                 <Camera className="w-3.5 h-3.5" />
-                <span>{selfieCaptured ? 'Reprendre la photo' : 'Effectuer le selfie de contrôle'}</span>
+                <span>
+                  {selfieCaptured
+                    ? "Reprendre la photo"
+                    : "Effectuer le selfie de contrôle"}
+                </span>
               </button>
             </div>
 
@@ -395,8 +481,16 @@ export const IdentityVerificationModal: React.FC<IdentityVerificationModalProps>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
-                  <div className="font-bold">{t('verification.identityVerificationModal.modeDemonstrationShongre')}</div>
-                  <div className="text-micro text-warning">{t('verification.identityVerificationModal.validationInstantaneeParSimulationOcr')}</div>
+                  <div className="font-bold">
+                    {t(
+                      "verification.identityVerificationModal.modeDemonstrationShongre",
+                    )}
+                  </div>
+                  <div className="text-micro text-warning">
+                    {t(
+                      "verification.identityVerificationModal.validationInstantaneeParSimulationOcr",
+                    )}
+                  </div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">

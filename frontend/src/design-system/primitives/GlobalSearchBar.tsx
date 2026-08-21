@@ -1,38 +1,42 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   MapPin,
   Layers,
   ChevronDown,
   X,
-  
   Check,
-  Compass
-} from 'lucide-react';
-import { TAXONOMY } from '../../domains/taxonomy/taxonomy.data';
-import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
-import { CategoryIcon } from './CategoryIcon';
-import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
-import { routes } from '../../configuration/routes';
+  Compass,
+} from "lucide-react";
+import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { CategoryIcon } from "./CategoryIcon";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { routes } from "../../configuration/routes";
 import {
   SEARCH_PLACEHOLDER,
   getSearchSuggestions,
   AutocompleteResults,
-} from '../../configuration/search.config';
-import { SearchAutocomplete, AutocompleteSelection } from './SearchAutocomplete';
-import { storageService } from '../../services/storage.service';
-import { useTranslation } from '../../i18n/I18nProvider';
+} from "../../configuration/search.config";
+import {
+  SearchAutocomplete,
+  AutocompleteSelection,
+} from "./SearchAutocomplete";
+import { storageService } from "../../services/storage.service";
+import { useTranslation } from "../../i18n/I18nProvider";
 import {
   DropdownMenu,
-  
   DROPDOWN_PANEL_CLASSES,
   DROPDOWN_HEADER_CLASSES,
   DROPDOWN_HEADER_TITLE_CLASSES,
   DROPDOWN_ITEM_CLASSES,
-  DROPDOWN_SEARCH_INPUT_CLASSES
-} from './DropdownMenu';
-import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+  DROPDOWN_SEARCH_INPUT_CLASSES,
+} from "./DropdownMenu";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../utils/controlMetrics";
 
 export interface GlobalSearchCriteria {
   query: string;
@@ -50,7 +54,7 @@ export interface GlobalSearchBarProps {
    * - 'search-page': Multi-field bar for top of search results page with direct filter synchronization and optional radius control.
    * - 'minimal': Single-row or stacked compact variant for mobile drawers or tight spaces.
    */
-  variant?: 'hero' | 'header' | 'search-page' | 'minimal';
+  variant?: "hero" | "header" | "search-page" | "minimal";
   initialQuery?: string;
   initialCategorySlug?: string;
   initialSubCategorySlug?: string;
@@ -77,18 +81,18 @@ export interface GlobalSearchBarProps {
 }
 
 export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
-  variant = 'hero',
-  initialQuery = '',
-  initialCategorySlug = '',
-  initialSubCategorySlug = '',
+  variant = "hero",
+  initialQuery = "",
+  initialCategorySlug = "",
+  initialSubCategorySlug = "",
   initialCity,
   initialRadiusKm,
   showCategory = true,
   showLocation = true,
   showRadius = false,
   placeholder,
-  className = '',
-  idPrefix = 'global-search',
+  className = "",
+  idPrefix = "global-search",
   autoFocus = false,
   onSearch,
   onQueryChange,
@@ -99,23 +103,39 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { location: userLocation, openLocationModal, activeMarket } = useMarketLocation();
+  const {
+    location: userLocation,
+    openLocationModal,
+    activeMarket,
+  } = useMarketLocation();
 
   const [query, setQuery] = useState(initialQuery);
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState(initialCategorySlug);
-  const [selectedSubCategorySlug, setSelectedSubCategorySlug] = useState(initialSubCategorySlug);
+  const [selectedCategorySlug, setSelectedCategorySlug] =
+    useState(initialCategorySlug);
+  const [selectedSubCategorySlug, setSelectedSubCategorySlug] = useState(
+    initialSubCategorySlug,
+  );
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
-  const [categoryFilterText, setCategoryFilterText] = useState('');
+  const [categoryFilterText, setCategoryFilterText] = useState("");
 
   // Autocomplete state
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  const isCountryWide = userLocation.city.startsWith('Tout') || userLocation.city.startsWith('Toute');
-  const effectiveCity = initialCity !== undefined ? initialCity : (!isCountryWide ? userLocation.city : '');
+  const isCountryWide =
+    userLocation.city.startsWith("Tout") ||
+    userLocation.city.startsWith("Toute");
+  const effectiveCity =
+    initialCity !== undefined
+      ? initialCity
+      : !isCountryWide
+        ? userLocation.city
+        : "";
   const [city, setCity] = useState(effectiveCity);
-  const [radiusKm, setRadiusKm] = useState<number | undefined>(initialRadiusKm ?? userLocation.radiusKm ?? 0);
+  const [radiusKm, setRadiusKm] = useState<number | undefined>(
+    initialRadiusKm ?? userLocation.radiusKm ?? 0,
+  );
 
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -149,7 +169,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     } else if (!isCountryWide) {
       setCity(userLocation.city);
     } else {
-      setCity('');
+      setCity("");
     }
   }, [initialCity, userLocation.city, isCountryWide]);
 
@@ -180,7 +200,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     if (!isCategoryMenuOpen && !isAutocompleteOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsCategoryMenuOpen(false);
         setIsAutocompleteOpen(false);
       }
@@ -188,25 +208,35 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
     const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as Node;
-      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(target)) {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(target)
+      ) {
         setIsCategoryMenuOpen(false);
       }
-      if (searchContainerRef.current && !searchContainerRef.current.contains(target)) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(target)
+      ) {
         setIsAutocompleteOpen(false);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [isCategoryMenuOpen, isAutocompleteOpen]);
 
   // Find active category
-  const activeCategory = TAXONOMY.find((cat) => cat.slug === selectedCategorySlug);
-  const activeCategoryLabel = activeCategory ? getTaxonomyLabel(activeCategory, 'compact') : 'Catégories';
+  const activeCategory = TAXONOMY.find(
+    (cat) => cat.slug === selectedCategorySlug,
+  );
+  const activeCategoryLabel = activeCategory
+    ? getTaxonomyLabel(activeCategory, "compact")
+    : "Catégories";
 
   // Filtered categories for dropdown search
   const filteredCategories = TAXONOMY.filter((cat) => {
@@ -214,25 +244,26 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     const search = categoryFilterText.toLowerCase();
     return (
       cat.name.toLowerCase().includes(search) ||
-      getTaxonomyLabel(cat, 'compact').toLowerCase().includes(search) ||
+      getTaxonomyLabel(cat, "compact").toLowerCase().includes(search) ||
       cat.slug.toLowerCase().includes(search) ||
-      cat.subCategories.some((sub) =>
-        sub.name.toLowerCase().includes(search) ||
-        getTaxonomyLabel(sub, 'compact').toLowerCase().includes(search)
+      cat.subCategories.some(
+        (sub) =>
+          sub.name.toLowerCase().includes(search) ||
+          getTaxonomyLabel(sub, "compact").toLowerCase().includes(search),
       )
     );
   });
 
   const handleCategorySelect = (categorySlug?: string) => {
-    setSelectedCategorySlug(categorySlug || '');
-    setSelectedSubCategorySlug('');
+    setSelectedCategorySlug(categorySlug || "");
+    setSelectedSubCategorySlug("");
     setIsCategoryMenuOpen(false);
-    setCategoryFilterText('');
+    setCategoryFilterText("");
   };
 
   const handleClearQuery = () => {
-    setQuery('');
-    onQueryChange?.('');
+    setQuery("");
+    onQueryChange?.("");
     setSelectedIndex(-1);
     if (searchInputRef.current) {
       searchInputRef.current.focus();
@@ -241,9 +272,17 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   };
 
   const executeSearch = (customCriteria?: Partial<GlobalSearchCriteria>) => {
-    const finalQuery = (customCriteria?.query !== undefined ? customCriteria.query : query).trim();
-    const finalCategory = customCriteria?.categorySlug !== undefined ? customCriteria.categorySlug : selectedCategorySlug;
-    const finalSubCategory = customCriteria?.subCategorySlug !== undefined ? customCriteria.subCategorySlug : selectedSubCategorySlug;
+    const finalQuery = (
+      customCriteria?.query !== undefined ? customCriteria.query : query
+    ).trim();
+    const finalCategory =
+      customCriteria?.categorySlug !== undefined
+        ? customCriteria.categorySlug
+        : selectedCategorySlug;
+    const finalSubCategory =
+      customCriteria?.subCategorySlug !== undefined
+        ? customCriteria.subCategorySlug
+        : selectedSubCategorySlug;
 
     if (finalQuery) {
       try {
@@ -319,7 +358,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     e.stopPropagation();
     try {
       const updated = recentSearches.filter((s) => s !== searchItem);
-      storageService.setByKey('shongre_recent_searches_v1', updated);
+      storageService.setByKey("shongre_recent_searches_v1", updated);
       setRecentSearches(updated);
     } catch (err) {
       console.error(err);
@@ -329,7 +368,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const handleClearAllRecentSearches = (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      storageService.setByKey('shongre_recent_searches_v1', []);
+      storageService.setByKey("shongre_recent_searches_v1", []);
       setRecentSearches([]);
     } catch (err) {
       console.error(err);
@@ -337,20 +376,24 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isAutocompleteOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    if (!isAutocompleteOpen && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
       setIsAutocompleteOpen(true);
       return;
     }
 
     if (!isAutocompleteOpen) return;
 
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev < totalSelectableCount - 1 ? prev + 1 : 0));
-    } else if (e.key === 'ArrowUp') {
+      setSelectedIndex((prev) =>
+        prev < totalSelectableCount - 1 ? prev + 1 : 0,
+      );
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : totalSelectableCount - 1));
-    } else if (e.key === 'Enter') {
+      setSelectedIndex((prev) =>
+        prev > 0 ? prev - 1 : totalSelectableCount - 1,
+      );
+    } else if (e.key === "Enter") {
       if (selectedIndex >= 0) {
         e.preventDefault();
         const trimmed = query.trim();
@@ -393,7 +436,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           }
         }
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setIsAutocompleteOpen(false);
     }
   };
@@ -402,19 +445,20 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // action items, so the long placeholder truncated mid-word to "Que recher".
   // The examples it carried are already offered by the autocomplete panel, which
   // shows trending searches as soon as the field is focused.
-  const isNarrowSurface = variant === 'minimal' || variant === 'header';
+  const isNarrowSurface = variant === "minimal" || variant === "header";
   const resolvedPlaceholder =
-    placeholder || (isNarrowSurface ? SEARCH_PLACEHOLDER.compact : SEARCH_PLACEHOLDER.full);
+    placeholder ||
+    (isNarrowSurface ? SEARCH_PLACEHOLDER.compact : SEARCH_PLACEHOLDER.full);
 
   // ---------------------------------------------------------------------------
   // Variant: HEADER (Desktop Header Bar)
   // ---------------------------------------------------------------------------
-  if (variant === 'header') {
+  if (variant === "header") {
     return (
       <div className="relative w-full min-w-0" ref={searchContainerRef}>
         <form
           role="search"
-          aria-label={t('ui.globalSearchBar.rechercheGlobale')}
+          aria-label={t("ui.globalSearchBar.rechercheGlobale")}
           onSubmit={handleSubmit}
           className={`flex items-stretch h-control-md w-full min-w-0 bg-bg-base border border-border-base rounded-control overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-bg-surface focus-within:shadow-xs ${CONTROL_MOTION_CLASS} ${className}`}
         >
@@ -425,18 +469,21 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               bar narrows to keyword + submit, and category/location stay
               reachable from the results page filters. */}
           {showCategory && (
-            <div className="relative shrink hidden lg:flex items-center min-w-0" ref={categoryDropdownRef}>
+            <div
+              className="relative shrink hidden lg:flex items-center min-w-0"
+              ref={categoryDropdownRef}
+            >
               <button
                 id={`${idPrefix}-header-category-button`}
                 type="button"
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
                 aria-expanded={isCategoryMenuOpen}
                 aria-haspopup="menu"
-                aria-label={t('ui.globalSearchBar.selectionnerUneCategorie')}
+                aria-label={t("ui.globalSearchBar.selectionnerUneCategorie")}
                 className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer rounded-l-control focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset min-w-0 w-full ${
                   selectedCategorySlug
-                    ? 'bg-primary-light text-primary hover:bg-primary-light/80'
-                    : 'text-stone-700 hover:bg-bg-subtle'
+                    ? "bg-primary-light text-primary hover:bg-primary-light/80"
+                    : "text-stone-700 hover:bg-bg-subtle"
                 }`}
               >
                 {activeCategory ? (
@@ -444,10 +491,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 ) : (
                   <Layers className="w-3.5 h-3.5 text-stone-500" />
                 )}
-                <span className="max-w-[76px] xl:max-w-[110px] truncate">{activeCategoryLabel}</span>
+                <span className="max-w-[76px] xl:max-w-[110px] truncate">
+                  {activeCategoryLabel}
+                </span>
                 <ChevronDown
                   className={`w-3 h-3 text-stone-500 transition-transform ${
-                    isCategoryMenuOpen ? 'rotate-180' : ''
+                    isCategoryMenuOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
@@ -461,11 +510,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 >
                   <div className={DROPDOWN_HEADER_CLASSES}>
                     <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
-                      <span>{t('ui.globalSearchBar.filtrerParCategorie')}</span>
+                      <span>{t("ui.globalSearchBar.filtrerParCategorie")}</span>
                     </div>
                     <input
                       type="text"
-                      placeholder={t('ui.globalSearchBar.rechercherUneCategorie')}
+                      placeholder={t(
+                        "ui.globalSearchBar.rechercherUneCategorie",
+                      )}
                       value={categoryFilterText}
                       onChange={(e) => setCategoryFilterText(e.target.value)}
                       className={DROPDOWN_SEARCH_INPUT_CLASSES}
@@ -484,9 +535,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <Layers className="w-3.5 h-3.5 text-stone-500" />
-                      <span>{t('ui.globalSearchBar.toutesLesCategories')}</span>
+                      <span>{t("ui.globalSearchBar.toutesLesCategories")}</span>
                     </div>
-                    {!selectedCategorySlug && <Check className="w-3.5 h-3.5 text-primary" />}
+                    {!selectedCategorySlug && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
                   </button>
 
                   {filteredCategories.map((cat) => (
@@ -502,7 +555,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <CategoryIcon category={cat} size="xs" />
-                        <span className="truncate">{getTaxonomyLabel(cat, 'compact')}</span>
+                        <span className="truncate">
+                          {getTaxonomyLabel(cat, "compact")}
+                        </span>
                       </div>
                       {selectedCategorySlug === cat.slug && (
                         <Check className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -521,7 +576,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               ref={searchInputRef}
               id={`${idPrefix}-header-query-input`}
               type="search"
-              aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
+              aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
@@ -547,7 +602,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={handleClearQuery}
-                aria-label={t('ui.globalSearchBar.effacerLeTexte')}
+                aria-label={t("ui.globalSearchBar.effacerLeTexte")}
                 className={`inline-flex items-center justify-center w-6 h-6 mr-1.5 text-stone-500 hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
               >
                 <X className="w-3.5 h-3.5" />
@@ -565,7 +620,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               className={`hidden lg:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink min-w-0 max-w-[150px] xl:max-w-[200px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
             >
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="truncate whitespace-nowrap">{city || userLocation.label}</span>
+              <span className="truncate whitespace-nowrap">
+                {city || userLocation.label}
+              </span>
             </button>
           )}
 
@@ -573,7 +630,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           <button
             id={`${idPrefix}-header-submit-button`}
             type="submit"
-            aria-label={t('ui.globalSearchBar.lancerLaRecherche')}
+            aria-label={t("ui.globalSearchBar.lancerLaRecherche")}
             /* Negative margins pull the button over the form's 1px border so it
                reaches the outer edge — otherwise a pale 1px rim traced the top,
                right and bottom of the orange block and read as a seam. The radius
@@ -607,12 +664,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // ---------------------------------------------------------------------------
   // Variant: MINIMAL (Mobile Drawer or Compact Bar)
   // ---------------------------------------------------------------------------
-  if (variant === 'minimal') {
+  if (variant === "minimal") {
     return (
       <div className="relative" ref={searchContainerRef}>
         <form
           role="search"
-          aria-label={t('ui.globalSearchBar.rechercheMobile')}
+          aria-label={t("ui.globalSearchBar.rechercheMobile")}
           onSubmit={handleSubmit}
           className={`space-y-2.5 ${className}`}
         >
@@ -625,7 +682,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
               aria-controls={`${idPrefix}-autocomplete-dropdown`}
-              aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
+              aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
               placeholder={resolvedPlaceholder}
               value={query}
               onChange={(e) => {
@@ -643,8 +700,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={handleClearQuery}
-                aria-label={t('ui.globalSearchBar.effacerLeTexte')}
-                    className={`absolute right-2.5 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
+                aria-label={t("ui.globalSearchBar.effacerLeTexte")}
+                className={`absolute right-2.5 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -662,8 +719,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
                     className={`w-full h-control-md flex items-center justify-between px-2.5 rounded-control border text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                       selectedCategorySlug
-                        ? 'bg-primary-light border-primary-border text-primary'
-                        : 'bg-bg-base border-border-base text-stone-700 hover:bg-bg-subtle'
+                        ? "bg-primary-light border-primary-border text-primary"
+                        : "bg-bg-base border-border-base text-stone-700 hover:bg-bg-subtle"
                     }`}
                   >
                     <span className="truncate">{activeCategoryLabel}</span>
@@ -676,18 +733,24 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                         type="button"
                         onClick={() => handleCategorySelect(undefined)}
                         className="w-full px-3 py-1.5 text-xs text-left font-bold hover:bg-bg-subtle text-stone-800"
-                      >{t('ui.globalSearchBar.toutesLesCategories2')}</button>
+                      >
+                        {t("ui.globalSearchBar.toutesLesCategories2")}
+                      </button>
                       {TAXONOMY.map((cat) => (
                         <button
                           key={cat.id}
                           type="button"
                           onClick={() => handleCategorySelect(cat.slug)}
                           className={`w-full px-3 py-1.5 text-xs text-left flex items-center gap-2 hover:bg-primary-light ${
-                            selectedCategorySlug === cat.slug ? 'font-bold text-primary bg-primary-light' : 'text-stone-700'
+                            selectedCategorySlug === cat.slug
+                              ? "font-bold text-primary bg-primary-light"
+                              : "text-stone-700"
                           }`}
                         >
                           <CategoryIcon category={cat} size="xs" />
-                          <span className="truncate">{getTaxonomyLabel(cat, 'compact')}</span>
+                          <span className="truncate">
+                            {getTaxonomyLabel(cat, "compact")}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -704,9 +767,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 >
                   <div className="flex items-center gap-1 truncate">
                     <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="truncate">{city || userLocation.label}</span>
+                    <span className="truncate">
+                      {city || userLocation.label}
+                    </span>
                   </div>
-                  <span className="text-micro text-primary font-bold shrink-0 ml-1">Changer</span>
+                  <span className="text-micro text-primary font-bold shrink-0 ml-1">
+                    Changer
+                  </span>
                 </button>
               )}
             </div>
@@ -745,12 +812,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // ---------------------------------------------------------------------------
   // Variant: SEARCH-PAGE (Search Results Top Bar)
   // ---------------------------------------------------------------------------
-  if (variant === 'search-page') {
+  if (variant === "search-page") {
     return (
       <div className="relative" ref={searchContainerRef}>
         <form
           role="search"
-          aria-label={t('ui.globalSearchBar.rechercheEtFiltres')}
+          aria-label={t("ui.globalSearchBar.rechercheEtFiltres")}
           onSubmit={handleSubmit}
           className={`flex flex-row flex-wrap sm:flex-nowrap gap-2 ${className}`}
         >
@@ -759,7 +826,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               sub-category and location, and stacking them here pushed the first
               result off the fold. */}
           {showCategory && (
-            <div className="relative shrink-0 hidden sm:block" ref={categoryDropdownRef}>
+            <div
+              className="relative shrink-0 hidden sm:block"
+              ref={categoryDropdownRef}
+            >
               <button
                 id={`${idPrefix}-page-category-button`}
                 type="button"
@@ -768,8 +838,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 aria-haspopup="menu"
                 className={`h-control-touch px-3.5 rounded-control border text-xs font-semibold flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                   selectedCategorySlug
-                    ? 'bg-primary-light border-primary-border text-primary font-bold'
-                    : 'bg-bg-base border-border-base hover:bg-bg-subtle text-stone-700'
+                    ? "bg-primary-light border-primary-border text-primary font-bold"
+                    : "bg-bg-base border-border-base hover:bg-bg-subtle text-stone-700"
                 }`}
               >
                 <div className="flex items-center gap-2 truncate">
@@ -778,11 +848,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   ) : (
                     <Layers className="w-3.5 h-3.5 text-stone-500" />
                   )}
-                  <span className="truncate max-w-[130px]">{activeCategoryLabel}</span>
+                  <span className="truncate max-w-[130px]">
+                    {activeCategoryLabel}
+                  </span>
                 </div>
                 <ChevronDown
                   className={`w-3 h-3 text-stone-400 transition-transform shrink-0 ${
-                    isCategoryMenuOpen ? 'rotate-180' : ''
+                    isCategoryMenuOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
@@ -798,12 +870,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
                       <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                         <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>{t('ui.globalSearchBar.categories')}</span>
+                        <span>{t("ui.globalSearchBar.categories")}</span>
                       </div>
                     </div>
                     <input
                       type="text"
-                      placeholder={t('ui.globalSearchBar.filtrerLesCategories')}
+                      placeholder={t("ui.globalSearchBar.filtrerLesCategories")}
                       value={categoryFilterText}
                       onChange={(e) => setCategoryFilterText(e.target.value)}
                       className={DROPDOWN_SEARCH_INPUT_CLASSES}
@@ -822,9 +894,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <Layers className="w-3.5 h-3.5 text-stone-500" />
-                      <span>{t('ui.globalSearchBar.toutesLesCategories')}</span>
+                      <span>{t("ui.globalSearchBar.toutesLesCategories")}</span>
                     </div>
-                    {!selectedCategorySlug && <Check className="w-3.5 h-3.5 text-primary" />}
+                    {!selectedCategorySlug && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
                   </button>
 
                   {filteredCategories.map((cat) => (
@@ -840,7 +914,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <CategoryIcon category={cat} size="xs" />
-                        <span className="truncate">{getTaxonomyLabel(cat, 'compact')}</span>
+                        <span className="truncate">
+                          {getTaxonomyLabel(cat, "compact")}
+                        </span>
                       </div>
                       {selectedCategorySlug === cat.slug && (
                         <Check className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -859,7 +935,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               ref={searchInputRef}
               id={`${idPrefix}-page-query-input`}
               type="search"
-              aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
+              aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
               role="combobox"
               aria-expanded={isAutocompleteOpen}
               aria-autocomplete="list"
@@ -879,8 +955,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               <button
                 type="button"
                 onClick={handleClearQuery}
-                aria-label={t('ui.globalSearchBar.effacerLeTexte')}
-              className={`absolute right-3 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
+                aria-label={t("ui.globalSearchBar.effacerLeTexte")}
+                className={`absolute right-3 inline-flex items-center justify-center w-6 h-6 text-stone-500 hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -916,11 +992,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     </div>
                   }
                   options={[
-                    { value: '0', label: 'Ville exacte' },
-                    { value: '10', label: '+10 km' },
-                    { value: '30', label: '+30 km' },
-                    { value: '50', label: '+50 km' },
-                    { value: '100', label: '+100 km' },
+                    { value: "0", label: "Ville exacte" },
+                    { value: "10", label: "+10 km" },
+                    { value: "30", label: "+30 km" },
+                    { value: "50", label: "+50 km" },
+                    { value: "100", label: "+100 km" },
                   ]}
                   value={String(radiusKm || 0)}
                   onChange={(val) => setRadiusKm(Number(val))}
@@ -932,7 +1008,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               id={`${idPrefix}-page-submit-button`}
               type="submit"
               className={`h-control-touch px-3.5 sm:px-5 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
-              aria-label={t('ui.globalSearchBar.lancerLaRecherche')}
+              aria-label={t("ui.globalSearchBar.lancerLaRecherche")}
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">Filtrer</span>
@@ -970,7 +1046,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     >
       <form
         role="search"
-        aria-label={t('ui.globalSearchBar.recherchePrincipaleDePetitesAnnonces')}
+        aria-label={t(
+          "ui.globalSearchBar.recherchePrincipaleDePetitesAnnonces",
+        )}
         onSubmit={handleSubmit}
         className="flex flex-col md:flex-row items-stretch md:items-center gap-2"
       >
@@ -983,11 +1061,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
               aria-expanded={isCategoryMenuOpen}
               aria-haspopup="menu"
-              aria-label={t('ui.globalSearchBar.filtrerParCategorie')}
+              aria-label={t("ui.globalSearchBar.filtrerParCategorie")}
               className={`w-full md:w-auto h-control-touch px-3.5 rounded-control border text-xs font-bold flex items-center justify-between md:justify-start gap-2 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                 selectedCategorySlug
-                  ? 'bg-primary-light border-primary-border text-primary'
-                  : 'bg-bg-base hover:bg-bg-subtle text-stone-800 border-border-base hover:border-stone-300'
+                  ? "bg-primary-light border-primary-border text-primary"
+                  : "bg-bg-base hover:bg-bg-subtle text-stone-800 border-border-base hover:border-stone-300"
               }`}
             >
               <div className="flex items-center gap-2 truncate">
@@ -996,11 +1074,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 ) : (
                   <Layers className="w-4 h-4 text-stone-500" />
                 )}
-                <span className="truncate max-w-[130px]">{activeCategoryLabel}</span>
+                <span className="truncate max-w-[130px]">
+                  {activeCategoryLabel}
+                </span>
               </div>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-stone-400 transition-transform shrink-0 ${
-                  isCategoryMenuOpen ? 'rotate-180' : ''
+                  isCategoryMenuOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
@@ -1016,12 +1096,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
                       <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <span>{t('ui.globalSearchBar.categories')}</span>
+                      <span>{t("ui.globalSearchBar.categories")}</span>
                     </div>
                   </div>
                   <input
                     type="text"
-                    placeholder={t('ui.globalSearchBar.chercherUneCategorie')}
+                    placeholder={t("ui.globalSearchBar.chercherUneCategorie")}
                     value={categoryFilterText}
                     onChange={(e) => setCategoryFilterText(e.target.value)}
                     className={DROPDOWN_SEARCH_INPUT_CLASSES}
@@ -1040,9 +1120,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 >
                   <div className="flex items-center gap-2.5">
                     <Layers className="w-4 h-4 text-stone-500" />
-                    <span>{t('ui.globalSearchBar.toutesLesCategories')}</span>
+                    <span>{t("ui.globalSearchBar.toutesLesCategories")}</span>
                   </div>
-                  {!selectedCategorySlug && <Check className="w-4 h-4 text-primary" />}
+                  {!selectedCategorySlug && (
+                    <Check className="w-4 h-4 text-primary" />
+                  )}
                 </button>
 
                 {filteredCategories.map((cat) => (
@@ -1059,7 +1141,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     <div className="flex items-center gap-2.5 truncate">
                       <CategoryIcon category={cat} size="sm" />
                       <div className="truncate">
-                        <div className="truncate font-semibold">{getTaxonomyLabel(cat, 'compact')}</div>
+                        <div className="truncate font-semibold">
+                          {getTaxonomyLabel(cat, "compact")}
+                        </div>
                         <div className="text-micro text-stone-500 font-normal">
                           {cat.subCategories.length} sous-catégories
                         </div>
@@ -1076,13 +1160,15 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         )}
 
         {/* 2. Keyword Search Query Input */}
-        <div className={`flex-1 flex items-center gap-2.5 px-3.5 h-control-touch bg-bg-base rounded-control border border-border-base hover:border-border-hover focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light focus-within:bg-bg-surface ${CONTROL_MOTION_CLASS}`}>
+        <div
+          className={`flex-1 flex items-center gap-2.5 px-3.5 h-control-touch bg-bg-base rounded-control border border-border-base hover:border-border-hover focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light focus-within:bg-bg-surface ${CONTROL_MOTION_CLASS}`}
+        >
           <Search className="w-4 h-4 text-stone-400 shrink-0" />
           <input
             ref={searchInputRef}
             id={`${idPrefix}-hero-query-input`}
             type="search"
-            aria-label={t('ui.globalSearchBar.rechercherUneAnnonce')}
+            aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
             role="combobox"
             aria-expanded={isAutocompleteOpen}
             aria-autocomplete="list"
@@ -1103,7 +1189,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <button
               type="button"
               onClick={handleClearQuery}
-              aria-label={t('ui.globalSearchBar.effacerLaRecherche')}
+              aria-label={t("ui.globalSearchBar.effacerLaRecherche")}
               className={`p-1 hover:bg-bg-muted rounded-full text-stone-500 hover:text-stone-700 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
             >
               <X className="w-3.5 h-3.5" />
@@ -1122,7 +1208,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           >
             <div className="flex items-center gap-1.5 truncate">
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="truncate">{city || userLocation.city || `Toute la ${activeMarket.name}`}</span>
+              <span className="truncate">
+                {city || userLocation.city || `Toute la ${activeMarket.name}`}
+              </span>
             </div>
             <ChevronDown className="w-3 h-3 text-stone-400 shrink-0 ml-auto" />
           </button>
@@ -1132,7 +1220,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         <button
           id={`${idPrefix}-hero-submit-button`}
           type="submit"
-          aria-label={t('ui.globalSearchBar.lancerLaRechercheDePetites')}
+          aria-label={t("ui.globalSearchBar.lancerLaRechercheDePetites")}
           className={`h-control-touch px-5 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm shadow-md shadow-primary/20 active:scale-95 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center gap-2 shrink-0 cursor-pointer`}
         >
           <Search className="w-4 h-4 shrink-0" />

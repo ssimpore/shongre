@@ -1,40 +1,30 @@
-import { isProSeller } from '../../domains/user/user.domain';
-import React, { useState, useEffect } from 'react';
+import { isProSeller } from "../../domains/user/user.domain";
+import React, { useState, useEffect } from "react";
+import { Search, CheckCircle2, AlertTriangle, FileCheck } from "lucide-react";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useToast } from "../../app/providers/ToastProvider";
+import { storageService } from "../../services/storage.service";
+import { userRepository } from "../../repositories/user.repository";
 import {
-  
-  Search,
-  CheckCircle2,
-  
-  
-  
-  AlertTriangle,
-  
-  
-  
-  
-  
-  FileCheck
-} from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { useToast } from '../../app/providers/ToastProvider';
-import { storageService } from '../../services/storage.service';
-import { userRepository } from '../../repositories/user.repository';
-import { ROLE_DEFINITIONS, ALL_PLATFORM_ROLES } from '../../security/roles.config';
-import { UserProfile  } from '../../types';
-import { Button } from '../../design-system/primitives/Button';
-import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
-import { PromptModal } from '../../design-system/primitives/PromptModal';
-import { Image } from '../../design-system/primitives/Image';
-import { useTranslation } from '../../i18n/I18nProvider';
-import type { MessageKey } from '../../i18n/messages.fr';
-import { usePageMeta } from '../../hooks/usePageMeta';
+  normalizePlatformRole,
+  ROLE_DEFINITIONS,
+  ALL_PLATFORM_ROLES,
+} from "../../security/roles.config";
+import { UserProfile } from "../../types";
+import { Button } from "../../design-system/primitives/Button";
+import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
+import { PromptModal } from "../../design-system/primitives/PromptModal";
+import { Image } from "../../design-system/primitives/Image";
+import { useTranslation } from "../../i18n/I18nProvider";
+import type { MessageKey } from "../../i18n/messages.fr";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminUsers.title'),
-    description: t('meta.adminUsers.description'),
-    canonicalPath: '/admin/utilisateurs',
+    title: t("meta.adminUsers.title"),
+    description: t("meta.adminUsers.description"),
+    canonicalPath: "/admin/utilisateurs",
     noIndex: true,
   });
 
@@ -42,14 +32,17 @@ export const AdminUsersPage: React.FC = () => {
   const toast = useToast();
 
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<string>("all");
 
   // Modals state
   const [kbisModalUser, setKbisModalUser] = useState<UserProfile | null>(null);
-  const [suspendModalUser, setSuspendModalUser] = useState<UserProfile | null>(null);
-  const [reactivateModalUser, setReactivateModalUser] = useState<UserProfile | null>(null);
+  const [suspendModalUser, setSuspendModalUser] = useState<UserProfile | null>(
+    null,
+  );
+  const [reactivateModalUser, setReactivateModalUser] =
+    useState<UserProfile | null>(null);
 
   const loadUsers = () => {
     const usersMap = storageService.getUsers();
@@ -63,12 +56,17 @@ export const AdminUsersPage: React.FC = () => {
   const handleConfirmVerifyPro = async (notes: string) => {
     if (!kbisModalUser) return;
     try {
-      await userRepository.verifyUser(kbisModalUser.id, { approve: true, notes: notes || 'Kbis vérifié conforme' });
+      await userRepository.verifyUser(kbisModalUser.id, {
+        approve: true,
+        notes: notes || "Kbis vérifié conforme",
+      });
       loadUsers();
-      toast.success(`Compte Pro de ${kbisModalUser.name} vérifié et badge validé.`);
+      toast.success(
+        `Compte Pro de ${kbisModalUser.name} vérifié et badge validé.`,
+      );
       setKbisModalUser(null);
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la validation du KBIS');
+      toast.error(err.message || "Erreur lors de la validation du KBIS");
     }
   };
 
@@ -80,7 +78,7 @@ export const AdminUsersPage: React.FC = () => {
       toast.success(`Le compte de ${suspendModalUser.name} a été suspendu.`);
       setSuspendModalUser(null);
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la suspension');
+      toast.error(err.message || "Erreur lors de la suspension");
     }
   };
 
@@ -89,18 +87,24 @@ export const AdminUsersPage: React.FC = () => {
     try {
       await userRepository.reactivateUser(reactivateModalUser.id);
       loadUsers();
-      toast.success(`Le compte de ${reactivateModalUser.name} a été réactivé avec succès.`);
+      toast.success(
+        `Le compte de ${reactivateModalUser.name} a été réactivé avec succès.`,
+      );
       setReactivateModalUser(null);
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la réactivation');
+      toast.error(err.message || "Erreur lors de la réactivation");
     }
   };
 
   const filteredUsers = users.filter((u) => {
-    if (selectedRole !== 'all' && u.primaryRole !== selectedRole && u.role !== selectedRole) {
+    if (
+      selectedRole !== "all" &&
+      u.primaryRole !== selectedRole &&
+      u.role !== selectedRole
+    ) {
       return false;
     }
-    if (selectedType !== 'all' && u.accountType !== selectedType) {
+    if (selectedType !== "all" && u.accountType !== selectedType) {
       return false;
     }
     if (searchQuery.trim()) {
@@ -121,12 +125,20 @@ export const AdminUsersPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminUsersPage.gouvernanceDesIdentites')}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-primary">
+            {t("admin.adminUsersPage.gouvernanceDesIdentites")}
+          </span>
           <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">{t('admin.adminUsersPage.gestionDesComptesVerificationsKbis')}</span>
+          <span className="text-xs text-stone-500 font-medium">
+            {t("admin.adminUsersPage.gestionDesComptesVerificationsKbis")}
+          </span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminUsersPage.annuaireDesUtilisateursVerifications')}</h1>
-        <p className="text-xs text-stone-600 mt-1">{t('admin.adminUsersPage.consultezEtAdministrezLEnsemble')}</p>
+        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+          {t("admin.adminUsersPage.annuaireDesUtilisateursVerifications")}
+        </h1>
+        <p className="text-xs text-stone-600 mt-1">
+          {t("admin.adminUsersPage.consultezEtAdministrezLEnsemble")}
+        </p>
       </div>
 
       {/* Filters Bar */}
@@ -138,31 +150,37 @@ export const AdminUsersPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('admin.adminUsersPage.rechercherUnNomEmailEntreprise')}
-              aria-label={t('admin.adminUsersPage.rechercherUnUtilisateur')}
+              placeholder={t(
+                "admin.adminUsersPage.rechercherUnNomEmailEntreprise",
+              )}
+              aria-label={t("admin.adminUsersPage.rechercherUnUtilisateur")}
               className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
             />
           </div>
 
           <select
-            aria-label={t('admin.adminUsersPage.filtrerParTypeDeCompte')}
+            aria-label={t("admin.adminUsersPage.filtrerParTypeDeCompte")}
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
             className="py-2 px-3 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
           >
-            <option value="all">{t('admin.adminUsersPage.tousLesTypesDeCompte')}</option>
+            <option value="all">
+              {t("admin.adminUsersPage.tousLesTypesDeCompte")}
+            </option>
             <option value="individual">Particulier</option>
             <option value="professional">Professionnel (Pro)</option>
             <option value="internal_staff">Personnel Interne (Staff)</option>
           </select>
 
           <select
-            aria-label={t('admin.adminUsersPage.filtrerParRolePlateforme')}
+            aria-label={t("admin.adminUsersPage.filtrerParRolePlateforme")}
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
             className="py-2 px-3 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
           >
-            <option value="all">Tous les rôles ({ALL_PLATFORM_ROLES.length})</option>
+            <option value="all">
+              Tous les rôles ({ALL_PLATFORM_ROLES.length})
+            </option>
             {ALL_PLATFORM_ROLES.map((r) => (
               <option key={r} value={r}>
                 {ROLE_DEFINITIONS[r]?.title || r}
@@ -182,7 +200,9 @@ export const AdminUsersPage: React.FC = () => {
           aria-atomic="true"
           className="text-xs text-stone-500 font-semibold shrink-0"
         >
-          {t('admin.adminUsersPage.utilisateursTrouves', { count: filteredUsers.length })}
+          {t("admin.adminUsersPage.utilisateursTrouves", {
+            count: filteredUsers.length,
+          })}
         </div>
       </div>
 
@@ -192,18 +212,32 @@ export const AdminUsersPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
               <tr>
-                <th scope="col" className="p-3.5">Utilisateur</th>
-                <th scope="col" className="p-3.5">{t('admin.adminUsersPage.typeRole')}</th>
-                <th scope="col" className="p-3.5">{t('admin.adminUsersPage.statutVerification')}</th>
-                <th scope="col" className="p-3.5">{t('admin.adminUsersPage.marcheVille')}</th>
-                <th scope="col" className="p-3.5 text-right">Actions</th>
+                <th scope="col" className="p-3.5">
+                  Utilisateur
+                </th>
+                <th scope="col" className="p-3.5">
+                  {t("admin.adminUsersPage.typeRole")}
+                </th>
+                <th scope="col" className="p-3.5">
+                  {t("admin.adminUsersPage.statutVerification")}
+                </th>
+                <th scope="col" className="p-3.5">
+                  {t("admin.adminUsersPage.marcheVille")}
+                </th>
+                <th scope="col" className="p-3.5 text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {filteredUsers.map((u) => {
-                const roleDef = ROLE_DEFINITIONS[u.primaryRole || u.role] || ROLE_DEFINITIONS.buyer;
+                const roleDef =
+                  ROLE_DEFINITIONS[
+                    normalizePlatformRole(u.primaryRole || u.role)
+                  ] || ROLE_DEFINITIONS.buyer;
                 const isPro = isProSeller(u);
-                const isPendingPro = isPro && u.professionalVerification?.status === 'pending';
+                const isPendingPro =
+                  isPro && u.professionalVerification?.status === "pending";
 
                 return (
                   <tr key={u.id} className="hover:bg-bg-base transition-colors">
@@ -211,7 +245,10 @@ export const AdminUsersPage: React.FC = () => {
                     <td className="p-3.5">
                       <div className="flex items-center gap-3">
                         <Image
-                          src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
+                          src={
+                            u.avatarUrl ||
+                            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120"
+                          }
                           alt={u.name}
                           sizes="36px"
                           className="w-9 h-9 rounded-full object-cover border border-border-base"
@@ -224,7 +261,7 @@ export const AdminUsersPage: React.FC = () => {
                             )}
                           </div>
                           <div className="text-xs text-stone-500">
-                            {u.companyName ? `${u.companyName} • ` : ''}
+                            {u.companyName ? `${u.companyName} • ` : ""}
                             {u.email}
                           </div>
                         </div>
@@ -234,7 +271,9 @@ export const AdminUsersPage: React.FC = () => {
                     {/* Type & Role */}
                     <td className="p-3.5">
                       <div className="flex flex-col gap-1 items-start">
-                        <span className={`text-micro font-bold px-2 py-1 rounded-full border ${roleDef.badgeColor}`}>
+                        <span
+                          className={`text-micro font-bold px-2 py-1 rounded-full border ${roleDef.badgeColor}`}
+                        >
                           {roleDef.title}
                         </span>
                         {/* This rendered the raw stored enum — `individual`,
@@ -245,7 +284,9 @@ export const AdminUsersPage: React.FC = () => {
                             with an individual role is a real state), so it stays
                             — as words. */}
                         <span className="text-micro text-stone-500">
-                          {t(`admin.accountType.${u.accountType || 'individual'}` as MessageKey)}
+                          {t(
+                            `admin.accountType.${u.accountType || "individual"}` as MessageKey,
+                          )}
                         </span>
                       </div>
                     </td>
@@ -259,7 +300,8 @@ export const AdminUsersPage: React.FC = () => {
                           </span>
                         ) : isPendingPro ? (
                           <span className="text-micro bg-warning-surface text-warning font-bold px-2 py-1 rounded-sm flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> KBIS En attente
+                            <AlertTriangle className="w-3 h-3" /> KBIS En
+                            attente
                           </span>
                         ) : (
                           <span className="text-micro bg-success-surface text-success font-bold px-2 py-1 rounded-sm">
@@ -276,9 +318,9 @@ export const AdminUsersPage: React.FC = () => {
 
                     {/* Location */}
                     <td className="p-3.5 text-stone-600">
-                      <div>{u.city || 'Non renseigné'}</div>
+                      <div>{u.city || "Non renseigné"}</div>
                       <div className="text-micro text-stone-500 font-mono">
-                        {u.marketScope?.countries.join(', ') || 'FR'}
+                        {u.marketScope?.countries.join(", ") || "FR"}
                       </div>
                     </td>
 
@@ -286,7 +328,7 @@ export const AdminUsersPage: React.FC = () => {
                     <td className="p-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {/* Verify Pro KBIS Button */}
-                        {isPendingPro && can('user.verify') && (
+                        {isPendingPro && can("user.verify") && (
                           <Button
                             size="sm"
                             onClick={() => setKbisModalUser(u)}
@@ -298,7 +340,7 @@ export const AdminUsersPage: React.FC = () => {
                         )}
 
                         {/* Suspend / Reactivate */}
-                        {can('user.suspend') && (
+                        {can("user.suspend") && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -310,10 +352,12 @@ export const AdminUsersPage: React.FC = () => {
                               }
                             }}
                             className={`text-xs ${
-                              u.isSuspended ? 'text-success border-success-border' : 'text-danger border-danger-border'
+                              u.isSuspended
+                                ? "text-success border-success-border"
+                                : "text-danger border-danger-border"
                             }`}
                           >
-                            {u.isSuspended ? 'Réactiver' : 'Suspendre'}
+                            {u.isSuspended ? "Réactiver" : "Suspendre"}
                           </Button>
                         )}
 
@@ -326,7 +370,7 @@ export const AdminUsersPage: React.FC = () => {
                             toast.info(`Basculé sur l'identité : ${u.name}`);
                           }}
                           className="text-xs text-stone-700"
-                          title={t('admin.adminUsersPage.seConnecterEnTantQue')}
+                          title={t("admin.adminUsersPage.seConnecterEnTantQue")}
                         >
                           Tester
                         </Button>
@@ -346,7 +390,7 @@ export const AdminUsersPage: React.FC = () => {
         onClose={() => setKbisModalUser(null)}
         onSubmit={handleConfirmVerifyPro}
         title="Validation KBIS Entreprise"
-        label={t('admin.adminUsersPage.noteInterneDeVerificationDes')}
+        label={t("admin.adminUsersPage.noteInterneDeVerificationDes")}
         initialValue="Justificatif KBIS / SIRET vérifié conforme auprès des registres officiels."
         confirmText="Valider le badge Pro"
         required
@@ -357,9 +401,9 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={Boolean(suspendModalUser)}
         onClose={() => setSuspendModalUser(null)}
         onSubmit={handleConfirmSuspend}
-        title={t('admin.adminUsersPage.suspendreUnCompteUtilisateur')}
-        label={t('admin.adminUsersPage.motifLegalDeLaMesure')}
-        placeholder={t('admin.adminUsersPage.exInfractionAuxReglesDe')}
+        title={t("admin.adminUsersPage.suspendreUnCompteUtilisateur")}
+        label={t("admin.adminUsersPage.motifLegalDeLaMesure")}
+        placeholder={t("admin.adminUsersPage.exInfractionAuxReglesDe")}
         confirmText="Confirmer la suspension"
         required
       />
@@ -369,7 +413,7 @@ export const AdminUsersPage: React.FC = () => {
         isOpen={Boolean(reactivateModalUser)}
         onClose={() => setReactivateModalUser(null)}
         onConfirm={handleConfirmReactivate}
-        title={t('admin.adminUsersPage.reactiverLeCompte')}
+        title={t("admin.adminUsersPage.reactiverLeCompte")}
         message={`Confirmez-vous la levée de la suspension pour l'utilisateur ${reactivateModalUser?.name} ?`}
         confirmText="Réactiver le compte"
         variant="success"

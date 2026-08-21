@@ -10,6 +10,8 @@ export interface INotificationRepository {
   markAsRead(notificationId: string): Promise<void>;
   markAllAsRead(userId: string): Promise<void>;
   delete(notificationId: string): Promise<void>;
+  registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void>;
+  unregisterDevice(userId: string, token: string): Promise<void>;
 }
 
 export const CANONICAL_DEMO_NOTIFICATIONS: NotificationItem[] = [
@@ -26,6 +28,7 @@ export const CANONICAL_DEMO_NOTIFICATIONS: NotificationItem[] = [
 
 export class DemoNotificationRepository implements INotificationRepository {
   private notifications: Map<string, NotificationItem> = new Map();
+  private devices = new Map<string, { userId: string; platform: 'ios' | 'android'; appVersion?: string }>();
 
   constructor(initialNotifs: NotificationItem[] = CANONICAL_DEMO_NOTIFICATIONS) {
     this.reset(initialNotifs);
@@ -82,6 +85,15 @@ export class DemoNotificationRepository implements INotificationRepository {
 
   async delete(notificationId: string): Promise<void> {
     this.notifications.delete(notificationId);
+  }
+
+  async registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void> {
+    this.devices.set(token, { userId, platform, appVersion });
+  }
+
+  async unregisterDevice(userId: string, token: string): Promise<void> {
+    const device = this.devices.get(token);
+    if (device?.userId === userId) this.devices.delete(token);
   }
 }
 
@@ -195,5 +207,26 @@ export class PostgresNotificationRepository implements INotificationRepository {
     } catch (err: any) {
       logger.warn(`PostgresNotificationRepository.delete skipped: ${err.message}`);
     }
+  }
+
+  async registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('push_device_tokens').upsert({
+      user_id: userId,
+      token,
+      platform,
+      app_version: appVersion || null,
+      last_seen_at: new Date().toISOString(),
+    }, { onConflict: 'token' });
+    if (error) throw new Error(`Failed to register push device: ${error.message}`);
+  }
+
+  async unregisterDevice(userId: string, token: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('push_device_tokens')
+      .delete()
+      .eq('user_id', userId)
+      .eq('token', token);
+    if (error) throw new Error(`Failed to unregister push device: ${error.message}`);
   }
 }

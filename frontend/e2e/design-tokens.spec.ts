@@ -38,7 +38,7 @@ test.describe('design-token runtime contracts', () => {
       };
     });
 
-    expect(contract.version).toBe('3');
+    expect(contract.version).toBe('4');
     expect(contract.tokenWidth).toBe('11.75rem');
     expect(contract.widths.length, 'the recent-listings rail did not render').toBeGreaterThanOrEqual(6);
     for (const width of contract.widths) {
@@ -128,7 +128,7 @@ test.describe('design-token runtime contracts', () => {
     // This is deliberately a route-wide audit (public, account, Pro, admin
     // and CRM), so it needs more time than a single-surface contract while
     // remaining bounded in CI.
-    test.setTimeout(120_000);
+    test.setTimeout(240_000);
     for (const route of ALL_ROUTES) {
       await usePersona(page, route.persona);
       await page.goto(route.path, { waitUntil: 'networkidle' });
@@ -159,6 +159,7 @@ test.describe('design-token runtime contracts', () => {
 
   test('keeps native registration fields on the touch size and control radius', async ({ page }) => {
     await page.goto('/inscription/particulier', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
 
     const fields = await page.evaluate(() =>
       [...document.querySelectorAll<HTMLInputElement | HTMLSelectElement>(

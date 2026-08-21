@@ -1,42 +1,42 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Bell,
-  Check,
-  Settings
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bell, Check, Settings } from "lucide-react";
 import {
   Notification,
-  NotificationFilterTab
-} from '../../domains/notifications/notification.types';
-import { notificationService, NotificationDateGroup } from '../../domains/notifications/notification.service';
-import { notificationCatalogService } from '../../domains/notifications/notification.catalog';
-import { notificationRepository } from '../../repositories/notification.repository';
-import { useNotifications } from '../../app/providers/NotificationProvider';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { NotificationItemCard } from './components/NotificationItemCard';
-import { NotificationDemoToolbar } from './components/NotificationDemoToolbar';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+  NotificationFilterTab,
+} from "../../domains/notifications/notification.types";
+import {
+  notificationService,
+  NotificationDateGroup,
+} from "../../domains/notifications/notification.service";
+import { notificationCatalogService } from "../../domains/notifications/notification.catalog";
+import { notificationRepository } from "../../repositories/notification.repository";
+import { useNotifications } from "../../app/providers/NotificationProvider";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { Button } from "../../design-system/primitives/Button";
+import { NotificationItemCard } from "./components/NotificationItemCard";
+import { NotificationDemoToolbar } from "./components/NotificationDemoToolbar";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.notifications.title'),
-    description: t('meta.notifications.description'),
-    canonicalPath: '/compte/notifications',
+    title: t("meta.notifications.title"),
+    description: t("meta.notifications.description"),
+    canonicalPath: "/compte/notifications",
     noIndex: true,
   });
 
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const currentUserId = currentUser ? currentUser.id : 'user-thomas';
+  const currentUserId = currentUser ? currentUser.id : "user-thomas";
 
-  const { unreadCount, markAsRead, markAllAsRead} = useNotifications();
+  const { unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<NotificationFilterTab>('all');
+  const [selectedFilter, setSelectedFilter] =
+    useState<NotificationFilterTab>("all");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Load complete notification list
@@ -45,7 +45,7 @@ export const NotificationsPage: React.FC = () => {
     try {
       const res = await notificationRepository.getNotifications({
         recipientId: currentUserId,
-        limit: 100
+        limit: 100,
       });
       setNotifications(res.notifications);
     } finally {
@@ -70,7 +70,10 @@ export const NotificationsPage: React.FC = () => {
 
   // Filter notifications
   const filteredNotifications = useMemo(() => {
-    return notificationService.filterNotifications(notifications, selectedFilter);
+    return notificationService.filterNotifications(
+      notifications,
+      selectedFilter,
+    );
   }, [notifications, selectedFilter]);
 
   // Group by date
@@ -79,12 +82,12 @@ export const NotificationsPage: React.FC = () => {
   }, [filteredNotifications]);
 
   const tabs: { id: NotificationFilterTab; label: string; count?: number }[] = [
-    { id: 'all', label: 'Toutes' },
-    { id: 'unread', label: 'Non lues', count: unreadCount },
-    { id: 'messages', label: 'Messages' },
-    { id: 'transactions', label: 'Commandes' },
-    { id: 'listings', label: 'Annonces' },
-    { id: 'account', label: 'Compte & Sécurité' },
+    { id: "all", label: "Toutes" },
+    { id: "unread", label: "Non lues", count: unreadCount },
+    { id: "messages", label: "Messages" },
+    { id: "transactions", label: "Commandes" },
+    { id: "listings", label: "Annonces" },
+    { id: "account", label: "Compte & Sécurité" },
   ];
 
   return (
@@ -94,9 +97,13 @@ export const NotificationsPage: React.FC = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
             <Bell className="w-6 h-6 text-primary" />
-            <span>{t('notifications.notificationsPage.centreDeNotifications')}</span>
+            <span>
+              {t("notifications.notificationsPage.centreDeNotifications")}
+            </span>
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('notifications.notificationsPage.misesAJourEnDirect')}</p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+            {t("notifications.notificationsPage.misesAJourEnDirect")}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
@@ -107,15 +114,20 @@ export const NotificationsPage: React.FC = () => {
               onClick={handleMarkAllRead}
               leftIcon={<Check className="w-3.5 h-3.5" />}
               className="text-xs"
-            >{t('notifications.notificationsPage.toutMarquerCommeLu')}</Button>
+            >
+              {t("notifications.notificationsPage.toutMarquerCommeLu")}
+            </Button>
           )}
 
           <Button
-            to="/compte/notifications/preferences" variant="outline"
-                          size="sm"
-                          leftIcon={<Settings className="w-3.5 h-3.5" />}
-                          className="text-xs"
-          >{t('notifications.notificationsPage.preferences')}</Button>
+            to="/compte/notifications/preferences"
+            variant="outline"
+            size="sm"
+            leftIcon={<Settings className="w-3.5 h-3.5" />}
+            className="text-xs"
+          >
+            {t("notifications.notificationsPage.preferences")}
+          </Button>
         </div>
       </div>
 
@@ -133,15 +145,17 @@ export const NotificationsPage: React.FC = () => {
               onClick={() => setSelectedFilter(tab.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-2 ${
                 isActive
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900'
+                  ? "bg-stone-900 text-white shadow-xs"
+                  : "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900"
               }`}
             >
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-micro font-extrabold ${
-                    isActive ? 'bg-primary text-white' : 'bg-primary/20 text-primary'
+                    isActive
+                      ? "bg-primary text-white"
+                      : "bg-primary/20 text-primary"
                   }`}
                 >
                   {tab.count}
@@ -172,11 +186,15 @@ export const NotificationsPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-bold text-stone-900">
-              {selectedFilter === 'unread'
-                ? 'Vous êtes à jour ! Aucune notification non lue.'
-                : 'Aucune notification dans cette catégorie.'}
+              {selectedFilter === "unread"
+                ? "Vous êtes à jour ! Aucune notification non lue."
+                : "Aucune notification dans cette catégorie."}
             </p>
-            <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">{t('notifications.notificationsPage.vosAlertesConcernantLesBaisses')}</p>
+            <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
+              {t(
+                "notifications.notificationsPage.vosAlertesConcernantLesBaisses",
+              )}
+            </p>
           </div>
         </div>
       ) : (

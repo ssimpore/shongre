@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { transactionCapabilitiesService } from './transaction.capabilities';
+import { describe, it, expect } from "vitest";
+import { transactionCapabilitiesService } from "./transaction.capabilities";
 
-describe('TransactionCapabilitiesService', () => {
-  it('enables direct purchase and reservation for physical consumer goods', () => {
+describe("TransactionCapabilitiesService", () => {
+  it("enables direct purchase and reservation for physical consumer goods", () => {
     const caps = transactionCapabilitiesService.resolve({
-      taxonomyNodeId: 'electronics.smartphones',
-      marketCode: 'FR',
+      taxonomyNodeId: "electronics.smartphones",
+      marketCode: "FR",
       price: 350,
       stock: 1,
     });
@@ -13,14 +13,14 @@ describe('TransactionCapabilitiesService', () => {
     expect(caps.canContact).toBe(true);
     expect(caps.canDirectPurchase).toBe(true);
     expect(caps.canReserve).toBe(true);
-    expect(caps.defaultModes).toContain('DIRECT_PURCHASE');
-    expect(caps.defaultModes).toContain('RESERVATION');
+    expect(caps.defaultModes).toContain("DIRECT_PURCHASE");
+    expect(caps.defaultModes).toContain("RESERVATION");
   });
 
-  it('disables direct purchase for real estate and services', () => {
+  it("disables direct purchase for real estate and services", () => {
     const realEstateCaps = transactionCapabilitiesService.resolve({
-      taxonomyNodeId: 'real_estate.sales',
-      marketCode: 'FR',
+      taxonomyNodeId: "real_estate.sales",
+      marketCode: "FR",
       price: 250000,
     });
 
@@ -29,11 +29,11 @@ describe('TransactionCapabilitiesService', () => {
     expect(realEstateCaps.directPurchaseDisabledReason).toBeDefined();
   });
 
-  it('disables direct online payment when price is 0 or listing intent is GIVE', () => {
+  it("disables direct online payment when price is 0 or listing intent is GIVE", () => {
     const giveCaps = transactionCapabilitiesService.resolve({
-      taxonomyNodeId: 'home_garden.furniture',
-      marketCode: 'FR',
-      listingIntent: 'GIVE',
+      taxonomyNodeId: "home_garden.furniture",
+      marketCode: "FR",
+      listingIntent: "GIVE",
       price: 0,
     });
 

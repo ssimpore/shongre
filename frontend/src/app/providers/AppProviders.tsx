@@ -1,13 +1,13 @@
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './AuthProvider';
-import { MarketLocationProvider } from './MarketLocationProvider';
-import { ToastProvider } from './ToastProvider';
-import { NotificationProvider } from './NotificationProvider';
-import { FavoritesProvider } from './FavoritesProvider';
-import { ConsentProvider } from './ConsentProvider';
-import { I18nProvider } from '../../i18n/I18nProvider';
-import { ErrorBoundary } from './ErrorBoundary';
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./AuthProvider";
+import { MarketLocationProvider } from "./MarketLocationProvider";
+import { ToastProvider } from "./ToastProvider";
+import { NotificationProvider } from "./NotificationProvider";
+import { FavoritesProvider } from "./FavoritesProvider";
+import { ConsentProvider } from "./ConsentProvider";
+import { I18nProvider } from "../../i18n/I18nProvider";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +19,9 @@ const queryClient = new QueryClient({
   },
 });
 
-export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProviders: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

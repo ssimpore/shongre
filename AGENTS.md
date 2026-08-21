@@ -4094,3 +4094,351 @@ correctly: a 96px slot needs a 192px source, and the ladder's next rung is 320w.
 Any budget expressed in pixels has to say which pixels. The gate now multiplies
 the slot by `window.devicePixelRatio`, which leaves chromium exactly as strict as
 it was and stops punishing webkit for honouring the ladder.
+
+---
+
+# 152. Mobile architecture and release engineering
+
+Shongre now has three application surfaces with strict ownership:
+
+```text
+frontend/              Next.js App Router Web application
+mobile/                one Expo/React Native application for iOS + Android
+backend/               modular API and marketplace domain services
+packages/contracts/    stable public transport/view-model primitives only
+infrastructure/        cross-cutting operational templates; not application code
+```
+
+Supabase remains canonical under `backend/supabase/`. Do not create a second
+Supabase tree under `infrastructure/` or the repository root.
+
+## One mobile source, continuously generated native projects
+
+Business UI and product logic live in `mobile/app/` and `mobile/src/`. Never
+create parallel `ios/features` and `android/features` implementations. Platform
+files are allowed only where the platform genuinely differs and should use
+React Native platform resolution or a narrow adapter.
+
+`mobile/app.config.ts` and supported Expo config plugins are the native source
+of truth. `mobile/ios/` and `mobile/android/` are ignored Continuous Native
+Generation output: regenerate them with `make mobile-prebuild-clean`, inspect
+the generated manifests/projects, and never hand-edit generated output. EAS
+must generate from the same config rather than build stale committed projects.
+
+The current baseline is Expo SDK 57, React Native 0.86, React 19.2, and Expo
+Router. React/React DOM are pinned once across workspaces because a second copy
+is a native/runtime correctness issue, not harmless package-manager noise. Run
+Expo Doctor after dependency changes and resolve actionable findings.
+
+## Environment and process ownership
+
+The root `.env.example` is the canonical runtime configuration template.
+Precedence is:
+
+```text
+exported variable > .env.local > .env
+```
+
+Host ports, local URLs, mobile identifiers, versions, and production URLs must
+come from that environment. Do not add fallback host ports to source, package
+scripts, Next.js/Expo/backend config, native files, or Make recipes. The root
+loader may derive local URLs from configured hosts and ports; production mobile
+URLs remain explicit HTTPS values.
+
+The root `Makefile` is the canonical developer/release CLI. Processes started
+by it are tracked in ignored `.runtime/`. Port cleanup must show the owning PID
+and command, send SIGTERM first, and only use SIGKILL against an exact PID whose
+ownership was revalidated. Never reintroduce `killall`, `pkill`, blind
+`lsof -ti | kill`, broad process patterns, or a fixed-port predev script. An
+unrelated listener must be refused even when startup cannot continue.
+
+## Client data modes and public contracts
+
+Web and mobile remain `demo` by default. Demo adapters are deterministic,
+asynchronous, and work with the backend and Supabase stopped. `api` selects HTTP
+adapters behind the same service contracts. Components must not branch on data
+mode or import backend implementation.
+
+Only genuinely stable cross-client types belong in `packages/contracts/`.
+Database rows, service-role details, fraud rules, and internal domain models do
+not. Money crossing a public client boundary uses integer `amountMinor` plus a
+currency code; any legacy major-unit backend mapping stays isolated in an HTTP
+adapter until the API contract migrates.
+
+## Mobile security and permissions
+
+Bearer credentials use `expo-secure-store` (Keychain/Keystore). Web fallback is
+memory-only; never downgrade mobile credentials into AsyncStorage or browser
+localStorage. Logout and account deletion remove the session and unregister the
+current push device.
+
+Production preflight rejects non-HTTPS, loopback, emulator, LAN, `.local`, and
+temporary tunnel endpoints. Do not weaken that gate to make a release build
+pass.
+
+The declared mobile permission set is intentionally small:
+
+```text
+camera
+user-selected photos (legacy Android media permission only through API 32)
+coarse foreground location
+notifications after an explained user action
+```
+
+Face ID, microphone, contacts, precise/background location, motion, overlay,
+and background services are absent or explicitly blocked. A new permission
+requires a real product need, a denial fallback, contextual request UI, updated
+purpose strings, both store maps, privacy policy review, generated-native
+inspection, and device tests.
+
+## Account deletion, push, and UGC safety are backend-authoritative
+
+`POST /api/v1/account/delete` derives the account from the authenticated
+principal, reauthenticates with the current password, refuses deletion while a
+non-terminal order exists, and invokes the service-role-only atomic database
+function `complete_account_deletion`. Migration `00008` expands the account
+status in its own transaction; migration `00009` owns deletion audit records,
+blocked users, push tokens, RLS, and the atomic anonymization function. Keep the
+split: PostgreSQL cannot safely use a newly added enum value in the same
+transaction that adds it.
+
+Deletion anonymizes eligible profile data, removes credentials and push tokens,
+and retains only records required for transactions, disputes, safety,
+accounting, or law. The mobile path and public `/account/delete` web path both
+go through a service contract; never implement a client-only “deleted” state.
+
+Reports, block/unblock state, and blocked-message enforcement are persisted and
+checked by backend services. Client hiding is presentation only. New UGC
+surfaces must reuse these controls and add ownership/abuse tests plus an
+operations plan.
+
+Generated database types must change with migrations. New repository code
+should use typed tables/functions instead of adding another `as any` escape.
+
+## Store evidence is not store approval
+
+Release checks use only:
+
+```text
+PASS
+FAIL
+WARNING
+MANUAL REVIEW REQUIRED
+NOT APPLICABLE
+```
+
+Never emit “Apple compliant”, “Google compliant”, or an approval guarantee.
+`make store-check` is a production preflight: it runs repository/mobile quality
+gates, regenerates native projects, inspects actual generated configuration,
+and reports human work separately. Every `FAIL` blocks a release candidate;
+warnings and manual items need named owners and evidence.
+
+Dependency advisories must be classified by shipped reachability and upgrade
+safety. Apply compatible transitive fixes and rerun Expo Doctor/install checks;
+never use `npm audit fix --force` when npm proposes downgrading the supported
+Expo SDK. On 2026-08-21 the compatible Metro/image parser patch removed all five
+high advisories. The remaining moderate advisory is the Expo config toolchain's
+`xcode -> uuid@7` path, for which npm only proposes an incompatible Expo/splash
+screen downgrade; track it for an upstream SDK fix because it is build tooling,
+not mobile runtime code.
+
+As verified on 2026-08-21, the release baseline is Xcode 26+/iOS 26 SDK+ and
+Google Play target API 36 from 2026-08-31, with Expo SDK 57 targeting/compiling
+API 36. These values are not permanent rules. Before every production upload,
+re-read official Apple Upcoming Requirements/App Review Guidelines, Google Play
+policies/target API rules, and Expo compatibility notes, then update
+`docs/compliance/store-requirements.md`.
+
+The same 2026-08-21 refresh records Apple's current age-rating questionnaire,
+privacy-manifest/required-reason and listed-SDK signature duties; Google's
+in-app plus public-Web deletion paths, UGC reporting/blocking/terms duties,
+Data Safety and reviewer-access forms, and the current Android page-size page.
+That page presently says target-35+ apps must support 16 KB devices and that
+unsupported updates become unreleasable from 2027-02-01. Treat every date as a
+retrieved policy snapshot and re-check the linked official page at release time.
+
+Privacy and SDK evidence lives under `mobile/store/`. Any new SDK, processor,
+AI data flow, payment capability, analytics/crash tool, permission, or collected
+data type must update the canonical data inventory, third-party SDK inventory,
+Apple label map, Google Data Safety map, public policy, and release checks before
+collection begins. No analytics, ads, tracking, or third-party crash reporter is
+enabled today.
+
+Physical marketplace payments and digital in-app value are separate. Paid
+listing visibility, subscriptions, and credits stay unavailable in mobile until
+a current region/store billing review selects an approved path with
+server-authoritative receipt and entitlement handling. UI code never selects a
+payment rail.
+
+Universal/App Links require real Apple team and Android production signing
+identities. Generate association files from templates with `make
+association-files`, keep generated files out of source control, deploy over
+HTTPS, and verify the deployed responses. Never ship placeholder fingerprints
+or team IDs.
+
+Build, submission, and public release remain three decisions. `make build`
+never submits. Preview/production build commands run preflight but do not submit;
+only explicit `make submit-ios` or `make submit-android` may upload, and neither
+authorizes an automatic public rollout.
+
+## Required validation for relevant changes
+
+```bash
+make env-check
+make check
+make mobile-check
+make mobile-prebuild-clean
+make android-sdk-check
+make android-16kb-check
+make ios-sdk-check        # where Xcode is available
+make ios-privacy-check
+make permissions-check
+make store-check          # release candidates
+```
+
+Local iOS source verification must run the environment loader under Bash before
+invoking Xcode. The developer's interactive shell may be zsh, but
+`scripts/env.sh` is a Bash script and direct zsh sourcing does not establish the
+required Expo identifiers and production URLs. When signing credentials are not
+available, the reproducible unsigned Release check is:
+
+```bash
+cd mobile/ios
+pod install
+bash -c 'source ../../scripts/env.sh && export NODE_ENV=production && \
+  xcodebuild -workspace Shongre.xcworkspace -scheme Shongre \
+  -configuration Release -destination "generic/platform=iOS Simulator" \
+  CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
+  DEBUG_INFORMATION_FORMAT=dwarf GCC_GENERATE_DEBUGGING_SYMBOLS=NO build'
+```
+
+This proves Release compilation, Metro export, Hermes bytecode, native linkage,
+resources, app packaging, and Xcode validation. It does not prove signing,
+device behavior, archive contents, or App Store acceptance. Those require the
+signed release candidate and physical-device/store checks. Ensure several
+gigabytes of free disk space before the first native build; only exact
+Shongre-owned DerivedData may be removed during cleanup.
+
+Port/process tooling changes must also test an overridden web, backend, and
+Metro port, successful cleanup of a controlled Shongre listener, and refusal to
+terminate a controlled unrelated listener.
+
+Every service wrapper must pass the resolved environment port to the process it
+starts, not only to Shongre's PID tracker. In particular, Expo start commands
+must receive `--port "$EXPO_METRO_PORT"`; otherwise status can report one port
+while Metro silently binds its default 8081. Verify the port printed by the
+actual framework, not only the wrapper's startup message.
+
+Tracked cleanup owns the complete validated child process tree, not just the
+top-level `npm` PID or the TCP listener. Before signaling, every exact PID must
+still resolve to the repository by cwd or command; a PID-file match alone is
+not proof of ownership. SIGTERM applies leaf-to-root, and SIGKILL is allowed
+only for an exact still-running PID whose project ownership was revalidated.
+Starting an already tracked service must stop that tree before replacing its
+PID file, so a port-collision restart cannot orphan package-manager or framework
+ancestors. Ownership failures must recheck liveness once before reporting an
+unrelated PID because Ctrl+C can terminate a process between `kill -0` and cwd
+inspection; that normal exit race is not a safety failure.
+
+---
+
+# 153. Cross-platform UI and design-system ownership
+
+Shongre has one product system shared by the Next.js Web application and the
+single Expo application that targets iOS and Android.
+
+## Canonical ownership
+
+* `packages/design-tokens/` is the only authoritative design-token source.
+  Frontend, mobile, iOS, and Android must not maintain independent colour,
+  typography, spacing, radius, shadow, motion, breakpoint, or z-index scales.
+  Platform adapters must be generated from or directly derive from this package.
+* `packages/ui/` is the canonical shared component library. Web and mobile must
+  consume its primitives and patterns when the component is technically and
+  semantically shared.
+* `packages/features/` owns reusable feature presentation and interaction rules;
+  `packages/contracts/` owns stable public schemas and DTOs; `packages/shared/`
+  owns framework-independent formatting, validation, and business utilities;
+  `packages/brand/` owns canonical brand assets and their deterministic platform
+  generation.
+* Do not recreate shared components or token sources under `frontend/` or
+  `mobile/`. A local compatibility file may only be a thin adapter to a shared
+  package and must not become a second implementation.
+
+## Platform boundaries
+
+* `mobile/app/` and `mobile/src/` remain the one mobile application source for
+  both iOS and Android. Never maintain separate iOS and Android business UIs.
+* Use `.web`, `.native`, `.ios`, and `.android` adapters only for genuine
+  platform differences. Keep their public component contract aligned.
+* Shared visual, validation, contract, and presentation changes must propagate
+  to every supported consumer without manual parallel edits.
+* Consolidation must preserve existing product behavior and accessible
+  metadata. Moving a component into a shared package is not permission to drop
+  seller trust, photo counts, delivery, dates, pricing states, focus behavior,
+  or actions that the existing component exposed.
+* A shared listing-card `list` variant remains a genuinely compact horizontal
+  row at 320px. Do not reuse grid media geometry or grid density without
+  validating the row's own content box at the minimum supported width.
+* Do not use a WebView as a source-sharing shortcut. Web remains real Next.js;
+  iOS and Android remain real Expo/React Native applications.
+* Preserve Next.js server rendering, metadata, structured data, semantic HTML,
+  accessibility, route optimization, and SEO. Do not widen the existing client
+  boundary when a Server Component or Web adapter is appropriate.
+* Shared image and avatar APIs must still allow Web adapters to provide
+  responsive `srcset`/`sizes`, priority hints, and optimized loading while
+  native adapters retain React Native image behavior.
+* Preserve native navigation, safe areas, keyboard behavior, permissions,
+  haptics, system sheets, VoiceOver, TalkBack, and store compatibility. Shared
+  styling never justifies degrading native UX.
+
+## Dependency and validation rules
+
+The shared dependency direction is one way:
+
+```text
+design-tokens / contracts
+          ↓
+brand / shared / ui
+          ↓
+features
+          ↓
+frontend / mobile
+```
+
+Backend may consume contracts and framework-independent schemas, but never UI,
+React Native, or application components. Shared packages must never import
+application routes.
+
+After any shared token, component, feature presentation, brand, validation, or
+contract change, run:
+
+```bash
+make tokens-check
+make ui-check
+make cross-platform-check
+```
+
+The cross-platform drift checker and one-edit propagation proof are mandatory
+gates. Do not weaken their raw-value, obsolete-token, package-boundary, or
+consumer checks merely to make a local implementation pass.
+When the generated design-token contract version changes, update its runtime
+contract assertion in the same shared-system change.
+
+Browser matrices run against the real Next.js development compiler. Keep their
+default concurrency bounded to two workers so concurrent cold-route compilation
+does not turn `networkidle` into a false product failure. A test that deliberately
+sweeps many routes or performs a multi-navigation configuration journey may
+declare its own larger, still-bounded timeout; do not raise the global
+single-route budget to hide a slow or unstable surface.
+After navigating to a client-routed compatibility surface, wait for the shared
+Next loading status to detach before asserting its DOM; `networkidle` alone does
+not mean the lazy application boundary has committed.
+
+Playwright Firefox r1538 cannot launch on macOS 27 because the host denies its
+`plugin-container` sandbox extension before a browser connection exists
+(upstream issue `microsoft/playwright#42082`). Omit only that project on Darwin
+27+ while the upstream defect remains, keep Firefox active in Linux CI, and
+retain `FORCE_FIREFOX_E2E=1` as the explicit probe for a future fixed browser.
+Do not translate a browser-launch failure into skipped product assertions on a
+host where the engine can launch.

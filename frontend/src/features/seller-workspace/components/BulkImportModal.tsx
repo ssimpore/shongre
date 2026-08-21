@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
-import { Upload, Download, CheckCircle2, AlertTriangle, FileSpreadsheet, Sparkles  } from 'lucide-react';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { listingRepository } from '../../../repositories/listing.repository';
-import { formatPrice } from '../../../utilities/formatters';
-import { UserProfile } from '../../../types';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import {
+  Upload,
+  Download,
+  CheckCircle2,
+  AlertTriangle,
+  FileSpreadsheet,
+  Sparkles,
+} from "lucide-react";
+import { Modal } from "../../../design-system/primitives/Modal";
+import { Button } from "../../../design-system/primitives/Button";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { listingRepository } from "../../../repositories/listing.repository";
+import { formatPrice } from "../../../utilities/formatters";
+import { UserProfile } from "../../../types";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -44,20 +51,22 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [, setCsvContent] = useState<string>('');
+  const [, setCsvContent] = useState<string>("");
   const [parsedItems, setParsedItems] = useState<ParsedListingItem[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 
   const handleDownloadSample = () => {
-    const blob = new Blob([SAMPLE_CSV_DATA], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([SAMPLE_CSV_DATA], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'modele_import_annonces_shongre.csv');
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "modele_import_annonces_shongre.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success('Le modèle CSV a été téléchargé.');
+    toast.success("Le modèle CSV a été téléchargé.");
   };
 
   const handleLoadSample = () => {
@@ -66,7 +75,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
   };
 
   const parseCsv = (text: string) => {
-    const lines = text.trim().split('\n');
+    const lines = text.trim().split("\n");
     if (lines.length <= 1) {
       setParsedItems([]);
       return;
@@ -78,18 +87,24 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
       const line = lines[i].trim();
       if (!line) continue;
 
-      const cols = line.split(';').map((c) => c.trim());
-      const title = cols[0] || '';
-      const categorySlug = cols[1] || 'home_garden';
-      const subCategorySlug = cols[2] || 'furniture';
+      const cols = line.split(";").map((c) => c.trim());
+      const title = cols[0] || "";
+      const categorySlug = cols[1] || "home_garden";
+      const subCategorySlug = cols[2] || "furniture";
       const price = parseFloat(cols[3]) || 0;
-      const condition = cols[4] || 'very_good';
+      const condition = cols[4] || "very_good";
       const stock = parseInt(cols[5], 10) || 1;
-      const city = cols[6] || currentUser.city || 'Paris';
-      const postalCode = cols[7] || currentUser.postalCode || '75000';
+      const city = cols[6] || currentUser.city || "Paris";
+      const postalCode = cols[7] || currentUser.postalCode || "75000";
 
       const isValid = title.length >= 5 && price > 0;
-      const validationError = !title ? 'Titre obligatoire' : title.length < 5 ? 'Titre trop court (< 5 car.)' : price <= 0 ? 'Prix invalide' : undefined;
+      const validationError = !title
+        ? "Titre obligatoire"
+        : title.length < 5
+          ? "Titre trop court (< 5 car.)"
+          : price <= 0
+            ? "Prix invalide"
+            : undefined;
 
       items.push({
         id: `parsed-${i}`,
@@ -137,12 +152,12 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           isFreeDonation: false,
           categorySlug: item.categorySlug,
           subCategorySlug: item.subCategorySlug,
-          categoryLabel: 'Maison & Jardin',
-          subCategoryLabel: 'Mobilier',
+          categoryLabel: "Maison & Jardin",
+          subCategoryLabel: "Mobilier",
           condition: item.condition as any,
           sellerId: currentUser.id,
           sellerName: currentUser.companyName || currentUser.name,
-          sellerType: 'pro',
+          sellerType: "pro",
           sellerAvatarUrl: currentUser.avatarUrl,
           sellerRating: currentUser.rating || 5,
           sellerReviewCount: currentUser.reviewCount || 0,
@@ -151,29 +166,39 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           sellerPostalCode: item.postalCode,
           city: item.city,
           postalCode: item.postalCode,
-          department: 'Rhône',
-          region: 'Auvergne-Rhône-Alpes',
+          department: "Rhône",
+          region: "Auvergne-Rhône-Alpes",
           photos: [
             {
               id: `p-${Date.now()}-${Math.random()}`,
-              url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80',
+              url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80",
               isCover: true,
             },
           ],
-          coverImageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80',
+          coverImageUrl:
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80",
           deliveryOptions: [
-            { type: 'hand_delivery', available: true, price: 0 },
-            { type: 'home_delivery', available: true, price: 14.9, courierName: 'Colissimo' },
+            { type: "hand_delivery", available: true, price: 0 },
+            {
+              type: "home_delivery",
+              available: true,
+              price: 14.9,
+              courierName: "Colissimo",
+            },
           ],
           isOnlinePaymentAvailable: true,
           isReservable: true,
           attributes: { stock_quantity: item.stock },
-          status: 'active',
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+          status: "active",
+          expiresAt: new Date(
+            Date.now() + 60 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
         });
       }
 
-      toast.success(`${validItems.length} annonces importées et publiées en ligne avec succès !`);
+      toast.success(
+        `${validItems.length} annonces importées et publiées en ligne avec succès !`,
+      );
       onImportCompleted();
       onClose();
     } catch (err: any) {
@@ -189,8 +214,10 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('sellerworkspace.bulkImportModal.importMassifDeCatalogueCsv')}
-      description={t('sellerworkspace.bulkImportModal.importezSimultanementDesDizainesD')}
+      title={t("sellerworkspace.bulkImportModal.importMassifDeCatalogueCsv")}
+      description={t(
+        "sellerworkspace.bulkImportModal.importezSimultanementDesDizainesD",
+      )}
       maxWidth="lg"
     >
       <div className="space-y-5">
@@ -202,13 +229,17 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               size="sm"
               onClick={handleDownloadSample}
               leftIcon={<Download className="w-3.5 h-3.5" />}
-            >{t('sellerworkspace.bulkImportModal.modeleCsvVierge')}</Button>
+            >
+              {t("sellerworkspace.bulkImportModal.modeleCsvVierge")}
+            </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleLoadSample}
               leftIcon={<Sparkles className="w-3.5 h-3.5 text-primary" />}
-            >{t('sellerworkspace.bulkImportModal.chargerUnExemple4Articles')}</Button>
+            >
+              {t("sellerworkspace.bulkImportModal.chargerUnExemple4Articles")}
+            </Button>
           </div>
 
           <label className="cursor-pointer">
@@ -219,7 +250,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               className="hidden"
             />
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition-colors shadow-xs">
-              <Upload className="w-3.5 h-3.5" />{t('sellerworkspace.bulkImportModal.parcourirUnFichierCsv')}</span>
+              <Upload className="w-3.5 h-3.5" />
+              {t("sellerworkspace.bulkImportModal.parcourirUnFichierCsv")}
+            </span>
           </label>
         </div>
 
@@ -227,7 +260,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         {parsedItems.length > 0 ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-stone-600 font-bold">
-              <span>{parsedItems.length} lignes détectées ({validCount} valides) :</span>
+              <span>
+                {parsedItems.length} lignes détectées ({validCount} valides) :
+              </span>
               {validCount < parsedItems.length && (
                 <span className="text-warning flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" />
@@ -241,21 +276,33 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                 <div
                   key={item.id}
                   className={`p-2.5 flex items-center justify-between gap-3 ${
-                    !item.isValid ? 'bg-danger-surface/50' : 'hover:bg-stone-50'
+                    !item.isValid ? "bg-danger-surface/50" : "hover:bg-stone-50"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-stone-400 text-micro w-4">#{idx + 1}</span>
-                    <span className="font-bold text-stone-900 truncate max-w-xs">{item.title}</span>
-                    <Badge variant="neutral" size="sm">Qté: {item.stock}</Badge>
+                    <span className="font-mono text-stone-400 text-micro w-4">
+                      #{idx + 1}
+                    </span>
+                    <span className="font-bold text-stone-900 truncate max-w-xs">
+                      {item.title}
+                    </span>
+                    <Badge variant="neutral" size="sm">
+                      Qté: {item.stock}
+                    </Badge>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-black text-stone-900">{formatPrice(item.price)}</span>
+                    <span className="font-black text-stone-900">
+                      {formatPrice(item.price)}
+                    </span>
                     {item.isValid ? (
-                      <Badge variant="verified" size="sm">Valide</Badge>
+                      <Badge variant="verified" size="sm">
+                        Valide
+                      </Badge>
                     ) : (
-                      <Badge variant="urgent" size="sm">{item.validationError}</Badge>
+                      <Badge variant="urgent" size="sm">
+                        {item.validationError}
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -265,8 +312,14 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         ) : (
           <div className="p-8 border-2 border-dashed border-stone-200 rounded-2xl text-center space-y-2 bg-stone-50/50">
             <FileSpreadsheet className="w-10 h-10 mx-auto text-stone-400" />
-            <h4 className="font-bold text-stone-800 text-sm">{t('sellerworkspace.bulkImportModal.deposezVotreFichierCsvIci')}</h4>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">{t('sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur')}</p>
+            <h4 className="font-bold text-stone-800 text-sm">
+              {t("sellerworkspace.bulkImportModal.deposezVotreFichierCsvIci")}
+            </h4>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              {t(
+                "sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur",
+              )}
+            </p>
           </div>
         )}
 
@@ -284,7 +337,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
             onClick={handleExecuteImport}
             leftIcon={<CheckCircle2 className="w-4 h-4" />}
           >
-            Importer et publier {validCount} annonce{validCount > 1 ? 's' : ''}
+            Importer et publier {validCount} annonce{validCount > 1 ? "s" : ""}
           </Button>
         </div>
       </div>

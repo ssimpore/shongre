@@ -3,18 +3,19 @@
  * Single Source of Truth for hierarchy, attributes, capabilities, search filters, and publication schemas.
  */
 
-export type TaxonomyLevel = 'category' | 'subcategory' | 'type' | 'subtype';
+export type TaxonomyLevel = "category" | "subcategory" | "type" | "subtype";
 
-export type TaxonomyNodeStatus = 'active' | 'draft' | 'disabled' | 'deprecated' | 'archived';
+export type TaxonomyNodeStatus =
+  "active" | "draft" | "disabled" | "deprecated" | "archived";
 
 export type ConditionSchemeId =
-  | 'consumer_product'
-  | 'vehicle'
-  | 'real_estate'
-  | 'collectible'
-  | 'professional'
-  | 'job'
-  | 'service';
+  | "consumer_product"
+  | "vehicle"
+  | "real_estate"
+  | "collectible"
+  | "professional"
+  | "job"
+  | "service";
 
 export interface ConditionOption {
   value: string;
@@ -24,13 +25,7 @@ export interface ConditionOption {
 }
 
 export type AttributeDataType =
-  | 'select'
-  | 'multi_select'
-  | 'number'
-  | 'text'
-  | 'boolean'
-  | 'range'
-  | 'year';
+  "select" | "multi_select" | "number" | "text" | "boolean" | "range" | "year";
 
 export interface AttributeOption {
   value: string;
@@ -40,7 +35,7 @@ export interface AttributeOption {
 
 export interface AttributeDependency {
   attributeId: string;
-  operator: 'equals' | 'in' | 'not_equals';
+  operator: "equals" | "in" | "not_equals";
   value: any;
 }
 
@@ -67,17 +62,18 @@ export interface TaxonomyAttribute {
   options?: AttributeOption[];
   dependencies?: AttributeDependency[];
   validation?: AttributeValidation;
-  publicationGroup?: 'general' | 'specifications' | 'dimensions' | 'performance' | 'legal';
+  publicationGroup?:
+    "general" | "specifications" | "dimensions" | "performance" | "legal";
   displayOrder?: number;
 }
 
 export type FulfillmentMode =
-  | 'hand_delivery'
-  | 'parcel_shipping'
-  | 'heavy_delivery'
-  | 'digital_download'
-  | 'on_site_service'
-  | 'none';
+  | "hand_delivery"
+  | "parcel_shipping"
+  | "heavy_delivery"
+  | "digital_download"
+  | "on_site_service"
+  | "none";
 
 export interface TaxonomyCapabilities {
   canSell: boolean;
@@ -113,13 +109,13 @@ export interface TaxonomyMarketOverride {
 }
 
 export type ListingFamily =
-  | 'physical_product'
-  | 'vehicle'
-  | 'real_estate'
-  | 'service'
-  | 'job'
-  | 'professional_equipment'
-  | 'digital';
+  | "physical_product"
+  | "vehicle"
+  | "real_estate"
+  | "service"
+  | "job"
+  | "professional_equipment"
+  | "digital";
 
 export interface TaxonomyNodeBase {
   id: string;
@@ -139,7 +135,7 @@ export interface TaxonomyNodeBase {
   shortLabel?: string;
 }
 
-export type TaxonomyLabelMode = 'full' | 'compact';
+export type TaxonomyLabelMode = "full" | "compact";
 
 export interface TaxonomyLabelOptions {
   compact?: boolean;
@@ -195,7 +191,7 @@ export interface ResolvedPublicationSchema {
 
 export interface SearchFacetDefinition {
   attribute: TaxonomyAttribute;
-  facetType: 'range' | 'select' | 'multi_select' | 'boolean';
+  facetType: "range" | "select" | "multi_select" | "boolean";
   order: number;
 }
 
@@ -204,14 +200,14 @@ export interface SearchFacetDefinition {
 // =========================================================================
 
 export type TaxonomyChangeType =
-  | 'created'
-  | 'updated'
-  | 'moved'
-  | 'reordered'
-  | 'deprecated'
-  | 'deleted'
-  | 'attribute_assigned'
-  | 'market_override';
+  | "created"
+  | "updated"
+  | "moved"
+  | "reordered"
+  | "deprecated"
+  | "deleted"
+  | "attribute_assigned"
+  | "market_override";
 
 export interface TaxonomyDraftChange {
   id: string;
@@ -232,7 +228,7 @@ export interface TaxonomyDraftChange {
 export interface TaxonomyVersion {
   id: string;
   versionNumber: number;
-  status: 'draft' | 'published' | 'archived';
+  status: "draft" | "published" | "archived";
   changeCount: number;
   description?: string;
   publishedAt?: string;
@@ -240,7 +236,7 @@ export interface TaxonomyVersion {
   createdAt: string;
 }
 
-export type ValidationSeverity = 'error' | 'warning' | 'info';
+export type ValidationSeverity = "error" | "warning" | "info";
 
 export interface TaxonomyValidationIssue {
   id: string;

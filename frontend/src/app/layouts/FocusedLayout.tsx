@@ -1,11 +1,11 @@
-import React from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { ArrowLeft, X } from 'lucide-react';
-import { routes } from '../../configuration/routes';
-import { AppScrollRestoration } from '../router/AppScrollRestoration';
-import { DemoRoleSwitcher } from './DemoRoleSwitcher';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { Container, SkipLink } from '../../design-system';
+import React from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { ArrowLeft, X } from "lucide-react";
+import { routes } from "../../configuration/routes";
+import { AppScrollRestoration } from "../router/AppScrollRestoration";
+import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { Container, SkipLink } from "../../design-system";
 
 /**
  * Shell for task-completion flows: publication, checkout, verification.
@@ -58,7 +58,7 @@ export const FocusedLayout: React.FC = () => {
               a hunt for the browser's back button. */}
           <Link
             to={routes.home()}
-            aria-label={t('shell.focusedLayout.quitterEtRevenirAL')}
+            aria-label={t("shell.focusedLayout.quitterEtRevenirAL")}
             className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-stone-600 hover:text-stone-950 hover:bg-bg-subtle motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <X className="w-5 h-5" />

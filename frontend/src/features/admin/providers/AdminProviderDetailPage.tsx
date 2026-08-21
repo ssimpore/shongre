@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   Sliders,
@@ -8,43 +8,44 @@ import {
   Layers,
   Clock,
   ExternalLink,
-  
   CheckCircle2,
-  
-  
-  
-  Building
-  
-} from 'lucide-react';
-import { providerService } from '../../../domains/providers/provider.service';
-import { getCategoryMetadata, getCapabilityMetadata } from '../../../domains/providers/provider-capabilities';
-import { ProviderConfigurationForm } from './components/ProviderConfigurationForm';
-import { ProviderMarketOverridesTab } from './components/ProviderMarketOverridesTab';
-import { ProviderHealthSimulator } from './components/ProviderHealthSimulator';
-import { ProviderAuditLogsTab } from './components/ProviderAuditLogsTab';
-import { ProviderImpactModal } from './components/ProviderImpactModal';
-import { Button } from '../../../design-system/primitives/Button';
-import { StatePanel } from '../../../design-system/primitives/StatePanel';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { usePageMeta } from '../../../hooks/usePageMeta';
+  Building,
+} from "lucide-react";
+import { providerService } from "../../../domains/providers/provider.service";
+import {
+  getCategoryMetadata,
+  getCapabilityMetadata,
+} from "../../../domains/providers/provider-capabilities";
+import { ProviderConfigurationForm } from "./components/ProviderConfigurationForm";
+import { ProviderMarketOverridesTab } from "./components/ProviderMarketOverridesTab";
+import { ProviderHealthSimulator } from "./components/ProviderHealthSimulator";
+import { ProviderAuditLogsTab } from "./components/ProviderAuditLogsTab";
+import { ProviderImpactModal } from "./components/ProviderImpactModal";
+import { Button } from "../../../design-system/primitives/Button";
+import { StatePanel } from "../../../design-system/primitives/StatePanel";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 
-type DetailTab = 'configuration' | 'markets' | 'health' | 'dependencies' | 'audit';
+type DetailTab =
+  "configuration" | "markets" | "health" | "dependencies" | "audit";
 
 export const AdminProviderDetailPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminProviderDetail.title'),
-    description: t('meta.adminProviderDetail.description'),
+    title: t("meta.adminProviderDetail.title"),
+    description: t("meta.adminProviderDetail.description"),
     noIndex: true,
   });
 
   const { providerId } = useParams<{ providerId: string }>();
-  const [activeTab, setActiveTab] = useState<DetailTab>('configuration');
+  const [activeTab, setActiveTab] = useState<DetailTab>("configuration");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Impact modal state
-  const [impactAction, setImpactAction] = useState<(() => Promise<void>) | null>(null);
-  const [impactMessage, setImpactMessage] = useState<string>('');
+  const [impactAction, setImpactAction] = useState<
+    (() => Promise<void>) | null
+  >(null);
+  const [impactMessage, setImpactMessage] = useState<string>("");
 
   const provider = useMemo(() => {
     return providerId ? providerService.getProvider(providerId) : undefined;
@@ -60,7 +61,9 @@ export const AdminProviderDetailPage: React.FC = () => {
       <StatePanel
         variant="notFound"
         title="Fournisseur introuvable"
-        description={t('admin.adminProviderDetailPage.cetIdentifiantDePrestataireN')}
+        description={t(
+          "admin.adminProviderDetailPage.cetIdentifiantDePrestataireN",
+        )}
         technicalDetail={`providerId: ${providerId}`}
         action={
           <Button
@@ -68,7 +71,9 @@ export const AdminProviderDetailPage: React.FC = () => {
             variant="primary"
             size="sm"
             leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
-          >{t('admin.adminProviderDetailPage.retourAuxIntegrations')}</Button>
+          >
+            {t("admin.adminProviderDetailPage.retourAuxIntegrations")}
+          </Button>
         }
       />
     );
@@ -87,7 +92,11 @@ export const AdminProviderDetailPage: React.FC = () => {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>{t('admin.adminProviderDetailPage.retourAuCatalogueDesFournisseurs')}</span>
+          <span>
+            {t(
+              "admin.adminProviderDetailPage.retourAuCatalogueDesFournisseurs",
+            )}
+          </span>
         </Link>
 
         {provider.metadata.documentationUrl && (
@@ -97,7 +106,10 @@ export const AdminProviderDetailPage: React.FC = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
-            <span>{provider.metadata.documentationLabel || 'Documentation technique'}</span>
+            <span>
+              {provider.metadata.documentationLabel ||
+                "Documentation technique"}
+            </span>
             <ExternalLink className="w-3 h-3" />
           </a>
         )}
@@ -113,11 +125,15 @@ export const AdminProviderDetailPage: React.FC = () => {
 
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-xl font-black text-stone-900">{provider.name}</h1>
+                <h1 className="text-xl font-black text-stone-900">
+                  {provider.name}
+                </h1>
                 <span className="text-xs font-mono font-bold bg-stone-100 text-stone-600 px-2 py-0.5 rounded border border-stone-200">
                   {provider.code}
                 </span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded border ${catMeta.badgeClass}`}>
+                <span
+                  className={`text-xs font-bold px-2 py-0.5 rounded border ${catMeta.badgeClass}`}
+                >
                   {catMeta.shortLabel}
                 </span>
               </div>
@@ -127,7 +143,8 @@ export const AdminProviderDetailPage: React.FC = () => {
                   <span className="flex items-center gap-1">
                     <Building className="w-3.5 h-3.5 text-stone-400" />
                     {provider.metadata.companyName}
-                    {provider.metadata.headquartersCountry && ` (${provider.metadata.headquartersCountry})`}
+                    {provider.metadata.headquartersCountry &&
+                      ` (${provider.metadata.headquartersCountry})`}
                   </span>
                 )}
                 <span>•</span>
@@ -136,7 +153,10 @@ export const AdminProviderDetailPage: React.FC = () => {
                 </span>
                 <span>•</span>
                 <span>
-                  Modifié le : {new Date(configuration.updatedAt).toLocaleDateString('fr-FR')}
+                  Modifié le :{" "}
+                  {new Date(configuration.updatedAt).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </span>
               </div>
             </div>
@@ -150,22 +170,24 @@ export const AdminProviderDetailPage: React.FC = () => {
                 Actif (Priorité {configuration.priority})
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">{t('admin.adminProviderDetailPage.desactive')}</span>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">
+                {t("admin.adminProviderDetailPage.desactive")}
+              </span>
             )}
 
             <span
               className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${
-                health === 'healthy'
-                  ? 'bg-success-surface text-success border-success-border'
-                  : health === 'degraded'
-                  ? 'bg-warning-surface text-warning border-warning-border'
-                  : 'bg-danger-surface text-danger border-danger-border'
+                health === "healthy"
+                  ? "bg-success-surface text-success border-success-border"
+                  : health === "degraded"
+                    ? "bg-warning-surface text-warning border-warning-border"
+                    : "bg-danger-surface text-danger border-danger-border"
               }`}
             >
-              {health === 'healthy' && '● Opérationnel'}
-              {health === 'degraded' && '▲ Dégradé'}
-              {health === 'unavailable' && '■ Indisponible'}
-              {health === 'unknown' && 'Santé inconnue'}
+              {health === "healthy" && "● Opérationnel"}
+              {health === "degraded" && "▲ Dégradé"}
+              {health === "unavailable" && "■ Indisponible"}
+              {health === "unknown" && "Santé inconnue"}
             </span>
 
             <span className="text-xs font-mono font-bold bg-stone-800 text-stone-200 px-2.5 py-1 rounded-full uppercase">
@@ -176,7 +198,9 @@ export const AdminProviderDetailPage: React.FC = () => {
 
         {/* Capabilities badges bar */}
         <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
-          <span className="text-xs font-semibold text-stone-500 mr-1">{t('admin.adminProviderDetailPage.capacitesFournies')}</span>
+          <span className="text-xs font-semibold text-stone-500 mr-1">
+            {t("admin.adminProviderDetailPage.capacitesFournies")}
+          </span>
           {provider.capabilities.map((cap) => (
             <span
               key={cap}
@@ -192,63 +216,65 @@ export const AdminProviderDetailPage: React.FC = () => {
       <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
           type="button"
-          onClick={() => setActiveTab('configuration')}
+          onClick={() => setActiveTab("configuration")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'configuration'
-              ? 'bg-primary text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            activeTab === "configuration"
+              ? "bg-primary text-white shadow-xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
           <Sliders className="w-3.5 h-3.5" />
-          <span>{t('admin.adminProviderDetailPage.configurationCles')}</span>
+          <span>{t("admin.adminProviderDetailPage.configurationCles")}</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('markets')}
+          onClick={() => setActiveTab("markets")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'markets'
-              ? 'bg-primary text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            activeTab === "markets"
+              ? "bg-primary text-white shadow-xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>{t('admin.adminProviderDetailPage.marchesSurcharges')}</span>
+          <span>{t("admin.adminProviderDetailPage.marchesSurcharges")}</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('health')}
+          onClick={() => setActiveTab("health")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'health'
-              ? 'bg-primary text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            activeTab === "health"
+              ? "bg-primary text-white shadow-xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
           <Activity className="w-3.5 h-3.5" />
-          <span>{t('admin.adminProviderDetailPage.santeTestsDemo')}</span>
+          <span>{t("admin.adminProviderDetailPage.santeTestsDemo")}</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('dependencies')}
+          onClick={() => setActiveTab("dependencies")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'dependencies'
-              ? 'bg-primary text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            activeTab === "dependencies"
+              ? "bg-primary text-white shadow-xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>{t('admin.adminProviderDetailPage.utilisationDependances')}</span>
+          <span>
+            {t("admin.adminProviderDetailPage.utilisationDependances")}
+          </span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('audit')}
+          onClick={() => setActiveTab("audit")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === 'audit'
-              ? 'bg-primary text-white shadow-xs'
-              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            activeTab === "audit"
+              ? "bg-primary text-white shadow-xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -257,7 +283,7 @@ export const AdminProviderDetailPage: React.FC = () => {
       </div>
 
       {/* Tab Panels */}
-      {activeTab === 'configuration' && (
+      {activeTab === "configuration" && (
         <ProviderConfigurationForm
           provider={provider}
           configuration={configuration}
@@ -269,7 +295,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         />
       )}
 
-      {activeTab === 'markets' && (
+      {activeTab === "markets" && (
         <ProviderMarketOverridesTab
           provider={provider}
           configuration={configuration}
@@ -277,7 +303,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         />
       )}
 
-      {activeTab === 'health' && (
+      {activeTab === "health" && (
         <ProviderHealthSimulator
           provider={provider}
           configuration={configuration}
@@ -285,24 +311,42 @@ export const AdminProviderDetailPage: React.FC = () => {
         />
       )}
 
-      {activeTab === 'dependencies' && (
+      {activeTab === "dependencies" && (
         <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe')}</h2>
+          <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">
+            {t(
+              "admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe",
+            )}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {provider.capabilities.map((cap) => {
               const meta = getCapabilityMetadata(cap);
               return (
-                <div key={cap} className="p-3.5 rounded-lg border border-stone-200 bg-stone-50/60 space-y-2">
+                <div
+                  key={cap}
+                  className="p-3.5 rounded-lg border border-stone-200 bg-stone-50/60 space-y-2"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-stone-900">{meta.name}</span>
-                    <span className="text-micro font-mono text-stone-500">{cap}</span>
+                    <span className="font-bold text-xs text-stone-900">
+                      {meta.name}
+                    </span>
+                    <span className="text-micro font-mono text-stone-500">
+                      {cap}
+                    </span>
                   </div>
                   <p className="text-xs text-stone-500">{meta.description}</p>
                   <div className="pt-2 border-t border-stone-200/60">
-                    <span className="text-micro font-semibold text-stone-600 block mb-1">{t('admin.adminProviderDetailPage.fonctionnalitesDirectes')}</span>
+                    <span className="text-micro font-semibold text-stone-600 block mb-1">
+                      {t(
+                        "admin.adminProviderDetailPage.fonctionnalitesDirectes",
+                      )}
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {meta.usedByFeatures.map((f) => (
-                        <span key={f} className="text-micro bg-stone-200/70 text-stone-800 px-1.5 py-0.5 rounded font-medium">
+                        <span
+                          key={f}
+                          className="text-micro bg-stone-200/70 text-stone-800 px-1.5 py-0.5 rounded font-medium"
+                        >
                           {f}
                         </span>
                       ))}
@@ -315,7 +359,9 @@ export const AdminProviderDetailPage: React.FC = () => {
         </div>
       )}
 
-      {activeTab === 'audit' && <ProviderAuditLogsTab providerId={provider.id} />}
+      {activeTab === "audit" && (
+        <ProviderAuditLogsTab providerId={provider.id} />
+      )}
 
       {/* Impact Modal */}
       {impactAction && (

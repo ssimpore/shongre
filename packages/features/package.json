@@ -1,0 +1,45 @@
+{
+  "name": "@shongre/features",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./listings": {
+      "react-native": "./src/listings/ListingCard.native.tsx",
+      "default": "./src/listings/ListingCard.web.tsx"
+    },
+    "./listings/web": "./src/listings/ListingCard.web.tsx",
+    "./listings/native": "./src/listings/ListingCard.native.tsx"
+  },
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "@shongre/contracts": "1.0.0",
+    "@shongre/design-tokens": "1.0.0",
+    "@shongre/shared": "1.0.0",
+    "@shongre/ui": "1.0.0",
+    "zod": "^3.24.2"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-native": ">=0.86.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

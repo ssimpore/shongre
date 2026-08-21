@@ -1,6 +1,7 @@
 import { Conversation, Message } from '../../shared/types/index.js';
 import { IMessagingRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { realtimeBroadcaster } from '../../infrastructure/realtime/realtime-broadcaster.js';
+import { AppError } from '../../shared/errors/app-error.js';
 
 export interface SendMessageInput {
   conversationId: string;
@@ -22,6 +23,7 @@ export class MessagingService {
   }
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
+    await this.assertInteractionAllowed(input.conversationId, input.senderId);
     const message: Message = {
       id: `msg_${Math.random().toString(36).substring(2, 10)}`,
       conversationId: input.conversationId,
@@ -69,7 +71,27 @@ export class MessagingService {
   }
 
   async blockUser(userId: string, targetUserId: string): Promise<void> {
+    if (!targetUserId || userId === targetUserId) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Utilisateur à bloquer invalide.' });
+    }
     return this.messagingRepo.blockUser(userId, targetUserId);
+  }
+
+  async unblockUser(userId: string, targetUserId: string): Promise<void> {
+    if (!targetUserId || userId === targetUserId) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Utilisateur à débloquer invalide.' });
+    }
+    return this.messagingRepo.unblockUser(userId, targetUserId);
+  }
+
+  private async assertInteractionAllowed(conversationId: string, senderId: string): Promise<void> {
+    if (senderId === 'system') return;
+    const conversation = await this.messagingRepo.getConversationById(conversationId);
+    if (!conversation) throw new AppError({ code: 'NOT_FOUND', message: 'Conversation introuvable.' });
+    const otherUserId = conversation.buyerId === senderId ? conversation.sellerId : conversation.buyerId;
+    if (await this.messagingRepo.isBlockedBetween(senderId, otherUserId)) {
+      throw new AppError({ code: 'FORBIDDEN', message: 'Cette conversation est temporairement indisponible.' });
+    }
   }
 }
 

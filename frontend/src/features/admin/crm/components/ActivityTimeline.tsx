@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   MessageSquare,
   Sparkles,
@@ -6,14 +6,12 @@ import {
   Mail,
   CheckCircle2,
   TrendingUp,
-  
-  
-  Send
-} from 'lucide-react';
-import { CrmActivity, ActivityType } from '../../../../domains/crm/crm.types';
-import { Button } from '../../../../design-system/primitives/Button';
-import { formatDate } from '../../../../utilities/formatters';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+  Send,
+} from "lucide-react";
+import { CrmActivity, ActivityType } from "../../../../domains/crm/crm.types";
+import { Button } from "../../../../design-system/primitives/Button";
+import { formatDate } from "../../../../utilities/formatters";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface ActivityTimelineProps {
   activities: CrmActivity[];
@@ -27,8 +25,10 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   loading = false,
 }) => {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<'all' | 'notes' | 'ai' | 'milestones'>('all');
-  const [newNote, setNewNote] = useState('');
+  const [filter, setFilter] = useState<"all" | "notes" | "ai" | "milestones">(
+    "all",
+  );
+  const [newNote, setNewNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddNote = async (e: React.FormEvent) => {
@@ -38,32 +38,33 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
     setIsSubmitting(true);
     try {
       await onAddNote(newNote.trim());
-      setNewNote('');
+      setNewNote("");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const filtered = activities.filter((a) => {
-    if (filter === 'notes') return a.type === 'note';
-    if (filter === 'ai') return a.isAiGenerated;
-    if (filter === 'milestones') return a.type === 'stage_changed' || a.type === 'pro_conversion';
+    if (filter === "notes") return a.type === "note";
+    if (filter === "ai") return a.isAiGenerated;
+    if (filter === "milestones")
+      return a.type === "stage_changed" || a.type === "pro_conversion";
     return true;
   });
 
   const getActivityIcon = (type: ActivityType, isAi?: boolean) => {
     if (isAi) return <Sparkles className="w-4 h-4 text-purple-600" />;
     switch (type) {
-      case 'note':
+      case "note":
         return <MessageSquare className="w-4 h-4 text-info" />;
-      case 'call':
+      case "call":
         return <Phone className="w-4 h-4 text-success" />;
-      case 'email':
+      case "email":
         return <Mail className="w-4 h-4 text-stone-600" />;
-      case 'stage_changed':
-      case 'pro_conversion':
+      case "stage_changed":
+      case "pro_conversion":
         return <TrendingUp className="w-4 h-4 text-warning" />;
-      case 'task_completed':
+      case "task_completed":
         return <CheckCircle2 className="w-4 h-4 text-success" />;
       default:
         return <MessageSquare className="w-4 h-4 text-stone-600" />;
@@ -74,11 +75,16 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
     <div className="space-y-4 text-xs">
       {/* Note Composer */}
       {onAddNote && (
-        <form onSubmit={handleAddNote} className="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 space-y-2.5">
+        <form
+          onSubmit={handleAddNote}
+          className="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 space-y-2.5"
+        >
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            placeholder={t('admin.activityTimeline.ajouterUneNoteCommercialeCompte')}
+            placeholder={t(
+              "admin.activityTimeline.ajouterUneNoteCommercialeCompte",
+            )}
             rows={2}
             className="w-full text-xs p-2.5 bg-white border border-stone-200 rounded-control placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors min-h-control-touch"
           />
@@ -91,7 +97,9 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               className="font-bold"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? 'Enregistrement...' : 'Publier la note'}</span>
+              <span>
+                {isSubmitting ? "Enregistrement..." : "Publier la note"}
+              </span>
             </Button>
           </div>
         </form>
@@ -101,41 +109,55 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       <div className="flex items-center gap-1.5 border-b border-border-subtle pb-2">
         <button
           type="button"
-          onClick={() => setFilter('all')}
+          onClick={() => setFilter("all")}
           className={`px-2.5 py-1 rounded-lg font-bold text-micro transition-colors cursor-pointer ${
-            filter === 'all' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
+            filter === "all"
+              ? "bg-stone-900 text-white"
+              : "text-stone-600 hover:bg-stone-100"
           }`}
         >
           Tous ({activities.length})
         </button>
         <button
           type="button"
-          onClick={() => setFilter('notes')}
+          onClick={() => setFilter("notes")}
           className={`px-2.5 py-1 rounded-lg font-bold text-micro transition-colors cursor-pointer ${
-            filter === 'notes' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
+            filter === "notes"
+              ? "bg-stone-900 text-white"
+              : "text-stone-600 hover:bg-stone-100"
           }`}
         >
           Notes
         </button>
         <button
           type="button"
-          onClick={() => setFilter('ai')}
+          onClick={() => setFilter("ai")}
           className={`px-2.5 py-1 rounded-lg font-bold text-micro transition-colors cursor-pointer ${
-            filter === 'ai' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
+            filter === "ai"
+              ? "bg-stone-900 text-white"
+              : "text-stone-600 hover:bg-stone-100"
           }`}
-        >{t('admin.activityTimeline.evenementsIa')}</button>
+        >
+          {t("admin.activityTimeline.evenementsIa")}
+        </button>
         <button
           type="button"
-          onClick={() => setFilter('milestones')}
+          onClick={() => setFilter("milestones")}
           className={`px-2.5 py-1 rounded-lg font-bold text-micro transition-colors cursor-pointer ${
-            filter === 'milestones' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
+            filter === "milestones"
+              ? "bg-stone-900 text-white"
+              : "text-stone-600 hover:bg-stone-100"
           }`}
-        >{t('admin.activityTimeline.etapesPipeline')}</button>
+        >
+          {t("admin.activityTimeline.etapesPipeline")}
+        </button>
       </div>
 
       {/* Timeline Stream */}
       {filtered.length === 0 ? (
-        <div className="text-center py-6 text-stone-500">{t('admin.activityTimeline.aucuneActiviteEnregistreePourCe')}</div>
+        <div className="text-center py-6 text-stone-500">
+          {t("admin.activityTimeline.aucuneActiviteEnregistreePourCe")}
+        </div>
       ) : (
         <div className="space-y-3 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-200">
           {filtered.map((act) => (
@@ -160,7 +182,11 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                   </p>
                 )}
 
-                <div className="text-micro text-stone-500 pt-0.5">{t('admin.activityTimeline.par')}<strong className="text-stone-600">{act.authorName}</strong>{' '}
+                <div className="text-micro text-stone-500 pt-0.5">
+                  {t("admin.activityTimeline.par")}
+                  <strong className="text-stone-600">
+                    {act.authorName}
+                  </strong>{" "}
                   {act.authorRole && `(${act.authorRole})`}
                 </div>
               </div>

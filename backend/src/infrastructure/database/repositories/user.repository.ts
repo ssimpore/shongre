@@ -23,6 +23,8 @@ export interface IUserRepository {
   getAll(): Promise<UserProfile[]>;
   findCredentialByUserId(userId: string): Promise<UserCredential | null>;
   saveCredential(credential: UserCredential): Promise<void>;
+  deleteCredential(userId: string): Promise<void>;
+  anonymize(userId: string, reason?: string): Promise<UserProfile>;
 }
 
 export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
@@ -156,6 +158,37 @@ export class DemoUserRepository implements IUserRepository {
 
   async saveCredential(credential: UserCredential): Promise<void> {
     this.credentials.set(credential.userId, credential.passwordHash);
+  }
+
+  async deleteCredential(userId: string): Promise<void> {
+    this.credentials.delete(userId);
+  }
+
+  async anonymize(userId: string): Promise<UserProfile> {
+    const existing = this.users.get(userId);
+    if (!existing) throw new Error(`User with id ${userId} not found in Demo repository`);
+    const anonymized: UserProfile = {
+      ...existing,
+      slug: `deleted-${userId}`,
+      email: `deleted+${userId}@anonymized.invalid`,
+      name: 'Utilisateur supprimé',
+      status: 'deleted',
+      avatarUrl: undefined,
+      phone: undefined,
+      city: undefined,
+      postalCode: undefined,
+      department: undefined,
+      region: undefined,
+      bio: undefined,
+      isVerified: false,
+      isIdentityVerified: false,
+      isPhoneVerified: false,
+      isEmailVerified: false,
+      isBusinessVerified: false,
+    };
+    this.users.set(userId, anonymized);
+    this.credentials.delete(userId);
+    return { ...anonymized };
   }
 }
 
@@ -319,5 +352,22 @@ export class PostgresUserRepository implements IUserRepository {
     if (error) {
       throw new Error(`Failed to save credential: ${error.message}`);
     }
+  }
+
+  async deleteCredential(userId: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await ((supabase.from('user_credentials' as any) as any).delete().eq('user_id', userId) as any);
+    if (error) throw new Error(`Failed to delete credential: ${error.message}`);
+  }
+
+  async anonymize(userId: string, reason?: string): Promise<UserProfile> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.rpc('complete_account_deletion', {
+      p_user_id: userId,
+      p_reason: reason || null,
+    });
+    const profile = data?.[0];
+    if (error || !profile) throw new Error(`Failed to anonymize account: ${error?.message || 'account not found'}`);
+    return this.mapRowToUserProfile(profile);
   }
 }

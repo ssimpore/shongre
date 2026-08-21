@@ -1,4 +1,4 @@
-import { UserProfile, UserRole } from '../../types';
+import { UserProfile, UserRole } from "../../types";
 
 export interface LoginCredentials {
   email: string;
@@ -24,4 +24,5 @@ export interface AuthServiceContract {
   switchRole(role: UserRole): Promise<UserProfile>;
   verifyPhone(phone: string, code: string): Promise<boolean>;
   verifyEmail(token: string): Promise<boolean>;
+  deleteAccount(password: string, reason?: string): Promise<void>;
 }

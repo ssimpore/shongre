@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Search, X } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { MapPin, Search, X } from "lucide-react";
 import {
   RECENT_SEARCH_ITEMS_CHANGED_EVENT,
   storageService,
-} from '../../../services/storage.service';
-import { RecentSearch } from '../../../types';
-import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
-import { Container } from '../../../design-system/primitives/Layout';
-import { IconButton } from '../../../design-system/primitives/IconButton';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { HomeSectionHeading } from './HomeSectionHeading';
-import { useMarketLocation } from '../../../app/providers/MarketLocationProvider';
-import { normalizeRecentSearchesLimit } from '../../../domains/market/market.constants';
+} from "../../../services/storage.service";
+import { RecentSearch } from "../../../types";
+import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
+import { Container } from "../../../design-system/primitives/Layout";
+import { IconButton } from "../../../design-system/primitives/IconButton";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { HomeSectionHeading } from "./HomeSectionHeading";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { normalizeRecentSearchesLimit } from "../../../domains/market/market.constants";
 
 export const HomeRecentSearches: React.FC = () => {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export const HomeRecentSearches: React.FC = () => {
   // Read once during state initialisation. Rendering an empty rail and filling
   // it in an effect caused a visible layout shift after the home page mounted.
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
-    storageService.getRecentSearchItems()
+    storageService.getRecentSearchItems(),
   );
 
   useEffect(() => {
@@ -31,11 +31,17 @@ export const HomeRecentSearches: React.FC = () => {
     // The custom event covers same-tab writes; the native event covers another
     // tab. Both keep the section reactive without turning storage into a second
     // source of React state.
-    window.addEventListener(RECENT_SEARCH_ITEMS_CHANGED_EVENT, refreshRecentSearches);
-    window.addEventListener('storage', refreshRecentSearches);
+    window.addEventListener(
+      RECENT_SEARCH_ITEMS_CHANGED_EVENT,
+      refreshRecentSearches,
+    );
+    window.addEventListener("storage", refreshRecentSearches);
     return () => {
-      window.removeEventListener(RECENT_SEARCH_ITEMS_CHANGED_EVENT, refreshRecentSearches);
-      window.removeEventListener('storage', refreshRecentSearches);
+      window.removeEventListener(
+        RECENT_SEARCH_ITEMS_CHANGED_EVENT,
+        refreshRecentSearches,
+      );
+      window.removeEventListener("storage", refreshRecentSearches);
     };
   }, []);
 
@@ -54,20 +60,17 @@ export const HomeRecentSearches: React.FC = () => {
   }
 
   return (
-    <Container
-      as="section"
-      aria-labelledby="home-recent-searches-title"
-    >
+    <Container as="section" aria-labelledby="home-recent-searches-title">
       {/* Section Header */}
       <div className="mb-4 sm:mb-6">
         <HomeSectionHeading id="home-recent-searches-title">
-          {t('home.homeRecentSearches.recherchesRecentes')}
+          {t("home.homeRecentSearches.recherchesRecentes")}
         </HomeSectionHeading>
       </div>
 
       {/* Recent Searches Cards Rail / Grid */}
       <ScrollRail
-        label={t('home.homeRecentSearches.recherchesRecentes')}
+        label={t("home.homeRecentSearches.recherchesRecentes")}
         snap
         className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible"
       >
@@ -100,9 +103,13 @@ export const HomeRecentSearches: React.FC = () => {
                   </h3>
 
                   <span className="mt-2 flex items-center gap-1.5 text-xs font-medium text-stone-500">
-                    <MapPin className="h-icon-sm w-icon-sm shrink-0 text-stone-400" aria-hidden="true" />
+                    <MapPin
+                      className="h-icon-sm w-icon-sm shrink-0 text-stone-400"
+                      aria-hidden="true"
+                    />
                     <span className="truncate">
-                      {item.locationLabel || t('home.homeRecentSearches.touteLaFrance')}
+                      {item.locationLabel ||
+                        t("home.homeRecentSearches.touteLaFrance")}
                     </span>
                   </span>
                 </span>
@@ -112,7 +119,7 @@ export const HomeRecentSearches: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDelete(item.id)}
-                ariaLabel={`${t('home.homeRecentSearches.supprimerCetteRecherche')} : ${item.title}`}
+                ariaLabel={`${t("home.homeRecentSearches.supprimerCetteRecherche")} : ${item.title}`}
                 className="absolute right-2 top-2 z-raised rounded-full text-stone-400 hover:bg-primary-light hover:text-primary sm:right-2.5 sm:top-2.5"
               >
                 <X className="h-icon-md w-icon-md" />

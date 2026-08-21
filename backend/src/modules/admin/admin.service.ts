@@ -6,6 +6,7 @@ import {
   AdminStatsSummary,
 } from '../../infrastructure/database/repositories/index.js';
 import { logger } from '../../infrastructure/logging/logger.js';
+import { AppError } from '../../shared/errors/app-error.js';
 
 export type { AdminStatsSummary };
 
@@ -44,6 +45,36 @@ export class AdminService {
   async resolveReport(reportId: string, action: 'dismiss' | 'remove_listing' | 'ban_user'): Promise<void> {
     await this.adminRepo.resolveReport(reportId, action);
     logger.info(`Report ${reportId} resolved with action: ${action}`);
+  }
+
+  async submitReport(input: {
+    reporterId: string;
+    listingId?: string;
+    reportedUserId?: string;
+    reason?: string;
+    details?: string;
+  }): Promise<{ id: string; status: 'pending' }> {
+    const reasons = new Set(['fraud', 'counterfeit', 'prohibited', 'harassment', 'other']);
+    if (!input.listingId && !input.reportedUserId) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Une annonce ou un utilisateur doit être signalé.' });
+    }
+    if (!input.reason || !reasons.has(input.reason)) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Motif de signalement invalide.' });
+    }
+    if (!input.details || input.details.trim().length < 10 || input.details.length > 2000) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Le détail du signalement doit contenir entre 10 et 2 000 caractères.' });
+    }
+    if (input.reportedUserId === input.reporterId) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Vous ne pouvez pas signaler votre propre compte.' });
+    }
+    const report = await this.adminRepo.createReport({
+      reporterId: input.reporterId,
+      listingId: input.listingId,
+      reportedUserId: input.reportedUserId,
+      reason: input.reason,
+      details: input.details.trim(),
+    });
+    return { ...report, status: 'pending' };
   }
 
   async getAuditLogs(): Promise<Array<{ id: string; timestamp: string; actor: string; action: string; target: string }>> {

@@ -1,7 +1,14 @@
-import React from 'react';
-import { User, Briefcase, CheckCircle2, ShieldCheck, Zap, Store } from 'lucide-react';
-import { AccountType } from '../../../types';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React from "react";
+import {
+  User,
+  Briefcase,
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
+  Store,
+} from "lucide-react";
+import { AccountType } from "../../../types";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface AccountTypeSelectorProps {
   selectedType: AccountType;
@@ -18,19 +25,19 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
       {/* Individual Option */}
       <button
         type="button"
-        onClick={() => onChange('individual')}
+        onClick={() => onChange("individual")}
         className={`relative flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-          selectedType === 'individual'
-            ? 'border-primary bg-primary-light/30 shadow-md ring-2 ring-primary/20'
-            : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50'
+          selectedType === "individual"
+            ? "border-primary bg-primary-light/30 shadow-md ring-2 ring-primary/20"
+            : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50"
         }`}
       >
         <div className="flex items-center justify-between w-full mb-3">
           <div
             className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
-              selectedType === 'individual'
-                ? 'bg-primary text-white'
-                : 'bg-stone-100 text-stone-700'
+              selectedType === "individual"
+                ? "bg-primary text-white"
+                : "bg-stone-100 text-stone-700"
             }`}
           >
             <User className="w-5 h-5" />
@@ -38,32 +45,40 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
 
           <div
             className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
-              selectedType === 'individual'
-                ? 'border-primary bg-primary text-white'
-                : 'border-stone-300 bg-white'
+              selectedType === "individual"
+                ? "border-primary bg-primary text-white"
+                : "border-stone-300 bg-white"
             }`}
           >
-            {selectedType === 'individual' && <CheckCircle2 className="w-4 h-4" />}
+            {selectedType === "individual" && (
+              <CheckCircle2 className="w-4 h-4" />
+            )}
           </div>
         </div>
 
         <span className="font-extrabold text-base text-stone-950 mb-1">
           Particulier
         </span>
-        <p className="text-xs text-stone-600 leading-relaxed mb-3">{t('auth.accountTypeSelector.pourAcheterEnTouteSecurite')}</p>
+        <p className="text-xs text-stone-600 leading-relaxed mb-3">
+          {t("auth.accountTypeSelector.pourAcheterEnTouteSecurite")}
+        </p>
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-            <span>{t('auth.accountTypeSelector.depotDAnnoncesGratuitEt')}</span>
+            <span>{t("auth.accountTypeSelector.depotDAnnoncesGratuitEt")}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-            <span>{t('auth.accountTypeSelector.paiementSecuriseAvecSequestre')}</span>
+            <span>
+              {t("auth.accountTypeSelector.paiementSecuriseAvecSequestre")}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-            <span>{t('auth.accountTypeSelector.messagerieInstantaneeDirecte')}</span>
+            <span>
+              {t("auth.accountTypeSelector.messagerieInstantaneeDirecte")}
+            </span>
           </div>
         </div>
       </button>
@@ -71,19 +86,19 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
       {/* Pro Option */}
       <button
         type="button"
-        onClick={() => onChange('professional')}
+        onClick={() => onChange("professional")}
         className={`relative flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-          selectedType === 'professional'
-            ? 'border-primary bg-primary-light/30 shadow-md ring-2 ring-primary/20'
-            : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50'
+          selectedType === "professional"
+            ? "border-primary bg-primary-light/30 shadow-md ring-2 ring-primary/20"
+            : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50"
         }`}
       >
         <div className="flex items-center justify-between w-full mb-3">
           <div
             className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-colors ${
-              selectedType === 'professional'
-                ? 'bg-primary text-white'
-                : 'bg-stone-100 text-stone-700'
+              selectedType === "professional"
+                ? "bg-primary text-white"
+                : "bg-stone-100 text-stone-700"
             }`}
           >
             <Briefcase className="w-5 h-5" />
@@ -95,12 +110,14 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
             </span>
             <div
               className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
-                selectedType === 'professional'
-                  ? 'border-primary bg-primary text-white'
-                  : 'border-stone-300 bg-white'
+                selectedType === "professional"
+                  ? "border-primary bg-primary text-white"
+                  : "border-stone-300 bg-white"
               }`}
             >
-              {selectedType === 'professional' && <CheckCircle2 className="w-4 h-4" />}
+              {selectedType === "professional" && (
+                <CheckCircle2 className="w-4 h-4" />
+              )}
             </div>
           </div>
         </div>
@@ -108,20 +125,28 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
         <span className="font-extrabold text-base text-stone-950 mb-1 flex items-center gap-1.5">
           Professionnel
         </span>
-        <p className="text-xs text-stone-600 leading-relaxed mb-3">{t('auth.accountTypeSelector.pourLesEntreprisesArtisansBoutiques')}</p>
+        <p className="text-xs text-stone-600 leading-relaxed mb-3">
+          {t("auth.accountTypeSelector.pourLesEntreprisesArtisansBoutiques")}
+        </p>
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>{t('auth.accountTypeSelector.badgeOfficielVendeurProVerifie')}</span>
+            <span>
+              {t("auth.accountTypeSelector.badgeOfficielVendeurProVerifie")}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <Store className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>{t('auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable')}</span>
+            <span>
+              {t("auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable")}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>{t('auth.accountTypeSelector.facturationAutomatiqueAvecTva')}</span>
+            <span>
+              {t("auth.accountTypeSelector.facturationAutomatiqueAvecTva")}
+            </span>
           </div>
         </div>
       </button>

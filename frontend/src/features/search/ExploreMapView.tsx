@@ -1,27 +1,29 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { routes } from '../../configuration/routes';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { routes } from "../../configuration/routes";
 import {
   MapPin,
   Layers,
   Maximize2,
   X,
   ExternalLink,
-  
-  
   Navigation,
-  Compass
-} from 'lucide-react';
-import { Listing } from '../../types';
-import { formatPrice, plural } from '../../utilities/formatters';
-import { getListingCoordinates, FRENCH_MAJOR_CITIES, FRANCE_CENTER } from '../../configuration/geoCoordinates';
-import { Badge } from '../../design-system/primitives/Badge';
-import { Image } from '../../design-system/primitives/Image';
-import { showsVerifiedBadge } from '../../domains/user/user.domain';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { getListingCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
+  Compass,
+} from "lucide-react";
+import { Listing } from "../../types";
+import { formatPrice, plural } from "../../utilities/formatters";
+import {
+  getListingCoordinates,
+  FRENCH_MAJOR_CITIES,
+  FRANCE_CENTER,
+} from "../../configuration/geoCoordinates";
+import { Badge } from "../../design-system/primitives/Badge";
+import { Image } from "../../design-system/primitives/Image";
+import { showsVerifiedBadge } from "../../domains/user/user.domain";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -43,7 +45,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
-  const [mapStyle, setMapStyle] = useState<'positron' | 'osm'>('positron');
+  const [mapStyle, setMapStyle] = useState<"positron" | "osm">("positron");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Initialize Map
@@ -63,18 +65,18 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
     // Default tile layer - CartoDB Positron for a warm, clean aesthetic matching Shongre
     const positronLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
       {
         maxZoom: 19,
-        subdomains: 'abcd',
-      }
+        subdomains: "abcd",
+      },
     ).addTo(map);
 
     tileLayerRef.current = positronLayer;
     mapInstanceRef.current = map;
 
     // Add zoom control top right
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.control.zoom({ position: "topright" }).addTo(map);
 
     return () => {
       map.remove();
@@ -90,7 +92,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    const id = requestAnimationFrame(() => map.invalidateSize({ animate: false }));
+    const id = requestAnimationFrame(() =>
+      map.invalidateSize({ animate: false }),
+    );
     return () => cancelAnimationFrame(id);
   }, [isSidebarOpen]);
 
@@ -101,13 +105,13 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     mapInstanceRef.current.removeLayer(tileLayerRef.current);
 
     const newUrl =
-      mapStyle === 'positron'
-        ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      mapStyle === "positron"
+        ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
     const newLayer = L.tileLayer(newUrl, {
       maxZoom: 19,
-      subdomains: mapStyle === 'positron' ? 'abcd' : 'abc',
+      subdomains: mapStyle === "positron" ? "abcd" : "abc",
     }).addTo(mapInstanceRef.current);
 
     tileLayerRef.current = newLayer;
@@ -135,31 +139,39 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       const isSelected = activeListing?.id === listing.id;
       const isHovered = hoveredListingId === listing.id;
-      const priceText = listing.isFreeDonation ? 'Don' : `${listing.price} €`;
+      const priceText = listing.isFreeDonation ? "Don" : `${listing.price} €`;
 
       // Custom HTML Marker Pill
       const customHtml = `
         <div class="shongre-map-marker-wrapper transition-all duration-normal transform ${
-          isSelected ? 'scale-115 z-dropdown' : isHovered ? 'scale-110 z-sticky' : 'z-raised'
+          isSelected
+            ? "scale-115 z-dropdown"
+            : isHovered
+              ? "scale-110 z-sticky"
+              : "z-raised"
         }">
           <div class="px-2.5 py-1 rounded-full font-bold text-xs shadow-md border flex items-center gap-1 cursor-pointer select-none transition-colors ${
             isSelected
-              ? 'bg-primary text-white border-primary-hover ring-3 ring-primary-border'
+              ? "bg-primary text-white border-primary-hover ring-3 ring-primary-border"
               : isHovered
-              ? 'bg-stone-900 text-white border-stone-800'
-              : 'bg-white text-stone-900 border-border-base hover:border-stone-400'
+                ? "bg-stone-900 text-white border-stone-800"
+                : "bg-white text-stone-900 border-border-base hover:border-stone-400"
           }">
-            ${listing.isBoosted ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ''}
+            ${listing.isBoosted ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ""}
             <span>${priceText}</span>
           </div>
           <div class="w-2 h-2 bg-current rotate-45 mx-auto -mt-1 ${
-            isSelected ? 'text-primary' : isHovered ? 'text-stone-900' : 'text-white'
+            isSelected
+              ? "text-primary"
+              : isHovered
+                ? "text-stone-900"
+                : "text-white"
           }"></div>
         </div>
       `;
 
       const customIcon = L.divIcon({
-        className: 'shongre-custom-marker-icon',
+        className: "shongre-custom-marker-icon",
         html: customHtml,
         iconSize: [60, 32],
         iconAnchor: [30, 24],
@@ -167,16 +179,16 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       const marker = L.marker(latLng, { icon: customIcon }).addTo(map);
 
-      marker.on('click', () => {
+      marker.on("click", () => {
         setActiveListing(listing);
         map.panTo(latLng, { animate: true, duration: 0.5 });
       });
 
-      marker.on('mouseover', () => {
+      marker.on("mouseover", () => {
         setHoveredListingId(listing.id);
       });
 
-      marker.on('mouseout', () => {
+      marker.on("mouseout", () => {
         setHoveredListingId(null);
       });
 
@@ -195,7 +207,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    if (cityName === 'Toute la France') {
+    if (cityName === "Toute la France") {
       map.setView([FRANCE_CENTER.lat, FRANCE_CENTER.lng], 6, { animate: true });
       return;
     }
@@ -203,7 +215,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     const key = cityName.toLowerCase().trim();
     const cityData = FRENCH_MAJOR_CITIES[key];
     if (cityData) {
-      map.setView([cityData.lat, cityData.lng], cityData.zoom || 12, { animate: true });
+      map.setView([cityData.lat, cityData.lng], cityData.zoom || 12, {
+        animate: true,
+      });
     }
   };
 
@@ -232,26 +246,35 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
           <button
             type="button"
-            onClick={() => handleFlyToCity('Toute la France')}
+            onClick={() => handleFlyToCity("Toute la France")}
             className="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors shrink-0"
-          >{t('search.exploreMapView.touteLaFrance')}</button>
+          >
+            {t("search.exploreMapView.touteLaFrance")}
+          </button>
 
-          {['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Toulouse', 'Nantes', 'Lille', 'Nice'].map(
-            (city) => (
-              <button
-                key={city}
-                type="button"
-                onClick={() => handleFlyToCity(city)}
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors shrink-0 ${
-                  selectedCity === city
-                    ? 'bg-primary text-white shadow-xs'
-                    : 'bg-bg-base text-stone-700 hover:bg-stone-200/80 border border-border-base'
-                }`}
-              >
-                {city}
-              </button>
-            )
-          )}
+          {[
+            "Paris",
+            "Lyon",
+            "Marseille",
+            "Bordeaux",
+            "Toulouse",
+            "Nantes",
+            "Lille",
+            "Nice",
+          ].map((city) => (
+            <button
+              key={city}
+              type="button"
+              onClick={() => handleFlyToCity(city)}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors shrink-0 ${
+                selectedCity === city
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-bg-base text-stone-700 hover:bg-stone-200/80 border border-border-base"
+              }`}
+            >
+              {city}
+            </button>
+          ))}
         </div>
 
         {/* View & Layer Actions */}
@@ -259,7 +282,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <button
             type="button"
             onClick={handleFitAll}
-            title={t('search.exploreMapView.recadrerSurLesAnnonces')}
+            title={t("search.exploreMapView.recadrerSurLesAnnonces")}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -268,13 +291,15 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
           <button
             type="button"
-            onClick={() => setMapStyle((s) => (s === 'positron' ? 'osm' : 'positron'))}
-            title={t('search.exploreMapView.changerLeStyleDeCarte')}
+            onClick={() =>
+              setMapStyle((s) => (s === "positron" ? "osm" : "positron"))
+            }
+            title={t("search.exploreMapView.changerLeStyleDeCarte")}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
           >
             <Layers className="w-3.5 h-3.5" />
             <span className="hidden md:inline">
-              {mapStyle === 'positron' ? 'Plan doux' : 'OSM'}
+              {mapStyle === "positron" ? "Plan doux" : "OSM"}
             </span>
           </button>
 
@@ -283,7 +308,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             onClick={() => setIsSidebarOpen((v) => !v)}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg hidden lg:flex items-center gap-1 transition-colors"
           >
-            <span>{isSidebarOpen ? 'Masquer la liste' : 'Afficher la liste'}</span>
+            <span>
+              {isSidebarOpen ? "Masquer la liste" : "Afficher la liste"}
+            </span>
           </button>
         </div>
       </div>
@@ -297,9 +324,11 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-white/95 backdrop-blur-md border-r border-border-base z-sticky shrink-0">
             <div className="p-3 border-b border-border-base flex items-center justify-between">
               <span className="text-xs font-bold text-stone-800 truncate">
-                {plural(listings.length, 'annonce')} sur la carte
+                {plural(listings.length, "annonce")} sur la carte
               </span>
-              <span className="text-xs text-stone-500">{t('search.exploreMapView.cliquezPourCentrer')}</span>
+              <span className="text-xs text-stone-500">
+                {t("search.exploreMapView.cliquezPourCentrer")}
+              </span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5 divide-y divide-border-subtle">
@@ -315,16 +344,20 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                     onClick={() => {
                       setActiveListing(item);
                       const coords = getListingCoordinates(item);
-                      mapInstanceRef.current?.setView([coords.lat, coords.lng], 13, {
-                        animate: true,
-                      });
+                      mapInstanceRef.current?.setView(
+                        [coords.lat, coords.lng],
+                        13,
+                        {
+                          animate: true,
+                        },
+                      );
                     }}
                     className={`pt-2.5 first:pt-0 cursor-pointer rounded-xl p-2 transition-colors ${
                       isSelected
-                        ? 'bg-primary-light border border-primary-border'
+                        ? "bg-primary-light border border-primary-border"
                         : isHovered
-                        ? 'bg-stone-50'
-                        : 'hover:bg-stone-50'
+                          ? "bg-stone-50"
+                          : "hover:bg-stone-50"
                     }`}
                   >
                     <div className="flex gap-2.5 items-center">
@@ -364,7 +397,6 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
         {/* Leaflet Container */}
         <div ref={mapContainerRef} className="w-full h-full z-raised" />
-
       </div>
 
       {/* Selected listing details sit below the map so they never cover the
@@ -380,14 +412,16 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               type="button"
               onClick={() => setActiveListing(null)}
               className="order-3 shrink-0 rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              aria-label={t('search.exploreMapView.fermerLaPrevisualisation')}
+              aria-label={t("search.exploreMapView.fermerLaPrevisualisation")}
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex min-w-0 flex-1 gap-3">
               <Image
-                src={activeListing.coverImageUrl || activeListing.photos[0]?.url}
+                src={
+                  activeListing.coverImageUrl || activeListing.photos[0]?.url
+                }
                 alt={activeListing.title}
                 sizes="96px"
                 className="w-24 h-24 rounded-xl object-cover border border-border-base shrink-0"
@@ -400,7 +434,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                     {getListingCategoryLabel(activeListing)}
                   </span>
                   {showsVerifiedBadge(activeListing) && (
-                    <Badge variant="verified" size="sm" icon>{t('search.exploreMapView.verifie')}</Badge>
+                    <Badge variant="verified" size="sm" icon>
+                      {t("search.exploreMapView.verifie")}
+                    </Badge>
                   )}
                 </div>
 
@@ -422,9 +458,13 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => navigate(routes.listing.detail(activeListing.id))}
+                    onClick={() =>
+                      navigate(routes.listing.detail(activeListing.id))
+                    }
                     className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >{t('search.exploreMapView.voirLAnnonce')}<ExternalLink className="w-3 h-3" />
+                  >
+                    {t("search.exploreMapView.voirLAnnonce")}
+                    <ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
               </div>
@@ -438,7 +478,13 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       <div className="absolute top-14 right-4 z-sticky pointer-events-none">
         <div className="bg-stone-900/85 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
           <Navigation className="w-3.5 h-3.5 text-primary" />
-          <span>{plural(listings.length, 'annonce géolocalisée', 'annonces géolocalisées')}</span>
+          <span>
+            {plural(
+              listings.length,
+              "annonce géolocalisée",
+              "annonces géolocalisées",
+            )}
+          </span>
         </div>
       </div>
     </div>

@@ -1,17 +1,9 @@
-import React, { useState } from 'react';
-import {
-  
-  CheckCircle2
-  
-  
-  
-  
-  
-} from 'lucide-react';
-import {  LISTING_BOOSTS } from '../../configuration/plans.config';
-import { Button } from '../../design-system/primitives/Button';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+import React, { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
+import { LISTING_BOOSTS } from "../../configuration/plans.config";
+import { Button } from "../../design-system/primitives/Button";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 interface AdminPlanConfig {
   id: string;
@@ -29,8 +21,8 @@ interface AdminPlanConfig {
 
 const INITIAL_PLANS: AdminPlanConfig[] = [
   {
-    id: 'pro_starter',
-    name: 'Pro Découverte',
+    id: "pro_starter",
+    name: "Pro Découverte",
     popular: false,
     priceMonthly: 29,
     maxActiveListings: 50,
@@ -42,8 +34,8 @@ const INITIAL_PLANS: AdminPlanConfig[] = [
     },
   },
   {
-    id: 'pro_business',
-    name: 'Pro Performance',
+    id: "pro_business",
+    name: "Pro Performance",
     popular: true,
     priceMonthly: 79,
     maxActiveListings: 250,
@@ -55,8 +47,8 @@ const INITIAL_PLANS: AdminPlanConfig[] = [
     },
   },
   {
-    id: 'pro_enterprise',
-    name: 'Pro Envergure',
+    id: "pro_enterprise",
+    name: "Pro Envergure",
     popular: false,
     priceMonthly: 199,
     maxActiveListings: 2000,
@@ -72,9 +64,9 @@ const INITIAL_PLANS: AdminPlanConfig[] = [
 export const AdminMonetizationPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminMonetization.title'),
-    description: t('meta.adminMonetization.description'),
-    canonicalPath: '/admin/monetisation',
+    title: t("meta.adminMonetization.title"),
+    description: t("meta.adminMonetization.description"),
+    canonicalPath: "/admin/monetisation",
     noIndex: true,
   });
 
@@ -83,7 +75,7 @@ export const AdminMonetizationPage: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   const handleSave = () => {
-    setSaveSuccess('Paramètres tarifaires et forfaits Pro enregistrés.');
+    setSaveSuccess("Paramètres tarifaires et forfaits Pro enregistrés.");
     setTimeout(() => setSaveSuccess(null), 4000);
   };
 
@@ -92,12 +84,20 @@ export const AdminMonetizationPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminMonetizationPage.revenusMonetisation')}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-primary">
+            {t("admin.adminMonetizationPage.revenusMonetisation")}
+          </span>
           <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">{t('admin.adminMonetizationPage.gestionDesFormulesDAbonnement')}</span>
+          <span className="text-xs text-stone-500 font-medium">
+            {t("admin.adminMonetizationPage.gestionDesFormulesDAbonnement")}
+          </span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminMonetizationPage.formulesProQuotasOptionsDe')}</h1>
-        <p className="text-xs text-stone-600 mt-1">{t('admin.adminMonetizationPage.configurezLesQuotasDAnnonces')}</p>
+        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+          {t("admin.adminMonetizationPage.formulesProQuotasOptionsDe")}
+        </h1>
+        <p className="text-xs text-stone-600 mt-1">
+          {t("admin.adminMonetizationPage.configurezLesQuotasDAnnonces")}
+        </p>
 
         {saveSuccess && (
           <div className="mt-4 p-3 bg-success-surface border border-success-border text-success text-xs font-semibold rounded-lg flex items-center gap-2">
@@ -113,7 +113,9 @@ export const AdminMonetizationPage: React.FC = () => {
           <div
             key={plan.id}
             className={`bg-white rounded-xl border p-5 shadow-xs flex flex-col justify-between ${
-              plan.popular ? 'border-primary ring-1 ring-primary' : 'border-stone-200'
+              plan.popular
+                ? "border-primary ring-1 ring-primary"
+                : "border-stone-200"
             }`}
           >
             <div>
@@ -129,7 +131,10 @@ export const AdminMonetizationPage: React.FC = () => {
               </div>
 
               <div className="text-2xl font-black text-stone-900 mb-4">
-                {plan.priceMonthly} € <span className="text-xs font-normal text-stone-500">/mois</span>
+                {plan.priceMonthly} €{" "}
+                <span className="text-xs font-normal text-stone-500">
+                  /mois
+                </span>
               </div>
 
               <div className="space-y-3 text-xs">
@@ -137,14 +142,17 @@ export const AdminMonetizationPage: React.FC = () => {
                   <label
                     htmlFor={`plan-${plan.id}-quota`}
                     className="block text-xs font-bold text-stone-600 mb-1"
-                  >{t('admin.adminMonetizationPage.quotaMaxDAnnoncesActives')}</label>
+                  >
+                    {t("admin.adminMonetizationPage.quotaMaxDAnnoncesActives")}
+                  </label>
                   <input
                     id={`plan-${plan.id}-quota`}
                     type="number"
                     value={plan.maxActiveListings}
                     onChange={(e) => {
                       const updated = [...plans];
-                      updated[idx].maxActiveListings = parseInt(e.target.value) || 0;
+                      updated[idx].maxActiveListings =
+                        parseInt(e.target.value) || 0;
                       setPlans(updated);
                     }}
                     className="w-full text-xs p-2 border border-stone-200 rounded-control font-mono focus:ring-1 focus:ring-primary h-control-touch"
@@ -155,7 +163,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   <label
                     htmlFor={`plan-${plan.id}-commission`}
                     className="block text-xs font-bold text-stone-600 mb-1"
-                  >{t('admin.adminMonetizationPage.commissionSurVente')}</label>
+                  >
+                    {t("admin.adminMonetizationPage.commissionSurVente")}
+                  </label>
                   <input
                     id={`plan-${plan.id}-commission`}
                     type="number"
@@ -163,7 +173,8 @@ export const AdminMonetizationPage: React.FC = () => {
                     value={plan.commissionRate}
                     onChange={(e) => {
                       const updated = [...plans];
-                      updated[idx].commissionRate = parseFloat(e.target.value) || 0;
+                      updated[idx].commissionRate =
+                        parseFloat(e.target.value) || 0;
                       setPlans(updated);
                     }}
                     className="w-full text-xs p-2 border border-stone-200 rounded-control font-mono focus:ring-1 focus:ring-primary h-control-touch"
@@ -178,12 +189,17 @@ export const AdminMonetizationPage: React.FC = () => {
                       checked={plan.features.storefrontCustomization}
                       onChange={(e) => {
                         const updated = [...plans];
-                        updated[idx].features.storefrontCustomization = e.target.checked;
+                        updated[idx].features.storefrontCustomization =
+                          e.target.checked;
                         setPlans(updated);
                       }}
                       className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
                     />
-                    <span>{t('admin.adminMonetizationPage.personnalisationVitrineBanniereStory')}</span>
+                    <span>
+                      {t(
+                        "admin.adminMonetizationPage.personnalisationVitrineBanniereStory",
+                      )}
+                    </span>
                   </label>
 
                   <label className="flex items-center gap-2 min-h-6 cursor-pointer">
@@ -192,7 +208,8 @@ export const AdminMonetizationPage: React.FC = () => {
                       checked={plan.features.prioritySupport}
                       onChange={(e) => {
                         const updated = [...plans];
-                        updated[idx].features.prioritySupport = e.target.checked;
+                        updated[idx].features.prioritySupport =
+                          e.target.checked;
                         setPlans(updated);
                       }}
                       className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
@@ -206,7 +223,8 @@ export const AdminMonetizationPage: React.FC = () => {
                       checked={plan.features.bulkImportExport}
                       onChange={(e) => {
                         const updated = [...plans];
-                        updated[idx].features.bulkImportExport = e.target.checked;
+                        updated[idx].features.bulkImportExport =
+                          e.target.checked;
                         setPlans(updated);
                       }}
                       className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
@@ -222,7 +240,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 size="sm"
                 onClick={handleSave}
                 className="w-full text-xs bg-stone-900 hover:bg-stone-800 text-white"
-              >{t('admin.adminMonetizationPage.mettreAJour')}</Button>
+              >
+                {t("admin.adminMonetizationPage.mettreAJour")}
+              </Button>
             </div>
           </div>
         ))}

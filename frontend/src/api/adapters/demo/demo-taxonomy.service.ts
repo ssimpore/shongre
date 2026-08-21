@@ -1,8 +1,11 @@
-import { TaxonomyServiceContract } from '../../contracts/taxonomy.contract';
-import { taxonomyService } from '../../../domains/taxonomy/taxonomy.service';
-import { Category } from '../../../types';
-import { TaxonomyNode, TaxonomyAttribute } from '../../../domains/taxonomy/taxonomy.types';
-import { simulateNetworkDelay } from '../../client/api-client.config';
+import { TaxonomyServiceContract } from "../../contracts/taxonomy.contract";
+import { taxonomyService } from "../../../domains/taxonomy/taxonomy.service";
+import { Category } from "../../../types";
+import {
+  TaxonomyNode,
+  TaxonomyAttribute,
+} from "../../../domains/taxonomy/taxonomy.types";
+import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getRootCategories(): Promise<Category[]> {
@@ -25,10 +28,12 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
     return taxonomyService.getChildren(nodeId);
   }
 
-  async getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]> {
+  async getAttributesForCategory(
+    categoryId: string,
+  ): Promise<TaxonomyAttribute[]> {
     await simulateNetworkDelay();
     const schema = taxonomyService.resolvePublicationSchema(categoryId);
-    return schema.attributes;
+    return schema?.attributes ?? [];
   }
 
   async resolveSearchFilters(nodeId?: string): Promise<any[]> {

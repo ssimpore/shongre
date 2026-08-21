@@ -3,9 +3,12 @@
  * Evaluates available newsletter topics, management permissions, and audience context.
  */
 
-import { UserProfile } from '../../types';
-import { isProSeller } from '../user/user.domain';
-import { newsletterTopicsService, NewsletterTopicDefinition } from './newsletter.topics';
+import { UserProfile } from "../../types";
+import { isProSeller } from "../user/user.domain";
+import {
+  newsletterTopicsService,
+  NewsletterTopicDefinition,
+} from "./newsletter.topics";
 
 export interface NewsletterCapabilities {
   canSubscribe: boolean;
@@ -16,13 +19,16 @@ export interface NewsletterCapabilities {
 }
 
 export class NewsletterCapabilitiesService {
-  resolve(params: { viewer: UserProfile | null; marketCode?: string }): NewsletterCapabilities {
+  resolve(params: {
+    viewer: UserProfile | null;
+    marketCode?: string;
+  }): NewsletterCapabilities {
     const { viewer } = params;
     const isPro = isProSeller(viewer);
     const canAdminCampaigns =
-      viewer?.role === 'admin' ||
-      viewer?.role === 'super_admin' ||
-      viewer?.role === 'moderator';
+      viewer?.role === "admin" ||
+      viewer?.role === "super_admin" ||
+      viewer?.role === "moderator";
 
     const availableTopics = newsletterTopicsService.getTopicsForAudience(isPro);
 
@@ -36,4 +42,5 @@ export class NewsletterCapabilitiesService {
   }
 }
 
-export const newsletterCapabilitiesService = new NewsletterCapabilitiesService();
+export const newsletterCapabilitiesService =
+  new NewsletterCapabilitiesService();

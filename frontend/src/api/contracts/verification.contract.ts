@@ -1,4 +1,4 @@
-import { VerificationState } from '../../types';
+import { VerificationState } from "../../types";
 
 export interface KYBCompanyLookupResult {
   siren: string;
@@ -18,8 +18,23 @@ export interface VerificationServiceContract {
     isBusinessVerified: boolean;
     isBankPayoutConfigured: boolean;
   }>;
-  submitIdentityDocument(userId: string, docType: string, fileUrl: string): Promise<{ status: 'pending' | 'verified' }>;
-  lookupCompanyBySiret(siretOrSiren: string): Promise<KYBCompanyLookupResult | null>;
-  submitBusinessRegistration(userId: string, siret: string, representativeName: string): Promise<{ status: 'verified' }>;
-  submitBankPayoutCoordinates(userId: string, iban: string, bic: string, holderName: string): Promise<{ status: 'configured' }>;
+  submitIdentityDocument(
+    userId: string,
+    docType: string,
+    fileUrl: string,
+  ): Promise<{ status: "pending" | "verified" }>;
+  lookupCompanyBySiret(
+    siretOrSiren: string,
+  ): Promise<KYBCompanyLookupResult | null>;
+  submitBusinessRegistration(
+    userId: string,
+    siret: string,
+    representativeName: string,
+  ): Promise<{ status: "verified" }>;
+  submitBankPayoutCoordinates(
+    userId: string,
+    iban: string,
+    bic: string,
+    holderName: string,
+  ): Promise<{ status: "configured" }>;
 }

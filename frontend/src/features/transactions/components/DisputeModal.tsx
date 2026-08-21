@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { AlertTriangle, UploadCloud } from 'lucide-react';
-import { Transaction, UserProfile } from '../../../types';
-import { TRANSACTION_CONFIG } from '../../../configuration/transaction.config';
-import { transactionService } from '../../../domains/transaction/transaction.service';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { Button } from '../../../design-system/primitives/Button';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { AlertTriangle, UploadCloud } from "lucide-react";
+import { Transaction, UserProfile } from "../../../types";
+import { TRANSACTION_CONFIG } from "../../../configuration/transaction.config";
+import { transactionService } from "../../../domains/transaction/transaction.service";
+import { Modal } from "../../../design-system/primitives/Modal";
+import { Button } from "../../../design-system/primitives/Button";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface DisputeModalProps {
   isOpen: boolean;
@@ -24,14 +24,16 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [reason, setReason] = useState(TRANSACTION_CONFIG.disputeReasons[0].id);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim() || description.length < 15) {
-      setError('Veuillez décrire le problème en détail (au moins 15 caractères).');
+      setError(
+        "Veuillez décrire le problème en détail (au moins 15 caractères).",
+      );
       return;
     }
 
@@ -39,15 +41,21 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
     setError(null);
 
     try {
-      const selectedReason = TRANSACTION_CONFIG.disputeReasons.find((r) => r.id === reason)?.label || reason;
-      const updated = await transactionService.openDispute(transaction.id, currentUser, {
-        reason: selectedReason,
-        description: description.trim(),
-      });
+      const selectedReason =
+        TRANSACTION_CONFIG.disputeReasons.find((r) => r.id === reason)?.label ||
+        reason;
+      const updated = await transactionService.openDispute(
+        transaction.id,
+        currentUser,
+        {
+          reason: selectedReason,
+          description: description.trim(),
+        },
+      );
       onSuccess(updated);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'ouverture du litige.');
+      setError(err.message || "Erreur lors de l'ouverture du litige.");
     } finally {
       setIsSubmitting(false);
     }
@@ -57,15 +65,21 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('transactions.disputeModal.signalerUnProblemeOuvrirUn')}
-      description={t('transactions.disputeModal.lesFondsSousSequestreResteront')}
+      title={t("transactions.disputeModal.signalerUnProblemeOuvrirUn")}
+      description={t(
+        "transactions.disputeModal.lesFondsSousSequestreResteront",
+      )}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-sm font-medium">
         <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-warning flex items-start gap-3 shadow-2xs">
           <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-warning">{t('transactions.disputeModal.protectionAcheteurVendeurActive')}</p>
-            <p className="text-xs text-warning mt-1 font-medium">{t('transactions.disputeModal.enOuvrantCeDossierAucun')}</p>
+            <p className="font-bold text-warning">
+              {t("transactions.disputeModal.protectionAcheteurVendeurActive")}
+            </p>
+            <p className="text-xs text-warning mt-1 font-medium">
+              {t("transactions.disputeModal.enOuvrantCeDossierAucun")}
+            </p>
           </div>
         </div>
 
@@ -76,7 +90,9 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         )}
 
         <div>
-          <label className="block font-bold text-stone-700 mb-2">{t('transactions.disputeModal.motifPrincipalDuLitige')}<span className="text-danger">*</span>
+          <label className="block font-bold text-stone-700 mb-2">
+            {t("transactions.disputeModal.motifPrincipalDuLitige")}
+            <span className="text-danger">*</span>
           </label>
           <select
             value={reason}
@@ -92,29 +108,47 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         </div>
 
         <div>
-          <label className="block font-bold text-stone-700 mb-2">{t('transactions.disputeModal.descriptionDetailleeDesFaits')}<span className="text-danger">*</span>
+          <label className="block font-bold text-stone-700 mb-2">
+            {t("transactions.disputeModal.descriptionDetailleeDesFaits")}
+            <span className="text-danger">*</span>
           </label>
           <textarea
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('transactions.disputeModal.expliquezCeQuiSEst')}
+            placeholder={t("transactions.disputeModal.expliquezCeQuiSEst")}
             className="w-full p-4 bg-white text-stone-900 rounded-control border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none font-medium transition-colors min-h-control-touch"
           />
         </div>
 
         <div className="p-5 border-2 border-dashed border-stone-200/60 rounded-2xl bg-stone-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-stone-100 hover:border-stone-300 transition-colors shadow-2xs">
           <UploadCloud className="w-8 h-8 text-stone-400 mb-2" />
-          <span className="font-bold text-stone-700">{t('transactions.disputeModal.ajouterDesPhotosOuJustificatifs')}</span>
-          <span className="text-xs text-stone-500 mt-1 font-medium">{t('transactions.disputeModal.jpgPngOuPdfMax')}</span>
+          <span className="font-bold text-stone-700">
+            {t("transactions.disputeModal.ajouterDesPhotosOuJustificatifs")}
+          </span>
+          <span className="text-xs text-stone-500 mt-1 font-medium">
+            {t("transactions.disputeModal.jpgPngOuPdfMax")}
+          </span>
         </div>
 
         <div className="flex gap-3 pt-4">
-          <Button type="button" variant="outline" fullWidth onClick={onClose} size="md">
+          <Button
+            type="button"
+            variant="outline"
+            fullWidth
+            onClick={onClose}
+            size="md"
+          >
             Annuler
           </Button>
-          <Button type="submit" variant="primary" fullWidth disabled={isSubmitting} size="md">
-            {isSubmitting ? 'Envoi du dossier...' : 'Déposer la réclamation'}
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            disabled={isSubmitting}
+            size="md"
+          >
+            {isSubmitting ? "Envoi du dossier..." : "Déposer la réclamation"}
           </Button>
         </div>
       </form>

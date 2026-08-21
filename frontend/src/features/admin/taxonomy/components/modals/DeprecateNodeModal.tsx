@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { TaxonomyNode } from '../../../../../domains/taxonomy/taxonomy.types';
-import { taxonomyAdminRepository } from '../../../../../repositories/taxonomy.repository';
-import { Modal } from '../../../../../design-system/primitives/Modal';
-import { Button } from '../../../../../design-system/primitives/Button';
-import { FormField } from '../../../../../design-system/primitives/FormField';
-import { useToast } from '../../../../../app/providers/ToastProvider';
-import { useAuth } from '../../../../../app/providers/AuthProvider';
-import { Archive, ArrowRight, ShieldCheck } from 'lucide-react';
-import { useTranslation } from '../../../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { TaxonomyNode } from "../../../../../domains/taxonomy/taxonomy.types";
+import { taxonomyAdminRepository } from "../../../../../repositories/taxonomy.repository";
+import { Modal } from "../../../../../design-system/primitives/Modal";
+import { Button } from "../../../../../design-system/primitives/Button";
+import { FormField } from "../../../../../design-system/primitives/FormField";
+import { useToast } from "../../../../../app/providers/ToastProvider";
+import { useAuth } from "../../../../../app/providers/AuthProvider";
+import { Archive, ArrowRight, ShieldCheck } from "lucide-react";
+import { useTranslation } from "../../../../../i18n/I18nProvider";
 
 export interface DeprecateNodeModalProps {
   isOpen: boolean;
@@ -27,26 +27,39 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
-  const [replacementId, setReplacementId] = useState<string>(node.replacedById || '');
+  const [replacementId, setReplacementId] = useState<string>(
+    node.replacedById || "",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableReplacements = allNodes.filter(
-    (n) => n.id !== node.id && n.status === 'active' && !n.ancestorIds?.includes(node.id)
+    (n) =>
+      n.id !== node.id &&
+      n.status === "active" &&
+      !n.ancestorIds?.includes(node.id),
   );
 
   const handleDeprecate = async () => {
     try {
       setIsSubmitting(true);
       const actor = currentUser
-        ? { id: currentUser.id, name: currentUser.name || 'Admin', role: currentUser.role }
+        ? {
+            id: currentUser.id,
+            name: currentUser.name || "Admin",
+            role: currentUser.role,
+          }
         : undefined;
 
-      await taxonomyAdminRepository.deprecateNode(node.id, replacementId || undefined, actor);
+      await taxonomyAdminRepository.deprecateNode(
+        node.id,
+        replacementId || undefined,
+        actor,
+      );
       toast.success(`Catégorie "${node.name}" dépréciée avec succès.`);
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || 'Erreur lors de la dépréciation.');
+      toast.error(err?.message || "Erreur lors de la dépréciation.");
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +70,9 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Déprécier la catégorie "${node.name}"`}
-      description={t('admin.deprecateNodeModal.laDepreciationRetireCetteRubrique')}
+      description={t(
+        "admin.deprecateNodeModal.laDepreciationRetireCetteRubrique",
+      )}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -65,17 +80,23 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
         <div className="p-3.5 bg-info-surface border border-info-border rounded-xl space-y-2 text-xs text-info">
           <div className="flex items-center gap-2 font-bold text-info">
             <ShieldCheck className="w-4 h-4 text-info" />
-            <span>{t('admin.deprecateNodeModal.garantiesDeRetrocompatibilite')}</span>
+            <span>
+              {t("admin.deprecateNodeModal.garantiesDeRetrocompatibilite")}
+            </span>
           </div>
           <ul className="list-disc list-inside space-y-1 text-info">
-            <li>{t('admin.deprecateNodeModal.lesAnnoncesExistantesPublieesSous')}</li>
-            <li>{t('admin.deprecateNodeModal.leWizardDePublicationNe')}</li>
-            <li>{t('admin.deprecateNodeModal.siUnSuccesseurEstDefini')}</li>
+            <li>
+              {t("admin.deprecateNodeModal.lesAnnoncesExistantesPublieesSous")}
+            </li>
+            <li>{t("admin.deprecateNodeModal.leWizardDePublicationNe")}</li>
+            <li>{t("admin.deprecateNodeModal.siUnSuccesseurEstDefini")}</li>
           </ul>
         </div>
 
         <FormField
-          label={t('admin.deprecateNodeModal.categorieDeRemplacementSuccesseurLogique')}
+          label={t(
+            "admin.deprecateNodeModal.categorieDeRemplacementSuccesseurLogique",
+          )}
           hint="Recommandé : redirige les recherches et suggestions vers une nouvelle catégorie active."
         >
           <select
@@ -83,7 +104,11 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
             onChange={(e) => setReplacementId(e.target.value)}
             className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
           >
-            <option value="">{t('admin.deprecateNodeModal.aucunSuccesseurDirectDepreciationSimple')}</option>
+            <option value="">
+              {t(
+                "admin.deprecateNodeModal.aucunSuccesseurDirectDepreciationSimple",
+              )}
+            </option>
             {availableReplacements.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name} [{r.level} - /{r.slug}]
@@ -113,7 +138,9 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
             disabled={isSubmitting}
             leftIcon={<Archive className="w-4 h-4" />}
           >
-            {isSubmitting ? 'Dépréciation en cours...' : 'Confirmer la dépréciation'}
+            {isSubmitting
+              ? "Dépréciation en cours..."
+              : "Confirmer la dépréciation"}
           </Button>
         </div>
       </div>

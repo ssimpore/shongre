@@ -10,6 +10,8 @@ export interface IMessagingRepository {
   getMessages(conversationId: string): Promise<Message[]>;
   markAsRead(conversationId: string, userId: string): Promise<void>;
   blockUser(userId: string, targetUserId: string): Promise<void>;
+  unblockUser(userId: string, targetUserId: string): Promise<void>;
+  isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean>;
 }
 
 export const CANONICAL_DEMO_CONVERSATIONS: Conversation[] = [
@@ -28,6 +30,7 @@ export const CANONICAL_DEMO_CONVERSATIONS: Conversation[] = [
 export class DemoMessagingRepository implements IMessagingRepository {
   private conversations: Map<string, Conversation> = new Map();
   private messages: Map<string, Message[]> = new Map(); // conversationId -> messages
+  private blockedPairs = new Set<string>();
 
   constructor(initialConvs: Conversation[] = CANONICAL_DEMO_CONVERSATIONS) {
     this.reset(initialConvs);
@@ -36,6 +39,7 @@ export class DemoMessagingRepository implements IMessagingRepository {
   reset(initialConvs: Conversation[] = CANONICAL_DEMO_CONVERSATIONS) {
     this.conversations.clear();
     this.messages.clear();
+    this.blockedPairs.clear();
     initialConvs.forEach((c) => this.conversations.set(c.id, { ...c }));
     this.messages.set('conv_1', [
       {
@@ -110,7 +114,16 @@ export class DemoMessagingRepository implements IMessagingRepository {
   }
 
   async blockUser(userId: string, targetUserId: string): Promise<void> {
+    this.blockedPairs.add(`${userId}:${targetUserId}`);
     logger.info(`User ${userId} blocked ${targetUserId}`);
+  }
+
+  async unblockUser(userId: string, targetUserId: string): Promise<void> {
+    this.blockedPairs.delete(`${userId}:${targetUserId}`);
+  }
+
+  async isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean> {
+    return this.blockedPairs.has(`${firstUserId}:${secondUserId}`) || this.blockedPairs.has(`${secondUserId}:${firstUserId}`);
   }
 }
 
@@ -242,6 +255,32 @@ export class PostgresMessagingRepository implements IMessagingRepository {
   }
 
   async blockUser(userId: string, targetUserId: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('blocked_users').upsert({
+      blocker_id: userId,
+      blocked_id: targetUserId,
+      created_at: new Date().toISOString(),
+    });
+    if (error) throw new Error(`Failed to block user: ${error.message}`);
     logger.info(`User ${userId} blocked ${targetUserId} in database`);
+  }
+
+  async unblockUser(userId: string, targetUserId: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('blocked_users')
+      .delete()
+      .eq('blocker_id', userId)
+      .eq('blocked_id', targetUserId);
+    if (error) throw new Error(`Failed to unblock user: ${error.message}`);
+  }
+
+  async isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.from('blocked_users')
+      .select('blocker_id')
+      .or(`and(blocker_id.eq.${firstUserId},blocked_id.eq.${secondUserId}),and(blocker_id.eq.${secondUserId},blocked_id.eq.${firstUserId})`)
+      .limit(1);
+    if (error) throw new Error(`Failed to check user block: ${error.message}`);
+    return Boolean(data?.length);
   }
 }

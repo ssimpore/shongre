@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   HelpCircle,
   User,
@@ -10,34 +10,36 @@ import {
   Truck,
   Briefcase,
   ShieldAlert,
-  
   AlertTriangle,
   UploadCloud,
   CheckCircle2,
   X,
-  MessageSquare
-} from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { useToast } from '../../app/providers/ToastProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { FormField, Input, Textarea } from '../../design-system/primitives/FormField';
+  MessageSquare,
+} from "lucide-react";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useToast } from "../../app/providers/ToastProvider";
+import { Button } from "../../design-system/primitives/Button";
+import {
+  FormField,
+  Input,
+  Textarea,
+} from "../../design-system/primitives/FormField";
 import {
   SupportCategory,
   SupportContext,
   SupportAttachment,
-} from '../../domains/support/support.types';
+} from "../../domains/support/support.types";
 import {
   SUPPORT_CATEGORIES,
-  
-  supportCategoriesService
-} from '../../domains/support/support.categories';
-import { supportCapabilitiesService } from '../../domains/support/support.capabilities';
-import { supportService } from '../../domains/support/support.service';
-import { supportRepository } from '../../repositories/support.repository';
-import { storageService } from '../../services/storage.service';
-import { SupportContextCard } from './components/SupportContextCard';
-import { usePageMeta } from '../../hooks/usePageMeta';
-import { useTranslation } from '../../i18n/I18nProvider';
+  supportCategoriesService,
+} from "../../domains/support/support.categories";
+import { supportCapabilitiesService } from "../../domains/support/support.capabilities";
+import { supportService } from "../../domains/support/support.service";
+import { supportRepository } from "../../repositories/support.repository";
+import { storageService } from "../../services/storage.service";
+import { SupportContextCard } from "./components/SupportContextCard";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   User: <User className="w-5 h-5" />,
@@ -65,26 +67,33 @@ export const ContactPage: React.FC = () => {
   const { currentUser, isAuthenticated } = useAuth();
   const toast = useToast();
 
-  const [selectedCategory, setSelectedCategory] = useState<SupportCategory | null>(null);
-  const [selectedReasonId, setSelectedReasonId] = useState<string>('');
-  const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
-  const [requesterName, setRequesterName] = useState(currentUser?.name || '');
-  const [requesterEmail, setRequesterEmail] = useState(currentUser?.email || '');
+  const [selectedCategory, setSelectedCategory] =
+    useState<SupportCategory | null>(null);
+  const [selectedReasonId, setSelectedReasonId] = useState<string>("");
+  const [subject, setSubject] = useState("");
+  const [description, setDescription] = useState("");
+  const [requesterName, setRequesterName] = useState(currentUser?.name || "");
+  const [requesterEmail, setRequesterEmail] = useState(
+    currentUser?.email || "",
+  );
   const [context, setContext] = useState<SupportContext | undefined>(undefined);
   const [attachments, setAttachments] = useState<SupportAttachment[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedReference, setSubmittedReference] = useState<string | null>(null);
+  const [submittedReference, setSubmittedReference] = useState<string | null>(
+    null,
+  );
 
   // Initialize capabilities
-  const capabilities = supportCapabilitiesService.resolve({ viewer: currentUser });
+  const capabilities = supportCapabilitiesService.resolve({
+    viewer: currentUser,
+  });
 
   // Read URL query params for deep linking context
   useEffect(() => {
-    const catParam = searchParams.get('category') as SupportCategory | null;
-    const txId = searchParams.get('txId');
-    const listingId = searchParams.get('listingId');
+    const catParam = searchParams.get("category") as SupportCategory | null;
+    const txId = searchParams.get("txId");
+    const listingId = searchParams.get("listingId");
 
     if (catParam && SUPPORT_CATEGORIES.some((c) => c.id === catParam)) {
       setSelectedCategory(catParam);
@@ -95,26 +104,26 @@ export const ContactPage: React.FC = () => {
       const foundTx = txList.find((t) => t.id === txId);
       if (foundTx) {
         setContext({
-          type: 'transaction',
+          type: "transaction",
           transactionId: foundTx.id,
           listingTitle: foundTx.listingTitle,
           amount: foundTx.amount,
         });
-        setSelectedCategory('purchase');
+        setSelectedCategory("purchase");
       }
     } else if (listingId) {
       const listingList = storageService.getListings();
       const foundListing = listingList.find((l) => l.id === listingId);
       if (foundListing) {
         setContext({
-          type: 'listing',
+          type: "listing",
           listingId: foundListing.id,
           listingTitle: foundListing.title,
           listingPhotoUrl: foundListing.photos?.[0]?.url,
           price: foundListing.price,
           sellerId: foundListing.sellerId,
         });
-        setSelectedCategory('listing');
+        setSelectedCategory("listing");
       }
     }
   }, [searchParams]);
@@ -144,9 +153,21 @@ export const ContactPage: React.FC = () => {
 
   const handleSimulateAttachment = () => {
     const sampleFiles = [
-      { name: 'capture_ecran_erreur.png', type: 'image' as const, size: 245000 },
-      { name: 'recu_virement_bancaire.pdf', type: 'document' as const, size: 580000 },
-      { name: 'photo_colis_endommage.jpg', type: 'image' as const, size: 1200000 },
+      {
+        name: "capture_ecran_erreur.png",
+        type: "image" as const,
+        size: 245000,
+      },
+      {
+        name: "recu_virement_bancaire.pdf",
+        type: "document" as const,
+        size: 580000,
+      },
+      {
+        name: "photo_colis_endommage.jpg",
+        type: "image" as const,
+        size: 1200000,
+      },
     ];
     const picked = sampleFiles[attachments.length % sampleFiles.length];
     const newAtt: SupportAttachment = {
@@ -154,7 +175,7 @@ export const ContactPage: React.FC = () => {
       type: picked.type,
       fileName: picked.name,
       fileSize: picked.size,
-      url: 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80',
+      url: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80",
     };
     setAttachments((prev) => [...prev, newAtt]);
   };
@@ -166,7 +187,7 @@ export const ContactPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCategory) {
-      setErrors({ category: 'Veuillez sélectionner un sujet principal.' });
+      setErrors({ category: "Veuillez sélectionner un sujet principal." });
       return;
     }
 
@@ -198,13 +219,18 @@ export const ContactPage: React.FC = () => {
         description: description.trim(),
         context,
         attachments,
-        priority: currentReasonDef?.defaultPriority || 'normal',
+        priority: currentReasonDef?.defaultPriority || "normal",
       });
 
       setSubmittedReference(created.reference);
-      toast.success(`Votre dossier porte la référence ${created.reference}.`, 'Demande envoyée');
+      toast.success(
+        `Votre dossier porte la référence ${created.reference}.`,
+        "Demande envoyée",
+      );
     } catch (err: any) {
-      setErrors({ submit: err.message || 'Impossible d\'envoyer votre demande. Réessayez.' });
+      setErrors({
+        submit: err.message || "Impossible d'envoyer votre demande. Réessayez.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -220,12 +246,18 @@ export const ContactPage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl font-black text-stone-900">Demande d'assistance transmise</h1>
-            <p className="text-xs sm:text-sm text-stone-600">{t('support.contactPage.votreDemandeABienEte')}</p>
+            <h1 className="text-2xl font-black text-stone-900">
+              Demande d'assistance transmise
+            </h1>
+            <p className="text-xs sm:text-sm text-stone-600">
+              {t("support.contactPage.votreDemandeABienEte")}
+            </p>
           </div>
 
           <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl max-w-sm mx-auto">
-            <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block mb-0.5">{t('support.contactPage.numeroDeDossier')}</span>
+            <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
+              {t("support.contactPage.numeroDeDossier")}
+            </span>
             <span className="text-xl font-black text-stone-900 font-mono tracking-wider">
               {submittedReference}
             </span>
@@ -233,8 +265,12 @@ export const ContactPage: React.FC = () => {
 
           <div className="text-xs text-stone-500 space-y-1 max-w-md mx-auto">
             <p>
-              Un conseiller Shongre étudie votre dossier et vous répondra directement{' '}
-              {isAuthenticated ? 'dans votre espace client et par email' : `à l'adresse ${requesterEmail}`}.
+              Un conseiller Shongre étudie votre dossier et vous répondra
+              directement{" "}
+              {isAuthenticated
+                ? "dans votre espace client et par email"
+                : `à l'adresse ${requesterEmail}`}
+              .
             </p>
           </div>
 
@@ -242,24 +278,32 @@ export const ContactPage: React.FC = () => {
             {isAuthenticated ? (
               <Button
                 variant="primary"
-                onClick={() => navigate('/compte/support')}
+                onClick={() => navigate("/compte/support")}
                 className="font-bold"
               >
                 Suivre mes demandes
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => navigate('/')} className="font-bold">{t('support.contactPage.retourALAccueil')}</Button>
+              <Button
+                variant="primary"
+                onClick={() => navigate("/")}
+                className="font-bold"
+              >
+                {t("support.contactPage.retourALAccueil")}
+              </Button>
             )}
             <Button
               variant="outline"
               onClick={() => {
                 setSubmittedReference(null);
                 setSelectedCategory(null);
-                setSelectedReasonId('');
-                setDescription('');
+                setSelectedReasonId("");
+                setDescription("");
                 setAttachments([]);
               }}
-            >{t('support.contactPage.envoyerUneAutreDemande')}</Button>
+            >
+              {t("support.contactPage.envoyerUneAutreDemande")}
+            </Button>
           </div>
         </div>
       </div>
@@ -270,13 +314,19 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
       {/* 1. Page Header */}
       <div className="text-center max-w-xl mx-auto space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">{t('support.contactPage.contacterLeSupportShongre')}</h1>
-        <p className="text-xs sm:text-sm text-stone-500">{t('support.contactPage.selectionnezLeMotifDeVotre')}</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+          {t("support.contactPage.contacterLeSupportShongre")}
+        </h1>
+        <p className="text-xs sm:text-sm text-stone-500">
+          {t("support.contactPage.selectionnezLeMotifDeVotre")}
+        </p>
       </div>
 
       {/* 2. Step 1: Category Selector */}
       <div className="space-y-3">
-        <label className="block text-xs font-black uppercase tracking-wider text-stone-700">{t('support.contactPage.1QuelEstLeSujet')}<span className="text-danger">*</span>
+        <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
+          {t("support.contactPage.1QuelEstLeSujet")}
+          <span className="text-danger">*</span>
         </label>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -289,20 +339,24 @@ export const ContactPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setSelectedCategory(cat.id);
-                  setSelectedReasonId('');
+                  setSelectedReasonId("");
                 }}
                 className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                   isSelected
-                    ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/20 shadow-xs'
-                    : 'border-border-base bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-50'
+                    ? "border-primary bg-primary/5 text-primary ring-2 ring-primary/20 shadow-xs"
+                    : "border-border-base bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-50"
                 }`}
               >
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${
-                    isSelected ? 'bg-primary text-white' : 'bg-stone-100 text-stone-600'
+                    isSelected
+                      ? "bg-primary text-white"
+                      : "bg-stone-100 text-stone-600"
                   }`}
                 >
-                  {CATEGORY_ICONS[cat.iconName] || <HelpCircle className="w-5 h-5" />}
+                  {CATEGORY_ICONS[cat.iconName] || (
+                    <HelpCircle className="w-5 h-5" />
+                  )}
                 </div>
 
                 <div>
@@ -317,13 +371,17 @@ export const ContactPage: React.FC = () => {
             );
           })}
         </div>
-        {errors.category && <p className="text-xs font-bold text-danger">{errors.category}</p>}
+        {errors.category && (
+          <p className="text-xs font-bold text-danger">{errors.category}</p>
+        )}
       </div>
 
       {/* 3. Step 2: Reason Selector & Handoffs */}
       {currentCategoryDef && (
         <div className="space-y-4 pt-2 animate-fadeIn">
-          <label className="block text-xs font-black uppercase tracking-wider text-stone-700">{t('support.contactPage.2PrecisezVotreSituation')}<span className="text-danger">*</span>
+          <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
+            {t("support.contactPage.2PrecisezVotreSituation")}
+            <span className="text-danger">*</span>
           </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -337,37 +395,49 @@ export const ContactPage: React.FC = () => {
                   onClick={() => setSelectedReasonId(r.id)}
                   className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
                     isSelected
-                      ? 'border-primary bg-primary/5 text-stone-900 font-bold ring-1 ring-primary/30'
-                      : 'border-border-base bg-white text-stone-700 hover:bg-stone-50'
+                      ? "border-primary bg-primary/5 text-stone-900 font-bold ring-1 ring-primary/30"
+                      : "border-border-base bg-white text-stone-700 hover:bg-stone-50"
                   }`}
                 >
                   <span className="text-xs leading-snug">{r.label}</span>
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                      isSelected ? 'border-primary bg-primary' : 'border-stone-300'
+                      isSelected
+                        ? "border-primary bg-primary"
+                        : "border-stone-300"
                     }`}
                   >
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    {isSelected && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                    )}
                   </div>
                 </button>
               );
             })}
           </div>
-          {errors.reason && <p className="text-xs font-bold text-danger">{errors.reason}</p>}
+          {errors.reason && (
+            <p className="text-xs font-bold text-danger">{errors.reason}</p>
+          )}
 
           {/* Handoff Banners */}
           {currentReasonDef?.isDisputeHandoff && (
             <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-3 text-warning text-xs">
               <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-bold text-warning">{t('support.contactPage.besoinDOuvrirUnLitige')}</p>
-                <p className="leading-relaxed">{t('support.contactPage.pourGelerLesFondsSous')}</p>
+                <p className="font-bold text-warning">
+                  {t("support.contactPage.besoinDOuvrirUnLitige")}
+                </p>
+                <p className="leading-relaxed">
+                  {t("support.contactPage.pourGelerLesFondsSous")}
+                </p>
                 <Button
                   to="/compte/achats"
                   variant="primary"
                   size="sm"
                   className="font-bold mt-1"
-                >{t('support.contactPage.accederAMesAchatsPour')}</Button>
+                >
+                  {t("support.contactPage.accederAMesAchatsPour")}
+                </Button>
               </div>
             </div>
           )}
@@ -376,26 +446,34 @@ export const ContactPage: React.FC = () => {
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3 text-stone-800 text-xs">
               <MessageSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-bold text-stone-900">{t('support.contactPage.echangeDirectAvecLeVendeur')}</p>
-                <p className="leading-relaxed">{t('support.contactPage.leSupportShongreNIntervient')}</p>
+                <p className="font-bold text-stone-900">
+                  {t("support.contactPage.echangeDirectAvecLeVendeur")}
+                </p>
+                <p className="leading-relaxed">
+                  {t("support.contactPage.leSupportShongreNIntervient")}
+                </p>
                 <Button
                   to="/compte/messages"
                   variant="outline"
                   size="sm"
                   className="font-bold mt-1"
-                >{t('support.contactPage.ouvrirLaMessagerie')}</Button>
+                >
+                  {t("support.contactPage.ouvrirLaMessagerie")}
+                </Button>
               </div>
             </div>
           )}
 
-          {currentReasonDef?.helpTip && !currentReasonDef.isDisputeHandoff && !currentReasonDef.isMessagingHandoff && (
-            <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-2xl text-xs text-stone-700 flex items-start gap-2.5">
-              <HelpCircle className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
-              <span>
-                <strong>Conseil :</strong> {currentReasonDef.helpTip}
-              </span>
-            </div>
-          )}
+          {currentReasonDef?.helpTip &&
+            !currentReasonDef.isDisputeHandoff &&
+            !currentReasonDef.isMessagingHandoff && (
+              <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-2xl text-xs text-stone-700 flex items-start gap-2.5">
+                <HelpCircle className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Conseil :</strong> {currentReasonDef.helpTip}
+                </span>
+              </div>
+            )}
         </div>
       )}
 
@@ -405,17 +483,26 @@ export const ContactPage: React.FC = () => {
           onSubmit={handleSubmit}
           className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-fadeIn"
         >
-          <h2 className="text-base font-black text-stone-900">{t('support.contactPage.3RedigezVotreMessage')}</h2>
+          <h2 className="text-base font-black text-stone-900">
+            {t("support.contactPage.3RedigezVotreMessage")}
+          </h2>
 
           {/* Context Card Preview if linked */}
           {context && (
-            <SupportContextCard context={context} onRemove={() => setContext(undefined)} />
+            <SupportContextCard
+              context={context}
+              onRemove={() => setContext(undefined)}
+            />
           )}
 
           {/* Guest Identity Fields (only when unauthenticated) */}
           {!isAuthenticated && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField label={t('support.contactPage.votreNomComplet')} required error={errors.requesterName}>
+              <FormField
+                label={t("support.contactPage.votreNomComplet")}
+                required
+                error={errors.requesterName}
+              >
                 <Input
                   value={requesterName}
                   onChange={(e) => setRequesterName(e.target.value)}
@@ -423,7 +510,11 @@ export const ContactPage: React.FC = () => {
                 />
               </FormField>
 
-              <FormField label={t('support.contactPage.votreAdresseEmail')} required error={errors.requesterEmail}>
+              <FormField
+                label={t("support.contactPage.votreAdresseEmail")}
+                required
+                error={errors.requesterEmail}
+              >
                 <Input
                   type="email"
                   value={requesterEmail}
@@ -435,17 +526,21 @@ export const ContactPage: React.FC = () => {
           )}
 
           {/* Subject Field */}
-          <FormField label={t('support.contactPage.objetDeLaDemande')} required error={errors.subject}>
+          <FormField
+            label={t("support.contactPage.objetDeLaDemande")}
+            required
+            error={errors.subject}
+          >
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder={t('support.contactPage.objetDeVotreDemande')}
+              placeholder={t("support.contactPage.objetDeVotreDemande")}
             />
           </FormField>
 
           {/* Description Textarea */}
           <FormField
-            label={t('support.contactPage.detaillezVotreSituation')}
+            label={t("support.contactPage.detaillezVotreSituation")}
             required
             hint="Expliquez ce qui s'est passé avec un maximum de précision."
             error={errors.description}
@@ -454,13 +549,17 @@ export const ContactPage: React.FC = () => {
               rows={5}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('support.contactPage.decrivezVotreProblemeLesDemarches')}
+              placeholder={t(
+                "support.contactPage.decrivezVotreProblemeLesDemarches",
+              )}
             />
           </FormField>
 
           {/* Attachment Picker */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-stone-700">{t('support.contactPage.piecesJointesOuCapturesD')}</label>
+            <label className="block text-xs font-bold text-stone-700">
+              {t("support.contactPage.piecesJointesOuCapturesD")}
+            </label>
 
             {attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
@@ -469,7 +568,9 @@ export const ContactPage: React.FC = () => {
                     key={att.id}
                     className="flex items-center gap-2 px-3 py-1.5 bg-stone-100 border border-stone-200 rounded-xl text-xs text-stone-800"
                   >
-                    <span className="font-medium truncate max-w-[200px]">{att.fileName}</span>
+                    <span className="font-medium truncate max-w-[200px]">
+                      {att.fileName}
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleRemoveAttachment(att.id)}
@@ -488,8 +589,12 @@ export const ContactPage: React.FC = () => {
               className="w-full p-4 border border-dashed border-border-base rounded-2xl bg-stone-50 hover:bg-stone-100 transition-colors flex flex-col items-center justify-center text-center cursor-pointer"
             >
               <UploadCloud className="w-5 h-5 text-stone-400 mb-1" />
-              <span className="text-xs font-bold text-stone-800">{t('support.contactPage.ajouterUneCaptureOuUn')}</span>
-              <span className="text-micro text-stone-500">{t('support.contactPage.jpgPngOuPdfMax')}</span>
+              <span className="text-xs font-bold text-stone-800">
+                {t("support.contactPage.ajouterUneCaptureOuUn")}
+              </span>
+              <span className="text-micro text-stone-500">
+                {t("support.contactPage.jpgPngOuPdfMax")}
+              </span>
             </button>
           </div>
 
@@ -508,7 +613,7 @@ export const ContactPage: React.FC = () => {
               disabled={isSubmitting}
               className="font-black"
             >
-              {isSubmitting ? 'Envoi en cours...' : 'Envoyer ma demande'}
+              {isSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
             </Button>
           </div>
         </form>

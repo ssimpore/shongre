@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { applyPageMeta, PageMeta } from '../services/seo.service';
+import { useEffect } from "react";
+import { applyPageMeta, PageMeta } from "../services/seo.service";
 
 /**
  * Declares a route's metadata from inside the page that owns it.

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
+import React from "react";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 export interface DataTableColumn<T> {
   /** Stable key, also used as the label on the stacked mobile layout. */
@@ -8,7 +8,7 @@ export interface DataTableColumn<T> {
   header: React.ReactNode;
   /** Cell renderer. */
   cell: (row: T) => React.ReactNode;
-  align?: 'left' | 'right';
+  align?: "left" | "right";
   /**
    * Marks the column that identifies the row. On mobile it becomes the row's
    * title instead of a label/value pair. Exactly one column should set this.
@@ -49,28 +49,37 @@ export function DataTable<T>({
   getRowKey,
   caption,
   empty,
-  className = '',
+  className = "",
 }: DataTableProps<T>) {
-  const isCompact = !useMediaQuery('(min-width: 768px)');
+  const isCompact = !useMediaQuery("(min-width: 768px)");
 
   if (rows.length === 0) return <>{empty ?? null}</>;
 
   if (isCompact) {
     const titleColumn = columns.find((c) => c.isRowTitle);
-    const detailColumns = columns.filter((c) => !c.isRowTitle && !c.hideInStack);
+    const detailColumns = columns.filter(
+      (c) => !c.isRowTitle && !c.hideInStack,
+    );
 
     return (
-      <ul className={`divide-y divide-border-subtle ${className}`} aria-label={caption}>
+      <ul
+        className={`divide-y divide-border-subtle ${className}`}
+        aria-label={caption}
+      >
         {rows.map((row) => (
           <li key={getRowKey(row)} className="py-4 space-y-2.5">
-            {titleColumn && <div className="min-w-0">{titleColumn.cell(row)}</div>}
+            {titleColumn && (
+              <div className="min-w-0">{titleColumn.cell(row)}</div>
+            )}
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
               {detailColumns.map((col) => (
                 <div key={col.id} className="min-w-0">
                   <dt className="text-micro font-semibold uppercase tracking-wider text-stone-500">
                     {col.header}
                   </dt>
-                  <dd className="text-xs text-stone-800 mt-0.5">{col.cell(row)}</dd>
+                  <dd className="text-xs text-stone-800 mt-0.5">
+                    {col.cell(row)}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -99,7 +108,7 @@ export function DataTable<T>({
               <th
                 key={col.id}
                 scope="col"
-                className={`p-3.5 whitespace-nowrap ${col.align === 'right' ? 'text-right' : ''}`}
+                className={`p-3.5 whitespace-nowrap ${col.align === "right" ? "text-right" : ""}`}
               >
                 {col.header}
               </th>
@@ -108,12 +117,15 @@ export function DataTable<T>({
         </thead>
         <tbody className="divide-y divide-border-subtle">
           {rows.map((row) => (
-            <tr key={getRowKey(row)} className="hover:bg-bg-base motion-interactive">
+            <tr
+              key={getRowKey(row)}
+              className="hover:bg-bg-base motion-interactive"
+            >
               {tableColumns.map((col) => (
                 <td
                   key={col.id}
-                  className={`p-3.5 align-middle ${col.align === 'right' ? 'text-right' : ''} ${
-                    col.className ?? ''
+                  className={`p-3.5 align-middle ${col.align === "right" ? "text-right" : ""} ${
+                    col.className ?? ""
                   }`}
                 >
                   {col.cell(row)}

@@ -8,15 +8,19 @@
  * that does NOT require or depend on a reservation workflow.
  */
 
-import {  ListingFamily } from '../taxonomy/taxonomy.types';
-import { taxonomyService } from '../taxonomy/taxonomy.service';
-import { marketService } from '../market/market.service';
-import { TransactionCapabilitiesResult, TransactionMode, ListingIntent } from '../publication/publication.types';
+import { ListingFamily } from "../taxonomy/taxonomy.types";
+import { taxonomyService } from "../taxonomy/taxonomy.service";
+import { marketService } from "../market/market.service";
+import {
+  TransactionCapabilitiesResult,
+  TransactionMode,
+  ListingIntent,
+} from "../publication/publication.types";
 
 export interface ResolveTransactionParams {
   taxonomyNodeId: string;
   marketCode?: string;
-  sellerType?: 'individual' | 'pro';
+  sellerType?: "individual" | "pro";
   sellerIsVerified?: boolean;
   listingIntent?: ListingIntent;
   price?: number;
@@ -30,10 +34,10 @@ export class TransactionCapabilitiesService {
   resolve(params: ResolveTransactionParams): TransactionCapabilitiesResult {
     const {
       taxonomyNodeId,
-      marketCode = 'FR',
-      sellerType = 'individual',
+      marketCode = "FR",
+      sellerType = "individual",
       sellerIsVerified = true,
-      listingIntent = 'SELL',
+      listingIntent = "SELL",
       price = 0,
       stock = 1,
     } = params;
@@ -51,19 +55,31 @@ export class TransactionCapabilitiesService {
     let directPurchaseDisabledReason: string | undefined;
 
     // Categories where direct online purchase is fundamentally not applicable
-    const noDirectPurchaseFamilies: ListingFamily[] = ['real_estate', 'job', 'service'];
+    const noDirectPurchaseFamilies: ListingFamily[] = [
+      "real_estate",
+      "job",
+      "service",
+    ];
     if (noDirectPurchaseFamilies.includes(family)) {
       canDirectPurchase = false;
-      directPurchaseDisabledReason = 'L\'achat en ligne direct n\'est pas applicable à cette catégorie.';
-    } else if (listingIntent === 'GIVE' || listingIntent === 'EXCHANGE' || price <= 0) {
+      directPurchaseDisabledReason =
+        "L'achat en ligne direct n'est pas applicable à cette catégorie.";
+    } else if (
+      listingIntent === "GIVE" ||
+      listingIntent === "EXCHANGE" ||
+      price <= 0
+    ) {
       canDirectPurchase = false;
-      directPurchaseDisabledReason = 'Le paiement en ligne requiert un prix de vente positif.';
+      directPurchaseDisabledReason =
+        "Le paiement en ligne requiert un prix de vente positif.";
     } else if (!effectiveMarket.payments.enabled) {
       canDirectPurchase = false;
-      directPurchaseDisabledReason = 'Le paiement sécurisé n\'est pas activé sur ce marché.';
+      directPurchaseDisabledReason =
+        "Le paiement sécurisé n'est pas activé sur ce marché.";
     } else if (node && node.capabilities?.securePaymentAllowed === false) {
       canDirectPurchase = false;
-      directPurchaseDisabledReason = 'Le paiement en ligne n\'est pas autorisé pour cette catégorie.';
+      directPurchaseDisabledReason =
+        "Le paiement en ligne n'est pas autorisé pour cette catégorie.";
     } else {
       canDirectPurchase = true;
     }
@@ -73,26 +89,29 @@ export class TransactionCapabilitiesService {
     let canReserve = false;
     let reservationDisabledReason: string | undefined;
 
-    if (family === 'job') {
+    if (family === "job") {
       canReserve = false;
-      reservationDisabledReason = 'La réservation n\'est pas applicable aux offres d\'emploi.';
-    } else if (listingIntent === 'GIVE') {
+      reservationDisabledReason =
+        "La réservation n'est pas applicable aux offres d'emploi.";
+    } else if (listingIntent === "GIVE") {
       canReserve = false;
-      reservationDisabledReason = 'Les dons gratuits ne nécessitent pas de réservation payante.';
+      reservationDisabledReason =
+        "Les dons gratuits ne nécessitent pas de réservation payante.";
     } else if (node && node.capabilities?.reservationAllowed === false) {
       canReserve = false;
-      reservationDisabledReason = 'La réservation n\'est pas disponible pour cette catégorie.';
+      reservationDisabledReason =
+        "La réservation n'est pas disponible pour cette catégorie.";
     } else {
       canReserve = true;
     }
 
     // Determine default modes
-    const defaultModes: TransactionMode[] = ['CONTACT_ONLY'];
+    const defaultModes: TransactionMode[] = ["CONTACT_ONLY"];
     if (canDirectPurchase) {
-      defaultModes.push('DIRECT_PURCHASE');
+      defaultModes.push("DIRECT_PURCHASE");
     }
     if (canReserve) {
-      defaultModes.push('RESERVATION');
+      defaultModes.push("RESERVATION");
     }
 
     return {
@@ -106,4 +125,5 @@ export class TransactionCapabilitiesService {
   }
 }
 
-export const transactionCapabilitiesService = new TransactionCapabilitiesService();
+export const transactionCapabilitiesService =
+  new TransactionCapabilitiesService();

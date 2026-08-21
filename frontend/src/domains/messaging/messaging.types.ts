@@ -4,17 +4,27 @@
  * participants, real-time subscriptions, and delivery statuses.
  */
 
-import {  ListingStatus, DeliveryType } from '../../types';
+import { ListingStatus, DeliveryType } from "../../types";
 
-export type ConversationType = 'listing' | 'transaction' | 'support' | 'general';
+export type ConversationType =
+  "listing" | "transaction" | "support" | "general";
 
-export type MessageDeliveryStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+export type MessageDeliveryStatus =
+  "sending" | "sent" | "delivered" | "read" | "failed";
 
-export type MessageContentType = 'text' | 'image' | 'file' | 'offer' | 'offer_accepted' | 'offer_declined' | 'reservation' | 'system';
+export type MessageContentType =
+  | "text"
+  | "image"
+  | "file"
+  | "offer"
+  | "offer_accepted"
+  | "offer_declined"
+  | "reservation"
+  | "system";
 
 export interface MessageAttachment {
   id: string;
-  type: 'image' | 'file';
+  type: "image" | "file";
   url: string;
   fileName?: string;
   fileSize?: number;
@@ -26,14 +36,14 @@ export interface ConversationParticipant {
   name: string;
   avatarUrl?: string;
   role?: string;
-  accountType?: 'individual' | 'pro';
+  accountType?: "individual" | "pro";
   isVerified?: boolean;
   rating?: number;
   reviewCount?: number;
 }
 
 export interface ListingConversationContext {
-  type: 'listing';
+  type: "listing";
   listingId: string;
   listingTitle: string;
   listingPrice: number;
@@ -42,16 +52,16 @@ export interface ListingConversationContext {
   categorySlug?: string;
   sellerId: string;
   sellerName: string;
-  sellerType?: 'individual' | 'pro';
+  sellerType?: "individual" | "pro";
 }
 
 export interface TransactionConversationContext {
-  type: 'transaction';
+  type: "transaction";
   transactionId: string;
   listingId: string;
   orderNumber?: string;
   amount: number;
-  escrowStatus: 'pending' | 'secured' | 'released' | 'refunded';
+  escrowStatus: "pending" | "secured" | "released" | "refunded";
   fulfillmentMode: DeliveryType;
   carrierName?: string;
   trackingNumber?: string;
@@ -63,10 +73,10 @@ export interface TransactionConversationContext {
 }
 
 export interface SupportConversationContext {
-  type: 'support';
+  type: "support";
   ticketId: string;
   category: string;
-  priority: 'low' | 'normal' | 'urgent';
+  priority: "low" | "normal" | "urgent";
 }
 
 export type ConversationContext =
@@ -81,7 +91,7 @@ export interface BaseTimelineItem {
 }
 
 export interface UserTimelineMessage extends BaseTimelineItem {
-  itemType: 'message';
+  itemType: "message";
   senderId: string;
   senderName: string;
   senderAvatarUrl?: string;
@@ -95,21 +105,21 @@ export interface UserTimelineMessage extends BaseTimelineItem {
 }
 
 export interface SystemTimelineEvent extends BaseTimelineItem {
-  itemType: 'system_event';
+  itemType: "system_event";
   eventType:
-    | 'conversation_created'
-    | 'offer_proposed'
-    | 'offer_accepted'
-    | 'offer_declined'
-    | 'reservation_confirmed'
-    | 'escrow_secured'
-    | 'pickup_scheduled'
-    | 'item_shipped'
-    | 'handover_completed'
-    | 'transaction_completed'
-    | 'funds_released'
-    | 'dispute_opened'
-    | 'safety_notice';
+    | "conversation_created"
+    | "offer_proposed"
+    | "offer_accepted"
+    | "offer_declined"
+    | "reservation_confirmed"
+    | "escrow_secured"
+    | "pickup_scheduled"
+    | "item_shipped"
+    | "handover_completed"
+    | "transaction_completed"
+    | "funds_released"
+    | "dispute_opened"
+    | "safety_notice";
   title: string;
   description: string;
   actorId?: string;
@@ -131,7 +141,7 @@ export interface ConversationPreview {
   isPinned?: boolean;
   isMuted?: boolean;
   isBlocked?: boolean;
-  status: 'active' | 'blocked' | 'archived';
+  status: "active" | "blocked" | "archived";
   createdAt: string;
   updatedAt: string;
 }
@@ -150,7 +160,8 @@ export interface ConversationCapabilities {
   disabledReason?: string;
 }
 
-export type RealtimeConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'offline' | 'error';
+export type RealtimeConnectionStatus =
+  "connecting" | "connected" | "reconnecting" | "offline" | "error";
 
 export interface TypingState {
   conversationId: string;
@@ -159,10 +170,17 @@ export interface TypingState {
   isTyping: boolean;
 }
 
-export type InboxFilterTab = 'all' | 'unread' | 'purchases' | 'sales' | 'transactions';
+export type InboxFilterTab =
+  "all" | "unread" | "purchases" | "sales" | "transactions";
 
 export interface MessagingRealtimeEvent {
-  type: 'new_message' | 'system_event' | 'message_status_updated' | 'typing' | 'conversation_read' | 'presence';
+  type:
+    | "new_message"
+    | "system_event"
+    | "message_status_updated"
+    | "typing"
+    | "conversation_read"
+    | "presence";
   conversationId: string;
   payload: any;
   timestamp: string;

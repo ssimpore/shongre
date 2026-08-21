@@ -1,6 +1,6 @@
-import { NotificationsServiceContract } from '../../contracts/notifications.contract';
-import { httpClient } from './http-client';
-import { NotificationItem } from '../../../types';
+import { NotificationsServiceContract } from "../../contracts/notifications.contract";
+import { httpClient } from "./http-client";
+import { NotificationItem } from "../../../types";
 
 export class HttpNotificationsService implements NotificationsServiceContract {
   async getUserNotifications(userId: string): Promise<NotificationItem[]> {
@@ -8,7 +8,9 @@ export class HttpNotificationsService implements NotificationsServiceContract {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const res = await httpClient.get<{ count: number }>(`/notifications/unread-count/${userId}`);
+    const res = await httpClient.get<{ count: number }>(
+      `/notifications/unread-count/${userId}`,
+    );
     return res.count;
   }
 

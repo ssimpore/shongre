@@ -1,20 +1,31 @@
 # Dependencies
 node_modules/
 frontend/node_modules/
+backend/node_modules/
+mobile/node_modules/
+packages/*/node_modules/
 
 # Production builds & caches
 dist/
-frontend/dist/
+frontend/.next/
+frontend/out/
 build/
-.vite/
-frontend/.vite/
 coverage/
 frontend/coverage/
+backend/coverage/
+mobile/coverage/
+mobile/.expo/
+mobile/.expo-shared/
+mobile/web-build/
+mobile/ios/build/
+mobile/android/.gradle/
+mobile/android/app/build/
 
 # Logs & System
 *.log
 .DS_Store
 *.tmp
+*.tsbuildinfo
 
 # Environment & Secrets
 .env
@@ -26,9 +37,28 @@ frontend/.env.*.local
 backend/.env
 backend/.env.local
 backend/.env.*.local
+mobile/.env
+mobile/.env.local
+mobile/.env.*.local
 !.env.example
 !frontend/.env.example
 !backend/.env.example
+
+# Root orchestration state and generated local infrastructure configuration
+.runtime/
+backend/supabase/config.toml
+frontend/public/.well-known/apple-app-site-association
+frontend/public/.well-known/assetlinks.json
+
+# Signing and store credentials
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+service-account*.json
 
 # Playwright artefacts
 frontend/test-results/

@@ -1,21 +1,26 @@
-import { SearchServiceContract } from '../../contracts/search.contract';
-import { listingRepository } from '../../../repositories/listing.repository';
-import { Listing, SearchFilters } from '../../../types';
-import { simulateNetworkDelay } from '../../client/api-client.config';
+import { SearchServiceContract } from "../../contracts/search.contract";
+import { listingRepository } from "../../../repositories/listing.repository";
+import { Listing, SearchFilters } from "../../../types";
+import { simulateNetworkDelay } from "../../client/api-client.config";
 
 const POPULAR_KEYWORDS = [
-  'iPhone 15 Pro',
-  'Vélo gravel',
-  'Canapé convertible',
-  'Peugeot 208',
-  'PlayStation 5',
-  'Table en chêne',
-  'Appartement T3',
-  'Veste Sézane',
+  "iPhone 15 Pro",
+  "Vélo gravel",
+  "Canapé convertible",
+  "Peugeot 208",
+  "PlayStation 5",
+  "Table en chêne",
+  "Appartement T3",
+  "Veste Sézane",
 ];
 
 export class DemoSearchService implements SearchServiceContract {
-  async search(params: SearchFilters): Promise<{ items: Listing[]; total: number; page: number; totalPages: number }> {
+  async search(params: SearchFilters): Promise<{
+    items: Listing[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
     await simulateNetworkDelay();
     const res = await listingRepository.getListings(params);
     return {

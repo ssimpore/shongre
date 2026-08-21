@@ -4,21 +4,22 @@
  * status notices, and primary CTA determination for the listing detail page.
  */
 
-import { Listing, UserProfile } from '../../types';
-import { TransactionCapabilitiesResult } from '../publication/publication.types';
+import { Listing, UserProfile } from "../../types";
+import { TransactionCapabilitiesResult } from "../publication/publication.types";
 
 export interface ListingStatusNotice {
-  type: 'reserved' | 'sold' | 'expired' | 'paused' | 'moderated';
+  type: "reserved" | "sold" | "expired" | "paused" | "moderated";
   title: string;
   message: string;
   isBuyerReserver?: boolean;
 }
 
-export type PrimaryBuyerAction = 'direct_purchase' | 'reservation' | 'contact' | 'none';
+export type PrimaryBuyerAction =
+  "direct_purchase" | "reservation" | "contact" | "none";
 
 export interface ResolvedListingActions {
   isOwner: boolean;
-  ownerActions: Array<'edit' | 'manage' | 'boost' | 'stats'>;
+  ownerActions: Array<"edit" | "manage" | "boost" | "stats">;
   primaryAction: PrimaryBuyerAction;
   canDirectPurchase: boolean;
   canReserve: boolean;
@@ -43,8 +44,8 @@ export class ListingActionsResolver {
     if (isOwner) {
       return {
         isOwner: true,
-        ownerActions: ['edit', 'manage', 'boost', 'stats'],
-        primaryAction: 'none',
+        ownerActions: ["edit", "manage", "boost", "stats"],
+        primaryAction: "none",
         canDirectPurchase: false,
         canReserve: false,
         canContact: false,
@@ -57,44 +58,51 @@ export class ListingActionsResolver {
     let statusNotice: ListingStatusNotice | null = null;
     const isBuyerReserver = !!(viewer && listing.activeReservationId);
 
-    if (listing.status === 'reserved') {
+    if (listing.status === "reserved") {
       statusNotice = {
-        type: 'reserved',
-        title: isBuyerReserver ? 'Votre réservation en cours' : 'Article actuellement réservé',
+        type: "reserved",
+        title: isBuyerReserver
+          ? "Votre réservation en cours"
+          : "Article actuellement réservé",
         message: isBuyerReserver
-          ? 'Vous avez réservé cet article avec paiement sous séquestre. Consultez votre espace achats.'
-          : 'Un paiement sous séquestre sécurisé est en cours de validation pour cet article.',
+          ? "Vous avez réservé cet article avec paiement sous séquestre. Consultez votre espace achats."
+          : "Un paiement sous séquestre sécurisé est en cours de validation pour cet article.",
         isBuyerReserver,
       };
-    } else if (listing.status === 'sold') {
+    } else if (listing.status === "sold") {
       statusNotice = {
-        type: 'sold',
-        title: 'Article vendu',
-        message: 'Cet article a trouvé preneur et n\'est plus disponible à la vente.',
+        type: "sold",
+        title: "Article vendu",
+        message:
+          "Cet article a trouvé preneur et n'est plus disponible à la vente.",
       };
-    } else if (listing.status === 'expired') {
+    } else if (listing.status === "expired") {
       statusNotice = {
-        type: 'expired',
-        title: 'Annonce expirée',
-        message: 'Cette annonce a expiré et n\'est plus disponible.',
+        type: "expired",
+        title: "Annonce expirée",
+        message: "Cette annonce a expiré et n'est plus disponible.",
       };
-    } else if (listing.status === 'archived' || listing.status === 'pending_review' || listing.status === 'draft') {
+    } else if (
+      listing.status === "archived" ||
+      listing.status === "pending_review" ||
+      listing.status === "draft"
+    ) {
       statusNotice = {
-        type: 'moderated',
-        title: 'Annonce indisponible',
-        message: 'Cette annonce n\'est plus accessible sur la plateforme.',
+        type: "moderated",
+        title: "Annonce indisponible",
+        message: "Cette annonce n'est plus accessible sur la plateforme.",
       };
     }
 
     // If listing is not active, disable buyer transactional CTAs
-    if (listing.status !== 'active') {
+    if (listing.status !== "active") {
       return {
         isOwner: false,
         ownerActions: [],
-        primaryAction: 'none',
+        primaryAction: "none",
         canDirectPurchase: false,
         canReserve: false,
-        canContact: listing.status === 'reserved', // Still allow contact if reserved
+        canContact: listing.status === "reserved", // Still allow contact if reserved
         canMakeOffer: false,
         statusNotice,
       };
@@ -116,16 +124,20 @@ export class ListingActionsResolver {
     );
 
     const canContact = transactionCapabilities.canContact;
-    const canMakeOffer = !!(listing.isNegotiable && listing.price > 0 && !listing.isFreeDonation);
+    const canMakeOffer = !!(
+      listing.isNegotiable &&
+      listing.price > 0 &&
+      !listing.isFreeDonation
+    );
 
     // 4. Primary CTA Priority
-    let primaryAction: PrimaryBuyerAction = 'contact';
+    let primaryAction: PrimaryBuyerAction = "contact";
     if (canDirectPurchase) {
-      primaryAction = 'direct_purchase';
+      primaryAction = "direct_purchase";
     } else if (canReserve) {
-      primaryAction = 'reservation';
+      primaryAction = "reservation";
     } else if (canContact) {
-      primaryAction = 'contact';
+      primaryAction = "contact";
     }
 
     return {

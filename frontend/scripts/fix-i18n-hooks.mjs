@@ -13,11 +13,11 @@
  *
  * Usage: node scripts/fix-i18n-hooks.mjs <file...>
  */
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from "fs";
 
 const files = process.argv.slice(2);
 if (files.length === 0) {
-  console.error('usage: node scripts/fix-i18n-hooks.mjs <file...>');
+  console.error("usage: node scripts/fix-i18n-hooks.mjs <file...>");
   process.exit(1);
 }
 
@@ -32,10 +32,15 @@ const COMPONENT =
   /(?:(?:export\s+)?const\s+([A-Z]\w*)\s*(?::\s*React\.FC[^=]*)?=\s*\([\s\S]*?\)\s*=>\s*\{\n)|(?:(?:export\s+)?function\s+([A-Z]\w*)\s*(?:<[^>]*>)?\s*\([\s\S]*?\)\s*(?::[^{]*)?\{\n)/g;
 
 for (const file of files) {
-  const source = readFileSync(file, 'utf8');
+  const source = readFileSync(file, "utf8");
 
-  if (/class\s+\w+\s+extends\s+React\.Component/.test(source) && /\bt\('/.test(source)) {
-    console.log(`⚠ ${file}: class component calls t() — hooks are illegal here, needs restructuring`);
+  if (
+    /class\s+\w+\s+extends\s+React\.Component/.test(source) &&
+    /\bt\('/.test(source)
+  ) {
+    console.log(
+      `⚠ ${file}: class component calls t() — hooks are illegal here, needs restructuring`,
+    );
     continue;
   }
 
@@ -55,7 +60,8 @@ for (const file of files) {
   for (const { name, bodyStart, bodyEnd } of [...bounds].reverse()) {
     const body = source.slice(bodyStart, bodyEnd);
     if (!/\bt\(\s*'/.test(body)) continue;
-    if (/const\s*\{[^}]*\bt\b[^}]*\}\s*=\s*useTranslation\(\)/.test(body)) continue;
+    if (/const\s*\{[^}]*\bt\b[^}]*\}\s*=\s*useTranslation\(\)/.test(body))
+      continue;
 
     output = `${output.slice(0, bodyStart)}  const { t } = useTranslation();\n${output.slice(bodyStart)}`;
     added += 1;

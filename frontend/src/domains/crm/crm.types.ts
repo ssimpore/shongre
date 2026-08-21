@@ -5,32 +5,32 @@
  */
 
 export type ContactLifecycle =
-  | 'lead'
-  | 'prospect'
-  | 'qualified'
-  | 'customer'
-  | 'partner'
-  | 'do_not_contact'
-  | 'archived';
+  | "lead"
+  | "prospect"
+  | "qualified"
+  | "customer"
+  | "partner"
+  | "do_not_contact"
+  | "archived";
 
-export type ContactQualification = 'unqualified' | 'low' | 'medium' | 'high';
+export type ContactQualification = "unqualified" | "low" | "medium" | "high";
 
 export type CompanyLifecycle =
-  | 'prospect'
-  | 'qualified'
-  | 'customer'
-  | 'partner'
-  | 'do_not_contact'
-  | 'archived';
+  | "prospect"
+  | "qualified"
+  | "customer"
+  | "partner"
+  | "do_not_contact"
+  | "archived";
 
 export type EntitySource =
-  | 'shongre_signup'
-  | 'pro_signup'
-  | 'manual'
-  | 'ai_research'
-  | 'inbound'
-  | 'referral'
-  | 'event';
+  | "shongre_signup"
+  | "pro_signup"
+  | "manual"
+  | "ai_research"
+  | "inbound"
+  | "referral"
+  | "event";
 
 export interface CrmContactIdentity {
   firstName: string;
@@ -98,20 +98,20 @@ export interface CrmCompany {
 }
 
 export type OpportunityType =
-  | 'pro_seller_acquisition'
-  | 'pro_subscription_upgrade'
-  | 'advertising'
-  | 'partnership'
-  | 'enterprise_account';
+  | "pro_seller_acquisition"
+  | "pro_subscription_upgrade"
+  | "advertising"
+  | "partnership"
+  | "enterprise_account";
 
 export type OpportunityStage =
-  | 'new'
-  | 'qualified'
-  | 'contacted'
-  | 'proposal'
-  | 'negotiation'
-  | 'won'
-  | 'lost';
+  | "new"
+  | "qualified"
+  | "contacted"
+  | "proposal"
+  | "negotiation"
+  | "won"
+  | "lost";
 
 export interface CrmMoney {
   amountMinor: number;
@@ -139,20 +139,20 @@ export interface CrmOpportunity {
 }
 
 export type ActivityType =
-  | 'note'
-  | 'call'
-  | 'email'
-  | 'meeting'
-  | 'task_completed'
-  | 'ai_discovered'
-  | 'stage_changed'
-  | 'pro_conversion'
-  | 'do_not_contact_set'
-  | 'enrichment_applied';
+  | "note"
+  | "call"
+  | "email"
+  | "meeting"
+  | "task_completed"
+  | "ai_discovered"
+  | "stage_changed"
+  | "pro_conversion"
+  | "do_not_contact_set"
+  | "enrichment_applied";
 
 export interface CrmActivity {
   id: string;
-  entityType: 'contact' | 'company' | 'opportunity';
+  entityType: "contact" | "company" | "opportunity";
   entityId: string;
   type: ActivityType;
   title: string;
@@ -163,8 +163,8 @@ export interface CrmActivity {
   createdAt: string;
 }
 
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type TaskStatus = 'pending' | 'completed' | 'cancelled';
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export type TaskStatus = "pending" | "completed" | "cancelled";
 
 export interface CrmTask {
   id: string;
@@ -172,7 +172,7 @@ export interface CrmTask {
   dueDate: string;
   assigneeId: string;
   assigneeName: string;
-  relatedType: 'contact' | 'company' | 'opportunity';
+  relatedType: "contact" | "company" | "opportunity";
   relatedId: string;
   relatedTitle: string;
   priority: TaskPriority;
@@ -215,7 +215,7 @@ export interface ProspectResearchCandidate {
   suggestedTaxonomySlugs?: string[];
   fit: {
     score: number; // 0 - 100
-    level: 'high' | 'medium' | 'low';
+    level: "high" | "medium" | "low";
     reasons: string[];
     caveats?: string[];
   };
@@ -223,7 +223,7 @@ export interface ProspectResearchCandidate {
   possibleExistingEntityId?: string;
   possibleExistingSellerId?: string;
   isDuplicate?: boolean;
-  status: 'discovered' | 'imported' | 'dismissed';
+  status: "discovered" | "imported" | "dismissed";
 }
 
 export interface ProspectResearchResult {

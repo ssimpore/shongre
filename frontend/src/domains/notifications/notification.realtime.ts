@@ -8,26 +8,36 @@ import {
   Notification,
   RealtimeNotificationEvent,
   NotificationRealtimeHandler,
-} from './notification.types';
+} from "./notification.types";
 
 export interface INotificationRealtimeClient {
   subscribe(userId: string, handler: NotificationRealtimeHandler): () => void;
   broadcast(event: RealtimeNotificationEvent): void;
-  simulateIncomingNotification(notification: Notification, delayMs?: number): void;
-  getConnectionStatus(): 'connecting' | 'connected' | 'reconnecting' | 'offline';
-  setConnectionStatus(status: 'connecting' | 'connected' | 'reconnecting' | 'offline'): void;
+  simulateIncomingNotification(
+    notification: Notification,
+    delayMs?: number,
+  ): void;
+  getConnectionStatus():
+    "connecting" | "connected" | "reconnecting" | "offline";
+  setConnectionStatus(
+    status: "connecting" | "connected" | "reconnecting" | "offline",
+  ): void;
 }
 
 export class DemoNotificationRealtimeClient implements INotificationRealtimeClient {
-  private status: 'connecting' | 'connected' | 'reconnecting' | 'offline' = 'connected';
+  private status: "connecting" | "connected" | "reconnecting" | "offline" =
+    "connected";
   private userListeners = new Map<string, Set<NotificationRealtimeHandler>>();
   private seenEventIds = new Set<string>();
 
-  getConnectionStatus(): 'connecting' | 'connected' | 'reconnecting' | 'offline' {
+  getConnectionStatus():
+    "connecting" | "connected" | "reconnecting" | "offline" {
     return this.status;
   }
 
-  setConnectionStatus(status: 'connecting' | 'connected' | 'reconnecting' | 'offline'): void {
+  setConnectionStatus(
+    status: "connecting" | "connected" | "reconnecting" | "offline",
+  ): void {
     this.status = status;
   }
 
@@ -63,7 +73,7 @@ export class DemoNotificationRealtimeClient implements INotificationRealtimeClie
   simulateIncomingNotification(notification: Notification, delayMs = 0): void {
     const trigger = () => {
       this.broadcast({
-        type: 'notification.created',
+        type: "notification.created",
         recipientId: notification.recipientId,
         payload: notification,
         timestamp: new Date().toISOString(),
@@ -78,4 +88,5 @@ export class DemoNotificationRealtimeClient implements INotificationRealtimeClie
   }
 }
 
-export const notificationRealtimeClient: INotificationRealtimeClient = new DemoNotificationRealtimeClient();
+export const notificationRealtimeClient: INotificationRealtimeClient =
+  new DemoNotificationRealtimeClient();

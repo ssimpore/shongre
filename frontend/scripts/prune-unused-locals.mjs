@@ -17,23 +17,27 @@
  *
  * Run: node scripts/prune-unused-locals.mjs [--dry]
  */
-import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
+import { execSync } from "child_process";
+import { readFileSync, writeFileSync } from "fs";
 
-const DRY = process.argv.includes('--dry');
+const DRY = process.argv.includes("--dry");
 const MAX_PASSES = 6;
 
 /** Calls whose only purpose might be their side effect. */
-const SIDE_EFFECTFUL = /\b(?:set|save|write|delete|remove|update|create|send|track|log|init|register|subscribe|mutate|push|toggle)/i;
+const SIDE_EFFECTFUL =
+  /\b(?:set|save|write|delete|remove|update|create|send|track|log|init|register|subscribe|mutate|push|toggle)/i;
 
 function diagnostics() {
   try {
-    execSync('npx tsc --noEmit --noUnusedLocals', { encoding: 'utf8', stdio: 'pipe' });
+    execSync("npx tsc --noEmit --noUnusedLocals", {
+      encoding: "utf8",
+      stdio: "pipe",
+    });
     return [];
   } catch (error) {
-    const out = `${error.stdout || ''}${error.stderr || ''}`;
+    const out = `${error.stdout || ""}${error.stderr || ""}`;
     return out
-      .split('\n')
+      .split("\n")
       .map((l) => l.match(/^(.+?)\((\d+),(\d+)\): error TS(6133|6198): (.+)$/))
       .filter(Boolean)
       .map((m) => ({
@@ -66,7 +70,7 @@ function dropProperty(text, name) {
     new RegExp(`\\b${name}\\b\\s*,?\\s*`),
   ];
   for (const shape of shapes) {
-    if (shape.test(text)) return text.replace(shape, '');
+    if (shape.test(text)) return text.replace(shape, "");
   }
   return null;
 }
@@ -81,7 +85,7 @@ function dropProperty(text, name) {
  * elision — the empty slot in `const [, setValue]` exists for exactly this.
  */
 function elideElement(text, name) {
-  const next = text.replace(new RegExp(`(\\[[^\\]]*?)\\b${name}\\b\\s*`), '$1');
+  const next = text.replace(new RegExp(`(\\[[^\\]]*?)\\b${name}\\b\\s*`), "$1");
   return next === text ? null : next;
 }
 
@@ -89,7 +93,7 @@ const skipped = [];
 let total = 0;
 
 for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
-  const found = diagnostics().filter((d) => d.name || d.code === '6198');
+  const found = diagnostics().filter((d) => d.name || d.code === "6198");
   if (found.length === 0) break;
 
   const byFile = new Map();
@@ -101,7 +105,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
   let removed = 0;
 
   for (const [file, items] of byFile) {
-    const lines = readFileSync(file, 'utf8').split('\n');
+    const lines = readFileSync(file, "utf8").split("\n");
     let touched = false;
 
     // Bottom-up so earlier line numbers stay valid.
@@ -109,11 +113,15 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
       const i = item.line - 1;
       const text = lines[i];
       if (text === undefined) continue;
-      const decline = () => skipped.push(`${file}:${item.line}  ${text.trim().slice(0, 72)}`);
+      const decline = () =>
+        skipped.push(`${file}:${item.line}  ${text.trim().slice(0, 72)}`);
 
       // Whole destructuring is dead: drop the statement if it is a plain read.
-      if (item.code === '6198') {
-        if (/=\s*[\w.$]+(\([^)]*\))?;?\s*$/.test(text) && !SIDE_EFFECTFUL.test(text.split('=')[1] || '')) {
+      if (item.code === "6198") {
+        if (
+          /=\s*[\w.$]+(\([^)]*\))?;?\s*$/.test(text) &&
+          !SIDE_EFFECTFUL.test(text.split("=")[1] || "")
+        ) {
           lines.splice(i, 1);
           removed += 1;
           touched = true;
@@ -125,20 +133,21 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
 
       const pattern = text.match(/const\s*([{[])/);
       if (pattern) {
-        const next = pattern[1] === '{'
-          ? dropProperty(text, item.name)
-          : elideElement(text, item.name);
+        const next =
+          pattern[1] === "{"
+            ? dropProperty(text, item.name)
+            : elideElement(text, item.name);
         if (next === null) {
           decline();
           continue;
         }
         const tidied = next
-          .replace(/\{\s*,/, '{')
-          .replace(/,\s*,/g, ',')
-          .replace(/,(\s*\})/g, '$1');
+          .replace(/\{\s*,/, "{")
+          .replace(/,\s*,/g, ",")
+          .replace(/,(\s*\})/g, "$1");
         // An emptied pattern means the statement was only dead bindings.
         if (/const\s*(\{\s*\}|\[\s*,*\s*\])\s*(:[^=]+)?=/.test(tidied)) {
-          if (SIDE_EFFECTFUL.test(tidied.split('=').slice(1).join('='))) {
+          if (SIDE_EFFECTFUL.test(tidied.split("=").slice(1).join("="))) {
             decline();
             continue;
           }
@@ -152,8 +161,14 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
       }
 
       // Standalone `const x = <plain read>` on one line.
-      const standalone = text.match(/^\s*const\s+\w+\s*(:[^=]+)?=\s*(.+?);?\s*$/);
-      if (standalone && !SIDE_EFFECTFUL.test(standalone[2]) && !/=>|function|\{$/.test(standalone[2])) {
+      const standalone = text.match(
+        /^\s*const\s+\w+\s*(:[^=]+)?=\s*(.+?);?\s*$/,
+      );
+      if (
+        standalone &&
+        !SIDE_EFFECTFUL.test(standalone[2]) &&
+        !/=>|function|\{$/.test(standalone[2])
+      ) {
         lines.splice(i, 1);
         removed += 1;
         touched = true;
@@ -162,7 +177,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
       }
     }
 
-    if (touched && !DRY) writeFileSync(file, lines.join('\n'));
+    if (touched && !DRY) writeFileSync(file, lines.join("\n"));
   }
 
   total += removed;
@@ -173,5 +188,5 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
 console.log(`\ntotal removed: ${total}`);
 if (skipped.length) {
   console.log(`left for a human (${new Set(skipped).size}):`);
-  [...new Set(skipped)].slice(0, 25).forEach((s) => console.log('  ' + s));
+  [...new Set(skipped)].slice(0, 25).forEach((s) => console.log("  " + s));
 }

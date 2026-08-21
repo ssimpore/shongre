@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Cookie } from 'lucide-react';
-import { Modal } from '../../design-system/primitives/Modal';
-import { Button } from '../../design-system/primitives/Button';
-import { useConsent } from '../providers/ConsentProvider';
-import { CONSENT_CATEGORIES } from '../../domains/consent/consent.service';
-import { ConsentCategories } from '../../domains/consent/consent.types';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Cookie } from "lucide-react";
+import { Modal } from "../../design-system/primitives/Modal";
+import { Button } from "../../design-system/primitives/Button";
+import { useConsent } from "../providers/ConsentProvider";
+import { CONSENT_CATEGORIES } from "../../domains/consent/consent.service";
+import { ConsentCategories } from "../../domains/consent/consent.types";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 /**
  * First-layer consent banner.
@@ -29,7 +29,8 @@ import { useTranslation } from '../../i18n/I18nProvider';
  * covered by the raised publish button.
  */
 const CookieBanner: React.FC = () => {
-  const { needsDecision, acceptAll, rejectOptional, openPreferences } = useConsent();
+  const { needsDecision, acceptAll, rejectOptional, openPreferences } =
+    useConsent();
   const { t } = useTranslation();
 
   if (!needsDecision) return null;
@@ -52,16 +53,19 @@ const CookieBanner: React.FC = () => {
 
           <div className="min-w-0 space-y-3">
             <div className="space-y-1">
-              <h2 id="cookie-banner-title" className="text-sm font-bold text-stone-900">
-                {t('consent.title')}
+              <h2
+                id="cookie-banner-title"
+                className="text-sm font-bold text-stone-900"
+              >
+                {t("consent.title")}
               </h2>
               <p className="text-xs text-stone-600 leading-relaxed">
-                {t('consent.body')}{' '}
+                {t("consent.body")}{" "}
                 <Link
                   to="/confidentialite"
                   className="font-semibold text-primary hover:underline"
                 >
-                  {t('consent.learnMore')}
+                  {t("consent.learnMore")}
                 </Link>
                 .
               </p>
@@ -69,14 +73,24 @@ const CookieBanner: React.FC = () => {
 
             {/* Accept and refuse share a row and a visual weight on purpose. */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <Button variant="primary" size="sm" onClick={acceptAll} className="font-bold">
-                {t('consent.acceptAll')}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={acceptAll}
+                className="font-bold"
+              >
+                {t("consent.acceptAll")}
               </Button>
-              <Button variant="outline" size="sm" onClick={rejectOptional} className="font-bold">
-                {t('consent.rejectAll')}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={rejectOptional}
+                className="font-bold"
+              >
+                {t("consent.rejectAll")}
               </Button>
               <Button variant="ghost" size="sm" onClick={openPreferences}>
-                {t('consent.customise')}
+                {t("consent.customise")}
               </Button>
             </div>
           </div>
@@ -95,8 +109,13 @@ const CookieBanner: React.FC = () => {
  * hidden — people are entitled to see what runs regardless of their choice.
  */
 const CookiePreferencesModal: React.FC = () => {
-  const { isPreferencesOpen, closePreferences, categories, savePreferences, acceptAll } =
-    useConsent();
+  const {
+    isPreferencesOpen,
+    closePreferences,
+    categories,
+    savePreferences,
+    acceptAll,
+  } = useConsent();
   const { t } = useTranslation();
   const [draft, setDraft] = useState<ConsentCategories>(categories);
 
@@ -109,8 +128,8 @@ const CookiePreferencesModal: React.FC = () => {
     <Modal
       isOpen={isPreferencesOpen}
       onClose={closePreferences}
-      title={t('consent.panelTitle')}
-      description={t('consent.panelDescription')}
+      title={t("consent.panelTitle")}
+      description={t("consent.panelDescription")}
       maxWidth="lg"
     >
       <div className="p-5 sm:p-6 space-y-4">
@@ -133,7 +152,7 @@ const CookiePreferencesModal: React.FC = () => {
                 </p>
                 {category.required && (
                   <p className="text-xs text-stone-500 mt-1 font-semibold">
-                    {t('consent.alwaysOn')}
+                    {t("consent.alwaysOn")}
                   </p>
                 )}
               </div>
@@ -146,11 +165,17 @@ const CookiePreferencesModal: React.FC = () => {
                 disabled={category.required}
                 aria-describedby={`consent-${category.id}-description`}
                 onChange={(e) =>
-                  setDraft((previous) => ({ ...previous, [category.id]: e.target.checked }))
+                  setDraft((previous) => ({
+                    ...previous,
+                    [category.id]: e.target.checked,
+                  }))
                 }
                 className="mt-1 shrink-0 w-5 h-5 rounded accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               />
-              <span id={`consent-${category.id}-description`} className="sr-only">
+              <span
+                id={`consent-${category.id}-description`}
+                className="sr-only"
+              >
                 {t(category.descriptionKey)}
               </span>
             </div>
@@ -159,11 +184,20 @@ const CookiePreferencesModal: React.FC = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:justify-end gap-2 p-5 sm:p-6 border-t border-border-subtle">
-        <Button variant="outline" size="sm" onClick={() => savePreferences(draft)}>
-          {t('consent.saveChoices')}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => savePreferences(draft)}
+        >
+          {t("consent.saveChoices")}
         </Button>
-        <Button variant="primary" size="sm" onClick={acceptAll} className="font-bold">
-          {t('consent.acceptAll')}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={acceptAll}
+          className="font-bold"
+        >
+          {t("consent.acceptAll")}
         </Button>
       </div>
     </Modal>

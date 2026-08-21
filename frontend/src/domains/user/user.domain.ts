@@ -1,8 +1,15 @@
-import { normalizePlatformRole, ROLE_DEFINITIONS } from '../../security/roles.config';
+import {
+  normalizePlatformRole,
+  ROLE_DEFINITIONS,
+} from "../../security/roles.config";
 
 export function isProSeller(user: any): boolean {
   if (!user) return false;
-  return user.sellerType === 'pro' || user.accountType === 'professional' || user.role === 'pro_seller';
+  return (
+    user.sellerType === "pro" ||
+    user.accountType === "professional" ||
+    user.role === "pro_seller"
+  );
 }
 
 /**
@@ -22,7 +29,7 @@ export function isProSeller(user: any): boolean {
  */
 export function isInternalAccount(user: any): boolean {
   if (!user) return false;
-  if (user.accountType === 'internal') return true;
+  if (user.accountType === "internal") return true;
   const role = normalizePlatformRole(user.primaryRole ?? user.role);
   return Boolean(ROLE_DEFINITIONS[role]?.isInternalStaff);
 }
@@ -50,22 +57,29 @@ export function isPubliclyListableProSeller(user: any): boolean {
 
 export function isIndividualSeller(user: any): boolean {
   if (!user) return false;
-  return !isProSeller(user) && (user.sellerType === 'individual' || user.accountType === 'individual');
+  return (
+    !isProSeller(user) &&
+    (user.sellerType === "individual" || user.accountType === "individual")
+  );
 }
 
 export function isAccountSuspended(user: any): boolean {
   if (!user) return false;
-  return Boolean(user.isSuspended || user.status === 'suspended');
+  return Boolean(user.isSuspended || user.status === "suspended");
 }
 
 export function isAccountDeactivated(user: any): boolean {
   if (!user) return false;
-  return Boolean(user.isDeactivated || user.status === 'disabled' || user.status === 'deleted');
+  return Boolean(
+    user.isDeactivated ||
+    user.status === "disabled" ||
+    user.status === "deleted",
+  );
 }
 
 export function isAccountLimited(user: any): boolean {
   if (!user) return false;
-  return user.status === 'limited';
+  return user.status === "limited";
 }
 
 /**

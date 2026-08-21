@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
   RAIL_CONTROL_CLASS,
   RAIL_CONTROL_ICON_CLASS,
-} from '../utils/controlMetrics';
+} from "../utils/controlMetrics";
 
 export interface ScrollRailProps {
   children: React.ReactNode;
@@ -53,8 +53,8 @@ export interface ScrollRailProps {
  */
 export const ScrollRail: React.FC<ScrollRailProps> = ({
   children,
-  className = '',
-  label = 'contenu',
+  className = "",
+  label = "contenu",
   snap = false,
 }) => {
   const { t } = useTranslation();
@@ -79,17 +79,20 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
     ro.observe(el);
     // Children changing width (tab labels, chips) also changes overflow.
     Array.from(el.children).forEach((c) => ro.observe(c));
-    el.addEventListener('scroll', measure, { passive: true });
+    el.addEventListener("scroll", measure, { passive: true });
     return () => {
       ro.disconnect();
-      el.removeEventListener('scroll', measure);
+      el.removeEventListener("scroll", measure);
     };
   }, [measure, children]);
 
   const nudge = (dir: -1 | 1) => {
     const el = trackRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * Math.max(160, el.clientWidth * 0.7), behavior: 'smooth' });
+    el.scrollBy({
+      left: dir * Math.max(160, el.clientWidth * 0.7),
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -102,10 +105,10 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
       <div
         ref={trackRef}
         tabIndex={overflow.left || overflow.right ? 0 : -1}
-        role={overflow.left || overflow.right ? 'region' : undefined}
+        role={overflow.left || overflow.right ? "region" : undefined}
         aria-label={overflow.left || overflow.right ? label : undefined}
         className={`overflow-x-auto no-scrollbar focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-          snap ? 'snap-x snap-mandatory scroll-px-4 sm:scroll-px-0' : ''
+          snap ? "snap-x snap-mandatory scroll-px-4 sm:scroll-px-0" : ""
         } ${className}`}
       >
         {children}
@@ -120,7 +123,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
         <button
           type="button"
           onClick={() => nudge(-1)}
-          aria-label={t('common.scrollRailLeft', { label })}
+          aria-label={t("common.scrollRailLeft", { label })}
           className={`absolute left-1 top-1/2 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky`}
         >
           <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
@@ -131,7 +134,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
         <button
           type="button"
           onClick={() => nudge(1)}
-          aria-label={t('common.scrollRailRight', { label })}
+          aria-label={t("common.scrollRailRight", { label })}
           className={`absolute right-1 top-1/2 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky`}
         >
           <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />

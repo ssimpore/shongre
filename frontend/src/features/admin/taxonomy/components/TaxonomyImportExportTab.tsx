@@ -1,25 +1,34 @@
-import React, { useState } from 'react';
-import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
-import { Button } from '../../../../design-system/primitives/Button';
-import { Textarea, FormField } from '../../../../design-system/primitives/FormField';
-import { useToast } from '../../../../app/providers/ToastProvider';
-import { useAuth } from '../../../../app/providers/AuthProvider';
-import { Download, Upload,  CheckCircle2, AlertOctagon, RotateCcw } from 'lucide-react';
-import { ConfirmModal } from '../../../../design-system/primitives/ConfirmModal';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { taxonomyAdminRepository } from "../../../../repositories/taxonomy.repository";
+import { Button } from "../../../../design-system/primitives/Button";
+import {
+  Textarea,
+  FormField,
+} from "../../../../design-system/primitives/FormField";
+import { useToast } from "../../../../app/providers/ToastProvider";
+import { useAuth } from "../../../../app/providers/AuthProvider";
+import {
+  Download,
+  Upload,
+  CheckCircle2,
+  AlertOctagon,
+  RotateCcw,
+} from "lucide-react";
+import { ConfirmModal } from "../../../../design-system/primitives/ConfirmModal";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 export interface TaxonomyImportExportTabProps {
   onImportSuccess: () => void;
 }
 
-export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = ({
-  onImportSuccess,
-}) => {
+export const TaxonomyImportExportTab: React.FC<
+  TaxonomyImportExportTabProps
+> = ({ onImportSuccess }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
 
-  const [importJson, setImportJson] = useState('');
+  const [importJson, setImportJson] = useState("");
   const [importResult, setImportResult] = useState<{
     success: boolean;
     newCount: number;
@@ -31,41 +40,52 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
 
   const handleExport = () => {
     const jsonStr = taxonomyAdminRepository.exportTaxonomyJSON();
-    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `shongre-taxonomy-export-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Fichier JSON de taxonomie exporté avec succès.');
+    toast.success("Fichier JSON de taxonomie exporté avec succès.");
   };
 
   const handleImport = () => {
     if (!importJson.trim()) {
-      toast.error('Veuillez coller le contenu JSON de taxonomie.');
+      toast.error("Veuillez coller le contenu JSON de taxonomie.");
       return;
     }
 
     const actor = currentUser
-      ? { id: currentUser.id, name: currentUser.name || 'Admin', role: currentUser.role }
+      ? {
+          id: currentUser.id,
+          name: currentUser.name || "Admin",
+          role: currentUser.role,
+        }
       : undefined;
-    const result = taxonomyAdminRepository.importTaxonomyJSON(importJson, actor);
+    const result = taxonomyAdminRepository.importTaxonomyJSON(
+      importJson,
+      actor,
+    );
     setImportResult(result);
 
     if (result.success) {
       toast.success(`Import réussi : ${result.newCount} rubriques chargées.`);
       onImportSuccess();
     } else {
-      toast.error(`Erreur d'import : ${result.errors.length} anomalie(s) détectée(s).`);
+      toast.error(
+        `Erreur d'import : ${result.errors.length} anomalie(s) détectée(s).`,
+      );
     }
   };
 
   const handleResetToBaseline = async () => {
     await taxonomyAdminRepository.resetToCanonical();
-    toast.success('Taxonomie réinitialisée sur le baseline canonique d\'origine.');
+    toast.success(
+      "Taxonomie réinitialisée sur le baseline canonique d'origine.",
+    );
     setIsResetModalOpen(false);
     onImportSuccess();
   };
@@ -78,9 +98,15 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
           <div>
             <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
               <Download className="w-5 h-5 text-primary" />
-              <span>{t('admin.taxonomyImportExportTab.exporterLaTaxonomieCanoniqueJson')}</span>
+              <span>
+                {t(
+                  "admin.taxonomyImportExportTab.exporterLaTaxonomieCanoniqueJson",
+                )}
+              </span>
             </h3>
-            <p className="text-xs text-stone-500 mt-1">{t('admin.taxonomyImportExportTab.generezUnExportCompletEt')}</p>
+            <p className="text-xs text-stone-500 mt-1">
+              {t("admin.taxonomyImportExportTab.generezUnExportCompletEt")}
+            </p>
           </div>
 
           <Button
@@ -88,7 +114,9 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
             size="sm"
             onClick={handleExport}
             leftIcon={<Download className="w-4 h-4" />}
-          >{t('admin.taxonomyImportExportTab.telechargerLExportJson')}</Button>
+          >
+            {t("admin.taxonomyImportExportTab.telechargerLExportJson")}
+          </Button>
         </div>
       </div>
 
@@ -97,12 +125,20 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <Upload className="w-5 h-5 text-primary" />
-            <span>{t('admin.taxonomyImportExportTab.importerUneArborescenceExterne')}</span>
+            <span>
+              {t(
+                "admin.taxonomyImportExportTab.importerUneArborescenceExterne",
+              )}
+            </span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">{t('admin.taxonomyImportExportTab.collezLeSchemaJsonA')}</p>
+          <p className="text-xs text-stone-500 mt-1">
+            {t("admin.taxonomyImportExportTab.collezLeSchemaJsonA")}
+          </p>
         </div>
 
-        <FormField label={t('admin.taxonomyImportExportTab.contenuJsonDeTaxonomie')}>
+        <FormField
+          label={t("admin.taxonomyImportExportTab.contenuJsonDeTaxonomie")}
+        >
           <Textarea
             rows={8}
             value={importJson}
@@ -116,8 +152,8 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
           <div
             className={`p-4 rounded-xl border text-xs space-y-2 ${
               importResult.success
-                ? 'bg-success-surface border-success-border text-success'
-                : 'bg-danger-surface border-danger-border text-danger'
+                ? "bg-success-surface border-success-border text-success"
+                : "bg-danger-surface border-danger-border text-danger"
             }`}
           >
             <div className="flex items-center gap-2 font-bold">
@@ -126,7 +162,11 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
               ) : (
                 <AlertOctagon className="w-4 h-4 text-danger" />
               )}
-              <span>{importResult.success ? 'Rapport d\'import validé' : 'Échec de validation de l\'import'}</span>
+              <span>
+                {importResult.success
+                  ? "Rapport d'import validé"
+                  : "Échec de validation de l'import"}
+              </span>
             </div>
             {importResult.errors.length > 0 && (
               <ul className="list-disc list-inside space-y-1">
@@ -144,7 +184,11 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
             size="sm"
             onClick={() => setIsResetModalOpen(true)}
             leftIcon={<RotateCcw className="w-3.5 h-3.5 text-stone-500" />}
-          >{t('admin.taxonomyImportExportTab.reinitialiserSurLeBaselineCanonique')}</Button>
+          >
+            {t(
+              "admin.taxonomyImportExportTab.reinitialiserSurLeBaselineCanonique",
+            )}
+          </Button>
 
           <Button
             variant="primary"
@@ -162,7 +206,9 @@ export const TaxonomyImportExportTab: React.FC<TaxonomyImportExportTabProps> = (
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
         onConfirm={handleResetToBaseline}
-        title={t('admin.taxonomyImportExportTab.reinitialiserLaTaxonomieDOrigine')}
+        title={t(
+          "admin.taxonomyImportExportTab.reinitialiserLaTaxonomieDOrigine",
+        )}
         message="Cette action supprimera toutes les modifications locales et restaurera les 16 univers canoniques initiaux de Shongre."
         confirmText="Réinitialiser"
         variant="danger"

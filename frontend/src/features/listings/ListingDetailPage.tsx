@@ -1,5 +1,11 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Heart,
   Share2,
@@ -11,54 +17,65 @@ import {
   MessageSquare,
   DollarSign,
   ShoppingBag,
-  
   CheckCircle2,
-  
   Send,
-  
   Edit3,
   Sliders,
-  
   Sparkles,
-  Star
-} from 'lucide-react';
-import { routes } from '../../configuration/routes';
-import { listingRepository } from '../../repositories/listing.repository';
-import { userRepository } from '../../repositories/user.repository';
-import { messagingRepository } from '../../repositories/messaging.repository';
-import { Listing, UserProfile, Transaction } from '../../types';
-import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
-import { marketService } from '../../domains/market/market.service';
-import { transactionCapabilitiesService } from '../../domains/transaction/transaction.capabilities';
-import { listingDisplayResolver } from '../../domains/listing/listing.display';
-import { listingActionsResolver } from '../../domains/listing/listing.actions';
-import { formatPrice, formatRelativeDate, calculateBuyerFee, plural } from '../../utilities/formatters';
-import { Breadcrumbs, PriceDisplay } from '../../design-system';
-import { Button } from '../../design-system/primitives/Button';
-import { StatePanel } from '../../design-system/primitives/StatePanel';
-import { Badge } from '../../design-system/primitives/Badge';
-import { Modal } from '../../design-system/primitives/Modal';
-import { Input, Textarea, FormField } from '../../design-system/primitives/FormField';
-import { ListingCard } from '../../design-system/primitives/ListingCard';
-import { ListingRail } from '../../design-system/primitives/ListingRail';
-import { Image } from '../../design-system/primitives/Image';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { useToast } from '../../app/providers/ToastProvider';
-import { useFavorites } from '../../app/providers/FavoritesProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
-import { buildBreadcrumbSchema, StructuredData } from '../../services/seo.service';
-import { storageService } from '../../services/storage.service';
-import { isProSeller } from '../../domains/user/user.domain';
-import { DirectPurchaseCheckoutModal } from '../transactions/DirectPurchaseCheckoutModal';
-import { ReservationCheckoutModal } from '../transactions/components/ReservationCheckoutModal';
-import { ListingMediaGallery } from './components/ListingMediaGallery';
-import { ListingCharacteristics } from './components/ListingCharacteristics';
-import { DropdownMenu } from '../../design-system/primitives/DropdownMenu';
-import { ListingFulfillmentSummary } from './components/ListingFulfillmentSummary';
-import { ListingSellerTrustSection } from './components/ListingSellerTrustSection';
-import { ListingSafetyNotice } from './components/ListingSafetyNotice';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { getListingCategoryLabel, getListingSubCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
+  Star,
+} from "lucide-react";
+import { routes } from "../../configuration/routes";
+import { listingRepository } from "../../repositories/listing.repository";
+import { userRepository } from "../../repositories/user.repository";
+import { messagingRepository } from "../../repositories/messaging.repository";
+import { Listing, UserProfile, Transaction } from "../../types";
+import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { marketService } from "../../domains/market/market.service";
+import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
+import { listingDisplayResolver } from "../../domains/listing/listing.display";
+import { listingActionsResolver } from "../../domains/listing/listing.actions";
+import {
+  formatPrice,
+  formatRelativeDate,
+  calculateBuyerFee,
+  plural,
+} from "../../utilities/formatters";
+import { Breadcrumbs, PriceDisplay } from "../../design-system";
+import { Button } from "../../design-system/primitives/Button";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
+import { Badge } from "../../design-system/primitives/Badge";
+import { Modal } from "../../design-system/primitives/Modal";
+import {
+  Input,
+  Textarea,
+  FormField,
+} from "../../design-system/primitives/FormField";
+import { ListingCard } from "../../design-system/primitives/ListingCard";
+import { ListingRail } from "../../design-system/primitives/ListingRail";
+import { Image } from "../../design-system/primitives/Image";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useToast } from "../../app/providers/ToastProvider";
+import { useFavorites } from "../../app/providers/FavoritesProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import {
+  buildBreadcrumbSchema,
+  StructuredData,
+} from "../../services/seo.service";
+import { storageService } from "../../services/storage.service";
+import { isProSeller } from "../../domains/user/user.domain";
+import { DirectPurchaseCheckoutModal } from "../transactions/DirectPurchaseCheckoutModal";
+import { ReservationCheckoutModal } from "../transactions/components/ReservationCheckoutModal";
+import { ListingMediaGallery } from "./components/ListingMediaGallery";
+import { ListingCharacteristics } from "./components/ListingCharacteristics";
+import { DropdownMenu } from "../../design-system/primitives/DropdownMenu";
+import { ListingFulfillmentSummary } from "./components/ListingFulfillmentSummary";
+import { ListingSellerTrustSection } from "./components/ListingSellerTrustSection";
+import { ListingSafetyNotice } from "./components/ListingSafetyNotice";
+import { useTranslation } from "../../i18n/I18nProvider";
+import {
+  getListingCategoryLabel,
+  getListingSubCategoryLabel,
+} from "../../domains/taxonomy/taxonomy.display";
 
 export const ListingDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -75,17 +92,18 @@ export const ListingDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal Dialog States
-  const [isDirectPurchaseModalOpen, setIsDirectPurchaseModalOpen] = useState(false);
+  const [isDirectPurchaseModalOpen, setIsDirectPurchaseModalOpen] =
+    useState(false);
   const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Form Fields
-  const [messageText, setMessageText] = useState('');
-  const [offerPrice, setOfferPrice] = useState('');
-  const [reportReason, setReportReason] = useState('suspicious');
-  const [reportDetails, setReportDetails] = useState('');
+  const [messageText, setMessageText] = useState("");
+  const [offerPrice, setOfferPrice] = useState("");
+  const [reportReason, setReportReason] = useState("suspicious");
+  const [reportDetails, setReportDetails] = useState("");
 
   // 1. Data Fetching
   useEffect(() => {
@@ -109,7 +127,9 @@ export const ListingDetailPage: React.FC = () => {
         listingRepository
           .getListings({ categorySlug: item.categorySlug, limit: 5 })
           .then((res) => {
-            setSimilarListings(res.listings.filter((l) => l.id !== item.id).slice(0, 4));
+            setSimilarListings(
+              res.listings.filter((l) => l.id !== item.id).slice(0, 4),
+            );
           });
       }
       setIsLoading(false);
@@ -119,20 +139,32 @@ export const ListingDetailPage: React.FC = () => {
   // 2. Taxonomy & Market resolution
   const taxonomyNode = useMemo(() => {
     if (!listing) return null;
-    return taxonomyService.getNode(listing.subCategorySlug) || taxonomyService.getNode(listing.categorySlug);
+    return (
+      taxonomyService.getNode(listing.subCategorySlug) ||
+      taxonomyService.getNode(listing.categorySlug)
+    );
   }, [listing]);
 
   const effectiveMarket = useMemo(() => {
-    const marketCode = listing?.marketCode || storageService.getActiveMarketCode() || 'FR';
+    const marketCode =
+      listing?.marketCode || storageService.getActiveMarketCode() || "FR";
     return marketService.getEffectiveConfig(marketCode);
   }, [listing]);
 
-  const displayCategoryLabel = listing ? getListingCategoryLabel(listing) : '';
-  const displaySubCategoryLabel = listing ? getListingSubCategoryLabel(listing) : '';
+  const displayCategoryLabel = listing ? getListingCategoryLabel(listing) : "";
+  const displaySubCategoryLabel = listing
+    ? getListingSubCategoryLabel(listing)
+    : "";
 
   // 3. Capabilities & Actions Resolution
   const transactionCaps = useMemo(() => {
-    if (!listing) return { canContact: true, canDirectPurchase: false, canReserve: false, defaultModes: ['CONTACT_ONLY' as const] };
+    if (!listing)
+      return {
+        canContact: true,
+        canDirectPurchase: false,
+        canReserve: false,
+        defaultModes: ["CONTACT_ONLY" as const],
+      };
     return transactionCapabilitiesService.resolve({
       taxonomyNodeId: listing.subCategorySlug || listing.categorySlug,
       marketCode: listing.marketCode,
@@ -147,7 +179,7 @@ export const ListingDetailPage: React.FC = () => {
       return {
         isOwner: false,
         ownerActions: [],
-        primaryAction: 'none' as const,
+        primaryAction: "none" as const,
         canDirectPurchase: false,
         canReserve: false,
         canContact: false,
@@ -177,20 +209,23 @@ export const ListingDetailPage: React.FC = () => {
     const node = actionBarRef.current;
     const root = document.documentElement;
     if (!node) {
-      root.style.removeProperty('--page-bottom-inset');
+      root.style.removeProperty("--page-bottom-inset");
       return;
     }
     const publish = () => {
       // The bar is `lg:hidden`, so above `lg` it measures 0 and reserves nothing.
       const height = node.getBoundingClientRect().height;
-      root.style.setProperty('--page-bottom-inset', height > 0 ? `${Math.ceil(height)}px` : '0px');
+      root.style.setProperty(
+        "--page-bottom-inset",
+        height > 0 ? `${Math.ceil(height)}px` : "0px",
+      );
     };
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(node);
     return () => {
       observer.disconnect();
-      root.style.removeProperty('--page-bottom-inset');
+      root.style.removeProperty("--page-bottom-inset");
     };
   });
 
@@ -216,28 +251,36 @@ export const ListingDetailPage: React.FC = () => {
    * with the first row (Offre/Réserver) instead of stacking two full-width
    * controls below it.
    */
-  const mobileActionClass = (action: 'offer' | 'reservation' | 'contact' | 'direct_purchase') => {
-    if (mobileActionCount === 4) return '';
+  const mobileActionClass = (
+    action: "offer" | "reservation" | "contact" | "direct_purchase",
+  ) => {
+    if (mobileActionCount === 4) return "";
     const isPrimary = actions.primaryAction === action;
-    if (mobileActionCount <= 2) return '';
+    if (mobileActionCount <= 2) return "";
 
     const classes = [
-      isPrimary ? 'col-span-2' : '',
-      isPrimary ? 'order-last' : '',
+      isPrimary ? "col-span-2" : "",
+      isPrimary ? "order-last" : "",
     ];
 
-    return classes.filter(Boolean).join(' ');
+    return classes.filter(Boolean).join(" ");
   };
 
   // 4. Characteristics & Summary derivation
   const summaryAttributes = useMemo(() => {
     if (!listing) return [];
-    return listingDisplayResolver.resolveSummaryAttributes(listing, taxonomyNode);
+    return listingDisplayResolver.resolveSummaryAttributes(
+      listing,
+      taxonomyNode,
+    );
   }, [listing, taxonomyNode]);
 
   const groupedCharacteristics = useMemo(() => {
     if (!listing) return [];
-    return listingDisplayResolver.resolveGroupedCharacteristics(listing, taxonomyNode);
+    return listingDisplayResolver.resolveGroupedCharacteristics(
+      listing,
+      taxonomyNode,
+    );
   }, [listing, taxonomyNode]);
 
   // 5. SEO metadata
@@ -254,11 +297,16 @@ export const ListingDetailPage: React.FC = () => {
       taxonomyNode,
       effectiveMarket,
     );
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const trail = [
-      { name: 'Accueil', path: '/' },
+      { name: "Accueil", path: "/" },
       ...(listing.categoryLabel
-        ? [{ name: listing.categoryLabel, path: `/categorie/${listing.categorySlug}` }]
+        ? [
+            {
+              name: listing.categoryLabel,
+              path: `/categorie/${listing.categorySlug}`,
+            },
+          ]
         : []),
       { name: listing.title },
     ];
@@ -268,9 +316,9 @@ export const ListingDetailPage: React.FC = () => {
       description: meta.description,
       canonicalPath: `/annonce/${listing.id}`,
       image: listing.coverImageUrl,
-      type: 'product' as const,
+      type: "product" as const,
       // A sold or expired listing should stop competing in search results.
-      noIndex: listing.status !== 'active',
+      noIndex: listing.status !== "active",
       structuredData: [
         meta.jsonLd as unknown as StructuredData,
         buildBreadcrumbSchema(trail, origin),
@@ -293,10 +341,16 @@ export const ListingDetailPage: React.FC = () => {
     if (!listing) return;
     try {
       const next = await toggleFavorite(listing.id);
-      toast.info(next ? 'Annonce ajoutée à vos favoris' : 'Annonce retirée de vos favoris');
+      toast.info(
+        next
+          ? "Annonce ajoutée à vos favoris"
+          : "Annonce retirée de vos favoris",
+      );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Impossible de mettre à jour vos favoris.',
+        error instanceof Error
+          ? error.message
+          : "Impossible de mettre à jour vos favoris.",
       );
     }
   };
@@ -307,14 +361,16 @@ export const ListingDetailPage: React.FC = () => {
       navigator.share({ title: listing.title, url: window.location.href });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success('Le lien de l\'annonce a été copié dans votre presse-papiers.');
+      toast.success(
+        "Le lien de l'annonce a été copié dans votre presse-papiers.",
+      );
     }
   };
 
   const handleSendMessage = async () => {
     if (!listing || !messageText.trim()) return;
-    const buyerId = currentUser ? currentUser.id : 'guest-user';
-    const buyerName = currentUser ? currentUser.name : 'Visiteur';
+    const buyerId = currentUser ? currentUser.id : "guest-user";
+    const buyerName = currentUser ? currentUser.name : "Visiteur";
 
     await messagingRepository.createOrGetConversation({
       listingId: listing.id,
@@ -326,21 +382,21 @@ export const ListingDetailPage: React.FC = () => {
     });
 
     setIsContactModalOpen(false);
-    setMessageText('');
-    toast.success('Votre message a bien été envoyé au vendeur !');
-    navigate('/compte/messages');
+    setMessageText("");
+    toast.success("Votre message a bien été envoyé au vendeur !");
+    navigate("/compte/messages");
   };
 
   const handleSendOffer = async () => {
     if (!listing) return;
     const numPrice = Number(offerPrice);
     if (isNaN(numPrice) || numPrice <= 0) {
-      toast.error('Veuillez entrer un montant valide.');
+      toast.error("Veuillez entrer un montant valide.");
       return;
     }
 
-    const buyerId = currentUser ? currentUser.id : 'user-thomas';
-    const buyerName = currentUser ? currentUser.name : 'Thomas Laurent';
+    const buyerId = currentUser ? currentUser.id : "user-thomas";
+    const buyerName = currentUser ? currentUser.name : "Thomas Laurent";
 
     const conv = await messagingRepository.createOrGetConversation({
       listingId: listing.id,
@@ -359,9 +415,11 @@ export const ListingDetailPage: React.FC = () => {
     });
 
     setIsOfferModalOpen(false);
-    setOfferPrice('');
-    toast.success(`Votre offre de ${formatPrice(numPrice)} a été transmise au vendeur.`);
-    navigate('/compte/messages');
+    setOfferPrice("");
+    toast.success(
+      `Votre offre de ${formatPrice(numPrice)} a été transmise au vendeur.`,
+    );
+    navigate("/compte/messages");
   };
 
   // Loading skeleton state
@@ -385,16 +443,22 @@ export const ListingDetailPage: React.FC = () => {
   if (!listing) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="sr-only">{t('listings.listingDetailPage.annonceIntrouvable')}</h1>
+        <h1 className="sr-only">
+          {t("listings.listingDetailPage.annonceIntrouvable")}
+        </h1>
         <StatePanel
           variant="notFound"
-          title={t('listings.listingDetailPage.annonceIntrouvableOuSupprimee')}
-          description={t('listings.listingDetailPage.cetteAnnonceNEstPlus')}
+          title={t("listings.listingDetailPage.annonceIntrouvableOuSupprimee")}
+          description={t("listings.listingDetailPage.cetteAnnonceNEstPlus")}
           action={
-            <Button variant="primary" onClick={() => navigate(routes.search())}>{t('listings.listingDetailPage.explorerLesAnnoncesSimilaires')}</Button>
+            <Button variant="primary" onClick={() => navigate(routes.search())}>
+              {t("listings.listingDetailPage.explorerLesAnnoncesSimilaires")}
+            </Button>
           }
           secondaryAction={
-            <Button variant="outline" onClick={() => navigate('/')}>{t('listings.listingDetailPage.retourALAccueil')}</Button>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              {t("listings.listingDetailPage.retourALAccueil")}
+            </Button>
           }
         />
       </div>
@@ -404,12 +468,19 @@ export const ListingDetailPage: React.FC = () => {
   const buyerFee = calculateBuyerFee(listing.price);
   // Buyer protection only applies to online payment, so it is the only case where
   // the price shown to the buyer differs from the amount they actually pay.
-  const showsBuyerFee = Boolean(listing.isOnlinePaymentAvailable) && listing.price > 0;
+  const showsBuyerFee =
+    Boolean(listing.isOnlinePaymentAvailable) && listing.price > 0;
   const breadcrumbItems = [
-    { label: 'Accueil', href: '/' },
+    { label: "Accueil", href: "/" },
     { label: displayCategoryLabel, href: `/categorie/${listing.categorySlug}` },
-    ...(displaySubCategoryLabel && displaySubCategoryLabel !== displayCategoryLabel
-      ? [{ label: displaySubCategoryLabel, href: `/categorie/${listing.categorySlug}?sub=${listing.subCategorySlug}` }]
+    ...(displaySubCategoryLabel &&
+    displaySubCategoryLabel !== displayCategoryLabel
+      ? [
+          {
+            label: displaySubCategoryLabel,
+            href: `/categorie/${listing.categorySlug}?sub=${listing.subCategorySlug}`,
+          },
+        ]
       : []),
     { label: listing.title },
   ];
@@ -424,7 +495,7 @@ export const ListingDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={handleShare}
-            aria-label={t('listings.listingDetailPage.partagerLAnnonce')}
+            aria-label={t("listings.listingDetailPage.partagerLAnnonce")}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -433,7 +504,7 @@ export const ListingDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsReportModalOpen(true)}
-            aria-label={t('listings.listingDetailPage.signalerCetteAnnonce')}
+            aria-label={t("listings.listingDetailPage.signalerCetteAnnonce")}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-danger bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Flag className="w-3.5 h-3.5" />
@@ -444,12 +515,10 @@ export const ListingDetailPage: React.FC = () => {
 
       {/* Main Grid: Left Column (Gallery + Details) / Right Column (Action Panel) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         {/* ========================================================================= */}
         {/* LEFT COLUMN: Media, Primary Summary, Characteristics, Description, Seller */}
         {/* ========================================================================= */}
         <div className="lg:col-span-8 space-y-6">
-          
           {/* 1. MEDIA GALLERY */}
           <ListingMediaGallery photos={listing.photos} title={listing.title} />
 
@@ -457,16 +526,24 @@ export const ListingDetailPage: React.FC = () => {
           <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm relative overflow-hidden">
             {/* Subtle background glow */}
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-            
+
             <div className="flex items-start justify-between gap-4 relative z-raised">
               <div className="space-y-2 flex-1">
                 {/* Badges strip: Category, Pro, Boosted */}
                 <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <Badge variant="primary" size="md">{displayCategoryLabel}</Badge>
-                  {isProSeller(listing) && <Badge variant="pro" size="md">{t('listings.listingDetailPage.vendeurPro')}</Badge>}
+                  <Badge variant="primary" size="md">
+                    {displayCategoryLabel}
+                  </Badge>
+                  {isProSeller(listing) && (
+                    <Badge variant="pro" size="md">
+                      {t("listings.listingDetailPage.vendeurPro")}
+                    </Badge>
+                  )}
                   {listing.isBoosted && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
-                      <Sparkles className="w-3.5 h-3.5 text-warning" />{t('listings.listingDetailPage.aLaUne')}</span>
+                      <Sparkles className="w-3.5 h-3.5 text-warning" />
+                      {t("listings.listingDetailPage.aLaUne")}
+                    </span>
                   )}
                 </div>
 
@@ -480,10 +557,16 @@ export const ListingDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleFavoriteToggle}
-                aria-label={isListingFavorite(listing.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                aria-label={
+                  isListingFavorite(listing.id)
+                    ? "Retirer des favoris"
+                    : "Ajouter aux favoris"
+                }
                 className="p-3.5 rounded-2xl bg-white hover:bg-primary/5 text-stone-400 hover:text-primary transition-all duration-fast cursor-pointer shrink-0 border border-stone-200 shadow-xs hover:shadow-sm hover:-translate-y-0.5 group"
               >
-                <Heart className={`w-6 h-6 transition-all duration-fast ${isListingFavorite(listing.id) ? 'fill-primary text-primary scale-110' : 'group-hover:scale-110'}`} />
+                <Heart
+                  className={`w-6 h-6 transition-all duration-fast ${isListingFavorite(listing.id) ? "fill-primary text-primary scale-110" : "group-hover:scale-110"}`}
+                />
               </button>
             </div>
 
@@ -535,7 +618,9 @@ export const ListingDetailPage: React.FC = () => {
             </h2>
             <div
               className={`text-sm text-stone-600 leading-loose whitespace-pre-line font-medium ${
-                !isDescriptionExpanded && listing.description.length > 450 ? 'line-clamp-6 relative' : ''
+                !isDescriptionExpanded && listing.description.length > 450
+                  ? "line-clamp-6 relative"
+                  : ""
               }`}
             >
               {listing.description}
@@ -550,7 +635,7 @@ export const ListingDetailPage: React.FC = () => {
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                 className="text-sm font-bold text-primary hover:text-primary-hover hover:underline pt-2 cursor-pointer transition-colors"
               >
-                {isDescriptionExpanded ? 'Afficher moins' : 'Afficher la suite'}
+                {isDescriptionExpanded ? "Afficher moins" : "Afficher la suite"}
               </button>
             )}
           </div>
@@ -559,24 +644,29 @@ export const ListingDetailPage: React.FC = () => {
           <ListingFulfillmentSummary listing={listing} />
 
           {/* 6. COMPACT SELLER IDENTITY & TRUST */}
-          {seller && (
-            <ListingSellerTrustSection
-              seller={seller}
-              reviews={[]}
-            />
-          )}
+          {seller && <ListingSellerTrustSection seller={seller} reviews={[]} />}
 
           {/* 7. SAFETY REASSURANCE NOTICE */}
-          <ListingSafetyNotice isOnlinePaymentAvailable={listing.isOnlinePaymentAvailable} />
+          <ListingSafetyNotice
+            isOnlinePaymentAvailable={listing.isOnlinePaymentAvailable}
+          />
 
           {/* 8. LISTING BOTTOM METADATA */}
           <div className="p-4 rounded-xl bg-bg-base/60 text-micro text-stone-500 flex items-center justify-between flex-wrap gap-2 border border-border-subtle">
-            <span>{t('listings.listingDetailPage.referenceAnnonce')} <strong className="font-mono text-stone-700">{listing.id}</strong></span>
+            <span>
+              {t("listings.listingDetailPage.referenceAnnonce")}{" "}
+              <strong className="font-mono text-stone-700">{listing.id}</strong>
+            </span>
             <Link
               to={`/contact?context=listing&listingId=${listing.id}`}
               className="text-primary hover:underline font-bold inline-flex items-center gap-1"
-            >{t('listings.listingDetailPage.signalerOuDemanderDeL')}</Link>
-            <span>Dernière mise à jour : {formatRelativeDate(listing.updatedAt || listing.createdAt)}</span>
+            >
+              {t("listings.listingDetailPage.signalerOuDemanderDeL")}
+            </Link>
+            <span>
+              Dernière mise à jour :{" "}
+              {formatRelativeDate(listing.updatedAt || listing.createdAt)}
+            </span>
           </div>
         </div>
 
@@ -585,7 +675,6 @@ export const ListingDetailPage: React.FC = () => {
         {/* ========================================================================= */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-6 shadow-md sticky top-24">
-            
             {/* Price Box — the item price only.
                 The fee breakdown that used to sit here was removed for two
                 reasons. It quoted `calculateBuyerFee` (4% + 0.70 €), while
@@ -596,7 +685,9 @@ export const ListingDetailPage: React.FC = () => {
                 point. The fee is disclosed, itemised, in the checkout and
                 reservation flows where the amount is actually known. */}
             <div className="space-y-1">
-              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">{t('listings.listingDetailPage.prixDeLArticle')}</span>
+              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
+                {t("listings.listingDetailPage.prixDeLArticle")}
+              </span>
               <PriceDisplay
                 price={listing.price}
                 originalPrice={listing.originalPrice}
@@ -606,7 +697,11 @@ export const ListingDetailPage: React.FC = () => {
               />
               {listing.isOnlinePaymentAvailable && listing.price > 0 && (
                 <p className="flex items-center gap-1.5 text-xs text-stone-500 pt-1.5">
-                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />{t('listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu')}</p>
+                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+                  {t(
+                    "listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu",
+                  )}
+                </p>
               )}
             </div>
 
@@ -616,7 +711,11 @@ export const ListingDetailPage: React.FC = () => {
                 decision. */}
             {seller && (
               <Link
-                to={isProSeller(seller) ? `/boutique/${seller.storeSlug || seller.slug || seller.id}` : `/profil/${seller.slug || seller.id}`}
+                to={
+                  isProSeller(seller)
+                    ? `/boutique/${seller.storeSlug || seller.slug || seller.id}`
+                    : `/profil/${seller.slug || seller.id}`
+                }
                 className="group flex items-start gap-3 p-4 rounded-2xl border border-stone-200/60 bg-stone-50/60 hover:bg-stone-50 hover:border-stone-300 transition-colors"
               >
                 <div className="relative shrink-0">
@@ -641,7 +740,11 @@ export const ListingDetailPage: React.FC = () => {
                     <span className="font-bold text-sm text-stone-900 truncate group-hover:text-primary transition-colors">
                       {seller.name}
                     </span>
-                    {isProSeller(seller) && <Badge variant="pro" size="sm">Pro</Badge>}
+                    {isProSeller(seller) && (
+                      <Badge variant="pro" size="sm">
+                        Pro
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1 flex-wrap">
@@ -650,11 +753,13 @@ export const ListingDetailPage: React.FC = () => {
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                         {seller.rating.toFixed(1)}
                         <span className="font-normal text-stone-500">
-                          ({plural(seller.reviewCount || 0, 'avis', 'avis')})
+                          ({plural(seller.reviewCount || 0, "avis", "avis")})
                         </span>
                       </span>
                     )}
-                    {seller.rating > 0 && seller.city && <span aria-hidden="true">·</span>}
+                    {seller.rating > 0 && seller.city && (
+                      <span aria-hidden="true">·</span>
+                    )}
                     {seller.city && (
                       <span className="flex items-center gap-1 truncate">
                         <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
@@ -675,7 +780,9 @@ export const ListingDetailPage: React.FC = () => {
               <div className="p-5 bg-primary/5 border border-primary/20 rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <Edit3 className="w-4 h-4" />
-                  <span>{t('listings.listingDetailPage.vousEtesLAuteurDe')}</span>
+                  <span>
+                    {t("listings.listingDetailPage.vousEtesLAuteurDe")}
+                  </span>
                 </div>
                 <div className="space-y-2">
                   <Button
@@ -684,14 +791,18 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     fullWidth
                     leftIcon={<Edit3 className="w-4 h-4" />}
-                  >{t('listings.listingDetailPage.modifierMonAnnonce')}</Button>
+                  >
+                    {t("listings.listingDetailPage.modifierMonAnnonce")}
+                  </Button>
                   <Button
                     to="/compte/annonces"
                     variant="outline"
                     size="md"
                     fullWidth
                     leftIcon={<Sliders className="w-4 h-4" />}
-                  >{t('listings.listingDetailPage.gererMesAnnoncesStats')}</Button>
+                  >
+                    {t("listings.listingDetailPage.gererMesAnnoncesStats")}
+                  </Button>
                 </div>
               </div>
             ) : actions.statusNotice ? (
@@ -747,17 +858,25 @@ export const ListingDetailPage: React.FC = () => {
                 {/* 2. Reservation (Secondary or Primary CTA if available) */}
                 {actions.canReserve && (
                   <Button
-                    variant={actions.primaryAction === 'reservation' ? 'primary' : 'outline'}
+                    variant={
+                      actions.primaryAction === "reservation"
+                        ? "primary"
+                        : "outline"
+                    }
                     size="md"
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
                     leftIcon={<Clock className="w-5 h-5 text-warning" />}
-                  >{t('listings.listingDetailPage.reserverLArticle')}</Button>
+                  >
+                    {t("listings.listingDetailPage.reserverLArticle")}
+                  </Button>
                 )}
 
                 <div
                   className={`grid gap-3 pt-1 ${
-                    actions.canMakeOffer && actions.canContact ? 'grid-cols-2' : 'grid-cols-1'
+                    actions.canMakeOffer && actions.canContact
+                      ? "grid-cols-2"
+                      : "grid-cols-1"
                   }`}
                 >
                   {/* 3. Price Negotiation Offer */}
@@ -774,10 +893,10 @@ export const ListingDetailPage: React.FC = () => {
                           rendered clipped mid-word. The pinned buy bar already
                           uses the short form, so they now agree. */}
                       <span className="sm:hidden">
-                        {t('listings.listingDetailPage.offreDePrixCourt')}
+                        {t("listings.listingDetailPage.offreDePrixCourt")}
                       </span>
                       <span className="hidden sm:inline">
-                        {t('listings.listingDetailPage.offreDePrix')}
+                        {t("listings.listingDetailPage.offreDePrix")}
                       </span>
                     </Button>
                   )}
@@ -785,12 +904,18 @@ export const ListingDetailPage: React.FC = () => {
                   {/* 4. Direct Contact Message */}
                   {actions.canContact && (
                     <Button
-                      variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
+                      variant={
+                        actions.primaryAction === "contact"
+                          ? "primary"
+                          : "secondary"
+                      }
                       size="md"
                       fullWidth
                       onClick={() => setIsContactModalOpen(true)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
-                    >{t('listings.listingDetailPage.message')}</Button>
+                    >
+                      {t("listings.listingDetailPage.message")}
+                    </Button>
                   )}
                 </div>
               </div>
@@ -809,19 +934,25 @@ export const ListingDetailPage: React.FC = () => {
               <h2 className="text-lg sm:text-xl font-black text-stone-900">
                 Annonces similaires dans {displayCategoryLabel}
               </h2>
-              <p className="text-xs text-stone-500">{t('listings.listingDetailPage.selectionDArticlesRecommandesSelon')}</p>
+              <p className="text-xs text-stone-500">
+                {t(
+                  "listings.listingDetailPage.selectionDArticlesRecommandesSelon",
+                )}
+              </p>
             </div>
 
             <Link
               to={`/categorie/${listing.categorySlug}`}
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
-              <span>{t('listings.listingDetailPage.voirTout')}</span>
+              <span>{t("listings.listingDetailPage.voirTout")}</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <ListingRail label={t('listings.listingDetailPage.annoncesSimilaires')}>
+          <ListingRail
+            label={t("listings.listingDetailPage.annoncesSimilaires")}
+          >
             {similarListings.map((simListing) => (
               <ListingCard key={simListing.id} listing={simListing} />
             ))}
@@ -832,7 +963,7 @@ export const ListingDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL DIALOGS */}
       {/* ========================================================================= */}
-      
+
       {/* 1. Direct Purchase Checkout Modal (Standalone, 0 reservation requirement) */}
       {isDirectPurchaseModalOpen && (
         <DirectPurchaseCheckoutModal
@@ -840,7 +971,7 @@ export const ListingDetailPage: React.FC = () => {
           onClose={() => setIsDirectPurchaseModalOpen(false)}
           listing={listing}
           onSuccess={() => {
-            setListing((prev) => (prev ? { ...prev, status: 'sold' } : null));
+            setListing((prev) => (prev ? { ...prev, status: "sold" } : null));
           }}
         />
       )}
@@ -853,8 +984,12 @@ export const ListingDetailPage: React.FC = () => {
           listing={listing}
           currentUser={currentUser}
           onReservationComplete={(_tx: Transaction) => {
-            setListing((prev) => (prev ? { ...prev, status: 'reserved' } : null));
-            toast.success('Réservation enregistrée et fonds placés sous séquestre !');
+            setListing((prev) =>
+              prev ? { ...prev, status: "reserved" } : null,
+            );
+            toast.success(
+              "Réservation enregistrée et fonds placés sous séquestre !",
+            );
           }}
         />
       )}
@@ -867,20 +1002,36 @@ export const ListingDetailPage: React.FC = () => {
         description={`À propos de "${listing.title}" (${formatPrice(listing.price)})`}
       >
         <div className="space-y-4 text-xs">
-          <FormField label={t('listings.listingDetailPage.votreMessage')} required>
+          <FormField
+            label={t("listings.listingDetailPage.votreMessage")}
+            required
+          >
             <Textarea
               rows={4}
-              placeholder={t('listings.listingDetailPage.bonjourVotreArticleMInteresse')}
+              placeholder={t(
+                "listings.listingDetailPage.bonjourVotreArticleMInteresse",
+              )}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
             />
           </FormField>
 
           <div className="flex gap-2">
-            <Button variant="outline" fullWidth onClick={() => setIsContactModalOpen(false)}>
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => setIsContactModalOpen(false)}
+            >
               Annuler
             </Button>
-            <Button variant="primary" fullWidth onClick={handleSendMessage} leftIcon={<Send className="w-4 h-4" />}>{t('listings.listingDetailPage.envoyerLeMessage')}</Button>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={handleSendMessage}
+              leftIcon={<Send className="w-4 h-4" />}
+            >
+              {t("listings.listingDetailPage.envoyerLeMessage")}
+            </Button>
           </div>
         </div>
       </Modal>
@@ -889,11 +1040,14 @@ export const ListingDetailPage: React.FC = () => {
       <Modal
         isOpen={isOfferModalOpen}
         onClose={() => setIsOfferModalOpen(false)}
-        title={t('listings.listingDetailPage.faireUneOffreDePrix')}
+        title={t("listings.listingDetailPage.faireUneOffreDePrix")}
         description={`Prix actuel : ${formatPrice(listing.price)}`}
       >
         <div className="space-y-4 text-xs">
-          <FormField label={t('listings.listingDetailPage.montantDeVotreOffre')} required>
+          <FormField
+            label={t("listings.listingDetailPage.montantDeVotreOffre")}
+            required
+          >
             <Input
               type="number"
               placeholder="ex: 120"
@@ -903,7 +1057,11 @@ export const ListingDetailPage: React.FC = () => {
           </FormField>
 
           <div className="flex gap-2">
-            <Button variant="outline" fullWidth onClick={() => setIsOfferModalOpen(false)}>
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => setIsOfferModalOpen(false)}
+            >
               Annuler
             </Button>
             <Button variant="primary" fullWidth onClick={handleSendOffer}>
@@ -917,39 +1075,50 @@ export const ListingDetailPage: React.FC = () => {
       <Modal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
-        title={t('listings.listingDetailPage.signalerCetteAnnonce')}
-        description={t('listings.listingDetailPage.aidezLEquipeDeModeration')}
+        title={t("listings.listingDetailPage.signalerCetteAnnonce")}
+        description={t("listings.listingDetailPage.aidezLEquipeDeModeration")}
       >
         <div className="space-y-4 text-xs">
-          <FormField label={t('listings.listingDetailPage.motifDuSignalement')}>
+          <FormField label={t("listings.listingDetailPage.motifDuSignalement")}>
             <DropdownMenu
               id="report-reason-select"
               ariaLabel="Motif du signalement"
               fullWidth
               headerTitle="Motif du signalement"
               options={[
-                { value: 'suspicious', label: 'Tentative de fraude ou arnaque' },
-                { value: 'prohibited', label: 'Article illégal ou interdit' },
-                { value: 'counterfeit', label: 'Contrefaçon' },
-                { value: 'wrong_category', label: 'Mauvaise catégorie' },
-                { value: 'other', label: 'Autre motif' },
+                {
+                  value: "suspicious",
+                  label: "Tentative de fraude ou arnaque",
+                },
+                { value: "prohibited", label: "Article illégal ou interdit" },
+                { value: "counterfeit", label: "Contrefaçon" },
+                { value: "wrong_category", label: "Mauvaise catégorie" },
+                { value: "other", label: "Autre motif" },
               ]}
               value={reportReason}
               onChange={(val) => setReportReason(val)}
             />
           </FormField>
 
-          <FormField label={t('listings.listingDetailPage.precisionsComplementaires')}>
+          <FormField
+            label={t("listings.listingDetailPage.precisionsComplementaires")}
+          >
             <Textarea
               rows={3}
-              placeholder={t('listings.listingDetailPage.expliquezCeQuiVousSemble')}
+              placeholder={t(
+                "listings.listingDetailPage.expliquezCeQuiVousSemble",
+              )}
               value={reportDetails}
               onChange={(e) => setReportDetails(e.target.value)}
             />
           </FormField>
 
           <div className="flex gap-2">
-            <Button variant="outline" fullWidth onClick={() => setIsReportModalOpen(false)}>
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => setIsReportModalOpen(false)}
+            >
               Annuler
             </Button>
             <Button
@@ -957,9 +1126,11 @@ export const ListingDetailPage: React.FC = () => {
               fullWidth
               onClick={() => {
                 setIsReportModalOpen(false);
-                toast.success('Votre signalement a été transmis avec succès.');
+                toast.success("Votre signalement a été transmis avec succès.");
               }}
-            >{t('listings.listingDetailPage.envoyerLeSignalement')}</Button>
+            >
+              {t("listings.listingDetailPage.envoyerLeSignalement")}
+            </Button>
           </div>
         </div>
       </Modal>
@@ -984,24 +1155,27 @@ export const ListingDetailPage: React.FC = () => {
           produce. From `sm` there is room for a single row again. */}
       <div
         ref={actionBarRef}
-        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+      >
         {/* The total is a full-width summary on phones, matching the action
             hierarchy: amount first, choices second, primary CTA last. */}
         <div className="flex items-baseline gap-3 min-w-0 sm:block sm:shrink-0">
           <div className="text-sm text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
-            {showsBuyerFee ? 'Total à payer' : 'Prix'}
+            {showsBuyerFee ? "Total à payer" : "Prix"}
           </div>
           <div className="text-2xl font-black text-stone-900 truncate tabular-nums leading-none">
             {listing.isFreeDonation
-              ? 'Don gratuit'
-              : formatPrice(showsBuyerFee ? listing.price + buyerFee : listing.price)}
+              ? "Don gratuit"
+              : formatPrice(
+                  showsBuyerFee ? listing.price + buyerFee : listing.price,
+                )}
           </div>
         </div>
 
         <div
           data-testid="listing-mobile-actions"
           className={`grid gap-2 ${
-            mobileActionCount > 1 ? 'grid-cols-2' : 'grid-cols-1'
+            mobileActionCount > 1 ? "grid-cols-2" : "grid-cols-1"
           } sm:flex sm:items-center sm:justify-end sm:shrink-0`}
         >
           {actions.isOwner ? (
@@ -1024,7 +1198,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass('offer')}`}
+                  className={`w-full sm:w-auto ${mobileActionClass("offer")}`}
                   onClick={() => setIsOfferModalOpen(true)}
                   leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 >
@@ -1033,27 +1207,35 @@ export const ListingDetailPage: React.FC = () => {
               )}
               {actions.canReserve && (
                 <Button
-                  variant={actions.canDirectPurchase ? 'outline' : 'primary'}
+                  variant={actions.canDirectPurchase ? "outline" : "primary"}
                   size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass('reservation')}`}
+                  className={`w-full sm:w-auto ${mobileActionClass("reservation")}`}
                   onClick={() => setIsReservationModalOpen(true)}
                   leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
-                >{t('listings.listingDetailPage.reserver')}</Button>
+                >
+                  {t("listings.listingDetailPage.reserver")}
+                </Button>
               )}
               {actions.canContact && (
                 <Button
-                  variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
+                  variant={
+                    actions.primaryAction === "contact"
+                      ? "primary"
+                      : "secondary"
+                  }
                   size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass('contact')}`}
+                  className={`w-full sm:w-auto ${mobileActionClass("contact")}`}
                   onClick={() => setIsContactModalOpen(true)}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
-                >{t('listings.listingDetailPage.message')}</Button>
+                >
+                  {t("listings.listingDetailPage.message")}
+                </Button>
               )}
               {actions.canDirectPurchase && (
                 <Button
                   variant="primary"
                   size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass('direct_purchase')}`}
+                  className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
                   onClick={() => setIsDirectPurchaseModalOpen(true)}
                   leftIcon={<ShoppingBag className="w-3.5 h-3.5" />}
                 >
@@ -1064,7 +1246,6 @@ export const ListingDetailPage: React.FC = () => {
           )}
         </div>
       </div>
-
     </div>
   );
 };

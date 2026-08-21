@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["{{APPLE_APP_ID}}"],
+        "components": [
+          { "/": "/listing/*", "comment": "Public listing details" },
+          { "/": "/account/delete", "comment": "Account deletion support" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["{{APPLE_APP_ID}}"]
+  }
+}

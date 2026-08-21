@@ -1,5 +1,5 @@
-import { apiClientConfig } from '../../client/api-client.config';
-import { AppError, AppErrorCode } from '../../errors/app-error';
+import { apiClientConfig } from "../../client/api-client.config";
+import { AppError, AppErrorCode } from "../../errors/app-error";
 
 export interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -14,16 +14,19 @@ export class HttpClient {
   }
 
   private getAuthToken(): string | null {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('shongre_auth_token');
+    if (typeof localStorage !== "undefined") {
+      return localStorage.getItem("shongre_auth_token");
     }
     return null;
   }
 
-  async request<T>(endpoint: string, options: HttpRequestOptions = {}): Promise<T> {
+  async request<T>(
+    endpoint: string,
+    options: HttpRequestOptions = {},
+  ): Promise<T> {
     const { params, headers, timeoutMs = 15000, ...customConfig } = options;
 
-    let url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    let url = `${this.baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
@@ -33,15 +36,15 @@ export class HttpClient {
       });
       const queryString = searchParams.toString();
       if (queryString) {
-        url += (url.includes('?') ? '&' : '?') + queryString;
+        url += (url.includes("?") ? "&" : "?") + queryString;
       }
     }
 
     const token = this.getAuthToken();
     const defaultHeaders: HeadersInit = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'X-Request-Id': `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "X-Request-Id": `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(headers as Record<string, string>),
     };
@@ -72,20 +75,21 @@ export class HttpClient {
         const code: AppErrorCode = rawCode
           ? (rawCode as AppErrorCode)
           : response.status === 401
-          ? 'UNAUTHENTICATED'
-          : response.status === 403
-          ? 'FORBIDDEN'
-          : response.status === 404
-          ? 'NOT_FOUND'
-          : response.status === 409
-          ? 'CONFLICT'
-          : response.status === 422
-          ? 'VALIDATION_ERROR'
-          : 'INTERNAL_ERROR';
+            ? "UNAUTHENTICATED"
+            : response.status === 403
+              ? "FORBIDDEN"
+              : response.status === 404
+                ? "NOT_FOUND"
+                : response.status === 409
+                  ? "CONFLICT"
+                  : response.status === 422
+                    ? "VALIDATION_ERROR"
+                    : "INTERNAL_ERROR";
 
         throw new AppError({
           code,
-          message: rawMessage || `HTTP Request failed with status ${response.status}`,
+          message:
+            rawMessage || `HTTP Request failed with status ${response.status}`,
           details: errorData.error || errorData,
         });
       }
@@ -94,42 +98,51 @@ export class HttpClient {
     } catch (err: any) {
       clearTimeout(timeoutId);
       if (err instanceof AppError) throw err;
-      if (err.name === 'AbortError') {
+      if (err.name === "AbortError") {
         throw new AppError({
-          code: 'TIMEOUT',
-          message: 'Délai d’attente dépassé lors de la communication avec le serveur.',
+          code: "TIMEOUT",
+          message:
+            "Délai d’attente dépassé lors de la communication avec le serveur.",
         });
       }
       throw new AppError({
-        code: 'NETWORK_ERROR',
-        message: err.message || 'Impossible de contacter le serveur Shongre.',
+        code: "NETWORK_ERROR",
+        message: err.message || "Impossible de contacter le serveur Shongre.",
         originalError: err,
       });
     }
   }
 
   get<T>(endpoint: string, options?: HttpRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: 'GET' });
+    return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
-  post<T>(endpoint: string, body?: unknown, options?: HttpRequestOptions): Promise<T> {
+  post<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: HttpRequestOptions,
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
-      method: 'POST',
+      method: "POST",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   }
 
-  put<T>(endpoint: string, body?: unknown, options?: HttpRequestOptions): Promise<T> {
+  put<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: HttpRequestOptions,
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
-      method: 'PUT',
+      method: "PUT",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   }
 
   delete<T>(endpoint: string, options?: HttpRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+    return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 }
 

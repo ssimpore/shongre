@@ -15,6 +15,13 @@ export interface IAdminRepository {
   getStats(): Promise<AdminStatsSummary>;
   getReports(): Promise<Array<{ id: string; listingId: string; reason: string; reporterName: string; createdAt: string }>>;
   resolveReport(reportId: string, action: 'dismiss' | 'remove_listing' | 'ban_user'): Promise<void>;
+  createReport(report: {
+    reporterId: string;
+    listingId?: string;
+    reportedUserId?: string;
+    reason: string;
+    details: string;
+  }): Promise<{ id: string }>;
   getAuditLogs(): Promise<Array<{ id: string; timestamp: string; actor: string; action: string; target: string }>>;
   saveAuditLog(log: { actorId?: string; actorName: string; actorRole: string; targetId?: string; targetName?: string; action: string; details: string; metadata?: any }): Promise<void>;
 }
@@ -60,6 +67,18 @@ export class DemoAdminRepository implements IAdminRepository {
 
   async resolveReport(reportId: string, action: 'dismiss' | 'remove_listing' | 'ban_user'): Promise<void> {
     this.reports = this.reports.filter((r) => r.id !== reportId);
+  }
+
+  async createReport(report: { reporterId: string; listingId?: string; reportedUserId?: string; reason: string; details: string }): Promise<{ id: string }> {
+    const id = `rep_${this.reports.length + 2}`;
+    this.reports.push({
+      id,
+      listingId: report.listingId || '',
+      reason: report.reason,
+      reporterName: 'Utilisateur',
+      createdAt: new Date().toISOString(),
+    });
+    return { id };
   }
 
   async getAuditLogs(): Promise<Array<{ id: string; timestamp: string; actor: string; action: string; target: string }>> {
@@ -138,6 +157,23 @@ export class PostgresAdminRepository implements IAdminRepository {
     } catch (err: any) {
       logger.warn(`PostgresAdminRepository.resolveReport DB update skipped: ${err.message}`);
     }
+  }
+
+  async createReport(report: { reporterId: string; listingId?: string; reportedUserId?: string; reason: string; details: string }): Promise<{ id: string }> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase.from('reports' as any) as any)
+      .insert({
+        reporter_id: report.reporterId,
+        listing_id: report.listingId || null,
+        reported_user_id: report.reportedUserId || null,
+        reason: report.reason,
+        details: report.details,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+    if (error || !data) throw new Error(`Failed to create report: ${error?.message}`);
+    return { id: data.id };
   }
 
   async getAuditLogs(): Promise<Array<{ id: string; timestamp: string; actor: string; action: string; target: string }>> {

@@ -1,12 +1,14 @@
-import { NotificationsServiceContract } from '../../contracts/notifications.contract';
-import { notificationRepository } from '../../../repositories/notification.repository';
-import { NotificationItem } from '../../../types';
-import { simulateNetworkDelay } from '../../client/api-client.config';
+import { NotificationsServiceContract } from "../../contracts/notifications.contract";
+import { notificationRepository } from "../../../repositories/notification.repository";
+import { NotificationItem } from "../../../types";
+import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoNotificationsService implements NotificationsServiceContract {
   async getUserNotifications(userId: string): Promise<NotificationItem[]> {
     await simulateNetworkDelay();
-    const result = await notificationRepository.getNotifications({ recipientId: userId });
+    const result = await notificationRepository.getNotifications({
+      recipientId: userId,
+    });
     return result.notifications as any;
   }
 

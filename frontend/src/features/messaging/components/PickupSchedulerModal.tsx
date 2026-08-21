@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Calendar   } from 'lucide-react';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { Button } from '../../../design-system/primitives/Button';
-import { FormField, Input } from '../../../design-system/primitives/FormField';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { Calendar } from "lucide-react";
+import { Modal } from "../../../design-system/primitives/Modal";
+import { Button } from "../../../design-system/primitives/Button";
+import { FormField, Input } from "../../../design-system/primitives/FormField";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface PickupSchedulerModalProps {
   isOpen: boolean;
@@ -16,12 +16,14 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  defaultAddress = '',
+  defaultAddress = "",
 }) => {
   const { t } = useTranslation();
-  const [date, setDate] = useState('2026-08-20');
-  const [timeSlot, setTimeSlot] = useState('14h00 - 15h00');
-  const [address, setAddress] = useState(defaultAddress || 'Place de la Comédie, 34000 Montpellier');
+  const [date, setDate] = useState("2026-08-20");
+  const [timeSlot, setTimeSlot] = useState("14h00 - 15h00");
+  const [address, setAddress] = useState(
+    defaultAddress || "Place de la Comédie, 34000 Montpellier",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,11 +43,14 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('messaging.pickupSchedulerModal.planifierLaRemiseEnMain')}
-      description={t('messaging.pickupSchedulerModal.convenezDUnCreneauEt')}
+      title={t("messaging.pickupSchedulerModal.planifierLaRemiseEnMain")}
+      description={t("messaging.pickupSchedulerModal.convenezDUnCreneauEt")}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-        <FormField label={t('messaging.pickupSchedulerModal.dateDuRendezVous')} required>
+        <FormField
+          label={t("messaging.pickupSchedulerModal.dateDuRendezVous")}
+          required
+        >
           <Input
             type="date"
             value={date}
@@ -54,24 +59,40 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
           />
         </FormField>
 
-        <FormField label={t('messaging.pickupSchedulerModal.creneauHoraire')} required>
+        <FormField
+          label={t("messaging.pickupSchedulerModal.creneauHoraire")}
+          required
+        >
           <select
             value={timeSlot}
             onChange={(e) => setTimeSlot(e.target.value)}
             className="w-full h-control-md px-3 border border-border-base rounded-control bg-white text-xs font-semibold"
           >
-            <option value="10h00 - 12h00">{t('messaging.pickupSchedulerModal.matinee10h0012h00')}</option>
+            <option value="10h00 - 12h00">
+              {t("messaging.pickupSchedulerModal.matinee10h0012h00")}
+            </option>
             <option value="12h00 - 14h00">Pause midi (12h00 - 14h00)</option>
-            <option value="14h00 - 16h00">{t('messaging.pickupSchedulerModal.apresMidi14h0016h00')}</option>
-            <option value="16h00 - 18h00">{t('messaging.pickupSchedulerModal.finDApresMidi16h00')}</option>
-            <option value="18h00 - 20h00">{t('messaging.pickupSchedulerModal.soiree18h0020h00')}</option>
+            <option value="14h00 - 16h00">
+              {t("messaging.pickupSchedulerModal.apresMidi14h0016h00")}
+            </option>
+            <option value="16h00 - 18h00">
+              {t("messaging.pickupSchedulerModal.finDApresMidi16h00")}
+            </option>
+            <option value="18h00 - 20h00">
+              {t("messaging.pickupSchedulerModal.soiree18h0020h00")}
+            </option>
           </select>
         </FormField>
 
-        <FormField label={t('messaging.pickupSchedulerModal.lieuDeRendezVousEspace')} required>
+        <FormField
+          label={t("messaging.pickupSchedulerModal.lieuDeRendezVousEspace")}
+          required
+        >
           <Input
             type="text"
-            placeholder={t('messaging.pickupSchedulerModal.exDevantLeMetroPlace')}
+            placeholder={t(
+              "messaging.pickupSchedulerModal.exDevantLeMetroPlace",
+            )}
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             required
@@ -88,7 +109,9 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
             type="submit"
             isLoading={isSubmitting}
             leftIcon={<Calendar className="w-4 h-4" />}
-          >{t('messaging.pickupSchedulerModal.confirmerLeRendezVous')}</Button>
+          >
+            {t("messaging.pickupSchedulerModal.confirmerLeRendezVous")}
+          </Button>
         </div>
       </form>
     </Modal>

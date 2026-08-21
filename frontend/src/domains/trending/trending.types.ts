@@ -1,14 +1,14 @@
-import type { Listing } from '../../types';
+import type { Listing } from "../../types";
 
 export type TrendingTopicType =
-  | 'category'
-  | 'subcategory'
-  | 'collection'
-  | 'search_term'
-  | 'brand'
-  | 'location'
-  | 'seasonal'
-  | 'editorial';
+  | "category"
+  | "subcategory"
+  | "collection"
+  | "search_term"
+  | "brand"
+  | "location"
+  | "seasonal"
+  | "editorial";
 
 export interface TrendingSignalSnapshot {
   activeListings: number;
@@ -35,16 +35,16 @@ export interface TrendingSignalSnapshot {
 }
 
 export type TrendWeightKey =
-  | 'searchGrowth'
-  | 'viewGrowth'
-  | 'favorites'
-  | 'contacts'
-  | 'conversion'
-  | 'listingVelocity'
-  | 'locality'
-  | 'freshness'
-  | 'seasonality'
-  | 'editorial';
+  | "searchGrowth"
+  | "viewGrowth"
+  | "favorites"
+  | "contacts"
+  | "conversion"
+  | "listingVelocity"
+  | "locality"
+  | "freshness"
+  | "seasonality"
+  | "editorial";
 
 export type TrendWeights = Record<TrendWeightKey, number>;
 
@@ -132,7 +132,7 @@ export interface TrendingTopic {
   badge?: string;
   trend: {
     score: number;
-    direction: 'up' | 'stable';
+    direction: "up" | "stable";
   };
 }
 
@@ -144,4 +144,3 @@ export interface TrendingSectionResponse {
   subtitle: string;
   topics: TrendingTopic[];
 }
-

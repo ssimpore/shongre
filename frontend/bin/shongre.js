@@ -13,6 +13,7 @@ import { spawnSync, spawn } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = resolve(__dirname, '..');
+const projectRoot = resolve(rootDir, '..');
 
 const args = process.argv.slice(2);
 const command = args[0] || 'help';
@@ -29,37 +30,26 @@ const colors = {
 };
 
 function getPort() {
-  const envPath = resolve(rootDir, '.env');
-  if (existsSync(envPath)) {
-    const content = readFileSync(envPath, 'utf8');
-    const match = content.match(/^PORT\s*=\s*"?([0-9]+)"?/m);
-    if (match && match[1]) {
-      return parseInt(match[1], 10);
+  const exported = process.env.FRONTEND_PORT || process.env.PORT;
+  if (exported) return parseInt(exported, 10);
+  for (const envName of ['.env.local', '.env']) {
+    const envPath = resolve(projectRoot, envName);
+    if (existsSync(envPath)) {
+      const content = readFileSync(envPath, 'utf8');
+      const match = content.match(/^FRONTEND_PORT\s*=\s*"?([0-9]+)"?/m);
+      if (match?.[1]) return parseInt(match[1], 10);
     }
   }
-  return parseInt(process.env.PORT || '3000', 10);
+  throw new Error('FRONTEND_PORT is required. Run make env-init from the repository root.');
 }
 
 function freePort(port) {
-  try {
-    const lsof = spawnSync('lsof', ['-ti', `:${port}`], { encoding: 'utf8' });
-    if (lsof.stdout) {
-      const pids = lsof.stdout.trim().split('\n').filter(Boolean);
-      if (pids.length > 0) {
-        console.log(`${colors.yellow}⚡ Port ${port} is occupied. Killing lingering process (PID: ${pids.join(', ')})...${colors.reset}`);
-        pids.forEach((pid) => {
-          try {
-            process.kill(parseInt(pid, 10), 'SIGKILL');
-          } catch (e) {
-            // ignore
-          }
-        });
-        console.log(`${colors.green}✔ Port ${port} successfully freed.${colors.reset}\n`);
-      }
-    }
-  } catch (err) {
-    // ignore if lsof is not found
-  }
+  const result = spawnSync('make', ['free-port', `PORT=${port}`], {
+    cwd: projectRoot,
+    stdio: 'inherit',
+    env: process.env,
+  });
+  if (result.status !== 0) process.exit(result.status || 1);
 }
 
 function printBanner() {
@@ -77,8 +67,8 @@ function printHelp() {
   make <target>
 
 ${colors.bright}Available Commands:${colors.reset}
-  ${colors.green}dev${colors.reset}             Start Vite dev server on port ${port} (auto-kills any process on this port)
-  ${colors.green}free-port${colors.reset}       Kill any running process occupying port ${port}
+  ${colors.green}dev${colors.reset}             Start Next.js through the root tracked-process tooling on port ${port}
+  ${colors.green}free-port${colors.reset}       Safely release a Shongre-owned process from port ${port}
   ${colors.green}build${colors.reset}           Compile production bundle with chunk optimizations
   ${colors.green}test${colors.reset}            Run Vitest unit test suite (RBAC, Escrow, AI, SIRET)
   ${colors.green}test-watch${colors.reset}      Run tests in interactive watch mode
@@ -105,7 +95,7 @@ function runInfo() {
   console.log(`  • Root Path   : ${rootDir}`);
   
   const hasEnv = existsSync(resolve(rootDir, '.env')) || existsSync(resolve(rootDir, '.env.local'));
-  console.log(`  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}None (defaults apply; demo mode needs no configuration)${colors.reset}`}`);
+  console.log(`  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}Missing; run make env-init${colors.reset}`}`);
   console.log(`  • Data mode   : ${colors.green}${process.env.VITE_DATA_MODE || 'demo'}${colors.reset} (frontend runs on local adapters)`);
   // AI runs behind the service contract now, so the browser holds no provider
   // key to report on — credentials belong to backend/ when the HTTP adapter lands.
@@ -176,13 +166,10 @@ function runCheck() {
 switch (command) {
   case 'dev':
   case 'start': {
-    const port = getPort();
-    freePort(port);
-    console.log(`${colors.cyan}${colors.bright}🚀 Launching Vite dev server on http://localhost:${port}...${colors.reset}\n`);
-    const child = spawn('npx', ['vite', '--port', String(port), '--host', '0.0.0.0'], {
-      cwd: rootDir,
+    const child = spawn('make', ['frontend-dev'], {
+      cwd: projectRoot,
       stdio: 'inherit',
-      env: { ...process.env, PORT: String(port) },
+      env: process.env,
     });
     child.on('exit', (code) => {
       process.exit(code || 0);

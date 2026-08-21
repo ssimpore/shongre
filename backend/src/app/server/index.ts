@@ -4,7 +4,7 @@ import { bootstrapApp } from '../bootstrap/index.js';
 import { apiV1Router } from '../../api/v1/router.js';
 import { logger } from '../../infrastructure/logging/logger.js';
 
-function renderBackendHomePage(port: number, prefix: string): string {
+function renderBackendHomePage(port: number, prefix: string, frontendUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -178,8 +178,8 @@ function renderBackendHomePage(port: number, prefix: string): string {
         <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">Frontend Web Application</div>
         <div style="color: var(--muted); font-size: 0.875rem;">Access the marketplace UI, search, publication wizard & workspaces.</div>
       </div>
-      <a href="http://localhost:3000" class="cta-btn" target="_blank" rel="noreferrer">
-        Open Frontend (Port 3000) ➜
+      <a href="${frontendUrl || '#'}" class="cta-btn" target="_blank" rel="noreferrer">
+        Open Frontend ➜
       </a>
     </div>
 
@@ -235,7 +235,7 @@ export function createHttpServer() {
     if (req.url === '/') {
       if (acceptHeader.includes('text/html')) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(renderBackendHomePage(config.port, config.apiPrefix));
+        res.end(renderBackendHomePage(config.port, config.apiPrefix, config.frontendUrl));
         return;
       }
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -244,9 +244,9 @@ export function createHttpServer() {
         service: 'shongre-backend',
         version: '1.0.0',
         port: config.port,
-        home: `http://localhost:${config.port}/`,
-        api: `http://localhost:${config.port}${config.apiPrefix}`,
-        health: `http://localhost:${config.port}/health`
+        home: `http://${config.host}:${config.port}/`,
+        api: `http://${config.host}:${config.port}${config.apiPrefix}`,
+        health: `http://${config.host}:${config.port}/health`
       }));
       return;
     }
@@ -269,11 +269,11 @@ export async function startServer() {
   await bootstrapApp();
   const server = createHttpServer();
 
-  server.listen(config.port, () => {
+  server.listen(config.port, config.host, () => {
     console.log(`\n  \x1b[32m\x1b[1mSHONGRE BACKEND v1.0.0\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`);
-    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36mhttp://localhost:${config.port}/\x1b[0m`);
-    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mAPI:\x1b[0m     \x1b[36mhttp://localhost:${config.port}${config.apiPrefix}\x1b[0m`);
-    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mHealth:\x1b[0m  \x1b[36mhttp://localhost:${config.port}/health\x1b[0m\n`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36mhttp://${config.host}:${config.port}/\x1b[0m`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mAPI:\x1b[0m     \x1b[36mhttp://${config.host}:${config.port}${config.apiPrefix}\x1b[0m`);
+    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mHealth:\x1b[0m  \x1b[36mhttp://${config.host}:${config.port}/health\x1b[0m\n`);
   });
 
   return server;

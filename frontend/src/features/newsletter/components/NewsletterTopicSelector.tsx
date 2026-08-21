@@ -1,7 +1,7 @@
-import React from 'react';
-import { Tag, Sparkles, Lightbulb, Briefcase, Zap, MapPin } from 'lucide-react';
-import { NewsletterTopic } from '../../../domains/newsletter/newsletter.types';
-import { NewsletterTopicDefinition } from '../../../domains/newsletter/newsletter.topics';
+import React from "react";
+import { Tag, Sparkles, Lightbulb, Briefcase, Zap, MapPin } from "lucide-react";
+import { NewsletterTopic } from "../../../domains/newsletter/newsletter.types";
+import { NewsletterTopicDefinition } from "../../../domains/newsletter/newsletter.topics";
 
 interface NewsletterTopicSelectorProps {
   topics: NewsletterTopicDefinition[];
@@ -19,12 +19,9 @@ const TOPIC_ICONS: Record<string, React.ReactNode> = {
   local_trends: <MapPin className="w-4 h-4 text-danger" />,
 };
 
-export const NewsletterTopicSelector: React.FC<NewsletterTopicSelectorProps> = ({
-  topics,
-  selectedTopicIds,
-  onChange,
-  disabled = false,
-}) => {
+export const NewsletterTopicSelector: React.FC<
+  NewsletterTopicSelectorProps
+> = ({ topics, selectedTopicIds, onChange, disabled = false }) => {
   const toggleTopic = (topicId: NewsletterTopic) => {
     if (disabled) return;
     if (selectedTopicIds.includes(topicId)) {
@@ -45,9 +42,9 @@ export const NewsletterTopicSelector: React.FC<NewsletterTopicSelectorProps> = (
             onClick={() => toggleTopic(t.id)}
             className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 select-none cursor-pointer ${
               isChecked
-                ? 'border-primary bg-primary/5 text-stone-900 ring-1 ring-primary/20'
-                : 'border-border-base bg-white text-stone-700 hover:bg-stone-50'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                ? "border-primary bg-primary/5 text-stone-900 ring-1 ring-primary/20"
+                : "border-border-base bg-white text-stone-700 hover:bg-stone-50"
+            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="p-2 rounded-xl bg-stone-100 shrink-0 mt-0.5">
               {TOPIC_ICONS[t.id] || <Sparkles className="w-4 h-4" />}

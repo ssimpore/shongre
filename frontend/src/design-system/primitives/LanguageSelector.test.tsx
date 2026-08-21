@@ -1,37 +1,41 @@
-import { describe, it, expect } from 'vitest';
-import React from 'react';
-import { LanguageSelector, SUPPORTED_LANGUAGES, SHIPPED_LOCALES } from './LanguageSelector';
+import { describe, it, expect } from "vitest";
+import React from "react";
+import {
+  LanguageSelector,
+  SUPPORTED_LANGUAGES,
+  SHIPPED_LOCALES,
+} from "./LanguageSelector";
 
-describe('LanguageSelector Primitive', () => {
-  it('instantiates correctly as a React component element', () => {
+describe("LanguageSelector Primitive", () => {
+  it("instantiates correctly as a React component element", () => {
     const element = React.createElement(LanguageSelector, {
-      variant: 'header',
-      idPrefix: 'test-lang',
+      variant: "header",
+      idPrefix: "test-lang",
     });
 
     expect(element).toBeDefined();
     expect(element.type).toBe(LanguageSelector);
-    expect(element.props.variant).toBe('header');
+    expect(element.props.variant).toBe("header");
   });
 
-  it('provides comprehensive list of European languages with flags', () => {
+  it("provides comprehensive list of European languages with flags", () => {
     expect(SUPPORTED_LANGUAGES.length).toBeGreaterThanOrEqual(4);
-    
-    const french = SUPPORTED_LANGUAGES.find((l) => l.code === 'fr-FR');
+
+    const french = SUPPORTED_LANGUAGES.find((l) => l.code === "fr-FR");
     expect(french).toBeDefined();
-    expect(french?.flag).toBe('🇫🇷');
+    expect(french?.flag).toBe("🇫🇷");
 
-    const english = SUPPORTED_LANGUAGES.find((l) => l.code === 'en-US');
+    const english = SUPPORTED_LANGUAGES.find((l) => l.code === "en-US");
     expect(english).toBeDefined();
-    expect(english?.flag).toBe('🇬🇧');
+    expect(english?.flag).toBe("🇬🇧");
 
-    const german = SUPPORTED_LANGUAGES.find((l) => l.code === 'de-DE');
+    const german = SUPPORTED_LANGUAGES.find((l) => l.code === "de-DE");
     expect(german).toBeDefined();
-    expect(german?.flag).toBe('🇩🇪');
+    expect(german?.flag).toBe("🇩🇪");
 
-    const spanish = SUPPORTED_LANGUAGES.find((l) => l.code === 'es-ES');
+    const spanish = SUPPORTED_LANGUAGES.find((l) => l.code === "es-ES");
     expect(spanish).toBeDefined();
-    expect(spanish?.flag).toBe('🇪🇸');
+    expect(spanish?.flag).toBe("🇪🇸");
   });
 });
 
@@ -42,16 +46,20 @@ describe('LanguageSelector Primitive', () => {
  * nobody can enable a language ahead of its translations — which is exactly how
  * this selector originally shipped six languages that all rendered French.
  */
-describe('language availability is measured, not declared', () => {
-  it('offers exactly the locales declared shipped', () => {
-    const availableCodes = SUPPORTED_LANGUAGES.filter((l) => l.isAvailable).map((l) => l.code);
+describe("language availability is measured, not declared", () => {
+  it("offers exactly the locales declared shipped", () => {
+    const availableCodes = SUPPORTED_LANGUAGES.filter((l) => l.isAvailable).map(
+      (l) => l.code,
+    );
     expect(availableCodes).toEqual([...SHIPPED_LOCALES]);
   });
 
-  it('does not offer a language with no catalogue', () => {
-    for (const code of ['de-DE', 'es-ES', 'nl-NL', 'it-IT']) {
+  it("does not offer a language with no catalogue", () => {
+    for (const code of ["de-DE", "es-ES", "nl-NL", "it-IT"]) {
       const language = SUPPORTED_LANGUAGES.find((l) => l.code === code);
-      expect(language?.isAvailable, `${code} must stay unselectable`).toBe(false);
+      expect(language?.isAvailable, `${code} must stay unselectable`).toBe(
+        false,
+      );
     }
   });
 
@@ -63,8 +71,8 @@ describe('language availability is measured, not declared', () => {
    * `npm run check:i18n` reports no hardcoded copy left, and the catalogue is
    * complete. If either regresses, this pairing is what catches it.
    */
-  it('offers English', () => {
-    const english = SUPPORTED_LANGUAGES.find((l) => l.code === 'en-US');
+  it("offers English", () => {
+    const english = SUPPORTED_LANGUAGES.find((l) => l.code === "en-US");
     expect(english?.isAvailable).toBe(true);
   });
 });

@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useId, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Building2, User, Sparkles, TrendingUp, X } from 'lucide-react';
-import { crmRepository, UniversalSearchResult } from '../../../../repositories/crm.repository';
-import { Badge } from '../../../../design-system/primitives/Badge';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React, { useState, useEffect, useId, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, Building2, User, Sparkles, TrendingUp, X } from "lucide-react";
+import {
+  crmRepository,
+  UniversalSearchResult,
+} from "../../../../repositories/crm.repository";
+import { Badge } from "../../../../design-system/primitives/Badge";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface CrmUniversalSearchProps {
   placeholder?: string;
@@ -11,12 +14,12 @@ interface CrmUniversalSearchProps {
 }
 
 export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
-  placeholder = 'Rechercher un contact, entreprise, opportunité ou utilisateur Shongre...',
-  className = '',
+  placeholder = "Rechercher un contact, entreprise, opportunité ou utilisateur Shongre...",
+  className = "",
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<UniversalSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,12 +29,15 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -67,33 +73,36 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
 
   const handleSelect = (item: UniversalSearchResult) => {
     setIsOpen(false);
-    setQuery('');
+    setQuery("");
     setHasSearched(false);
     navigate(item.linkTo);
   };
 
   const clearSearch = () => {
-    setQuery('');
+    setQuery("");
     setResults([]);
     setIsOpen(false);
     setHasSearched(false);
   };
 
-  const getItemIcon = (type: UniversalSearchResult['type']) => {
+  const getItemIcon = (type: UniversalSearchResult["type"]) => {
     switch (type) {
-      case 'company':
+      case "company":
         return <Building2 className="w-4 h-4 text-primary" />;
-      case 'contact':
+      case "contact":
         return <User className="w-4 h-4 text-info" />;
-      case 'opportunity':
+      case "opportunity":
         return <TrendingUp className="w-4 h-4 text-warning" />;
-      case 'shongre_user':
+      case "shongre_user":
         return <Sparkles className="w-4 h-4 text-success" />;
     }
   };
 
   return (
-    <div ref={containerRef} className={`relative w-full max-w-2xl ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative w-full max-w-2xl ${className}`}
+    >
       <div className="relative">
         <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
@@ -107,10 +116,10 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
             if (query.trim()) setIsOpen(true);
           }}
           onKeyDown={(event) => {
-            if (event.key === 'Escape') setIsOpen(false);
+            if (event.key === "Escape") setIsOpen(false);
           }}
           placeholder={placeholder}
-          aria-label={t('admin.crmUniversalSearch.label')}
+          aria-label={t("admin.crmUniversalSearch.label")}
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={isOpen}
@@ -122,7 +131,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
           <button
             type="button"
             onClick={clearSearch}
-            aria-label={t('admin.crmUniversalSearch.clear')}
+            aria-label={t("admin.crmUniversalSearch.clear")}
             className="absolute right-2 top-1/2 inline-flex min-h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-md text-stone-500 transition-colors duration-fast hover:bg-stone-100 hover:text-stone-700"
           >
             <X className="w-3.5 h-3.5" />
@@ -139,18 +148,20 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
         >
           <div className="p-2 bg-stone-50 text-micro font-bold text-stone-500 uppercase tracking-wider">
             {isLoading
-              ? t('admin.crmUniversalSearch.loading')
-              : t('admin.crmUniversalSearch.results', { count: results.length })}
+              ? t("admin.crmUniversalSearch.loading")
+              : t("admin.crmUniversalSearch.results", {
+                  count: results.length,
+                })}
           </div>
 
           {!isLoading && hasSearched && results.length === 0 ? (
             <p className="px-4 py-5 text-center text-xs text-stone-500">
-              {t('admin.crmUniversalSearch.noResults')}
+              {t("admin.crmUniversalSearch.noResults")}
             </p>
           ) : (
             <ul
               className="divide-y divide-stone-100"
-              aria-label={t('admin.crmUniversalSearch.resultsList')}
+              aria-label={t("admin.crmUniversalSearch.resultsList")}
             >
               {results.map((hit) => (
                 <li key={`${hit.type}-${hit.id}`}>
@@ -173,7 +184,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
                       </span>
                     </span>
 
-                    <Badge variant={hit.badgeVariant || 'neutral'} size="sm">
+                    <Badge variant={hit.badgeVariant || "neutral"} size="sm">
                       {hit.badgeText}
                     </Badge>
                   </button>

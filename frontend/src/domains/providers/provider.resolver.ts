@@ -5,17 +5,19 @@
  */
 
 import {
-  
   ProviderCapability,
   ProviderConfiguration,
   ProviderHealthStatus,
   EffectiveProviderResolution,
   CapabilityHealthResult,
   ProviderImpactAnalysis,
-  ProviderRoutingRule
-} from './provider.types';
-import { CANONICAL_PROVIDER_REGISTRY, getProviderById } from './provider.registry';
-import { getCapabilityMetadata } from './provider-capabilities';
+  ProviderRoutingRule,
+} from "./provider.types";
+import {
+  CANONICAL_PROVIDER_REGISTRY,
+  getProviderById,
+} from "./provider.registry";
+import { getCapabilityMetadata } from "./provider-capabilities";
 
 export class ProviderResolver {
   /**
@@ -24,15 +26,15 @@ export class ProviderResolver {
   public isProviderEnabledForMarket(
     providerId: string,
     marketCode: string,
-    configurations: Record<string, ProviderConfiguration>
+    configurations: Record<string, ProviderConfiguration>,
   ): boolean {
     const config = configurations[providerId];
     if (!config) return false;
 
-    const normMarket = (marketCode || 'FR').toUpperCase();
+    const normMarket = (marketCode || "FR").toUpperCase();
 
     // 1. France is canonical baseline
-    if (normMarket === 'FR') {
+    if (normMarket === "FR") {
       return config.enabled;
     }
 
@@ -52,13 +54,13 @@ export class ProviderResolver {
   public getEffectivePriority(
     providerId: string,
     marketCode: string,
-    configurations: Record<string, ProviderConfiguration>
+    configurations: Record<string, ProviderConfiguration>,
   ): number {
     const config = configurations[providerId];
     if (!config) return 999;
 
-    const normMarket = (marketCode || 'FR').toUpperCase();
-    if (normMarket !== 'FR') {
+    const normMarket = (marketCode || "FR").toUpperCase();
+    if (normMarket !== "FR") {
       const override = config.marketOverrides?.[normMarket];
       if (override && override.priority !== undefined) {
         return override.priority;
@@ -74,15 +76,15 @@ export class ProviderResolver {
   public getEffectiveSettings(
     providerId: string,
     marketCode: string,
-    configurations: Record<string, ProviderConfiguration>
+    configurations: Record<string, ProviderConfiguration>,
   ): Record<string, any> {
     const config = configurations[providerId];
     if (!config) return {};
 
-    const normMarket = (marketCode || 'FR').toUpperCase();
+    const normMarket = (marketCode || "FR").toUpperCase();
     const baseSettings = config.settings || {};
 
-    if (normMarket === 'FR') {
+    if (normMarket === "FR") {
       return { ...baseSettings };
     }
 
@@ -106,17 +108,19 @@ export class ProviderResolver {
     configurations: Record<string, ProviderConfiguration>;
     routingRules?: Record<string, ProviderRoutingRule>;
   }): EffectiveProviderResolution {
-    const { capability, marketCode = 'FR', configurations } = params;
+    const { capability, marketCode = "FR", configurations } = params;
     const normMarket = marketCode.toUpperCase();
 
     // Find all providers registered for this capability
     const candidateProviders = CANONICAL_PROVIDER_REGISTRY.filter((p) =>
-      p.capabilities.includes(capability)
+      p.capabilities.includes(capability),
     );
 
     // Filter candidate providers that support this market and are enabled
     const enabledCandidates = candidateProviders.filter((p) => {
-      const supportsMarket = p.supportedMarkets.includes('*') || p.supportedMarkets.includes(normMarket);
+      const supportsMarket =
+        p.supportedMarkets.includes("*") ||
+        p.supportedMarkets.includes(normMarket);
       if (!supportsMarket) return false;
       return this.isProviderEnabledForMarket(p.id, normMarket, configurations);
     });
@@ -130,8 +134,8 @@ export class ProviderResolver {
         primaryConfig: null,
         fallbackProvider: null,
         fallbackConfig: null,
-        isInheritedFromFrance: normMarket !== 'FR',
-        effectiveHealth: 'unavailable',
+        isInheritedFromFrance: normMarket !== "FR",
+        effectiveHealth: "unavailable",
         reason: `Aucun prestataire actif configuré pour ${capability} sur le marché ${normMarket}.`,
       };
     }
@@ -146,27 +150,36 @@ export class ProviderResolver {
     const primary = sorted[0];
     const primaryConfig = configurations[primary.id] || null;
     const fallback = sorted.length > 1 ? sorted[1] : null;
-    const fallbackConfig = fallback ? configurations[fallback.id] || null : null;
+    const fallbackConfig = fallback
+      ? configurations[fallback.id] || null
+      : null;
 
     // Check if configuration is inherited from France
     let isInherited = false;
-    if (normMarket !== 'FR') {
+    if (normMarket !== "FR") {
       const override = primaryConfig?.marketOverrides?.[normMarket];
-      isInherited = !override || (override.enabled === undefined && override.priority === undefined);
+      isInherited =
+        !override ||
+        (override.enabled === undefined && override.priority === undefined);
     }
 
     // Determine effective health
-    const primaryHealth = primaryConfig?.health || 'unknown';
+    const primaryHealth = primaryConfig?.health || "unknown";
     let effectiveHealth: ProviderHealthStatus = primaryHealth;
 
-    if (primaryHealth === 'unavailable' && fallback && fallbackConfig && fallbackConfig.health === 'healthy') {
-      effectiveHealth = 'degraded'; // Fallback takes over with degraded platform state
+    if (
+      primaryHealth === "unavailable" &&
+      fallback &&
+      fallbackConfig &&
+      fallbackConfig.health === "healthy"
+    ) {
+      effectiveHealth = "degraded"; // Fallback takes over with degraded platform state
     }
 
     return {
       capability,
       marketCode: normMarket,
-      isAvailable: effectiveHealth !== 'unavailable',
+      isAvailable: effectiveHealth !== "unavailable",
       primaryProvider: primary,
       primaryConfig,
       fallbackProvider: fallback,
@@ -184,7 +197,7 @@ export class ProviderResolver {
     marketCode?: string;
     configurations: Record<string, ProviderConfiguration>;
   }): CapabilityHealthResult {
-    const { capability, marketCode = 'FR', configurations } = params;
+    const { capability, marketCode = "FR", configurations } = params;
     const capMeta = getCapabilityMetadata(capability);
     const resolution = this.resolveEffectiveProviders({
       capability,
@@ -197,27 +210,33 @@ export class ProviderResolver {
         capability,
         category: capMeta.category,
         marketCode,
-        status: resolution.primaryProvider ? 'unavailable' : 'unconfigured',
-        activeProviderName: resolution.primaryProvider?.name || 'Non configuré',
-        activeProviderId: resolution.primaryProvider?.id || '',
+        status: resolution.primaryProvider ? "unavailable" : "unconfigured",
+        activeProviderName: resolution.primaryProvider?.name || "Non configuré",
+        activeProviderId: resolution.primaryProvider?.id || "",
         isFallbackActive: false,
         isInherited: resolution.isInheritedFromFrance,
-        message: resolution.reason || 'Service non disponible dans ce marché.',
+        message: resolution.reason || "Service non disponible dans ce marché.",
       };
     }
 
-    const primaryHealth = resolution.primaryConfig?.health || 'unknown';
+    const primaryHealth = resolution.primaryConfig?.health || "unknown";
     const isFallbackRunning =
-      primaryHealth === 'unavailable' &&
-      Boolean(resolution.fallbackProvider && resolution.fallbackConfig?.health === 'healthy');
+      primaryHealth === "unavailable" &&
+      Boolean(
+        resolution.fallbackProvider &&
+        resolution.fallbackConfig?.health === "healthy",
+      );
 
-    const activeProvider = isFallbackRunning ? resolution.fallbackProvider! : resolution.primaryProvider;
+    const activeProvider = isFallbackRunning
+      ? resolution.fallbackProvider!
+      : resolution.primaryProvider;
 
-    let status: 'operational' | 'degraded' | 'unavailable' | 'unconfigured' = 'operational';
-    if (isFallbackRunning || primaryHealth === 'degraded') {
-      status = 'degraded';
-    } else if (primaryHealth === 'unavailable') {
-      status = 'unavailable';
+    let status: "operational" | "degraded" | "unavailable" | "unconfigured" =
+      "operational";
+    if (isFallbackRunning || primaryHealth === "degraded") {
+      status = "degraded";
+    } else if (primaryHealth === "unavailable") {
+      status = "unavailable";
     }
 
     return {
@@ -244,13 +263,18 @@ export class ProviderResolver {
     targetMarketCode?: string;
     allMarkets?: string[];
   }): ProviderImpactAnalysis {
-    const { providerId, configurations, targetMarketCode = 'FR', allMarkets = ['FR', 'BE', 'CH', 'ES', 'LU', 'DE'] } = params;
+    const {
+      providerId,
+      configurations,
+      targetMarketCode = "FR",
+      allMarkets = ["FR", "BE", "CH", "ES", "LU", "DE"],
+    } = params;
     const provider = getProviderById(providerId);
 
     if (!provider) {
       return {
         providerId,
-        providerName: 'Inconnu',
+        providerName: "Inconnu",
         affectedCapabilities: [],
         directlyAffectedMarkets: [],
         inheritedMarketsAffected: [],
@@ -283,8 +307,8 @@ export class ProviderResolver {
         });
 
         if (resolution.primaryProvider?.id === providerId) {
-          if (mCode === 'FR') {
-            directlyAffectedMarkets.push('FR');
+          if (mCode === "FR") {
+            directlyAffectedMarkets.push("FR");
           } else if (resolution.isInheritedFromFrance) {
             if (!inheritedMarketsAffected.includes(mCode)) {
               inheritedMarketsAffected.push(mCode);
@@ -307,17 +331,23 @@ export class ProviderResolver {
         configurations,
       });
 
-      if (!resolution.fallbackProvider || resolution.fallbackProvider.id === providerId) {
+      if (
+        !resolution.fallbackProvider ||
+        resolution.fallbackProvider.id === providerId
+      ) {
         hasAlternativeFallback = false;
         warnings.push(
-          `Aucun prestataire de secours disponible pour la capacité critique "${getCapabilityMetadata(cap).name}".`
+          `Aucun prestataire de secours disponible pour la capacité critique "${getCapabilityMetadata(cap).name}".`,
         );
       }
     }
 
-    if (directlyAffectedMarkets.includes('FR') && inheritedMarketsAffected.length > 0) {
+    if (
+      directlyAffectedMarkets.includes("FR") &&
+      inheritedMarketsAffected.length > 0
+    ) {
       warnings.push(
-        `La modification en France impactera automatiquement ${inheritedMarketsAffected.length} marché(s) dépendant(s) : ${inheritedMarketsAffected.join(', ')}.`
+        `La modification en France impactera automatiquement ${inheritedMarketsAffected.length} marché(s) dépendant(s) : ${inheritedMarketsAffected.join(", ")}.`,
       );
     }
 

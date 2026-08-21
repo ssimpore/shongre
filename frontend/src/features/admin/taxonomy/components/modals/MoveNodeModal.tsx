@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { TaxonomyNode } from '../../../../../domains/taxonomy/taxonomy.types';
-import { taxonomyAdminRepository } from '../../../../../repositories/taxonomy.repository';
-import { Modal } from '../../../../../design-system/primitives/Modal';
-import { Button } from '../../../../../design-system/primitives/Button';
-import { FormField } from '../../../../../design-system/primitives/FormField';
-import { CategoryIcon } from '../../../../../design-system/primitives/CategoryIcon';
-import { useToast } from '../../../../../app/providers/ToastProvider';
-import { useAuth } from '../../../../../app/providers/AuthProvider';
-import { FolderTree, AlertTriangle } from 'lucide-react';
-import { useTranslation } from '../../../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { TaxonomyNode } from "../../../../../domains/taxonomy/taxonomy.types";
+import { taxonomyAdminRepository } from "../../../../../repositories/taxonomy.repository";
+import { Modal } from "../../../../../design-system/primitives/Modal";
+import { Button } from "../../../../../design-system/primitives/Button";
+import { FormField } from "../../../../../design-system/primitives/FormField";
+import { CategoryIcon } from "../../../../../design-system/primitives/CategoryIcon";
+import { useToast } from "../../../../../app/providers/ToastProvider";
+import { useAuth } from "../../../../../app/providers/AuthProvider";
+import { FolderTree, AlertTriangle } from "lucide-react";
+import { useTranslation } from "../../../../../i18n/I18nProvider";
 
 export interface MoveNodeModalProps {
   isOpen: boolean;
@@ -28,7 +28,9 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
-  const [selectedParentId, setSelectedParentId] = useState<string>(node.parentId || 'root');
+  const [selectedParentId, setSelectedParentId] = useState<string>(
+    node.parentId || "root",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const impact = taxonomyAdminRepository.analyzeNodeImpact(node.id);
@@ -43,9 +45,14 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
   const handleMove = async () => {
     try {
       setIsSubmitting(true);
-      const targetParentId = selectedParentId === 'root' ? null : selectedParentId;
+      const targetParentId =
+        selectedParentId === "root" ? null : selectedParentId;
       const actor = currentUser
-        ? { id: currentUser.id, name: currentUser.name || 'Admin', role: currentUser.role }
+        ? {
+            id: currentUser.id,
+            name: currentUser.name || "Admin",
+            role: currentUser.role,
+          }
         : undefined;
 
       await taxonomyAdminRepository.moveNode(node.id, targetParentId, actor);
@@ -53,7 +60,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || 'Erreur lors du déplacement de la branche.');
+      toast.error(err?.message || "Erreur lors du déplacement de la branche.");
     } finally {
       setIsSubmitting(false);
     }
@@ -64,7 +71,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Déplacer la branche "${node.name}"`}
-      description={t('admin.moveNodeModal.reorganisezLaHierarchieEnDeplacant')}
+      description={t("admin.moveNodeModal.reorganisezLaHierarchieEnDeplacant")}
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -88,29 +95,38 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
         <div className="p-3.5 bg-warning-surface border border-warning-border rounded-xl space-y-1.5 text-xs text-warning">
           <div className="flex items-center gap-1.5 font-bold text-warning">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>{t('admin.moveNodeModal.impactStructurelDuDeplacement')}</span>
+            <span>
+              {t("admin.moveNodeModal.impactStructurelDuDeplacement")}
+            </span>
           </div>
           <ul className="list-disc list-inside space-y-0.5 pl-1 text-warning/90">
             <li>
-              <strong>{impact.descendantsCount}</strong> sous-catégories / types enfants seront déplacés.
+              <strong>{impact.descendantsCount}</strong> sous-catégories / types
+              enfants seront déplacés.
             </li>
             <li>
-              <strong>~{impact.activeListingsCount}</strong> annonces actives conserveront leur liaison d'ID stable sans rupture.
+              <strong>~{impact.activeListingsCount}</strong> annonces actives
+              conserveront leur liaison d'ID stable sans rupture.
             </li>
-            <li>{t('admin.moveNodeModal.lesCapacitesEtAttributsHerites')}</li>
+            <li>{t("admin.moveNodeModal.lesCapacitesEtAttributsHerites")}</li>
           </ul>
         </div>
 
-        <FormField label={t('admin.moveNodeModal.choisirLeNouveauParentDe')} required>
+        <FormField
+          label={t("admin.moveNodeModal.choisirLeNouveauParentDe")}
+          required
+        >
           <select
             value={selectedParentId}
             onChange={(e) => setSelectedParentId(e.target.value)}
             className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
           >
-            <option value="root">{t('admin.moveNodeModal.racinePrincipaleNiveauCategorieRacine')}</option>
+            <option value="root">
+              {t("admin.moveNodeModal.racinePrincipaleNiveauCategorieRacine")}
+            </option>
             {validParents.map((p) => {
               const depth = p.ancestorIds ? p.ancestorIds.length : 0;
-              const indent = '—'.repeat(depth) + (depth > 0 ? ' ' : '');
+              const indent = "—".repeat(depth) + (depth > 0 ? " " : "");
               return (
                 <option key={p.id} value={p.id}>
                   {indent}
@@ -129,10 +145,14 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
             variant="primary"
             size="sm"
             onClick={handleMove}
-            disabled={isSubmitting || selectedParentId === (node.parentId || 'root')}
+            disabled={
+              isSubmitting || selectedParentId === (node.parentId || "root")
+            }
             leftIcon={<FolderTree className="w-4 h-4" />}
           >
-            {isSubmitting ? 'Déplacement en cours...' : 'Confirmer le déplacement'}
+            {isSubmitting
+              ? "Déplacement en cours..."
+              : "Confirmer le déplacement"}
           </Button>
         </div>
       </div>

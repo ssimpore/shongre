@@ -1,6 +1,15 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { consentService } from '../../domains/consent/consent.service';
-import { ConsentCategories, ConsentCategory } from '../../domains/consent/consent.types';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { consentService } from "../../domains/consent/consent.service";
+import {
+  ConsentCategories,
+  ConsentCategory,
+} from "../../domains/consent/consent.types";
 
 interface ConsentContextValue {
   /** What the visitor currently permits. Optional categories default to false. */
@@ -17,7 +26,9 @@ interface ConsentContextValue {
   isPreferencesOpen: boolean;
 }
 
-const ConsentContext = createContext<ConsentContextValue | undefined>(undefined);
+const ConsentContext = createContext<ConsentContextValue | undefined>(
+  undefined,
+);
 
 /**
  * Cookie and tracking consent for the whole application.
@@ -28,7 +39,9 @@ const ConsentContext = createContext<ConsentContextValue | undefined>(undefined)
  * gate before the tracker is the only order that works — the other way round
  * ships a period where data is collected without a legal basis.
  */
-export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [decision, setDecision] = useState(() => consentService.getDecision());
   const [isPreferencesOpen, setPreferencesOpen] = useState(false);
 
@@ -69,16 +82,26 @@ export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       closePreferences: () => setPreferencesOpen(false),
       isPreferencesOpen,
     }),
-    [categories, decision, hasConsent, acceptAll, rejectOptional, savePreferences, isPreferencesOpen],
+    [
+      categories,
+      decision,
+      hasConsent,
+      acceptAll,
+      rejectOptional,
+      savePreferences,
+      isPreferencesOpen,
+    ],
   );
 
-  return <ConsentContext.Provider value={value}>{children}</ConsentContext.Provider>;
+  return (
+    <ConsentContext.Provider value={value}>{children}</ConsentContext.Provider>
+  );
 };
 
 export const useConsent = (): ConsentContextValue => {
   const context = useContext(ConsentContext);
   if (!context) {
-    throw new Error('useConsent must be used inside <ConsentProvider>.');
+    throw new Error("useConsent must be used inside <ConsentProvider>.");
   }
   return context;
 };

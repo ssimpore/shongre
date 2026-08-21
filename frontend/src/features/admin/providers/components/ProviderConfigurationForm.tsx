@@ -1,26 +1,15 @@
-import React, { useState } from 'react';
-import {
-  Save,
-  Lock
-  
-  
-  
-  
-  
-  
-  
-  
-} from 'lucide-react';
+import React, { useState } from "react";
+import { Save, Lock } from "lucide-react";
 import {
   Provider,
   ProviderConfiguration,
   ProviderEnvironment,
   CredentialStatus,
-} from '../../../../domains/providers/provider.types';
-import { providerService } from '../../../../domains/providers/provider.service';
-import { Button } from '../../../../design-system/primitives/Button';
-import { useToast } from '../../../../app/providers/ToastProvider';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+} from "../../../../domains/providers/provider.types";
+import { providerService } from "../../../../domains/providers/provider.service";
+import { Button } from "../../../../design-system/primitives/Button";
+import { useToast } from "../../../../app/providers/ToastProvider";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface ProviderConfigurationFormProps {
   provider: Provider;
@@ -29,19 +18,22 @@ interface ProviderConfigurationFormProps {
   onRequestImpactReview: (action: () => Promise<void>, message: string) => void;
 }
 
-export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps> = ({
-  provider,
-  configuration,
-  onSaved,
-  onRequestImpactReview,
-}) => {
+export const ProviderConfigurationForm: React.FC<
+  ProviderConfigurationFormProps
+> = ({ provider, configuration, onSaved, onRequestImpactReview }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const [enabled, setEnabled] = useState(configuration.enabled);
-  const [environment, setEnvironment] = useState<ProviderEnvironment>(configuration.environment);
+  const [environment, setEnvironment] = useState<ProviderEnvironment>(
+    configuration.environment,
+  );
   const [priority, setPriority] = useState(configuration.priority);
-  const [settings, setSettings] = useState<Record<string, any>>(configuration.settings || {});
-  const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>(configuration.credentialStatus);
+  const [settings, setSettings] = useState<Record<string, any>>(
+    configuration.settings || {},
+  );
+  const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>(
+    configuration.credentialStatus,
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const handleFieldChange = (key: string, value: any) => {
@@ -76,10 +68,10 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
         credentialStatus,
         ...extraUpdates,
       });
-      toast.success('Configuration du prestataire enregistrée avec succès.');
+      toast.success("Configuration du prestataire enregistrée avec succès.");
       onSaved();
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de l\'enregistrement.');
+      toast.error(err.message || "Erreur lors de l'enregistrement.");
     } finally {
       setIsSaving(false);
     }
@@ -91,13 +83,23 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. General Operational Controls */}
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-        <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">{t('admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement')}</h2>
+        <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">
+          {t(
+            "admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement",
+          )}
+        </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable Toggle */}
           <div className="flex flex-col justify-between p-3 rounded-lg border border-stone-200 bg-stone-50/60">
-            <span className="text-xs font-bold text-stone-900">{t('admin.providerConfigurationForm.etatDActivation')}</span>
-            <p className="text-micro text-stone-500 mb-2">{t('admin.providerConfigurationForm.rendLePrestataireOperationnelPour')}</p>
+            <span className="text-xs font-bold text-stone-900">
+              {t("admin.providerConfigurationForm.etatDActivation")}
+            </span>
+            <p className="text-micro text-stone-500 mb-2">
+              {t(
+                "admin.providerConfigurationForm.rendLePrestataireOperationnelPour",
+              )}
+            </p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -107,7 +109,7 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
               />
               <div className="w-9 h-5 bg-stone-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
               <span className="ml-2 text-xs font-semibold text-stone-700">
-                {enabled ? 'Activé' : 'Désactivé'}
+                {enabled ? "Activé" : "Désactivé"}
               </span>
             </label>
           </div>
@@ -118,8 +120,15 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                 accessible name at all — on the screen that holds a payment
                 provider's routing priority and environment. Promoted to real
                 labels wired by `htmlFor`. */}
-            <label htmlFor="provider-environment" className="text-xs font-bold text-stone-900">Environnement</label>
-            <p className="text-micro text-stone-500 mb-2">{t('admin.providerConfigurationForm.contexteDExecution')}</p>
+            <label
+              htmlFor="provider-environment"
+              className="text-xs font-bold text-stone-900"
+            >
+              Environnement
+            </label>
+            <p className="text-micro text-stone-500 mb-2">
+              {t("admin.providerConfigurationForm.contexteDExecution")}
+            </p>
             <select
               id="provider-environment"
               value={environment}
@@ -127,14 +136,25 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
               className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-medium text-stone-800 h-control-touch"
             >
               <option value="demo">Demo (Simulation locale)</option>
-              <option value="sandbox">{t('admin.providerConfigurationForm.sandboxEnvironnementDeTestPartenaire')}</option>
-              <option value="production">{t('admin.providerConfigurationForm.productionServeurSecurise')}</option>
+              <option value="sandbox">
+                {t(
+                  "admin.providerConfigurationForm.sandboxEnvironnementDeTestPartenaire",
+                )}
+              </option>
+              <option value="production">
+                {t("admin.providerConfigurationForm.productionServeurSecurise")}
+              </option>
             </select>
           </div>
 
           {/* Priority */}
           <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
-            <label htmlFor="provider-priority" className="text-xs font-bold text-stone-900">{t('admin.providerConfigurationForm.prioriteDeRoutage')}</label>
+            <label
+              htmlFor="provider-priority"
+              className="text-xs font-bold text-stone-900"
+            >
+              {t("admin.providerConfigurationForm.prioriteDeRoutage")}
+            </label>
             <p className="text-micro text-stone-500 mb-2">
               1 = Primaire, 2 = Secours
             </p>
@@ -155,23 +175,33 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
       <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div>
-            <h2 className="text-sm font-bold text-stone-900">{t('admin.providerConfigurationForm.parametresTechniquesClesDApi')}</h2>
-            <p className="text-xs text-stone-500">{t('admin.providerConfigurationForm.lesClesSecretesSontGerees')}</p>
+            <h2 className="text-sm font-bold text-stone-900">
+              {t(
+                "admin.providerConfigurationForm.parametresTechniquesClesDApi",
+              )}
+            </h2>
+            <p className="text-xs text-stone-500">
+              {t("admin.providerConfigurationForm.lesClesSecretesSontGerees")}
+            </p>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
             <Lock className="w-3.5 h-3.5 text-warning" />
-            <span>{t('admin.providerConfigurationForm.securiteCertifiee')}</span>
+            <span>
+              {t("admin.providerConfigurationForm.securiteCertifiee")}
+            </span>
           </div>
         </div>
 
         {schemaFields.length === 0 ? (
-          <p className="text-xs text-stone-500 italic">{t('admin.providerConfigurationForm.aucunParametreRequisPourCette')}</p>
+          <p className="text-xs text-stone-500 italic">
+            {t("admin.providerConfigurationForm.aucunParametreRequisPourCette")}
+          </p>
         ) : (
           <div className="space-y-4">
             {schemaFields.map((field) => {
               const isSecret = field.secret;
-              const val = settings[field.key] ?? field.defaultValue ?? '';
+              const val = settings[field.key] ?? field.defaultValue ?? "";
 
               return (
                 <div key={field.key} className="space-y-1">
@@ -193,17 +223,37 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                   {isSecret ? (
                     <div className="p-3 rounded-lg border border-warning-border bg-warning-surface/40 space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-stone-600">{t('admin.providerConfigurationForm.statutDesIdentifiants')}</span>
+                        <span className="text-stone-600">
+                          {t(
+                            "admin.providerConfigurationForm.statutDesIdentifiants",
+                          )}
+                        </span>
                         <select
-                          aria-label={t('admin.providerConfigurationForm.statutDesIdentifiants')}
+                          aria-label={t(
+                            "admin.providerConfigurationForm.statutDesIdentifiants",
+                          )}
                           value={credentialStatus}
-                          onChange={(e) => setCredentialStatus(e.target.value as any)}
+                          onChange={(e) =>
+                            setCredentialStatus(e.target.value as any)
+                          }
                           className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning h-control-touch"
                         >
-                          <option value="configured">{t('admin.providerConfigurationForm.cleConfigureeEtValidee')}</option>
-                          <option value="not_configured">{t('admin.providerConfigurationForm.nonConfiguree')}</option>
-                          <option value="invalid">{t('admin.providerConfigurationForm.cleRevoqueeOuInvalide')}</option>
-                          <option value="expired">{t('admin.providerConfigurationForm.cleExpiree')}</option>
+                          <option value="configured">
+                            {t(
+                              "admin.providerConfigurationForm.cleConfigureeEtValidee",
+                            )}
+                          </option>
+                          <option value="not_configured">
+                            {t("admin.providerConfigurationForm.nonConfiguree")}
+                          </option>
+                          <option value="invalid">
+                            {t(
+                              "admin.providerConfigurationForm.cleRevoqueeOuInvalide",
+                            )}
+                          </option>
+                          <option value="expired">
+                            {t("admin.providerConfigurationForm.cleExpiree")}
+                          </option>
                         </select>
                       </div>
 
@@ -219,30 +269,44 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => toast.info('La rotation des clés réelles sera exécutée par le backend sécurisé.')}
+                          onClick={() =>
+                            toast.info(
+                              "La rotation des clés réelles sera exécutée par le backend sécurisé.",
+                            )
+                          }
                           className="text-xs shrink-0 h-control-sm"
                         >
                           Remplacer
                         </Button>
                       </div>
-                      <p className="text-micro text-stone-500">{t('admin.providerConfigurationForm.protectionRenforceeLeSecretReel')}</p>
+                      <p className="text-micro text-stone-500">
+                        {t(
+                          "admin.providerConfigurationForm.protectionRenforceeLeSecretReel",
+                        )}
+                      </p>
                     </div>
-                  ) : field.type === 'boolean' ? (
+                  ) : field.type === "boolean" ? (
                     <label className="flex items-center gap-2 cursor-pointer pt-1">
                       <input
                         id={`provider-field-${field.key}`}
                         type="checkbox"
                         checked={Boolean(val)}
-                        onChange={(e) => handleFieldChange(field.key, e.target.checked)}
+                        onChange={(e) =>
+                          handleFieldChange(field.key, e.target.checked)
+                        }
                         className="rounded border-stone-300 text-primary focus:ring-primary h-4 w-4"
                       />
-                      <span className="text-xs text-stone-700 font-medium">{field.description || 'Activer cette option'}</span>
+                      <span className="text-xs text-stone-700 font-medium">
+                        {field.description || "Activer cette option"}
+                      </span>
                     </label>
-                  ) : field.type === 'select' && field.options ? (
+                  ) : field.type === "select" && field.options ? (
                     <select
                       id={`provider-field-${field.key}`}
                       value={val}
-                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange(field.key, e.target.value)
+                      }
                       className="w-full py-2 px-3 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 h-control-touch"
                     >
                       {field.options.map((opt) => (
@@ -254,13 +318,15 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
                   ) : (
                     <input
                       id={`provider-field-${field.key}`}
-                      type={field.type === 'number' ? 'number' : 'text'}
+                      type={field.type === "number" ? "number" : "text"}
                       value={val}
                       placeholder={field.placeholder}
                       onChange={(e) =>
                         handleFieldChange(
                           field.key,
-                          field.type === 'number' ? Number(e.target.value) : e.target.value
+                          field.type === "number"
+                            ? Number(e.target.value)
+                            : e.target.value,
                         )
                       }
                       className="w-full h-control-touch py-2 px-3 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50"
@@ -282,7 +348,9 @@ export const ProviderConfigurationForm: React.FC<ProviderConfigurationFormProps>
           isLoading={isSaving}
           leftIcon={<Save className="w-4 h-4" />}
           className="text-xs font-bold"
-        >{t('admin.providerConfigurationForm.enregistrerLaConfiguration')}</Button>
+        >
+          {t("admin.providerConfigurationForm.enregistrerLaConfiguration")}
+        </Button>
       </div>
     </form>
   );

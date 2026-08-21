@@ -5,116 +5,103 @@
  */
 
 export type ProviderCategory =
-  | 'PAYMENT'
-  | 'PAYOUT'
-  | 'DELIVERY'
-  | 'AUTHENTICATION'
-  | 'EMAIL'
-  | 'SMS'
-  | 'PUSH'
-  | 'STORAGE'
-  | 'CDN'
-  | 'IMAGE_PROCESSING'
-  | 'MAPS'
-  | 'GEOCODING'
-  | 'SEARCH'
-  | 'AI'
-  | 'ANALYTICS'
-  | 'ERROR_MONITORING'
-  | 'FRAUD_RISK'
-  | 'CAPTCHA'
-  | 'CRM'
-  | 'INVOICING'
-  | 'IDENTITY_VERIFICATION'
-  | 'BUSINESS_VERIFICATION';
+  | "PAYMENT"
+  | "PAYOUT"
+  | "DELIVERY"
+  | "AUTHENTICATION"
+  | "EMAIL"
+  | "SMS"
+  | "PUSH"
+  | "STORAGE"
+  | "CDN"
+  | "IMAGE_PROCESSING"
+  | "MAPS"
+  | "GEOCODING"
+  | "SEARCH"
+  | "AI"
+  | "ANALYTICS"
+  | "ERROR_MONITORING"
+  | "FRAUD_RISK"
+  | "CAPTCHA"
+  | "CRM"
+  | "INVOICING"
+  | "IDENTITY_VERIFICATION"
+  | "BUSINESS_VERIFICATION";
 
 export type ProviderCapability =
   // Payment & Escrow
-  | 'payment.card'
-  | 'payment.wallet'
-  | 'payment.sepa'
-  | 'payment.escrow'
-  | 'payment.refund'
-  | 'payout.transfer'
-  | 'payout.instant'
+  | "payment.card"
+  | "payment.wallet"
+  | "payment.sepa"
+  | "payment.escrow"
+  | "payment.refund"
+  | "payout.transfer"
+  | "payout.instant"
   // Delivery & Logistics
-  | 'delivery.relay_point'
-  | 'delivery.home_delivery'
-  | 'delivery.express'
-  | 'delivery.bulky'
-  | 'delivery.quote'
-  | 'delivery.tracking'
-  | 'delivery.label'
+  | "delivery.relay_point"
+  | "delivery.home_delivery"
+  | "delivery.express"
+  | "delivery.bulky"
+  | "delivery.quote"
+  | "delivery.tracking"
+  | "delivery.label"
   // Authentication & SSO
-  | 'auth.oauth_google'
-  | 'auth.oauth_apple'
-  | 'auth.email_password'
-  | 'auth.mfa_totp'
-  | 'auth.session'
+  | "auth.oauth_google"
+  | "auth.oauth_apple"
+  | "auth.email_password"
+  | "auth.mfa_totp"
+  | "auth.session"
   // Communications
-  | 'email.transactional'
-  | 'email.marketing'
-  | 'sms.otp'
-  | 'sms.transactional'
-  | 'push.web'
-  | 'push.mobile'
+  | "email.transactional"
+  | "email.marketing"
+  | "sms.otp"
+  | "sms.transactional"
+  | "push.web"
+  | "push.mobile"
   // AI & Search
-  | 'ai.listing_assistance'
-  | 'ai.safety_audit'
-  | 'ai.prospect_research'
-  | 'ai.company_enrichment'
-  | 'search.marketplace'
-  | 'search.public_web'
+  | "ai.listing_assistance"
+  | "ai.safety_audit"
+  | "ai.prospect_research"
+  | "ai.company_enrichment"
+  | "search.marketplace"
+  | "search.public_web"
   // Maps & Location
-  | 'maps.display'
-  | 'maps.geocode'
-  | 'maps.reverse_geocode'
-  | 'maps.autocomplete'
+  | "maps.display"
+  | "maps.geocode"
+  | "maps.reverse_geocode"
+  | "maps.autocomplete"
   // KYC & KYB Verification
-  | 'verification.identity'
-  | 'verification.business'
-  | 'verification.vat'
+  | "verification.identity"
+  | "verification.business"
+  | "verification.vat"
   // Storage & Media
-  | 'storage.media'
-  | 'storage.document'
-  | 'cdn.delivery'
-  | 'image.optimization'
+  | "storage.media"
+  | "storage.document"
+  | "cdn.delivery"
+  | "image.optimization"
   // Analytics & Monitoring
-  | 'analytics.product'
-  | 'monitoring.error_tracking'
+  | "analytics.product"
+  | "monitoring.error_tracking"
   // Billing & Invoicing
-  | 'invoicing.subscription'
-  | 'invoicing.electronic'
+  | "invoicing.subscription"
+  | "invoicing.electronic"
   // Security & Trust
-  | 'security.captcha'
-  | 'security.fraud_risk';
+  | "security.captcha"
+  | "security.fraud_risk";
 
-export type ProviderEnvironment = 'demo' | 'sandbox' | 'production';
+export type ProviderEnvironment = "demo" | "sandbox" | "production";
 
 export type CredentialStatus =
-  | 'not_required'
-  | 'not_configured'
-  | 'configured'
-  | 'invalid'
-  | 'expired';
+  "not_required" | "not_configured" | "configured" | "invalid" | "expired";
 
 export type ProviderHealthStatus =
-  | 'unknown'
-  | 'healthy'
-  | 'degraded'
-  | 'unavailable';
+  "unknown" | "healthy" | "degraded" | "unavailable";
 
 export type ProviderStatus =
-  | 'draft'
-  | 'active'
-  | 'disabled'
-  | 'requires_configuration';
+  "draft" | "active" | "disabled" | "requires_configuration";
 
 export type IntegrationReadiness =
-  | 'implemented_demo'
-  | 'frontend_only'
-  | 'backend_pending'
-  | 'production_ready';
+  "implemented_demo" | "frontend_only" | "backend_pending" | "production_ready";
 
 export interface ConfigurationFieldOption {
   value: string;
@@ -125,7 +112,14 @@ export interface ConfigurationFieldOption {
 export interface ProviderConfigurationField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'boolean' | 'select' | 'multi-select' | 'url' | 'password';
+  type:
+    | "text"
+    | "number"
+    | "boolean"
+    | "select"
+    | "multi-select"
+    | "url"
+    | "password";
   description?: string;
   placeholder?: string;
   defaultValue?: any;
@@ -241,7 +235,7 @@ export interface CapabilityHealthResult {
   capability: ProviderCapability;
   category: ProviderCategory;
   marketCode: string;
-  status: 'operational' | 'degraded' | 'unavailable' | 'unconfigured';
+  status: "operational" | "degraded" | "unavailable" | "unconfigured";
   activeProviderName: string;
   activeProviderId: string;
   isFallbackActive: boolean;
@@ -270,7 +264,12 @@ export interface ProviderImpactAnalysis {
 export interface ProviderTestResult {
   providerId: string;
   success: boolean;
-  scenario: 'healthy' | 'missing_credentials' | 'timeout' | 'invalid_config' | 'unsupported_market';
+  scenario:
+    | "healthy"
+    | "missing_credentials"
+    | "timeout"
+    | "invalid_config"
+    | "unsupported_market";
   latencyMs: number;
   message: string;
   testedAt: string;
@@ -289,15 +288,15 @@ export interface ProviderAuditEvent {
   providerId: string;
   providerName: string;
   action:
-    | 'configured'
-    | 'enabled'
-    | 'disabled'
-    | 'priority_changed'
-    | 'environment_changed'
-    | 'credentials_updated'
-    | 'market_override_set'
-    | 'market_override_reset'
-    | 'health_simulated';
+    | "configured"
+    | "enabled"
+    | "disabled"
+    | "priority_changed"
+    | "environment_changed"
+    | "credentials_updated"
+    | "market_override_set"
+    | "market_override_reset"
+    | "health_simulated";
   marketCode?: string;
   details: string;
   previousValue?: any;

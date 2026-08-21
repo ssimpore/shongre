@@ -1,54 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { Mail, PlusCircle, Eye, Send } from "lucide-react";
+import { Button } from "../../design-system/primitives/Button";
+import { Badge } from "../../design-system/primitives/Badge";
+import { Modal } from "../../design-system/primitives/Modal";
 import {
-  Mail,
-  PlusCircle,
-  Eye,
-  Send
-  
-  
-  
-  
-  
-  
-  
-} from 'lucide-react';
-import { Button } from '../../design-system/primitives/Button';
-import { Badge } from '../../design-system/primitives/Badge';
-import { Modal } from '../../design-system/primitives/Modal';
-import { FormField, Input, Textarea, Select } from '../../design-system/primitives/FormField';
-import { NewsletterCampaign, NewsletterTopic } from '../../domains/newsletter/newsletter.types';
-import { newsletterRepository } from '../../repositories/newsletter.repository';
-import { newsletterTopicsService } from '../../domains/newsletter/newsletter.topics';
-import { useToast } from '../../app/providers/ToastProvider';
-import { formatDate } from '../../utilities/formatters';
-import { NewsletterPreviewModal } from '../newsletter/components/NewsletterPreviewModal';
-import { Skeleton, EmptyState } from '../../design-system';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+  FormField,
+  Input,
+  Textarea,
+  Select,
+} from "../../design-system/primitives/FormField";
+import {
+  NewsletterCampaign,
+  NewsletterTopic,
+} from "../../domains/newsletter/newsletter.types";
+import { newsletterRepository } from "../../repositories/newsletter.repository";
+import { newsletterTopicsService } from "../../domains/newsletter/newsletter.topics";
+import { useToast } from "../../app/providers/ToastProvider";
+import { formatDate } from "../../utilities/formatters";
+import { NewsletterPreviewModal } from "../newsletter/components/NewsletterPreviewModal";
+import { Skeleton, EmptyState } from "../../design-system";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const AdminNewsletterPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminNewsletter.title'),
-    description: t('meta.adminNewsletter.description'),
-    canonicalPath: '/admin/newsletter',
+    title: t("meta.adminNewsletter.title"),
+    description: t("meta.adminNewsletter.description"),
+    canonicalPath: "/admin/newsletter",
     noIndex: true,
   });
 
   const toast = useToast();
   const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [previewCampaign, setPreviewCampaign] = useState<NewsletterCampaign | null>(null);
+  const [previewCampaign, setPreviewCampaign] =
+    useState<NewsletterCampaign | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // New campaign form state
-  const [name, setName] = useState('');
-  const [subject, setSubject] = useState('');
-  const [previewText, setPreviewText] = useState('');
-  const [heroTitle, setHeroTitle] = useState('');
-  const [introText, setIntroText] = useState('');
-  const [targetAudience, setTargetAudience] = useState<'all' | 'individual' | 'pro'>('all');
-  const [targetTopic, setTargetTopic] = useState<NewsletterTopic>('editorial');
+  const [name, setName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [previewText, setPreviewText] = useState("");
+  const [heroTitle, setHeroTitle] = useState("");
+  const [introText, setIntroText] = useState("");
+  const [targetAudience, setTargetAudience] = useState<
+    "all" | "individual" | "pro"
+  >("all");
+  const [targetTopic, setTargetTopic] = useState<NewsletterTopic>("editorial");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCampaigns = async () => {
@@ -68,7 +67,7 @@ export const AdminNewsletterPage: React.FC = () => {
   const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !subject.trim()) {
-      toast.error('Veuillez renseigner le nom et l\'objet de la campagne.');
+      toast.error("Veuillez renseigner le nom et l'objet de la campagne.");
       return;
     }
 
@@ -79,32 +78,36 @@ export const AdminNewsletterPage: React.FC = () => {
         subject: subject.trim(),
         previewText: previewText.trim(),
         topic: targetTopic,
-        marketCode: 'FR',
-        locale: 'fr-FR',
+        marketCode: "FR",
+        locale: "fr-FR",
         audience: {
-          marketCode: 'FR',
-          accountTypes: targetAudience === 'all' ? ['individual', 'pro'] : [targetAudience],
+          marketCode: "FR",
+          accountTypes:
+            targetAudience === "all" ? ["individual", "pro"] : [targetAudience],
           topicIds: [targetTopic],
         },
         content: {
           heroTitle: heroTitle.trim() || subject.trim(),
           introText: introText.trim(),
-          ctaText: 'Découvrir la sélection',
-          ctaUrl: '/recherche',
+          ctaText: "Découvrir la sélection",
+          ctaUrl: "/recherche",
         },
-        status: 'ready',
+        status: "ready",
       });
 
       setIsCreateModalOpen(false);
-      setName('');
-      setSubject('');
-      setPreviewText('');
-      setHeroTitle('');
-      setIntroText('');
+      setName("");
+      setSubject("");
+      setPreviewText("");
+      setHeroTitle("");
+      setIntroText("");
       fetchCampaigns();
-      toast.success('Campagne newsletter créée avec succès.', 'Campagne enregistrée');
+      toast.success(
+        "Campagne newsletter créée avec succès.",
+        "Campagne enregistrée",
+      );
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la création.');
+      toast.error(err.message || "Erreur lors de la création.");
     } finally {
       setIsSubmitting(false);
     }
@@ -114,24 +117,47 @@ export const AdminNewsletterPage: React.FC = () => {
     try {
       await newsletterRepository.simulateSendCampaign(campaignId);
       fetchCampaigns();
-      toast.success('Envoi simulé avec succès aux abonnés ciblés.', 'Campagne envoyée');
+      toast.success(
+        "Envoi simulé avec succès aux abonnés ciblés.",
+        "Campagne envoyée",
+      );
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de l\'envoi.');
+      toast.error(err.message || "Erreur lors de l'envoi.");
     }
   };
 
-  const getStatusBadge = (status: NewsletterCampaign['status']) => {
+  const getStatusBadge = (status: NewsletterCampaign["status"]) => {
     switch (status) {
-      case 'sent':
-        return <Badge variant="success" size="sm">{t('admin.adminNewsletterPage.envoyee')}</Badge>;
-      case 'scheduled':
-        return <Badge variant="warning" size="sm">{t('admin.adminNewsletterPage.programmee')}</Badge>;
-      case 'ready':
-        return <Badge variant="primary" size="sm">{t('admin.adminNewsletterPage.prete')}</Badge>;
-      case 'draft':
-        return <Badge variant="neutral" size="sm">Brouillon</Badge>;
+      case "sent":
+        return (
+          <Badge variant="success" size="sm">
+            {t("admin.adminNewsletterPage.envoyee")}
+          </Badge>
+        );
+      case "scheduled":
+        return (
+          <Badge variant="warning" size="sm">
+            {t("admin.adminNewsletterPage.programmee")}
+          </Badge>
+        );
+      case "ready":
+        return (
+          <Badge variant="primary" size="sm">
+            {t("admin.adminNewsletterPage.prete")}
+          </Badge>
+        );
+      case "draft":
+        return (
+          <Badge variant="neutral" size="sm">
+            Brouillon
+          </Badge>
+        );
       default:
-        return <Badge variant="neutral" size="sm">{status}</Badge>;
+        return (
+          <Badge variant="neutral" size="sm">
+            {status}
+          </Badge>
+        );
     }
   };
 
@@ -143,7 +169,11 @@ export const AdminNewsletterPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Campagnes & Newsletters Marketing
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('admin.adminNewsletterPage.editionDesSelectionsHebdomadairesCiblage')}</p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            {t(
+              "admin.adminNewsletterPage.editionDesSelectionsHebdomadairesCiblage",
+            )}
+          </p>
         </div>
 
         <Button
@@ -160,29 +190,43 @@ export const AdminNewsletterPage: React.FC = () => {
       {/* 2. Overview Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-border-base rounded-2xl p-5 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('admin.adminNewsletterPage.abonnesActifsFr')}</span>
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+            {t("admin.adminNewsletterPage.abonnesActifsFr")}
+          </span>
           <div className="text-2xl font-black text-stone-900">4 680</div>
-          <span className="text-micro text-success font-bold">{t('admin.adminNewsletterPage.84CeMoisCi')}</span>
+          <span className="text-micro text-success font-bold">
+            {t("admin.adminNewsletterPage.84CeMoisCi")}
+          </span>
         </div>
 
         <div className="bg-white border border-border-base rounded-2xl p-5 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('admin.adminNewsletterPage.tauxDOuvertureEstime')}</span>
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+            {t("admin.adminNewsletterPage.tauxDOuvertureEstime")}
+          </span>
           <div className="text-2xl font-black text-stone-900">46.2%</div>
-          <span className="text-micro text-stone-500">{t('admin.adminNewsletterPage.moyenneSurLes5Dernieres')}</span>
+          <span className="text-micro text-stone-500">
+            {t("admin.adminNewsletterPage.moyenneSurLes5Dernieres")}
+          </span>
         </div>
 
         <div className="bg-white border border-border-base rounded-2xl p-5 space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{t('admin.adminNewsletterPage.campagnesDiffusees')}</span>
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+            {t("admin.adminNewsletterPage.campagnesDiffusees")}
+          </span>
           <div className="text-2xl font-black text-stone-900">
-            {campaigns.filter((c) => c.status === 'sent').length}
+            {campaigns.filter((c) => c.status === "sent").length}
           </div>
-          <span className="text-micro text-stone-500">{t('admin.adminNewsletterPage.editionsHebdomadairesEtFlash')}</span>
+          <span className="text-micro text-stone-500">
+            {t("admin.adminNewsletterPage.editionsHebdomadairesEtFlash")}
+          </span>
         </div>
       </div>
 
       {/* 3. Campaigns List */}
       <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-        <h2 className="text-base font-black text-stone-900">{t('admin.adminNewsletterPage.historiqueDesCampagnes')}</h2>
+        <h2 className="text-base font-black text-stone-900">
+          {t("admin.adminNewsletterPage.historiqueDesCampagnes")}
+        </h2>
 
         {loading ? (
           <div className="space-y-3">
@@ -193,8 +237,10 @@ export const AdminNewsletterPage: React.FC = () => {
         ) : campaigns.length === 0 ? (
           <EmptyState
             icon={<Mail className="w-8 h-8 text-stone-500" />}
-            title={t('admin.adminNewsletterPage.aucuneCampagneCreee')}
-            description={t('admin.adminNewsletterPage.creezUnePremiereCampagnePour')}
+            title={t("admin.adminNewsletterPage.aucuneCampagneCreee")}
+            description={t(
+              "admin.adminNewsletterPage.creezUnePremiereCampagnePour",
+            )}
             className="border-0 shadow-none"
             action={
               <Button
@@ -224,21 +270,30 @@ export const AdminNewsletterPage: React.FC = () => {
                       {camp.sentAt
                         ? `Envoyée le ${formatDate(camp.sentAt)}`
                         : camp.scheduledAt
-                        ? `Programmée le ${formatDate(camp.scheduledAt)}`
-                        : `Créée le ${formatDate(camp.createdAt)}`}
+                          ? `Programmée le ${formatDate(camp.scheduledAt)}`
+                          : `Créée le ${formatDate(camp.createdAt)}`}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-black text-stone-900 truncate">{camp.name}</h3>
+                  <h3 className="text-sm font-black text-stone-900 truncate">
+                    {camp.name}
+                  </h3>
                   <p className="text-xs text-stone-500 truncate">
                     Objet : <strong>{camp.subject}</strong>
                   </p>
 
                   {camp.stats && (
                     <div className="flex items-center gap-4 text-micro text-stone-600 pt-1 font-medium">
-                      <span>Destinataires : <strong>{camp.stats.recipientsCount}</strong></span>
-                      <span>Ouvertures : <strong>{camp.stats.openedCount}</strong></span>
-                      <span>Clics : <strong>{camp.stats.clickedCount}</strong></span>
+                      <span>
+                        Destinataires :{" "}
+                        <strong>{camp.stats.recipientsCount}</strong>
+                      </span>
+                      <span>
+                        Ouvertures : <strong>{camp.stats.openedCount}</strong>
+                      </span>
+                      <span>
+                        Clics : <strong>{camp.stats.clickedCount}</strong>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -251,10 +306,10 @@ export const AdminNewsletterPage: React.FC = () => {
                     className="font-bold flex items-center gap-1.5"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>{t('admin.adminNewsletterPage.apercu')}</span>
+                    <span>{t("admin.adminNewsletterPage.apercu")}</span>
                   </Button>
 
-                  {camp.status !== 'sent' && (
+                  {camp.status !== "sent" && (
                     <Button
                       variant="primary"
                       size="sm"
@@ -285,51 +340,67 @@ export const AdminNewsletterPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title={t('admin.adminNewsletterPage.creerUneCampagneNewsletter')}
-        description={t('admin.adminNewsletterPage.redigezEtCiblezUneNouvelle')}
+        title={t("admin.adminNewsletterPage.creerUneCampagneNewsletter")}
+        description={t("admin.adminNewsletterPage.redigezEtCiblezUneNouvelle")}
       >
         <form onSubmit={handleCreateCampaign} className="space-y-4 text-xs">
-          <FormField label={t('admin.adminNewsletterPage.nomInterneDeLaCampagne')} required>
+          <FormField
+            label={t("admin.adminNewsletterPage.nomInterneDeLaCampagne")}
+            required
+          >
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={t('admin.adminNewsletterPage.exSelectionVelosVintageSemaine')}
+              placeholder={t(
+                "admin.adminNewsletterPage.exSelectionVelosVintageSemaine",
+              )}
             />
           </FormField>
 
-          <FormField label={t('admin.adminNewsletterPage.objetDeLEmail')} required>
+          <FormField
+            label={t("admin.adminNewsletterPage.objetDeLEmail")}
+            required
+          >
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder={t('admin.adminNewsletterPage.exLesMeilleuresAffairesVelo')}
+              placeholder={t(
+                "admin.adminNewsletterPage.exLesMeilleuresAffairesVelo",
+              )}
             />
           </FormField>
 
-          <FormField label={t('admin.adminNewsletterPage.texteDApercuPreheader')}>
+          <FormField
+            label={t("admin.adminNewsletterPage.texteDApercuPreheader")}
+          >
             <Input
               value={previewText}
               onChange={(e) => setPreviewText(e.target.value)}
-              placeholder={t('admin.adminNewsletterPage.exJusquA40Sur')}
+              placeholder={t("admin.adminNewsletterPage.exJusquA40Sur")}
             />
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label={t('admin.adminNewsletterPage.audienceCiblee')}>
+            <FormField label={t("admin.adminNewsletterPage.audienceCiblee")}>
               <Select
-                aria-label={t('admin.adminNewsletterPage.audienceCibleeParLEnvoi')}
+                aria-label={t(
+                  "admin.adminNewsletterPage.audienceCibleeParLEnvoi",
+                )}
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value as any)}
                 options={[
-                  { value: 'all', label: 'Tous les abonnés' },
-                  { value: 'individual', label: 'Particuliers uniquement' },
-                  { value: 'pro', label: 'Professionnels uniquement' },
+                  { value: "all", label: "Tous les abonnés" },
+                  { value: "individual", label: "Particuliers uniquement" },
+                  { value: "pro", label: "Professionnels uniquement" },
                 ]}
               />
             </FormField>
 
-            <FormField label={t('admin.adminNewsletterPage.thematique')}>
+            <FormField label={t("admin.adminNewsletterPage.thematique")}>
               <Select
-                aria-label={t('admin.adminNewsletterPage.thematiqueCibleeParLEnvoi')}
+                aria-label={t(
+                  "admin.adminNewsletterPage.thematiqueCibleeParLEnvoi",
+                )}
                 value={targetTopic}
                 onChange={(e) => setTargetTopic(e.target.value as any)}
                 options={newsletterTopicsService.getAllTopics().map((t) => ({
@@ -344,16 +415,20 @@ export const AdminNewsletterPage: React.FC = () => {
             <Input
               value={heroTitle}
               onChange={(e) => setHeroTitle(e.target.value)}
-              placeholder={t('admin.adminNewsletterPage.titreDAccrocheDansL')}
+              placeholder={t("admin.adminNewsletterPage.titreDAccrocheDansL")}
             />
           </FormField>
 
-          <FormField label={t('admin.adminNewsletterPage.texteDIntroductionEditorial')}>
+          <FormField
+            label={t("admin.adminNewsletterPage.texteDIntroductionEditorial")}
+          >
             <Textarea
               rows={3}
               value={introText}
               onChange={(e) => setIntroText(e.target.value)}
-              placeholder={t('admin.adminNewsletterPage.quelquesPhrasesPourContextualiserLa')}
+              placeholder={t(
+                "admin.adminNewsletterPage.quelquesPhrasesPourContextualiserLa",
+              )}
             />
           </FormField>
 
@@ -373,7 +448,7 @@ export const AdminNewsletterPage: React.FC = () => {
               disabled={isSubmitting}
               className="font-bold"
             >
-              {isSubmitting ? 'Création...' : 'Créer la campagne'}
+              {isSubmitting ? "Création..." : "Créer la campagne"}
             </Button>
           </div>
         </form>

@@ -1,18 +1,16 @@
-import React from 'react';
+import React from "react";
 import {
   ChevronDown,
   ChevronRight,
   Plus,
   ArrowUp,
   ArrowDown,
-  
-  
   Archive,
-  Layers
-} from 'lucide-react';
-import { TaxonomyNode } from '../../../../domains/taxonomy/taxonomy.types';
-import { CategoryIcon } from '../../../../design-system/primitives/CategoryIcon';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+  Layers,
+} from "lucide-react";
+import { TaxonomyNode } from "../../../../domains/taxonomy/taxonomy.types";
+import { CategoryIcon } from "../../../../design-system/primitives/CategoryIcon";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 export interface TaxonomyHierarchyTreeProps {
   nodes: TaxonomyNode[];
@@ -20,7 +18,11 @@ export interface TaxonomyHierarchyTreeProps {
   onSelectNode: (node: TaxonomyNode) => void;
   expandedNodes: Record<string, boolean>;
   onToggleExpand: (nodeId: string, e: React.MouseEvent) => void;
-  onReorderNode: (nodeId: string, direction: 'up' | 'down', e: React.MouseEvent) => void;
+  onReorderNode: (
+    nodeId: string,
+    direction: "up" | "down",
+    e: React.MouseEvent,
+  ) => void;
   onAddChild: (parentNode: TaxonomyNode, e: React.MouseEvent) => void;
   searchQuery?: string;
   levelFilter?: string;
@@ -35,27 +37,36 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
   onToggleExpand,
   onReorderNode,
   onAddChild,
-  searchQuery = '',
-  levelFilter = 'all',
-  statusFilter = 'all',
+  searchQuery = "",
+  levelFilter = "all",
+  statusFilter = "all",
 }) => {
   const { t } = useTranslation();
   const matchesFilter = (node: TaxonomyNode): boolean => {
     // 1. Level filter
-    if (levelFilter !== 'all' && node.level !== levelFilter) return false;
+    if (levelFilter !== "all" && node.level !== levelFilter) return false;
     // 2. Status filter
-    if (statusFilter !== 'all' && node.status !== statusFilter) return false;
+    if (statusFilter !== "all" && node.status !== statusFilter) return false;
     // 3. Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const matchName = node.name.toLowerCase().includes(q);
-      const matchLabel = (node.label || '').toLowerCase().includes(q);
-      const matchShort = (node.shortLabel || '').toLowerCase().includes(q);
+      const matchLabel = (node.label || "").toLowerCase().includes(q);
+      const matchShort = (node.shortLabel || "").toLowerCase().includes(q);
       const matchSlug = node.slug.toLowerCase().includes(q);
       const matchId = node.id.toLowerCase().includes(q);
-      const matchAlias = (node.aliases || []).some((a) => a.toLowerCase().includes(q));
+      const matchAlias = (node.aliases || []).some((a) =>
+        a.toLowerCase().includes(q),
+      );
 
-      if (matchName || matchLabel || matchShort || matchSlug || matchId || matchAlias) {
+      if (
+        matchName ||
+        matchLabel ||
+        matchShort ||
+        matchSlug ||
+        matchId ||
+        matchAlias
+      ) {
         return true;
       }
       // Check if any descendant matches
@@ -67,9 +78,15 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
     return true;
   };
 
-  const renderNodeRow = (node: TaxonomyNode, depth: number, index: number, totalSiblings: number) => {
+  const renderNodeRow = (
+    node: TaxonomyNode,
+    depth: number,
+    index: number,
+    totalSiblings: number,
+  ) => {
     const isSelected = selectedNodeId === node.id;
-    const isExpanded = Boolean(expandedNodes[node.id]) || Boolean(searchQuery.trim());
+    const isExpanded =
+      Boolean(expandedNodes[node.id]) || Boolean(searchQuery.trim());
     const hasChildren = Boolean(node.children && node.children.length > 0);
     const visibleChildren = (node.children || []).filter(matchesFilter);
 
@@ -82,8 +99,8 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
         <div
           className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-fast border ${
             isSelected
-              ? 'bg-primary-light/80 border-primary text-primary font-bold shadow-xs'
-              : 'border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle'
+              ? "bg-primary-light/80 border-primary text-primary font-bold shadow-xs"
+              : "border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle"
           }`}
           style={{ paddingLeft: `${Math.max(8, depth * 18 + 8)}px` }}
         >
@@ -101,8 +118,12 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                    name they had, and it is never surfaced on a touch device. */
                 aria-label={
                   isExpanded
-                    ? t('admin.taxonomyHierarchyTree.replierNode', { name: node.name })
-                    : t('admin.taxonomyHierarchyTree.deplierNode', { name: node.name })
+                    ? t("admin.taxonomyHierarchyTree.replierNode", {
+                        name: node.name,
+                      })
+                    : t("admin.taxonomyHierarchyTree.deplierNode", {
+                        name: node.name,
+                      })
                 }
                 aria-expanded={isExpanded}
               >
@@ -136,15 +157,15 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               </span>
 
               {/* Status indicators */}
-              {node.status === 'draft' && (
+              {node.status === "draft" && (
                 <span className="shrink-0 text-micro bg-stone-100 text-stone-600 px-1.5 py-0.2 rounded font-bold uppercase">
                   Brouillon
                 </span>
               )}
-              {node.status === 'deprecated' && (
+              {node.status === "deprecated" && (
                 <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
                   <Archive className="w-2.5 h-2.5" />
-                  {t('admin.taxonomyHierarchyTree.deprecie')}
+                  {t("admin.taxonomyHierarchyTree.deprecie")}
                 </span>
               )}
             </button>
@@ -159,9 +180,11 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
             {index > 0 && (
               <button
                 type="button"
-                onClick={(e) => onReorderNode(node.id, 'up', e)}
+                onClick={(e) => onReorderNode(node.id, "up", e)}
                 className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
-                aria-label={t('admin.taxonomyHierarchyTree.monterNode', { name: node.name })}
+                aria-label={t("admin.taxonomyHierarchyTree.monterNode", {
+                  name: node.name,
+                })}
               >
                 <ArrowUp className="w-3 h-3" />
               </button>
@@ -169,21 +192,26 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
             {index < totalSiblings - 1 && (
               <button
                 type="button"
-                onClick={(e) => onReorderNode(node.id, 'down', e)}
+                onClick={(e) => onReorderNode(node.id, "down", e)}
                 className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
-                aria-label={t('admin.taxonomyHierarchyTree.descendreNode', { name: node.name })}
+                aria-label={t("admin.taxonomyHierarchyTree.descendreNode", {
+                  name: node.name,
+                })}
               >
                 <ArrowDown className="w-3 h-3" />
               </button>
             )}
 
             {/* Context Add Child */}
-            {node.level !== 'subtype' && (
+            {node.level !== "subtype" && (
               <button
                 type="button"
                 onClick={(e) => onAddChild(node, e)}
                 className="p-1 rounded text-stone-500 hover:text-primary hover:bg-primary-light min-w-6 min-h-6 inline-flex items-center justify-center"
-                aria-label={t('admin.taxonomyHierarchyTree.ajouterSousRubriqueNode', { name: node.name })}
+                aria-label={t(
+                  "admin.taxonomyHierarchyTree.ajouterSousRubriqueNode",
+                  { name: node.name },
+                )}
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -202,7 +230,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
         {hasChildren && isExpanded && (
           <div className="space-y-0.5 border-l border-stone-200/60 ml-4 pl-1">
             {visibleChildren.map((child, cIdx) =>
-              renderNodeRow(child, depth + 1, cIdx, visibleChildren.length)
+              renderNodeRow(child, depth + 1, cIdx, visibleChildren.length),
             )}
           </div>
         )}
@@ -217,12 +245,18 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
       {filteredRoots.length === 0 ? (
         <div className="p-8 text-center text-xs text-stone-500 border border-dashed rounded-2xl">
           <Layers className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-          <p className="font-semibold text-stone-600">{t('admin.taxonomyHierarchyTree.aucuneRubriqueNeCorrespondA')}</p>
-          <p className="text-micro text-stone-500 mt-1">{t('admin.taxonomyHierarchyTree.modifiezVotreRechercheOuReinitialisez')}</p>
+          <p className="font-semibold text-stone-600">
+            {t("admin.taxonomyHierarchyTree.aucuneRubriqueNeCorrespondA")}
+          </p>
+          <p className="text-micro text-stone-500 mt-1">
+            {t(
+              "admin.taxonomyHierarchyTree.modifiezVotreRechercheOuReinitialisez",
+            )}
+          </p>
         </div>
       ) : (
         filteredRoots.map((root, idx) =>
-          renderNodeRow(root, 0, idx, filteredRoots.length)
+          renderNodeRow(root, 0, idx, filteredRoots.length),
         )
       )}
     </div>

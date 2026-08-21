@@ -12,10 +12,10 @@
  * Keeping the identity here and the messages there means the data path costs
  * nothing but a string.
  */
-export const DEFAULT_LOCALE = 'fr-FR';
+export const DEFAULT_LOCALE = "fr-FR";
 
 /** Locales the product has data or messages for. */
-export const KNOWN_LOCALES = ['fr-FR', 'en-US'] as const;
+export const KNOWN_LOCALES = ["fr-FR", "en-US"] as const;
 
 /**
  * Normalises a requested locale to one we recognise, matching on the language
@@ -26,9 +26,9 @@ export function normaliseLocale(locale: string | undefined): string {
   if (!locale) return DEFAULT_LOCALE;
   if ((KNOWN_LOCALES as readonly string[]).includes(locale)) return locale;
 
-  const language = locale.split('-')[0].toLowerCase();
+  const language = locale.split("-")[0].toLowerCase();
   const match = KNOWN_LOCALES.find(
-    (candidate) => candidate.split('-')[0].toLowerCase() === language,
+    (candidate) => candidate.split("-")[0].toLowerCase() === language,
   );
   return match ?? DEFAULT_LOCALE;
 }

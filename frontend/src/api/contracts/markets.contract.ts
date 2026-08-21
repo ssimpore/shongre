@@ -1,4 +1,4 @@
-import { CountryMarketDefinition } from '../../configuration/market.config';
+import { CountryMarketDefinition } from "../../configuration/market.config";
 
 export interface MarketsServiceContract {
   getAllMarkets(): Promise<CountryMarketDefinition[]>;

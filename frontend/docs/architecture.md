@@ -2,15 +2,16 @@
 
 ## 1. System Overview
 
-The Shongre frontend is a Single Page Application built with React 19, TypeScript, and Vite. It is designed to work in two independent modes:
-- **Standalone Demo Mode** (`VITE_DATA_MODE=demo`): Operates with deterministic local service adapters and state stores. Backend is completely optional and does not need to run.
-- **Live HTTP API Mode** (`VITE_DATA_MODE=api`): Connects over REST HTTP to the Shongre backend API (`/api/v1/*`), with structured error handling, auth token management, and request tracing.
+The Shongre frontend is a Next.js App Router application built with React 19 and TypeScript. The server-rendered app shell owns metadata, structured data, robots, sitemap, and the manifest. The mature marketplace UI is mounted behind one client boundary while routes are migrated incrementally to Server Components. It operates in two independent data modes:
+
+- **Standalone Demo Mode** (`NEXT_PUBLIC_DATA_MODE=demo`): Operates with deterministic local service adapters and state stores. Backend is completely optional and does not need to run.
+- **Live HTTP API Mode** (`NEXT_PUBLIC_DATA_MODE=api`): Connects over REST HTTP to the Shongre backend API (`/api/v1/*`), with structured error handling, auth token management, and request tracing.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                          FRONTEND                           │
 │                                                             │
-│  VITE_DATA_MODE=demo                 VITE_DATA_MODE=api     │
+│ NEXT_PUBLIC_DATA_MODE=demo      NEXT_PUBLIC_DATA_MODE=api  │
 │         │                                    │              │
 │         ▼                                    ▼              │
 │    Demo Adapters                       HTTP Adapters        │

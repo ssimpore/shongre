@@ -1,38 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Headphones,
   PlusCircle,
-  
-  
   ChevronRight,
-  MessageSquare
-  
-} from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { Badge } from '../../design-system/primitives/Badge';
-import { SupportRequest, SupportRequestStatus } from '../../domains/support/support.types';
-import { supportService } from '../../domains/support/support.service';
-import { supportRepository } from '../../repositories/support.repository';
-import { formatDate } from '../../utilities/formatters';
-import { Skeleton } from '../../design-system';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+  MessageSquare,
+} from "lucide-react";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { Button } from "../../design-system/primitives/Button";
+import { Badge } from "../../design-system/primitives/Badge";
+import {
+  SupportRequest,
+  SupportRequestStatus,
+} from "../../domains/support/support.types";
+import { supportService } from "../../domains/support/support.service";
+import { supportRepository } from "../../repositories/support.repository";
+import { formatDate } from "../../utilities/formatters";
+import { Skeleton } from "../../design-system";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const SupportRequestsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.supportRequests.title'),
-    description: t('meta.supportRequests.description'),
-    canonicalPath: '/compte/support',
+    title: t("meta.supportRequests.title"),
+    description: t("meta.supportRequests.description"),
+    canonicalPath: "/compte/support",
     noIndex: true,
   });
 
   const { currentUser } = useAuth();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -41,7 +41,7 @@ export const SupportRequestsPage: React.FC = () => {
       try {
         const res = await supportRepository.getRequests({
           requesterId: currentUser.id,
-          status: filterStatus as SupportRequestStatus | 'all',
+          status: filterStatus as SupportRequestStatus | "all",
         });
         setRequests(res.requests);
       } finally {
@@ -52,10 +52,10 @@ export const SupportRequestsPage: React.FC = () => {
   }, [currentUser, filterStatus]);
 
   const tabs = [
-    { id: 'all', label: 'Toutes les demandes' },
-    { id: 'waiting_for_user', label: 'Action requise' },
-    { id: 'in_progress', label: 'En cours' },
-    { id: 'resolved', label: 'Résolues' },
+    { id: "all", label: "Toutes les demandes" },
+    { id: "waiting_for_user", label: "Action requise" },
+    { id: "in_progress", label: "En cours" },
+    { id: "resolved", label: "Résolues" },
   ];
 
   return (
@@ -63,8 +63,12 @@ export const SupportRequestsPage: React.FC = () => {
       {/* 1. Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">Aide & Assistance</h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('support.supportRequestsPage.suivezLEtatDeVos')}</p>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+            Aide & Assistance
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            {t("support.supportRequestsPage.suivezLEtatDeVos")}
+          </p>
         </div>
 
         <Button
@@ -89,8 +93,8 @@ export const SupportRequestsPage: React.FC = () => {
               onClick={() => setFilterStatus(tab.id)}
               className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap transition-colors border-b-2 -mb-px cursor-pointer ${
                 isActive
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-stone-500 hover:text-stone-900'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-stone-500 hover:text-stone-900"
               }`}
             >
               {tab.label}
@@ -112,18 +116,27 @@ export const SupportRequestsPage: React.FC = () => {
             <Headphones className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-base font-black text-stone-900">Aucune demande en cours</h2>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">{t('support.supportRequestsPage.siVousRencontrezUneDifficulte')}</p>
+            <h2 className="text-base font-black text-stone-900">
+              Aucune demande en cours
+            </h2>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              {t("support.supportRequestsPage.siVousRencontrezUneDifficulte")}
+            </p>
           </div>
           <Button
             to="/contact"
             variant="outline"
             size="sm"
             className="font-bold"
-          >{t('support.supportRequestsPage.contacterLeSupport')}</Button>
+          >
+            {t("support.supportRequestsPage.contacterLeSupport")}
+          </Button>
         </div>
       ) : (
-        <section aria-labelledby="support-requests-heading" className="space-y-3">
+        <section
+          aria-labelledby="support-requests-heading"
+          className="space-y-3"
+        >
           <h2 id="support-requests-heading" className="sr-only">
             Mes demandes d'assistance
           </h2>
@@ -157,7 +170,8 @@ export const SupportRequestsPage: React.FC = () => {
                   </h3>
 
                   <p className="text-xs text-stone-600 line-clamp-1">
-                    {req.messages[req.messages.length - 1]?.content || req.description}
+                    {req.messages[req.messages.length - 1]?.content ||
+                      req.description}
                   </p>
                 </div>
 

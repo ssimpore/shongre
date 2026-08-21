@@ -1,6 +1,9 @@
-import { WorkspaceServiceContract, UserWorkspaceSummary } from '../../contracts/workspace.contract';
-import { httpClient } from './http-client';
-import { Listing } from '../../../types';
+import {
+  WorkspaceServiceContract,
+  UserWorkspaceSummary,
+} from "../../contracts/workspace.contract";
+import { httpClient } from "./http-client";
+import { Listing } from "../../../types";
 
 export class HttpWorkspaceService implements WorkspaceServiceContract {
   async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {

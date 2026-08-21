@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Sparkles,
   MessageSquare,
@@ -10,94 +10,100 @@ import {
   ShieldAlert,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
-import { NotificationType } from '../../../domains/notifications/notification.types';
-import { useNotifications } from '../../../app/providers/NotificationProvider';
-import { useTranslation } from '../../../i18n/I18nProvider';
+} from "lucide-react";
+import { NotificationType } from "../../../domains/notifications/notification.types";
+import { useNotifications } from "../../../app/providers/NotificationProvider";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export const NotificationDemoToolbar: React.FC = () => {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const { simulateNotification } = useNotifications();
 
-  const scenarios: { label: string; type: NotificationType; icon: React.ReactNode; context?: any }[] = [
+  const scenarios: {
+    label: string;
+    type: NotificationType;
+    icon: React.ReactNode;
+    context?: any;
+  }[] = [
     {
-      label: 'Nouveau message',
-      type: 'message.received',
+      label: "Nouveau message",
+      type: "message.received",
       icon: <MessageSquare className="w-3.5 h-3.5 text-info" />,
       context: {
-        type: 'conversation',
-        conversationId: 'conv-101',
-        senderName: 'Marie Dupont',
-        previewText: 'Bonjour, l\'article est-il disponible pour un envoi rapide ?',
+        type: "conversation",
+        conversationId: "conv-101",
+        senderName: "Marie Dupont",
+        previewText:
+          "Bonjour, l'article est-il disponible pour un envoi rapide ?",
       },
     },
     {
-      label: 'Réservation acceptée',
-      type: 'reservation.accepted',
+      label: "Réservation acceptée",
+      type: "reservation.accepted",
       icon: <ShoppingBag className="w-3.5 h-3.5 text-success" />,
       context: {
-        type: 'transaction',
-        transactionId: 'tx-201',
-        listingTitle: 'Table à manger en teck massif',
+        type: "transaction",
+        transactionId: "tx-201",
+        listingTitle: "Table à manger en teck massif",
       },
     },
     {
-      label: 'Nouvelle commande',
-      type: 'order.created',
+      label: "Nouvelle commande",
+      type: "order.created",
       icon: <ShoppingBag className="w-3.5 h-3.5 text-success" />,
       context: {
-        type: 'transaction',
-        transactionId: 'tx-301',
-        listingTitle: 'Vélo Gravel Canyon Grizl 7',
+        type: "transaction",
+        transactionId: "tx-301",
+        listingTitle: "Vélo Gravel Canyon Grizl 7",
       },
     },
     {
-      label: 'Paiement échoué (Critique)',
-      type: 'payment.failed',
+      label: "Paiement échoué (Critique)",
+      type: "payment.failed",
       icon: <AlertCircle className="w-3.5 h-3.5 text-danger" />,
       context: {
-        type: 'transaction',
-        transactionId: 'tx-401',
+        type: "transaction",
+        transactionId: "tx-401",
       },
     },
     {
-      label: 'Colis expédié',
-      type: 'fulfillment.shipped',
+      label: "Colis expédié",
+      type: "fulfillment.shipped",
       icon: <Package className="w-3.5 h-3.5 text-indigo-600" />,
       context: {
-        type: 'transaction',
-        transactionId: 'tx-501',
-        listingTitle: 'iPhone 15 Pro Max 256Go',
+        type: "transaction",
+        transactionId: "tx-501",
+        listingTitle: "iPhone 15 Pro Max 256Go",
       },
     },
     {
-      label: 'Avis 5 étoiles reçu',
-      type: 'review.received',
+      label: "Avis 5 étoiles reçu",
+      type: "review.received",
       icon: <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />,
       context: {
-        type: 'account',
-        reviewerName: 'Julien M.',
+        type: "account",
+        reviewerName: "Julien M.",
         rating: 5,
       },
     },
     {
-      label: 'Abonnement Pro activé',
-      type: 'subscription.started',
+      label: "Abonnement Pro activé",
+      type: "subscription.started",
       icon: <DollarSign className="w-3.5 h-3.5 text-warning" />,
       context: {
-        type: 'subscription',
-        planId: 'plan_pro_premium',
-        planName: 'Forfait Pro Illimité',
+        type: "subscription",
+        planId: "plan_pro_premium",
+        planName: "Forfait Pro Illimité",
       },
     },
     {
-      label: 'Signalement modérateur',
-      type: 'moderation.report_assigned',
+      label: "Signalement modérateur",
+      type: "moderation.report_assigned",
       icon: <ShieldAlert className="w-3.5 h-3.5 text-stone-700" />,
       context: {
-        type: 'moderation',
-        reportId: '9842',
+        type: "moderation",
+        reportId: "9842",
       },
     },
   ];
@@ -111,14 +117,26 @@ export const NotificationDemoToolbar: React.FC = () => {
       >
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>{t('notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel')}</span>
+          <span>
+            {t(
+              "notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel",
+            )}
+          </span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )}
       </button>
 
       {isExpanded && (
         <div className="pt-2 border-t border-stone-800 space-y-2">
-          <p className="text-micro text-stone-500">{t('notifications.notificationDemoToolbar.cliquezSurUnScenarioPour')}</p>
+          <p className="text-micro text-stone-500">
+            {t(
+              "notifications.notificationDemoToolbar.cliquezSurUnScenarioPour",
+            )}
+          </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {scenarios.map((sc, idx) => (

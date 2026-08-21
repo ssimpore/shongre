@@ -1,4 +1,4 @@
-import { NotificationItem } from '../../types';
+import { NotificationItem } from "../../types";
 
 export interface NotificationsServiceContract {
   getUserNotifications(userId: string): Promise<NotificationItem[]>;

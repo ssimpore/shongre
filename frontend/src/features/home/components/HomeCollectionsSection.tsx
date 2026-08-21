@@ -1,11 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
-import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
-import { Image } from '../../../design-system/primitives/Image';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import type { MessageKey } from '../../../i18n/messages.fr';
-import { HomeSectionHeading } from './HomeSectionHeading';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Sparkles } from "lucide-react";
+import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
+import { Image } from "../../../design-system/primitives/Image";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import type { MessageKey } from "../../../i18n/messages.fr";
+import { HomeSectionHeading } from "./HomeSectionHeading";
 
 interface TrendingCollectionItem {
   id: string;
@@ -16,34 +16,39 @@ interface TrendingCollectionItem {
 
 const TRENDING_COLLECTIONS: TrendingCollectionItem[] = [
   {
-    id: 'piece-manquante',
-    titleKey: 'home.homeCollectionsSection.laPieceManquante',
-    imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80',
-    to: '/recherche?q=jante+roue+piece+auto',
+    id: "piece-manquante",
+    titleKey: "home.homeCollectionsSection.laPieceManquante",
+    imageUrl:
+      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80",
+    to: "/recherche?q=jante+roue+piece+auto",
   },
   {
-    id: 'velo-famille',
-    titleKey: 'home.homeCollectionsSection.aVeloEnFamille',
-    imageUrl: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80',
-    to: '/recherche?category=velos',
+    id: "velo-famille",
+    titleKey: "home.homeCollectionsSection.aVeloEnFamille",
+    imageUrl:
+      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
+    to: "/recherche?category=velos",
   },
   {
-    id: 'amenagez-exterieur',
-    titleKey: 'home.homeCollectionsSection.amenagezVotreExterieur',
-    imageUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
-    to: '/recherche?category=maison-deco',
+    id: "amenagez-exterieur",
+    titleKey: "home.homeCollectionsSection.amenagezVotreExterieur",
+    imageUrl:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
+    to: "/recherche?category=maison-deco",
   },
   {
-    id: 'petit-plongeon',
-    titleKey: 'home.homeCollectionsSection.unPetitPlongeon',
-    imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80',
-    to: '/recherche?q=piscine+bouee+ete',
+    id: "petit-plongeon",
+    titleKey: "home.homeCollectionsSection.unPetitPlongeon",
+    imageUrl:
+      "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80",
+    to: "/recherche?q=piscine+bouee+ete",
   },
   {
-    id: 'de-l-air',
-    titleKey: 'home.homeCollectionsSection.deLAir',
-    imageUrl: 'https://images.unsplash.com/photo-1565151443833-29bf2b583c19?auto=format&fit=crop&w=800&q=80',
-    to: '/recherche?q=ventilateur+climatiseur',
+    id: "de-l-air",
+    titleKey: "home.homeCollectionsSection.deLAir",
+    imageUrl:
+      "https://images.unsplash.com/photo-1565151443833-29bf2b583c19?auto=format&fit=crop&w=800&q=80",
+    to: "/recherche?q=ventilateur+climatiseur",
   },
 ];
 
@@ -61,7 +66,13 @@ function CollectionArtworkFallback(): React.ReactElement {
   );
 }
 
-function CollectionCard({ item, title }: { item: TrendingCollectionItem; title: string }): React.ReactElement {
+function CollectionCard({
+  item,
+  title,
+}: {
+  item: TrendingCollectionItem;
+  title: string;
+}): React.ReactElement {
   const [imageFailed, setImageFailed] = React.useState(false);
 
   return (
@@ -103,18 +114,22 @@ export const HomeCollectionsSection: React.FC = () => {
     >
       <div className="mb-4 sm:mb-6">
         <HomeSectionHeading id="home-collections-title">
-          {t('home.homeCollectionsSection.tendanceEnCeMoment')}
+          {t("home.homeCollectionsSection.tendanceEnCeMoment")}
         </HomeSectionHeading>
       </div>
 
       <ScrollRail
-        label={t('home.homeCollectionsSection.tendanceEnCeMoment')}
+        label={t("home.homeCollectionsSection.tendanceEnCeMoment")}
         snap
         className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible"
       >
         <div className="flex min-w-max gap-3 sm:gap-4 md:grid md:min-w-0 md:grid-cols-5">
           {TRENDING_COLLECTIONS.map((item) => (
-            <CollectionCard key={item.id} item={item} title={t(item.titleKey)} />
+            <CollectionCard
+              key={item.id}
+              item={item}
+              title={t(item.titleKey)}
+            />
           ))}
         </div>
       </ScrollRail>

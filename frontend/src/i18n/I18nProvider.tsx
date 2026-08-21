@@ -1,7 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
-import { useMarketLocation } from '../app/providers/MarketLocationProvider';
-import { MessageKey } from './messages.fr';
-import { DEFAULT_LOCALE, resolveLocale, translate, TranslateOptions } from './i18n.service';
+import React, { createContext, useCallback, useContext, useMemo } from "react";
+import { useMarketLocation } from "../app/providers/MarketLocationProvider";
+import { MessageKey } from "./messages.fr";
+import {
+  DEFAULT_LOCALE,
+  resolveLocale,
+  translate,
+  TranslateOptions,
+} from "./i18n.service";
 
 interface I18nContextValue {
   /** The locale actually being rendered — resolved, not the raw preference. */
@@ -19,12 +24,15 @@ const I18nContext = createContext<I18nContextValue | undefined>(undefined);
  * "what language is this" is exactly the kind of drift this codebase has been
  * fixing elsewhere. This provider reads that locale and turns it into messages.
  */
-export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { currentLocale } = useMarketLocation();
   const locale = resolveLocale(currentLocale);
 
   const t = useCallback(
-    (key: MessageKey, options?: TranslateOptions) => translate(key, locale, options),
+    (key: MessageKey, options?: TranslateOptions) =>
+      translate(key, locale, options),
     [locale],
   );
 
@@ -47,6 +55,7 @@ export const useTranslation = (): I18nContextValue => {
 
   return {
     locale: DEFAULT_LOCALE,
-    t: (key: MessageKey, options?: TranslateOptions) => translate(key, DEFAULT_LOCALE, options),
+    t: (key: MessageKey, options?: TranslateOptions) =>
+      translate(key, DEFAULT_LOCALE, options),
   };
 };

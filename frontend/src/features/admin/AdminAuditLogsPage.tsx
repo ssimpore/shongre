@@ -1,39 +1,28 @@
-import { Modal } from '../../design-system/primitives/Modal';
-import { ConfirmModal } from '../../design-system/primitives/ConfirmModal';
-import React, { useState, useEffect } from 'react';
-import {
-  
-  Search,
-  
-  
-  Download,
-  Trash2,
-  
-  
-  
-  Eye
-} from 'lucide-react';
-import { useToast } from '../../app/providers/ToastProvider';
-import { auditService } from '../../security/audit.service';
-import { SecurityAuditLog, auditActionLabel } from '../../types';
-import { roleLabel } from '../../security/roles.config';
-import { Button } from '../../design-system/primitives/Button';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+import { Modal } from "../../design-system/primitives/Modal";
+import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
+import React, { useState, useEffect } from "react";
+import { Search, Download, Trash2, Eye } from "lucide-react";
+import { useToast } from "../../app/providers/ToastProvider";
+import { auditService } from "../../security/audit.service";
+import { SecurityAuditLog, auditActionLabel } from "../../types";
+import { roleLabel } from "../../security/roles.config";
+import { Button } from "../../design-system/primitives/Button";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const AdminAuditLogsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.adminAuditLogs.title'),
-    description: t('meta.adminAuditLogs.description'),
-    canonicalPath: '/admin/audit',
+    title: t("meta.adminAuditLogs.title"),
+    description: t("meta.adminAuditLogs.description"),
+    canonicalPath: "/admin/audit",
     noIndex: true,
   });
 
   const toast = useToast();
   const [logs, setLogs] = useState<SecurityAuditLog[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAction, setSelectedAction] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAction, setSelectedAction] = useState<string>("all");
   const [selectedLog, setSelectedLog] = useState<SecurityAuditLog | null>(null);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
@@ -47,26 +36,29 @@ export const AdminAuditLogsPage: React.FC = () => {
 
   const handleExportCsv = () => {
     const csv = auditService.exportLogsAsCsv();
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `shongre_audit_log_${new Date().toISOString().slice(0, 10)}.csv`);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `shongre_audit_log_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success('Le fichier CSV a été téléchargé avec succès.');
+    toast.success("Le fichier CSV a été téléchargé avec succès.");
   };
 
   const handleConfirmClear = () => {
     auditService.clearLogs();
     loadLogs();
     setIsClearModalOpen(false);
-    toast.info('Le registre d\'audit a été réinitialisé.');
+    toast.info("Le registre d'audit a été réinitialisé.");
   };
 
   const filteredLogs = logs.filter((log) => {
-    if (selectedAction !== 'all' && log.action !== selectedAction) {
+    if (selectedAction !== "all" && log.action !== selectedAction) {
       return false;
     }
     if (searchQuery.trim()) {
@@ -89,12 +81,22 @@ export const AdminAuditLogsPage: React.FC = () => {
       <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">{t('admin.adminAuditLogsPage.tracabiliteConformite')}</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              {t("admin.adminAuditLogsPage.tracabiliteConformite")}
+            </span>
             <span className="text-stone-300">•</span>
-            <span className="text-xs text-stone-500 font-medium">{t('admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme')}</span>
+            <span className="text-xs text-stone-500 font-medium">
+              {t("admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme")}
+            </span>
           </div>
-          <h1 className="text-2xl font-black text-stone-900 tracking-tight">{t('admin.adminAuditLogsPage.registreDAuditSecurite')}</h1>
-          <p className="text-xs text-stone-600 mt-1">{t('admin.adminAuditLogsPage.enregistrementImmuableDesModificationsDe')}</p>
+          <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+            {t("admin.adminAuditLogsPage.registreDAuditSecurite")}
+          </h1>
+          <p className="text-xs text-stone-600 mt-1">
+            {t(
+              "admin.adminAuditLogsPage.enregistrementImmuableDesModificationsDe",
+            )}
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -113,7 +115,9 @@ export const AdminAuditLogsPage: React.FC = () => {
             onClick={() => setIsClearModalOpen(true)}
             className="text-xs text-danger hover:bg-danger-surface"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1" />{t('admin.adminAuditLogsPage.reinitialiser')}</Button>
+            <Trash2 className="w-3.5 h-3.5 mr-1" />
+            {t("admin.adminAuditLogsPage.reinitialiser")}
+          </Button>
         </div>
       </div>
 
@@ -125,19 +129,23 @@ export const AdminAuditLogsPage: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('admin.adminAuditLogsPage.rechercherParActeurActionCible')}
-            aria-label={t('admin.adminAuditLogsPage.rechercherDansLeRegistreD')}
+            placeholder={t(
+              "admin.adminAuditLogsPage.rechercherParActeurActionCible",
+            )}
+            aria-label={t("admin.adminAuditLogsPage.rechercherDansLeRegistreD")}
             className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary h-control-touch"
           />
         </div>
 
         <select
-          aria-label={t('admin.adminAuditLogsPage.filtrerLeJournalParType')}
+          aria-label={t("admin.adminAuditLogsPage.filtrerLeJournalParType")}
           value={selectedAction}
           onChange={(e) => setSelectedAction(e.target.value)}
           className="py-2 px-3 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary bg-white h-control-touch"
         >
-          <option value="all">Toutes les actions d'audit ({logs.length})</option>
+          <option value="all">
+            Toutes les actions d'audit ({logs.length})
+          </option>
           {uniqueActions.map((act) => (
             <option key={act} value={act}>
               {auditActionLabel(act)}
@@ -152,39 +160,69 @@ export const AdminAuditLogsPage: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-stone-100 text-stone-700 font-bold border-b border-stone-200">
               <tr>
-                <th scope="col" className="p-3">Horodatage (UTC)</th>
-                <th scope="col" className="p-3">Acteur (Initiateur)</th>
-                <th scope="col" className="p-3">{t('admin.adminAuditLogsPage.actionSysteme')}</th>
-                <th scope="col" className="p-3">Cible / Ressource</th>
-                <th scope="col" className="p-3">{t('admin.adminAuditLogsPage.detailsMotif')}</th>
-                <th scope="col" className="p-3 text-right">{t('admin.adminAuditLogsPage.detail')}</th>
+                <th scope="col" className="p-3">
+                  Horodatage (UTC)
+                </th>
+                <th scope="col" className="p-3">
+                  Acteur (Initiateur)
+                </th>
+                <th scope="col" className="p-3">
+                  {t("admin.adminAuditLogsPage.actionSysteme")}
+                </th>
+                <th scope="col" className="p-3">
+                  Cible / Ressource
+                </th>
+                <th scope="col" className="p-3">
+                  {t("admin.adminAuditLogsPage.detailsMotif")}
+                </th>
+                <th scope="col" className="p-3 text-right">
+                  {t("admin.adminAuditLogsPage.detail")}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-stone-500">{t('admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre')}</td>
+                  <td colSpan={6} className="p-8 text-center text-stone-500">
+                    {t(
+                      "admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre",
+                    )}
+                  </td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-stone-50 transition-colors">
+                  <tr
+                    key={log.id}
+                    className="hover:bg-stone-50 transition-colors"
+                  >
                     <td className="p-3 font-mono text-xs text-stone-500 whitespace-nowrap">
                       {new Date(log.timestamp).toLocaleString()}
                     </td>
                     <td className="p-3">
-                      <div className="font-bold text-stone-900">{log.actorName}</div>
-                      <div className="text-micro text-stone-500">{roleLabel(log.actorRole)}</div>
+                      <div className="font-bold text-stone-900">
+                        {log.actorName}
+                      </div>
+                      <div className="text-micro text-stone-500">
+                        {roleLabel(log.actorRole)}
+                      </div>
                     </td>
                     {/* Human label leads; the raw key stays underneath because this
                         is a forensic table and operators filter and grep by it. */}
                     <td className="p-3">
-                      <div className="font-semibold text-stone-900">{auditActionLabel(log.action)}</div>
-                      <div className="text-micro text-stone-500 font-mono">{log.action}</div>
+                      <div className="font-semibold text-stone-900">
+                        {auditActionLabel(log.action)}
+                      </div>
+                      <div className="text-micro text-stone-500 font-mono">
+                        {log.action}
+                      </div>
                     </td>
                     <td className="p-3 text-stone-800">
-                      {log.targetName || log.targetId || '-'}
+                      {log.targetName || log.targetId || "-"}
                     </td>
-                    <td className="p-3 text-stone-600 max-w-xs truncate" title={log.details}>
+                    <td
+                      className="p-3 text-stone-600 max-w-xs truncate"
+                      title={log.details}
+                    >
                       {log.details}
                     </td>
                     <td className="p-3 text-right">
@@ -192,7 +230,10 @@ export const AdminAuditLogsPage: React.FC = () => {
                         type="button"
                         onClick={() => setSelectedLog(log)}
                         className="text-stone-500 hover:text-stone-900 p-1 rounded-sm"
-                        aria-label={t('admin.adminAuditLogsPage.voirLePayloadDe', { action: auditActionLabel(log.action) })}
+                        aria-label={t(
+                          "admin.adminAuditLogsPage.voirLePayloadDe",
+                          { action: auditActionLabel(log.action) },
+                        )}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -205,34 +246,44 @@ export const AdminAuditLogsPage: React.FC = () => {
         </div>
       </div>
 
-            <Modal
+      <Modal
         isOpen={!!selectedLog}
         onClose={() => setSelectedLog(null)}
         title={`Enregistrement d'Audit #${selectedLog?.id}`}
-        
       >
         {selectedLog && (
-            <div className="space-y-4">
+          <div className="space-y-4">
             <div className="space-y-2 text-xs">
               <div>
-                <strong className="text-stone-700">Horodatage :</strong> {selectedLog.timestamp}
+                <strong className="text-stone-700">Horodatage :</strong>{" "}
+                {selectedLog.timestamp}
               </div>
               <div>
-                <strong className="text-stone-700">Acteur :</strong> {selectedLog.actorName} (ID: {selectedLog.actorId})
+                <strong className="text-stone-700">Acteur :</strong>{" "}
+                {selectedLog.actorName} (ID: {selectedLog.actorId})
               </div>
               <div>
-                <strong className="text-stone-700">{t('admin.adminAuditLogsPage.role')}</strong> {roleLabel(selectedLog.actorRole)}
+                <strong className="text-stone-700">
+                  {t("admin.adminAuditLogsPage.role")}
+                </strong>{" "}
+                {roleLabel(selectedLog.actorRole)}
               </div>
               <div>
-                <strong className="text-stone-700">Action :</strong> {selectedLog.action}
+                <strong className="text-stone-700">Action :</strong>{" "}
+                {selectedLog.action}
               </div>
               <div>
-                <strong className="text-stone-700">{t('admin.adminAuditLogsPage.details')}</strong> {selectedLog.details}
+                <strong className="text-stone-700">
+                  {t("admin.adminAuditLogsPage.details")}
+                </strong>{" "}
+                {selectedLog.details}
               </div>
 
               {selectedLog.previousValue && (
                 <div>
-                  <strong className="text-stone-700">{t('admin.adminAuditLogsPage.etatPrecedent')}</strong>
+                  <strong className="text-stone-700">
+                    {t("admin.adminAuditLogsPage.etatPrecedent")}
+                  </strong>
                   <pre className="mt-1 p-2 bg-stone-100 rounded-sm font-mono text-micro overflow-x-auto">
                     {JSON.stringify(selectedLog.previousValue, null, 2)}
                   </pre>
@@ -241,7 +292,9 @@ export const AdminAuditLogsPage: React.FC = () => {
 
               {selectedLog.newValue && (
                 <div>
-                  <strong className="text-stone-700">{t('admin.adminAuditLogsPage.nouvelEtat')}</strong>
+                  <strong className="text-stone-700">
+                    {t("admin.adminAuditLogsPage.nouvelEtat")}
+                  </strong>
                   <pre className="mt-1 p-2 bg-stone-100 rounded-sm font-mono text-micro overflow-x-auto">
                     {JSON.stringify(selectedLog.newValue, null, 2)}
                   </pre>
@@ -250,11 +303,15 @@ export const AdminAuditLogsPage: React.FC = () => {
             </div>
 
             <div className="pt-3 border-t border-stone-200 text-right">
-              <Button size="sm" onClick={() => setSelectedLog(null)} className="text-xs">
+              <Button
+                size="sm"
+                onClick={() => setSelectedLog(null)}
+                className="text-xs"
+              >
                 Fermer
               </Button>
             </div>
-            </div>
+          </div>
         )}
       </Modal>
 
@@ -262,7 +319,7 @@ export const AdminAuditLogsPage: React.FC = () => {
         isOpen={isClearModalOpen}
         onClose={() => setIsClearModalOpen(false)}
         onConfirm={handleConfirmClear}
-        title={t('admin.adminAuditLogsPage.reinitialiserLeRegistreDAudit')}
+        title={t("admin.adminAuditLogsPage.reinitialiserLeRegistreDAudit")}
         message="Cette action effacera l'historique des journaux d'audit enregistrés pour cette session démo."
         confirmText="Réinitialiser les logs"
         variant="warning"

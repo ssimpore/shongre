@@ -1,10 +1,14 @@
-import { describe, it, expect } from 'vitest';
-import { transactionService } from './transaction.service';
+import { describe, it, expect } from "vitest";
+import { transactionService } from "./transaction.service";
 
-describe('TransactionService - Escrow & Fee Calculations', () => {
-  it('calculates buyer protection fee and minor units correctly for an individual seller', () => {
+describe("TransactionService - Escrow & Fee Calculations", () => {
+  it("calculates buyer protection fee and minor units correctly for an individual seller", () => {
     const itemPrice = 100; // 100 EUR
-    const amounts = transactionService.calculateAmounts(itemPrice, 'hand_delivery', 'individual');
+    const amounts = transactionService.calculateAmounts(
+      itemPrice,
+      "hand_delivery",
+      "individual",
+    );
 
     // Item price in cents
     expect(amounts.itemPrice).toBe(100);
@@ -27,8 +31,14 @@ describe('TransactionService - Escrow & Fee Calculations', () => {
     expect(amounts.sellerPayoutAmount).toBe(100);
   });
 
-  it('calculates minor-units snapshot accurately with calculateOrderPricingSnapshot', () => {
-    const snapshot = transactionService.calculateOrderPricingSnapshot(150, 2, 6.90, 'pro', 'FR');
+  it("calculates minor-units snapshot accurately with calculateOrderPricingSnapshot", () => {
+    const snapshot = transactionService.calculateOrderPricingSnapshot(
+      150,
+      2,
+      6.9,
+      "pro",
+      "FR",
+    );
     // itemPriceMinor: 15000
     // itemSubtotalMinor: 30000
     // shippingFeeMinor: 690
@@ -44,29 +54,41 @@ describe('TransactionService - Escrow & Fee Calculations', () => {
     expect(snapshot.platformCommissionMinor).toBe(900);
     expect(snapshot.totalAmountMinor).toBe(31960);
     expect(snapshot.sellerPayoutAmountMinor).toBe(29100);
-    expect(snapshot.currency).toBe('EUR');
+    expect(snapshot.currency).toBe("EUR");
   });
 
-  it('calculates shipping fee for relay point and home delivery', () => {
-    const relayAmounts = transactionService.calculateAmounts(50, 'relay_point', 'individual');
+  it("calculates shipping fee for relay point and home delivery", () => {
+    const relayAmounts = transactionService.calculateAmounts(
+      50,
+      "relay_point",
+      "individual",
+    );
     expect(relayAmounts.shippingFee).toBe(4.9);
     expect(relayAmounts.shippingFeeCents).toBe(490);
 
-    const homeAmounts = transactionService.calculateAmounts(50, 'home_delivery', 'individual');
+    const homeAmounts = transactionService.calculateAmounts(
+      50,
+      "home_delivery",
+      "individual",
+    );
     expect(homeAmounts.shippingFee).toBe(6.9);
     expect(homeAmounts.shippingFeeCents).toBe(690);
   });
 
-  it('calculates platform commission for professional marketplace sellers', () => {
+  it("calculates platform commission for professional marketplace sellers", () => {
     const itemPrice = 200; // 200 EUR
-    const amounts = transactionService.calculateAmounts(itemPrice, 'relay_point', 'pro');
+    const amounts = transactionService.calculateAmounts(
+      itemPrice,
+      "relay_point",
+      "pro",
+    );
 
     // Commission rate is 3% for pro in transaction config (200 * 0.03 = 6 EUR)
     expect(amounts.platformCommission).toBe(6);
     expect(amounts.sellerPayoutAmount).toBe(194); // 200 - 6 = 194 EUR
   });
 
-  it('generates a 6-digit confirmation PIN code', () => {
+  it("generates a 6-digit confirmation PIN code", () => {
     const pin = transactionService.generateVerificationPin();
     expect(pin).toMatch(/^\d{6}$/);
     const num = parseInt(pin, 10);
@@ -74,7 +96,7 @@ describe('TransactionService - Escrow & Fee Calculations', () => {
     expect(num).toBeLessThanOrEqual(999999);
   });
 
-  it('generates a human-readable transaction reference code starting with SHG-', () => {
+  it("generates a human-readable transaction reference code starting with SHG-", () => {
     const ref = transactionService.generateReferenceCode();
     expect(ref).toMatch(/^SHG-[A-Z0-9]{6}$/);
   });

@@ -1,61 +1,70 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
   translate,
   resolveLocale,
   interpolate,
   catalogueCoverage,
   DEFAULT_LOCALE,
-} from './i18n.service';
-import { messagesFr, MessageKey } from './messages.fr';
-import { messagesEn } from './messages.en';
+} from "./i18n.service";
+import { messagesFr, MessageKey } from "./messages.fr";
+import { messagesEn } from "./messages.en";
 
-describe('resolveLocale', () => {
-  it('takes an exact catalogue match', () => {
-    expect(resolveLocale('en-US')).toBe('en-US');
-    expect(resolveLocale('fr-FR')).toBe('fr-FR');
+describe("resolveLocale", () => {
+  it("takes an exact catalogue match", () => {
+    expect(resolveLocale("en-US")).toBe("en-US");
+    expect(resolveLocale("fr-FR")).toBe("fr-FR");
   });
 
   // Without subtag matching, an `en-GB` visitor silently reads French.
-  it.each(['en-GB', 'en-AU', 'en'])('matches %s on its language subtag', (locale) => {
-    expect(resolveLocale(locale)).toBe('en-US');
-  });
+  it.each(["en-GB", "en-AU", "en"])(
+    "matches %s on its language subtag",
+    (locale) => {
+      expect(resolveLocale(locale)).toBe("en-US");
+    },
+  );
 
-  it('falls back to the default for a locale we have no messages for', () => {
-    expect(resolveLocale('ja-JP')).toBe(DEFAULT_LOCALE);
+  it("falls back to the default for a locale we have no messages for", () => {
+    expect(resolveLocale("ja-JP")).toBe(DEFAULT_LOCALE);
     expect(resolveLocale(undefined)).toBe(DEFAULT_LOCALE);
   });
 });
 
-describe('interpolate', () => {
-  it('substitutes named placeholders', () => {
-    expect(interpolate('Langue : {language}.', { language: 'Français' })).toBe('Langue : Français.');
+describe("interpolate", () => {
+  it("substitutes named placeholders", () => {
+    expect(interpolate("Langue : {language}.", { language: "Français" })).toBe(
+      "Langue : Français.",
+    );
   });
 
-  it('leaves an unmatched placeholder visible rather than printing undefined', () => {
-    expect(interpolate('© {year} Shongre')).toBe('© {year} Shongre');
-    expect(interpolate('{a} and {b}', { a: 'one' })).toBe('one and {b}');
+  it("leaves an unmatched placeholder visible rather than printing undefined", () => {
+    expect(interpolate("© {year} Shongre")).toBe("© {year} Shongre");
+    expect(interpolate("{a} and {b}", { a: "one" })).toBe("one and {b}");
   });
 });
 
-describe('translate', () => {
-  it('returns the message for the active locale', () => {
-    expect(translate('nav.sell', 'fr-FR')).toBe('Vendre');
-    expect(translate('nav.sell', 'en-US')).toBe('Sell');
+describe("translate", () => {
+  it("returns the message for the active locale", () => {
+    expect(translate("nav.sell", "fr-FR")).toBe("Vendre");
+    expect(translate("nav.sell", "en-US")).toBe("Sell");
   });
 
-  it('interpolates values', () => {
-    expect(translate('footer.copyright', 'en-US', { year: 2026 })).toContain('© 2026');
+  it("interpolates values", () => {
+    expect(translate("footer.copyright", "en-US", { year: 2026 })).toContain(
+      "© 2026",
+    );
   });
 
   // A partially translated locale must degrade to readable French, never to a
   // raw key appearing in the interface.
-  it('falls back to French for a key the locale has not translated', () => {
-    const partial = 'de-DE';
-    expect(translate('nav.sell', partial)).toBe(messagesFr['nav.sell']);
+  it("falls back to French for a key the locale has not translated", () => {
+    const partial = "de-DE";
+    expect(translate("nav.sell", partial)).toBe(messagesFr["nav.sell"]);
   });
 
-  it('returns the key only when nothing anywhere defines it', () => {
-    expect(translate('does.not.exist' as MessageKey, 'fr-FR')).toBe('does.not.exist');
+  it("returns the key only when nothing anywhere defines it", () => {
+    expect(translate("does.not.exist" as MessageKey, "fr-FR")).toBe(
+      "does.not.exist",
+    );
   });
 });
 
@@ -66,23 +75,39 @@ describe('translate', () => {
  * codebase's own `plural()` helper hard-codes `Math.abs(count) >= 2`, which is
  * the French rule — correct today and wrong the moment English ships.
  */
-describe('pluralisation follows the locale, not a count check', () => {
-  it('handles French, where zero is singular', () => {
-    expect(translate('common.listingCount', 'fr-FR', { count: 0 })).toBe('0 annonce');
-    expect(translate('common.listingCount', 'fr-FR', { count: 1 })).toBe('1 annonce');
-    expect(translate('common.listingCount', 'fr-FR', { count: 5 })).toBe('5 annonces');
+describe("pluralisation follows the locale, not a count check", () => {
+  it("handles French, where zero is singular", () => {
+    expect(translate("common.listingCount", "fr-FR", { count: 0 })).toBe(
+      "0 annonce",
+    );
+    expect(translate("common.listingCount", "fr-FR", { count: 1 })).toBe(
+      "1 annonce",
+    );
+    expect(translate("common.listingCount", "fr-FR", { count: 5 })).toBe(
+      "5 annonces",
+    );
   });
 
-  it('handles English, where zero is plural', () => {
-    expect(translate('common.listingCount', 'en-US', { count: 0 })).toBe('0 listings');
-    expect(translate('common.listingCount', 'en-US', { count: 1 })).toBe('1 listing');
-    expect(translate('common.listingCount', 'en-US', { count: 5 })).toBe('5 listings');
+  it("handles English, where zero is plural", () => {
+    expect(translate("common.listingCount", "en-US", { count: 0 })).toBe(
+      "0 listings",
+    );
+    expect(translate("common.listingCount", "en-US", { count: 1 })).toBe(
+      "1 listing",
+    );
+    expect(translate("common.listingCount", "en-US", { count: 5 })).toBe(
+      "5 listings",
+    );
   });
 
-  it('keeps an invariant plural form stable across counts', () => {
+  it("keeps an invariant plural form stable across counts", () => {
     // "avis" does not inflect in French.
-    expect(translate('common.reviewCount', 'fr-FR', { count: 1 })).toBe('1 avis');
-    expect(translate('common.reviewCount', 'fr-FR', { count: 9 })).toBe('9 avis');
+    expect(translate("common.reviewCount", "fr-FR", { count: 1 })).toBe(
+      "1 avis",
+    );
+    expect(translate("common.reviewCount", "fr-FR", { count: 9 })).toBe(
+      "9 avis",
+    );
   });
 });
 
@@ -93,33 +118,51 @@ describe('pluralisation follows the locale, not a count check', () => {
  * otherwise English page. That is invisible in review and obvious to a user, so
  * it is asserted rather than trusted.
  */
-describe('catalogue integrity', () => {
-  it('English defines every key French does', () => {
-    const missing = (Object.keys(messagesFr) as MessageKey[]).filter((key) => !messagesEn[key]);
-    expect(missing, `untranslated keys:\n${missing.join('\n')}`).toEqual([]);
+describe("catalogue integrity", () => {
+  it("English defines every key French does", () => {
+    const english = messagesEn as Record<string, string | undefined>;
+    const missing = (Object.keys(messagesFr) as MessageKey[]).filter(
+      (key) => !english[key],
+    );
+    expect(missing, `untranslated keys:\n${missing.join("\n")}`).toEqual([]);
   });
 
-  it('English introduces no key French does not have', () => {
+  it("English introduces no key French does not have", () => {
     const sourceKeys = new Set(Object.keys(messagesFr));
-    const orphans = Object.keys(messagesEn).filter((key) => !sourceKeys.has(key));
-    expect(orphans, `keys with no source entry:\n${orphans.join('\n')}`).toEqual([]);
+    const orphans = Object.keys(messagesEn).filter(
+      (key) => !sourceKeys.has(key),
+    );
+    expect(
+      orphans,
+      `keys with no source entry:\n${orphans.join("\n")}`,
+    ).toEqual([]);
   });
 
-  it('every countable message declares both plural forms', () => {
+  it("every countable message declares both plural forms", () => {
     const keys = Object.keys(messagesFr);
-    const countable = keys.filter((key) => key.endsWith('_one')).map((key) => key.slice(0, -4));
-    expect(countable.length, 'expected some countable messages').toBeGreaterThan(0);
+    const countable = keys
+      .filter((key) => key.endsWith("_one"))
+      .map((key) => key.slice(0, -4));
+    expect(
+      countable.length,
+      "expected some countable messages",
+    ).toBeGreaterThan(0);
 
     for (const base of countable) {
-      expect(keys, `${base} is missing its _other form`).toContain(`${base}_other`);
-      expect(messagesEn[`${base}_other` as MessageKey], `${base}_other untranslated`).toBeTruthy();
+      expect(keys, `${base} is missing its _other form`).toContain(
+        `${base}_other`,
+      );
+      expect(
+        (messagesEn as Record<string, string | undefined>)[`${base}_other`],
+        `${base}_other untranslated`,
+      ).toBeTruthy();
     }
   });
 
-  it('reports full coverage for the locales that have catalogues', () => {
-    expect(catalogueCoverage('fr-FR')).toBe(1);
-    expect(catalogueCoverage('en-US')).toBe(1);
-    expect(catalogueCoverage('en-GB')).toBe(1); // subtag match
+  it("reports full coverage for the locales that have catalogues", () => {
+    expect(catalogueCoverage("fr-FR")).toBe(1);
+    expect(catalogueCoverage("en-US")).toBe(1);
+    expect(catalogueCoverage("en-GB")).toBe(1); // subtag match
   });
 
   /**
@@ -130,9 +173,12 @@ describe('catalogue integrity', () => {
    * which would have switched German, Spanish, Dutch and Italian on in the
    * selector, each of them rendering the interface entirely in French.
    */
-  it('reports nothing for a locale with no catalogue', () => {
-    for (const locale of ['de-DE', 'es-ES', 'nl-NL', 'it-IT', 'ja-JP']) {
-      expect(catalogueCoverage(locale), `${locale} must not claim coverage`).toBe(0);
+  it("reports nothing for a locale with no catalogue", () => {
+    for (const locale of ["de-DE", "es-ES", "nl-NL", "it-IT", "ja-JP"]) {
+      expect(
+        catalogueCoverage(locale),
+        `${locale} must not claim coverage`,
+      ).toBe(0);
     }
   });
 });

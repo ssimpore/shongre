@@ -1,50 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { User, PlusCircle, Search } from "lucide-react";
+import { Button } from "../../../design-system/primitives/Button";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { Modal } from "../../../design-system/primitives/Modal";
 import {
-  User,
-  PlusCircle,
-  Search
-  
-  
-  
-  
-  
-} from 'lucide-react';
-import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { FormField, Input, Select } from '../../../design-system/primitives/FormField';
-import { crmRepository } from '../../../repositories/crm.repository';
-import { CrmContact } from '../../../domains/crm/crm.types';
-import { crmService } from '../../../domains/crm/crm.service';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { Skeleton, EmptyState } from '../../../design-system';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { usePageMeta } from '../../../hooks/usePageMeta';
+  FormField,
+  Input,
+  Select,
+} from "../../../design-system/primitives/FormField";
+import { crmRepository } from "../../../repositories/crm.repository";
+import { CrmContact } from "../../../domains/crm/crm.types";
+import { crmService } from "../../../domains/crm/crm.service";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { Skeleton, EmptyState } from "../../../design-system";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 
 export const CrmContactsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.crmContacts.title'),
-    description: t('meta.crmContacts.description'),
-    canonicalPath: '/admin/crm/contacts',
+    title: t("meta.crmContacts.title"),
+    description: t("meta.crmContacts.description"),
+    canonicalPath: "/admin/crm/contacts",
     noIndex: true,
   });
 
   const toast = useToast();
   const [contacts, setContacts] = useState<CrmContact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [lifecycleFilter, setLifecycleFilter] = useState<string>('all');
+  const [search, setSearch] = useState("");
+  const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // New Contact Form
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [companyName, setCompanyName] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchContacts = async () => {
@@ -64,7 +59,7 @@ export const CrmContactsPage: React.FC = () => {
   const handleCreateContact = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() || !email.trim()) {
-      toast.error('Le prénom et l\'adresse email sont obligatoires.');
+      toast.error("Le prénom et l'adresse email sont obligatoires.");
       return;
     }
 
@@ -79,33 +74,36 @@ export const CrmContactsPage: React.FC = () => {
           jobTitle: jobTitle.trim() || undefined,
         },
         companyName: companyName.trim() || undefined,
-        lifecycle: 'prospect',
-        qualification: 'medium',
-        marketCode: 'FR',
-        source: 'manual',
+        lifecycle: "prospect",
+        qualification: "medium",
+        marketCode: "FR",
+        source: "manual",
       });
 
       setIsCreateModalOpen(false);
-      setFirstName('');
-      setLastName('');
-      setEmail('');
-      setPhone('');
-      setJobTitle('');
-      setCompanyName('');
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPhone("");
+      setJobTitle("");
+      setCompanyName("");
       fetchContacts();
-      toast.success('Contact créé avec succès.', 'Contact enregistré');
+      toast.success("Contact créé avec succès.", "Contact enregistré");
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la création du contact.');
+      toast.error(err.message || "Erreur lors de la création du contact.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const filteredContacts = contacts.filter((c) => {
-    if (lifecycleFilter !== 'all' && c.lifecycle !== lifecycleFilter) return false;
+    if (lifecycleFilter !== "all" && c.lifecycle !== lifecycleFilter)
+      return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      const nameMatch = `${c.identity.firstName} ${c.identity.lastName}`.toLowerCase().includes(q);
+      const nameMatch = `${c.identity.firstName} ${c.identity.lastName}`
+        .toLowerCase()
+        .includes(q);
       const emailMatch = c.identity.email.toLowerCase().includes(q);
       const compMatch = c.companyName?.toLowerCase().includes(q);
       return nameMatch || emailMatch || compMatch;
@@ -121,7 +119,9 @@ export const CrmContactsPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Contacts & Interlocuteurs
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('admin.crmContactsPage.baseUnifieeDesAcheteursVendeurs')}</p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+            {t("admin.crmContactsPage.baseUnifieeDesAcheteursVendeurs")}
+          </p>
         </div>
 
         <Button
@@ -143,24 +143,28 @@ export const CrmContactsPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
-                aria-label={t('admin.crmContactsPage.rechercherParNomEmailEntreprise')}
+            placeholder={t(
+              "admin.crmContactsPage.rechercherParNomEmailEntreprise",
+            )}
+            aria-label={t(
+              "admin.crmContactsPage.rechercherParNomEmailEntreprise",
+            )}
             className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
         <div className="flex items-center gap-2">
           <Select
-            aria-label={t('admin.crmContactsPage.filtrerLesContactsParCycle')}
+            aria-label={t("admin.crmContactsPage.filtrerLesContactsParCycle")}
             value={lifecycleFilter}
             onChange={(e) => setLifecycleFilter(e.target.value)}
             options={[
-              { value: 'all', label: 'Tous les statuts' },
-              { value: 'prospect', label: 'Prospects' },
-              { value: 'qualified', label: 'Qualifiés' },
-              { value: 'customer', label: 'Clients / Pro' },
-              { value: 'partner', label: 'Partenaires' },
-              { value: 'do_not_contact', label: 'Ne pas contacter' },
+              { value: "all", label: "Tous les statuts" },
+              { value: "prospect", label: "Prospects" },
+              { value: "qualified", label: "Qualifiés" },
+              { value: "customer", label: "Clients / Pro" },
+              { value: "partner", label: "Partenaires" },
+              { value: "do_not_contact", label: "Ne pas contacter" },
             ]}
           />
         </div>
@@ -177,17 +181,21 @@ export const CrmContactsPage: React.FC = () => {
         ) : filteredContacts.length === 0 ? (
           <EmptyState
             icon={<User className="w-8 h-8 text-stone-500" />}
-            title={t('admin.crmContactsPage.aucunContactNeCorrespondAux')}
-            description={t('admin.crmContactsPage.elargissezLaRechercheOuReinitialisez')}
+            title={t("admin.crmContactsPage.aucunContactNeCorrespondAux")}
+            description={t(
+              "admin.crmContactsPage.elargissezLaRechercheOuReinitialisez",
+            )}
             action={
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setSearch('');
-                  setLifecycleFilter('all');
+                  setSearch("");
+                  setLifecycleFilter("all");
                 }}
-              >{t('admin.crmContactsPage.reinitialiserLesFiltres')}</Button>
+              >
+                {t("admin.crmContactsPage.reinitialiserLesFiltres")}
+              </Button>
             }
             className="border-0 shadow-none"
           />
@@ -205,7 +213,8 @@ export const CrmContactsPage: React.FC = () => {
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center font-bold text-stone-700 text-xs shrink-0">
-                      {c.identity.firstName[0]}{c.identity.lastName[0] || ''}
+                      {c.identity.firstName[0]}
+                      {c.identity.lastName[0] || ""}
                     </div>
 
                     <div className="min-w-0 space-y-0.5">
@@ -214,7 +223,9 @@ export const CrmContactsPage: React.FC = () => {
                           {c.identity.firstName} {c.identity.lastName}
                         </span>
                         {c.linkedUserId && (
-                          <Badge variant="verified" size="sm">{t('admin.crmContactsPage.compteShongreLie')}</Badge>
+                          <Badge variant="verified" size="sm">
+                            {t("admin.crmContactsPage.compteShongreLie")}
+                          </Badge>
                         )}
                         {c.doNotContact && (
                           <Badge variant="urgent" size="sm">
@@ -228,7 +239,9 @@ export const CrmContactsPage: React.FC = () => {
                         {c.companyName && (
                           <>
                             <span>•</span>
-                            <span className="text-stone-700 font-medium">{c.companyName}</span>
+                            <span className="text-stone-700 font-medium">
+                              {c.companyName}
+                            </span>
                           </>
                         )}
                         {c.identity.jobTitle && (
@@ -242,7 +255,9 @@ export const CrmContactsPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <span className={`px-2 py-0.5 rounded-md text-micro font-bold ${qualInfo.badgeClass}`}>
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-micro font-bold ${qualInfo.badgeClass}`}
+                    >
                       {qualInfo.label}
                     </span>
                     <Badge variant={lifecycleInfo.variant} size="sm">
@@ -260,16 +275,18 @@ export const CrmContactsPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title={t('admin.crmContactsPage.creerUnContactCrm')}
-        description={t('admin.crmContactsPage.ajoutezUnInterlocuteurOuProspect')}
+        title={t("admin.crmContactsPage.creerUnContactCrm")}
+        description={t(
+          "admin.crmContactsPage.ajoutezUnInterlocuteurOuProspect",
+        )}
       >
         <form onSubmit={handleCreateContact} className="space-y-3.5 text-xs">
           <div className="grid grid-cols-2 gap-3">
-            <FormField label={t('admin.crmContactsPage.prenom')} required>
+            <FormField label={t("admin.crmContactsPage.prenom")} required>
               <Input
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder={t('admin.crmContactsPage.prenom')}
+                placeholder={t("admin.crmContactsPage.prenom")}
               />
             </FormField>
             <FormField label="Nom">
@@ -291,7 +308,7 @@ export const CrmContactsPage: React.FC = () => {
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label={t('admin.crmContactsPage.telephone')}>
+            <FormField label={t("admin.crmContactsPage.telephone")}>
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -302,7 +319,7 @@ export const CrmContactsPage: React.FC = () => {
               <Input
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                placeholder={t('admin.crmContactsPage.exGerant')}
+                placeholder={t("admin.crmContactsPage.exGerant")}
               />
             </FormField>
           </div>
@@ -311,7 +328,7 @@ export const CrmContactsPage: React.FC = () => {
             <Input
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              placeholder={t('admin.crmContactsPage.exMaisonDecoParis')}
+              placeholder={t("admin.crmContactsPage.exMaisonDecoParis")}
             />
           </FormField>
 
@@ -331,7 +348,7 @@ export const CrmContactsPage: React.FC = () => {
               disabled={isSubmitting}
               className="font-bold"
             >
-              {isSubmitting ? 'Création...' : 'Créer le contact'}
+              {isSubmitting ? "Création..." : "Créer le contact"}
             </Button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import { Transaction, DeliveryType } from '../../types';
+import { Transaction, DeliveryType } from "../../types";
 
 export interface CreateDirectPurchaseInput {
   listingId: string;
@@ -10,7 +10,7 @@ export interface CreateDirectPurchaseInput {
     postalCode: string;
     country: string;
   };
-  paymentMethod: 'card' | 'bank_transfer' | 'wallet';
+  paymentMethod: "card" | "bank_transfer" | "wallet";
 }
 
 export interface CreateReservationInput {
@@ -28,7 +28,14 @@ export interface OrdersServiceContract {
   getSales(userId: string): Promise<Transaction[]>;
   createDirectPurchase(input: CreateDirectPurchaseInput): Promise<Transaction>;
   createReservation(input: CreateReservationInput): Promise<Transaction>;
-  confirmHandoverPIN(orderId: string, enteredPin: string): Promise<{ success: boolean; message: string }>;
+  confirmHandoverPIN(
+    orderId: string,
+    enteredPin: string,
+  ): Promise<{ success: boolean; message: string }>;
   confirmDeliveryReceived(orderId: string): Promise<Transaction>;
-  openDispute(orderId: string, reason: string, details: string): Promise<Transaction>;
+  openDispute(
+    orderId: string,
+    reason: string,
+    details: string,
+  ): Promise<Transaction>;
 }

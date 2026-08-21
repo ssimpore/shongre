@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { IconButton } from '../../../design-system/primitives/IconButton';
+import React, { useState } from "react";
+import { Eye, EyeOff, Check, X, ShieldAlert } from "lucide-react";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { IconButton } from "../../../design-system/primitives/IconButton";
 
 export interface PasswordFieldProps {
   id?: string;
@@ -23,14 +23,14 @@ export interface PasswordFieldProps {
 }
 
 export const PasswordField: React.FC<PasswordFieldProps> = ({
-  id = 'password',
-  name = 'password',
+  id = "password",
+  name = "password",
   value,
   onChange,
-  label = 'Mot de passe',
-  placeholder = '••••••••••••',
+  label = "Mot de passe",
+  placeholder = "••••••••••••",
   required = true,
-  autoComplete = 'current-password',
+  autoComplete = "current-password",
   showStrength = false,
   error,
   disabled = false,
@@ -45,30 +45,39 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
   const hasNumber = /[0-9]/.test(value);
   const hasSpecial = /[^A-Za-z0-9]/.test(value);
 
-  const score = [hasMinLength, hasUppercase, hasLowercase, hasNumber, hasSpecial].filter(Boolean).length;
+  const score = [
+    hasMinLength,
+    hasUppercase,
+    hasLowercase,
+    hasNumber,
+    hasSpecial,
+  ].filter(Boolean).length;
 
-  let strengthLabel = 'Faible';
-  let strengthColor = 'bg-danger text-danger';
+  let strengthLabel = "Faible";
+  let strengthColor = "bg-danger text-danger";
   let strengthPercent = 20;
 
   if (score >= 4) {
-    strengthLabel = 'Très robuste';
-    strengthColor = 'bg-success text-success';
+    strengthLabel = "Très robuste";
+    strengthColor = "bg-success text-success";
     strengthPercent = 100;
   } else if (score === 3) {
-    strengthLabel = 'Bon';
-    strengthColor = 'bg-primary text-primary';
+    strengthLabel = "Bon";
+    strengthColor = "bg-primary text-primary";
     strengthPercent = 75;
   } else if (score === 2) {
-    strengthLabel = 'Moyen';
-    strengthColor = 'bg-amber-500 text-warning';
+    strengthLabel = "Moyen";
+    strengthColor = "bg-amber-500 text-warning";
     strengthPercent = 50;
   }
 
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={id} className="block text-xs font-bold text-stone-800 mb-1.5">
+        <label
+          htmlFor={id}
+          className="block text-xs font-bold text-stone-800 mb-1.5"
+        >
           {label} {required && <span className="text-primary">*</span>}
         </label>
       )}
@@ -77,7 +86,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
         <input
           id={id}
           name={name}
-          type={showPassword ? 'text' : 'password'}
+          type={showPassword ? "text" : "password"}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
@@ -86,8 +95,8 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           disabled={disabled}
           className={`w-full h-control-touch px-3.5 py-2.5 pr-11 bg-white border rounded-control text-sm text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
             error
-              ? 'border-danger focus:border-danger bg-danger-surface/20'
-              : 'border-stone-200 focus:border-primary'
+              ? "border-danger focus:border-danger bg-danger-surface/20"
+              : "border-stone-200 focus:border-primary"
           }`}
         />
 
@@ -95,10 +104,18 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           size="sm"
           variant="ghost"
           onClick={() => setShowPassword(!showPassword)}
-          ariaLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          ariaLabel={
+            showPassword
+              ? "Masquer le mot de passe"
+              : "Afficher le mot de passe"
+          }
           className="absolute right-1.5 top-1/2 -translate-y-1/2"
         >
-          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {showPassword ? (
+            <EyeOff className="w-4 h-4" />
+          ) : (
+            <Eye className="w-4 h-4" />
+          )}
         </IconButton>
       </div>
 
@@ -112,13 +129,15 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       {showStrength && value.length > 0 && (
         <div className="mt-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-100 text-xs">
           <div className="flex items-center justify-between font-bold mb-1.5">
-            <span className="text-stone-500">{t('auth.passwordField.robustesseDuMotDePasse')}</span>
-            <span className={strengthColor.split(' ')[1]}>{strengthLabel}</span>
+            <span className="text-stone-500">
+              {t("auth.passwordField.robustesseDuMotDePasse")}
+            </span>
+            <span className={strengthColor.split(" ")[1]}>{strengthLabel}</span>
           </div>
 
           <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden mb-2">
             <div
-              className={`h-full transition-all duration-normal ${strengthColor.split(' ')[0]}`}
+              className={`h-full transition-all duration-normal ${strengthColor.split(" ")[0]}`}
               style={{ width: `${strengthPercent}%` }}
             />
           </div>
@@ -130,7 +149,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
-              <span>{t('auth.passwordField.8CaracteresMinimum')}</span>
+              <span>{t("auth.passwordField.8CaracteresMinimum")}</span>
             </div>
             <div className="flex items-center gap-1">
               {hasUppercase ? (
@@ -154,7 +173,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               ) : (
                 <X className="w-3 h-3 text-stone-300 shrink-0" />
               )}
-              <span>{t('auth.passwordField.1CaractereSpecial')}</span>
+              <span>{t("auth.passwordField.1CaractereSpecial")}</span>
             </div>
           </div>
         </div>

@@ -17,29 +17,30 @@
  * CI:  `npm run check:i18n` fails if a locale is declared shipped while strings
  *      remain outside the catalogue.
  */
-import { readdirSync, readFileSync, statSync } from 'fs';
-import { join, relative } from 'path';
+import { readdirSync, readFileSync, statSync } from "fs";
+import { join, relative } from "path";
 
-const ROOT = 'src';
-const SHOW_LIST = process.argv.includes('--list');
+const ROOT = "src";
+const SHOW_LIST = process.argv.includes("--list");
 
 /** Surfaces already migrated; regressions here are what the gate protects. */
 const MIGRATED = [
-  'src/app/layouts/MobileBottomNav.tsx',
-  'src/app/layouts/Footer.tsx',
-  'src/app/layouts/CookieConsent.tsx',
-  'src/design-system/primitives/LanguageSelector.tsx',
+  "src/app/layouts/MobileBottomNav.tsx",
+  "src/app/layouts/Footer.tsx",
+  "src/app/layouts/CookieConsent.tsx",
+  "src/design-system/primitives/LanguageSelector.tsx",
 ];
 
 /** Directories with no user-facing copy of their own. */
-const SKIP_DIRS = new Set(['i18n', 'mocks']);
+const SKIP_DIRS = new Set(["i18n", "mocks"]);
 
 const ACCENTED = /[àâäçéèêëîïôöùûüÿœÆ]/i;
 const FRENCH_WORDS =
   /\b(le|la|les|un|une|des|du|de|au|aux|et|ou|est|sont|vous|votre|vos|nos|notre|pour|avec|sans|sur|dans|par|plus|tout|tous|toute|cette|ce|ces|qui|que|dont|être|avoir|annonce|annonces|vendeur|acheteur|recherche|compte|message|messages|paiement|livraison)\b/i;
 
 /** Props whose string value is read out or displayed. */
-const VISIBLE_PROPS = /\b(aria-label|title|placeholder|alt|label|description)=["']([^"']{3,})["']/g;
+const VISIBLE_PROPS =
+  /\b(aria-label|title|placeholder|alt|label|description)=["']([^"']{3,})["']/g;
 /** Text sitting directly between JSX tags, on one line. */
 const JSX_TEXT = />([^<>{}\n]{3,})</g;
 /** The same, wrapped across lines — invisible to the single-line pattern. */
@@ -59,7 +60,14 @@ const COPY_IDENTIFIERS =
  * renders "French" to an English reader is worse than one that renders
  * "Français", which is what the reader is looking for.
  */
-const NATIVE_LANGUAGE_NAMES = new Set(['Français', 'English', 'Deutsch', 'Español', 'Nederlands', 'Italiano']);
+const NATIVE_LANGUAGE_NAMES = new Set([
+  "Français",
+  "English",
+  "Deutsch",
+  "Español",
+  "Nederlands",
+  "Italiano",
+]);
 
 function looksFrench(text) {
   const trimmed = text.trim();
@@ -77,7 +85,11 @@ function walk(dir, files = []) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       if (!SKIP_DIRS.has(entry)) walk(full, files);
-    } else if (/\.tsx?$/.test(entry) && !/\.test\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry)) {
+    } else if (
+      /\.tsx?$/.test(entry) &&
+      !/\.test\.tsx?$/.test(entry) &&
+      !/\.d\.ts$/.test(entry)
+    ) {
       files.push(full);
     }
   }
@@ -88,7 +100,7 @@ const findings = [];
 const perFile = new Map();
 
 for (const file of walk(ROOT)) {
-  const source = readFileSync(file, 'utf8');
+  const source = readFileSync(file, "utf8");
   const hits = [];
 
   /* Records that carry their own per-locale maps are already translated: the
@@ -106,7 +118,7 @@ for (const file of walk(ROOT)) {
     if (looksFrench(value)) hits.push(value.trim());
   }
   for (const [, value] of source.matchAll(MULTILINE_JSX_TEXT)) {
-    const collapsed = value.replace(/\s+/g, ' ').trim();
+    const collapsed = value.replace(/\s+/g, " ").trim();
     if (looksFrench(collapsed)) hits.push(collapsed);
   }
   // Groups: [full, identifier, quote, text] — read the text, not the quote.
@@ -117,8 +129,8 @@ for (const file of walk(ROOT)) {
   }
 
   if (hits.length) {
-    perFile.set(relative('.', file), hits.length);
-    findings.push(...hits.map((text) => ({ file: relative('.', file), text })));
+    perFile.set(relative(".", file), hits.length);
+    findings.push(...hits.map((text) => ({ file: relative(".", file), text })));
   }
 }
 
@@ -127,7 +139,7 @@ const migratedRegressions = MIGRATED.filter((file) => perFile.has(file));
 
 const ranked = [...perFile.entries()].sort((a, b) => b[1] - a[1]);
 
-console.log('\ni18n migration coverage\n' + '='.repeat(50));
+console.log("\ni18n migration coverage\n" + "=".repeat(50));
 console.log(`Untranslated user-visible strings: ${totalStrings}`);
 console.log(`Files carrying them:               ${perFile.size}`);
 console.log(`\nLargest remaining surfaces:`);
@@ -136,7 +148,7 @@ for (const [file, count] of ranked.slice(0, 12)) {
 }
 
 if (SHOW_LIST) {
-  console.log('\nAll findings:');
+  console.log("\nAll findings:");
   for (const { file, text } of findings) {
     console.log(`  ${file}: ${text.slice(0, 90)}`);
   }
@@ -144,8 +156,10 @@ if (SHOW_LIST) {
 
 if (migratedRegressions.length) {
   console.error(
-    '\n✖ These surfaces were migrated to t() and have picked up hardcoded copy again:\n' +
-      migratedRegressions.map((file) => `    ${file} (${perFile.get(file)})`).join('\n'),
+    "\n✖ These surfaces were migrated to t() and have picked up hardcoded copy again:\n" +
+      migratedRegressions
+        .map((file) => `    ${file} (${perFile.get(file)})`)
+        .join("\n"),
   );
   process.exit(1);
 }

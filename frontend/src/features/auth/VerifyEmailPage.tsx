@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import {  AlertCircle, ArrowRight, RefreshCw, CheckCircle2,  Mail } from 'lucide-react';
-import { authService } from '../../domains/auth/auth.service';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { useToast } from '../../app/providers/ToastProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { AuthLayout } from './components/AuthLayout';
-import { usePageMeta } from '../../hooks/usePageMeta';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  AlertCircle,
+  ArrowRight,
+  RefreshCw,
+  CheckCircle2,
+  Mail,
+} from "lucide-react";
+import { authService } from "../../domains/auth/auth.service";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useToast } from "../../app/providers/ToastProvider";
+import { Button } from "../../design-system/primitives/Button";
+import { AuthLayout } from "./components/AuthLayout";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const VerifyEmailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -23,13 +29,15 @@ export const VerifyEmailPage: React.FC = () => {
   const toast = useToast();
   const { currentUser, refreshUser } = useAuth();
 
-  const urlToken = searchParams.get('token') || '';
+  const urlToken = searchParams.get("token") || "";
 
   const [tokenInput, setTokenInput] = useState(urlToken);
-  const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>(urlToken ? 'verifying' : 'idle');
+  const [status, setStatus] = useState<
+    "idle" | "verifying" | "success" | "error"
+  >(urlToken ? "verifying" : "idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resendStatus, setResendStatus] = useState<string | null>(null);
-  const [demoCodeHint, ] = useState<string | null>(null);
+  const [demoCodeHint] = useState<string | null>(null);
 
   useEffect(() => {
     if (urlToken) {
@@ -38,34 +46,36 @@ export const VerifyEmailPage: React.FC = () => {
   }, [urlToken]);
 
   const handleVerify = async (tokenToVerify: string) => {
-    setStatus('verifying');
+    setStatus("verifying");
     setErrorMessage(null);
 
     try {
       const res = await authService.verifyEmail(tokenToVerify.trim());
       if (res.success) {
-        setStatus('success');
+        setStatus("success");
         refreshUser();
-        toast.success('Votre adresse email a été confirmée avec succès !');
+        toast.success("Votre adresse email a été confirmée avec succès !");
       } else {
-        setStatus('error');
+        setStatus("error");
         setErrorMessage(res.message);
       }
     } catch (err: any) {
-      setStatus('error');
-      setErrorMessage(err.message || 'Erreur lors de la validation.');
+      setStatus("error");
+      setErrorMessage(err.message || "Erreur lors de la validation.");
     }
   };
 
   const handleResendVerification = () => {
     if (!currentUser) {
-      setErrorMessage('Vous devez être connecté pour demander un nouveau lien de validation.');
+      setErrorMessage(
+        "Vous devez être connecté pour demander un nouveau lien de validation.",
+      );
       return;
     }
 
     const res = authService.resendEmailVerification(currentUser.email);
     if (res.success) {
-      setResendStatus('Un nouvel email de confirmation vient d\'être envoyé.');
+      setResendStatus("Un nouvel email de confirmation vient d'être envoyé.");
     } else {
       setErrorMessage(res.message);
     }
@@ -73,22 +83,26 @@ export const VerifyEmailPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title={t('auth.verifyEmailPage.verificationDAdresseEmail')}
-      subtitle={t('auth.verifyEmailPage.confirmezVotreAdresseEmailPour')}
+      title={t("auth.verifyEmailPage.verificationDAdresseEmail")}
+      subtitle={t("auth.verifyEmailPage.confirmezVotreAdresseEmailPour")}
       footerLink={{
-        text: 'Retourner à votre compte ?',
-        linkText: 'Mon tableau de bord',
-        to: '/compte',
+        text: "Retourner à votre compte ?",
+        linkText: "Mon tableau de bord",
+        to: "/compte",
       }}
     >
-      {status === 'success' ? (
+      {status === "success" ? (
         <div className="text-center py-4 space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-success-surface text-success mx-auto flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <h2 className="text-lg font-black text-stone-900">{t('auth.verifyEmailPage.emailValideAvecSucces')}</h2>
-          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">{t('auth.verifyEmailPage.votreCompteEstDesormaisSecurise')}</p>
+          <h2 className="text-lg font-black text-stone-900">
+            {t("auth.verifyEmailPage.emailValideAvecSucces")}
+          </h2>
+          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
+            {t("auth.verifyEmailPage.votreCompteEstDesormaisSecurise")}
+          </p>
 
           <div className="pt-3">
             <Button
@@ -96,9 +110,11 @@ export const VerifyEmailPage: React.FC = () => {
               variant="primary"
               size="md"
               className="w-full"
-              onClick={() => navigate('/compte')}
+              onClick={() => navigate("/compte")}
               rightIcon={<ArrowRight className="w-4 h-4" />}
-            >{t('auth.verifyEmailPage.accederAMonEspace')}</Button>
+            >
+              {t("auth.verifyEmailPage.accederAMonEspace")}
+            </Button>
           </div>
         </div>
       ) : (
@@ -117,7 +133,11 @@ export const VerifyEmailPage: React.FC = () => {
                 <span>{resendStatus}</span>
               </div>
               {demoCodeHint && (
-                <p className="text-micro text-success">{t('auth.verifyEmailPage.tokenDemo')}<code className="bg-success-surface px-1 py-0.5 rounded font-bold">{demoCodeHint}</code>
+                <p className="text-micro text-success">
+                  {t("auth.verifyEmailPage.tokenDemo")}
+                  <code className="bg-success-surface px-1 py-0.5 rounded font-bold">
+                    {demoCodeHint}
+                  </code>
                 </p>
               )}
             </div>
@@ -126,8 +146,12 @@ export const VerifyEmailPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-700 flex items-start gap-3">
             <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              Consultez la boîte de réception de votre adresse email{' '}
-              {currentUser?.email && <strong className="text-stone-900">{currentUser.email}</strong>}. Cliquez sur le lien reçu ou collez le jeton de validation ci-dessous.
+              Consultez la boîte de réception de votre adresse email{" "}
+              {currentUser?.email && (
+                <strong className="text-stone-900">{currentUser.email}</strong>
+              )}
+              . Cliquez sur le lien reçu ou collez le jeton de validation
+              ci-dessous.
             </div>
           </div>
 
@@ -139,12 +163,14 @@ export const VerifyEmailPage: React.FC = () => {
             className="space-y-3 pt-2"
           >
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.verifyEmailPage.jetonDeValidationOuCode')}</label>
+              <label className="block text-xs font-bold text-stone-800 mb-1.5">
+                {t("auth.verifyEmailPage.jetonDeValidationOuCode")}
+              </label>
               <input
                 type="text"
                 value={tokenInput}
                 onChange={(e) => setTokenInput(e.target.value)}
-                placeholder={t('auth.verifyEmailPage.collezIciVotreJetonDe')}
+                placeholder={t("auth.verifyEmailPage.collezIciVotreJetonDe")}
                 required
                 className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
@@ -155,7 +181,7 @@ export const VerifyEmailPage: React.FC = () => {
               variant="primary"
               size="md"
               className="w-full"
-              isLoading={status === 'verifying'}
+              isLoading={status === "verifying"}
             >
               Valider mon adresse email
             </Button>
@@ -171,7 +197,9 @@ export const VerifyEmailPage: React.FC = () => {
                 className="text-primary"
                 leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
               >
-                <span>{t('auth.verifyEmailPage.renvoyerUnEmailDeValidation')}</span>
+                <span>
+                  {t("auth.verifyEmailPage.renvoyerUnEmailDeValidation")}
+                </span>
               </Button>
             </div>
           )}

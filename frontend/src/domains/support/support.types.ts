@@ -5,43 +5,39 @@
  */
 
 export type SupportCategory =
-  | 'account'
-  | 'listing'
-  | 'purchase'
-  | 'sale'
-  | 'reservation'
-  | 'payment'
-  | 'refund'
-  | 'delivery'
-  | 'messaging'
-  | 'safety'
-  | 'verification'
-  | 'pro_account'
-  | 'subscription'
-  | 'billing'
-  | 'technical'
-  | 'privacy'
-  | 'other';
+  | "account"
+  | "listing"
+  | "purchase"
+  | "sale"
+  | "reservation"
+  | "payment"
+  | "refund"
+  | "delivery"
+  | "messaging"
+  | "safety"
+  | "verification"
+  | "pro_account"
+  | "subscription"
+  | "billing"
+  | "technical"
+  | "privacy"
+  | "other";
 
 export type SupportRequestStatus =
-  | 'submitted'
-  | 'in_progress'
-  | 'waiting_for_user'
-  | 'resolved'
-  | 'closed';
+  "submitted" | "in_progress" | "waiting_for_user" | "resolved" | "closed";
 
-export type SupportPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type SupportPriority = "low" | "normal" | "high" | "urgent";
 
 export interface SupportAttachment {
   id: string;
-  type: 'image' | 'document';
+  type: "image" | "document";
   fileName: string;
   fileSize?: number;
   url: string;
 }
 
 export interface ListingSupportContext {
-  type: 'listing';
+  type: "listing";
   listingId: string;
   listingTitle?: string;
   listingPhotoUrl?: string;
@@ -52,7 +48,7 @@ export interface ListingSupportContext {
 }
 
 export interface TransactionSupportContext {
-  type: 'transaction';
+  type: "transaction";
   transactionId: string;
   orderNumber?: string;
   listingId?: string;
@@ -60,25 +56,25 @@ export interface TransactionSupportContext {
   listingPhotoUrl?: string;
   amount?: number;
   currency?: string;
-  flowType?: 'direct_purchase' | 'reservation';
+  flowType?: "direct_purchase" | "reservation";
   counterpartName?: string;
 }
 
 export interface ConversationSupportContext {
-  type: 'conversation';
+  type: "conversation";
   conversationId: string;
   counterpartId?: string;
   counterpartName?: string;
 }
 
 export interface SubscriptionSupportContext {
-  type: 'subscription';
+  type: "subscription";
   planId: string;
   planName: string;
 }
 
 export interface AccountSupportContext {
-  type: 'account';
+  type: "account";
   userId?: string;
   email?: string;
 }
@@ -92,7 +88,7 @@ export type SupportContext =
 
 export interface SupportTimelineMessage {
   id: string;
-  authorType: 'user' | 'agent' | 'system';
+  authorType: "user" | "agent" | "system";
   authorName: string;
   content: string;
   createdAt: string;
@@ -137,7 +133,7 @@ export interface CreateSupportRequestInput {
 
 export interface SupportRequestQuery {
   requesterId?: string;
-  status?: SupportRequestStatus | 'all';
+  status?: SupportRequestStatus | "all";
   category?: SupportCategory;
   limit?: number;
   offset?: number;

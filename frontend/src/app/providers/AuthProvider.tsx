@@ -1,11 +1,33 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { UserProfile, UserRole, PlatformRole, AccountType, Permission, AuthResult } from '../../types';
-import { userRepository } from '../../repositories/user.repository';
-import { storageService } from '../../services/storage.service';
-import { authService } from '../../domains/auth/auth.service';
-import { authorizationService, ResourceOwnershipContext, AuthorizationContextOptions } from '../../security/authorization.service';
-import { normalizePlatformRole } from '../../security/roles.config';
-import { isProSeller, isAccountSuspended, isAccountLimited } from '../../domains/user/user.domain';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import {
+  UserProfile,
+  UserRole,
+  PlatformRole,
+  AccountType,
+  Permission,
+  AuthResult,
+} from "../../types";
+import { userRepository } from "../../repositories/user.repository";
+import { storageService } from "../../services/storage.service";
+import { authService } from "../../domains/auth/auth.service";
+import {
+  authorizationService,
+  ResourceOwnershipContext,
+  AuthorizationContextOptions,
+} from "../../security/authorization.service";
+import { normalizePlatformRole } from "../../security/roles.config";
+import {
+  isProSeller,
+  isAccountSuspended,
+  isAccountLimited,
+} from "../../domains/user/user.domain";
 
 interface AuthContextType {
   currentUser: UserProfile | null;
@@ -20,7 +42,11 @@ interface AuthContextType {
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   isIdentityVerified: boolean;
-  login: (email: string, password: string, options?: { rememberMe?: boolean }) => Promise<AuthResult>;
+  login: (
+    email: string,
+    password: string,
+    options?: { rememberMe?: boolean },
+  ) => Promise<AuthResult>;
   loginWithMFA: (tempToken: string, code: string) => Promise<AuthResult>;
   registerIndividual: (data: {
     name: string;
@@ -60,8 +86,18 @@ interface AuthContextType {
   switchRole: (role: UserRole) => Promise<void>;
   switchDemoUser: (userKey: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  can: (permission: Permission, resource?: ResourceOwnershipContext | any, options?: AuthorizationContextOptions) => boolean;
-  hasEntitlement: (entitlement: 'storefrontCustomization' | 'prioritySupport' | 'bulkImportExport' | 'automaticRelisting') => boolean;
+  can: (
+    permission: Permission,
+    resource?: ResourceOwnershipContext | any,
+    options?: AuthorizationContextOptions,
+  ) => boolean;
+  hasEntitlement: (
+    entitlement:
+      | "storefrontCustomization"
+      | "prioritySupport"
+      | "bulkImportExport"
+      | "automaticRelisting",
+  ) => boolean;
   canAccessMarket: (countryCode?: string) => boolean;
   logout: () => void;
   loginAs: (role: UserRole) => void;
@@ -69,9 +105,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentKey, setCurrentKey] = useState<string>(() => storageService.getCurrentUserKey());
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => storageService.getCurrentUser());
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [currentKey, setCurrentKey] = useState<string>(() =>
+    storageService.getCurrentUserKey(),
+  );
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() =>
+    storageService.getCurrentUser(),
+  );
 
   const refreshUser = useCallback(() => {
     const key = storageService.getCurrentUserKey();
@@ -86,13 +128,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentKey]);
 
   const platformRole = useMemo<PlatformRole>(() => {
-    if (!currentUser) return 'guest';
+    if (!currentUser) return "guest";
     return currentUser.primaryRole || normalizePlatformRole(currentUser.role);
   }, [currentUser]);
 
   const accountType = useMemo<AccountType>(() => {
-    if (!currentUser) return 'individual';
-    return currentUser.accountType || (isProSeller(currentUser) ? 'professional' : 'individual');
+    if (!currentUser) return "individual";
+    return (
+      currentUser.accountType ||
+      (isProSeller(currentUser) ? "professional" : "individual")
+    );
   }, [currentUser]);
 
   const effectivePermissions = useMemo<Permission[]>(() => {
@@ -107,7 +152,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isPhoneVerified = Boolean(currentUser?.isPhoneVerified);
   const isIdentityVerified = Boolean(currentUser?.isIdentityVerified);
 
-  const login = async (email: string, password: string, options?: { rememberMe?: boolean }): Promise<AuthResult> => {
+  const login = async (
+    email: string,
+    password: string,
+    options?: { rememberMe?: boolean },
+  ): Promise<AuthResult> => {
     const result = await authService.login(email, password, options);
     if (result.success && result.user) {
       setCurrentKey(result.user.id);
@@ -116,7 +165,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return result;
   };
 
-  const loginWithMFA = async (tempToken: string, code: string): Promise<AuthResult> => {
+  const loginWithMFA = async (
+    tempToken: string,
+    code: string,
+  ): Promise<AuthResult> => {
     const result = await authService.verifyMFALogin(tempToken, code);
     if (result.success && result.user) {
       setCurrentKey(result.user.id);
@@ -176,9 +228,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone?: string;
   }): Promise<AuthResult> => {
     if (!currentUser) {
-      return { success: false, errorMessage: 'Vous devez être connecté pour effectuer cette action.' };
+      return {
+        success: false,
+        errorMessage: "Vous devez être connecté pour effectuer cette action.",
+      };
     }
-    const result = await authService.upgradeIndividualToPro(currentUser.id, proData);
+    const result = await authService.upgradeIndividualToPro(
+      currentUser.id,
+      proData,
+    );
     if (result.success && result.user) {
       setCurrentUser(result.user);
     }
@@ -198,7 +256,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentKey(userKey);
     const user = storageService.getCurrentUser(userKey);
     if (user) {
-      storageService.setCurrentRole(user.primaryRole || normalizePlatformRole(user.role));
+      storageService.setCurrentRole(
+        user.primaryRole || normalizePlatformRole(user.role),
+      );
     }
     setCurrentUser(user);
   };
@@ -212,13 +272,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const can = (
     permission: Permission,
     resource?: ResourceOwnershipContext | any,
-    options?: AuthorizationContextOptions
+    options?: AuthorizationContextOptions,
   ): boolean => {
     return authorizationService.can(currentUser, permission, resource, options);
   };
 
   const hasEntitlement = (
-    entitlement: 'storefrontCustomization' | 'prioritySupport' | 'bulkImportExport' | 'automaticRelisting'
+    entitlement:
+      | "storefrontCustomization"
+      | "prioritySupport"
+      | "bulkImportExport"
+      | "automaticRelisting",
   ): boolean => {
     return authorizationService.hasEntitlement(currentUser, entitlement);
   };
@@ -229,7 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     authService.logout();
-    setCurrentKey('guest');
+    setCurrentKey("guest");
     setCurrentUser(null);
   };
 
@@ -241,11 +305,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         currentUser,
-        role: (currentUser?.role as UserRole) || 'guest',
+        role: (currentUser?.role as UserRole) || "guest",
         platformRole,
         accountType,
         effectivePermissions,
-        isAuthenticated: Boolean(currentUser && platformRole !== 'guest'),
+        isAuthenticated: Boolean(currentUser && platformRole !== "guest"),
         isSuspended,
         isLimited,
         isPro,
@@ -275,6 +339,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export function useAuth(): AuthContextType {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

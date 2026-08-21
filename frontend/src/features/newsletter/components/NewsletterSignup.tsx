@@ -1,31 +1,31 @@
-import React, { useState } from 'react';
-import { Mail, CheckCircle2, ArrowRight,  AlertCircle } from 'lucide-react';
-import { useAuth } from '../../../app/providers/AuthProvider';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { Button } from '../../../design-system/primitives/Button';
-import { newsletterService } from '../../../domains/newsletter/newsletter.service';
-import { newsletterRepository } from '../../../repositories/newsletter.repository';
-import { NewsletterSubscriptionSource } from '../../../domains/newsletter/newsletter.types';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { Mail, CheckCircle2, ArrowRight, AlertCircle } from "lucide-react";
+import { useAuth } from "../../../app/providers/AuthProvider";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { Button } from "../../../design-system/primitives/Button";
+import { newsletterService } from "../../../domains/newsletter/newsletter.service";
+import { newsletterRepository } from "../../../repositories/newsletter.repository";
+import { NewsletterSubscriptionSource } from "../../../domains/newsletter/newsletter.types";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface NewsletterSignupProps {
-  variant?: 'band' | 'footer' | 'inline';
+  variant?: "band" | "footer" | "inline";
   showConsentCheckbox?: boolean;
   className?: string;
   source?: NewsletterSubscriptionSource;
 }
 
 export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
-  variant = 'band',
+  variant = "band",
   showConsentCheckbox = true,
-  className = '',
-  source = 'homepage',
+  className = "",
+  source = "homepage",
 }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
 
-  const [email, setEmail] = useState(currentUser?.email || '');
+  const [email, setEmail] = useState(currentUser?.email || "");
   const [consent, setConsent] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -37,12 +37,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
 
     const validation = newsletterService.validateEmail(email);
     if (!validation.isValid) {
-      setErrorMessage(validation.error || 'Email invalide.');
+      setErrorMessage(validation.error || "Email invalide.");
       return;
     }
 
     if (showConsentCheckbox && !consent) {
-      setErrorMessage('Veuillez accepter de recevoir les actualités Shongre.');
+      setErrorMessage("Veuillez accepter de recevoir les actualités Shongre.");
       return;
     }
 
@@ -51,15 +51,20 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
       await newsletterRepository.subscribe({
         email: email.trim(),
         subscriberId: currentUser?.id,
-        accountType: currentUser?.sellerType === 'pro' ? 'pro' : 'individual',
+        accountType: currentUser?.sellerType === "pro" ? "pro" : "individual",
         source,
         consentGiven: true,
       });
 
       setIsSuccess(true);
-      toast.success('Votre inscription à la newsletter Shongre a bien été enregistrée.', 'Abonnement confirmé');
+      toast.success(
+        "Votre inscription à la newsletter Shongre a bien été enregistrée.",
+        "Abonnement confirmé",
+      );
     } catch (err: any) {
-      setErrorMessage(err.message || 'Impossible d\'enregistrer votre inscription. Réessayez.');
+      setErrorMessage(
+        err.message || "Impossible d'enregistrer votre inscription. Réessayez.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -67,28 +72,34 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
 
   // SUCCESS STATE
   if (isSuccess) {
-    if (variant === 'footer') {
+    if (variant === "footer") {
       return (
         <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold py-1">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{t('newsletter.newsletterSignup.inscriptionConfirmee')}</span>
+          <span>{t("newsletter.newsletterSignup.inscriptionConfirmee")}</span>
         </div>
       );
     }
 
     return (
-      <div className={`p-6 rounded-3xl bg-success-surface border border-success-border text-center space-y-2 ${className}`}>
+      <div
+        className={`p-6 rounded-3xl bg-success-surface border border-success-border text-center space-y-2 ${className}`}
+      >
         <div className="w-10 h-10 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-5 h-5" />
         </div>
-        <h4 className="text-sm font-black text-success">{t('newsletter.newsletterSignup.vousEtesBienInscrit')}</h4>
-        <p className="text-xs text-success max-w-sm mx-auto">{t('newsletter.newsletterSignup.vousRecevrezNosSelectionsEt')}</p>
+        <h4 className="text-sm font-black text-success">
+          {t("newsletter.newsletterSignup.vousEtesBienInscrit")}
+        </h4>
+        <p className="text-xs text-success max-w-sm mx-auto">
+          {t("newsletter.newsletterSignup.vousRecevrezNosSelectionsEt")}
+        </p>
       </div>
     );
   }
 
   // FOOTER COMPACT VARIANT
-  if (variant === 'footer') {
+  if (variant === "footer") {
     return (
       <form onSubmit={handleSubmit} className={`space-y-2 ${className}`}>
         {/* Stacked, not side by side. This sits in the footer's narrowest
@@ -102,8 +113,8 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('newsletter.newsletterSignup.votreEmailCom')}
-              aria-label={t('newsletter.newsletterSignup.votreAdresseEmail')}
+              placeholder={t("newsletter.newsletterSignup.votreEmailCom")}
+              aria-label={t("newsletter.newsletterSignup.votreAdresseEmail")}
               autoComplete="email"
               disabled={isSubmitting}
               className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20-on-dark transition-colors"
@@ -117,7 +128,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             isLoading={isSubmitting}
             rightIcon={<ArrowRight className="w-4 h-4" />}
           >
-            <span>{isSubmitting ? 'Inscription…' : 'S\'inscrire'}</span>
+            <span>{isSubmitting ? "Inscription…" : "S'inscrire"}</span>
           </Button>
         </div>
         {errorMessage && (
@@ -138,12 +149,18 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               so this uses the inverse-surface brand variant. */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary-on-dark text-xs font-bold">
             <Mail className="w-3.5 h-3.5" />
-            <span>{t('newsletter.newsletterSignup.laSelectionShongre')}</span>
+            <span>{t("newsletter.newsletterSignup.laSelectionShongre")}</span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">{t('newsletter.newsletterSignup.recevezNosMeilleuresPepitesBons')}</h2>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">
+            {t("newsletter.newsletterSignup.recevezNosMeilleuresPepitesBons")}
+          </h2>
 
-          <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">{t('newsletter.newsletterSignup.chaqueSemaineUneSelectionExclusive')}</p>
+          <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
+            {t(
+              "newsletter.newsletterSignup.chaqueSemaineUneSelectionExclusive",
+            )}
+          </p>
         </div>
 
         <div className="lg:col-span-6">
@@ -155,8 +172,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('newsletter.newsletterSignup.saisissezVotreAdresseEmail')}
-                  aria-label={t('newsletter.newsletterSignup.votreAdresseEmail')}
+                  placeholder={t(
+                    "newsletter.newsletterSignup.saisissezVotreAdresseEmail",
+                  )}
+                  aria-label={t(
+                    "newsletter.newsletterSignup.votreAdresseEmail",
+                  )}
                   autoComplete="email"
                   disabled={isSubmitting}
                   className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
@@ -170,7 +191,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                 disabled={isSubmitting}
                 className="font-black shrink-0 flex items-center justify-center gap-2"
               >
-                <span>{isSubmitting ? 'Inscription...' : 'S\'inscrire'}</span>
+                <span>{isSubmitting ? "Inscription..." : "S'inscrire"}</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -183,7 +204,9 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   onChange={(e) => setConsent(e.target.checked)}
                   className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
                 />
-                <span>{t('newsletter.newsletterSignup.jAccepteDeRecevoirLa')}</span>
+                <span>
+                  {t("newsletter.newsletterSignup.jAccepteDeRecevoirLa")}
+                </span>
               </label>
             )}
 

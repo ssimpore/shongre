@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { ImageOff } from 'lucide-react';
-import { buildSrcSet } from './responsiveImage';
+import React, { useEffect, useState } from "react";
+import { ImageOff } from "lucide-react";
+import { buildSrcSet } from "./responsiveImage";
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Required: pass `''` only for images that are purely decorative. */
@@ -45,11 +45,11 @@ export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
  */
 export const Image: React.FC<ImageProps> = ({
   alt,
-  className = '',
-  fallbackIconClassName = 'w-5 h-5',
+  className = "",
+  fallbackIconClassName = "w-5 h-5",
   loading,
-  referrerPolicy = 'no-referrer',
-  decoding = 'async',
+  referrerPolicy = "no-referrer",
+  decoding = "async",
   onError,
   onLoad,
   sizes,
@@ -73,7 +73,7 @@ export const Image: React.FC<ImageProps> = ({
     return (
       <div
         role="img"
-        aria-label={alt || 'Image indisponible'}
+        aria-label={alt || "Image indisponible"}
         className={`flex items-center justify-center bg-bg-subtle text-stone-500 ${className}`}
       >
         <ImageOff className={fallbackIconClassName} aria-hidden="true" />
@@ -81,7 +81,8 @@ export const Image: React.FC<ImageProps> = ({
     );
   }
 
-  const srcSet = sizes ? buildSrcSet(src) : undefined;
+  const srcSet =
+    sizes && typeof src === "string" ? buildSrcSet(src) : undefined;
 
   return (
     <img
@@ -89,11 +90,11 @@ export const Image: React.FC<ImageProps> = ({
       srcSet={srcSet}
       sizes={srcSet ? sizes : undefined}
       alt={alt}
-      loading={loading ?? (priority ? 'eager' : 'lazy')}
-      fetchPriority={priority ? 'high' : undefined}
+      loading={loading ?? (priority ? "eager" : "lazy")}
+      fetchPriority={priority ? "high" : undefined}
       decoding={decoding}
       referrerPolicy={referrerPolicy}
-      className={`${className} transition-opacity duration-fast ${hasArrived ? 'opacity-100' : 'opacity-0'}`}
+      className={`${className} transition-opacity duration-fast ${hasArrived ? "opacity-100" : "opacity-0"}`}
       /* A cached image can finish before React attaches `onLoad`, which would
          strand it at `opacity-0`. The ref settles that case on mount. */
       ref={(node) => {

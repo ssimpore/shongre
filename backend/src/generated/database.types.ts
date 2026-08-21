@@ -18,7 +18,7 @@ export interface Database {
           name: string;
           account_type: 'individual' | 'professional' | 'internal';
           primary_role: string;
-          status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived';
+          status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived' | 'deleted';
           avatar_url: string | null;
           phone: string | null;
           city: string | null;
@@ -47,7 +47,7 @@ export interface Database {
           name: string;
           account_type?: 'individual' | 'professional' | 'internal';
           primary_role?: string;
-          status?: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived';
+          status?: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived' | 'deleted';
           avatar_url?: string | null;
           phone?: string | null;
           city?: string | null;
@@ -69,6 +69,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
+        Relationships: [];
       };
       listings: {
         Row: {
@@ -148,6 +149,7 @@ export interface Database {
           expires_at?: string;
         };
         Update: Partial<Database['public']['Tables']['listings']['Insert']>;
+        Relationships: [];
       };
       orders: {
         Row: {
@@ -209,6 +211,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['orders']['Insert']>;
+        Relationships: [];
       };
       markets: {
         Row: {
@@ -242,6 +245,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['markets']['Insert']>;
+        Relationships: [];
       };
       categories: {
         Row: {
@@ -271,6 +275,65 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['categories']['Insert']>;
+        Relationships: [];
+      };
+      account_deletion_requests: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          status: 'requested' | 'blocked' | 'completed';
+          reason: string | null;
+          blocked_reason: string | null;
+          requested_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          status: 'requested' | 'blocked' | 'completed';
+          reason?: string | null;
+          blocked_reason?: string | null;
+          requested_at?: string;
+          completed_at?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['account_deletion_requests']['Insert']>;
+        Relationships: [];
+      };
+      blocked_users: {
+        Row: {
+          blocker_id: string;
+          blocked_id: string;
+          created_at: string;
+        };
+        Insert: {
+          blocker_id: string;
+          blocked_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['blocked_users']['Insert']>;
+        Relationships: [];
+      };
+      push_device_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          token: string;
+          platform: 'ios' | 'android';
+          app_version: string | null;
+          created_at: string;
+          last_seen_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          token: string;
+          platform: 'ios' | 'android';
+          app_version?: string | null;
+          created_at?: string;
+          last_seen_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['push_device_tokens']['Insert']>;
+        Relationships: [];
       };
       reviews: {
         Row: {
@@ -294,10 +357,15 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['reviews']['Insert']>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
     Functions: {
+      complete_account_deletion: {
+        Args: { p_user_id: string; p_reason?: string | null };
+        Returns: Database['public']['Tables']['profiles']['Row'][];
+      };
       release_order_escrow: {
         Args: { p_order_id: string; p_actor_id: string };
         Returns: Json;
@@ -305,6 +373,7 @@ export interface Database {
     };
     Enums: {
       platform_role: string;
+      account_status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived' | 'deleted';
       listing_status: string;
       transaction_status: string;
       boost_type: string;

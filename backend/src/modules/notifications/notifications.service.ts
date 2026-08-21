@@ -1,6 +1,7 @@
 import { NotificationItem } from '../../shared/types/index.js';
 import { INotificationRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { realtimeBroadcaster } from '../../infrastructure/realtime/realtime-broadcaster.js';
+import { AppError } from '../../shared/errors/app-error.js';
 
 export class NotificationsService {
   constructor(private notificationRepo: INotificationRepository = repositories.notifications) {}
@@ -32,6 +33,21 @@ export class NotificationsService {
 
   async deleteNotification(notificationId: string): Promise<void> {
     return this.notificationRepo.delete(notificationId);
+  }
+
+  async registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void> {
+    if (!/^Expo(nent)?PushToken\[[A-Za-z0-9_-]+\]$/.test(token || '')) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Jeton de notification invalide.' });
+    }
+    if (platform !== 'ios' && platform !== 'android') {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Plateforme de notification invalide.' });
+    }
+    await this.notificationRepo.registerDevice(userId, token, platform, appVersion?.slice(0, 30));
+  }
+
+  async unregisterDevice(userId: string, token: string): Promise<void> {
+    if (!token) return;
+    await this.notificationRepo.unregisterDevice(userId, token);
   }
 
   async dispatchNotification(userId: string, type: string, title: string, body: string, linkUrl?: string): Promise<NotificationItem> {

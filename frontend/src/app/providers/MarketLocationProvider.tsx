@@ -1,11 +1,26 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { LocationSelection } from '../../types';
-import { Market, MarketConfiguration, MarketCity } from '../../domains/market/market.types';
-import { marketService } from '../../domains/market/market.service';
-import { MARKETS_CHANGED_EVENT, MARKETS_STORAGE_KEY, storageService } from '../../services/storage.service';
-import { formatPrice as formatPriceUtil } from '../../utilities/formatters';
-import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
-import { refreshTaxonomyProjection } from '../../domains/taxonomy/taxonomy.data';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import { LocationSelection } from "../../types";
+import {
+  Market,
+  MarketConfiguration,
+  MarketCity,
+} from "../../domains/market/market.types";
+import { marketService } from "../../domains/market/market.service";
+import {
+  MARKETS_CHANGED_EVENT,
+  MARKETS_STORAGE_KEY,
+  storageService,
+} from "../../services/storage.service";
+import { formatPrice as formatPriceUtil } from "../../utilities/formatters";
+import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { refreshTaxonomyProjection } from "../../domains/taxonomy/taxonomy.data";
 
 interface MarketContextType {
   activeMarket: Market;
@@ -21,7 +36,10 @@ interface MarketContextType {
   currentCurrency: string;
   setCurrency: (currency: string) => void;
   currencySymbol: string;
-  formatPrice: (amount: number, options?: { showCurrency?: boolean; isFreeDonation?: boolean }) => string;
+  formatPrice: (
+    amount: number,
+    options?: { showCurrency?: boolean; isFreeDonation?: boolean },
+  ) => string;
   isLocationModalOpen: boolean;
   openLocationModal: () => void;
   closeLocationModal: () => void;
@@ -30,11 +48,15 @@ interface MarketContextType {
   closePreferencesModal: () => void;
 }
 
-const MarketLocationContext = createContext<MarketContextType | undefined>(undefined);
+const MarketLocationContext = createContext<MarketContextType | undefined>(
+  undefined,
+);
 
-export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeMarketCode, setActiveMarketCode] = useState<string>(() =>
-    storageService.getActiveMarketCode() || 'FR'
+export const MarketLocationProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const [activeMarketCode, setActiveMarketCode] = useState<string>(
+    () => storageService.getActiveMarketCode() || "FR",
   );
   const [marketDataVersion, setMarketDataVersion] = useState(0);
 
@@ -49,11 +71,14 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
     };
 
     window.addEventListener(MARKETS_CHANGED_EVENT, refreshMarketConfiguration);
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      window.removeEventListener(MARKETS_CHANGED_EVENT, refreshMarketConfiguration);
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(
+        MARKETS_CHANGED_EVENT,
+        refreshMarketConfiguration,
+      );
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
@@ -66,7 +91,9 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
   }, [activeMarket, marketDataVersion]);
 
   const availableMarkets = useMemo<Market[]>(() => {
-    return marketService.getMarkets().filter((m) => m.status === 'active' || m.status === 'coming_soon');
+    return marketService
+      .getMarkets()
+      .filter((m) => m.status === "active" || m.status === "coming_soon");
   }, [marketDataVersion]);
 
   const [location, setLocationState] = useState<LocationSelection>(() => {
@@ -76,18 +103,24 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
     }
     return {
       city: `Toute la ${activeMarket.name}`,
-      postalCode: '',
+      postalCode: "",
       radiusKm: 0,
       label: `Toute la ${activeMarket.name}`,
     };
   });
 
   const [currentLocale, setCurrentLocaleState] = useState<string>(() => {
-    return storageService.getUserLocale() || effectiveConfig.localization.defaultLocale;
+    return (
+      storageService.getUserLocale() ||
+      effectiveConfig.localization.defaultLocale
+    );
   });
 
   const [currentCurrency, setCurrentCurrencyState] = useState<string>(() => {
-    return storageService.getUserCurrency() || effectiveConfig.localization.defaultCurrency;
+    return (
+      storageService.getUserCurrency() ||
+      effectiveConfig.localization.defaultCurrency
+    );
   });
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -136,7 +169,7 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
   // pick pronunciation from `<html lang>`, and it was pinned to the `fr` in
   // index.html no matter what the user selected.
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
     document.documentElement.lang = currentLocale.slice(0, 2);
   }, [currentLocale]);
 
@@ -153,7 +186,7 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
 
     const defaultLoc: LocationSelection = {
       city: `Toute la ${market.name}`,
-      postalCode: '',
+      postalCode: "",
       radiusKm: 0,
       label: `Toute la ${market.name}`,
     };
@@ -169,7 +202,7 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
   const resetLocation = useCallback(() => {
     const defaultLoc: LocationSelection = {
       city: `Toute la ${activeMarket.name}`,
-      postalCode: '',
+      postalCode: "",
       radiusKm: 0,
       label: `Toute la ${activeMarket.name}`,
     };
@@ -181,22 +214,25 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
   }, [activeMarket]);
 
   const currencySymbol = useMemo<string>(() => {
-    if (currentCurrency === 'EUR') return '€';
-    if (currentCurrency === 'USD') return '$';
-    if (currentCurrency === 'GBP') return '£';
-    if (currentCurrency === 'CHF') return 'CHF';
+    if (currentCurrency === "EUR") return "€";
+    if (currentCurrency === "USD") return "$";
+    if (currentCurrency === "GBP") return "£";
+    if (currentCurrency === "CHF") return "CHF";
     return currentCurrency;
   }, [currentCurrency]);
 
   const formatPrice = useCallback(
-    (amount: number, options?: { showCurrency?: boolean; isFreeDonation?: boolean }) => {
+    (
+      amount: number,
+      options?: { showCurrency?: boolean; isFreeDonation?: boolean },
+    ) => {
       return formatPriceUtil(amount, {
         ...options,
         locale: currentLocale,
         currency: currentCurrency,
       });
     },
-    [currentLocale, currentCurrency]
+    [currentLocale, currentCurrency],
   );
 
   return (
@@ -231,7 +267,10 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
 
 export function useMarketLocation(): MarketContextType {
   const ctx = useContext(MarketLocationContext);
-  if (!ctx) throw new Error('useMarketLocation must be used within MarketLocationProvider');
+  if (!ctx)
+    throw new Error(
+      "useMarketLocation must be used within MarketLocationProvider",
+    );
   return ctx;
 }
 

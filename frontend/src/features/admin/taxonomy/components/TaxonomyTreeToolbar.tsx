@@ -1,7 +1,7 @@
-import React from 'react';
-import { Search, Plus, Filter,  X } from 'lucide-react';
-import { Button } from '../../../../design-system/primitives/Button';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React from "react";
+import { Search, Plus, Filter, X } from "lucide-react";
+import { Button } from "../../../../design-system/primitives/Button";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 export interface TaxonomyTreeToolbarProps {
   searchQuery: string;
@@ -35,8 +35,12 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder={t('admin.taxonomyTreeToolbar.rechercherParLibelleNomCourt')}
-            aria-label={t('admin.taxonomyTreeToolbar.rechercherDansLArborescence')}
+            placeholder={t(
+              "admin.taxonomyTreeToolbar.rechercherParLibelleNomCourt",
+            )}
+            aria-label={t(
+              "admin.taxonomyTreeToolbar.rechercherDansLArborescence",
+            )}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -44,7 +48,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           {searchQuery && (
             <button
               type="button"
-              onClick={() => onSearchChange('')}
+              onClick={() => onSearchChange("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-0.5"
             >
               <X className="w-3.5 h-3.5" />
@@ -59,7 +63,9 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           onClick={onAddRootCategory}
           leftIcon={<Plus className="w-3.5 h-3.5" />}
           className="shrink-0"
-        >{t('admin.taxonomyTreeToolbar.ajouterUneCategorie')}</Button>
+        >
+          {t("admin.taxonomyTreeToolbar.ajouterUneCategorie")}
+        </Button>
       </div>
 
       {/* Filter Chips & Expand Controls */}
@@ -71,28 +77,40 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           </div>
 
           <select
-            aria-label={t('admin.taxonomyTreeToolbar.filtrerParNiveauDeTaxonomie')}
+            aria-label={t(
+              "admin.taxonomyTreeToolbar.filtrerParNiveauDeTaxonomie",
+            )}
             value={levelFilter}
             onChange={(e) => onLevelFilterChange(e.target.value)}
             className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
-            <option value="all">{t('admin.taxonomyTreeToolbar.tousLesNiveaux')}</option>
-            <option value="category">{t('admin.taxonomyTreeToolbar.categoriesRacinesUnivers')}</option>
-            <option value="subcategory">{t('admin.taxonomyTreeToolbar.sousCategories')}</option>
+            <option value="all">
+              {t("admin.taxonomyTreeToolbar.tousLesNiveaux")}
+            </option>
+            <option value="category">
+              {t("admin.taxonomyTreeToolbar.categoriesRacinesUnivers")}
+            </option>
+            <option value="subcategory">
+              {t("admin.taxonomyTreeToolbar.sousCategories")}
+            </option>
             <option value="type">Types (Feuilles)</option>
             <option value="subtype">Sous-types</option>
           </select>
 
           <select
-            aria-label={t('admin.taxonomyTreeToolbar.filtrerParStatutDeN')}
+            aria-label={t("admin.taxonomyTreeToolbar.filtrerParStatutDeN")}
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
             className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
-            <option value="all">{t('admin.taxonomyTreeToolbar.tousLesStatuts')}</option>
+            <option value="all">
+              {t("admin.taxonomyTreeToolbar.tousLesStatuts")}
+            </option>
             <option value="active">Actifs uniquement</option>
             <option value="draft">Brouillons uniquement</option>
-            <option value="deprecated">{t('admin.taxonomyTreeToolbar.depreciesUniquement')}</option>
+            <option value="deprecated">
+              {t("admin.taxonomyTreeToolbar.depreciesUniquement")}
+            </option>
           </select>
         </div>
 
@@ -101,12 +119,16 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             type="button"
             onClick={onExpandAll}
             className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
-          >{t('admin.taxonomyTreeToolbar.deplierTout')}</button>
+          >
+            {t("admin.taxonomyTreeToolbar.deplierTout")}
+          </button>
           <button
             type="button"
             onClick={onCollapseAll}
             className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-stone-900 bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
-          >{t('admin.taxonomyTreeToolbar.replierTout')}</button>
+          >
+            {t("admin.taxonomyTreeToolbar.replierTout")}
+          </button>
         </div>
       </div>
     </div>

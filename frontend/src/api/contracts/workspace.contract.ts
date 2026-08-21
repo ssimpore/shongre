@@ -1,4 +1,4 @@
-import { Listing, Transaction } from '../../types';
+import { Listing, Transaction } from "../../types";
 
 export interface UserWorkspaceSummary {
   activeListingsCount: number;

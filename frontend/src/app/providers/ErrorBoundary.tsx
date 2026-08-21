@@ -1,7 +1,7 @@
-import React, { ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { Button } from '../../design-system/primitives/Button';
+import React, { ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { Button } from "../../design-system/primitives/Button";
 
 interface Props {
   children: ReactNode;
@@ -28,7 +28,10 @@ const ErrorFallback: React.FC<{
   const { t } = useTranslation();
 
   return (
-    <div role="alert" className="min-h-screen bg-bg-base flex items-center justify-center p-4">
+    <div
+      role="alert"
+      className="min-h-screen bg-bg-base flex items-center justify-center p-4"
+    >
       <div className="max-w-md w-full bg-white rounded-2xl border border-border-base p-6 sm:p-8 shadow-xl text-center space-y-5">
         <div className="w-14 h-14 rounded-2xl bg-primary-light text-primary mx-auto flex items-center justify-center">
           <AlertTriangle className="w-7 h-7" />
@@ -36,10 +39,10 @@ const ErrorFallback: React.FC<{
 
         <div className="space-y-2">
           <h1 className="text-xl sm:text-2xl font-black text-text-main">
-            {t('shell.errorBoundary.uneErreurInattendueEstSurvenue')}
+            {t("shell.errorBoundary.uneErreurInattendueEstSurvenue")}
           </h1>
           <p className="text-sm text-text-secondary">
-            {t('shell.errorBoundary.applicationARencontreUnProbleme')}
+            {t("shell.errorBoundary.applicationARencontreUnProbleme")}
           </p>
         </div>
 
@@ -55,9 +58,11 @@ const ErrorFallback: React.FC<{
             variant="primary"
             size="md"
             fullWidth
-            leftIcon={<RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />}
+            leftIcon={
+              <RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />
+            }
           >
-            {t('shell.errorBoundary.actualiserLaPage')}
+            {t("shell.errorBoundary.actualiserLaPage")}
           </Button>
 
           <Button
@@ -65,9 +70,14 @@ const ErrorFallback: React.FC<{
             variant="outline"
             size="md"
             fullWidth
-            leftIcon={<Home className="h-icon-md w-icon-md text-primary" aria-hidden="true" />}
+            leftIcon={
+              <Home
+                className="h-icon-md w-icon-md text-primary"
+                aria-hidden="true"
+              />
+            }
           >
-            {t('shell.errorBoundary.retourAccueil')}
+            {t("shell.errorBoundary.retourAccueil")}
           </Button>
         </div>
       </div>
@@ -89,12 +99,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error in React tree:', error, errorInfo);
+    console.error("Uncaught error in React tree:", error, errorInfo);
   }
 
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   private handleReload = () => {

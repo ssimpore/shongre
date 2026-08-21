@@ -1,9 +1,13 @@
-import { isProSeller } from '../domains/user/user.domain';
-import { useMemo } from 'react';
-import { useAuth } from '../app/providers/AuthProvider';
-import { authorizationService, ResourceOwnershipContext, AuthorizationContextOptions } from './authorization.service';
-import { Permission, PlatformRole } from '../types';
-import { normalizePlatformRole } from './roles.config';
+import { isProSeller } from "../domains/user/user.domain";
+import { useMemo } from "react";
+import { useAuth } from "../app/providers/AuthProvider";
+import {
+  authorizationService,
+  ResourceOwnershipContext,
+  AuthorizationContextOptions,
+} from "./authorization.service";
+import { Permission, PlatformRole } from "../types";
+import { normalizePlatformRole } from "./roles.config";
 
 export function useAuthorization() {
   const { currentUser } = useAuth();
@@ -16,15 +20,24 @@ export function useAuthorization() {
     return (
       permission: Permission,
       resource?: ResourceOwnershipContext | any,
-      options?: AuthorizationContextOptions
+      options?: AuthorizationContextOptions,
     ): boolean => {
-      return authorizationService.can(currentUser, permission, resource, options);
+      return authorizationService.can(
+        currentUser,
+        permission,
+        resource,
+        options,
+      );
     };
   }, [currentUser]);
 
   const hasEntitlement = useMemo(() => {
     return (
-      entitlement: 'storefrontCustomization' | 'prioritySupport' | 'bulkImportExport' | 'automaticRelisting'
+      entitlement:
+        | "storefrontCustomization"
+        | "prioritySupport"
+        | "bulkImportExport"
+        | "automaticRelisting",
     ): boolean => {
       return authorizationService.hasEntitlement(currentUser, entitlement);
     };
@@ -36,11 +49,16 @@ export function useAuthorization() {
     };
   }, [currentUser]);
 
-  const isSuspended = currentUser?.isSuspended || currentUser?.status === 'suspended';
-  const isDeactivated = currentUser?.isDeactivated || currentUser?.status === 'disabled' || currentUser?.status === 'deleted';
-  const isLimited = currentUser?.status === 'limited';
+  const isSuspended =
+    currentUser?.isSuspended || currentUser?.status === "suspended";
+  const isDeactivated =
+    currentUser?.isDeactivated ||
+    currentUser?.status === "disabled" ||
+    currentUser?.status === "deleted";
+  const isLimited = currentUser?.status === "limited";
   const isPro = isProSeller(currentUser);
-  const normalizedRole: PlatformRole = currentUser?.primaryRole || normalizePlatformRole(currentUser?.role);
+  const normalizedRole: PlatformRole =
+    currentUser?.primaryRole || normalizePlatformRole(currentUser?.role);
 
   return {
     currentUser,
@@ -49,7 +67,8 @@ export function useAuthorization() {
     hasEntitlement,
     canAccessMarket,
     role: normalizedRole,
-    accountType: currentUser?.accountType || (isPro ? 'professional' : 'individual'),
+    accountType:
+      currentUser?.accountType || (isPro ? "professional" : "individual"),
     isSuspended,
     isDeactivated,
     isLimited,
@@ -61,15 +80,25 @@ export function useAuthorization() {
 export function useCan(
   permission: Permission,
   resource?: ResourceOwnershipContext | any,
-  options?: AuthorizationContextOptions
+  options?: AuthorizationContextOptions,
 ): boolean {
   const { can } = useAuthorization();
-  return useMemo(() => can(permission, resource, options), [can, permission, resource, options]);
+  return useMemo(
+    () => can(permission, resource, options),
+    [can, permission, resource, options],
+  );
 }
 
 export function useEntitlement(
-  entitlement: 'storefrontCustomization' | 'prioritySupport' | 'bulkImportExport' | 'automaticRelisting'
+  entitlement:
+    | "storefrontCustomization"
+    | "prioritySupport"
+    | "bulkImportExport"
+    | "automaticRelisting",
 ): boolean {
   const { hasEntitlement } = useAuthorization();
-  return useMemo(() => hasEntitlement(entitlement), [hasEntitlement, entitlement]);
+  return useMemo(
+    () => hasEntitlement(entitlement),
+    [hasEntitlement, entitlement],
+  );
 }

@@ -9,8 +9,8 @@ import {
   ProviderConfiguration,
   ProviderRoutingRule,
   ProviderMarketOverride,
-} from './provider.types';
-import { getProviderById } from './provider.registry';
+} from "./provider.types";
+import { getProviderById } from "./provider.registry";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -24,17 +24,24 @@ export class ProviderValidator {
    */
   validateConfiguration(
     provider: Provider,
-    config: Partial<ProviderConfiguration>
+    config: Partial<ProviderConfiguration>,
   ): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     if (!config.environment) {
-      errors.push('L\'environnement (demo, sandbox, production) est obligatoire.');
+      errors.push(
+        "L'environnement (demo, sandbox, production) est obligatoire.",
+      );
     }
 
-    if (config.priority !== undefined && (config.priority < 1 || !Number.isInteger(config.priority))) {
-      errors.push('La priorité doit être un entier positif supérieur ou égal à 1.');
+    if (
+      config.priority !== undefined &&
+      (config.priority < 1 || !Number.isInteger(config.priority))
+    ) {
+      errors.push(
+        "La priorité doit être un entier positif supérieur ou égal à 1.",
+      );
     }
 
     // Check schema requirements
@@ -49,26 +56,38 @@ export class ProviderValidator {
           // If enabled, required fields must be filled or marked as configured
           if (config.enabled) {
             if (isSecret) {
-              if (config.credentialStatus === 'not_configured' || config.credentialStatus === 'invalid') {
-                errors.push(`Le champ secret requis "${field.label}" n'est pas configuré.`);
+              if (
+                config.credentialStatus === "not_configured" ||
+                config.credentialStatus === "invalid"
+              ) {
+                errors.push(
+                  `Le champ secret requis "${field.label}" n'est pas configuré.`,
+                );
               }
-            } else if (val === undefined || val === null || val === '') {
+            } else if (val === undefined || val === null || val === "") {
               errors.push(`Le champ requis "${field.label}" est manquant.`);
             }
           }
         }
 
         // Validate URL format if type is url
-        if (field.type === 'url' && val) {
+        if (field.type === "url" && val) {
           try {
             new URL(val);
           } catch {
-            errors.push(`Le champ "${field.label}" doit être une URL valide (ex: https://...).`);
+            errors.push(
+              `Le champ "${field.label}" doit être une URL valide (ex: https://...).`,
+            );
           }
         }
 
         // Validate Number format
-        if (field.type === 'number' && val !== undefined && val !== null && val !== '') {
+        if (
+          field.type === "number" &&
+          val !== undefined &&
+          val !== null &&
+          val !== ""
+        ) {
           if (isNaN(Number(val))) {
             errors.push(`Le champ "${field.label}" doit être un nombre.`);
           }
@@ -77,8 +96,10 @@ export class ProviderValidator {
     }
 
     // Activation blocker warnings
-    if (config.enabled && config.credentialStatus === 'not_configured') {
-      warnings.push('Le prestataire est activé mais ses identifiants ne sont pas encore configurés.');
+    if (config.enabled && config.credentialStatus === "not_configured") {
+      warnings.push(
+        "Le prestataire est activé mais ses identifiants ne sont pas encore configurés.",
+      );
     }
 
     return {
@@ -94,20 +115,28 @@ export class ProviderValidator {
   validateMarketOverride(
     provider: Provider,
     marketCode: string,
-    override: ProviderMarketOverride
+    override: ProviderMarketOverride,
   ): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     const normMarket = marketCode.toUpperCase();
-    if (!provider.supportedMarkets.includes('*') && !provider.supportedMarkets.includes(normMarket)) {
+    if (
+      !provider.supportedMarkets.includes("*") &&
+      !provider.supportedMarkets.includes(normMarket)
+    ) {
       errors.push(
-        `Le prestataire ${provider.name} ne supporte pas officiellement le marché ${normMarket}.`
+        `Le prestataire ${provider.name} ne supporte pas officiellement le marché ${normMarket}.`,
       );
     }
 
-    if (override.priority !== undefined && (override.priority < 1 || !Number.isInteger(override.priority))) {
-      errors.push('La priorité de surcharge doit être un entier supérieur ou égal à 1.');
+    if (
+      override.priority !== undefined &&
+      (override.priority < 1 || !Number.isInteger(override.priority))
+    ) {
+      errors.push(
+        "La priorité de surcharge doit être un entier supérieur ou égal à 1.",
+      );
     }
 
     return {
@@ -126,23 +155,29 @@ export class ProviderValidator {
 
     const primary = getProviderById(rule.primaryProviderId);
     if (!primary) {
-      errors.push(`Le prestataire primaire "${rule.primaryProviderId}" est introuvable.`);
+      errors.push(
+        `Le prestataire primaire "${rule.primaryProviderId}" est introuvable.`,
+      );
     } else if (!primary.capabilities.includes(rule.capability)) {
       errors.push(
-        `Le prestataire primaire ${primary.name} ne supporte pas la capacité "${rule.capability}".`
+        `Le prestataire primaire ${primary.name} ne supporte pas la capacité "${rule.capability}".`,
       );
     }
 
     if (rule.fallbackProviderId) {
       if (rule.fallbackProviderId === rule.primaryProviderId) {
-        errors.push('Le prestataire de secours (fallback) ne peut pas être identique au prestataire primaire.');
+        errors.push(
+          "Le prestataire de secours (fallback) ne peut pas être identique au prestataire primaire.",
+        );
       } else {
         const fallback = getProviderById(rule.fallbackProviderId);
         if (!fallback) {
-          errors.push(`Le prestataire de secours "${rule.fallbackProviderId}" est introuvable.`);
+          errors.push(
+            `Le prestataire de secours "${rule.fallbackProviderId}" est introuvable.`,
+          );
         } else if (!fallback.capabilities.includes(rule.capability)) {
           errors.push(
-            `Le prestataire de secours ${fallback.name} ne supporte pas la capacité "${rule.capability}".`
+            `Le prestataire de secours ${fallback.name} ne supporte pas la capacité "${rule.capability}".`,
           );
         }
       }

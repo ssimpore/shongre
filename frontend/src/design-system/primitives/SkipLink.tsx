@@ -1,5 +1,5 @@
-import React from 'react';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React from "react";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 /**
  * The keyboard bypass required by WCAG 2.4.1.
@@ -17,7 +17,9 @@ import { useTranslation } from '../../i18n/I18nProvider';
  * `targetId` defaults to the `main` landmark every layout already renders — the
  * layouts only had to name it.
  */
-export const SkipLink: React.FC<{ targetId?: string }> = ({ targetId = 'main-content' }) => {
+export const SkipLink: React.FC<{ targetId?: string }> = ({
+  targetId = "main-content",
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -29,7 +31,7 @@ export const SkipLink: React.FC<{ targetId?: string }> = ({ targetId = 'main-con
                  focus:font-bold focus:shadow-dropdown focus:outline-2 focus:outline-offset-2
                  focus:outline-primary"
     >
-      {t('a11y.skipToContent')}
+      {t("a11y.skipToContent")}
     </a>
   );
 };

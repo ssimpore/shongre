@@ -376,6 +376,103 @@ describe('API v1 Endpoints Integration', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Mobile safety and account lifecycle
+  // ---------------------------------------------------------------------------
+
+  it('accepts an authenticated user report for moderation', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/reports`, {
+      method: 'POST',
+      headers: auth(buyerToken),
+      body: JSON.stringify({
+        listingId: 'list_1',
+        reason: 'other',
+        details: 'Le contenu de cette annonce doit être vérifié par la modération.',
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect((await res.json()).status).toBe('pending');
+  });
+
+  it('enforces a block on subsequent message sends and supports explicit unblock', async () => {
+    const sellerToken = await login('camille.martin@example.fr');
+    const block = await fetch(`${baseUrl}/api/v1/messaging/block`, {
+      method: 'POST',
+      headers: auth(buyerToken),
+      body: JSON.stringify({ targetUserId: 'user_camille' }),
+    });
+    expect(block.status).toBe(200);
+
+    const refused = await fetch(`${baseUrl}/api/v1/messaging/send`, {
+      method: 'POST',
+      headers: auth(sellerToken),
+      body: JSON.stringify({ conversationId: 'conv_1', text: 'Ce message doit être refusé.' }),
+    });
+    expect(refused.status).toBe(403);
+
+    const unblock = await fetch(`${baseUrl}/api/v1/messaging/unblock`, {
+      method: 'POST',
+      headers: auth(buyerToken),
+      body: JSON.stringify({ targetUserId: 'user_camille' }),
+    });
+    expect(unblock.status).toBe(200);
+  });
+
+  it('registers and removes only the caller push device token', async () => {
+    const token = 'ExpoPushToken[mobile-test-token]';
+    const register = await fetch(`${baseUrl}/api/v1/notifications/devices`, {
+      method: 'POST',
+      headers: auth(buyerToken),
+      body: JSON.stringify({ token, platform: 'ios', appVersion: '1.0.0' }),
+    });
+    expect(register.status).toBe(200);
+
+    const remove = await fetch(`${baseUrl}/api/v1/notifications/devices/unregister`, {
+      method: 'POST',
+      headers: auth(buyerToken),
+      body: JSON.stringify({ token }),
+    });
+    expect(remove.status).toBe(200);
+  });
+
+  it('blocks deletion while an order is active', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/account/delete`, {
+      method: 'POST',
+      headers: auth(buyerToken),
+      body: JSON.stringify({ password: DEMO_ACCOUNT_PASSWORD }),
+    });
+    expect(res.status).toBe(409);
+  });
+
+  it('anonymizes an eligible account, revokes access, and removes its credential', async () => {
+    const email = 'mobile-delete-test@example.fr';
+    const password = 'DeleteThisAccount2026!';
+    const registration = await fetch(`${baseUrl}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name: 'Deletion Test', role: 'individual_buyer', password }),
+    });
+    expect(registration.status).toBe(200);
+    const session = await registration.json();
+
+    const deletion = await fetch(`${baseUrl}/api/v1/account/delete`, {
+      method: 'POST',
+      headers: auth(session.token),
+      body: JSON.stringify({ password, reason: 'Test automatisé' }),
+    });
+    expect(deletion.status).toBe(200);
+    expect((await deletion.json()).status).toBe('completed');
+
+    const me = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: auth(session.token) });
+    expect(await me.json()).toBeNull();
+    const relogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    expect(relogin.status).toBe(401);
+  });
+
+  // ---------------------------------------------------------------------------
   // Webhooks
   // ---------------------------------------------------------------------------
 

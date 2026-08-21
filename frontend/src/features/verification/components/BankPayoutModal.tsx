@@ -1,19 +1,10 @@
-import React, { useState } from 'react';
-import {
-  CreditCard,
-  
-  AlertCircle,
-  X,
-  Lock,
-  
-  ShieldCheck
-  
-} from 'lucide-react';
-import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
-import { Button } from '../../../design-system/primitives/Button';
-import { useVerification } from '../../../domains/verification/useVerification';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { CreditCard, AlertCircle, X, Lock, ShieldCheck } from "lucide-react";
+import { useDialogBehavior } from "../../../design-system/primitives/useDialogBehavior";
+import { Button } from "../../../design-system/primitives/Button";
+import { useVerification } from "../../../domains/verification/useVerification";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface BankPayoutModalProps {
   isOpen: boolean;
@@ -30,10 +21,12 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
   const { currentUser, submitBankPayout } = useVerification();
   const toast = useToast();
 
-  const [accountHolder, setAccountHolder] = useState(currentUser?.name || currentUser?.companyName || '');
-  const [rawIban, setRawIban] = useState('');
-  const [bic, setBic] = useState('');
-  const [bankName, setBankName] = useState('');
+  const [accountHolder, setAccountHolder] = useState(
+    currentUser?.name || currentUser?.companyName || "",
+  );
+  const [rawIban, setRawIban] = useState("");
+  const [bic, setBic] = useState("");
+  const [bankName, setBankName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,14 +37,14 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
   const handleIbanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = e.target.value
       .toUpperCase()
-      .replace(/[^A-Z0-9]/g, '')
-      .replace(/(.{4})/g, '$1 ')
+      .replace(/[^A-Z0-9]/g, "")
+      .replace(/(.{4})/g, "$1 ")
       .trim();
     setRawIban(formatted);
 
     // Auto detect French banks if BIC empty
-    if (formatted.startsWith('FR76') && !bic) {
-      setBankName('Compte Bancaire Français (SEPA)');
+    if (formatted.startsWith("FR76") && !bic) {
+      setBankName("Compte Bancaire Français (SEPA)");
     }
   };
 
@@ -59,26 +52,26 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    const cleanIban = rawIban.replace(/\s+/g, '');
-    const cleanBic = bic.replace(/\s+/g, '').toUpperCase();
+    const cleanIban = rawIban.replace(/\s+/g, "");
+    const cleanBic = bic.replace(/\s+/g, "").toUpperCase();
 
     if (!accountHolder.trim()) {
-      setError('Veuillez renseigner le nom complet du titulaire du compte.');
+      setError("Veuillez renseigner le nom complet du titulaire du compte.");
       return;
     }
 
     if (cleanIban.length < 15) {
-      setError('Le numéro IBAN saisi est trop court.');
+      setError("Le numéro IBAN saisi est trop court.");
       return;
     }
 
     if (!/^[A-Z]{2}[0-9A-Z]+$/.test(cleanIban)) {
-      setError('Le format de l\'IBAN est invalide.');
+      setError("Le format de l'IBAN est invalide.");
       return;
     }
 
     if (cleanBic && (cleanBic.length < 8 || cleanBic.length > 11)) {
-      setError('Le code BIC / SWIFT doit comporter entre 8 et 11 caractères.');
+      setError("Le code BIC / SWIFT doit comporter entre 8 et 11 caractères.");
       return;
     }
 
@@ -88,8 +81,8 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
       const res = await submitBankPayout({
         accountHolderName: accountHolder.trim(),
         iban: cleanIban,
-        bic: cleanBic || 'GENERICSEPA',
-        bankName: bankName.trim() || 'Banque SEPA Validée',
+        bic: cleanBic || "GENERICSEPA",
+        bankName: bankName.trim() || "Banque SEPA Validée",
       });
 
       if (res.success) {
@@ -100,7 +93,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
         setError(res.message);
       }
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'enregistrement bancaire.');
+      setError(err.message || "Erreur lors de l'enregistrement bancaire.");
     } finally {
       setIsLoading(false);
     }
@@ -136,8 +129,17 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
             <CreditCard className="w-5 h-5" />
           </div>
           <div>
-            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">{t('verification.bankPayoutModal.coordonneesBancairesDeVirement')}</h3>
-            <p className="text-xs text-stone-500 font-semibold">{t('verification.bankPayoutModal.sequestreSecuriseVirementsDeVentes')}</p>
+            <h3
+              id={titleId}
+              className="text-lg font-black text-stone-900 leading-tight"
+            >
+              {t("verification.bankPayoutModal.coordonneesBancairesDeVirement")}
+            </h3>
+            <p className="text-xs text-stone-500 font-semibold">
+              {t(
+                "verification.bankPayoutModal.sequestreSecuriseVirementsDeVentes",
+              )}
+            </p>
           </div>
         </div>
 
@@ -150,21 +152,27 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.bankPayoutModal.nomDuTitulaireDuCompte')}<span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1">
+              {t("verification.bankPayoutModal.nomDuTitulaireDuCompte")}
+              <span className="text-primary">*</span>
             </label>
             <input
               type="text"
               value={accountHolder}
               onChange={(e) => setAccountHolder(e.target.value)}
-              placeholder={t('verification.bankPayoutModal.exJeanDupontOuSarl')}
+              placeholder={t("verification.bankPayoutModal.exJeanDupontOuSarl")}
               required
               className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-800 h-control-touch"
             />
-            <p className="text-micro text-stone-500 mt-1">{t('verification.bankPayoutModal.leNomDoitCorrespondreA')}</p>
+            <p className="text-micro text-stone-500 mt-1">
+              {t("verification.bankPayoutModal.leNomDoitCorrespondreA")}
+            </p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.bankPayoutModal.numeroIbanZoneSepa')}<span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1">
+              {t("verification.bankPayoutModal.numeroIbanZoneSepa")}
+              <span className="text-primary">*</span>
             </label>
             <input
               type="text"
@@ -190,7 +198,9 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.bankPayoutModal.etablissementBancaire')}</label>
+              <label className="block text-xs font-bold text-stone-800 mb-1">
+                {t("verification.bankPayoutModal.etablissementBancaire")}
+              </label>
               <input
                 type="text"
                 value={bankName}
@@ -204,7 +214,9 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
           <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 flex items-start gap-2.5">
             <Lock className="w-4 h-4 text-success shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong>Protection bancaire :</strong> Vos fonds issus des ventes sont protégés en séquestre réglementé et automatiquement virés sur ce compte dès confirmation de la transaction.
+              <strong>Protection bancaire :</strong> Vos fonds issus des ventes
+              sont protégés en séquestre réglementé et automatiquement virés sur
+              ce compte dès confirmation de la transaction.
             </div>
           </div>
 

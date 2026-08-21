@@ -1,4 +1,4 @@
-import { ReviewItem } from '../../types';
+import { ReviewItem } from "../../types";
 
 export interface SubmitReviewInput {
   targetUserId: string;

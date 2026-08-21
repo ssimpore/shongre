@@ -43,6 +43,10 @@ test('shows at most six recent searches by default', async ({ page }) => {
 });
 
 test('lets an admin change the recent-search display limit for the homepage', async ({ page }) => {
+  // This journey configures an admin override and then performs a five-route
+  // write/read sweep. Keep the global single-route budget strict and widen only
+  // this intentionally multi-navigation contract.
+  test.setTimeout(90_000);
   await usePersona(page, 'admin');
   await page.goto('/admin/marches', { waitUntil: 'networkidle' });
 

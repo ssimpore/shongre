@@ -18,7 +18,7 @@
  * Add a host only after confirming it honours `w` — an unrecognised host
  * falls back to the original `src`, which is always safe.
  */
-const RESIZABLE_HOSTS = new Set(['images.unsplash.com']);
+const RESIZABLE_HOSTS = new Set(["images.unsplash.com"]);
 
 /**
  * The width ladder offered to the browser.
@@ -29,11 +29,13 @@ const RESIZABLE_HOSTS = new Set(['images.unsplash.com']);
  * for a 2x device pixel ratio. The three sub-128px steps exist for avatars,
  * which otherwise had to round up to 160w for a 28px circle.
  */
-export const DEFAULT_WIDTH_LADDER = [64, 96, 128, 160, 240, 320, 480, 640, 800, 1080, 1440] as const;
+export const DEFAULT_WIDTH_LADDER = [
+  64, 96, 128, 160, 240, 320, 480, 640, 800, 1080, 1440,
+] as const;
 
 /** Parses `src` when it is an absolute http(s) URL we can safely rewrite. */
 function parseResizableUrl(src: string): URL | null {
-  if (!src || src.startsWith('data:') || src.startsWith('blob:')) return null;
+  if (!src || src.startsWith("data:") || src.startsWith("blob:")) return null;
   let url: URL;
   try {
     url = new URL(src);
@@ -41,14 +43,14 @@ function parseResizableUrl(src: string): URL | null {
     // Relative paths (local assets) are served as-is and have no resize API.
     return null;
   }
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
   if (!RESIZABLE_HOSTS.has(url.hostname)) return null;
   return url;
 }
 
 /** True when `buildSrcSet` can produce a ladder for this source. */
 export function isResizableSource(src: string | undefined): boolean {
-  return typeof src === 'string' && parseResizableUrl(src) !== null;
+  return typeof src === "string" && parseResizableUrl(src) !== null;
 }
 
 /**
@@ -61,16 +63,17 @@ export function buildSrcSet(
   src: string | undefined,
   ladder: readonly number[] = DEFAULT_WIDTH_LADDER,
 ): string | undefined {
-  if (typeof src !== 'string') return undefined;
+  if (typeof src !== "string") return undefined;
   const url = parseResizableUrl(src);
   if (!url) return undefined;
 
   // Never offer sources larger than the one the fixture asked for: upscaling
   // past the original costs bytes for no visible gain.
-  const intrinsic = Number(url.searchParams.get('w'));
-  const capped = Number.isFinite(intrinsic) && intrinsic > 0
-    ? ladder.filter((w) => w <= intrinsic)
-    : [...ladder];
+  const intrinsic = Number(url.searchParams.get("w"));
+  const capped =
+    Number.isFinite(intrinsic) && intrinsic > 0
+      ? ladder.filter((w) => w <= intrinsic)
+      : [...ladder];
 
   // A source whose intrinsic width sits below the whole ladder still deserves
   // its own entry, otherwise the ladder is empty and we emit nothing.
@@ -79,10 +82,10 @@ export function buildSrcSet(
   return widths
     .map((w) => {
       const variant = new URL(url.href);
-      variant.searchParams.set('w', String(w));
+      variant.searchParams.set("w", String(w));
       return `${variant.href} ${w}w`;
     })
-    .join(', ');
+    .join(", ");
 }
 
 /**
@@ -94,15 +97,15 @@ export function buildSrcSet(
  */
 export const IMAGE_SIZES = {
   /** 2-up on phones, 3-up on tablets, 4/5-up on desktop. */
-  card: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw',
+  card: "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw",
   /** Fixed-width thumbnail beside list-variant copy. */
-  thumbnail: '(max-width: 640px) 100vw, 220px',
+  thumbnail: "(max-width: 640px) 100vw, 220px",
   /** Dense 8-up rail and compact cards. */
-  compact: '(max-width: 640px) 33vw, 160px',
+  compact: "(max-width: 640px) 33vw, 160px",
   /** Listing detail gallery — full width on phones, capped by the content column. */
-  gallery: '(max-width: 1024px) 100vw, 900px',
+  gallery: "(max-width: 1024px) 100vw, 900px",
   /** Gallery filmstrip thumbnails (56-80px painted, 2x accounted for). */
-  thumb: '80px',
+  thumb: "80px",
 } as const;
 
 /**
@@ -113,11 +116,11 @@ export const IMAGE_SIZES = {
  * scale is mirrored here and keyed by the same names `Avatar` accepts.
  */
 export const AVATAR_SIZES = {
-  sm: '28px',
-  md: '40px',
-  lg: '48px',
-  xl: '64px',
-  '2xl': '(max-width: 640px) 96px, 128px',
+  sm: "28px",
+  md: "40px",
+  lg: "48px",
+  xl: "64px",
+  "2xl": "(max-width: 640px) 96px, 128px",
 } as const;
 
 export type ImageSizesKey = keyof typeof IMAGE_SIZES;

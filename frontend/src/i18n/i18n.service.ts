@@ -1,19 +1,24 @@
-import { CatalogueKey, MessageCatalogue, MessageKey, messagesFr } from './messages.fr';
-import { messagesEn } from './messages.en';
-import { DEFAULT_LOCALE } from './locale';
+import {
+  CatalogueKey,
+  MessageCatalogue,
+  MessageKey,
+  messagesFr,
+} from "./messages.fr";
+import { messagesEn } from "./messages.en";
+import { DEFAULT_LOCALE } from "./locale";
 
-export { DEFAULT_LOCALE } from './locale';
+export { DEFAULT_LOCALE } from "./locale";
 
 /** Values substituted into `{placeholder}` slots. */
-export type TranslationValues = Record<string, string | number>;
+export type TranslationValues = Record<string, string | number | undefined>;
 
 /**
  * Catalogues by locale. French is the source and is always complete; the others
  * are partial and fall back to it key by key.
  */
 export const CATALOGUES: Record<string, MessageCatalogue> = {
-  'fr-FR': messagesFr,
-  'en-US': messagesEn,
+  "fr-FR": messagesFr,
+  "en-US": messagesEn,
 };
 
 /**
@@ -25,13 +30,15 @@ export const CATALOGUES: Record<string, MessageCatalogue> = {
  * — which is precisely how the selector would offer German and then render
  * every string in French.
  */
-export function findCatalogue(locale: string | undefined): MessageCatalogue | undefined {
+export function findCatalogue(
+  locale: string | undefined,
+): MessageCatalogue | undefined {
   if (!locale) return undefined;
   if (CATALOGUES[locale]) return CATALOGUES[locale];
 
-  const language = locale.split('-')[0].toLowerCase();
+  const language = locale.split("-")[0].toLowerCase();
   const match = Object.keys(CATALOGUES).find(
-    (candidate) => candidate.split('-')[0].toLowerCase() === language,
+    (candidate) => candidate.split("-")[0].toLowerCase() === language,
   );
   return match ? CATALOGUES[match] : undefined;
 }
@@ -48,18 +55,21 @@ export function resolveLocale(locale: string | undefined): string {
   if (!locale) return DEFAULT_LOCALE;
   if (CATALOGUES[locale]) return locale;
 
-  const language = locale.split('-')[0].toLowerCase();
+  const language = locale.split("-")[0].toLowerCase();
   const match = Object.keys(CATALOGUES).find(
-    (candidate) => candidate.split('-')[0].toLowerCase() === language,
+    (candidate) => candidate.split("-")[0].toLowerCase() === language,
   );
   return match ?? DEFAULT_LOCALE;
 }
 
 /** Fills `{placeholder}` slots. An unmatched placeholder is left visible. */
-export function interpolate(template: string, values?: TranslationValues): string {
+export function interpolate(
+  template: string,
+  values?: TranslationValues,
+): string {
   if (!values) return template;
   return template.replace(/\{(\w+)\}/g, (match, name: string) =>
-    name in values ? String(values[name]) : match,
+    values[name] !== undefined ? String(values[name]) : match,
   );
 }
 
@@ -84,7 +94,7 @@ export function selectPluralKey(
   try {
     category = new Intl.PluralRules(locale).select(count);
   } catch {
-    category = count === 1 ? 'one' : 'other';
+    category = count === 1 ? "one" : "other";
   }
 
   const candidates = [`${key}_${category}`, `${key}_other`, key];
@@ -117,8 +127,13 @@ export function translate(
     (messagesFr as Record<string, string | undefined>)[candidate];
 
   const effectiveKey =
-    typeof options?.count === 'number'
-      ? selectPluralKey(key, options.count, resolved, (candidate) => lookup(candidate) !== undefined)
+    typeof options?.count === "number"
+      ? selectPluralKey(
+          key,
+          options.count,
+          resolved,
+          (candidate) => lookup(candidate) !== undefined,
+        )
       : key;
 
   const template = lookup(effectiveKey) ?? lookup(key);
@@ -142,7 +157,7 @@ export function catalogueCoverage(locale: string): number {
   if (keys.length === 0) return 1;
 
   const translated = keys.filter(
-    (key) => typeof catalogue[key] === 'string' && catalogue[key] !== '',
+    (key) => typeof catalogue[key] === "string" && catalogue[key] !== "",
   );
   return translated.length / keys.length;
 }

@@ -102,7 +102,14 @@ export async function measureOverflow(page: Page): Promise<OverflowReport> {
  * under parallel workers) or wasted seconds on every route. Polling for a width
  * that has held steady across consecutive frames is both faster and stable.
  */
-export async function waitForStableLayout(page: Page, timeoutMs = 4000): Promise<void> {
+export async function waitForStableLayout(page: Page, timeoutMs = 10_000): Promise<void> {
+  // A stable loading shell is not a stable application. Next's client boundary
+  // can remain visible while a route chunk compiles in development, especially
+  // when the responsive matrix runs several browsers in parallel.
+  await page
+    .getByRole('status', { name: /Chargement de Shongre/i })
+    .waitFor({ state: 'detached', timeout: timeoutMs });
+
   await page.evaluate(async (budget) => {
     const readWidth = () => Math.max(
       document.documentElement.scrollWidth,

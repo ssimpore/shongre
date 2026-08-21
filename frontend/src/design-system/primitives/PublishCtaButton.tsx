@@ -1,15 +1,15 @@
-import React from 'react';
-import { PlusCircle } from 'lucide-react';
-import { usePublishCta } from '../../security/usePublishCta';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { Button } from './Button';
+import React from "react";
+import { PlusCircle } from "lucide-react";
+import { usePublishCta } from "../../security/usePublishCta";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { Button } from "./Button";
 
 export interface PublishCtaButtonProps {
   /** Fills its container; the drawer and the hero's mobile stack both want this. */
   fullWidth?: boolean;
   /** Runs before navigation — the mobile drawer uses it to close itself. */
   onNavigate?: () => void;
-  size?: 'md' | 'lg';
+  size?: "md" | "lg";
   className?: string;
 }
 
@@ -34,8 +34,8 @@ export interface PublishCtaButtonProps {
 export const PublishCtaButton: React.FC<PublishCtaButtonProps> = ({
   fullWidth = false,
   onNavigate,
-  size = 'md',
-  className = '',
+  size = "md",
+  className = "",
 }) => {
   const publishCta = usePublishCta();
   const { t } = useTranslation();
@@ -48,7 +48,7 @@ export const PublishCtaButton: React.FC<PublishCtaButtonProps> = ({
       size={size}
       fullWidth={fullWidth}
       leftIcon={<PlusCircle className="w-4.5 h-4.5 text-primary" />}
-      className={`${fullWidth ? '' : 'w-full sm:w-auto'} ${className}`}
+      className={`${fullWidth ? "" : "w-full sm:w-auto"} ${className}`}
     >
       {t(publishCta.labelKey)}
     </Button>

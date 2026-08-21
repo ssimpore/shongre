@@ -8,7 +8,7 @@ export const RECENT_SEARCHES_LIMIT_MIN = 1;
 export const RECENT_SEARCHES_LIMIT_MAX = 12;
 
 export function normalizeRecentSearchesLimit(value: unknown): number {
-  const parsed = typeof value === 'number' ? value : Number(value);
+  const parsed = typeof value === "number" ? value : Number(value);
 
   if (!Number.isFinite(parsed)) {
     return RECENT_SEARCHES_LIMIT_DEFAULT;

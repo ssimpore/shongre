@@ -1,4 +1,4 @@
-import type { TrendingAdminConfig, TrendWeights } from './trending.types';
+import type { TrendingAdminConfig, TrendWeights } from "./trending.types";
 
 export const DEFAULT_TREND_WEIGHTS: TrendWeights = {
   searchGrowth: 0.18,
@@ -22,14 +22,13 @@ export const DEFAULT_TRENDING_ADMIN_CONFIG: TrendingAdminConfig = {
   displayPeriodDays: 7,
   cacheTtlMinutes: 20,
   personalizationWeight: 0.22,
-  title: 'En ce moment sur Shongre',
-  subtitle: 'Découvrez ce qui attire le plus les acheteurs en ce moment.',
+  title: "En ce moment sur Shongre",
+  subtitle: "Découvrez ce qui attire le plus les acheteurs en ce moment.",
   mobileVisible: true,
   desktopVisible: true,
   excludedCategories: [],
   excludedTopics: [],
   weights: DEFAULT_TREND_WEIGHTS,
   overrides: [],
-  updatedAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: "2026-01-01T00:00:00.000Z",
 };
-

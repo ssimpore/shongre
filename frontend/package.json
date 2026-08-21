@@ -1,5 +1,5 @@
 {
-  "name": "shongre-platform",
+  "name": "shongre-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,11 +7,15 @@
     "shongre": "./bin/shongre.js"
   },
   "scripts": {
-    "dev": "vite --host=0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "predev": "npm run build --workspace=@shongre/design-tokens",
+    "dev": "node scripts/next-cli.mjs dev",
+    "prebuild": "npm run build --workspace=@shongre/design-tokens",
+    "build": "next build",
+    "preview": "node scripts/next-cli.mjs start",
+    "start": "node scripts/next-cli.mjs start",
+    "clean": "rm -rf .next out server.js",
     "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs",
+    "pretest": "npm run build --workspace=@shongre/design-tokens",
     "test": "vitest run",
     "check": "node ./bin/shongre.js check",
     "cli": "node ./bin/shongre.js",
@@ -26,14 +30,20 @@
     "check:i18n": "node scripts/check-i18n-coverage.mjs"
   },
   "dependencies": {
+    "@shongre/brand": "1.0.0",
+    "@shongre/contracts": "1.0.0",
+    "@shongre/design-tokens": "1.0.0",
+    "@shongre/features": "1.0.0",
+    "@shongre/shared": "1.0.0",
+    "@shongre/ui": "1.0.0",
     "@fontsource-variable/inter": "^5.3.0",
-    "@tailwindcss/vite": "^4.1.14",
     "@tanstack/react-query": "^5.101.4",
     "canvas-confetti": "^1.9.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
-    "react": "^19.0.1",
-    "react-dom": "^19.0.1",
+    "next": "16.3.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
@@ -44,11 +54,10 @@
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@tailwindcss/postcss": "^4.3.3",
     "axe-core": "^4.13.0",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3",
     "vitest": "^4.1.10"
   }
 }

@@ -3,11 +3,14 @@
  * Pure domain utilities for support references, status formatting, and form validation.
  */
 
-import { SupportRequestStatus,  CreateSupportRequestInput } from './support.types';
+import {
+  SupportRequestStatus,
+  CreateSupportRequestInput,
+} from "./support.types";
 
 export interface SupportStatusInfo {
   label: string;
-  variant: 'neutral' | 'primary' | 'warning' | 'success' | 'urgent';
+  variant: "neutral" | "primary" | "warning" | "success" | "urgent";
   description: string;
 }
 
@@ -25,35 +28,38 @@ export class SupportService {
    */
   getStatusInfo(status: SupportRequestStatus): SupportStatusInfo {
     switch (status) {
-      case 'submitted':
+      case "submitted":
         return {
-          label: 'Demande envoyée',
-          variant: 'primary',
-          description: 'Votre demande a bien été reçue et est en file d\'attente.',
+          label: "Demande envoyée",
+          variant: "primary",
+          description:
+            "Votre demande a bien été reçue et est en file d'attente.",
         };
-      case 'in_progress':
+      case "in_progress":
         return {
-          label: 'En cours de traitement',
-          variant: 'warning',
-          description: 'Un conseiller du support Shongre examine actuellement votre dossier.',
+          label: "En cours de traitement",
+          variant: "warning",
+          description:
+            "Un conseiller du support Shongre examine actuellement votre dossier.",
         };
-      case 'waiting_for_user':
+      case "waiting_for_user":
         return {
-          label: 'Réponse attendue de votre part',
-          variant: 'urgent',
-          description: 'Le support a répondu et attend des précisions pour finaliser votre demande.',
+          label: "Réponse attendue de votre part",
+          variant: "urgent",
+          description:
+            "Le support a répondu et attend des précisions pour finaliser votre demande.",
         };
-      case 'resolved':
+      case "resolved":
         return {
-          label: 'Résolue',
-          variant: 'success',
-          description: 'Cette demande a été résolue par nos équipes.',
+          label: "Résolue",
+          variant: "success",
+          description: "Cette demande a été résolue par nos équipes.",
         };
-      case 'closed':
+      case "closed":
         return {
-          label: 'Clôturée',
-          variant: 'neutral',
-          description: 'Cette demande est clôturée et archivée.',
+          label: "Clôturée",
+          variant: "neutral",
+          description: "Cette demande est clôturée et archivée.",
         };
     }
   }
@@ -61,33 +67,39 @@ export class SupportService {
   /**
    * Validates support form inputs before submission.
    */
-  validateSupportInput(input: Partial<CreateSupportRequestInput>): { isValid: boolean; errors: Record<string, string> } {
+  validateSupportInput(input: Partial<CreateSupportRequestInput>): {
+    isValid: boolean;
+    errors: Record<string, string>;
+  } {
     const errors: Record<string, string> = {};
 
     if (!input.category) {
-      errors.category = 'Veuillez sélectionner une catégorie.';
+      errors.category = "Veuillez sélectionner une catégorie.";
     }
 
     if (!input.reason) {
-      errors.reason = 'Veuillez préciser le motif de votre demande.';
+      errors.reason = "Veuillez préciser le motif de votre demande.";
     }
 
     if (!input.requesterName || !input.requesterName.trim()) {
-      errors.requesterName = 'Veuillez indiquer votre nom.';
+      errors.requesterName = "Veuillez indiquer votre nom.";
     }
 
     if (!input.requesterEmail || !input.requesterEmail.trim()) {
-      errors.requesterEmail = 'Veuillez indiquer votre adresse email.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.requesterEmail.trim())) {
-      errors.requesterEmail = 'Adresse email invalide.';
+      errors.requesterEmail = "Veuillez indiquer votre adresse email.";
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.requesterEmail.trim())
+    ) {
+      errors.requesterEmail = "Adresse email invalide.";
     }
 
     if (!input.subject || !input.subject.trim()) {
-      errors.subject = 'Veuillez préciser l\'objet de votre demande.';
+      errors.subject = "Veuillez préciser l'objet de votre demande.";
     }
 
     if (!input.description || input.description.trim().length < 10) {
-      errors.description = 'Veuillez détailler votre situation (au moins 10 caractères).';
+      errors.description =
+        "Veuillez détailler votre situation (au moins 10 caractères).";
     }
 
     return {

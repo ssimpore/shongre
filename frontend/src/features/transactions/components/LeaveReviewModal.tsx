@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Star, Check, Sparkles  } from 'lucide-react';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { Button } from '../../../design-system/primitives/Button';
-import { Textarea } from '../../../design-system/primitives/FormField';
-import { userRepository } from '../../../repositories/user.repository';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { Transaction, UserProfile } from '../../../types';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { Star, Check, Sparkles } from "lucide-react";
+import { Modal } from "../../../design-system/primitives/Modal";
+import { Button } from "../../../design-system/primitives/Button";
+import { Textarea } from "../../../design-system/primitives/FormField";
+import { userRepository } from "../../../repositories/user.repository";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { Transaction, UserProfile } from "../../../types";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface LeaveReviewModalProps {
   isOpen: boolean;
@@ -17,12 +17,12 @@ interface LeaveReviewModalProps {
 }
 
 const POSITIVE_BADGES = [
-  'Article conforme à la description',
-  'Envoi ultra-rapide',
-  'Emballage soigné & sécurisé',
-  'Vendeur très réactif',
-  'Excellente communication',
-  'Paiement immédiat',
+  "Article conforme à la description",
+  "Envoi ultra-rapide",
+  "Emballage soigné & sécurisé",
+  "Vendeur très réactif",
+  "Excellente communication",
+  "Paiement immédiat",
 ];
 
 export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
@@ -36,19 +36,25 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
   const toast = useToast();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [selectedBadges, setSelectedBadges] = useState<string[]>([
-    'Article conforme à la description',
-    'Vendeur très réactif',
+    "Article conforme à la description",
+    "Vendeur très réactif",
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const targetUserId = currentUser.id === transaction.buyerId ? transaction.sellerId : transaction.buyerId;
-  const targetUserName = currentUser.id === transaction.buyerId ? transaction.sellerName : transaction.buyerName;
+  const targetUserId =
+    currentUser.id === transaction.buyerId
+      ? transaction.sellerId
+      : transaction.buyerId;
+  const targetUserName =
+    currentUser.id === transaction.buyerId
+      ? transaction.sellerName
+      : transaction.buyerName;
 
   const toggleBadge = (badge: string) => {
     setSelectedBadges((prev) =>
-      prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
+      prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge],
     );
   };
 
@@ -58,9 +64,10 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const fullComment = selectedBadges.length > 0
-        ? `${comment ? comment + '\n\n' : ''}Points forts : ${selectedBadges.join(', ')}`
-        : comment;
+      const fullComment =
+        selectedBadges.length > 0
+          ? `${comment ? comment + "\n\n" : ""}Points forts : ${selectedBadges.join(", ")}`
+          : comment;
 
       const newRev = await userRepository.addReview({
         authorId: currentUser.id,
@@ -68,11 +75,13 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
         authorAvatarUrl: currentUser.avatarUrl,
         targetUserId,
         rating,
-        comment: fullComment || 'Transaction parfaite ! Vendeur recommandé.',
+        comment: fullComment || "Transaction parfaite ! Vendeur recommandé.",
         listingTitle: transaction.listingTitle,
       });
 
-      toast.success('Votre évaluation a été enregistrée avec succès ! Merci pour votre avis.');
+      toast.success(
+        "Votre évaluation a été enregistrée avec succès ! Merci pour votre avis.",
+      );
       onReviewSubmitted(newRev.id);
       onClose();
     } catch (err: any) {
@@ -109,7 +118,9 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
                 >
                   <Star
                     className={`w-8 h-8 ${
-                      active ? 'text-amber-400 fill-amber-400' : 'text-stone-300'
+                      active
+                        ? "text-amber-400 fill-amber-400"
+                        : "text-stone-300"
                     }`}
                   />
                 </button>
@@ -117,17 +128,19 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
             })}
           </div>
           <div className="text-xs font-semibold text-stone-700">
-            {rating === 5 && '⭐️⭐️⭐️⭐️⭐️ Exceptionnel / Parfait'}
-            {rating === 4 && '⭐️⭐️⭐️⭐️ Très bien'}
-            {rating === 3 && '⭐️⭐️⭐️ Conforme'}
-            {rating === 2 && '⭐️⭐️ Décevant'}
-            {rating === 1 && '⭐️ Médiocre'}
+            {rating === 5 && "⭐️⭐️⭐️⭐️⭐️ Exceptionnel / Parfait"}
+            {rating === 4 && "⭐️⭐️⭐️⭐️ Très bien"}
+            {rating === 3 && "⭐️⭐️⭐️ Conforme"}
+            {rating === 2 && "⭐️⭐️ Décevant"}
+            {rating === 1 && "⭐️ Médiocre"}
           </div>
         </div>
 
         {/* Positive Badges */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-stone-700 block">{t('transactions.leaveReviewModal.ceQueVousAvezParticulierement')}</label>
+          <label className="text-xs font-bold text-stone-700 block">
+            {t("transactions.leaveReviewModal.ceQueVousAvezParticulierement")}
+          </label>
           <div className="flex flex-wrap gap-2">
             {POSITIVE_BADGES.map((badge) => {
               const isSelected = selectedBadges.includes(badge);
@@ -138,8 +151,8 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
                   onClick={() => toggleBadge(badge)}
                   className={`text-sm px-3 py-1.5 rounded-xl border transition-all duration-normal cursor-pointer flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-primary/10 text-primary border-primary/40 font-bold shadow-sm'
-                      : 'bg-stone-50 text-stone-600 border-stone-200/60 hover:bg-stone-100 hover:border-stone-300 shadow-2xs'
+                      ? "bg-primary/10 text-primary border-primary/40 font-bold shadow-sm"
+                      : "bg-stone-50 text-stone-600 border-stone-200/60 hover:bg-stone-100 hover:border-stone-300 shadow-2xs"
                   }`}
                 >
                   {isSelected && <Check className="w-4 h-4 text-primary" />}
@@ -152,10 +165,14 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
 
         {/* Text Comment */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-stone-700 block">{t('transactions.leaveReviewModal.commentaireDetailleFacultatif')}</label>
+          <label className="text-xs font-bold text-stone-700 block">
+            {t("transactions.leaveReviewModal.commentaireDetailleFacultatif")}
+          </label>
           <Textarea
             rows={3}
-            placeholder={t('transactions.leaveReviewModal.partagezVotreExperienceAvecCet')}
+            placeholder={t(
+              "transactions.leaveReviewModal.partagezVotreExperienceAvecCet",
+            )}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
@@ -163,7 +180,13 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
 
         {/* Action buttons */}
         <div className="flex gap-3 pt-4">
-          <Button variant="outline" fullWidth onClick={onClose} type="button" size="md">
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={onClose}
+            type="button"
+            size="md"
+          >
             Annuler
           </Button>
           <Button

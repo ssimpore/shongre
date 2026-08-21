@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollRail } from './ScrollRail';
+import React from "react";
+import { ScrollRail } from "./ScrollRail";
 
 export interface ListingRailProps {
   /** `ListingCard`s. Each is wrapped in the fixed-width, snapping rail cell. */
@@ -32,8 +32,8 @@ export interface ListingRailProps {
  */
 export const ListingRail: React.FC<ListingRailProps> = ({
   children,
-  label = 'annonces',
-  className = '',
+  label = "annonces",
+  className = "",
 }) => (
   <ScrollRail
     snap

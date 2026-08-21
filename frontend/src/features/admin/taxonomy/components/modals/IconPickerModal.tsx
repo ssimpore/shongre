@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Car,
   Home,
@@ -36,13 +36,16 @@ import {
   Package,
   KeyRound,
   Zap,
-} from 'lucide-react';
-import { Modal } from '../../../../../design-system/primitives/Modal';
-import { Button } from '../../../../../design-system/primitives/Button';
-import { Input } from '../../../../../design-system/primitives/FormField';
-import { useTranslation } from '../../../../../i18n/I18nProvider';
+} from "lucide-react";
+import { Modal } from "../../../../../design-system/primitives/Modal";
+import { Button } from "../../../../../design-system/primitives/Button";
+import { Input } from "../../../../../design-system/primitives/FormField";
+import { useTranslation } from "../../../../../i18n/I18nProvider";
 
-export const AVAILABLE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+export const AVAILABLE_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   Car,
   Home,
   Briefcase,
@@ -95,23 +98,23 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
   onSelectIcon,
 }) => {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   const filteredIcons = Object.keys(AVAILABLE_ICONS).filter((name) =>
-    name.toLowerCase().includes(search.toLowerCase().trim())
+    name.toLowerCase().includes(search.toLowerCase().trim()),
   );
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('admin.iconPickerModal.selectionnerUneIconeCanonique')}
-      description={t('admin.iconPickerModal.choisissezParmiLeRegistreDes')}
+      title={t("admin.iconPickerModal.selectionnerUneIconeCanonique")}
+      description={t("admin.iconPickerModal.choisissezParmiLeRegistreDes")}
       maxWidth="md"
     >
       <div className="space-y-4">
         <Input
-          placeholder={t('admin.iconPickerModal.rechercherUneIconeExCar')}
+          placeholder={t("admin.iconPickerModal.rechercherUneIconeExCar")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -131,13 +134,15 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                 }}
                 className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all text-stone-700 hover:border-primary hover:bg-white hover:text-primary ${
                   isSelected
-                    ? 'border-primary bg-primary-light text-primary ring-2 ring-primary/20 shadow-xs'
-                    : 'border-border-subtle bg-white'
+                    ? "border-primary bg-primary-light text-primary ring-2 ring-primary/20 shadow-xs"
+                    : "border-border-subtle bg-white"
                 }`}
                 title={iconName}
               >
                 <IconComponent className="w-5 h-5" />
-                <span className="text-micro truncate max-w-full font-mono">{iconName}</span>
+                <span className="text-micro truncate max-w-full font-mono">
+                  {iconName}
+                </span>
               </button>
             );
           })}

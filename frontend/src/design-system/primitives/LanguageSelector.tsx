@@ -1,15 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Settings2, ChevronRight } from 'lucide-react';
-import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, Check, Settings2, ChevronRight } from "lucide-react";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import {
   DROPDOWN_PANEL_CLASSES,
   DROPDOWN_HEADER_CLASSES,
   DROPDOWN_HEADER_TITLE_CLASSES,
   DROPDOWN_ITEM_CLASSES,
-} from './DropdownMenu';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { catalogueCoverage } from '../../i18n/i18n.service';
-import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+} from "./DropdownMenu";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { catalogueCoverage } from "../../i18n/i18n.service";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../utils/controlMetrics";
 
 export interface LanguageOption {
   code: string;
@@ -54,23 +57,25 @@ export const LOCALE_READY_THRESHOLD = 1;
  * catalogue backs that claim. `npm run check:i18n` counts the hardcoded strings
  * still standing between English and this list.
  */
-export const SHIPPED_LOCALES = ['fr-FR', 'en-US'] as const;
+export const SHIPPED_LOCALES = ["fr-FR", "en-US"] as const;
 
-const LANGUAGES: Omit<LanguageOption, 'isAvailable'>[] = [
-  { code: 'fr-FR', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
-  { code: 'en-US', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'de-DE', name: 'Deutsch', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'es-ES', name: 'Español', nativeName: 'Español', flag: '🇪🇸' },
-  { code: 'nl-NL', name: 'Nederlands', nativeName: 'Nederlands', flag: '🇳🇱' },
-  { code: 'it-IT', name: 'Italiano', nativeName: 'Italiano', flag: '🇮🇹' },
+const LANGUAGES: Omit<LanguageOption, "isAvailable">[] = [
+  { code: "fr-FR", name: "Français", nativeName: "Français", flag: "🇫🇷" },
+  { code: "en-US", name: "English", nativeName: "English", flag: "🇬🇧" },
+  { code: "de-DE", name: "Deutsch", nativeName: "Deutsch", flag: "🇩🇪" },
+  { code: "es-ES", name: "Español", nativeName: "Español", flag: "🇪🇸" },
+  { code: "nl-NL", name: "Nederlands", nativeName: "Nederlands", flag: "🇳🇱" },
+  { code: "it-IT", name: "Italiano", nativeName: "Italiano", flag: "🇮🇹" },
 ];
 
-export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map((language) => ({
-  ...language,
-  isAvailable:
-    (SHIPPED_LOCALES as readonly string[]).includes(language.code) &&
-    catalogueCoverage(language.code) >= LOCALE_READY_THRESHOLD,
-}));
+export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map(
+  (language) => ({
+    ...language,
+    isAvailable:
+      (SHIPPED_LOCALES as readonly string[]).includes(language.code) &&
+      catalogueCoverage(language.code) >= LOCALE_READY_THRESHOLD,
+  }),
+);
 
 /**
  * What the picker actually offers.
@@ -81,23 +86,26 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map((language) =>
  * turned a one-item picker into a scrolling panel. A language appears when it
  * works, and not before — the roadmap does not belong in a control.
  */
-export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter((lang) => lang.isAvailable);
+export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter(
+  (lang) => lang.isAvailable,
+);
 
 export interface LanguageSelectorProps {
   /** Optional custom styling for the container */
   className?: string;
   /** Variant style */
-  variant?: 'header' | 'footer' | 'compact' | 'drawer';
+  variant?: "header" | "footer" | "compact" | "drawer";
   /** ID prefix for accessibility and testing */
   idPrefix?: string;
 }
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
-  className = '',
-  variant = 'header',
-  idPrefix = 'lang-selector',
+  className = "",
+  variant = "header",
+  idPrefix = "lang-selector",
 }) => {
-  const { currentLocale, setLocale, openPreferencesModal } = useMarketLocation();
+  const { currentLocale, setLocale, openPreferencesModal } =
+    useMarketLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [alignRight, setAlignRight] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -106,7 +114,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   // Find active language or default to French
   const activeLanguage =
     SUPPORTED_LANGUAGES.find(
-      (lang) => lang.code === currentLocale || lang.code.startsWith(currentLocale) || currentLocale.startsWith(lang.code.slice(0, 2))
+      (lang) =>
+        lang.code === currentLocale ||
+        lang.code.startsWith(currentLocale) ||
+        currentLocale.startsWith(lang.code.slice(0, 2)),
     ) || SUPPORTED_LANGUAGES[0];
 
   /**
@@ -126,7 +137,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     if (!trigger) return;
 
     const { left } = trigger.getBoundingClientRect();
-    const panelWidth = trigger.querySelector<HTMLElement>('[role="menu"]')?.getBoundingClientRect().width ?? 0;
+    const panelWidth =
+      trigger
+        .querySelector<HTMLElement>('[role="menu"]')
+        ?.getBoundingClientRect().width ?? 0;
     const MARGIN = 12;
     setAlignRight(left + panelWidth > window.innerWidth - MARGIN);
   }, [isOpen]);
@@ -136,23 +150,26 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsOpen(false);
       }
     };
 
     const handlePointerDown = (e: PointerEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [isOpen]);
 
@@ -168,17 +185,19 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   };
 
   const buttonClasses =
-    variant === 'footer'
+    variant === "footer"
       ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-300 hover:text-white bg-stone-800/80 hover:bg-stone-800 border border-stone-700/80 hover:border-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
-          isOpen ? 'bg-stone-800 text-white border-stone-600 ring-1 ring-stone-600' : ''
+          isOpen
+            ? "bg-stone-800 text-white border-stone-600 ring-1 ring-stone-600"
+            : ""
         }`
       : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border border-transparent hover:border-border-base ${
-          isOpen ? 'bg-bg-subtle border-border-base text-stone-950' : ''
+          isOpen ? "bg-bg-subtle border-border-base text-stone-950" : ""
         }`;
 
-  const horizontal = alignRight ? 'right-0' : 'left-0';
+  const horizontal = alignRight ? "right-0" : "left-0";
   const dropdownPlacement =
-    variant === 'footer'
+    variant === "footer"
       ? `bottom-full ${horizontal} mb-2`
       : `top-full ${horizontal} mt-1.5`;
 
@@ -190,18 +209,26 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        aria-label={t('language.current', { language: activeLanguage.name })}
+        aria-label={t("language.current", { language: activeLanguage.name })}
         className={buttonClasses}
       >
-        <span className="text-base shrink-0 leading-none">{activeLanguage.flag}</span>
-        <span className={`font-bold uppercase tracking-wide ${variant === 'footer' ? 'text-stone-200' : 'text-stone-800'}`}>
+        <span className="text-base shrink-0 leading-none">
+          {activeLanguage.flag}
+        </span>
+        <span
+          className={`font-bold uppercase tracking-wide ${variant === "footer" ? "text-stone-200" : "text-stone-800"}`}
+        >
           {activeLanguage.code.slice(0, 2)}
         </span>
         <ChevronDown
           className={`w-3.5 h-3.5 transition-transform ${
-            variant === 'footer'
-              ? isOpen ? 'rotate-180 text-primary-light' : 'text-stone-400'
-              : isOpen ? 'rotate-180 text-primary' : 'text-stone-500'
+            variant === "footer"
+              ? isOpen
+                ? "rotate-180 text-primary-light"
+                : "text-stone-400"
+              : isOpen
+                ? "rotate-180 text-primary"
+                : "text-stone-500"
           }`}
         />
       </button>
@@ -215,7 +242,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         >
           <div className={DROPDOWN_HEADER_CLASSES}>
             <div className={DROPDOWN_HEADER_TITLE_CLASSES}>
-              <span>{t('language.choose')}</span>
+              <span>{t("language.choose")}</span>
             </div>
           </div>
 
@@ -231,17 +258,23 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   type="button"
                   onClick={() => handleSelectLanguage(lang)}
                   className={`${DROPDOWN_ITEM_CLASSES.base} ${
-                    isSelected ? DROPDOWN_ITEM_CLASSES.selected : DROPDOWN_ITEM_CLASSES.unselected
+                    isSelected
+                      ? DROPDOWN_ITEM_CLASSES.selected
+                      : DROPDOWN_ITEM_CLASSES.unselected
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="text-base leading-none">{lang.flag}</span>
                     <div className="flex flex-col">
                       <span className="leading-tight">{lang.nativeName}</span>
-                      <span className="text-micro text-stone-500 font-normal">{lang.name}</span>
+                      <span className="text-micro text-stone-500 font-normal">
+                        {lang.name}
+                      </span>
                     </div>
                   </div>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                  {isSelected && (
+                    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                  )}
                 </button>
               );
             })}
@@ -258,7 +291,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             >
               <div className="flex items-center gap-2">
                 <Settings2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span>{t('language.preferences')}</span>
+                <span>{t("language.preferences")}</span>
               </div>
               <div className="flex items-center text-stone-500">
                 <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform" />

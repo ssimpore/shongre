@@ -4,27 +4,26 @@ import {
   MarketGeography,
   MarketStatus,
   SettingResolution,
-  MarketInheritanceMetrics
-  
-} from './market.types';
-import { INITIAL_MARKETS } from './market.defaults';
-import { normalizeRecentSearchesLimit } from './market.constants';
+  MarketInheritanceMetrics,
+} from "./market.types";
+import { INITIAL_MARKETS } from "./market.defaults";
+import { normalizeRecentSearchesLimit } from "./market.constants";
 import {
   marketResolver,
   setNestedValue,
   deleteNestedValue,
   getNestedValue,
-} from './market.resolver';
-import { storageService } from '../../services/storage.service';
-import { auditService } from '../../security/audit.service';
-import { taxonomyService } from '../taxonomy/taxonomy.service';
+} from "./market.resolver";
+import { storageService } from "../../services/storage.service";
+import { auditService } from "../../security/audit.service";
+import { taxonomyService } from "../taxonomy/taxonomy.service";
 import {
   MarketEligibilityResult,
   MultiMarketValidationResult,
   PublicationDraftState,
   ValidationError,
-} from '../publication/publication.types';
-import { UserProfile } from '../../types';
+} from "../publication/publication.types";
+import { UserProfile } from "../../types";
 
 /**
  * Market Service - High Level Business Engine for Market Management & Resolution
@@ -46,7 +45,7 @@ export class MarketService {
    * Returns only publicly active markets
    */
   public getActiveMarkets(): Market[] {
-    return this.getMarkets().filter((m) => m.status === 'active');
+    return this.getMarkets().filter((m) => m.status === "active");
   }
 
   /**
@@ -54,7 +53,7 @@ export class MarketService {
    */
   public getMarket(code?: string): Market {
     const markets = this.getMarkets();
-    const normalized = (code || 'FR').toUpperCase();
+    const normalized = (code || "FR").toUpperCase();
     const found = markets.find((m) => m.code.toUpperCase() === normalized);
     return found || this.getDefaultMarket();
   }
@@ -74,9 +73,9 @@ export class MarketService {
    */
   public getDefaultMarket(): Market {
     const markets = this.getMarkets();
-    const defaultMarket = markets.find((m) => m.isDefault && m.code === 'FR');
+    const defaultMarket = markets.find((m) => m.isDefault && m.code === "FR");
     if (defaultMarket) return defaultMarket;
-    return markets.find((m) => m.code === 'FR') || INITIAL_MARKETS[0];
+    return markets.find((m) => m.code === "FR") || INITIAL_MARKETS[0];
   }
 
   /**
@@ -91,7 +90,10 @@ export class MarketService {
   /**
    * Resolves a single setting with full provenance metadata
    */
-  public resolveSetting<T = any>(marketCode: string, path: string): SettingResolution<T> {
+  public resolveSetting<T = any>(
+    marketCode: string,
+    path: string,
+  ): SettingResolution<T> {
     const targetMarket = this.getMarket(marketCode);
     const franceMarket = this.getDefaultMarket();
     return marketResolver.resolveSetting<T>(targetMarket, franceMarket, path);
@@ -121,18 +123,21 @@ export class MarketService {
     marketCode: string,
     path: string,
     value: any,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Market {
     const markets = this.getMarkets();
-    const targetIdx = markets.findIndex((m) => m.code.toUpperCase() === marketCode.toUpperCase());
+    const targetIdx = markets.findIndex(
+      (m) => m.code.toUpperCase() === marketCode.toUpperCase(),
+    );
     if (targetIdx < 0) {
       throw new Error(`Market [${marketCode}] not found.`);
     }
 
     const market = markets[targetIdx];
-    const valueToPersist = path === 'features.recentSearchesLimit'
-      ? normalizeRecentSearchesLimit(value)
-      : value;
+    const valueToPersist =
+      path === "features.recentSearchesLimit"
+        ? normalizeRecentSearchesLimit(value)
+        : value;
     const prevValue = getNestedValue(market.overrides, path);
     const updatedOverrides = { ...market.overrides };
     setNestedValue(updatedOverrides, path, valueToPersist);
@@ -149,10 +154,10 @@ export class MarketService {
 
     // Audit log
     auditService.logEvent({
-      actorId: actor?.id || 'admin-system',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: (actor?.role as any) || 'admin',
-      action: 'market_scope_updated',
+      actorId: actor?.id || "admin-system",
+      actorName: actor?.name || "Administrateur",
+      actorRole: (actor?.role as any) || "admin",
+      action: "market_scope_updated",
       details: `Surcharge configurée pour le marché [${market.name}] sur la clé [${path}] : ${JSON.stringify(valueToPersist)}`,
       previousValue: prevValue,
       newValue: valueToPersist,
@@ -168,17 +173,21 @@ export class MarketService {
   public resetMarketOverride(
     marketCode: string,
     path: string,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Market {
     const markets = this.getMarkets();
-    const targetIdx = markets.findIndex((m) => m.code.toUpperCase() === marketCode.toUpperCase());
+    const targetIdx = markets.findIndex(
+      (m) => m.code.toUpperCase() === marketCode.toUpperCase(),
+    );
     if (targetIdx < 0) {
       throw new Error(`Market [${marketCode}] not found.`);
     }
 
     const market = markets[targetIdx];
-    if (market.isDefault || market.code === 'FR') {
-      throw new Error('Cannot reset overrides on the canonical default France market.');
+    if (market.isDefault || market.code === "FR") {
+      throw new Error(
+        "Cannot reset overrides on the canonical default France market.",
+      );
     }
 
     const prevValue = getNestedValue(market.overrides, path);
@@ -197,13 +206,13 @@ export class MarketService {
 
     // Audit log
     auditService.logEvent({
-      actorId: actor?.id || 'admin-system',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: (actor?.role as any) || 'admin',
-      action: 'market_scope_updated',
+      actorId: actor?.id || "admin-system",
+      actorName: actor?.name || "Administrateur",
+      actorRole: (actor?.role as any) || "admin",
+      action: "market_scope_updated",
       details: `Réinitialisation de la surcharge sur [${path}] pour [${market.name}]. Reprise dynamique de l'héritage France.`,
       previousValue: prevValue,
-      newValue: 'INHERITED_FROM_FRANCE',
+      newValue: "INHERITED_FROM_FRANCE",
       market: market.code,
     });
 
@@ -215,17 +224,19 @@ export class MarketService {
    */
   public resetAllOverridesToFrance(
     marketCode: string,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Market {
     const markets = this.getMarkets();
-    const targetIdx = markets.findIndex((m) => m.code.toUpperCase() === marketCode.toUpperCase());
+    const targetIdx = markets.findIndex(
+      (m) => m.code.toUpperCase() === marketCode.toUpperCase(),
+    );
     if (targetIdx < 0) {
       throw new Error(`Market [${marketCode}] not found.`);
     }
 
     const market = markets[targetIdx];
-    if (market.isDefault || market.code === 'FR') {
-      throw new Error('Cannot reset canonical France market.');
+    if (market.isDefault || market.code === "FR") {
+      throw new Error("Cannot reset canonical France market.");
     }
 
     const updatedMarket: Market = {
@@ -239,10 +250,10 @@ export class MarketService {
     storageService.saveMarkets(markets);
 
     auditService.logEvent({
-      actorId: actor?.id || 'admin-system',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: (actor?.role as any) || 'admin',
-      action: 'market_scope_updated',
+      actorId: actor?.id || "admin-system",
+      actorName: actor?.name || "Administrateur",
+      actorRole: (actor?.role as any) || "admin",
+      action: "market_scope_updated",
       details: `Toutes les surcharges du marché [${market.name}] ont été réinitialisées sur la France (100% hérité).`,
       market: market.code,
     });
@@ -256,17 +267,21 @@ export class MarketService {
   public updateMarketStatus(
     marketCode: string,
     status: MarketStatus,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Market {
     const markets = this.getMarkets();
-    const targetIdx = markets.findIndex((m) => m.code.toUpperCase() === marketCode.toUpperCase());
+    const targetIdx = markets.findIndex(
+      (m) => m.code.toUpperCase() === marketCode.toUpperCase(),
+    );
     if (targetIdx < 0) {
       throw new Error(`Market [${marketCode}] not found.`);
     }
 
     const market = markets[targetIdx];
-    if (market.isDefault && status !== 'active') {
-      throw new Error('The default reference market (France) must always remain active.');
+    if (market.isDefault && status !== "active") {
+      throw new Error(
+        "The default reference market (France) must always remain active.",
+      );
     }
 
     const updatedMarket: Market = {
@@ -279,10 +294,10 @@ export class MarketService {
     storageService.saveMarkets(markets);
 
     auditService.logEvent({
-      actorId: actor?.id || 'admin-system',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: (actor?.role as any) || 'admin',
-      action: 'market_scope_updated',
+      actorId: actor?.id || "admin-system",
+      actorName: actor?.name || "Administrateur",
+      actorRole: (actor?.role as any) || "admin",
+      action: "market_scope_updated",
       details: `Statut du marché [${market.name}] mis à jour : [${status.toUpperCase()}]`,
       previousValue: market.status,
       newValue: status,
@@ -308,7 +323,7 @@ export class MarketService {
       status?: MarketStatus;
       geography?: MarketGeography;
     },
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Market {
     const markets = this.getMarkets();
     const normalizedCode = data.code.toUpperCase().trim();
@@ -322,14 +337,17 @@ export class MarketService {
       code: normalizedCode,
       countryCode: normalizedCode,
       name: data.name.trim(),
-      flag: data.flag || '🌐',
-      status: data.status || 'draft',
+      flag: data.flag || "🌐",
+      status: data.status || "draft",
       isDefault: false,
-      defaultLocale: data.defaultLocale || 'fr-FR',
-      supportedLocales: data.supportedLocales || [data.defaultLocale || 'fr-FR'],
-      currency: data.currency.toUpperCase() || 'EUR',
-      currencySymbol: data.currencySymbol || (data.currency === 'EUR' ? '€' : data.currency),
-      timezone: data.timezone || 'Europe/Paris',
+      defaultLocale: data.defaultLocale || "fr-FR",
+      supportedLocales: data.supportedLocales || [
+        data.defaultLocale || "fr-FR",
+      ],
+      currency: data.currency.toUpperCase() || "EUR",
+      currencySymbol:
+        data.currencySymbol || (data.currency === "EUR" ? "€" : data.currency),
+      timezone: data.timezone || "Europe/Paris",
       geography: data.geography || {
         allCountryEnabled: true,
         regions: [],
@@ -343,8 +361,10 @@ export class MarketService {
         localization: {
           defaultLocale: data.defaultLocale,
           defaultCurrency: data.currency.toUpperCase(),
-          currencySymbol: data.currencySymbol || (data.currency === 'EUR' ? '€' : data.currency),
-          timezone: data.timezone || 'Europe/Paris',
+          currencySymbol:
+            data.currencySymbol ||
+            (data.currency === "EUR" ? "€" : data.currency),
+          timezone: data.timezone || "Europe/Paris",
         },
       },
       createdAt: new Date().toISOString(),
@@ -356,10 +376,10 @@ export class MarketService {
     storageService.saveMarkets(markets);
 
     auditService.logEvent({
-      actorId: actor?.id || 'admin-system',
-      actorName: actor?.name || 'Administrateur',
-      actorRole: (actor?.role as any) || 'admin',
-      action: 'market_scope_updated',
+      actorId: actor?.id || "admin-system",
+      actorName: actor?.name || "Administrateur",
+      actorRole: (actor?.role as any) || "admin",
+      action: "market_scope_updated",
       details: `Création du nouveau marché [${newMarket.name}] (${newMarket.code}) avec héritage France`,
       newValue: newMarket,
       market: newMarket.code,
@@ -375,34 +395,58 @@ export class MarketService {
   /**
    * Checks whether a given taxonomy category / subcategory node is available in a market
    */
-  public isCategoryEnabledInMarket(marketCode: string, categoryIdOrSlug: string): boolean {
+  public isCategoryEnabledInMarket(
+    marketCode: string,
+    categoryIdOrSlug: string,
+  ): boolean {
     const config = this.getEffectiveConfig(marketCode);
-    const disabledSlugs = (config.taxonomy?.disabledCategorySlugs || []).map((s) => s.toLowerCase());
-    const disabledSubSlugs = (config.taxonomy?.disabledSubCategorySlugs || []).map((s) => s.toLowerCase());
+    const disabledSlugs = (config.taxonomy?.disabledCategorySlugs || []).map(
+      (s) => s.toLowerCase(),
+    );
+    const disabledSubSlugs = (
+      config.taxonomy?.disabledSubCategorySlugs || []
+    ).map((s) => s.toLowerCase());
 
     const targetKey = categoryIdOrSlug.toLowerCase();
-    if (disabledSlugs.includes(targetKey) || disabledSubSlugs.includes(targetKey)) {
+    if (
+      disabledSlugs.includes(targetKey) ||
+      disabledSubSlugs.includes(targetKey)
+    ) {
       return false;
     }
 
     // Resolve node and check its ancestors
-    const node = taxonomyService.getNode(categoryIdOrSlug) || taxonomyService.getNodeBySlug(categoryIdOrSlug);
+    const node =
+      taxonomyService.getNode(categoryIdOrSlug) ||
+      taxonomyService.getNodeBySlug(categoryIdOrSlug);
     if (!node) return true;
 
-    if (disabledSlugs.includes(node.slug.toLowerCase()) || disabledSlugs.includes(node.id.toLowerCase())) {
+    if (
+      disabledSlugs.includes(node.slug.toLowerCase()) ||
+      disabledSlugs.includes(node.id.toLowerCase())
+    ) {
       return false;
     }
-    if (disabledSubSlugs.includes(node.slug.toLowerCase()) || disabledSubSlugs.includes(node.id.toLowerCase())) {
+    if (
+      disabledSubSlugs.includes(node.slug.toLowerCase()) ||
+      disabledSubSlugs.includes(node.id.toLowerCase())
+    ) {
       return false;
     }
 
     // Check ancestors
     const ancestors = taxonomyService.getAncestors(node.id);
     for (const anc of ancestors) {
-      if (disabledSlugs.includes(anc.slug.toLowerCase()) || disabledSlugs.includes(anc.id.toLowerCase())) {
+      if (
+        disabledSlugs.includes(anc.slug.toLowerCase()) ||
+        disabledSlugs.includes(anc.id.toLowerCase())
+      ) {
         return false;
       }
-      if (disabledSubSlugs.includes(anc.slug.toLowerCase()) || disabledSubSlugs.includes(anc.id.toLowerCase())) {
+      if (
+        disabledSubSlugs.includes(anc.slug.toLowerCase()) ||
+        disabledSubSlugs.includes(anc.id.toLowerCase())
+      ) {
         return false;
       }
     }
@@ -418,13 +462,17 @@ export class MarketService {
     categorySlugOrId: string,
     enabled: boolean,
     isSubCategory = false,
-    actor?: { id: string; name: string; role: string }
+    actor?: { id: string; name: string; role: string },
   ): Market {
     const market = this.getMarket(marketCode);
     const currentOverrides = market.overrides || {};
     const currentTaxonomy = currentOverrides.taxonomy || {};
-    const disabledCategories = new Set(currentTaxonomy.disabledCategorySlugs || []);
-    const disabledSubCategories = new Set(currentTaxonomy.disabledSubCategorySlugs || []);
+    const disabledCategories = new Set(
+      currentTaxonomy.disabledCategorySlugs || [],
+    );
+    const disabledSubCategories = new Set(
+      currentTaxonomy.disabledSubCategorySlugs || [],
+    );
 
     const targetKey = categorySlugOrId.trim();
 
@@ -450,9 +498,9 @@ export class MarketService {
 
     return this.updateMarketOverride(
       marketCode,
-      'taxonomy',
+      "taxonomy",
       updatedTaxonomy,
-      actor
+      actor,
     );
   }
 
@@ -476,19 +524,22 @@ export class MarketService {
       let ineligibilityReason: string | undefined;
 
       // 1. Market Status Check
-      if (market.status !== 'active') {
+      if (market.status !== "active") {
         isEligible = false;
         ineligibilityReason =
-          market.status === 'coming_soon'
-            ? 'Marché en cours de lancement'
-            : market.status === 'paused'
-            ? 'Marché temporairement suspendu'
-            : 'Marché inactif (brouillon ou archivé)';
+          market.status === "coming_soon"
+            ? "Marché en cours de lancement"
+            : market.status === "paused"
+              ? "Marché temporairement suspendu"
+              : "Marché inactif (brouillon ou archivé)";
       }
 
       // 2. Category Availability in Market Check
       if (isEligible && effectiveCategoryKey) {
-        const isCatEnabled = this.isCategoryEnabledInMarket(market.code, effectiveCategoryKey);
+        const isCatEnabled = this.isCategoryEnabledInMarket(
+          market.code,
+          effectiveCategoryKey,
+        );
         if (!isCatEnabled) {
           isEligible = false;
           ineligibilityReason = `La catégorie sélectionnée n'est pas ouverte sur le marché ${market.name}.`;
@@ -496,19 +547,31 @@ export class MarketService {
       }
 
       // 3. Pro Requirements & Legal verification
-      const isProSeller = params.isPro || params.seller?.role === 'pro_seller' || params.seller?.accountType === 'professional';
-      if (isEligible && isProSeller && config.pro?.requireKbis && !params.seller?.isVerified) {
-        warnings.push(`Vérification pro requise (${config.pro.businessIdentifierLabel})`);
+      const isProSeller =
+        params.isPro ||
+        params.seller?.role === "pro_seller" ||
+        params.seller?.accountType === "professional";
+      if (
+        isEligible &&
+        isProSeller &&
+        config.pro?.requireKbis &&
+        !params.seller?.isVerified
+      ) {
+        warnings.push(
+          `Vérification pro requise (${config.pro.businessIdentifierLabel})`,
+        );
       }
 
       // 4. Currency warning if different from default EUR
-      if (config.localization.defaultCurrency !== 'EUR') {
-        warnings.push(`Devise locale : ${config.localization.defaultCurrency} (${config.localization.currencySymbol})`);
+      if (config.localization.defaultCurrency !== "EUR") {
+        warnings.push(
+          `Devise locale : ${config.localization.defaultCurrency} (${config.localization.currencySymbol})`,
+        );
       }
 
       // 5. Reservation warning if disabled
       if (!config.reservation.enabled) {
-        warnings.push('Réservation avec acompte non disponible sur ce marché.');
+        warnings.push("Réservation avec acompte non disponible sur ce marché.");
       }
 
       return {
@@ -527,7 +590,10 @@ export class MarketService {
           directPurchase: config.payments?.enabled ?? true,
           reservation: config.reservation?.enabled ?? true,
           handDelivery: config.delivery?.handDeliveryEnabled ?? true,
-          parcelShipping: (config.delivery?.enabled ?? true) && ((config.delivery?.carriers?.mondialRelay?.enabled ?? false) || (config.delivery?.carriers?.colissimo?.enabled ?? false)),
+          parcelShipping:
+            (config.delivery?.enabled ?? true) &&
+            ((config.delivery?.carriers?.mondialRelay?.enabled ?? false) ||
+              (config.delivery?.carriers?.colissimo?.enabled ?? false)),
           crossBorderDeliverySupported: true,
         },
       };
@@ -543,25 +609,27 @@ export class MarketService {
     seller?: UserProfile | null;
   }): MultiMarketValidationResult {
     const { draft, marketCodes, seller } = params;
-    const marketResults: MultiMarketValidationResult['marketResults'] = {};
+    const marketResults: MultiMarketValidationResult["marketResults"] = {};
     const globalErrors: ValidationError[] = [];
     const globalWarnings: string[] = [];
 
     if (!marketCodes || marketCodes.length === 0) {
       globalErrors.push({
-        field: 'selectedMarkets',
-        code: 'NO_MARKETS_SELECTED',
-        message: 'Veuillez sélectionner au moins un marché de diffusion.',
+        field: "selectedMarkets",
+        code: "NO_MARKETS_SELECTED",
+        message: "Veuillez sélectionner au moins un marché de diffusion.",
       });
     }
 
     const eligibilities = this.getEligibleMarketsForListing({
       seller,
       categoryId: draft.taxonomyNodeId,
-      isPro: seller?.role === 'pro_seller',
+      isPro: seller?.role === "pro_seller",
     });
 
-    const eligMap = new Map(eligibilities.map((e) => [e.marketCode.toUpperCase(), e]));
+    const eligMap = new Map(
+      eligibilities.map((e) => [e.marketCode.toUpperCase(), e]),
+    );
 
     let allMarketsValid = globalErrors.length === 0;
 
@@ -575,23 +643,33 @@ export class MarketService {
       if (!eligibility || !eligibility.isEligible) {
         errors.push({
           field: `markets.${normalizedCode}`,
-          code: 'MARKET_INELIGIBLE',
-          message: eligibility?.ineligibilityReason || `Le marché ${market.name} n'est pas éligible.`,
+          code: "MARKET_INELIGIBLE",
+          message:
+            eligibility?.ineligibilityReason ||
+            `Le marché ${market.name} n'est pas éligible.`,
         });
       }
 
       // Check category in this specific market
-      if (draft.taxonomyNodeId && !this.isCategoryEnabledInMarket(normalizedCode, draft.taxonomyNodeId)) {
+      if (
+        draft.taxonomyNodeId &&
+        !this.isCategoryEnabledInMarket(normalizedCode, draft.taxonomyNodeId)
+      ) {
         errors.push({
           field: `markets.${normalizedCode}.category`,
-          code: 'CATEGORY_DISABLED_IN_MARKET',
+          code: "CATEGORY_DISABLED_IN_MARKET",
           message: `La catégorie choisie n'est pas ouverte sur le marché ${market.name}.`,
         });
       }
 
       // Check transaction compatibility
-      if (draft.transaction?.allowReservation && !eligibility?.features.reservation) {
-        warnings.push(`La réservation sera désactivée pour ${market.name} (non supportée).`);
+      if (
+        draft.transaction?.allowReservation &&
+        !eligibility?.features.reservation
+      ) {
+        warnings.push(
+          `La réservation sera désactivée pour ${market.name} (non supportée).`,
+        );
       }
 
       const isMarketValid = errors.length === 0;

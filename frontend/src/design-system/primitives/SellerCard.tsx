@@ -1,12 +1,18 @@
-import { isProSeller, showsVerifiedBadge } from '../../domains/user/user.domain';
-import React from 'react';
-import { ShieldCheck, Star, MapPin, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { UserProfile } from '../../types';
-import { Avatar } from './Badge';
-import { Badge } from './Badge';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+import {
+  isProSeller,
+  showsVerifiedBadge,
+} from "../../domains/user/user.domain";
+import React from "react";
+import { ShieldCheck, Star, MapPin, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
+import { UserProfile } from "../../types";
+import { Avatar } from "./Badge";
+import { Badge } from "./Badge";
+import { useTranslation } from "../../i18n/I18nProvider";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../utils/controlMetrics";
 
 export interface SellerCardProps {
   user: UserProfile;
@@ -19,14 +25,19 @@ export const SellerCard: React.FC<SellerCardProps> = ({
   user,
   showContactAction = false,
   onContact,
-  className = '',
+  className = "",
 }) => {
   const { t } = useTranslation();
   const isPro = isProSeller(user);
-  const profileUrl = isPro && user.storeSlug ? `/boutique/${user.storeSlug}` : `/profil/${user.slug || user.id}`;
+  const profileUrl =
+    isPro && user.storeSlug
+      ? `/boutique/${user.storeSlug}`
+      : `/profil/${user.slug || user.id}`;
 
   return (
-    <div className={`bg-bg-surface rounded-card border border-border-base p-4 sm:p-5 ${className}`}>
+    <div
+      className={`bg-bg-surface rounded-card border border-border-base p-4 sm:p-5 ${className}`}
+    >
       <div className="flex items-start gap-3.5">
         <Link to={profileUrl} className="shrink-0 group">
           <Avatar
@@ -46,8 +57,16 @@ export const SellerCard: React.FC<SellerCardProps> = ({
             >
               {user.companyName || user.name}
             </Link>
-            {isPro && <Badge variant="pro" size="sm">Pro</Badge>}
-            {showsVerifiedBadge(user) && <Badge variant="verified" size="sm" icon>{t('ui.sellerCard.verifie')}</Badge>}
+            {isPro && (
+              <Badge variant="pro" size="sm">
+                Pro
+              </Badge>
+            )}
+            {showsVerifiedBadge(user) && (
+              <Badge variant="verified" size="sm" icon>
+                {t("ui.sellerCard.verifie")}
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center gap-2 mt-1 text-xs text-stone-600">
@@ -57,7 +76,9 @@ export const SellerCard: React.FC<SellerCardProps> = ({
             >
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               {user.rating.toFixed(1)}
-              <span className="font-normal text-stone-500">({user.reviewCount} avis)</span>
+              <span className="font-normal text-stone-500">
+                ({user.reviewCount} avis)
+              </span>
             </Link>
             <span>•</span>
             <span className="flex items-center gap-1 text-stone-500">
@@ -67,7 +88,9 @@ export const SellerCard: React.FC<SellerCardProps> = ({
           </div>
 
           {user.bio && (
-            <p className="text-xs text-stone-600 mt-2 line-clamp-2">{user.bio}</p>
+            <p className="text-xs text-stone-600 mt-2 line-clamp-2">
+              {user.bio}
+            </p>
           )}
         </div>
       </div>
@@ -79,7 +102,9 @@ export const SellerCard: React.FC<SellerCardProps> = ({
         </div>
         <div className="flex items-center gap-1.5 min-w-0">
           <ShieldCheck className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-          <span className="truncate">Taux de réponse : {user.responseRatePercent}%</span>
+          <span className="truncate">
+            Taux de réponse : {user.responseRatePercent}%
+          </span>
         </div>
       </div>
 
@@ -90,13 +115,21 @@ export const SellerCard: React.FC<SellerCardProps> = ({
         >
           {isPro ? (
             <>
-              <span className="hidden sm:inline">{t('ui.sellerCard.visiterLaBoutiqueOfficielleCatalogue')}</span>
-              <span className="sm:hidden">{t('ui.sellerCard.visiterLaBoutique')}</span>
+              <span className="hidden sm:inline">
+                {t("ui.sellerCard.visiterLaBoutiqueOfficielleCatalogue")}
+              </span>
+              <span className="sm:hidden">
+                {t("ui.sellerCard.visiterLaBoutique")}
+              </span>
             </>
           ) : (
             <>
-              <span className="hidden sm:inline">{t('ui.sellerCard.voirLeProfilAnnonces')}</span>
-              <span className="sm:hidden">{t('ui.sellerCard.voirLeProfil')}</span>
+              <span className="hidden sm:inline">
+                {t("ui.sellerCard.voirLeProfilAnnonces")}
+              </span>
+              <span className="sm:hidden">
+                {t("ui.sellerCard.voirLeProfil")}
+              </span>
             </>
           )}
           <span aria-hidden="true">→</span>

@@ -3,15 +3,15 @@
  * Authoritative determination of participant capabilities, actions, and disabled states.
  */
 
-import { UserProfile } from '../../types';
-import { ConversationCapabilities } from './messaging.types';
+import { UserProfile } from "../../types";
+import { ConversationCapabilities } from "./messaging.types";
 
 export interface ResolveCapabilitiesParams {
   viewer: UserProfile | null;
   counterpartId: string;
   isBlockedByViewer?: boolean;
   isBlockedByCounterpart?: boolean;
-  conversationStatus?: 'active' | 'blocked' | 'archived';
+  conversationStatus?: "active" | "blocked" | "archived";
   isViewerSuspended?: boolean;
   isListingAvailable?: boolean;
 }
@@ -26,7 +26,7 @@ export class MessagingCapabilitiesService {
       counterpartId,
       isBlockedByViewer = false,
       isBlockedByCounterpart = false,
-      conversationStatus = 'active',
+      conversationStatus = "active",
       isViewerSuspended = false,
       isListingAvailable = true,
     } = params;
@@ -44,12 +44,13 @@ export class MessagingCapabilitiesService {
         canReport: false,
         isBlockedByViewer: false,
         isBlockedByCounterpart: false,
-        disabledReason: 'Veuillez vous connecter pour participer à cette conversation.',
+        disabledReason:
+          "Veuillez vous connecter pour participer à cette conversation.",
       };
     }
 
     // 2. Suspended user
-    if (isViewerSuspended || viewer.status === 'suspended') {
+    if (isViewerSuspended || viewer.status === "suspended") {
       return {
         canRead: true,
         canSend: false,
@@ -61,7 +62,8 @@ export class MessagingCapabilitiesService {
         canReport: false,
         isBlockedByViewer,
         isBlockedByCounterpart,
-        disabledReason: 'Votre compte est actuellement suspendu. Vous ne pouvez pas envoyer de messages.',
+        disabledReason:
+          "Votre compte est actuellement suspendu. Vous ne pouvez pas envoyer de messages.",
       };
     }
 
@@ -78,11 +80,12 @@ export class MessagingCapabilitiesService {
         canReport: true,
         isBlockedByViewer: true,
         isBlockedByCounterpart,
-        disabledReason: 'Vous avez bloqué cet utilisateur. Débloquez-le pour lui envoyer un message.',
+        disabledReason:
+          "Vous avez bloqué cet utilisateur. Débloquez-le pour lui envoyer un message.",
       };
     }
 
-    if (isBlockedByCounterpart || conversationStatus === 'blocked') {
+    if (isBlockedByCounterpart || conversationStatus === "blocked") {
       return {
         canRead: true,
         canSend: false,
@@ -94,12 +97,13 @@ export class MessagingCapabilitiesService {
         canReport: true,
         isBlockedByViewer: false,
         isBlockedByCounterpart: true,
-        disabledReason: 'Cet utilisateur n\'accepte plus les messages de cette conversation.',
+        disabledReason:
+          "Cet utilisateur n'accepte plus les messages de cette conversation.",
       };
     }
 
     // 4. Archived / Closed conversation
-    if (conversationStatus === 'archived') {
+    if (conversationStatus === "archived") {
       return {
         canRead: true,
         canSend: false,
@@ -111,7 +115,8 @@ export class MessagingCapabilitiesService {
         canReport: true,
         isBlockedByViewer: false,
         isBlockedByCounterpart: false,
-        disabledReason: 'Cette conversation est archivée. Vous pouvez consulter l\'historique en lecture seule.',
+        disabledReason:
+          "Cette conversation est archivée. Vous pouvez consulter l'historique en lecture seule.",
       };
     }
 

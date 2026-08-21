@@ -1,8 +1,7 @@
-import React from 'react';
+import React from "react";
 import {
   MessageSquare,
   ShoppingBag,
-  
   AlertCircle,
   ShieldCheck,
   Sparkles,
@@ -10,11 +9,13 @@ import {
   Package,
   Star,
   Tag,
-  
-  ArrowRight
-} from 'lucide-react';
-import { Notification, NotificationCategory } from '../../../domains/notifications/notification.types';
-import { formatRelativeDate } from '../../../utilities/formatters';
+  ArrowRight,
+} from "lucide-react";
+import {
+  Notification,
+  NotificationCategory,
+} from "../../../domains/notifications/notification.types";
+import { formatRelativeDate } from "../../../utilities/formatters";
 
 interface NotificationItemCardProps {
   notification: Notification;
@@ -27,30 +28,33 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
   onSelect,
   isCompact = false,
 }) => {
-  const getCategoryIcon = (category: NotificationCategory, priority: string) => {
-    if (priority === 'critical') {
+  const getCategoryIcon = (
+    category: NotificationCategory,
+    priority: string,
+  ) => {
+    if (priority === "critical") {
       return <AlertCircle className="w-4 h-4 text-danger" />;
     }
 
     switch (category) {
-      case 'messages':
+      case "messages":
         return <MessageSquare className="w-4 h-4 text-info" />;
-      case 'transactions':
+      case "transactions":
         return <ShoppingBag className="w-4 h-4 text-success" />;
-      case 'listings':
+      case "listings":
         return <Tag className="w-4 h-4 text-primary" />;
-      case 'delivery':
+      case "delivery":
         return <Package className="w-4 h-4 text-indigo-600" />;
-      case 'reviews':
+      case "reviews":
         return <Star className="w-4 h-4 text-amber-500 fill-amber-400" />;
-      case 'monetization':
+      case "monetization":
         return <DollarSign className="w-4 h-4 text-warning" />;
-      case 'account':
-      case 'security':
+      case "account":
+      case "security":
         return <ShieldCheck className="w-4 h-4 text-success" />;
-      case 'moderation':
+      case "moderation":
         return <AlertCircle className="w-4 h-4 text-warning" />;
-      case 'system':
+      case "system":
       default:
         return <Sparkles className="w-4 h-4 text-stone-600" />;
     }
@@ -62,12 +66,12 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
     <div
       onClick={() => onSelect(notification)}
       className={`flex items-start gap-3 transition-colors cursor-pointer group ${
-        isCompact ? 'p-3 hover:bg-stone-50' : 'p-4 hover:bg-stone-50/80'
-      } ${isUnread ? 'bg-primary/5' : 'bg-white'}`}
+        isCompact ? "p-3 hover:bg-stone-50" : "p-4 hover:bg-stone-50/80"
+      } ${isUnread ? "bg-primary/5" : "bg-white"}`}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onSelect(notification);
         }
@@ -76,7 +80,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       {/* Category Icon Badge */}
       <div
         className={`rounded-xl flex items-center justify-center shrink-0 border border-border-base bg-white shadow-2xs ${
-          isCompact ? 'w-8 h-8' : 'w-10 h-10'
+          isCompact ? "w-8 h-8" : "w-10 h-10"
         }`}
       >
         {getCategoryIcon(notification.category, notification.priority)}
@@ -87,7 +91,9 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
         <div className="flex items-center justify-between gap-2 mb-0.5">
           <h2
             className={`text-xs truncate ${
-              isUnread ? 'font-black text-stone-950' : 'font-bold text-stone-800'
+              isUnread
+                ? "font-black text-stone-950"
+                : "font-bold text-stone-800"
             }`}
           >
             {notification.title}
@@ -97,17 +103,21 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
           </span>
         </div>
 
-        <p className={`text-xs leading-relaxed line-clamp-2 ${isUnread ? 'text-stone-700 font-medium' : 'text-stone-500'}`}>
+        <p
+          className={`text-xs leading-relaxed line-clamp-2 ${isUnread ? "text-stone-700 font-medium" : "text-stone-500"}`}
+        >
           {notification.body}
         </p>
 
         {/* Action Button Link (if not compact) */}
-        {!isCompact && notification.actions && notification.actions.length > 0 && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-primary group-hover:underline">
-            <span>{notification.actions[0].label}</span>
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        )}
+        {!isCompact &&
+          notification.actions &&
+          notification.actions.length > 0 && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-primary group-hover:underline">
+              <span>{notification.actions[0].label}</span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          )}
       </div>
 
       {/* Unread Pill Indicator */}

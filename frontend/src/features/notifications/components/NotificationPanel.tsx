@@ -1,10 +1,10 @@
-import React, { useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Bell, Check, ExternalLink, Settings } from 'lucide-react';
-import { Notification } from '../../../domains/notifications/notification.types';
-import { notificationCatalogService } from '../../../domains/notifications/notification.catalog';
-import { NotificationItemCard } from './NotificationItemCard';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, Check, ExternalLink, Settings } from "lucide-react";
+import { Notification } from "../../../domains/notifications/notification.types";
+import { notificationCatalogService } from "../../../domains/notifications/notification.catalog";
+import { NotificationItemCard } from "./NotificationItemCard";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -34,7 +34,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
 
     const handleClickOutside = (e: MouseEvent) => {
@@ -43,11 +43,11 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -65,7 +65,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       ref={panelRef}
       className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-dropdown border border-border-base z-popover overflow-hidden flex flex-col max-h-[500px] animate-in fade-in slide-in-from-top-2 duration-fast"
       role="region"
-      aria-label={t('notifications.notificationPanel.panneauDesNotifications')}
+      aria-label={t("notifications.notificationPanel.panneauDesNotifications")}
     >
       {/* Header */}
       <div className="p-3.5 border-b border-border-base flex items-center justify-between gap-2 bg-stone-50/50">
@@ -86,7 +86,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               className="text-micro font-bold text-stone-600 hover:text-stone-900 p-1 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Check className="w-3.5 h-3.5 text-primary" />
-              <span>{t('notifications.notificationPanel.toutLire')}</span>
+              <span>{t("notifications.notificationPanel.toutLire")}</span>
             </button>
           )}
 
@@ -94,8 +94,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             to="/compte/notifications/preferences"
             onClick={onClose}
             className="p-1 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-100 transition-colors"
-            title={t('notifications.notificationPanel.preferencesDeNotifications')}
-            aria-label={t('notifications.notificationPanel.preferencesDeNotifications')}
+            title={t(
+              "notifications.notificationPanel.preferencesDeNotifications",
+            )}
+            aria-label={t(
+              "notifications.notificationPanel.preferencesDeNotifications",
+            )}
           >
             <Settings className="w-3.5 h-3.5" />
           </Link>
@@ -121,18 +125,28 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mx-auto">
               <Bell className="w-5 h-5" />
             </div>
-            <p className="text-xs font-bold text-stone-800">{t('notifications.notificationPanel.aucuneNotificationPourLeMoment')}</p>
-            <p className="text-micro text-stone-500">{t('notifications.notificationPanel.vosAlertesMessagesEtTransactions')}</p>
+            <p className="text-xs font-bold text-stone-800">
+              {t(
+                "notifications.notificationPanel.aucuneNotificationPourLeMoment",
+              )}
+            </p>
+            <p className="text-micro text-stone-500">
+              {t(
+                "notifications.notificationPanel.vosAlertesMessagesEtTransactions",
+              )}
+            </p>
           </div>
         ) : (
-          notifications.slice(0, 6).map((notif) => (
-            <NotificationItemCard
-              key={notif.id}
-              notification={notif}
-              onSelect={handleSelectNotification}
-              isCompact
-            />
-          ))
+          notifications
+            .slice(0, 6)
+            .map((notif) => (
+              <NotificationItemCard
+                key={notif.id}
+                notification={notif}
+                onSelect={handleSelectNotification}
+                isCompact
+              />
+            ))
         )}
       </div>
 
@@ -143,7 +157,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           onClick={onClose}
           className="text-xs font-bold text-primary hover:text-primary-hover transition-colors inline-flex items-center gap-1.5"
         >
-          <span>{t('notifications.notificationPanel.voirToutesLesNotifications')}</span>
+          <span>
+            {t("notifications.notificationPanel.voirToutesLesNotifications")}
+          </span>
           <ExternalLink className="w-3 h-3" />
         </Link>
       </div>

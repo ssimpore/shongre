@@ -1,173 +1,208 @@
-# Shongre — Marketplace & Escrow Platform
+# Shongre
 
-Shongre is a multi-market classifieds and transactional escrow marketplace supporting both individual (*Particuliers*) and verified professional sellers (*Professionnels*), featuring secure end-to-end transactions (full escrow deposit, hand delivery with PIN verification, parcel delivery, live messaging with attachments, and Pro seller storefront management).
+Shongre is a multi-market classifieds and transactional marketplace for individual and professional sellers. The repository contains a Next.js Web application, a modular Node.js backend, and one Expo/React Native mobile application for iOS and Android.
 
----
-
-## 1. Dual-Mode Architecture & Execution Matrix
-
-Shongre permanently supports switching between a fully deterministic **Demo environment** and a live **PostgreSQL / Supabase HTTP API environment** through centralized configuration.
+## Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                          FRONTEND                           │
-│                                                             │
-│  VITE_DATA_MODE=demo                 VITE_DATA_MODE=api     │
-│         │                                    │              │
-│         ▼                                    ▼              │
-│    Demo Adapters                       HTTP Adapters        │
-│   (Local Fixtures)                     (API Client)         │
-└──────────────────────────────────────────────┬──────────────┘
-                                               │
-                                       HTTP /api/v1/*
-                                               │
-                                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                           BACKEND                           │
-│                                                             │
-│                   Domain & Application Services             │
-│                 (Listings, Auth, Orders, Escrow...)         │
-│                                │                            │
-│                       Repository Interfaces                 │
-│                                │                            │
-│      ┌─────────────────────────┴─────────────────────────┐  │
-│      ▼                                                   ▼  │
-│  Demo Repositories                            Postgres Repos│
-│  (In-Memory Store)                            (Supabase/PG) │
-│      │                                                   │  │
-│  BACKEND_DATA_MODE=demo                  BACKEND_DATA_MODE= │
-│                                                   database  │
-└──────────────────────────────────────────────────┬──────────┘
-                                                   │
-                                                   ▼
-                                           Supabase / Postgres
+Web users ───────▶ frontend/ ──┐
+                               ├── typed public contracts ──▶ backend/ ──▶ PostgreSQL / Supabase
+Mobile users ───▶ mobile/ ─────┘
+                     │
+                     ├── Expo source in app/ + src/
+                     └── generated native projects in ios/ + android/
+
+Shared product system: packages/design-tokens/, packages/ui/, packages/features/,
+packages/shared/, packages/brand/, and packages/contracts/
+Runtime/deployment tooling:  infrastructure/ + scripts/ + Makefile
 ```
 
-### Supported Execution Modes
+The web and mobile clients are adapter-based. Their default `demo` mode is deterministic, asynchronous, and works with the backend stopped. `api` mode uses the same service contracts with HTTP adapters. UI components do not import backend implementation or branch on data mode.
 
-| Mode | Frontend (`VITE_DATA_MODE`) | Backend (`BACKEND_DATA_MODE`) | External Services | Use Case |
-| :--- | :--- | :--- | :--- | :--- |
-| **Mode A** | `demo` | *Not required* | None | Standalone UI development & deterministic browser testing |
-| **Mode B** | `api` | `demo` | Backend API (:4000) | Full-stack HTTP contract testing without database |
-| **Mode C** | `api` | `database` | Supabase Local / Docker | Complete local development against PostgreSQL |
-| **Mode D** | `api` | `database` | Supabase Cloud | Staging & Production deployment |
+Supabase remains canonical under `backend/supabase/`; `infrastructure/` owns cross-cutting templates and operations rather than a duplicate database stack.
 
----
+## Prerequisites
 
-## 2. Technology Stack
+- Node.js 22 or newer and npm 10 or newer
+- Docker plus the Supabase CLI for local database mode
+- Expo-compatible iOS/Android tooling for local native runs
+- macOS and current Xcode for local iOS builds; EAS may build remotely
 
-- **Frontend**: React 19 (`react`, `react-dom`), TypeScript 5.8, React Router 7 (`react-router-dom`), Vite 6, Tailwind CSS v4, Lucide Icons, Leaflet, Vitest 4
-- **Backend**: Node.js 22+ ESM, TypeScript 5.8, PostgreSQL 15, Supabase (`@supabase/supabase-js`), Stripe (`stripe`), Google Gen AI (`@google/genai`), Vitest 3
-- **DevOps & Automation**: Root `Makefile`, CLI helper (`frontend/bin/shongre.js`), boundary scanner (`check-boundary.js`)
+Run `make doctor` for an evidence-based local tool report. Missing optional native tools do not prevent standalone web/demo work.
 
----
+## First setup
 
-## 3. Quick Start
-
-### Prerequisites
-- **Node.js**: `v20.x` or later (recommended: `v22+`)
-- **npm**: `v10.x` or later
-
-### Install Dependencies
 ```bash
-make install
+make setup
+make info
 ```
 
-### Run Full Stack
-```bash
-# Start BOTH Frontend (:3000) and Backend (:4000) concurrently in default mode
-make dev
+`make setup` creates an ignored `.env` from `.env.example`, installs the npm workspace, renders local Supabase configuration, and runs diagnostics. Keep secrets in ignored `.env.local` or secure CI/EAS variables.
 
-# Run Frontend in API mode against Backend in Demo mode
-make dev-api-demo
+Environment precedence is:
 
-# Run Frontend in API mode against Backend in PostgreSQL mode
-make dev-db
+```text
+exported process variable  >  .env.local  >  .env
 ```
 
-### Run Tests & Quality CI
+All host ports and runtime URLs come from that configuration. `scripts/env.sh` derives local URLs when appropriate; Make targets and package scripts do not own competing port values.
+
+## Development
+
 ```bash
-# Run all frontend and backend tests
+make dev          # backend + web
+make dev-mobile   # backend + one Expo Metro server
+make dev-all      # backend + web + one Expo Metro server
+
+make ios
+make android
+make mobile-web
+
+make status
+make health
+make logs
+make stop-all
+```
+
+Processes launched through the root tooling are recorded under ignored `.runtime/`. Port collision handling prints the owning PID/command and only terminates a process whose tracked PID belongs to this repository. It never runs a broad `killall`, pattern kill, or blind SIGKILL.
+
+To override a port for one invocation, export it on that command:
+
+```bash
+FRONTEND_PORT=3310 make frontend-dev
+BACKEND_PORT=4410 make backend-dev
+EXPO_METRO_PORT=8181 make mobile
+```
+
+Use `make ports` to see configured values and current owners. `make free-port PORT=…` refuses to kill an unrelated process.
+
+## Data modes
+
+| Client/runtime | Deterministic standalone mode | Connected mode                                      |
+| -------------- | ----------------------------- | --------------------------------------------------- |
+| Web            | `NEXT_PUBLIC_DATA_MODE=demo`  | `NEXT_PUBLIC_DATA_MODE=api` + `NEXT_PUBLIC_API_URL` |
+| Mobile         | `EXPO_PUBLIC_DATA_MODE=demo`  | `EXPO_PUBLIC_DATA_MODE=api` + `EXPO_PUBLIC_API_URL` |
+| Backend        | `BACKEND_DATA_MODE=demo`      | `BACKEND_DATA_MODE=database`                        |
+
+Demo is the default. There is no silent fallback to Supabase or production HTTP. Production mobile configuration is separately validated from local public Expo values.
+
+## Database and infrastructure
+
+```bash
+make infra-start
+make infra-status
+make infra-health
+make db-migrate
+make db-seed
+make db-types
+make infra-stop
+```
+
+Schema changes belong in `backend/supabase/migrations/`. `make db-reset` refuses to run unless `APP_ENV=development`. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
+
+## Quality
+
+```bash
+make lint
+make typecheck
 make test
-
-# Run repository contract tests across dual modes
-make test-contracts
-
-# Run full CI quality check (lint + test + build + boundary scan)
 make check
+
+make frontend-build
+make backend-build
+make mobile-check
+make infra-check
+make ui-check
+make cross-platform-check
 ```
 
----
+`make check` covers all workspaces, builds web/backend, checks infrastructure, and enforces frontend/backend boundaries. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
 
-## 4. Repository Structure
+## Mobile and store readiness
+
+The mobile application uses Expo SDK 57, React Native 0.86, React 19.2, and Expo Router. Stable identifiers, application version, iOS build number, Android versionCode, deployment target, SDK targets, privacy manifest, permissions, and deep-link domains are driven by `mobile/app.config.ts` plus release environment variables.
+
+```bash
+make mobile-prebuild-clean
+make expo-doctor
+make android-sdk-check
+make android-16kb-check
+make ios-sdk-check
+make permissions-check
+make privacy-check
+make store-check
+```
+
+Store-check uses `PASS`, `FAIL`, `WARNING`, `MANUAL REVIEW REQUIRED`, and `NOT APPLICABLE`. It is a preflight, never a claim that Apple or Google will approve the app. Current evidence and human tasks live in `mobile/store/` and `docs/compliance/`.
+
+On macOS, verify the native iOS Release source graph without signing after the
+generated workspace exists:
+
+```bash
+cd mobile/ios
+pod install
+bash -c 'source ../../scripts/env.sh && export NODE_ENV=production && \
+  xcodebuild -workspace Shongre.xcworkspace -scheme Shongre \
+  -configuration Release -destination "generic/platform=iOS Simulator" \
+  CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
+  DEBUG_INFORMATION_FORMAT=dwarf GCC_GENERATE_DEBUGGING_SYMBOLS=NO build'
+```
+
+The Bash wrapper is required because `scripts/env.sh` owns the non-secret Expo
+release configuration. This validates compilation, Hermes bundling, linkage,
+resources, and app packaging; it does not replace a signed device archive or
+store submission checks. Allow several gigabytes of free disk space for a first
+native build.
+
+Universal/App Link files require real signing identities. Configure `APPLE_TEAM_ID` and `ANDROID_SHA256_CERT_FINGERPRINT`, then run `make association-files`, deploy the generated ignored files over HTTPS, and verify them with `make deep-links-check`.
+
+Build, submit, and release remain separate actions:
+
+```bash
+make ios-preview-build
+make android-preview-build
+make ios-production-build
+make android-production-build
+
+# Explicit submission only after preflight and human approval
+make submit-ios
+make submit-android
+```
+
+Production credentials, keystores, certificates, App Store Connect keys, Play service accounts, EAS credentials, and reviewer passwords must never be committed.
+
+## Safety and privacy implemented
+
+- mobile sessions use Keychain/Keystore through Expo SecureStore;
+- production endpoint checks require stable HTTPS and reject local, LAN, emulator, and tunnel hosts;
+- account deletion is available in mobile and on the public web, with reauthentication, active-order protection, anonymization, credential/token revocation, and audit state;
+- UGC users can report and server-authoritatively block/unblock, and blocked users cannot send messages;
+- push registration is associated with the authenticated account and removed on logout/deletion;
+- declared native permissions are limited to camera, selected photos, coarse foreground location, and notifications with usable fallbacks;
+- analytics, advertising, tracking, contacts, microphone, precise/background location, and crash-reporting SDKs are not enabled today;
+- physical marketplace payments are separated from digital promotion/subscription features, which remain unavailable in mobile until a current billing-policy review approves an implementation.
+
+The final privacy policy, exact retention periods, processor list, store-console declarations, reviewer credentials, ratings, signing, signed-artifact checks, metadata, and rollout remain human/legal/operations responsibilities.
+
+## Repository map
 
 ```text
-shongre/
-├── frontend/                     # Self-contained frontend application
-│   ├── .env.example              # Frontend environment template (VITE_DATA_MODE, VITE_API_URL)
-│   ├── bin/                      # CLI automation and CI checks (shongre.js)
-│   ├── src/
-│   │   ├── api/
-│   │   │   ├── adapters/         # Demo and HTTP service adapters
-│   │   │   ├── client/           # Service registry and API configuration
-│   │   │   ├── contracts/        # Typed public API service contracts
-│   │   │   └── errors/           # Normalized AppError and user messages
-│   │   ├── app/                  # Routing, layouts, and providers
-│   │   ├── domains/              # Domain logic (marketplace, taxonomy, escrow)
-│   │   ├── features/             # Feature UI views and pages
-│   │   └── design-system/        # Reusable UI primitives and design tokens
-│   └── package.json
-├── backend/                      # Self-contained backend application
-│   ├── .env.example              # Backend environment template (BACKEND_DATA_MODE, Supabase, Stripe)
-│   ├── src/
-│   │   ├── api/v1/               # REST API HTTP router and handlers
-│   │   ├── app/                  # Bootstrap, server, and central config
-│   │   ├── infrastructure/
-│   │   │   ├── database/         # Repositories (I*, Demo*, Postgres*) and DB clients
-│   │   │   ├── logging/          # Structured logger
-│   │   │   ├── payments/         # Stripe adapter
-│   │   │   ├── search/           # Postgres full-text search provider
-│   │   │   └── supabase/         # Supabase client singleton
-│   │   ├── integrations/         # External provider abstractions (Stripe, KYC, SIRET, Gemini AI)
-│   │   ├── modules/              # Domain services (listings, auth, orders, escrow...)
-│   │   └── shared/               # Shared domain types, RBAC permissions, escrow helpers
-│   ├── supabase/                 # Supabase SQL migrations, RLS policies, seed
-│   ├── tests/                    # Unit, contract, integration, RLS, and boundary tests
-│   └── package.json
-├── Makefile                      # Monorepo unified automation
-├── AGENTS.md                     # Engineering rules and architecture boundaries
-└── README.md
+frontend/                 Next.js App Router Web app, demo + HTTP adapters
+backend/                  Node modular monolith, repositories, API, tests
+backend/supabase/         canonical migrations, policies, functions, local config template
+mobile/                   single Expo iOS/Android source and generated native projects
+mobile/store/             Apple, Google, privacy, permission, and release evidence
+packages/design-tokens/   canonical visual values and generated platform adapters
+packages/ui/              shared Web/native primitive APIs
+packages/features/        shared feature presentation and interaction rules
+packages/shared/          framework-free formatting and validation
+packages/brand/           canonical brand mark and generated app assets
+packages/contracts/       stable runtime validation and DTO schemas
+infrastructure/           cross-cutting operations and association-file templates
+scripts/                  environment, process, port, health, and infrastructure tooling
+docs/                     architecture, security, operations, and current store baseline
+Makefile                  canonical developer and release CLI
+AGENTS.md                 mandatory engineering rules and durable lessons
 ```
 
----
-
-## 5. Security & Boundary Guarantees
-
-- **Authenticated API**: Every `/api/v1` route declares an access rule (`PUBLIC`, `AUTHENTICATED`, or a required permission). Identity is resolved per request from a signed `Authorization: Bearer` token — never from a path parameter or request body. See AGENTS.md §151.
-- **Password storage**: scrypt (`node:crypto`), salted per account, in a dedicated `user_credentials` table that is never exposed to clients. Login is constant-time and does not reveal whether an account exists.
-- **Least privilege**: Roles map to permissions through `shared/auth/rbac.ts`. Registration cannot claim staff roles, and a session can only switch to roles the account actually holds.
-- **Webhook authenticity**: Stripe webhooks are verified against `STRIPE_WEBHOOK_SECRET` (HMAC-SHA256 over the raw body, with a replay window). Unsigned events are rejected.
-- **Zero Secret Leakage**: The frontend bundle never imports backend implementations or sensitive environment variables (`SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, Stripe secret keys). Verified automatically via `make check-boundary`.
-- **Relational Integrity & RLS**: All Supabase business tables are secured with Row Level Security (RLS) policies and PostgreSQL constraints.
-- **Contract Equivalence**: Frontend consumes typed service contracts (`ListingsServiceContract`, `OrdersServiceContract`, etc.) without branching conditionals in UI components.
-
-### Required configuration
-
-| Variable | Where | Notes |
-| :--- | :--- | :--- |
-| `JWT_SECRET` | backend | **Required in production.** The server refuses to boot if unset, shorter than 32 chars, or still a placeholder. Generate with `openssl rand -base64 48`. |
-| `AUTH_TOKEN_TTL_SECONDS` | backend | Session lifetime, default `43200` (12h). |
-| `STRIPE_WEBHOOK_SECRET` | backend | Required for the Stripe webhook endpoint to accept anything. |
-| `DEMO_ACCOUNT_PASSWORD` | backend | Password for seeded demo personas. Never seeded in production. |
-| `VITE_DATA_MODE` | frontend | **Must be set explicitly to build** (`api` or `demo`); the build fails otherwise. |
-
-### Demo credentials
-
-In non-production environments the canonical personas are seeded with the
-password `ShongreDemo2024!` (override via `DEMO_ACCOUNT_PASSWORD`):
-
-| Account | Role |
-| :--- | :--- |
-| `thomas.laurent@example.fr` | individual buyer |
-| `camille.martin@example.fr` | individual seller |
-| `admin@shongre.com` | admin |
+Run `make help` for the canonical command list.

@@ -1,7 +1,15 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { services } from '../../api/client/service-registry';
-import { storageService } from '../../services/storage.service';
-import { useAuth } from './AuthProvider';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { services } from "../../api/client/service-registry";
+import { storageService } from "../../services/storage.service";
+import { useAuth } from "./AuthProvider";
 
 interface FavoritesContextValue {
   /** Ids of every listing the current user has saved. */
@@ -14,7 +22,9 @@ interface FavoritesContextValue {
   clearFavorites: () => Promise<void>;
 }
 
-const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefined);
+const FavoritesContext = createContext<FavoritesContextValue | undefined>(
+  undefined,
+);
 
 /**
  * One source of truth for saved listings.
@@ -28,7 +38,9 @@ const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefi
  * Reads and writes go through the listings service contract, so this keeps
  * working unchanged when the demo adapter is swapped for the HTTP one.
  */
-export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser } = useAuth();
@@ -51,7 +63,9 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // mount instead would hand whoever is already signed in on a shared device
     // the saves left behind by the last signed-out visitor.
     const signingIn =
-      previousIdentity.current !== undefined && !previousIdentity.current && Boolean(identity);
+      previousIdentity.current !== undefined &&
+      !previousIdentity.current &&
+      Boolean(identity);
     previousIdentity.current = identity;
 
     if (signingIn) storageService.mergeGuestFavorites();
@@ -81,7 +95,9 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     let optimistic = false;
     setFavoriteIds((previous) => {
       optimistic = !previous.includes(listingId);
-      return optimistic ? [...previous, listingId] : previous.filter((id) => id !== listingId);
+      return optimistic
+        ? [...previous, listingId]
+        : previous.filter((id) => id !== listingId);
     });
 
     try {
@@ -94,9 +110,13 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch {
       // Put the set back the way it was rather than leaving a lie on screen.
       setFavoriteIds((previous) =>
-        optimistic ? previous.filter((id) => id !== listingId) : [...previous, listingId],
+        optimistic
+          ? previous.filter((id) => id !== listingId)
+          : [...previous, listingId],
       );
-      throw new Error('Impossible de mettre à jour vos favoris pour le moment.');
+      throw new Error(
+        "Impossible de mettre à jour vos favoris pour le moment.",
+      );
     }
   }, []);
 
@@ -104,10 +124,12 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const previous = favoriteIds;
     setFavoriteIds([]);
     try {
-      await Promise.all(previous.map((id) => services.listings.toggleFavorite(id)));
+      await Promise.all(
+        previous.map((id) => services.listings.toggleFavorite(id)),
+      );
     } catch {
       setFavoriteIds(previous);
-      throw new Error('Impossible de vider vos favoris pour le moment.');
+      throw new Error("Impossible de vider vos favoris pour le moment.");
     }
   }, [favoriteIds]);
 
@@ -123,13 +145,17 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     [favoriteIds, isLoading, isFavorite, toggleFavorite, clearFavorites],
   );
 
-  return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
+  return (
+    <FavoritesContext.Provider value={value}>
+      {children}
+    </FavoritesContext.Provider>
+  );
 };
 
 export const useFavorites = (): FavoritesContextValue => {
   const context = useContext(FavoritesContext);
   if (!context) {
-    throw new Error('useFavorites must be used inside <FavoritesProvider>.');
+    throw new Error("useFavorites must be used inside <FavoritesProvider>.");
   }
   return context;
 };

@@ -1,12 +1,12 @@
 export type CollectionPillarId =
-  | 'all'
-  | 'editorial'
-  | 'budget'
-  | 'style'
-  | 'lifestyle'
-  | 'mobility'
-  | 'local'
-  | 'personalized';
+  | "all"
+  | "editorial"
+  | "budget"
+  | "style"
+  | "lifestyle"
+  | "mobility"
+  | "local"
+  | "personalized";
 
 export interface CollectionPillar {
   id: CollectionPillarId;
@@ -43,7 +43,8 @@ export interface Collection {
   curatorNote: string;
   badge: {
     label: string;
-    variant: 'terracotta' | 'emerald' | 'sky' | 'amber' | 'purple' | 'rose' | 'indigo';
+    variant:
+      "terracotta" | "emerald" | "sky" | "amber" | "purple" | "rose" | "indigo";
   };
   itemCountLabel: string;
   coverImageUrl: string;

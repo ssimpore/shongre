@@ -1,13 +1,13 @@
-import { consentService } from '../domains/consent/consent.service';
+import { consentService } from "../domains/consent/consent.service";
 
 export type MarketplaceAnalyticsEvent =
-  | 'trending_section_view'
-  | 'trending_topic_impression'
-  | 'trending_topic_click'
-  | 'trending_topic_change'
-  | 'trending_listing_impression'
-  | 'trending_listing_click'
-  | 'trending_see_all_click';
+  | "trending_section_view"
+  | "trending_topic_impression"
+  | "trending_topic_click"
+  | "trending_topic_change"
+  | "trending_listing_impression"
+  | "trending_listing_click"
+  | "trending_see_all_click";
 
 export interface MarketplaceAnalyticsPayload {
   market?: string;
@@ -15,7 +15,7 @@ export interface MarketplaceAnalyticsPayload {
   topicType?: string;
   position?: number;
   listingId?: string;
-  source?: 'trending_now';
+  source?: "trending_now";
 }
 
 export interface AnalyticsEventRecord {
@@ -32,8 +32,11 @@ const memoryEvents: AnalyticsEventRecord[] = [];
  * silently starts tracking before the visitor permits audience measurement.
  */
 export const analyticsService = {
-  track(name: MarketplaceAnalyticsEvent, payload: MarketplaceAnalyticsPayload = {}): void {
-    if (!consentService.hasConsent('analytics')) return;
+  track(
+    name: MarketplaceAnalyticsEvent,
+    payload: MarketplaceAnalyticsPayload = {},
+  ): void {
+    if (!consentService.hasConsent("analytics")) return;
     memoryEvents.push({ name, payload, occurredAt: new Date().toISOString() });
     if (memoryEvents.length > 100) memoryEvents.shift();
   },
@@ -44,4 +47,3 @@ export const analyticsService = {
     memoryEvents.length = 0;
   },
 };
-

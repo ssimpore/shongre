@@ -1,7 +1,10 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+import React from "react";
+import { X } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../utils/controlMetrics";
 
 export interface FilterChipProps {
   /** Human-readable filter value, e.g. `Véhicules` or `"vélo gravel"`. */
@@ -11,7 +14,7 @@ export interface FilterChipProps {
    * can tell apart a query, a category and a transactional facet at a glance —
    * it carries no business meaning.
    */
-  tone?: 'query' | 'neutral' | 'strong' | 'success' | 'warning';
+  tone?: "query" | "neutral" | "strong" | "success" | "warning";
   /**
    * Called when the user removes the filter. Omit for read-only chips.
    * The remove control is always given an accessible name derived from `label`.
@@ -25,12 +28,12 @@ export interface FilterChipProps {
   className?: string;
 }
 
-const TONE_STYLES: Record<NonNullable<FilterChipProps['tone']>, string> = {
-  query: 'bg-primary-light text-primary border-primary-border',
-  neutral: 'bg-stone-100 text-stone-800 border-stone-200',
-  strong: 'bg-stone-900 text-white border-stone-900',
-  success: 'bg-success-surface text-success border-success-border',
-  warning: 'bg-warning-surface text-warning border-warning-border',
+const TONE_STYLES: Record<NonNullable<FilterChipProps["tone"]>, string> = {
+  query: "bg-primary-light text-primary border-primary-border",
+  neutral: "bg-stone-100 text-stone-800 border-stone-200",
+  strong: "bg-stone-900 text-white border-stone-900",
+  success: "bg-success-surface text-success border-success-border",
+  warning: "bg-warning-surface text-warning border-warning-border",
 };
 
 /**
@@ -42,17 +45,17 @@ const TONE_STYLES: Record<NonNullable<FilterChipProps['tone']>, string> = {
  */
 export const FilterChip: React.FC<FilterChipProps> = ({
   children,
-  tone = 'neutral',
+  tone = "neutral",
   onRemove,
   label,
-  className = '',
+  className = "",
 }) => {
   const { t } = useTranslation();
 
   return (
     <span
       className={`inline-flex items-center gap-1 max-w-full text-xs font-semibold pl-2.5 ${
-        onRemove ? 'pr-1' : 'pr-2.5'
+        onRemove ? "pr-1" : "pr-2.5"
       } py-1 rounded-full border ${TONE_STYLES[tone]} ${className}`}
     >
       <span className="truncate">{children}</span>
@@ -60,8 +63,8 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         <button
           type="button"
           onClick={onRemove}
-          aria-label={t('common.removeFilter', {
-            name: label ?? (typeof children === 'string' ? children : ''),
+          aria-label={t("common.removeFilter", {
+            name: label ?? (typeof children === "string" ? children : ""),
           }).trim()}
           /* The glyph stays 12px so the chip keeps its size, but the control
              itself must clear the 24px WCAG 2.5.8 floor — it was 16x16. The

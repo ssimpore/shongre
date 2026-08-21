@@ -1,4 +1,4 @@
-import { MessageKey } from '../../i18n/messages.fr';
+import { MessageKey } from "../../i18n/messages.fr";
 
 /**
  * Cookie/tracking consent, as the CNIL and the GDPR frame it.
@@ -8,7 +8,7 @@ import { MessageKey } from '../../i18n/messages.fr';
  * without. Everything else is off until the visitor turns it on — consent is
  * opt-in, so "no decision yet" and "refused" must behave identically.
  */
-export type ConsentCategory = 'necessary' | 'analytics' | 'marketing';
+export type ConsentCategory = "necessary" | "analytics" | "marketing";
 
 export type ConsentCategories = Record<ConsentCategory, boolean>;
 

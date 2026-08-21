@@ -36,6 +36,9 @@ test.describe('horizontal overflow', () => {
   // matrix rather than the three representative widths.
   for (const viewport of VIEWPORTS) {
     test(`public routes hold at ${viewport.name}`, async ({ page }) => {
+      // This one test intentionally performs a complete public-route sweep.
+      // Keep the global single-route budget strict and widen only this audit.
+      test.setTimeout(90_000);
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await usePersona(page, 'guest');
       for (const route of PUBLIC_ROUTES) {

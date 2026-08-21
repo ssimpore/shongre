@@ -1,20 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Mail, KeyRound, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
-import { authService } from '../../domains/auth/auth.service';
-import { useToast } from '../../app/providers/ToastProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { PasswordField } from './components/PasswordField';
-import { AuthLayout } from './components/AuthLayout';
-import { usePageMeta } from '../../hooks/usePageMeta';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Mail,
+  KeyRound,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import { authService } from "../../domains/auth/auth.service";
+import { useToast } from "../../app/providers/ToastProvider";
+import { Button } from "../../design-system/primitives/Button";
+import { PasswordField } from "./components/PasswordField";
+import { AuthLayout } from "./components/AuthLayout";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: "Mot de passe oublié",
-    description:
-      "Réinitialisez le mot de passe de votre compte Shongre.",
+    description: "Réinitialisez le mot de passe de votre compte Shongre.",
     noIndex: true,
   });
 
@@ -22,13 +27,15 @@ export const ForgotPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const toast = useToast();
 
-  const urlToken = searchParams.get('token') || '';
+  const urlToken = searchParams.get("token") || "";
 
-  const [step, setStep] = useState<'request' | 'reset'>(urlToken ? 'reset' : 'request');
-  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<"request" | "reset">(
+    urlToken ? "reset" : "request",
+  );
+  const [email, setEmail] = useState("");
   const [token, setToken] = useState(urlToken);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [demoResetToken, setDemoResetToken] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +60,7 @@ export const ForgotPasswordPage: React.FC = () => {
         setErrorMessage(res.message);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Erreur lors de la demande.');
+      setErrorMessage(err.message || "Erreur lors de la demande.");
     } finally {
       setIsLoading(false);
     }
@@ -64,12 +71,14 @@ export const ForgotPasswordPage: React.FC = () => {
     setErrorMessage(null);
 
     if (newPassword.length < 8) {
-      setErrorMessage('Le nouveau mot de passe doit comporter au moins 8 caractères.');
+      setErrorMessage(
+        "Le nouveau mot de passe doit comporter au moins 8 caractères.",
+      );
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMessage('Les deux mots de passe ne correspondent pas.');
+      setErrorMessage("Les deux mots de passe ne correspondent pas.");
       return;
     }
 
@@ -77,13 +86,15 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       const res = await authService.resetPassword(token.trim(), newPassword);
       if (res.success) {
-        toast.success('Votre mot de passe a été mis à jour ! Vous pouvez vous connecter.');
-        navigate('/connexion');
+        toast.success(
+          "Votre mot de passe a été mis à jour ! Vous pouvez vous connecter.",
+        );
+        navigate("/connexion");
       } else {
         setErrorMessage(res.message);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Erreur lors de la réinitialisation.');
+      setErrorMessage(err.message || "Erreur lors de la réinitialisation.");
     } finally {
       setIsLoading(false);
     }
@@ -91,16 +102,18 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title={step === 'request' ? 'Mot de passe oublié' : 'Nouveau mot de passe'}
+      title={
+        step === "request" ? "Mot de passe oublié" : "Nouveau mot de passe"
+      }
       subtitle={
-        step === 'request'
-          ? 'Recevez un lien de réinitialisation sécurisé par email'
-          : 'Définissez votre nouveau mot de passe d\'accès sécurisé'
+        step === "request"
+          ? "Recevez un lien de réinitialisation sécurisé par email"
+          : "Définissez votre nouveau mot de passe d'accès sécurisé"
       }
       footerLink={{
-        text: 'Vous vous souvenez de votre mot de passe ?',
-        linkText: 'Se connecter',
-        to: '/connexion',
+        text: "Vous vous souvenez de votre mot de passe ?",
+        linkText: "Se connecter",
+        to: "/connexion",
       }}
     >
       {errorMessage && (
@@ -110,7 +123,7 @@ export const ForgotPasswordPage: React.FC = () => {
         </div>
       )}
 
-      {successMessage && step === 'request' && (
+      {successMessage && step === "request" && (
         <div className="mb-5 p-4 rounded-xl bg-success-surface border border-success-border text-xs text-success space-y-2">
           <div className="flex items-start gap-2 font-bold text-success">
             <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
@@ -119,23 +132,34 @@ export const ForgotPasswordPage: React.FC = () => {
 
           {demoResetToken && (
             <div className="pt-2 border-t border-success-border/80">
-              <p className="text-micro text-success mb-1.5 font-medium">{t('auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi')}</p>
+              <p className="text-micro text-success mb-1.5 font-medium">
+                {t(
+                  "auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi",
+                )}
+              </p>
               <Button
                 type="button"
                 variant="primary"
                 size="sm"
                 className="w-full"
-                onClick={() => setStep('reset')}
-              >{t('auth.forgotPasswordPage.accederAuFormulaireDeNouveau')}</Button>
+                onClick={() => setStep("reset")}
+              >
+                {t("auth.forgotPasswordPage.accederAuFormulaireDeNouveau")}
+              </Button>
             </div>
           )}
         </div>
       )}
 
-      {step === 'request' ? (
+      {step === "request" ? (
         <form onSubmit={handleRequestReset} className="space-y-4">
           <div>
-            <label htmlFor="reset-email" className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.forgotPasswordPage.adresseEmailDeVotreCompte')}<span className="text-primary">*</span>
+            <label
+              htmlFor="reset-email"
+              className="block text-xs font-bold text-stone-800 mb-1.5"
+            >
+              {t("auth.forgotPasswordPage.adresseEmailDeVotreCompte")}
+              <span className="text-primary">*</span>
             </label>
             <div className="relative">
               <input
@@ -143,7 +167,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('auth.forgotPasswordPage.votreEmailExempleFr')}
+                placeholder={t("auth.forgotPasswordPage.votreEmailExempleFr")}
                 required
                 autoComplete="email"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
@@ -159,19 +183,23 @@ export const ForgotPasswordPage: React.FC = () => {
             className="w-full"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
-          >{t('auth.forgotPasswordPage.envoyerLeLienDeReinitialisation')}</Button>
+          >
+            {t("auth.forgotPasswordPage.envoyerLeLienDeReinitialisation")}
+          </Button>
         </form>
       ) : (
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.forgotPasswordPage.jetonDeValidationToken')}<span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+              {t("auth.forgotPasswordPage.jetonDeValidationToken")}
+              <span className="text-primary">*</span>
             </label>
             <div className="relative">
               <input
                 type="text"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                placeholder={t('auth.forgotPasswordPage.collezLeTokenRecuPar')}
+                placeholder={t("auth.forgotPasswordPage.collezLeTokenRecuPar")}
                 required
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
@@ -184,7 +212,7 @@ export const ForgotPasswordPage: React.FC = () => {
               id="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              label={t('auth.forgotPasswordPage.nouveauMotDePasse')}
+              label={t("auth.forgotPasswordPage.nouveauMotDePasse")}
               showStrength
               required
               autoComplete="new-password"
@@ -192,7 +220,9 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">{t('auth.forgotPasswordPage.confirmerLeNouveauMotDe')}<span className="text-primary">*</span>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+              {t("auth.forgotPasswordPage.confirmerLeNouveauMotDe")}
+              <span className="text-primary">*</span>
             </label>
             <input
               type="password"
@@ -212,15 +242,19 @@ export const ForgotPasswordPage: React.FC = () => {
             className="w-full mt-2"
             isLoading={isLoading}
             rightIcon={<ArrowRight className="w-4 h-4" />}
-          >{t('auth.forgotPasswordPage.mettreAJourMonMot')}</Button>
+          >
+            {t("auth.forgotPasswordPage.mettreAJourMonMot")}
+          </Button>
 
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setStep('request')}
+            onClick={() => setStep("request")}
             className="w-full text-stone-500"
-          >{t('auth.forgotPasswordPage.renvoyerUnNouvelEmail')}</Button>
+          >
+            {t("auth.forgotPasswordPage.renvoyerUnNouvelEmail")}
+          </Button>
         </form>
       )}
     </AuthLayout>

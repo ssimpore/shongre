@@ -1,35 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Headphones,
   Send,
   CheckCircle2,
   Paperclip,
-  Sparkles
-  
-  
-  
-} from 'lucide-react';
-import { useAuth } from '../../app/providers/AuthProvider';
-import { useToast } from '../../app/providers/ToastProvider';
-import { Button } from '../../design-system/primitives/Button';
-import { Badge } from '../../design-system/primitives/Badge';
-import { Textarea } from '../../design-system/primitives/FormField';
-import { SupportRequest } from '../../domains/support/support.types';
-import { supportService } from '../../domains/support/support.service';
-import { supportRepository } from '../../repositories/support.repository';
-import { formatDate } from '../../utilities/formatters';
-import { SupportContextCard } from './components/SupportContextCard';
-import { Skeleton } from '../../design-system';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+  Sparkles,
+} from "lucide-react";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useToast } from "../../app/providers/ToastProvider";
+import { Button } from "../../design-system/primitives/Button";
+import { Badge } from "../../design-system/primitives/Badge";
+import { Textarea } from "../../design-system/primitives/FormField";
+import { SupportRequest } from "../../domains/support/support.types";
+import { supportService } from "../../domains/support/support.service";
+import { supportRepository } from "../../repositories/support.repository";
+import { formatDate } from "../../utilities/formatters";
+import { SupportContextCard } from "./components/SupportContextCard";
+import { Skeleton } from "../../design-system";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const SupportRequestDetailPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.supportRequestDetail.title'),
-    description: t('meta.supportRequestDetail.description'),
+    title: t("meta.supportRequestDetail.title"),
+    description: t("meta.supportRequestDetail.description"),
     noIndex: true,
   });
 
@@ -40,7 +37,7 @@ export const SupportRequestDetailPage: React.FC = () => {
 
   const [request, setRequest] = useState<SupportRequest | null>(null);
   const [loading, setLoading] = useState(true);
-  const [replyText, setReplyText] = useState('');
+  const [replyText, setReplyText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -69,14 +66,20 @@ export const SupportRequestDetailPage: React.FC = () => {
         {
           id: currentUser.id,
           name: currentUser.name,
-          type: 'user',
-        }
+          type: "user",
+        },
       );
       setRequest(updated);
-      setReplyText('');
-      toast.success('Votre message a été ajouté au dossier.', 'Réponse transmise');
+      setReplyText("");
+      toast.success(
+        "Votre message a été ajouté au dossier.",
+        "Réponse transmise",
+      );
     } catch (err: any) {
-      toast.error(err.message || 'Impossible d\'envoyer votre réponse.', 'Erreur');
+      toast.error(
+        err.message || "Impossible d'envoyer votre réponse.",
+        "Erreur",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -87,10 +90,13 @@ export const SupportRequestDetailPage: React.FC = () => {
     try {
       const updated = await supportRepository.simulateAgentReply(
         request.id,
-        'Bonjour, merci pour ces précisions. Votre dossier a été mis à jour et validé par notre équipe. N\'hésitez pas si vous avez une autre question !'
+        "Bonjour, merci pour ces précisions. Votre dossier a été mis à jour et validé par notre équipe. N'hésitez pas si vous avez une autre question !",
       );
       setRequest(updated);
-      toast.info('Une réponse du conseiller Hugo a été simulée.', 'Simulation Support');
+      toast.info(
+        "Une réponse du conseiller Hugo a été simulée.",
+        "Simulation Support",
+      );
     } catch (err: any) {
       console.error(err);
     }
@@ -101,7 +107,10 @@ export const SupportRequestDetailPage: React.FC = () => {
     try {
       const updated = await supportRepository.resolveRequest(request.id);
       setRequest(updated);
-      toast.success('Le dossier est désormais marqué comme résolu.', 'Demande résolue');
+      toast.success(
+        "Le dossier est désormais marqué comme résolu.",
+        "Demande résolue",
+      );
     } catch (err: any) {
       console.error(err);
     }
@@ -119,14 +128,23 @@ export const SupportRequestDetailPage: React.FC = () => {
   if (!request) {
     return (
       <div className="bg-white border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
-        <h3 className="text-base font-black text-stone-900">Dossier d'assistance introuvable</h3>
-        <Button variant="outline" size="sm" onClick={() => navigate('/compte/support')}>{t('support.supportRequestDetailPage.retourAMesDemandes2')}</Button>
+        <h3 className="text-base font-black text-stone-900">
+          Dossier d'assistance introuvable
+        </h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/compte/support")}
+        >
+          {t("support.supportRequestDetailPage.retourAMesDemandes2")}
+        </Button>
       </div>
     );
   }
 
   const statusInfo = supportService.getStatusInfo(request.status);
-  const isClosedOrResolved = request.status === 'resolved' || request.status === 'closed';
+  const isClosedOrResolved =
+    request.status === "resolved" || request.status === "closed";
 
   return (
     <div className="space-y-6">
@@ -134,11 +152,13 @@ export const SupportRequestDetailPage: React.FC = () => {
       <div className="flex items-center justify-between gap-4">
         <button
           type="button"
-          onClick={() => navigate('/compte/support')}
+          onClick={() => navigate("/compte/support")}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-stone-950 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{t('support.supportRequestDetailPage.retourAMesDemandes')}</span>
+          <span>
+            {t("support.supportRequestDetailPage.retourAMesDemandes")}
+          </span>
         </button>
 
         {!isClosedOrResolved && (
@@ -149,7 +169,9 @@ export const SupportRequestDetailPage: React.FC = () => {
             className="font-bold flex items-center gap-1.5 text-success hover:text-success"
           >
             <CheckCircle2 className="w-4 h-4 text-success" />
-            <span>{t('support.supportRequestDetailPage.marquerCommeResolu')}</span>
+            <span>
+              {t("support.supportRequestDetailPage.marquerCommeResolu")}
+            </span>
           </Button>
         )}
       </div>
@@ -172,8 +194,12 @@ export const SupportRequestDetailPage: React.FC = () => {
         </div>
 
         <div>
-          <h1 className="text-lg sm:text-xl font-black text-stone-900">{request.subject}</h1>
-          <p className="text-xs text-stone-500 mt-0.5">{statusInfo.description}</p>
+          <h1 className="text-lg sm:text-xl font-black text-stone-900">
+            {request.subject}
+          </h1>
+          <p className="text-xs text-stone-500 mt-0.5">
+            {statusInfo.description}
+          </p>
         </div>
 
         {/* Linked Context Card if any */}
@@ -188,15 +214,15 @@ export const SupportRequestDetailPage: React.FC = () => {
 
         <div className="space-y-3">
           {request.messages.map((msg) => {
-            const isAgent = msg.authorType === 'agent';
+            const isAgent = msg.authorType === "agent";
 
             return (
               <div
                 key={msg.id}
                 className={`p-5 rounded-3xl border transition-all ${
                   isAgent
-                    ? 'bg-primary/5 border-primary/20 mr-4 sm:mr-12'
-                    : 'bg-white border-border-base ml-4 sm:ml-12'
+                    ? "bg-primary/5 border-primary/20 mr-4 sm:mr-12"
+                    : "bg-white border-border-base ml-4 sm:ml-12"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -204,11 +230,15 @@ export const SupportRequestDetailPage: React.FC = () => {
                     <div
                       className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
                         isAgent
-                          ? 'bg-primary text-white'
-                          : 'bg-stone-200 text-stone-700'
+                          ? "bg-primary text-white"
+                          : "bg-stone-200 text-stone-700"
                       }`}
                     >
-                      {isAgent ? <Headphones className="w-3.5 h-3.5" /> : msg.authorName.charAt(0)}
+                      {isAgent ? (
+                        <Headphones className="w-3.5 h-3.5" />
+                      ) : (
+                        msg.authorName.charAt(0)
+                      )}
                     </div>
                     <div>
                       <span className="text-xs font-black text-stone-900 block leading-tight">
@@ -253,12 +283,15 @@ export const SupportRequestDetailPage: React.FC = () => {
       {/* 4. Reply Composer or Closed Banner */}
       {isClosedOrResolved ? (
         <div className="p-4 bg-stone-100 border border-stone-200 rounded-2xl text-center text-xs text-stone-600 font-medium">
-          Ce dossier est résolu ou clôturé. Si vous rencontrez un nouveau problème, veuillez{' '}
+          Ce dossier est résolu ou clôturé. Si vous rencontrez un nouveau
+          problème, veuillez{" "}
           <button
             type="button"
-            onClick={() => navigate('/contact')}
+            onClick={() => navigate("/contact")}
             className="text-primary font-bold hover:underline"
-          >{t('support.supportRequestDetailPage.ouvrirUneNouvelleDemande')}</button>
+          >
+            {t("support.supportRequestDetailPage.ouvrirUneNouvelleDemande")}
+          </button>
           .
         </div>
       ) : (
@@ -267,7 +300,9 @@ export const SupportRequestDetailPage: React.FC = () => {
           className="bg-white border border-border-base rounded-3xl p-5 shadow-xs space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase tracking-wider text-stone-700">{t('support.supportRequestDetailPage.repondreANotreEquipe')}</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-stone-700">
+              {t("support.supportRequestDetailPage.repondreANotreEquipe")}
+            </h3>
 
             {/* Demo test button */}
             <button
@@ -276,7 +311,11 @@ export const SupportRequestDetailPage: React.FC = () => {
               className="text-micro font-bold text-warning bg-warning-surface hover:bg-warning-surface border border-warning-border px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
             >
               <Sparkles className="w-3 h-3 text-warning" />
-              <span>{t('support.supportRequestDetailPage.simulerReponseConseillerDemo')}</span>
+              <span>
+                {t(
+                  "support.supportRequestDetailPage.simulerReponseConseillerDemo",
+                )}
+              </span>
             </button>
           </div>
 
@@ -284,7 +323,9 @@ export const SupportRequestDetailPage: React.FC = () => {
             rows={4}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder={t('support.supportRequestDetailPage.ecrivezVotreMessageOuVos')}
+            placeholder={t(
+              "support.supportRequestDetailPage.ecrivezVotreMessageOuVos",
+            )}
           />
 
           <div className="flex justify-end gap-3 pt-2">
@@ -296,7 +337,7 @@ export const SupportRequestDetailPage: React.FC = () => {
               className="font-bold flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
-              <span>{isSubmitting ? 'Envoi...' : 'Envoyer ma réponse'}</span>
+              <span>{isSubmitting ? "Envoi..." : "Envoyer ma réponse"}</span>
             </Button>
           </div>
         </form>

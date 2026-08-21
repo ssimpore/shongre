@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React from "react";
+import { Link } from "react-router-dom";
+import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from "lucide-react";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 /**
  * Card frame for the authentication screens.
@@ -63,7 +63,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 
           {footerLink && (
             <div className="mt-6 pt-6 border-t border-stone-100 text-center text-xs sm:text-sm text-stone-600">
-              {footerLink.text}{' '}
+              {footerLink.text}{" "}
               <Link
                 to={footerLink.to}
                 className="font-bold text-primary hover:text-primary-hover transition-colors underline underline-offset-4"
@@ -83,12 +83,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
-            <span>{t('auth.authLayout.conformiteRgpdFranceUe')}</span>
+            <span>{t("auth.authLayout.conformiteRgpdFranceUe")}</span>
           </div>
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success" />
-            <span>{t('auth.authLayout.protectionAcheteurVendeur')}</span>
+            <span>{t("auth.authLayout.protectionAcheteurVendeur")}</span>
           </div>
         </div>
       </div>

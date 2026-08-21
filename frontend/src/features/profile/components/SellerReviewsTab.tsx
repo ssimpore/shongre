@@ -1,25 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   Star,
   CheckCircle2,
   MessageSquare,
-  
   ShoppingBag,
-  Calendar
-  
-} from 'lucide-react';
-import { ReviewItem, UserProfile } from '../../../types';
-import { Avatar } from '../../../design-system/primitives/Badge';
-import { useTranslation } from '../../../i18n/I18nProvider';
+  Calendar,
+} from "lucide-react";
+import { ReviewItem, UserProfile } from "../../../types";
+import { Avatar } from "../../../design-system/primitives/Badge";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface SellerReviewsTabProps {
   seller: UserProfile;
   reviews: ReviewItem[];
 }
 
-export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, reviews }) => {
+export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
+  seller,
+  reviews,
+}) => {
   const { t } = useTranslation();
-  const [selectedRatingFilter, setSelectedRatingFilter] = useState<number | null>(null);
+  const [selectedRatingFilter, setSelectedRatingFilter] = useState<
+    number | null
+  >(null);
 
   // Compute breakdown statistics
   const stats = useMemo(() => {
@@ -66,13 +69,13 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
   const formatDate = (isoString: string) => {
     try {
       const date = new Date(isoString);
-      return new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
+      return new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       }).format(date);
     } catch {
-      return 'Récemment';
+      return "Récemment";
     }
   };
 
@@ -81,31 +84,34 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
       {/* Review Summary Score Card */}
       <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          
           {/* Main Average Score */}
           <div className="md:col-span-4 text-center md:text-left md:border-r md:border-border-subtle md:pr-6">
             <div className="text-4xl sm:text-5xl font-black text-stone-900 leading-none mb-2">
               {stats.average.toFixed(1)}
-              <span className="text-xl sm:text-2xl font-bold text-stone-500">/5</span>
+              <span className="text-xl sm:text-2xl font-bold text-stone-500">
+                /5
+              </span>
             </div>
-            
+
             <div className="flex items-center justify-center md:justify-start gap-1 mb-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   className={`w-5 h-5 ${
                     star <= Math.round(stats.average)
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-stone-300'
+                      ? "fill-amber-400 text-amber-400"
+                      : "text-stone-300"
                   }`}
                 />
               ))}
             </div>
 
             <p className="text-xs sm:text-sm text-stone-600 font-medium">
-              Basé sur {stats.total} avis vérifié{stats.total > 1 ? 's' : ''}
+              Basé sur {stats.total} avis vérifié{stats.total > 1 ? "s" : ""}
             </p>
-            <p className="text-xs text-stone-500 mt-1">{t('profile.sellerReviewsTab.avisCertifiesSuiteAUne')}</p>
+            <p className="text-xs text-stone-500 mt-1">
+              {t("profile.sellerReviewsTab.avisCertifiesSuiteAUne")}
+            </p>
           </div>
 
           {/* Breakdown Rating Progress Bars */}
@@ -116,17 +122,18 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
                 type="button"
                 onClick={() =>
                   setSelectedRatingFilter(
-                    selectedRatingFilter === item.star ? null : item.star
+                    selectedRatingFilter === item.star ? null : item.star,
                   )
                 }
                 className={`w-full flex items-center gap-3 text-xs py-1 px-2 rounded-lg transition-colors cursor-pointer text-left ${
                   selectedRatingFilter === item.star
-                    ? 'bg-warning-surface font-bold'
-                    : 'hover:bg-bg-base'
+                    ? "bg-warning-surface font-bold"
+                    : "hover:bg-bg-base"
                 }`}
               >
                 <span className="flex items-center gap-1 w-12 shrink-0 font-medium text-stone-700">
-                  {item.star} <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  {item.star}{" "}
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 </span>
 
                 <div className="flex-1 h-2.5 bg-border-subtle rounded-full overflow-hidden">
@@ -142,20 +149,24 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
               </button>
             ))}
           </div>
-
         </div>
       </div>
 
       {/* Review List Filter Notification if Active */}
       {selectedRatingFilter && (
         <div className="flex items-center justify-between bg-warning-surface border border-warning-border px-4 py-2.5 rounded-xl text-xs text-warning">
-          <span>{t('profile.sellerReviewsTab.affichageDesAvisAvecLa')}<strong>{selectedRatingFilter} étoile(s)</strong> ({displayedReviews.length})
+          <span>
+            {t("profile.sellerReviewsTab.affichageDesAvisAvecLa")}
+            <strong>{selectedRatingFilter} étoile(s)</strong> (
+            {displayedReviews.length})
           </span>
           <button
             type="button"
             onClick={() => setSelectedRatingFilter(null)}
             className="font-bold underline text-warning hover:text-warning"
-          >{t('profile.sellerReviewsTab.afficherTousLesAvis')}</button>
+          >
+            {t("profile.sellerReviewsTab.afficherTousLesAvis")}
+          </button>
         </div>
       )}
 
@@ -181,7 +192,9 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
                         {rev.authorName}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success-surface px-2 py-1 rounded-full border border-success-border">
-                        <CheckCircle2 className="w-3 h-3" />{t('profile.sellerReviewsTab.achatVerifie')}</span>
+                        <CheckCircle2 className="w-3 h-3" />
+                        {t("profile.sellerReviewsTab.achatVerifie")}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-500">
@@ -191,8 +204,8 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
                             key={star}
                             className={`w-3.5 h-3.5 ${
                               star <= rev.rating
-                                ? 'fill-amber-400 text-amber-400'
-                                : 'text-stone-300'
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-stone-300"
                             }`}
                           />
                         ))}
@@ -234,12 +247,12 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({ seller, revi
           <h4 className="text-base font-bold text-stone-900 mb-1">
             {selectedRatingFilter
               ? `Aucun avis avec ${selectedRatingFilter} étoile(s)`
-              : 'Pas encore d\'avis pour ce vendeur'}
+              : "Pas encore d'avis pour ce vendeur"}
           </h4>
           <p className="text-xs text-stone-500 max-w-sm mx-auto">
             {selectedRatingFilter
-              ? 'Essayez de réinitialiser le filtre de note pour afficher les autres avis.'
-              : 'Les avis clients apparaîtront ici dès que les premières transactions sécurisées auront été conclues.'}
+              ? "Essayez de réinitialiser le filtre de note pour afficher les autres avis."
+              : "Les avis clients apparaîtront ici dès que les premières transactions sécurisées auront été conclues."}
           </p>
         </div>
       )}

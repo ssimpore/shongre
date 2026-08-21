@@ -1,13 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import {
   Notification,
   NotificationType,
-} from '../../domains/notifications/notification.types';
-import { notificationRepository } from '../../repositories/notification.repository';
-import { notificationRealtimeClient } from '../../domains/notifications/notification.realtime';
-import { notificationCatalogService } from '../../domains/notifications/notification.catalog';
-import { useAuth } from './AuthProvider';
-import { useToast } from './ToastProvider';
+} from "../../domains/notifications/notification.types";
+import { notificationRepository } from "../../repositories/notification.repository";
+import { notificationRealtimeClient } from "../../domains/notifications/notification.realtime";
+import { notificationCatalogService } from "../../domains/notifications/notification.catalog";
+import { useAuth } from "./AuthProvider";
+import { useToast } from "./ToastProvider";
 
 interface NotificationContextValue {
   unreadCount: number;
@@ -16,18 +22,27 @@ interface NotificationContextValue {
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   refresh: () => Promise<void>;
-  simulateNotification: (type: NotificationType, context?: any) => Promise<void>;
+  simulateNotification: (
+    type: NotificationType,
+    context?: any,
+  ) => Promise<void>;
 }
 
-const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextValue | undefined>(
+  undefined,
+);
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { currentUser } = useAuth();
   const toast = useToast();
-  const currentUserId = currentUser ? currentUser.id : 'user-thomas';
+  const currentUserId = currentUser ? currentUser.id : "user-thomas";
 
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [recentNotifications, setRecentNotifications] = useState<Notification[]>([]);
+  const [recentNotifications, setRecentNotifications] = useState<
+    Notification[]
+  >([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Load recent notifications & unread count
@@ -52,29 +67,37 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (!currentUserId) return;
 
-    const unsubscribe = notificationRealtimeClient.subscribe(currentUserId, (event) => {
-      if (event.type === 'notification.created') {
-        const notif = event.payload as Notification;
-        setRecentNotifications((prev) => [notif, ...prev.filter((n) => n.id !== notif.id)]);
-        setUnreadCount((prev) => prev + 1);
+    const unsubscribe = notificationRealtimeClient.subscribe(
+      currentUserId,
+      (event) => {
+        if (event.type === "notification.created") {
+          const notif = event.payload as Notification;
+          setRecentNotifications((prev) => [
+            notif,
+            ...prev.filter((n) => n.id !== notif.id),
+          ]);
+          setUnreadCount((prev) => prev + 1);
 
-        // Show non-intrusive toast for high/critical notifications
-        if (notif.priority === 'high' || notif.priority === 'critical') {
-          toast.info(notif.title);
+          // Show non-intrusive toast for high/critical notifications
+          if (notif.priority === "high" || notif.priority === "critical") {
+            toast.info(notif.title);
+          }
+        } else if (event.type === "notification.read") {
+          const { id } = event.payload;
+          setRecentNotifications((prev) =>
+            prev.map((n) =>
+              n.id === id ? { ...n, isRead: true, status: "read" } : n,
+            ),
+          );
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        } else if (event.type === "notification.all_read") {
+          setRecentNotifications((prev) =>
+            prev.map((n) => ({ ...n, isRead: true, status: "read" })),
+          );
+          setUnreadCount(0);
         }
-      } else if (event.type === 'notification.read') {
-        const { id } = event.payload;
-        setRecentNotifications((prev) =>
-          prev.map((n) => (n.id === id ? { ...n, isRead: true, status: 'read' } : n))
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } else if (event.type === 'notification.all_read') {
-        setRecentNotifications((prev) =>
-          prev.map((n) => ({ ...n, isRead: true, status: 'read' }))
-        );
-        setUnreadCount(0);
-      }
-    });
+      },
+    );
 
     return () => {
       unsubscribe();
@@ -84,7 +107,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const markAsRead = async (id: string) => {
     await notificationRepository.markAsRead(id);
     setRecentNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true, status: 'read' } : n))
+      prev.map((n) =>
+        n.id === id ? { ...n, isRead: true, status: "read" } : n,
+      ),
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   };
@@ -92,12 +117,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const markAllAsRead = async () => {
     await notificationRepository.markAllAsRead(currentUserId);
     setRecentNotifications((prev) =>
-      prev.map((n) => ({ ...n, isRead: true, status: 'read' }))
+      prev.map((n) => ({ ...n, isRead: true, status: "read" })),
     );
     setUnreadCount(0);
   };
 
-  const simulateNotification = async (type: NotificationType, context?: any) => {
+  const simulateNotification = async (
+    type: NotificationType,
+    context?: any,
+  ) => {
     const notif = notificationCatalogService.createNotificationFromEvent({
       type,
       recipientId: currentUserId,
@@ -126,7 +154,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 export const useNotifications = (): NotificationContextValue => {
   const ctx = useContext(NotificationContext);
   if (!ctx) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider",
+    );
   }
   return ctx;
 };

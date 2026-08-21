@@ -4,9 +4,9 @@
  * seller capabilities and listing intent into an actionable publication schema.
  */
 
-import { taxonomyService } from '../taxonomy/taxonomy.service';
-import { ATTRIBUTE_REGISTRY } from '../taxonomy/attribute.registry';
-import { CONDITION_SCHEMES } from '../taxonomy/condition.schemes';
+import { taxonomyService } from "../taxonomy/taxonomy.service";
+import { ATTRIBUTE_REGISTRY } from "../taxonomy/attribute.registry";
+import { CONDITION_SCHEMES } from "../taxonomy/condition.schemes";
 import {
   TaxonomyNode,
   TaxonomyAttribute,
@@ -14,9 +14,9 @@ import {
   TaxonomyCapabilities,
   SellerEligibilityRules,
   ListingFamily,
-} from '../taxonomy/taxonomy.types';
-import { ListingIntent, PriceModel } from './publication.types';
-import { marketService } from '../market/market.service';
+} from "../taxonomy/taxonomy.types";
+import { ListingIntent, PriceModel } from "./publication.types";
+import { marketService } from "../market/market.service";
 
 export interface ResolvedPublicationField {
   attribute: TaxonomyAttribute;
@@ -59,8 +59,15 @@ export class PublicationResolver {
   /**
    * Resolves the full publication schema for a given taxonomy node and market context.
    */
-  resolve(params: ResolvePublicationParams): ResolvedPublicationEngineSchema | null {
-    const { taxonomyNodeId, marketCode = 'FR', listingIntent, currentValues = {} } = params;
+  resolve(
+    params: ResolvePublicationParams,
+  ): ResolvedPublicationEngineSchema | null {
+    const {
+      taxonomyNodeId,
+      marketCode = "FR",
+      listingIntent,
+      currentValues = {},
+    } = params;
     const node = taxonomyService.getNode(taxonomyNodeId);
     if (!node) return null;
 
@@ -78,7 +85,7 @@ export class PublicationResolver {
       reservationAllowed: true,
       securePaymentAllowed: true,
       negotiablePrice: true,
-      fulfillmentModes: ['hand_delivery', 'parcel_shipping'],
+      fulfillmentModes: ["hand_delivery", "parcel_shipping"],
     };
 
     hierarchy.forEach((n) => {
@@ -86,7 +93,10 @@ export class PublicationResolver {
         Object.assign(capabilities, n.capabilities);
       }
       if (n.marketOverrides && n.marketOverrides[marketCode]?.capabilities) {
-        Object.assign(capabilities, n.marketOverrides[marketCode]!.capabilities);
+        Object.assign(
+          capabilities,
+          n.marketOverrides[marketCode]!.capabilities,
+        );
       }
     });
 
@@ -102,8 +112,14 @@ export class PublicationResolver {
       if (n.sellerEligibility) {
         Object.assign(sellerEligibility, n.sellerEligibility);
       }
-      if (n.marketOverrides && n.marketOverrides[marketCode]?.sellerEligibility) {
-        Object.assign(sellerEligibility, n.marketOverrides[marketCode]!.sellerEligibility);
+      if (
+        n.marketOverrides &&
+        n.marketOverrides[marketCode]?.sellerEligibility
+      ) {
+        Object.assign(
+          sellerEligibility,
+          n.marketOverrides[marketCode]!.sellerEligibility,
+        );
       }
     });
 
@@ -118,7 +134,8 @@ export class PublicationResolver {
       }
     }
     const conditionScheme: ConditionOption[] =
-      CONDITION_SCHEMES[conditionSchemeId || 'consumer_product'] || CONDITION_SCHEMES.consumer_product;
+      CONDITION_SCHEMES[conditionSchemeId || "consumer_product"] ||
+      CONDITION_SCHEMES.consumer_product;
 
     // 4. Resolve Attributes with overrides
     const accumulatedAttributeIds = new Set<string>();
@@ -126,14 +143,20 @@ export class PublicationResolver {
       if (n.attributeIds) {
         n.attributeIds.forEach((attrId) => accumulatedAttributeIds.add(attrId));
       }
-      if (n.marketOverrides && n.marketOverrides[marketCode]?.additionalAttributeIds) {
-        n.marketOverrides[marketCode]!.additionalAttributeIds!.forEach((attrId) =>
-          accumulatedAttributeIds.add(attrId)
+      if (
+        n.marketOverrides &&
+        n.marketOverrides[marketCode]?.additionalAttributeIds
+      ) {
+        n.marketOverrides[marketCode]!.additionalAttributeIds!.forEach(
+          (attrId) => accumulatedAttributeIds.add(attrId),
         );
       }
-      if (n.marketOverrides && n.marketOverrides[marketCode]?.removedAttributeIds) {
+      if (
+        n.marketOverrides &&
+        n.marketOverrides[marketCode]?.removedAttributeIds
+      ) {
         n.marketOverrides[marketCode]!.removedAttributeIds!.forEach((attrId) =>
-          accumulatedAttributeIds.delete(attrId)
+          accumulatedAttributeIds.delete(attrId),
         );
       }
     });
@@ -156,11 +179,12 @@ export class PublicationResolver {
 
       if (attr.dependencies && attr.dependencies.length > 0) {
         isVisiblyMet = attr.dependencies.every((dep) => {
-          const rawKey = dep.attributeId.split('.').pop() || dep.attributeId;
+          const rawKey = dep.attributeId.split(".").pop() || dep.attributeId;
           const val = currentValues[rawKey] ?? currentValues[dep.attributeId];
-          if (dep.operator === 'equals') return val === dep.value;
-          if (dep.operator === 'in') return Array.isArray(dep.value) && dep.value.includes(val);
-          if (dep.operator === 'not_equals') return val !== dep.value;
+          if (dep.operator === "equals") return val === dep.value;
+          if (dep.operator === "in")
+            return Array.isArray(dep.value) && dep.value.includes(val);
+          if (dep.operator === "not_equals") return val !== dep.value;
           return true;
         });
       }
@@ -174,47 +198,53 @@ export class PublicationResolver {
     });
 
     // 6. Resolve Supported Intents
-    let supportedIntents: ListingIntent[] = ['SELL', 'GIVE', 'EXCHANGE'];
-    if (listingFamily === 'real_estate') {
-      supportedIntents = ['SELL', 'RENT'];
-    } else if (listingFamily === 'service') {
-      supportedIntents = ['OFFER_SERVICE'];
-    } else if (listingFamily === 'job') {
-      supportedIntents = ['JOB_OFFER'];
-    } else if (listingFamily === 'vehicle') {
-      supportedIntents = ['SELL', 'RENT'];
+    let supportedIntents: ListingIntent[] = ["SELL", "GIVE", "EXCHANGE"];
+    if (listingFamily === "real_estate") {
+      supportedIntents = ["SELL", "RENT"];
+    } else if (listingFamily === "service") {
+      supportedIntents = ["OFFER_SERVICE"];
+    } else if (listingFamily === "job") {
+      supportedIntents = ["JOB_OFFER"];
+    } else if (listingFamily === "vehicle") {
+      supportedIntents = ["SELL", "RENT"];
     }
     if (node.supportedIntents) {
       supportedIntents = node.supportedIntents as ListingIntent[];
     }
-    const defaultIntent = supportedIntents[0] || 'SELL';
+    const defaultIntent = supportedIntents[0] || "SELL";
 
     // 7. Resolve Supported Price Models
-    let supportedPriceModels: PriceModel[] = ['fixed', 'negotiable', 'free'];
-    let defaultPriceModel: PriceModel = 'fixed';
-    if (listingFamily === 'service') {
-      supportedPriceModels = ['hourly', 'daily', 'fixed', 'on_request'];
-      defaultPriceModel = 'hourly';
-    } else if (listingFamily === 'job') {
-      supportedPriceModels = ['monthly', 'on_request'];
-      defaultPriceModel = 'monthly';
-    } else if (listingFamily === 'real_estate' && (listingIntent === 'RENT' || defaultIntent === 'RENT')) {
-      supportedPriceModels = ['rent_plus_charges', 'monthly'];
-      defaultPriceModel = 'rent_plus_charges';
+    let supportedPriceModels: PriceModel[] = ["fixed", "negotiable", "free"];
+    let defaultPriceModel: PriceModel = "fixed";
+    if (listingFamily === "service") {
+      supportedPriceModels = ["hourly", "daily", "fixed", "on_request"];
+      defaultPriceModel = "hourly";
+    } else if (listingFamily === "job") {
+      supportedPriceModels = ["monthly", "on_request"];
+      defaultPriceModel = "monthly";
+    } else if (
+      listingFamily === "real_estate" &&
+      (listingIntent === "RENT" || defaultIntent === "RENT")
+    ) {
+      supportedPriceModels = ["rent_plus_charges", "monthly"];
+      defaultPriceModel = "rent_plus_charges";
     }
 
     // 8. Resolve Market Currency
     const effectiveMarket = marketService.getEffectiveConfig(marketCode);
     const currency = {
-      code: effectiveMarket.localization.defaultCurrency || 'EUR',
-      symbol: effectiveMarket.localization.currencySymbol || '€',
+      code: effectiveMarket.localization.defaultCurrency || "EUR",
+      symbol: effectiveMarket.localization.currencySymbol || "€",
     };
 
     // 9. Summary Attribute IDs
     let summaryIds = node.summaryAttributeIds;
     if (!summaryIds || summaryIds.length === 0) {
       for (let i = ancestors.length - 1; i >= 0; i--) {
-        if (ancestors[i].summaryAttributeIds && ancestors[i].summaryAttributeIds!.length > 0) {
+        if (
+          ancestors[i].summaryAttributeIds &&
+          ancestors[i].summaryAttributeIds!.length > 0
+        ) {
           summaryIds = ancestors[i].summaryAttributeIds;
           break;
         }

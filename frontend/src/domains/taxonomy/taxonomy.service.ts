@@ -9,14 +9,14 @@ import {
   ListingFamily,
   TaxonomyLabelMode,
   TaxonomyLabelOptions,
-} from './taxonomy.types';
-import { CANONICAL_TAXONOMY } from './taxonomy.data';
-import { getTaxonomyLabel } from './taxonomy.labels';
+} from "./taxonomy.types";
+import { CANONICAL_TAXONOMY } from "./taxonomy.data";
+import { getTaxonomyLabel } from "./taxonomy.labels";
 // Re-exported so the many existing `from './taxonomy.service'` imports keep working.
-export { getTaxonomyLabel } from './taxonomy.labels';
-import { ATTRIBUTE_REGISTRY } from './attribute.registry';
-import { CONDITION_SCHEMES } from './condition.schemes';
-import { activeDataLocale } from '../../i18n/localized';
+export { getTaxonomyLabel } from "./taxonomy.labels";
+import { ATTRIBUTE_REGISTRY } from "./attribute.registry";
+import { CONDITION_SCHEMES } from "./condition.schemes";
+import { activeDataLocale } from "../../i18n/localized";
 
 export type { TaxonomyLabelMode, TaxonomyLabelOptions };
 
@@ -24,13 +24,12 @@ export type { TaxonomyLabelMode, TaxonomyLabelOptions };
  * Universal taxonomy label resolution helper.
  * - In 'full' mode (default): returns canonical full label.
  * - In 'compact' mode: returns shortLabel ?? label ?? name.
- * 
+ *
  * Rules:
  * - Never returns undefined or blank string for valid nodes.
  * - Uses nullish coalescing (??), not OR (||).
  * - shortLabel is strictly a presentation alias and must never be used as an identifier.
  */
-
 
 class TaxonomyService {
   private nodesMap: Map<string, TaxonomyNode> = new Map();
@@ -47,7 +46,11 @@ class TaxonomyService {
     this.slugMap.clear();
     this.rootNodes = [];
 
-    const traverse = (node: TaxonomyNode, parent?: TaxonomyNode, ancestors: string[] = []) => {
+    const traverse = (
+      node: TaxonomyNode,
+      parent?: TaxonomyNode,
+      ancestors: string[] = [],
+    ) => {
       const fullAncestors = parent ? [...ancestors, parent.id] : ancestors;
       /* `name`, `label` and `shortLabel` are the flat mirrors of
          `labels['fr-FR']` / `shortLabels['fr-FR']`, and most call sites read the
@@ -60,7 +63,10 @@ class TaxonomyService {
          removes the duplication instead of adding a second catalogue: whatever
          a consumer reads, it now reads in the active language. */
       const localizedLabel = getTaxonomyLabel(node, { locale: dataLocale });
-      const localizedShort = getTaxonomyLabel(node, { locale: dataLocale, compact: true });
+      const localizedShort = getTaxonomyLabel(node, {
+        locale: dataLocale,
+        compact: true,
+      });
 
       const indexedNode: TaxonomyNode = {
         ...node,
@@ -79,7 +85,9 @@ class TaxonomyService {
       }
 
       if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => traverse(child, indexedNode, fullAncestors));
+        node.children.forEach((child) =>
+          traverse(child, indexedNode, fullAncestors),
+        );
       }
     };
 
@@ -97,7 +105,7 @@ class TaxonomyService {
   // QUERY & TRAVERSAL APIS
   // ==========================================
   getRootCategories(): TaxonomyNode[] {
-    return this.rootNodes.filter((n) => n.status === 'active');
+    return this.rootNodes.filter((n) => n.status === "active");
   }
 
   getAllNodes(): TaxonomyNode[] {
@@ -136,12 +144,15 @@ class TaxonomyService {
       labels?: Record<string, string>;
       shortLabels?: Record<string, string>;
     } | null,
-    modeOrOptions: TaxonomyLabelMode | TaxonomyLabelOptions = 'full'
+    modeOrOptions: TaxonomyLabelMode | TaxonomyLabelOptions = "full",
   ): string {
     return getTaxonomyLabel(node, modeOrOptions);
   }
 
-  getBreadcrumbs(nodeId: string, mode: TaxonomyLabelMode = 'full'): { label: string; slug: string; id: string }[] {
+  getBreadcrumbs(
+    nodeId: string,
+    mode: TaxonomyLabelMode = "full",
+  ): { label: string; slug: string; id: string }[] {
     const node = this.nodesMap.get(nodeId);
     if (!node) return [];
     const ancestors = this.getAncestors(nodeId);
@@ -155,21 +166,25 @@ class TaxonomyService {
 
   isPublishable(nodeId: string): boolean {
     const node = this.nodesMap.get(nodeId);
-    if (!node || node.status !== 'active') return false;
+    if (!node || node.status !== "active") return false;
     if (node.publishable === false) return false;
     if (node.publishable === true) return true;
     // By default, leaf nodes (nodes without active children) are publishable
-    const children = this.getChildren(nodeId).filter((c) => c.status === 'active');
+    const children = this.getChildren(nodeId).filter(
+      (c) => c.status === "active",
+    );
     return children.length === 0;
   }
 
   getPublishableLeaves(): TaxonomyNode[] {
-    return Array.from(this.nodesMap.values()).filter((n) => this.isPublishable(n.id));
+    return Array.from(this.nodesMap.values()).filter((n) =>
+      this.isPublishable(n.id),
+    );
   }
 
   getFamily(nodeId: string): ListingFamily {
     const node = this.nodesMap.get(nodeId);
-    if (!node) return 'physical_product';
+    if (!node) return "physical_product";
     if (node.listingFamily) return node.listingFamily;
 
     const ancestors = this.getAncestors(nodeId);
@@ -181,14 +196,14 @@ class TaxonomyService {
 
     // Infer from root ID
     const rootId = ancestors[0]?.id || node.id;
-    if (rootId.startsWith('vehicle')) return 'vehicle';
-    if (rootId.startsWith('real_estate')) return 'real_estate';
-    if (rootId.startsWith('service')) return 'service';
-    if (rootId.startsWith('job')) return 'job';
-    if (rootId.startsWith('pro_')) return 'professional_equipment';
-    if (rootId.startsWith('digital')) return 'digital';
+    if (rootId.startsWith("vehicle")) return "vehicle";
+    if (rootId.startsWith("real_estate")) return "real_estate";
+    if (rootId.startsWith("service")) return "service";
+    if (rootId.startsWith("job")) return "job";
+    if (rootId.startsWith("pro_")) return "professional_equipment";
+    if (rootId.startsWith("digital")) return "digital";
 
-    return 'physical_product';
+    return "physical_product";
   }
 
   searchTaxonomy(query: string, limit: number = 8): TaxonomyNode[] {
@@ -198,7 +213,7 @@ class TaxonomyService {
     const matches: { node: TaxonomyNode; score: number }[] = [];
 
     this.nodesMap.forEach((node) => {
-      if (node.status === 'disabled') return;
+      if (node.status === "disabled") return;
       let score = 0;
       const name = node.name.toLowerCase();
       const slug = node.slug.toLowerCase();
@@ -238,7 +253,10 @@ class TaxonomyService {
   // ==========================================
   // RESOLUTION ENGINES
   // ==========================================
-  resolvePublicationSchema(nodeId: string, marketCode: string = 'FR'): ResolvedPublicationSchema | null {
+  resolvePublicationSchema(
+    nodeId: string,
+    marketCode: string = "FR",
+  ): ResolvedPublicationSchema | null {
     const node = this.nodesMap.get(nodeId);
     if (!node) return null;
 
@@ -254,7 +272,7 @@ class TaxonomyService {
       reservationAllowed: true,
       securePaymentAllowed: true,
       negotiablePrice: true,
-      fulfillmentModes: ['hand_delivery', 'parcel_shipping'],
+      fulfillmentModes: ["hand_delivery", "parcel_shipping"],
     };
 
     hierarchy.forEach((n) => {
@@ -263,7 +281,10 @@ class TaxonomyService {
       }
       // Apply market override if present
       if (n.marketOverrides && n.marketOverrides[marketCode]?.capabilities) {
-        Object.assign(capabilities, n.marketOverrides[marketCode]!.capabilities);
+        Object.assign(
+          capabilities,
+          n.marketOverrides[marketCode]!.capabilities,
+        );
       }
     });
 
@@ -279,8 +300,14 @@ class TaxonomyService {
       if (n.sellerEligibility) {
         Object.assign(sellerEligibility, n.sellerEligibility);
       }
-      if (n.marketOverrides && n.marketOverrides[marketCode]?.sellerEligibility) {
-        Object.assign(sellerEligibility, n.marketOverrides[marketCode]!.sellerEligibility);
+      if (
+        n.marketOverrides &&
+        n.marketOverrides[marketCode]?.sellerEligibility
+      ) {
+        Object.assign(
+          sellerEligibility,
+          n.marketOverrides[marketCode]!.sellerEligibility,
+        );
       }
     });
 
@@ -295,7 +322,8 @@ class TaxonomyService {
       }
     }
     const conditionOptions: ConditionOption[] =
-      CONDITION_SCHEMES[conditionSchemeId || 'consumer_product'] || CONDITION_SCHEMES.consumer_product;
+      CONDITION_SCHEMES[conditionSchemeId || "consumer_product"] ||
+      CONDITION_SCHEMES.consumer_product;
 
     // 4. Resolve Attributes
     const accumulatedAttributeIds = new Set<string>();
@@ -303,14 +331,20 @@ class TaxonomyService {
       if (n.attributeIds) {
         n.attributeIds.forEach((attrId) => accumulatedAttributeIds.add(attrId));
       }
-      if (n.marketOverrides && n.marketOverrides[marketCode]?.additionalAttributeIds) {
-        n.marketOverrides[marketCode]!.additionalAttributeIds!.forEach((attrId) =>
-          accumulatedAttributeIds.add(attrId)
+      if (
+        n.marketOverrides &&
+        n.marketOverrides[marketCode]?.additionalAttributeIds
+      ) {
+        n.marketOverrides[marketCode]!.additionalAttributeIds!.forEach(
+          (attrId) => accumulatedAttributeIds.add(attrId),
         );
       }
-      if (n.marketOverrides && n.marketOverrides[marketCode]?.removedAttributeIds) {
+      if (
+        n.marketOverrides &&
+        n.marketOverrides[marketCode]?.removedAttributeIds
+      ) {
         n.marketOverrides[marketCode]!.removedAttributeIds!.forEach((attrId) =>
-          accumulatedAttributeIds.delete(attrId)
+          accumulatedAttributeIds.delete(attrId),
         );
       }
     });
@@ -330,7 +364,10 @@ class TaxonomyService {
     let summaryIds = node.summaryAttributeIds;
     if (!summaryIds || summaryIds.length === 0) {
       for (let i = ancestors.length - 1; i >= 0; i--) {
-        if (ancestors[i].summaryAttributeIds && ancestors[i].summaryAttributeIds!.length > 0) {
+        if (
+          ancestors[i].summaryAttributeIds &&
+          ancestors[i].summaryAttributeIds!.length > 0
+        ) {
           summaryIds = ancestors[i].summaryAttributeIds;
           break;
         }
@@ -348,7 +385,10 @@ class TaxonomyService {
     };
   }
 
-  resolveSearchFilters(nodeId?: string, marketCode: string = 'FR'): SearchFacetDefinition[] {
+  resolveSearchFilters(
+    nodeId?: string,
+    marketCode: string = "FR",
+  ): SearchFacetDefinition[] {
     if (!nodeId) {
       // Global facets: Price, Condition, Location, SellerType
       return [];
@@ -360,13 +400,18 @@ class TaxonomyService {
     return schema.attributes
       .filter((attr) => attr.filterable)
       .map((attr, idx) => {
-        let facetType: 'range' | 'select' | 'multi_select' | 'boolean' = 'select';
-        if (attr.dataType === 'number' || attr.dataType === 'year' || attr.dataType === 'range') {
-          facetType = 'range';
-        } else if (attr.dataType === 'boolean') {
-          facetType = 'boolean';
-        } else if (attr.dataType === 'multi_select') {
-          facetType = 'multi_select';
+        let facetType: "range" | "select" | "multi_select" | "boolean" =
+          "select";
+        if (
+          attr.dataType === "number" ||
+          attr.dataType === "year" ||
+          attr.dataType === "range"
+        ) {
+          facetType = "range";
+        } else if (attr.dataType === "boolean") {
+          facetType = "boolean";
+        } else if (attr.dataType === "multi_select") {
+          facetType = "multi_select";
         }
 
         return {
@@ -418,39 +463,48 @@ class TaxonomyService {
       seenIds.add(node.id);
 
       // 2. Unique slug among siblings
-      const siblingKey = `${node.parentId || 'root'}:${node.slug}`;
+      const siblingKey = `${node.parentId || "root"}:${node.slug}`;
       if (seenSlugs.has(siblingKey)) {
-        errors.push(`Duplicate sibling slug: ${node.slug} under parent ${node.parentId || 'root'}`);
+        errors.push(
+          `Duplicate sibling slug: ${node.slug} under parent ${node.parentId || "root"}`,
+        );
       }
       seenSlugs.add(siblingKey);
 
       // 3. Parent exists if parentId set
       if (node.parentId && !this.nodesMap.has(node.parentId)) {
-        errors.push(`Orphan node: ${node.id} references missing parentId ${node.parentId}`);
+        errors.push(
+          `Orphan node: ${node.id} references missing parentId ${node.parentId}`,
+        );
       }
 
       // 4. Attribute references valid
       if (node.attributeIds) {
         node.attributeIds.forEach((attrId) => {
           if (!ATTRIBUTE_REGISTRY[attrId]) {
-            errors.push(`Node ${node.id} references unknown attribute ${attrId}`);
+            errors.push(
+              `Node ${node.id} references unknown attribute ${attrId}`,
+            );
           }
         });
       }
 
       // 5. shortLabel format check (must not be empty string if defined)
       if (node.shortLabel !== undefined) {
-        if (typeof node.shortLabel !== 'string' || node.shortLabel.trim().length === 0) {
+        if (
+          typeof node.shortLabel !== "string" ||
+          node.shortLabel.trim().length === 0
+        ) {
           errors.push(`Node ${node.id} has invalid empty shortLabel`);
         }
       }
 
       // 6. Check sibling collision for shortLabel
       if (node.shortLabel) {
-        const siblingShortKey = `${node.parentId || 'root'}:${node.shortLabel.toLowerCase().trim()}`;
+        const siblingShortKey = `${node.parentId || "root"}:${node.shortLabel.toLowerCase().trim()}`;
         if (seenShortLabels.has(siblingShortKey)) {
           errors.push(
-            `Ambiguous duplicate shortLabel "${node.shortLabel}" under parent ${node.parentId || 'root'}`
+            `Ambiguous duplicate shortLabel "${node.shortLabel}" under parent ${node.parentId || "root"}`,
           );
         }
         seenShortLabels.add(siblingShortKey);

@@ -5,9 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "predev": "node scripts/maintenance/free-port.js",
     "dev": "tsx watch src/app/server/index.ts",
-    "free-port": "node scripts/maintenance/free-port.js",
     "build": "tsc && tsc-alias",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
@@ -25,6 +23,7 @@
     "check:boundary": "node scripts/maintenance/check-boundary.js"
   },
   "dependencies": {
+    "@shongre/contracts": "*",
     "@google/genai": "^2.4.0",
     "@supabase/supabase-js": "^2.49.1",
     "dotenv": "^16.4.7",

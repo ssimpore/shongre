@@ -15,22 +15,39 @@ import {
   UserTimelineMessage,
   SystemTimelineEvent,
   TypingState,
-} from './messaging.types';
+} from "./messaging.types";
 
 export interface IMessagingRealtimeClient {
   getConnectionStatus(): RealtimeConnectionStatus;
-  onConnectionStatusChange(handler: (status: RealtimeConnectionStatus) => void): () => void;
-  subscribeToConversation(conversationId: string, handler: RealtimeEventHandler): () => void;
+  onConnectionStatusChange(
+    handler: (status: RealtimeConnectionStatus) => void,
+  ): () => void;
+  subscribeToConversation(
+    conversationId: string,
+    handler: RealtimeEventHandler,
+  ): () => void;
   subscribeToInbox(userId: string, handler: RealtimeEventHandler): () => void;
-  sendTyping(conversationId: string, userId: string, userName: string, isTyping: boolean): void;
+  sendTyping(
+    conversationId: string,
+    userId: string,
+    userName: string,
+    isTyping: boolean,
+  ): void;
   broadcastMessage(message: UserTimelineMessage): void;
   broadcastSystemEvent(event: SystemTimelineEvent): void;
-  simulateSellerAutoReply(conversationId: string, sellerId: string, sellerName: string, promptText?: string): void;
+  simulateSellerAutoReply(
+    conversationId: string,
+    sellerId: string,
+    sellerName: string,
+    promptText?: string,
+  ): void;
 }
 
 export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
-  private status: RealtimeConnectionStatus = 'connected';
-  private statusListeners = new Set<(status: RealtimeConnectionStatus) => void>();
+  private status: RealtimeConnectionStatus = "connected";
+  private statusListeners = new Set<
+    (status: RealtimeConnectionStatus) => void
+  >();
   private conversationListeners = new Map<string, Set<RealtimeEventHandler>>();
   private inboxListeners = new Map<string, Set<RealtimeEventHandler>>();
 
@@ -43,7 +60,9 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
     this.statusListeners.forEach((fn) => fn(newStatus));
   }
 
-  onConnectionStatusChange(handler: (status: RealtimeConnectionStatus) => void): () => void {
+  onConnectionStatusChange(
+    handler: (status: RealtimeConnectionStatus) => void,
+  ): () => void {
     this.statusListeners.add(handler);
     handler(this.status);
     return () => {
@@ -51,7 +70,10 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
     };
   }
 
-  subscribeToConversation(conversationId: string, handler: RealtimeEventHandler): () => void {
+  subscribeToConversation(
+    conversationId: string,
+    handler: RealtimeEventHandler,
+  ): () => void {
     if (!this.conversationListeners.has(conversationId)) {
       this.conversationListeners.set(conversationId, new Set());
     }
@@ -81,9 +103,14 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
     };
   }
 
-  sendTyping(conversationId: string, userId: string, userName: string, isTyping: boolean): void {
+  sendTyping(
+    conversationId: string,
+    userId: string,
+    userName: string,
+    isTyping: boolean,
+  ): void {
     const event: MessagingRealtimeEvent = {
-      type: 'typing',
+      type: "typing",
       conversationId,
       payload: { userId, userName, isTyping } as TypingState,
       timestamp: new Date().toISOString(),
@@ -94,7 +121,7 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
 
   broadcastMessage(message: UserTimelineMessage): void {
     const event: MessagingRealtimeEvent = {
-      type: 'new_message',
+      type: "new_message",
       conversationId: message.conversationId,
       payload: message,
       timestamp: message.createdAt,
@@ -106,7 +133,7 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
 
   broadcastSystemEvent(systemEvent: SystemTimelineEvent): void {
     const event: MessagingRealtimeEvent = {
-      type: 'system_event',
+      type: "system_event",
       conversationId: systemEvent.conversationId,
       payload: systemEvent,
       timestamp: systemEvent.createdAt,
@@ -123,7 +150,7 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
     conversationId: string,
     sellerId: string,
     sellerName: string,
-    promptText = 'Bonjour, oui, l\'article est bien disponible !'
+    promptText = "Bonjour, oui, l'article est bien disponible !",
   ): void {
     // 1. Trigger typing indicator after 800ms
     setTimeout(() => {
@@ -135,14 +162,14 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
       this.sendTyping(conversationId, sellerId, sellerName, false);
 
       const replyMessage: UserTimelineMessage = {
-        itemType: 'message',
+        itemType: "message",
         id: `msg-sim-${Date.now()}`,
         conversationId,
         senderId: sellerId,
         senderName: sellerName,
         content: promptText,
-        contentType: 'text',
-        status: 'delivered',
+        contentType: "text",
+        status: "delivered",
         isRead: false,
         createdAt: new Date().toISOString(),
       };
@@ -151,7 +178,10 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
     }, 2400);
   }
 
-  private dispatchToConversation(conversationId: string, event: MessagingRealtimeEvent): void {
+  private dispatchToConversation(
+    conversationId: string,
+    event: MessagingRealtimeEvent,
+  ): void {
     const handlers = this.conversationListeners.get(conversationId);
     if (handlers) {
       handlers.forEach((h) => h(event));
@@ -165,4 +195,5 @@ export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
   }
 }
 
-export const messagingRealtimeClient: IMessagingRealtimeClient = new DemoMessagingRealtimeClient();
+export const messagingRealtimeClient: IMessagingRealtimeClient =
+  new DemoMessagingRealtimeClient();

@@ -1,9 +1,12 @@
-import { isProSeller, isPubliclyListableProSeller } from '../domains/user/user.domain';
-import { UserProfile, UserRole, PlatformRole, ReviewItem } from '../types';
-import { storageService } from '../services/storage.service';
-import { DEMO_USERS, INITIAL_REVIEWS } from '../mocks/initialDemoData';
-import { authorizationService } from '../security/authorization.service';
-import { auditService } from '../security/audit.service';
+import {
+  isProSeller,
+  isPubliclyListableProSeller,
+} from "../domains/user/user.domain";
+import { UserProfile, UserRole, PlatformRole, ReviewItem } from "../types";
+import { storageService } from "../services/storage.service";
+import { DEMO_USERS, INITIAL_REVIEWS } from "../mocks/initialDemoData";
+import { authorizationService } from "../security/authorization.service";
+import { auditService } from "../security/audit.service";
 
 export interface IUserRepository {
   getCurrentUser(): Promise<UserProfile | null>;
@@ -13,21 +16,32 @@ export interface IUserRepository {
   getUserBySlug(slug: string): Promise<UserProfile | null>;
   getUserBySlugOrId(slugOrId: string): Promise<UserProfile | null>;
   getProSellerBySlug(slug: string): Promise<UserProfile | null>;
-  updateProfile(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
+  updateProfile(
+    id: string,
+    updates: Partial<UserProfile>,
+  ): Promise<UserProfile>;
   switchDemoRole(role: UserRole): Promise<UserProfile | null>;
   switchDemoUser(userKey: string): Promise<UserProfile | null>;
   suspendUser(userId: string, reason: string): Promise<UserProfile>;
   reactivateUser(userId: string): Promise<UserProfile>;
-  verifyUser(userId: string, options: { approve: boolean; notes?: string }): Promise<UserProfile>;
+  verifyUser(
+    userId: string,
+    options: { approve: boolean; notes?: string },
+  ): Promise<UserProfile>;
   updateUserRole(userId: string, newRole: PlatformRole): Promise<UserProfile>;
   getReviewsForUser(userId: string): Promise<ReviewItem[]>;
-  addReview(review: Omit<ReviewItem, 'id' | 'createdAt'>): Promise<ReviewItem>;
+  addReview(review: Omit<ReviewItem, "id" | "createdAt">): Promise<ReviewItem>;
   getAllProSellers(): Promise<UserProfile[]>;
   isFollowing(sellerId: string): boolean;
   toggleFollow(sellerId: string): boolean;
   isBlocked(userId: string): boolean;
   toggleBlock(userId: string): boolean;
-  reportUser(report: { targetUserId: string; targetUserName?: string; reason: string; comment?: string }): Promise<void>;
+  reportUser(report: {
+    targetUserId: string;
+    targetUserName?: string;
+    reason: string;
+    comment?: string;
+  }): Promise<void>;
 }
 
 export class MockUserRepository implements IUserRepository {
@@ -59,8 +73,14 @@ export class MockUserRepository implements IUserRepository {
         (u) =>
           u.slug?.toLowerCase() === clean ||
           u.storeSlug?.toLowerCase() === clean ||
-          u.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === clean ||
-          u.companyName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === clean
+          u.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "") === clean ||
+          u.companyName
+            ?.toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "") === clean,
       ) || null
     );
   }
@@ -84,8 +104,14 @@ export class MockUserRepository implements IUserRepository {
 
     // 4. Normalized name match
     const byNormalizedName = all.find((u) => {
-      const nameSlug = u.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const companySlug = u.companyName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const nameSlug = u.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      const companySlug = u.companyName
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
       return nameSlug === clean || companySlug === clean;
     });
     if (byNormalizedName) return byNormalizedName;
@@ -98,14 +124,17 @@ export class MockUserRepository implements IUserRepository {
     return user && isProSeller(user) ? user : user;
   }
 
-  async updateProfile(id: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+  async updateProfile(
+    id: string,
+    updates: Partial<UserProfile>,
+  ): Promise<UserProfile> {
     const currentUser = storageService.getCurrentUser();
     const user = await this.getUserById(id);
-    if (!user) throw new Error('Utilisateur non trouvé');
+    if (!user) throw new Error("Utilisateur non trouvé");
 
-    const isStaff = authorizationService.can(currentUser, 'user.manage');
+    const isStaff = authorizationService.can(currentUser, "user.manage");
     if (!isStaff) {
-      authorizationService.assertCan(currentUser, 'profile.update.own', user);
+      authorizationService.assertCan(currentUser, "profile.update.own", user);
     }
 
     const updated = { ...user, ...updates };
@@ -126,15 +155,15 @@ export class MockUserRepository implements IUserRepository {
 
   async suspendUser(userId: string, reason: string): Promise<UserProfile> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'user.suspend');
+    authorizationService.assertCan(currentUser, "user.suspend");
 
     const user = await this.getUserById(userId);
-    if (!user) throw new Error('Utilisateur non trouvé');
+    if (!user) throw new Error("Utilisateur non trouvé");
 
     const updated: UserProfile = {
       ...user,
       isSuspended: true,
-      status: 'suspended',
+      status: "suspended",
       suspendedReason: reason,
       suspendedAt: new Date().toISOString(),
     };
@@ -147,10 +176,10 @@ export class MockUserRepository implements IUserRepository {
       actorRole: currentUser!.primaryRole || currentUser!.role,
       targetId: user.id,
       targetName: user.name,
-      action: 'user_suspended',
+      action: "user_suspended",
       details: `Suspension du compte utilisateur : "${reason}".`,
       previousValue: { status: user.status },
-      newValue: { status: 'suspended', reason },
+      newValue: { status: "suspended", reason },
     });
 
     return updated;
@@ -158,15 +187,15 @@ export class MockUserRepository implements IUserRepository {
 
   async reactivateUser(userId: string): Promise<UserProfile> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'user.reactivate');
+    authorizationService.assertCan(currentUser, "user.reactivate");
 
     const user = await this.getUserById(userId);
-    if (!user) throw new Error('Utilisateur non trouvé');
+    if (!user) throw new Error("Utilisateur non trouvé");
 
     const updated: UserProfile = {
       ...user,
       isSuspended: false,
-      status: 'active',
+      status: "active",
       suspendedReason: undefined,
       suspendedAt: undefined,
     };
@@ -179,33 +208,38 @@ export class MockUserRepository implements IUserRepository {
       actorRole: currentUser!.primaryRole || currentUser!.role,
       targetId: user.id,
       targetName: user.name,
-      action: 'user_reactivated',
-      details: 'Réactivation du compte suite à levée des restrictions.',
-      previousValue: { status: 'suspended' },
-      newValue: { status: 'active' },
+      action: "user_reactivated",
+      details: "Réactivation du compte suite à levée des restrictions.",
+      previousValue: { status: "suspended" },
+      newValue: { status: "active" },
     });
 
     return updated;
   }
 
-  async verifyUser(userId: string, options: { approve: boolean; notes?: string }): Promise<UserProfile> {
+  async verifyUser(
+    userId: string,
+    options: { approve: boolean; notes?: string },
+  ): Promise<UserProfile> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'user.verify');
+    authorizationService.assertCan(currentUser, "user.verify");
 
     const user = await this.getUserById(userId);
-    if (!user) throw new Error('Utilisateur non trouvé');
+    if (!user) throw new Error("Utilisateur non trouvé");
 
     const updated: UserProfile = {
       ...user,
       isVerified: options.approve,
-      professionalVerification: isProSeller(user) ? {
-        status: options.approve ? 'verified' : 'rejected',
-        reviewedAt: new Date().toISOString(),
-        reviewedBy: currentUser!.name,
-        notes: options.notes,
-      } : undefined,
+      professionalVerification: isProSeller(user)
+        ? {
+            status: options.approve ? "verified" : "rejected",
+            reviewedAt: new Date().toISOString(),
+            reviewedBy: currentUser!.name,
+            notes: options.notes,
+          }
+        : undefined,
       identityVerification: {
-        status: options.approve ? 'verified' : 'rejected',
+        status: options.approve ? "verified" : "rejected",
         verifiedAt: options.approve ? new Date().toISOString() : undefined,
       },
     };
@@ -218,21 +252,26 @@ export class MockUserRepository implements IUserRepository {
       actorRole: currentUser!.primaryRole || currentUser!.role,
       targetId: user.id,
       targetName: user.name,
-      action: options.approve ? 'verification_approved' : 'verification_rejected',
+      action: options.approve
+        ? "verification_approved"
+        : "verification_rejected",
       details: options.approve
-        ? `Validation des justificatifs et attribution du badge vérifié. Note : ${options.notes || 'Conforme'}.`
-        : `Rejet des justificatifs d'immatriculation / identité. Motif : ${options.notes || 'Non conforme'}.`,
+        ? `Validation des justificatifs et attribution du badge vérifié. Note : ${options.notes || "Conforme"}.`
+        : `Rejet des justificatifs d'immatriculation / identité. Motif : ${options.notes || "Non conforme"}.`,
     });
 
     return updated;
   }
 
-  async updateUserRole(userId: string, newRole: PlatformRole): Promise<UserProfile> {
+  async updateUserRole(
+    userId: string,
+    newRole: PlatformRole,
+  ): Promise<UserProfile> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'role.manage');
+    authorizationService.assertCan(currentUser, "role.manage");
 
     const user = await this.getUserById(userId);
-    if (!user) throw new Error('Utilisateur non trouvé');
+    if (!user) throw new Error("Utilisateur non trouvé");
 
     const updated: UserProfile = {
       ...user,
@@ -248,7 +287,7 @@ export class MockUserRepository implements IUserRepository {
       actorRole: currentUser!.primaryRole || currentUser!.role,
       targetId: user.id,
       targetName: user.name,
-      action: 'role_assigned',
+      action: "role_assigned",
       details: `Modification du rôle plateforme : de [${user.role}] vers [${newRole}].`,
       previousValue: { role: user.role },
       newValue: { role: newRole },
@@ -261,9 +300,11 @@ export class MockUserRepository implements IUserRepository {
     return INITIAL_REVIEWS.filter((r) => r.targetUserId === userId);
   }
 
-  async addReview(review: Omit<ReviewItem, 'id' | 'createdAt'>): Promise<ReviewItem> {
+  async addReview(
+    review: Omit<ReviewItem, "id" | "createdAt">,
+  ): Promise<ReviewItem> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'review.create');
+    authorizationService.assertCan(currentUser, "review.create");
 
     const newReview: ReviewItem = {
       ...review,
@@ -275,9 +316,12 @@ export class MockUserRepository implements IUserRepository {
     // Update target user's reviewCount and rating
     const targetUser = await this.getUserById(review.targetUserId);
     if (targetUser) {
-      const allTargetReviews = INITIAL_REVIEWS.filter((r) => r.targetUserId === review.targetUserId);
+      const allTargetReviews = INITIAL_REVIEWS.filter(
+        (r) => r.targetUserId === review.targetUserId,
+      );
       const totalScore = allTargetReviews.reduce((sum, r) => sum + r.rating, 0);
-      const avgRating = Math.round((totalScore / allTargetReviews.length) * 10) / 10;
+      const avgRating =
+        Math.round((totalScore / allTargetReviews.length) * 10) / 10;
 
       const updatedUser: UserProfile = {
         ...targetUser,
@@ -311,7 +355,7 @@ export class MockUserRepository implements IUserRepository {
 
   toggleFollow(sellerId: string): boolean {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'favorite.manage.own');
+    authorizationService.assertCan(currentUser, "favorite.manage.own");
     return storageService.toggleFollowSeller(sellerId);
   }
 
@@ -321,13 +365,18 @@ export class MockUserRepository implements IUserRepository {
 
   toggleBlock(userId: string): boolean {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'message.block');
+    authorizationService.assertCan(currentUser, "message.block");
     return storageService.toggleBlockUser(userId);
   }
 
-  async reportUser(report: { targetUserId: string; targetUserName?: string; reason: string; comment?: string }): Promise<void> {
+  async reportUser(report: {
+    targetUserId: string;
+    targetUserName?: string;
+    reason: string;
+    comment?: string;
+  }): Promise<void> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'report.create');
+    authorizationService.assertCan(currentUser, "report.create");
     storageService.saveUserReport(report);
   }
 }

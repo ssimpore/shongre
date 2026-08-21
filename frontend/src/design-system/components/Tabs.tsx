@@ -1,5 +1,5 @@
-import React from 'react';
-import { cn } from '../utils/variants';
+import React from "react";
+import { cn } from "../utils/variants";
 
 export interface TabItem {
   id: string;
@@ -12,23 +12,24 @@ export interface TabsProps {
   tabs: TabItem[];
   activeTab: string;
   onChange: (tabId: string) => void;
-  variant?: 'underline' | 'segmented';
+  variant?: "underline" | "segmented";
   label: string;
   idPrefix?: string;
   className?: string;
 }
 
 export const tabId = (idPrefix: string, id: string) => `${idPrefix}-tab-${id}`;
-export const tabPanelId = (idPrefix: string, id: string) => `${idPrefix}-panel-${id}`;
+export const tabPanelId = (idPrefix: string, id: string) =>
+  `${idPrefix}-panel-${id}`;
 
 /** One APG-compliant, horizontally resilient tab implementation. */
 export const Tabs: React.FC<TabsProps> = ({
   tabs,
   activeTab,
   onChange,
-  variant = 'underline',
+  variant = "underline",
   label,
-  idPrefix = 'tabs',
+  idPrefix = "tabs",
   className,
 }) => {
   const listRef = React.useRef<HTMLDivElement>(null);
@@ -36,7 +37,7 @@ export const Tabs: React.FC<TabsProps> = ({
   React.useEffect(() => {
     listRef.current
       ?.querySelector<HTMLElement>('[aria-selected="true"]')
-      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [activeTab]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -44,10 +45,12 @@ export const Tabs: React.FC<TabsProps> = ({
     if (currentIndex === -1) return;
 
     let nextIndex: number | null = null;
-    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
-    else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-    else if (event.key === 'Home') nextIndex = 0;
-    else if (event.key === 'End') nextIndex = tabs.length - 1;
+    if (event.key === "ArrowRight")
+      nextIndex = (currentIndex + 1) % tabs.length;
+    else if (event.key === "ArrowLeft")
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
     if (nextIndex === null) return;
 
     event.preventDefault();
@@ -58,7 +61,7 @@ export const Tabs: React.FC<TabsProps> = ({
       ?.focus();
   };
 
-  const isSegmented = variant === 'segmented';
+  const isSegmented = variant === "segmented";
 
   return (
     <div
@@ -67,10 +70,10 @@ export const Tabs: React.FC<TabsProps> = ({
       aria-label={label}
       aria-orientation="horizontal"
       className={cn(
-        'flex overflow-x-auto no-scrollbar',
+        "flex overflow-x-auto no-scrollbar",
         isSegmented
-          ? 'gap-1.5 border-b border-border-base pb-2'
-          : 'gap-1 border-b border-border-base sm:gap-2',
+          ? "gap-1.5 border-b border-border-base pb-2"
+          : "gap-1 border-b border-border-base sm:gap-2",
         className,
       )}
     >
@@ -88,17 +91,19 @@ export const Tabs: React.FC<TabsProps> = ({
             onClick={() => onChange(tab.id)}
             onKeyDown={handleKeyDown}
             className={cn(
-              'flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap font-semibold motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+              "flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap font-semibold motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
               isSegmented
                 ? cn(
-                    'h-control-sm rounded-control px-3 text-xs sm:px-4',
-                    isActive ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-bg-subtle',
+                    "h-control-sm rounded-control px-3 text-xs sm:px-4",
+                    isActive
+                      ? "bg-stone-900 text-white"
+                      : "text-stone-600 hover:bg-bg-subtle",
                   )
                 : cn(
-                    'relative px-2 pb-3 text-xs sm:px-3 sm:text-sm',
+                    "relative px-2 pb-3 text-xs sm:px-3 sm:text-sm",
                     isActive
-                      ? 'font-bold text-primary'
-                      : 'text-stone-600 hover:text-stone-950',
+                      ? "font-bold text-primary"
+                      : "text-stone-600 hover:text-stone-950",
                   ),
             )}
           >
@@ -107,19 +112,22 @@ export const Tabs: React.FC<TabsProps> = ({
             {tab.count !== undefined && (
               <span
                 className={cn(
-                  'rounded-full px-1.5 py-0.5 text-micro font-bold',
+                  "rounded-full px-1.5 py-0.5 text-micro font-bold",
                   isActive
                     ? isSegmented
-                      ? 'bg-white/15 text-white'
-                      : 'bg-primary-light text-primary'
-                    : 'bg-bg-muted text-stone-600',
+                      ? "bg-white/15 text-white"
+                      : "bg-primary-light text-primary"
+                    : "bg-bg-muted text-stone-600",
                 )}
               >
                 {tab.count}
               </span>
             )}
             {!isSegmented && isActive && (
-              <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-t-full bg-primary" />
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-0 h-0.5 rounded-t-full bg-primary"
+              />
             )}
           </button>
         );
@@ -135,7 +143,7 @@ export interface TabPanelProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const TabPanel: React.FC<TabPanelProps> = ({
   tab,
-  idPrefix = 'tabs',
+  idPrefix = "tabs",
   children,
   ...props
 }) => (

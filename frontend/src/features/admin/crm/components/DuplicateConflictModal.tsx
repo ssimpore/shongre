@@ -1,9 +1,12 @@
-import React from 'react';
-import { AlertCircle  } from 'lucide-react';
-import { Modal } from '../../../../design-system/primitives/Modal';
-import { Button } from '../../../../design-system/primitives/Button';
-import { CrmCompany, ProspectResearchCandidate } from '../../../../domains/crm/crm.types';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React from "react";
+import { AlertCircle } from "lucide-react";
+import { Modal } from "../../../../design-system/primitives/Modal";
+import { Button } from "../../../../design-system/primitives/Button";
+import {
+  CrmCompany,
+  ProspectResearchCandidate,
+} from "../../../../domains/crm/crm.types";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface DuplicateConflictModalProps {
   isOpen: boolean;
@@ -29,16 +32,25 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('admin.duplicateConflictModal.entrepriseExistanteDetectee')}
-      description={t('admin.duplicateConflictModal.uneCorrespondanceAEteTrouvee')}
+      title={t("admin.duplicateConflictModal.entrepriseExistanteDetectee")}
+      description={t(
+        "admin.duplicateConflictModal.uneCorrespondanceAEteTrouvee",
+      )}
     >
       <div className="space-y-4 text-xs">
         <div className="p-3.5 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-2.5 text-warning">
           <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold block">{t('admin.duplicateConflictModal.doublonPotentielIdentifie')}</span>
+            <span className="font-bold block">
+              {t("admin.duplicateConflictModal.doublonPotentielIdentifie")}
+            </span>
             <p className="text-warning text-micro leading-relaxed">
-              L'entreprise <strong className="text-stone-900">{candidate.company.name}</strong> partage le même domaine web ou nom commercial qu'une entité existante.
+              L'entreprise{" "}
+              <strong className="text-stone-900">
+                {candidate.company.name}
+              </strong>{" "}
+              partage le même domaine web ou nom commercial qu'une entité
+              existante.
             </p>
           </div>
         </div>
@@ -50,8 +62,13 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
             </span>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <span className="font-bold text-stone-900 text-xs block">{matchedCompany.name}</span>
-                <span className="text-stone-500 text-micro">{matchedCompany.industry} • {matchedCompany.location?.city || 'France'}</span>
+                <span className="font-bold text-stone-900 text-xs block">
+                  {matchedCompany.name}
+                </span>
+                <span className="text-stone-500 text-micro">
+                  {matchedCompany.industry} •{" "}
+                  {matchedCompany.location?.city || "France"}
+                </span>
               </div>
               <span className="font-bold text-primary font-mono text-micro">
                 Statut : {matchedCompany.lifecycle}
@@ -64,8 +81,17 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
           <Button variant="outline" size="sm" onClick={onClose}>
             Annuler
           </Button>
-          <Button variant="outline" size="sm" onClick={onCreateSeparate}>{t('admin.duplicateConflictModal.creerQuandMemeSepare')}</Button>
-          <Button variant="primary" size="sm" onClick={onAssociate} className="font-bold">{t('admin.duplicateConflictModal.associerLaRechercheAL')}</Button>
+          <Button variant="outline" size="sm" onClick={onCreateSeparate}>
+            {t("admin.duplicateConflictModal.creerQuandMemeSepare")}
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onAssociate}
+            className="font-bold"
+          >
+            {t("admin.duplicateConflictModal.associerLaRechercheAL")}
+          </Button>
         </div>
       </div>
     </Modal>

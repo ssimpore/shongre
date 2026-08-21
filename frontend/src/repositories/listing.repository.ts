@@ -1,25 +1,58 @@
-import { isProSeller } from '../domains/user/user.domain';
-import { Listing, SearchFilters, ListingStatus } from '../types';
-import { storageService } from '../services/storage.service';
-import { authorizationService, EntitlementLimitError } from '../security/authorization.service';
-import { auditService } from '../security/audit.service';
-import { taxonomyService } from '../domains/taxonomy/taxonomy.service';
+import { isProSeller } from "../domains/user/user.domain";
+import { Listing, SearchFilters, ListingStatus } from "../types";
+import { storageService } from "../services/storage.service";
+import {
+  authorizationService,
+  EntitlementLimitError,
+} from "../security/authorization.service";
+import { auditService } from "../security/audit.service";
+import { taxonomyService } from "../domains/taxonomy/taxonomy.service";
 
 export interface IListingRepository {
-  getListings(filters?: SearchFilters): Promise<{ listings: Listing[]; total: number; page: number; totalPages: number }>;
+  getListings(filters?: SearchFilters): Promise<{
+    listings: Listing[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }>;
   getListingById(id: string): Promise<Listing | null>;
-  createListing(listing: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'viewsCount' | 'favoritesCount' | 'contactCount'>): Promise<Listing>;
+  createListing(
+    listing: Omit<
+      Listing,
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "viewsCount"
+      | "favoritesCount"
+      | "contactCount"
+    >,
+  ): Promise<Listing>;
   updateListing(id: string, updates: Partial<Listing>): Promise<Listing>;
   updateListingStatus(id: string, status: ListingStatus): Promise<Listing>;
-  updateListingMarkets(id: string, marketCodes: string[], marketPublications?: any[]): Promise<Listing>;
+  updateListingMarkets(
+    id: string,
+    marketCodes: string[],
+    marketPublications?: any[],
+  ): Promise<Listing>;
   getListingsByMarket(marketCode: string): Promise<Listing[]>;
-  boostListing(id: string, boostType: 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight'): Promise<Listing>;
-  moderateListing(id: string, action: 'hide' | 'approve' | 'delete', reason?: string): Promise<Listing | boolean>;
+  boostListing(
+    id: string,
+    boostType:
+      "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight",
+  ): Promise<Listing>;
+  moderateListing(
+    id: string,
+    action: "hide" | "approve" | "delete",
+    reason?: string,
+  ): Promise<Listing | boolean>;
   deleteListing(id: string): Promise<boolean>;
   getFeaturedListings(): Promise<Listing[]>;
   getDealsListings(): Promise<Listing[]>;
   getListingsBySeller(sellerId: string): Promise<Listing[]>;
-  getSimilarListings(listingId: string, categorySlug: string): Promise<Listing[]>;
+  getSimilarListings(
+    listingId: string,
+    categorySlug: string,
+  ): Promise<Listing[]>;
   incrementViews(listingId: string): Promise<void>;
   toggleFavorite(listingId: string): Promise<boolean>;
   getFavorites(): Promise<Listing[]>;
@@ -27,8 +60,15 @@ export interface IListingRepository {
 }
 
 export class MockListingRepository implements IListingRepository {
-  async getListings(filters: SearchFilters = {}): Promise<{ listings: Listing[]; total: number; page: number; totalPages: number }> {
-    let list = storageService.getListings().filter((l) => l.status === 'active');
+  async getListings(filters: SearchFilters = {}): Promise<{
+    listings: Listing[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    let list = storageService
+      .getListings()
+      .filter((l) => l.status === "active");
 
     // Query text
     if (filters.query && filters.query.trim()) {
@@ -39,18 +79,23 @@ export class MockListingRepository implements IListingRepository {
           item.description.toLowerCase().includes(q) ||
           item.categoryLabel.toLowerCase().includes(q) ||
           item.subCategoryLabel.toLowerCase().includes(q) ||
-          item.city.toLowerCase().includes(q)
+          item.city.toLowerCase().includes(q),
       );
     }
 
     // Market Code filter (supports multi-market listings)
-    if (filters.marketCode && filters.marketCode !== 'all' && filters.marketCode !== '*') {
+    if (
+      filters.marketCode &&
+      filters.marketCode !== "all" &&
+      filters.marketCode !== "*"
+    ) {
       const mCode = filters.marketCode.toUpperCase();
       list = list.filter((item) => {
         // 1. Check marketPublications if present
         if (item.marketPublications && item.marketPublications.length > 0) {
           return item.marketPublications.some(
-            (p) => p.marketCode.toUpperCase() === mCode && p.status === 'active'
+            (p) =>
+              p.marketCode.toUpperCase() === mCode && p.status === "active",
           );
         }
         // 2. Check marketCodes array
@@ -58,16 +103,18 @@ export class MockListingRepository implements IListingRepository {
           return item.marketCodes.some((code) => code.toUpperCase() === mCode);
         }
         // 3. Fallback to primary marketCode or FR
-        return ((item.marketCode || 'FR').toUpperCase() === mCode);
+        return (item.marketCode || "FR").toUpperCase() === mCode;
       });
     }
 
     // Category with taxonomy normalization and alias resolution
-    if (filters.categorySlug && filters.categorySlug !== 'all') {
+    if (filters.categorySlug && filters.categorySlug !== "all") {
       const catSlugOrId = filters.categorySlug.toLowerCase();
       const matchedSlugs = new Set<string>([catSlugOrId]);
 
-      const catNode = taxonomyService.getNodeBySlug(catSlugOrId) || taxonomyService.getNode(catSlugOrId);
+      const catNode =
+        taxonomyService.getNodeBySlug(catSlugOrId) ||
+        taxonomyService.getNode(catSlugOrId);
       if (catNode) {
         matchedSlugs.add(catNode.slug.toLowerCase());
         matchedSlugs.add(catNode.id.toLowerCase());
@@ -78,44 +125,69 @@ export class MockListingRepository implements IListingRepository {
       }
 
       // Alias mapping
-      if (matchedSlugs.has('maison-jardin') || matchedSlugs.has('home_garden') || matchedSlugs.has('maison-deco')) {
-        matchedSlugs.add('maison-jardin');
-        matchedSlugs.add('maison-deco');
-        matchedSlugs.add('home_garden');
+      if (
+        matchedSlugs.has("maison-jardin") ||
+        matchedSlugs.has("home_garden") ||
+        matchedSlugs.has("maison-deco")
+      ) {
+        matchedSlugs.add("maison-jardin");
+        matchedSlugs.add("maison-deco");
+        matchedSlugs.add("home_garden");
       }
-      if (matchedSlugs.has('multimedia-electronique') || matchedSlugs.has('multimedia')) {
-        matchedSlugs.add('multimedia-electronique');
-        matchedSlugs.add('multimedia');
+      if (
+        matchedSlugs.has("multimedia-electronique") ||
+        matchedSlugs.has("multimedia")
+      ) {
+        matchedSlugs.add("multimedia-electronique");
+        matchedSlugs.add("multimedia");
       }
-      if (matchedSlugs.has('mode-accessoires') || matchedSlugs.has('mode') || matchedSlugs.has('fashion') || matchedSlugs.has('mode-beaute')) {
-        matchedSlugs.add('mode-accessoires');
-        matchedSlugs.add('mode');
-        matchedSlugs.add('mode-beaute');
-        matchedSlugs.add('fashion');
+      if (
+        matchedSlugs.has("mode-accessoires") ||
+        matchedSlugs.has("mode") ||
+        matchedSlugs.has("fashion") ||
+        matchedSlugs.has("mode-beaute")
+      ) {
+        matchedSlugs.add("mode-accessoires");
+        matchedSlugs.add("mode");
+        matchedSlugs.add("mode-beaute");
+        matchedSlugs.add("fashion");
       }
-      if (matchedSlugs.has('loisirs-culture') || matchedSlugs.has('loisirs-sport') || matchedSlugs.has('sports') || matchedSlugs.has('leisure_culture')) {
-        matchedSlugs.add('loisirs-culture');
-        matchedSlugs.add('loisirs-sport');
-        matchedSlugs.add('leisure_culture');
-        matchedSlugs.add('sports');
+      if (
+        matchedSlugs.has("loisirs-culture") ||
+        matchedSlugs.has("loisirs-sport") ||
+        matchedSlugs.has("sports") ||
+        matchedSlugs.has("leisure_culture")
+      ) {
+        matchedSlugs.add("loisirs-culture");
+        matchedSlugs.add("loisirs-sport");
+        matchedSlugs.add("leisure_culture");
+        matchedSlugs.add("sports");
       }
-      if (matchedSlugs.has('bebe-puericulture-enfants') || matchedSlugs.has('bebe-puericulture') || matchedSlugs.has('baby_kids')) {
-        matchedSlugs.add('bebe-puericulture-enfants');
-        matchedSlugs.add('bebe-puericulture');
-        matchedSlugs.add('baby_kids');
+      if (
+        matchedSlugs.has("bebe-puericulture-enfants") ||
+        matchedSlugs.has("bebe-puericulture") ||
+        matchedSlugs.has("baby_kids")
+      ) {
+        matchedSlugs.add("bebe-puericulture-enfants");
+        matchedSlugs.add("bebe-puericulture");
+        matchedSlugs.add("baby_kids");
       }
-      if (matchedSlugs.has('vehicules') || matchedSlugs.has('vehicles') || matchedSlugs.has('auto-moto')) {
-        matchedSlugs.add('vehicules');
-        matchedSlugs.add('vehicles');
+      if (
+        matchedSlugs.has("vehicules") ||
+        matchedSlugs.has("vehicles") ||
+        matchedSlugs.has("auto-moto")
+      ) {
+        matchedSlugs.add("vehicules");
+        matchedSlugs.add("vehicles");
       }
-      if (matchedSlugs.has('immobilier') || matchedSlugs.has('real_estate')) {
-        matchedSlugs.add('immobilier');
-        matchedSlugs.add('real_estate');
+      if (matchedSlugs.has("immobilier") || matchedSlugs.has("real_estate")) {
+        matchedSlugs.add("immobilier");
+        matchedSlugs.add("real_estate");
       }
 
       list = list.filter((item) => {
-        const itemCat = (item.categorySlug || '').toLowerCase();
-        const itemSubCat = (item.subCategorySlug || '').toLowerCase();
+        const itemCat = (item.categorySlug || "").toLowerCase();
+        const itemSubCat = (item.subCategorySlug || "").toLowerCase();
         return matchedSlugs.has(itemCat) || matchedSlugs.has(itemSubCat);
       });
     }
@@ -125,60 +197,86 @@ export class MockListingRepository implements IListingRepository {
       const subSlugOrId = filters.subCategorySlug.toLowerCase();
       const matchedSubSlugs = new Set<string>([subSlugOrId]);
 
-      const subNode = taxonomyService.getNodeBySlug(subSlugOrId) || taxonomyService.getNode(subSlugOrId);
+      const subNode =
+        taxonomyService.getNodeBySlug(subSlugOrId) ||
+        taxonomyService.getNode(subSlugOrId);
       if (subNode) {
         matchedSubSlugs.add(subNode.slug.toLowerCase());
         matchedSubSlugs.add(subNode.id.toLowerCase());
       }
 
-      if (matchedSubSlugs.has('smartphones-telephones') || matchedSubSlugs.has('smartphones')) {
-        matchedSubSlugs.add('smartphones-telephones');
-        matchedSubSlugs.add('smartphones');
+      if (
+        matchedSubSlugs.has("smartphones-telephones") ||
+        matchedSubSlugs.has("smartphones")
+      ) {
+        matchedSubSlugs.add("smartphones-telephones");
+        matchedSubSlugs.add("smartphones");
       }
-      if (matchedSubSlugs.has('voitures') || matchedSubSlugs.has('cars') || matchedSubSlugs.has('vehicles.cars')) {
-        matchedSubSlugs.add('voitures');
-        matchedSubSlugs.add('cars');
-        matchedSubSlugs.add('vehicles.cars');
+      if (
+        matchedSubSlugs.has("voitures") ||
+        matchedSubSlugs.has("cars") ||
+        matchedSubSlugs.has("vehicles.cars")
+      ) {
+        matchedSubSlugs.add("voitures");
+        matchedSubSlugs.add("cars");
+        matchedSubSlugs.add("vehicles.cars");
       }
-      if (matchedSubSlugs.has('velos-trottinettes') || matchedSubSlugs.has('velos')) {
-        matchedSubSlugs.add('velos-trottinettes');
-        matchedSubSlugs.add('velos');
+      if (
+        matchedSubSlugs.has("velos-trottinettes") ||
+        matchedSubSlugs.has("velos")
+      ) {
+        matchedSubSlugs.add("velos-trottinettes");
+        matchedSubSlugs.add("velos");
       }
-      if (matchedSubSlugs.has('bricolage-outillage-jardin') || matchedSubSlugs.has('bricolage-jardin')) {
-        matchedSubSlugs.add('bricolage-outillage-jardin');
-        matchedSubSlugs.add('bricolage-jardin');
+      if (
+        matchedSubSlugs.has("bricolage-outillage-jardin") ||
+        matchedSubSlugs.has("bricolage-jardin")
+      ) {
+        matchedSubSlugs.add("bricolage-outillage-jardin");
+        matchedSubSlugs.add("bricolage-jardin");
       }
 
       list = list.filter((item) => {
-        const itemSubCat = (item.subCategorySlug || '').toLowerCase();
+        const itemSubCat = (item.subCategorySlug || "").toLowerCase();
         return matchedSubSlugs.has(itemSubCat);
       });
     }
 
     // City / Location & Radius filter (skip if "Toute la France" or "Tout le pays")
-    if (filters.city && !filters.city.startsWith('Tout') && !filters.city.startsWith('Toute')) {
+    if (
+      filters.city &&
+      !filters.city.startsWith("Tout") &&
+      !filters.city.startsWith("Toute")
+    ) {
       const cityQuery = filters.city.toLowerCase().trim();
-      const postalPrefix = (filters.postalCode || '').slice(0, 2);
+      const postalPrefix = (filters.postalCode || "").slice(0, 2);
       const radius = filters.radiusKm || 0;
 
       list = list.filter((item) => {
-        const itemCity = (item.city || '').toLowerCase();
-        const itemPostal = (item.postalCode || '');
-        const itemDept = (item.department || '').toLowerCase();
-        const itemRegion = (item.region || '').toLowerCase();
+        const itemCity = (item.city || "").toLowerCase();
+        const itemPostal = item.postalCode || "";
+        const itemDept = (item.department || "").toLowerCase();
+        const itemRegion = (item.region || "").toLowerCase();
 
         // Exact city match
         if (itemCity.includes(cityQuery)) return true;
         if (postalPrefix && itemPostal.startsWith(postalPrefix)) return true;
 
         // Radius expansion (surrounding department / region)
-        if (radius >= 30 && (itemDept.includes(cityQuery) || itemRegion.includes(cityQuery))) {
+        if (
+          radius >= 30 &&
+          (itemDept.includes(cityQuery) || itemRegion.includes(cityQuery))
+        ) {
           return true;
         }
         if (radius >= 50 && postalPrefix) {
           const itemDeptNum = parseInt(itemPostal.slice(0, 2), 10);
           const filterDeptNum = parseInt(postalPrefix, 10);
-          if (!isNaN(itemDeptNum) && !isNaN(filterDeptNum) && Math.abs(itemDeptNum - filterDeptNum) <= 2) {
+          if (
+            !isNaN(itemDeptNum) &&
+            !isNaN(filterDeptNum) &&
+            Math.abs(itemDeptNum - filterDeptNum) <= 2
+          ) {
             return true;
           }
         }
@@ -199,13 +297,17 @@ export class MockListingRepository implements IListingRepository {
     }
 
     // Seller type
-    if (filters.sellerType && filters.sellerType !== 'all') {
+    if (filters.sellerType && filters.sellerType !== "all") {
       list = list.filter((item) => item.sellerType === filters.sellerType);
     }
 
     // Delivery available
     if (filters.deliveryAvailable) {
-      list = list.filter((item) => item.deliveryOptions.some((d) => d.available && d.type !== 'hand_delivery'));
+      list = list.filter((item) =>
+        item.deliveryOptions.some(
+          (d) => d.available && d.type !== "hand_delivery",
+        ),
+      );
     }
 
     // Online payment
@@ -215,33 +317,39 @@ export class MockListingRepository implements IListingRepository {
 
     // Only Deals
     if (filters.onlyDeals) {
-      list = list.filter((item) => item.originalPrice && item.originalPrice > item.price);
+      list = list.filter(
+        (item) => item.originalPrice && item.originalPrice > item.price,
+      );
     }
 
     // Conditions
     if (filters.conditions && filters.conditions.length > 0) {
-      list = list.filter((item) => filters.conditions!.includes(item.condition));
+      list = list.filter((item) =>
+        filters.conditions!.includes(item.condition),
+      );
     }
 
     // Sorting
-    const sort = filters.sortBy || 'date_desc';
+    const sort = filters.sortBy || "date_desc";
     list.sort((a, b) => {
-      if (sort === 'date_desc') {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sort === "date_desc") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
       }
-      if (sort === 'price_asc') {
+      if (sort === "price_asc") {
         return a.price - b.price;
       }
-      if (sort === 'price_desc') {
+      if (sort === "price_desc") {
         return b.price - a.price;
       }
-      if (sort === 'distance' && filters.city) {
+      if (sort === "distance" && filters.city) {
         const cityQuery = filters.city.toLowerCase();
         const aExact = a.city.toLowerCase().includes(cityQuery) ? 1 : 0;
         const bExact = b.city.toLowerCase().includes(cityQuery) ? 1 : 0;
         return bExact - aExact;
       }
-      if (sort === 'relevance') {
+      if (sort === "relevance") {
         return (b.isBoosted ? 1 : 0) - (a.isBoosted ? 1 : 0);
       }
       return 0;
@@ -263,22 +371,32 @@ export class MockListingRepository implements IListingRepository {
   }
 
   async createListing(
-    input: Omit<Listing, 'id' | 'createdAt' | 'updatedAt' | 'viewsCount' | 'favoritesCount' | 'contactCount'>
+    input: Omit<
+      Listing,
+      | "id"
+      | "createdAt"
+      | "updatedAt"
+      | "viewsCount"
+      | "favoritesCount"
+      | "contactCount"
+    >,
   ): Promise<Listing> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'listing.create');
+    authorizationService.assertCan(currentUser, "listing.create");
 
     // Check active listings quota
-    const currentActiveListings = storageService.getListings().filter((l) => l.sellerId === currentUser?.id && l.status === 'active');
+    const currentActiveListings = storageService
+      .getListings()
+      .filter((l) => l.sellerId === currentUser?.id && l.status === "active");
     const maxQuota = authorizationService.getMaxListingsQuota(currentUser);
     if (currentActiveListings.length >= maxQuota) {
       throw new EntitlementLimitError(
-        `Limite de votre formule atteinte (${maxQuota} annonces actives maximum). Veuillez souscrire à une formule supérieure ou archiver une annonce existante.`
+        `Limite de votre formule atteinte (${maxQuota} annonces actives maximum). Veuillez souscrire à une formule supérieure ou archiver une annonce existante.`,
       );
     }
 
     const now = new Date().toISOString();
-    const activeMarket = storageService.getActiveMarketCode() || 'FR';
+    const activeMarket = storageService.getActiveMarketCode() || "FR";
     const newListing: Listing = {
       ...input,
       marketCode: (input as any).marketCode || activeMarket,
@@ -302,10 +420,17 @@ export class MockListingRepository implements IListingRepository {
     }
 
     const currentUser = storageService.getCurrentUser();
-    const isModerator = authorizationService.can(currentUser, 'listing.moderate');
+    const isModerator = authorizationService.can(
+      currentUser,
+      "listing.moderate",
+    );
 
     if (!isModerator) {
-      authorizationService.assertCan(currentUser, 'listing.update.own', listing);
+      authorizationService.assertCan(
+        currentUser,
+        "listing.update.own",
+        listing,
+      );
     }
 
     const updated: Listing = {
@@ -317,18 +442,27 @@ export class MockListingRepository implements IListingRepository {
     return updated;
   }
 
-  async updateListingStatus(id: string, status: ListingStatus): Promise<Listing> {
+  async updateListingStatus(
+    id: string,
+    status: ListingStatus,
+  ): Promise<Listing> {
     return this.updateListing(id, { status });
   }
 
-  async boostListing(id: string, boostType: 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight'): Promise<Listing> {
+  async boostListing(
+    id: string,
+    boostType:
+      "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight",
+  ): Promise<Listing> {
     const listing = await this.getListingById(id);
-    if (!listing) throw new Error('Annonce non trouvée');
+    if (!listing) throw new Error("Annonce non trouvée");
 
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'listing.promote', listing);
+    authorizationService.assertCan(currentUser, "listing.promote", listing);
 
-    const boostExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const boostExpiresAt = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
     return this.updateListing(id, {
       isBoosted: true,
       boostType,
@@ -336,14 +470,18 @@ export class MockListingRepository implements IListingRepository {
     });
   }
 
-  async moderateListing(id: string, action: 'hide' | 'approve' | 'delete', reason?: string): Promise<Listing | boolean> {
+  async moderateListing(
+    id: string,
+    action: "hide" | "approve" | "delete",
+    reason?: string,
+  ): Promise<Listing | boolean> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'listing.moderate');
+    authorizationService.assertCan(currentUser, "listing.moderate");
 
     const listing = await this.getListingById(id);
-    if (!listing) throw new Error('Annonce introuvable');
+    if (!listing) throw new Error("Annonce introuvable");
 
-    if (action === 'delete') {
+    if (action === "delete") {
       const deleted = await this.deleteListing(id);
       auditService.logEvent({
         actorId: currentUser!.id,
@@ -351,13 +489,14 @@ export class MockListingRepository implements IListingRepository {
         actorRole: currentUser!.primaryRole || currentUser!.role,
         targetId: listing.id,
         targetName: listing.title,
-        action: 'listing_moderated',
-        details: `Suppression définitive de l'annonce pour motif : "${reason || 'Infraction aux règles'}".`,
+        action: "listing_moderated",
+        details: `Suppression définitive de l'annonce pour motif : "${reason || "Infraction aux règles"}".`,
       });
       return deleted;
     }
 
-    const nextStatus: ListingStatus = action === 'hide' ? 'pending_review' : 'active';
+    const nextStatus: ListingStatus =
+      action === "hide" ? "pending_review" : "active";
     const updated = await this.updateListing(id, { status: nextStatus });
 
     auditService.logEvent({
@@ -366,8 +505,8 @@ export class MockListingRepository implements IListingRepository {
       actorRole: currentUser!.primaryRole || currentUser!.role,
       targetId: listing.id,
       targetName: listing.title,
-      action: action === 'hide' ? 'listing_hidden' : 'listing_restored',
-      details: `Modération [${action.toUpperCase()}] de l'annonce "${listing.title}". Motif : ${reason || 'Vérification de sécurité'}.`,
+      action: action === "hide" ? "listing_hidden" : "listing_restored",
+      details: `Modération [${action.toUpperCase()}] de l'annonce "${listing.title}". Motif : ${reason || "Vérification de sécurité"}.`,
     });
 
     return updated;
@@ -377,9 +516,16 @@ export class MockListingRepository implements IListingRepository {
     const listing = await this.getListingById(id);
     if (listing) {
       const currentUser = storageService.getCurrentUser();
-      const isModerator = authorizationService.can(currentUser, 'listing.moderate');
+      const isModerator = authorizationService.can(
+        currentUser,
+        "listing.moderate",
+      );
       if (!isModerator) {
-        authorizationService.assertCan(currentUser, 'listing.delete.own', listing);
+        authorizationService.assertCan(
+          currentUser,
+          "listing.delete.own",
+          listing,
+        );
       }
     }
 
@@ -389,23 +535,37 @@ export class MockListingRepository implements IListingRepository {
   }
 
   async getFeaturedListings(): Promise<Listing[]> {
-    const list = storageService.getListings().filter((l) => l.status === 'active');
+    const list = storageService
+      .getListings()
+      .filter((l) => l.status === "active");
     return list.filter((l) => l.isBoosted || isProSeller(l)).slice(0, 6);
   }
 
   async getDealsListings(): Promise<Listing[]> {
-    const list = storageService.getListings().filter((l) => l.status === 'active');
-    return list.filter((l) => l.originalPrice && l.originalPrice > l.price).slice(0, 6);
+    const list = storageService
+      .getListings()
+      .filter((l) => l.status === "active");
+    return list
+      .filter((l) => l.originalPrice && l.originalPrice > l.price)
+      .slice(0, 6);
   }
 
   async getListingsBySeller(sellerId: string): Promise<Listing[]> {
     return storageService.getListings().filter((l) => l.sellerId === sellerId);
   }
 
-  async getSimilarListings(listingId: string, categorySlug: string): Promise<Listing[]> {
+  async getSimilarListings(
+    listingId: string,
+    categorySlug: string,
+  ): Promise<Listing[]> {
     return storageService
       .getListings()
-      .filter((l) => l.id !== listingId && l.categorySlug === categorySlug && l.status === 'active')
+      .filter(
+        (l) =>
+          l.id !== listingId &&
+          l.categorySlug === categorySlug &&
+          l.status === "active",
+      )
       .slice(0, 4);
   }
 
@@ -419,11 +579,14 @@ export class MockListingRepository implements IListingRepository {
 
   async toggleFavorite(listingId: string): Promise<boolean> {
     const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, 'favorite.manage.own');
+    authorizationService.assertCan(currentUser, "favorite.manage.own");
     const isFav = storageService.toggleFavorite(listingId);
     const listing = await this.getListingById(listingId);
     if (listing) {
-      listing.favoritesCount = Math.max(0, listing.favoritesCount + (isFav ? 1 : -1));
+      listing.favoritesCount = Math.max(
+        0,
+        listing.favoritesCount + (isFav ? 1 : -1),
+      );
       storageService.saveListing(listing);
     }
     return isFav;
@@ -435,27 +598,38 @@ export class MockListingRepository implements IListingRepository {
     return all.filter((l) => favIds.includes(l.id));
   }
 
-  async updateListingMarkets(id: string, marketCodes: string[], marketPublications?: any[]): Promise<Listing> {
+  async updateListingMarkets(
+    id: string,
+    marketCodes: string[],
+    marketPublications?: any[],
+  ): Promise<Listing> {
     const listing = await this.getListingById(id);
-    if (!listing) throw new Error('Annonce non trouvée');
+    if (!listing) throw new Error("Annonce non trouvée");
 
     const currentUser = storageService.getCurrentUser();
-    if (listing.sellerId !== currentUser.id && currentUser.role !== 'admin' && currentUser.role !== 'super_admin') {
-      authorizationService.assertCan(currentUser, 'listing.moderate');
+    if (!currentUser) throw new Error("Authentification requise");
+    if (
+      listing.sellerId !== currentUser.id &&
+      currentUser.role !== "admin" &&
+      currentUser.role !== "super_admin"
+    ) {
+      authorizationService.assertCan(currentUser, "listing.moderate");
     }
 
-    const normalizedCodes = Array.from(new Set(marketCodes.map((c) => c.toUpperCase())));
-    const primary = listing.marketCode || normalizedCodes[0] || 'FR';
+    const normalizedCodes = Array.from(
+      new Set(marketCodes.map((c) => c.toUpperCase())),
+    );
+    const primary = listing.marketCode || normalizedCodes[0] || "FR";
 
     const pubs =
       marketPublications && marketPublications.length > 0
         ? marketPublications
         : normalizedCodes.map((mCode) => ({
             marketCode: mCode,
-            status: 'active' as const,
+            status: "active" as const,
             isPrimary: mCode === primary,
             publishedAt: new Date().toISOString(),
-            currency: mCode === 'CH' ? 'CHF' : 'EUR',
+            currency: mCode === "CH" ? "CHF" : "EUR",
             complianceChecked: true,
           }));
 
@@ -471,8 +645,8 @@ export class MockListingRepository implements IListingRepository {
       actorRole: currentUser.role as any,
       targetId: id,
       targetName: listing.title,
-      action: 'listing_moderated',
-      details: `Marchés de diffusion mis à jour pour l'annonce #${id} : [${normalizedCodes.join(', ')}]`,
+      action: "listing_moderated",
+      details: `Marchés de diffusion mis à jour pour l'annonce #${id} : [${normalizedCodes.join(", ")}]`,
       market: primary,
     });
 
@@ -486,14 +660,14 @@ export class MockListingRepository implements IListingRepository {
 
   async decrementStock(listingId: string, quantity: number): Promise<Listing> {
     const listing = await this.getListingById(listingId);
-    if (!listing) throw new Error('Annonce non trouvée');
+    if (!listing) throw new Error("Annonce non trouvée");
 
     const currentStock = listing.stock ?? 1;
     const newStock = Math.max(0, currentStock - quantity);
 
     listing.stock = newStock;
     if (newStock === 0) {
-      listing.status = 'sold';
+      listing.status = "sold";
     }
     listing.updatedAt = new Date().toISOString();
 
@@ -502,4 +676,5 @@ export class MockListingRepository implements IListingRepository {
   }
 }
 
-export const listingRepository: IListingRepository = new MockListingRepository();
+export const listingRepository: IListingRepository =
+  new MockListingRepository();

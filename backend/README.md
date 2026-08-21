@@ -68,7 +68,7 @@ make install
 
 ### 2. Development Server
 ```bash
-# Start BOTH Frontend (:3000) and Backend (:4000) concurrently
+# Start frontend and backend on the ports configured in the root environment
 make dev
 
 # Run Frontend in API mode against Backend in Demo mode

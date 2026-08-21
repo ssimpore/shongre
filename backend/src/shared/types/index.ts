@@ -16,7 +16,7 @@ export interface UserProfile {
   primaryRole: string;
   role: UserRole;
   sellerType?: 'individual' | 'pro';
-  status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived';
+  status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived' | 'deleted';
   avatarUrl?: string;
   phone?: string;
   city?: string;

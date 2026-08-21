@@ -1,10 +1,14 @@
-import { OrdersServiceContract, CreateDirectPurchaseInput, CreateReservationInput } from '../../contracts/orders.contract';
-import { transactionRepository } from '../../../repositories/transaction.repository';
-import { transactionService } from '../../../domains/transaction/transaction.service';
-import { listingRepository } from '../../../repositories/listing.repository';
-import { storageService } from '../../../services/storage.service';
-import { Transaction } from '../../../types';
-import { simulateNetworkDelay } from '../../client/api-client.config';
+import {
+  OrdersServiceContract,
+  CreateDirectPurchaseInput,
+  CreateReservationInput,
+} from "../../contracts/orders.contract";
+import { transactionRepository } from "../../../repositories/transaction.repository";
+import { transactionService } from "../../../domains/transaction/transaction.service";
+import { listingRepository } from "../../../repositories/listing.repository";
+import { storageService } from "../../../services/storage.service";
+import { Transaction } from "../../../types";
+import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoOrdersService implements OrdersServiceContract {
   async getOrderById(orderId: string): Promise<Transaction | null> {
@@ -22,17 +26,19 @@ export class DemoOrdersService implements OrdersServiceContract {
     return transactionRepository.getSales(userId);
   }
 
-  async createDirectPurchase(input: CreateDirectPurchaseInput): Promise<Transaction> {
+  async createDirectPurchase(
+    input: CreateDirectPurchaseInput,
+  ): Promise<Transaction> {
     await simulateNetworkDelay();
     const listing = await listingRepository.getListingById(input.listingId);
-    if (!listing) throw new Error('Annonce introuvable');
+    if (!listing) throw new Error("Annonce introuvable");
 
     const pricing = transactionService.calculateOrderPricingSnapshot(
       listing.price,
       1,
       4.99,
       listing.sellerType,
-      listing.marketCodes?.[0] || 'FR'
+      listing.marketCodes?.[0] || "FR",
     );
 
     const tx = await transactionRepository.createTransaction({
@@ -41,7 +47,7 @@ export class DemoOrdersService implements OrdersServiceContract {
       listingPrice: listing.price,
       listingPhotoUrl: listing.coverImageUrl,
       buyerId: input.buyerId,
-      buyerName: storageService.getCurrentUser()?.name || 'Acheteur',
+      buyerName: storageService.getCurrentUser()?.name || "Acheteur",
       sellerId: listing.sellerId,
       sellerName: listing.sellerName,
       amount: pricing.itemSubtotalMinor / 100,
@@ -49,7 +55,7 @@ export class DemoOrdersService implements OrdersServiceContract {
       protectionFee: pricing.buyerProtectionFeeMinor / 100,
       shippingFee: pricing.shippingFeeMinor / 100,
       currency: pricing.currency,
-      status: 'payment_escrowed',
+      status: "payment_escrowed",
       deliveryMethod: input.deliveryMethod,
     });
 
@@ -59,7 +65,7 @@ export class DemoOrdersService implements OrdersServiceContract {
   async createReservation(input: CreateReservationInput): Promise<Transaction> {
     await simulateNetworkDelay();
     const listing = await listingRepository.getListingById(input.listingId);
-    if (!listing) throw new Error('Annonce introuvable');
+    if (!listing) throw new Error("Annonce introuvable");
 
     const tx = await transactionRepository.createTransaction({
       listingId: listing.id,
@@ -67,7 +73,7 @@ export class DemoOrdersService implements OrdersServiceContract {
       listingPrice: listing.price,
       listingPhotoUrl: listing.coverImageUrl,
       buyerId: input.buyerId,
-      buyerName: storageService.getCurrentUser()?.name || 'Acheteur',
+      buyerName: storageService.getCurrentUser()?.name || "Acheteur",
       sellerId: listing.sellerId,
       sellerName: listing.sellerName,
       amount: input.depositAmount,
@@ -75,37 +81,53 @@ export class DemoOrdersService implements OrdersServiceContract {
       protectionFee: 0.99,
       shippingFee: 0,
       currency: listing.currency,
-      status: 'payment_escrowed',
-      deliveryMethod: 'hand_delivery',
+      status: "payment_escrowed",
+      deliveryMethod: "hand_delivery",
     });
 
     return tx;
   }
 
-  async confirmHandoverPIN(orderId: string, enteredPin: string): Promise<{ success: boolean; message: string }> {
+  async confirmHandoverPIN(
+    orderId: string,
+    enteredPin: string,
+  ): Promise<{ success: boolean; message: string }> {
     await simulateNetworkDelay();
-    const success = await transactionRepository.confirmHandoverPin(orderId, enteredPin);
+    const success = await transactionRepository.confirmHandoverPin(
+      orderId,
+      enteredPin,
+    );
     if (success) {
-      return { success: true, message: 'Code PIN validé avec succès ! Fonds débloqués.' };
+      return {
+        success: true,
+        message: "Code PIN validé avec succès ! Fonds débloqués.",
+      };
     }
-    return { success: false, message: 'Code PIN incorrect ou transaction non valide.' };
+    return {
+      success: false,
+      message: "Code PIN incorrect ou transaction non valide.",
+    };
   }
 
   async confirmDeliveryReceived(orderId: string): Promise<Transaction> {
     await simulateNetworkDelay();
-    return transactionRepository.updateTransactionStatus(orderId, 'completed');
+    return transactionRepository.updateTransactionStatus(orderId, "completed");
   }
 
-  async openDispute(orderId: string, reason: string, details: string): Promise<Transaction> {
+  async openDispute(
+    orderId: string,
+    reason: string,
+    details: string,
+  ): Promise<Transaction> {
     await simulateNetworkDelay();
     const user = storageService.getCurrentUser();
     return transactionRepository.openDispute(orderId, {
-      openedBy: user?.id || 'buyer',
-      openedByName: user?.name || 'Acheteur',
-      role: 'buyer',
+      openedBy: user?.id || "buyer",
+      openedByName: user?.name || "Acheteur",
+      role: "buyer",
       reason,
       description: details,
-      status: 'open',
+      status: "open",
     });
   }
 }

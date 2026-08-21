@@ -1,38 +1,30 @@
 export type VerificationDimensionId =
-  | 'email'
-  | 'phone'
-  | 'identity'
-  | 'business'
-  | 'bank_payout'
-  | 'mfa';
+  "email" | "phone" | "identity" | "business" | "bank_payout" | "mfa";
 
 export type VerificationState =
-  | 'not_started'
-  | 'pending'
-  | 'verified'
-  | 'requires_action'
-  | 'rejected'
-  | 'expired';
+  | "not_started"
+  | "pending"
+  | "verified"
+  | "requires_action"
+  | "rejected"
+  | "expired";
 
 export type KycDocumentType =
-  | 'national_id'
-  | 'passport'
-  | 'residence_permit'
-  | 'driving_license';
+  "national_id" | "passport" | "residence_permit" | "driving_license";
 
 export type KybDocumentType =
-  | 'kbis'
-  | 'insee_notice'
-  | 'articles_of_association'
-  | 'bank_rib'
-  | 'ubo_declaration';
+  | "kbis"
+  | "insee_notice"
+  | "articles_of_association"
+  | "bank_rib"
+  | "ubo_declaration";
 
 export type TrustLevel =
-  | 'tier_0_visitor'
-  | 'tier_1_starter'
-  | 'tier_2_verified_member'
-  | 'tier_3_trusted_seller'
-  | 'tier_4_verified_pro';
+  | "tier_0_visitor"
+  | "tier_1_starter"
+  | "tier_2_verified_member"
+  | "tier_3_trusted_seller"
+  | "tier_4_verified_pro";
 
 export interface VerificationRequirement {
   id: VerificationDimensionId;

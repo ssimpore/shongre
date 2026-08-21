@@ -1,35 +1,32 @@
-import React, { useState } from 'react';
-import { taxonomyAdminRepository } from '../../../../repositories/taxonomy.repository';
-import { Button } from '../../../../design-system/primitives/Button';
-import { useToast } from '../../../../app/providers/ToastProvider';
-import { useAuth } from '../../../../app/providers/AuthProvider';
-import { formatLogTimestamp } from '../../../../utilities/formatters';
+import React, { useState } from "react";
+import { taxonomyAdminRepository } from "../../../../repositories/taxonomy.repository";
+import { Button } from "../../../../design-system/primitives/Button";
+import { useToast } from "../../../../app/providers/ToastProvider";
+import { useAuth } from "../../../../app/providers/AuthProvider";
+import { formatLogTimestamp } from "../../../../utilities/formatters";
 import {
   Send,
   RotateCcw,
-  
   AlertCircle,
   GitCommit,
-  
   History,
-  
-  FileDiff
-} from 'lucide-react';
-import { ConfirmModal } from '../../../../design-system/primitives/ConfirmModal';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+  FileDiff,
+} from "lucide-react";
+import { ConfirmModal } from "../../../../design-system/primitives/ConfirmModal";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 export interface TaxonomyDraftPublishTabProps {
   onPublishSuccess: () => void;
 }
 
-export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = ({
-  onPublishSuccess,
-}) => {
+export const TaxonomyDraftPublishTab: React.FC<
+  TaxonomyDraftPublishTabProps
+> = ({ onPublishSuccess }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
 
-  const [publishDescription, setPublishDescription] = useState('');
+  const [publishDescription, setPublishDescription] = useState("");
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,26 +34,34 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
   const draftChanges = taxonomyAdminRepository.getDraftChanges();
   const versions = taxonomyAdminRepository.getVersions();
   const validationIssues = taxonomyAdminRepository.validateTaxonomy();
-  const hasBlockingErrors = validationIssues.some((i) => i.severity === 'error');
+  const hasBlockingErrors = validationIssues.some(
+    (i) => i.severity === "error",
+  );
 
   const handlePublish = async () => {
     try {
       setIsSubmitting(true);
       const actor = currentUser
-        ? { id: currentUser.id, name: currentUser.name || 'Admin', role: currentUser.role }
+        ? {
+            id: currentUser.id,
+            name: currentUser.name || "Admin",
+            role: currentUser.role,
+          }
         : undefined;
 
       const version = await taxonomyAdminRepository.publishDraft(
         publishDescription.trim() || undefined,
-        actor
+        actor,
       );
 
-      toast.success(`Taxonomie Version ${version.versionNumber} publiée avec succès !`);
-      setPublishDescription('');
+      toast.success(
+        `Taxonomie Version ${version.versionNumber} publiée avec succès !`,
+      );
+      setPublishDescription("");
       setIsPublishModalOpen(false);
       onPublishSuccess();
     } catch (err: any) {
-      toast.error(err?.message || 'Erreur lors de la publication.');
+      toast.error(err?.message || "Erreur lors de la publication.");
     } finally {
       setIsSubmitting(false);
     }
@@ -66,11 +71,11 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
     try {
       setIsSubmitting(true);
       await taxonomyAdminRepository.discardDraft();
-      toast.success('Brouillon réinitialisé sur la version publiée.');
+      toast.success("Brouillon réinitialisé sur la version publiée.");
       setIsDiscardModalOpen(false);
       onPublishSuccess();
     } catch (err: any) {
-      toast.error(err?.message || 'Erreur lors de l\'annulation.');
+      toast.error(err?.message || "Erreur lors de l'annulation.");
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +96,7 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
             <p className="text-xs text-stone-500 mt-1">
               {draftChanges.length > 0
                 ? `${draftChanges.length} modification(s) enregistrée(s) localement. Publiez pour appliquer les changements sur toute la plateforme.`
-                : 'Aucune modification en attente. La taxonomie est synchronisée avec la version active.'}
+                : "Aucune modification en attente. La taxonomie est synchronisée avec la version active."}
             </p>
           </div>
 
@@ -102,7 +107,9 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                 size="sm"
                 onClick={() => setIsDiscardModalOpen(true)}
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-              >{t('admin.taxonomyDraftPublishTab.annulerLesModifications')}</Button>
+              >
+                {t("admin.taxonomyDraftPublishTab.annulerLesModifications")}
+              </Button>
             )}
 
             <Button
@@ -111,7 +118,9 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
               onClick={() => setIsPublishModalOpen(true)}
               disabled={draftChanges.length === 0 || hasBlockingErrors}
               leftIcon={<Send className="w-3.5 h-3.5" />}
-            >{t('admin.taxonomyDraftPublishTab.publierLesModifications')}</Button>
+            >
+              {t("admin.taxonomyDraftPublishTab.publierLesModifications")}
+            </Button>
           </div>
         </div>
 
@@ -119,7 +128,11 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
         {hasBlockingErrors && draftChanges.length > 0 && (
           <div className="p-3.5 bg-danger-surface border border-danger-border rounded-xl text-xs text-danger flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-danger shrink-0" />
-            <span>{t('admin.taxonomyDraftPublishTab.publicationBloqueeDesAnomaliesCritiques')}<strong>Validation</strong>.
+            <span>
+              {t(
+                "admin.taxonomyDraftPublishTab.publicationBloqueeDesAnomaliesCritiques",
+              )}
+              <strong>Validation</strong>.
             </span>
           </div>
         )}
@@ -129,7 +142,9 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
           <div className="space-y-2 pt-3 border-t border-border-subtle">
             <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
               <FileDiff className="w-3.5 h-3.5 text-stone-500" />
-              <span>{t('admin.taxonomyDraftPublishTab.detailDesChangementsEtages')}</span>
+              <span>
+                {t("admin.taxonomyDraftPublishTab.detailDesChangementsEtages")}
+              </span>
             </h4>
 
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -141,18 +156,20 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                   <div className="flex items-center gap-2.5">
                     <span
                       className={`text-micro px-2 py-0.5 rounded-full font-mono font-bold uppercase ${
-                        change.changeType === 'created'
-                          ? 'bg-success-surface text-success'
-                          : change.changeType === 'deprecated'
-                          ? 'bg-danger-surface text-danger'
-                          : change.changeType === 'moved'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-info-surface text-info'
+                        change.changeType === "created"
+                          ? "bg-success-surface text-success"
+                          : change.changeType === "deprecated"
+                            ? "bg-danger-surface text-danger"
+                            : change.changeType === "moved"
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-info-surface text-info"
                       }`}
                     >
                       {change.changeType}
                     </span>
-                    <span className="font-bold text-stone-900">{change.nodeLabel}</span>
+                    <span className="font-bold text-stone-900">
+                      {change.nodeLabel}
+                    </span>
                     <span className="text-stone-500">{change.description}</span>
                   </div>
 
@@ -171,10 +188,13 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
         <div className="flex items-center justify-between">
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
             <History className="w-5 h-5 text-primary" />
-            <span>{t('admin.taxonomyDraftPublishTab.historiqueDesVersionsPubliees')}</span>
+            <span>
+              {t("admin.taxonomyDraftPublishTab.historiqueDesVersionsPubliees")}
+            </span>
           </h3>
           <span className="text-xs text-stone-500 font-mono">
-            {versions.length} version{versions.length > 1 ? 's' : ''} archivée{versions.length > 1 ? 's' : ''}
+            {versions.length} version{versions.length > 1 ? "s" : ""} archivée
+            {versions.length > 1 ? "s" : ""}
           </span>
         </div>
 
@@ -182,17 +202,32 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-border-subtle text-stone-500 uppercase tracking-wider text-micro">
-                <th scope="col" className="py-2.5 px-3">Version</th>
-                <th scope="col" className="py-2.5 px-3">Statut</th>
-                <th scope="col" className="py-2.5 px-3">Changements</th>
-                <th scope="col" className="py-2.5 px-3">Description</th>
-                <th scope="col" className="py-2.5 px-3">{t('admin.taxonomyDraftPublishTab.publiePar')}</th>
-                <th scope="col" className="py-2.5 px-3">Date</th>
+                <th scope="col" className="py-2.5 px-3">
+                  Version
+                </th>
+                <th scope="col" className="py-2.5 px-3">
+                  Statut
+                </th>
+                <th scope="col" className="py-2.5 px-3">
+                  Changements
+                </th>
+                <th scope="col" className="py-2.5 px-3">
+                  Description
+                </th>
+                <th scope="col" className="py-2.5 px-3">
+                  {t("admin.taxonomyDraftPublishTab.publiePar")}
+                </th>
+                <th scope="col" className="py-2.5 px-3">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {versions.map((ver, idx) => (
-                <tr key={ver.id} className="hover:bg-bg-subtle/50 transition-colors">
+                <tr
+                  key={ver.id}
+                  className="hover:bg-bg-subtle/50 transition-colors"
+                >
                   <td className="py-3 px-3 font-mono font-bold text-stone-900 flex items-center gap-2">
                     <GitCommit className="w-3.5 h-3.5 text-primary" />
                     <span>v{ver.versionNumber}.0</span>
@@ -207,13 +242,19 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
                       {ver.status}
                     </span>
                   </td>
-                  <td className="py-3 px-3 font-mono">{ver.changeCount} modif.</td>
-                  <td className="py-3 px-3 text-stone-700 max-w-xs truncate">
-                    {ver.description || 'Mise à jour standard'}
+                  <td className="py-3 px-3 font-mono">
+                    {ver.changeCount} modif.
                   </td>
-                  <td className="py-3 px-3 text-stone-600">{ver.publishedBy || 'Admin'}</td>
+                  <td className="py-3 px-3 text-stone-700 max-w-xs truncate">
+                    {ver.description || "Mise à jour standard"}
+                  </td>
+                  <td className="py-3 px-3 text-stone-600">
+                    {ver.publishedBy || "Admin"}
+                  </td>
                   <td className="py-3 px-3 text-stone-500 font-mono">
-                    {ver.publishedAt ? new Date(ver.publishedAt).toLocaleDateString() : '-'}
+                    {ver.publishedAt
+                      ? new Date(ver.publishedAt).toLocaleDateString()
+                      : "-"}
                   </td>
                 </tr>
               ))}
@@ -227,9 +268,11 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
         isOpen={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
         onConfirm={handlePublish}
-        title={t('admin.taxonomyDraftPublishTab.publierLesModificationsDeTaxonomie')}
+        title={t(
+          "admin.taxonomyDraftPublishTab.publierLesModificationsDeTaxonomie",
+        )}
         message={`Vous êtes sur le point de publier ${draftChanges.length} modification(s) vers la version ${versions.length + 1}.0. Les changements s'appliqueront immédiatement aux moteurs de recherche et formulaires de publication.`}
-        confirmText={isSubmitting ? 'Publication...' : 'Confirmer & Publier'}
+        confirmText={isSubmitting ? "Publication..." : "Confirmer & Publier"}
         variant="primary"
       />
 
@@ -238,7 +281,9 @@ export const TaxonomyDraftPublishTab: React.FC<TaxonomyDraftPublishTabProps> = (
         isOpen={isDiscardModalOpen}
         onClose={() => setIsDiscardModalOpen(false)}
         onConfirm={handleDiscard}
-        title={t('admin.taxonomyDraftPublishTab.annulerToutesLesModificationsEn')}
+        title={t(
+          "admin.taxonomyDraftPublishTab.annulerToutesLesModificationsEn",
+        )}
         message="Cette action effacera l'ensemble des changements étagés et restaurera la dernière version publiée."
         confirmText="Annuler le brouillon"
         variant="danger"

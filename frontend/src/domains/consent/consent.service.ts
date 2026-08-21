@@ -1,12 +1,12 @@
-import { storageService } from '../../services/storage.service';
+import { storageService } from "../../services/storage.service";
 import {
   ConsentCategories,
   ConsentCategory,
   ConsentCategoryDescriptor,
   ConsentDecision,
-} from './consent.types';
+} from "./consent.types";
 
-const STORAGE_KEY = 'shongre_cookie_consent_v1';
+const STORAGE_KEY = "shongre_cookie_consent_v1";
 
 /**
  * Bump when the categories below change what they cover. A stored decision from
@@ -20,21 +20,21 @@ export const CONSENT_LIFETIME_DAYS = 182;
 
 export const CONSENT_CATEGORIES: ConsentCategoryDescriptor[] = [
   {
-    id: 'necessary',
-    labelKey: 'consent.category.necessary',
-    descriptionKey: 'consent.category.necessaryDescription',
+    id: "necessary",
+    labelKey: "consent.category.necessary",
+    descriptionKey: "consent.category.necessaryDescription",
     required: true,
   },
   {
-    id: 'analytics',
-    labelKey: 'consent.category.analytics',
-    descriptionKey: 'consent.category.analyticsDescription',
+    id: "analytics",
+    labelKey: "consent.category.analytics",
+    descriptionKey: "consent.category.analyticsDescription",
     required: false,
   },
   {
-    id: 'marketing',
-    labelKey: 'consent.category.marketing',
-    descriptionKey: 'consent.category.marketingDescription',
+    id: "marketing",
+    labelKey: "consent.category.marketing",
+    descriptionKey: "consent.category.marketingDescription",
     required: false,
   },
 ];
@@ -55,7 +55,9 @@ export function allCategories(): ConsentCategories {
  * hand-edited or written by an older build, and code downstream is entitled to
  * assume the invariant holds.
  */
-export function normaliseCategories(partial?: Partial<ConsentCategories>): ConsentCategories {
+export function normaliseCategories(
+  partial?: Partial<ConsentCategories>,
+): ConsentCategories {
   return { ...defaultCategories(), ...partial, necessary: true };
 }
 
@@ -77,7 +79,10 @@ export function isDecisionCurrent(
 class ConsentService {
   /** The stored decision, or `null` when none applies and the banner is due. */
   getDecision(now: Date = new Date()): ConsentDecision | null {
-    const stored = storageService.get<ConsentDecision | null>(STORAGE_KEY, null);
+    const stored = storageService.get<ConsentDecision | null>(
+      STORAGE_KEY,
+      null,
+    );
     if (!isDecisionCurrent(stored, now)) return null;
     return { ...stored, categories: normaliseCategories(stored.categories) };
   }
@@ -91,7 +96,10 @@ class ConsentService {
     return this.getCategories(now)[category];
   }
 
-  save(categories: Partial<ConsentCategories>, now: Date = new Date()): ConsentDecision {
+  save(
+    categories: Partial<ConsentCategories>,
+    now: Date = new Date(),
+  ): ConsentDecision {
     const decision: ConsentDecision = {
       version: CONSENT_VERSION,
       decidedAt: now.toISOString(),

@@ -1,6 +1,6 @@
-import { MARKET_CONFIG } from '../configuration/market.config';
-import { storageService } from '../services/storage.service';
-import { marketService } from '../domains/market/market.service';
+import { MARKET_CONFIG } from "../configuration/market.config";
+import { storageService } from "../services/storage.service";
+import { marketService } from "../domains/market/market.service";
 
 /**
  * Format price in EUR or current market currency with proper non-breaking spaces and decimals
@@ -13,24 +13,31 @@ export function formatPrice(
     locale?: string;
     currency?: string;
     marketCode?: string;
-  } = {}
+  } = {},
 ): string {
   if (options.isFreeDonation || amount === 0) {
-    return 'Don / Gratuit';
+    return "Don / Gratuit";
   }
 
   let locale = options.locale;
   let currency = options.currency;
 
   if (!locale || !currency) {
-    const marketCode = options.marketCode || storageService.getActiveMarketCode() || 'FR';
+    const marketCode =
+      options.marketCode || storageService.getActiveMarketCode() || "FR";
     const config = marketService.getEffectiveConfig(marketCode);
-    locale = locale || config.localization.defaultLocale || MARKET_CONFIG.defaultLocale;
-    currency = currency || config.localization.defaultCurrency || MARKET_CONFIG.defaultCurrency;
+    locale =
+      locale ||
+      config.localization.defaultLocale ||
+      MARKET_CONFIG.defaultLocale;
+    currency =
+      currency ||
+      config.localization.defaultCurrency ||
+      MARKET_CONFIG.defaultCurrency;
   }
 
   const formatted = new Intl.NumberFormat(locale, {
-    style: options.showCurrency !== false ? 'currency' : 'decimal',
+    style: options.showCurrency !== false ? "currency" : "decimal",
     currency: currency,
     minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
     maximumFractionDigits: 2,
@@ -42,8 +49,8 @@ export function formatPrice(
 export interface RelativeTimestampOptions {
   locale?: string;
   referenceDate?: Date | string | number;
-  style?: 'long' | 'short' | 'narrow';
-  numeric?: 'auto' | 'always';
+  style?: "long" | "short" | "narrow";
+  numeric?: "auto" | "always";
   /**
    * If true (default), returns natural conversational relative text (e.g. "Il y a 2 heures", "2 hours ago", "Hier").
    * If false, returns just the unit without prefix/suffix (e.g. "2 heures", "2 hours").
@@ -57,27 +64,31 @@ export interface RelativeTimestampOptions {
  */
 export function formatRelativeTimestamp(
   dateInput: string | number | Date | null | undefined,
-  options: RelativeTimestampOptions = {}
+  options: RelativeTimestampOptions = {},
 ): string {
-  if (!dateInput) return '';
+  if (!dateInput) return "";
 
   try {
-    const targetDate = typeof dateInput === 'object' && dateInput instanceof Date ? dateInput : new Date(dateInput);
+    const targetDate =
+      typeof dateInput === "object" && dateInput instanceof Date
+        ? dateInput
+        : new Date(dateInput);
     if (isNaN(targetDate.getTime())) {
-      return typeof dateInput === 'string' ? dateInput : '';
+      return typeof dateInput === "string" ? dateInput : "";
     }
 
     const refDate = options.referenceDate
-      ? typeof options.referenceDate === 'object' && options.referenceDate instanceof Date
+      ? typeof options.referenceDate === "object" &&
+        options.referenceDate instanceof Date
         ? options.referenceDate
         : new Date(options.referenceDate)
       : new Date();
 
-    const locale = options.locale || MARKET_CONFIG.defaultLocale || 'fr-FR';
-    const isFrench = locale.toLowerCase().startsWith('fr');
-    const isEnglish = locale.toLowerCase().startsWith('en');
-    const style = options.style || 'long';
-    const numeric = options.numeric || 'auto';
+    const locale = options.locale || MARKET_CONFIG.defaultLocale || "fr-FR";
+    const isFrench = locale.toLowerCase().startsWith("fr");
+    const isEnglish = locale.toLowerCase().startsWith("en");
+    const style = options.style || "long";
+    const numeric = options.numeric || "auto";
     const addPrefix = options.addPrefix !== false;
 
     const diffMs = refDate.getTime() - targetDate.getTime();
@@ -91,30 +102,34 @@ export function formatRelativeTimestamp(
 
     // Under 45 seconds or future
     if (diffSeconds < 45) {
-      if (isFrench) return 'À l\'instant';
-      if (isEnglish) return 'Just now';
-      return 'À l\'instant';
+      if (isFrench) return "À l'instant";
+      if (isEnglish) return "Just now";
+      return "À l'instant";
     }
 
     // Minutes (< 60 minutes)
     if (diffMinutes < 60) {
       if (isFrench) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `Il y a ${diffMinutes} min` : `${diffMinutes} min`;
         }
-        const unit = diffMinutes === 1 ? 'minute' : 'minutes';
-        return addPrefix ? `Il y a ${diffMinutes} ${unit}` : `${diffMinutes} ${unit}`;
+        const unit = diffMinutes === 1 ? "minute" : "minutes";
+        return addPrefix
+          ? `Il y a ${diffMinutes} ${unit}`
+          : `${diffMinutes} ${unit}`;
       }
       if (isEnglish) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `${diffMinutes}m ago` : `${diffMinutes}m`;
         }
-        const unit = diffMinutes === 1 ? 'minute' : 'minutes';
-        return addPrefix ? `${diffMinutes} ${unit} ago` : `${diffMinutes} ${unit}`;
+        const unit = diffMinutes === 1 ? "minute" : "minutes";
+        return addPrefix
+          ? `${diffMinutes} ${unit} ago`
+          : `${diffMinutes} ${unit}`;
       }
       try {
         const rtf = new Intl.RelativeTimeFormat(locale, { numeric, style });
-        return rtf.format(-diffMinutes, 'minute');
+        return rtf.format(-diffMinutes, "minute");
       } catch {
         return `Il y a ${diffMinutes} min`;
       }
@@ -123,22 +138,24 @@ export function formatRelativeTimestamp(
     // Hours (< 24 hours)
     if (diffHours < 24) {
       if (isFrench) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `Il y a ${diffHours} h` : `${diffHours} h`;
         }
-        const unit = diffHours === 1 ? 'heure' : 'heures';
-        return addPrefix ? `Il y a ${diffHours} ${unit}` : `${diffHours} ${unit}`;
+        const unit = diffHours === 1 ? "heure" : "heures";
+        return addPrefix
+          ? `Il y a ${diffHours} ${unit}`
+          : `${diffHours} ${unit}`;
       }
       if (isEnglish) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `${diffHours}h ago` : `${diffHours}h`;
         }
-        const unit = diffHours === 1 ? 'hour' : 'hours';
+        const unit = diffHours === 1 ? "hour" : "hours";
         return addPrefix ? `${diffHours} ${unit} ago` : `${diffHours} ${unit}`;
       }
       try {
         const rtf = new Intl.RelativeTimeFormat(locale, { numeric, style });
-        return rtf.format(-diffHours, 'hour');
+        return rtf.format(-diffHours, "hour");
       } catch {
         return `Il y a ${diffHours} h`;
       }
@@ -147,28 +164,28 @@ export function formatRelativeTimestamp(
     // Days (< 7 days)
     if (diffDays < 7) {
       if (isFrench) {
-        if (diffDays === 1 && numeric === 'auto') {
-          return 'Hier';
+        if (diffDays === 1 && numeric === "auto") {
+          return "Hier";
         }
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `Il y a ${diffDays} j` : `${diffDays} j`;
         }
-        const unit = diffDays === 1 ? 'jour' : 'jours';
+        const unit = diffDays === 1 ? "jour" : "jours";
         return addPrefix ? `Il y a ${diffDays} ${unit}` : `${diffDays} ${unit}`;
       }
       if (isEnglish) {
-        if (diffDays === 1 && numeric === 'auto') {
-          return 'Yesterday';
+        if (diffDays === 1 && numeric === "auto") {
+          return "Yesterday";
         }
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `${diffDays}d ago` : `${diffDays}d`;
         }
-        const unit = diffDays === 1 ? 'day' : 'days';
+        const unit = diffDays === 1 ? "day" : "days";
         return addPrefix ? `${diffDays} ${unit} ago` : `${diffDays} ${unit}`;
       }
       try {
         const rtf = new Intl.RelativeTimeFormat(locale, { numeric, style });
-        return rtf.format(-diffDays, 'day');
+        return rtf.format(-diffDays, "day");
       } catch {
         return `Il y a ${diffDays} j`;
       }
@@ -178,22 +195,22 @@ export function formatRelativeTimestamp(
     if (diffDays < 30) {
       const weeks = Math.max(1, diffWeeks);
       if (isFrench) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `Il y a ${weeks} sem.` : `${weeks} sem.`;
         }
-        const unit = weeks === 1 ? 'semaine' : 'semaines';
+        const unit = weeks === 1 ? "semaine" : "semaines";
         return addPrefix ? `Il y a ${weeks} ${unit}` : `${weeks} ${unit}`;
       }
       if (isEnglish) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `${weeks}w ago` : `${weeks}w`;
         }
-        const unit = weeks === 1 ? 'week' : 'weeks';
+        const unit = weeks === 1 ? "week" : "weeks";
         return addPrefix ? `${weeks} ${unit} ago` : `${weeks} ${unit}`;
       }
       try {
         const rtf = new Intl.RelativeTimeFormat(locale, { numeric, style });
-        return rtf.format(-weeks, 'week');
+        return rtf.format(-weeks, "week");
       } catch {
         return `Il y a ${weeks} sem.`;
       }
@@ -206,15 +223,15 @@ export function formatRelativeTimestamp(
         return addPrefix ? `Il y a ${months} mois` : `${months} mois`;
       }
       if (isEnglish) {
-        if (style === 'short' || style === 'narrow') {
+        if (style === "short" || style === "narrow") {
           return addPrefix ? `${months}mo ago` : `${months}mo`;
         }
-        const unit = months === 1 ? 'month' : 'months';
+        const unit = months === 1 ? "month" : "months";
         return addPrefix ? `${months} ${unit} ago` : `${months} ${unit}`;
       }
       try {
         const rtf = new Intl.RelativeTimeFormat(locale, { numeric, style });
-        return rtf.format(-months, 'month');
+        return rtf.format(-months, "month");
       } catch {
         return `Il y a ${months} mois`;
       }
@@ -223,34 +240,37 @@ export function formatRelativeTimestamp(
     // Years (>= 365 days)
     const years = Math.max(1, diffYears);
     if (isFrench) {
-      if (style === 'short' || style === 'narrow') {
+      if (style === "short" || style === "narrow") {
         return addPrefix ? `Il y a ${years} an` : `${years} an`;
       }
-      const unit = years === 1 ? 'an' : 'ans';
+      const unit = years === 1 ? "an" : "ans";
       return addPrefix ? `Il y a ${years} ${unit}` : `${years} ${unit}`;
     }
     if (isEnglish) {
-      if (style === 'short' || style === 'narrow') {
+      if (style === "short" || style === "narrow") {
         return addPrefix ? `${years}y ago` : `${years}y`;
       }
-      const unit = years === 1 ? 'year' : 'years';
+      const unit = years === 1 ? "year" : "years";
       return addPrefix ? `${years} ${unit} ago` : `${years} ${unit}`;
     }
     try {
       const rtf = new Intl.RelativeTimeFormat(locale, { numeric, style });
-      return rtf.format(-years, 'year');
+      return rtf.format(-years, "year");
     } catch {
-      return `Il y a ${years} an${years > 1 ? 's' : ''}`;
+      return `Il y a ${years} an${years > 1 ? "s" : ""}`;
     }
   } catch {
-    return typeof dateInput === 'string' ? dateInput : '';
+    return typeof dateInput === "string" ? dateInput : "";
   }
 }
 
 /**
  * Format date in localized format or relative time (e.g. "Il y a 2 heures", "Hier", "Il y a 3 jours")
  */
-export function formatRelativeDate(isoDateString: string, locale?: string): string {
+export function formatRelativeDate(
+  isoDateString: string,
+  locale?: string,
+): string {
   return formatRelativeTimestamp(isoDateString, { locale });
 }
 
@@ -262,9 +282,9 @@ export function formatDate(isoDateString: string, locale?: string): string {
     const date = new Date(isoDateString);
     const activeLocale = locale || MARKET_CONFIG.defaultLocale;
     return date.toLocaleDateString(activeLocale, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   } catch {
     return isoDateString;
@@ -283,7 +303,11 @@ export function formatDate(isoDateString: string, locale?: string): string {
  *   plural(0, 'annonce')             → "0 annonce"
  *   plural(2, 'journal', 'journaux') → "2 journaux"
  */
-export function plural(count: number, singular: string, pluralForm?: string): string {
+export function plural(
+  count: number,
+  singular: string,
+  pluralForm?: string,
+): string {
   const isPlural = Math.abs(count) >= 2;
   const word = isPlural ? (pluralForm ?? `${singular}s`) : singular;
   return `${count} ${word}`;
@@ -299,24 +323,33 @@ export function plural(count: number, singular: string, pluralForm?: string): st
  * anything older carries its date. Seconds are omitted — they were always `:00`
  * and added noise without information.
  */
-export function formatLogTimestamp(isoDateString: string, locale?: string): string {
+export function formatLogTimestamp(
+  isoDateString: string,
+  locale?: string,
+): string {
   try {
     const date = new Date(isoDateString);
     if (Number.isNaN(date.getTime())) return isoDateString;
     const activeLocale = locale || MARKET_CONFIG.defaultLocale;
-    const time = date.toLocaleTimeString(activeLocale, { hour: '2-digit', minute: '2-digit' });
+    const time = date.toLocaleTimeString(activeLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    const dayDelta = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86_400_000);
+    const startOfDay = (d: Date) =>
+      new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const dayDelta = Math.round(
+      (startOfDay(new Date()) - startOfDay(date)) / 86_400_000,
+    );
 
     if (dayDelta === 0) return `Aujourd'hui ${time}`;
     if (dayDelta === 1) return `Hier ${time}`;
 
     const sameYear = date.getFullYear() === new Date().getFullYear();
     const day = date.toLocaleDateString(activeLocale, {
-      day: 'numeric',
-      month: 'short',
-      ...(sameYear ? {} : { year: 'numeric' }),
+      day: "numeric",
+      month: "short",
+      ...(sameYear ? {} : { year: "numeric" }),
     });
     return `${day} ${time}`;
   } catch {
@@ -328,10 +361,13 @@ export function formatLogTimestamp(isoDateString: string, locale?: string): stri
  * Format phone number for display
  */
 export function formatPhoneNumber(phone: string): string {
-  if (!phone) return '';
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 10 && cleaned.startsWith('0')) {
-    return cleaned.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+  if (!phone) return "";
+  const cleaned = phone.replace(/\D/g, "");
+  if (cleaned.length === 10 && cleaned.startsWith("0")) {
+    return cleaned.replace(
+      /(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/,
+      "$1 $2 $3 $4 $5",
+    );
   }
   return phone;
 }
@@ -342,11 +378,14 @@ export function formatPhoneNumber(phone: string): string {
 export function calculateBuyerFee(
   price: number,
   feePercent = MARKET_CONFIG.buyerProtectionFeePercent,
-  fixedFee = MARKET_CONFIG.buyerProtectionFixedFee
+  fixedFee = MARKET_CONFIG.buyerProtectionFixedFee,
 ): number {
   if (price <= 0) return 0;
   const variable = price * feePercent;
   return Math.round((variable + fixedFee) * 100) / 100;
 }
 
-export { formatBusinessIdentifier, validateBusinessIdentifier } from '../configuration/market.config';
+export {
+  formatBusinessIdentifier,
+  validateBusinessIdentifier,
+} from "../configuration/market.config";

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Modal } from './Modal';
-import { Button } from './Button';
-import { Input, Textarea, FormField } from './FormField';
+import React, { useState, useEffect } from "react";
+import { Modal } from "./Modal";
+import { Button } from "./Button";
+import { Input, Textarea, FormField } from "./FormField";
 
 export interface PromptModalProps {
   isOpen: boolean;
@@ -24,10 +24,10 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   onSubmit,
   title,
   label,
-  placeholder = '',
-  initialValue = '',
-  confirmText = 'Valider',
-  cancelText = 'Annuler',
+  placeholder = "",
+  initialValue = "",
+  confirmText = "Valider",
+  cancelText = "Annuler",
   multiline = false,
   required = true,
   hint,
@@ -45,7 +45,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (required && !value.trim()) {
-      setError('Ce champ est obligatoire.');
+      setError("Ce champ est obligatoire.");
       return;
     }
     onSubmit(value.trim());
@@ -55,7 +55,12 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="md">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label={label} required={required} hint={hint} error={error || undefined}>
+        <FormField
+          label={label}
+          required={required}
+          hint={hint}
+          error={error || undefined}
+        >
           {multiline ? (
             <Textarea
               rows={4}

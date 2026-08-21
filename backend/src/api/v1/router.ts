@@ -120,6 +120,9 @@ export class ApiV1Router {
       const ownerId = resolveOwnerId(principal, params.id, 'user.manage');
       return usersService.updateUserProfile(ownerId, sanitizeProfileUpdate(body, principal));
     });
+    this.addRoute('POST', '/account/delete', AUTHENTICATED, async ({ principal, body }) =>
+      usersService.deleteOwnAccount(principal.userId, body?.password, body?.reason)
+    );
 
     // --------------------------------------------------------------------------
     // LISTINGS & SEARCH ROUTES
@@ -317,6 +320,10 @@ export class ApiV1Router {
       await messagingService.blockUser(principal.userId, body?.targetUserId);
       return { success: true };
     });
+    this.addRoute('POST', '/messaging/unblock', AUTHENTICATED, async ({ principal, body }) => {
+      await messagingService.unblockUser(principal.userId, body?.targetUserId);
+      return { success: true };
+    });
 
     // --------------------------------------------------------------------------
     // NOTIFICATIONS ROUTES
@@ -342,6 +349,14 @@ export class ApiV1Router {
       await notificationsService.deleteNotification(params.id);
       return { success: true };
     });
+    this.addRoute('POST', '/notifications/devices', AUTHENTICATED, async ({ principal, body }) => {
+      await notificationsService.registerDevice(principal.userId, body?.token, body?.platform, body?.appVersion);
+      return { success: true };
+    });
+    this.addRoute('POST', '/notifications/devices/unregister', AUTHENTICATED, async ({ principal, body }) => {
+      await notificationsService.unregisterDevice(principal.userId, body?.token);
+      return { success: true };
+    });
 
     // --------------------------------------------------------------------------
     // REVIEWS ROUTES
@@ -350,6 +365,9 @@ export class ApiV1Router {
     this.addRoute('GET', '/reviews/user/:userId', PUBLIC, async ({ params }) => reviewsService.getUserReviews(params.userId));
     this.addRoute('POST', '/reviews/submit', permission('review.create'), async ({ principal, body }) =>
       reviewsService.submitReview({ ...body, authorId: principal.userId })
+    );
+    this.addRoute('POST', '/reports', permission('report.create'), async ({ principal, body }) =>
+      adminService.submitReport({ ...body, reporterId: principal.userId })
     );
 
     // --------------------------------------------------------------------------
@@ -503,7 +521,7 @@ export class ApiV1Router {
 
   async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const rawUrl = req.url || '/';
-    const parsedUrl = new URL(rawUrl, 'http://localhost');
+    const parsedUrl = new URL(rawUrl, 'http://request.invalid');
     let pathname = parsedUrl.pathname;
 
     if (pathname.startsWith('/api/v1')) {
@@ -523,7 +541,7 @@ export class ApiV1Router {
       });
 
       let body: any = null;
-      if (['POST', 'PUT', 'PATCH'].includes(method)) {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
         body = await this.readRequestBody(req);
       }
 

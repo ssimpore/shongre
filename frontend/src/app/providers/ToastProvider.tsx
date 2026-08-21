@@ -1,16 +1,23 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export interface Toast {
   id: string;
-  type: 'success' | 'error' | 'info' | 'warning';
+  type: "success" | "error" | "info" | "warning";
   title?: string;
   message: string;
 }
 
 interface ToastContextType {
-  showToast: (type: Toast['type'], message: string, title?: string) => void;
+  showToast: (type: Toast["type"], message: string, title?: string) => void;
   success: (message: string, title?: string) => void;
   error: (message: string, title?: string) => void;
   info: (message: string, title?: string) => void;
@@ -19,7 +26,9 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { t } = useTranslation();
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextToastId = useRef(0);
@@ -33,20 +42,35 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
-  const showToast = useCallback((type: Toast['type'], message: string, title?: string) => {
-    const id = `toast-${nextToastId.current++}`;
-    setToasts((prev) => [...prev, { id, type, message, title }]);
-    const timer = window.setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-      dismissalTimers.current.delete(id);
-    }, 4500);
-    dismissalTimers.current.set(id, timer);
-  }, []);
+  const showToast = useCallback(
+    (type: Toast["type"], message: string, title?: string) => {
+      const id = `toast-${nextToastId.current++}`;
+      setToasts((prev) => [...prev, { id, type, message, title }]);
+      const timer = window.setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+        dismissalTimers.current.delete(id);
+      }, 4500);
+      dismissalTimers.current.set(id, timer);
+    },
+    [],
+  );
 
-  const success = useCallback((msg: string, title?: string) => showToast('success', msg, title), [showToast]);
-  const error = useCallback((msg: string, title?: string) => showToast('error', msg, title), [showToast]);
-  const info = useCallback((msg: string, title?: string) => showToast('info', msg, title), [showToast]);
-  const warning = useCallback((msg: string, title?: string) => showToast('warning', msg, title), [showToast]);
+  const success = useCallback(
+    (msg: string, title?: string) => showToast("success", msg, title),
+    [showToast],
+  );
+  const error = useCallback(
+    (msg: string, title?: string) => showToast("error", msg, title),
+    [showToast],
+  );
+  const info = useCallback(
+    (msg: string, title?: string) => showToast("info", msg, title),
+    [showToast],
+  );
+  const warning = useCallback(
+    (msg: string, title?: string) => showToast("warning", msg, title),
+    [showToast],
+  );
 
   const removeToast = (id: string) => {
     const timer = dismissalTimers.current.get(id);
@@ -76,7 +100,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           into two regions — splitting would reorder a mixed stack visually. */}
       <div
         role="region"
-        aria-label={t('common.notifications')}
+        aria-label={t("common.notifications")}
         aria-live="polite"
         aria-relevant="additions"
         aria-atomic="false"
@@ -84,34 +108,56 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       >
         {toasts.map((toast) => {
           const typeStyles = {
-            success: 'bg-emerald-900/90 text-white border-emerald-700',
-            error: 'bg-red-900/90 text-white border-red-700',
-            info: 'bg-stone-900/90 text-white border-stone-700',
-            warning: 'bg-amber-900/90 text-white border-amber-700',
+            success: "bg-emerald-900/90 text-white border-emerald-700",
+            error: "bg-red-900/90 text-white border-red-700",
+            info: "bg-stone-900/90 text-white border-stone-700",
+            warning: "bg-amber-900/90 text-white border-amber-700",
           };
 
           const icons = {
-            success: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" aria-hidden="true" />,
-            error: <AlertCircle className="w-5 h-5 text-red-400 shrink-0" aria-hidden="true" />,
-            info: <Info className="w-5 h-5 text-sky-400 shrink-0" aria-hidden="true" />,
-            warning: <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" aria-hidden="true" />,
+            success: (
+              <CheckCircle2
+                className="w-5 h-5 text-emerald-400 shrink-0"
+                aria-hidden="true"
+              />
+            ),
+            error: (
+              <AlertCircle
+                className="w-5 h-5 text-red-400 shrink-0"
+                aria-hidden="true"
+              />
+            ),
+            info: (
+              <Info
+                className="w-5 h-5 text-sky-400 shrink-0"
+                aria-hidden="true"
+              />
+            ),
+            warning: (
+              <AlertCircle
+                className="w-5 h-5 text-amber-400 shrink-0"
+                aria-hidden="true"
+              />
+            ),
           };
 
           return (
             <div
               key={toast.id}
-              role={toast.type === 'error' ? 'alert' : 'status'}
+              role={toast.type === "error" ? "alert" : "status"}
               className={`pointer-events-auto p-3.5 rounded-xl shadow-xl border backdrop-blur-md flex items-start gap-3 animate-in slide-in-from-bottom duration-normal ${typeStyles[toast.type]}`}
             >
               {icons[toast.type]}
               <div className="flex-1 text-xs sm:text-sm">
-                {toast.title && <div className="font-bold mb-0.5">{toast.title}</div>}
+                {toast.title && (
+                  <div className="font-bold mb-0.5">{toast.title}</div>
+                )}
                 <div>{toast.message}</div>
               </div>
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}
-                aria-label={t('common.close')}
+                aria-label={t("common.close")}
                 /* 24px is the WCAG 2.5.8 floor; the glyph stays 16px and the
                    negative margin keeps the larger hit area from widening the
                    toast. */
@@ -129,6 +175,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export function useToast(): ToastContextType {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within ToastProvider');
+  if (!ctx) throw new Error("useToast must be used within ToastProvider");
   return ctx;
 }

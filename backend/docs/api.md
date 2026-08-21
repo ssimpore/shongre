@@ -1,6 +1,6 @@
 # Shongre REST API v1 Specification
 
-Base URL: `http://localhost:4000/api/v1`
+Base URL: `${BACKEND_ORIGIN}${API_PREFIX}`. Local values are derived from the root environment; run `make info` to print the active URL.
 
 ---
 

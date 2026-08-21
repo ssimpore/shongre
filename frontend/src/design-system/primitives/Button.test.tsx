@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import React from 'react';
-import { Button } from './Button';
+import { describe, it, expect } from "vitest";
+import React from "react";
+import { Button } from "./Button";
 
 /**
  * A caller's display utility has to beat the primitive's default.
@@ -17,12 +17,16 @@ import { Button } from './Button';
  * equivalent, asserted so the base class cannot silently reclaim precedence.
  */
 const classesOf = (element: React.ReactElement): string => {
-  const rendered = (Button as unknown as (props: unknown) => React.ReactElement)(element.props);
+  const rendered = (
+    Button as unknown as (props: unknown) => React.ReactElement
+  )(element.props);
   const walk = (node: unknown): string => {
-    const candidate = node as { props?: { className?: string; children?: unknown } };
+    const candidate = node as {
+      props?: { className?: string; children?: unknown };
+    };
     if (candidate?.props?.className) return candidate.props.className;
     if (candidate?.props?.children) return walk(candidate.props.children);
-    return '';
+    return "";
   };
   return walk(rendered);
 };
@@ -30,52 +34,60 @@ const classesOf = (element: React.ReactElement): string => {
 const renderButton = (
   element: React.ReactElement,
 ): React.ReactElement<Record<string, unknown>> =>
-  (Button as unknown as (
-    props: unknown,
-  ) => React.ReactElement<Record<string, unknown>>)(element.props);
+  (
+    Button as unknown as (
+      props: unknown,
+    ) => React.ReactElement<Record<string, unknown>>
+  )(element.props);
 
-describe('Button display utilities', () => {
-  it('drops its own inline-flex when the caller sets a display', () => {
-    const classes = classesOf(<Button className="hidden sm:inline-flex">Suivre</Button>);
+describe("Button display utilities", () => {
+  it("drops its own inline-flex when the caller sets a display", () => {
+    const classes = classesOf(
+      <Button className="hidden sm:inline-flex">Suivre</Button>,
+    );
 
-    expect(classes).toContain('hidden');
-    expect(classes.split(/\s+/)).not.toContain('inline-flex');
+    expect(classes).toContain("hidden");
+    expect(classes.split(/\s+/)).not.toContain("inline-flex");
   });
 
-  it.each(['hidden', 'block', 'flex', 'grid', 'inline-block'])(
-    'yields to a caller-supplied `%s`',
+  it.each(["hidden", "block", "flex", "grid", "inline-block"])(
+    "yields to a caller-supplied `%s`",
     (display) => {
       const classes = classesOf(<Button className={display}>Label</Button>);
-      expect(classes.split(/\s+/)).not.toContain('inline-flex');
+      expect(classes.split(/\s+/)).not.toContain("inline-flex");
     },
   );
 
   // Responsive-only display utilities are not a base-layer conflict, so the
   // default must stay — otherwise the button has no display at all below `sm`.
-  it('keeps inline-flex when the caller only sets a responsive display', () => {
+  it("keeps inline-flex when the caller only sets a responsive display", () => {
     const classes = classesOf(<Button className="sm:block">Label</Button>);
-    expect(classes.split(/\s+/)).toContain('inline-flex');
+    expect(classes.split(/\s+/)).toContain("inline-flex");
   });
 
-  it('keeps inline-flex when the caller sets unrelated classes', () => {
-    const classes = classesOf(<Button className="flex-1 min-w-0 font-bold">Label</Button>);
-    expect(classes.split(/\s+/)).toContain('inline-flex');
+  it("keeps inline-flex when the caller sets unrelated classes", () => {
+    const classes = classesOf(
+      <Button className="flex-1 min-w-0 font-bold">Label</Button>,
+    );
+    expect(classes.split(/\s+/)).toContain("inline-flex");
   });
 });
 
-describe('Button form behavior', () => {
-  it('does not submit an enclosing form unless submission is explicit', () => {
-    expect(renderButton(<Button>Continuer</Button>).props.type).toBe('button');
+describe("Button form behavior", () => {
+  it("does not submit an enclosing form unless submission is explicit", () => {
+    expect(renderButton(<Button>Continuer</Button>).props.type).toBe("button");
   });
 
-  it('preserves an explicit submit type', () => {
-    expect(renderButton(<Button type="submit">Publier</Button>).props.type).toBe('submit');
+  it("preserves an explicit submit type", () => {
+    expect(
+      renderButton(<Button type="submit">Publier</Button>).props.type,
+    ).toBe("submit");
   });
 
-  it('announces its loading state and disables repeat submission', () => {
+  it("announces its loading state and disables repeat submission", () => {
     const rendered = renderButton(<Button isLoading>Publier</Button>);
 
     expect(rendered.props.disabled).toBe(true);
-    expect(rendered.props['aria-busy']).toBe(true);
+    expect(rendered.props["aria-busy"]).toBe(true);
   });
 });

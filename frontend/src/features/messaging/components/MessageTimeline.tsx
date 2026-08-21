@@ -1,28 +1,28 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from "react";
 import {
   Check,
   CheckCheck,
   Clock,
   AlertCircle,
-  
-  Image as 
-  DollarSign,
-  
+  Image as DollarSign,
   ShieldCheck,
   Maximize2,
-  Info
-} from 'lucide-react';
+  Info,
+} from "lucide-react";
 import {
   TimelineItem,
   UserTimelineMessage,
   SystemTimelineEvent,
   TypingState,
-} from '../../../domains/messaging/messaging.types';
-import { messagingService, TimelineDateGroup } from '../../../domains/messaging/messaging.service';
-import { Button } from '../../../design-system/primitives/Button';
-import { formatPrice } from '../../../utilities/formatters';
-import { Image } from '../../../design-system/primitives/Image';
-import { useTranslation } from '../../../i18n/I18nProvider';
+} from "../../../domains/messaging/messaging.types";
+import {
+  messagingService,
+  TimelineDateGroup,
+} from "../../../domains/messaging/messaging.service";
+import { Button } from "../../../design-system/primitives/Button";
+import { formatPrice } from "../../../utilities/formatters";
+import { Image } from "../../../design-system/primitives/Image";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface MessageTimelineProps {
   items: TimelineItem[];
@@ -61,17 +61,21 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
   useEffect(() => {
     const list = scrollRef.current;
     if (!list) return;
-    list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+    list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
   }, [items, typingState]);
 
-  const groups: TimelineDateGroup[] = messagingService.groupTimelineByDate(items);
+  const groups: TimelineDateGroup[] =
+    messagingService.groupTimelineByDate(items);
 
   const formatTime = (iso: string) => {
     try {
       const date = new Date(iso);
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } catch {
-      return '';
+      return "";
     }
   };
 
@@ -85,13 +89,17 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
       className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/50"
       tabIndex={0}
       role="log"
-      aria-label={t('messaging.messageTimeline.historiqueDeLaConversation')}
+      aria-label={t("messaging.messageTimeline.historiqueDeLaConversation")}
     >
       {groups.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-500 space-y-2">
           <Info className="w-8 h-8 text-stone-300" />
-          <p className="text-xs font-bold text-stone-600">{t('messaging.messageTimeline.debutDeLaConversation')}</p>
-          <p className="text-micro text-stone-500 max-w-xs">{t('messaging.messageTimeline.posezVosQuestionsAuVendeur')}</p>
+          <p className="text-xs font-bold text-stone-600">
+            {t("messaging.messageTimeline.debutDeLaConversation")}
+          </p>
+          <p className="text-micro text-stone-500 max-w-xs">
+            {t("messaging.messageTimeline.posezVosQuestionsAuVendeur")}
+          </p>
         </div>
       ) : (
         groups.map((group, groupIdx) => (
@@ -106,7 +114,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
             {/* Messages & Events */}
             <div className="space-y-3">
               {group.items.map((item) => {
-                if (item.itemType === 'system_event') {
+                if (item.itemType === "system_event") {
                   const sys = item as SystemTimelineEvent;
                   return (
                     <div key={sys.id} className="my-3 flex justify-center">
@@ -129,12 +137,12 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                 // Regular User Message
                 const msg = item as UserTimelineMessage;
                 const isMe = msg.senderId === currentUserId;
-                const isOffer = msg.contentType === 'offer';
+                const isOffer = msg.contentType === "offer";
 
                 return (
                   <div
                     key={msg.id}
-                    className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group`}
+                    className={`flex flex-col ${isMe ? "items-end" : "items-start"} group`}
                   >
                     {!isMe && (
                       <span className="text-micro font-bold text-stone-500 mb-1 ml-1">
@@ -145,8 +153,8 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     <div
                       className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 shadow-2xs text-xs font-medium ${
                         isMe
-                          ? 'bg-primary text-white rounded-br-xs'
-                          : 'bg-white text-stone-900 border border-border-base rounded-bl-xs'
+                          ? "bg-primary text-white rounded-br-xs"
+                          : "bg-white text-stone-900 border border-border-base rounded-bl-xs"
                       }`}
                     >
                       {/* Photo Attachment */}
@@ -154,9 +162,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                         <div className="mb-2 relative group/img cursor-pointer overflow-hidden rounded-xl">
                           <Image
                             src={msg.attachment.url}
-                            alt={t('messaging.messageTimeline.photoPartagee')}
+                            alt={t("messaging.messageTimeline.photoPartagee")}
                             sizes="(max-width: 640px) 75vw, 320px"
-                  className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
+                            className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
                             onClick={() => onOpenImage(msg.attachment!.url)}
                           />
                           <button
@@ -175,7 +183,10 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                         <div className="p-2.5 rounded-xl bg-warning-surface border border-warning-border text-warning mb-2 space-y-2">
                           <div className="flex items-center gap-1.5 font-extrabold text-xs">
                             <DollarSign className="w-4 h-4 text-warning" />
-                            <span>Offre proposée : {formatPrice(msg.offerAmount || 0)}</span>
+                            <span>
+                              Offre proposée :{" "}
+                              {formatPrice(msg.offerAmount || 0)}
+                            </span>
                           </div>
                           {!isMe && onRespondOffer && (
                             <div className="flex gap-2 pt-1">
@@ -183,7 +194,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                                 variant="primary"
                                 size="sm"
                                 fullWidth
-                                onClick={() => onRespondOffer(true, msg.offerAmount)}
+                                onClick={() =>
+                                  onRespondOffer(true, msg.offerAmount)
+                                }
                               >
                                 Accepter
                               </Button>
@@ -191,7 +204,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                                 variant="outline"
                                 size="sm"
                                 fullWidth
-                                onClick={() => onRespondOffer(false, msg.offerAmount)}
+                                onClick={() =>
+                                  onRespondOffer(false, msg.offerAmount)
+                                }
                               >
                                 Refuser
                               </Button>
@@ -201,7 +216,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                       )}
 
                       {/* Text content */}
-                      <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                      <p className="leading-relaxed whitespace-pre-wrap break-words">
+                        {msg.content}
+                      </p>
 
                       {/* Timestamp & Status Ticks */}
                       <div
@@ -210,27 +227,39 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                            content, so they take the full-strength white the
                            message body already uses. */
                         className={`flex items-center justify-end gap-1 text-micro mt-1 ${
-                          isMe ? 'text-white' : 'text-stone-500'
+                          isMe ? "text-white" : "text-stone-500"
                         }`}
                       >
                         <span>{formatTime(msg.createdAt)}</span>
 
                         {isMe && (
                           <span className="inline-flex items-center">
-                            {msg.status === 'sending' && <Clock className="w-3 h-3 animate-spin" />}
-                            {msg.status === 'sent' && <Check className="w-3 h-3" />}
-                            {msg.status === 'delivered' && <CheckCheck className="w-3 h-3 text-white/90" />}
-                            {msg.status === 'read' && <CheckCheck className="w-3 h-3 text-white" />}
-                            {msg.status === 'failed' && (
+                            {msg.status === "sending" && (
+                              <Clock className="w-3 h-3 animate-spin" />
+                            )}
+                            {msg.status === "sent" && (
+                              <Check className="w-3 h-3" />
+                            )}
+                            {msg.status === "delivered" && (
+                              <CheckCheck className="w-3 h-3 text-white/90" />
+                            )}
+                            {msg.status === "read" && (
+                              <CheckCheck className="w-3 h-3 text-white" />
+                            )}
+                            {msg.status === "failed" && (
                               <span className="flex items-center gap-1 text-red-200 font-bold">
                                 <AlertCircle className="w-3 h-3" />
-                                <span>{t('messaging.messageTimeline.echec')}</span>
+                                <span>
+                                  {t("messaging.messageTimeline.echec")}
+                                </span>
                                 {onRetryMessage && (
                                   <button
                                     type="button"
                                     onClick={() => onRetryMessage(msg)}
                                     className="underline ml-0.5 hover:text-white"
-                                  >{t('messaging.messageTimeline.reessayer')}</button>
+                                  >
+                                    {t("messaging.messageTimeline.reessayer")}
+                                  </button>
                                 )}
                               </span>
                             )}

@@ -1,46 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { PlusCircle, Search, Sparkles } from "lucide-react";
+import { Button } from "../../../design-system/primitives/Button";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { Modal } from "../../../design-system/primitives/Modal";
 import {
-  
-  PlusCircle,
-  Search,
-  Sparkles
-  
-  
-} from 'lucide-react';
-import { Button } from '../../../design-system/primitives/Button';
-import { Badge } from '../../../design-system/primitives/Badge';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { FormField, Input, Select } from '../../../design-system/primitives/FormField';
-import { crmRepository } from '../../../repositories/crm.repository';
-import { CrmCompany } from '../../../domains/crm/crm.types';
-import { crmService } from '../../../domains/crm/crm.service';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { Skeleton } from '../../../design-system';
-import { useTranslation } from '../../../i18n/I18nProvider';
-import { usePageMeta } from '../../../hooks/usePageMeta';
+  FormField,
+  Input,
+  Select,
+} from "../../../design-system/primitives/FormField";
+import { crmRepository } from "../../../repositories/crm.repository";
+import { CrmCompany } from "../../../domains/crm/crm.types";
+import { crmService } from "../../../domains/crm/crm.service";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { Skeleton } from "../../../design-system";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 
 export const CrmCompaniesPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.crmCompanies.title'),
-    description: t('meta.crmCompanies.description'),
-    canonicalPath: '/admin/crm/entreprises',
+    title: t("meta.crmCompanies.title"),
+    description: t("meta.crmCompanies.description"),
+    canonicalPath: "/admin/crm/entreprises",
     noIndex: true,
   });
 
   const toast = useToast();
   const [companies, setCompanies] = useState<CrmCompany[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [lifecycleFilter, setLifecycleFilter] = useState<string>('all');
+  const [search, setSearch] = useState("");
+  const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // New Company Form
-  const [name, setName] = useState('');
-  const [website, setWebsite] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [city, setCity] = useState('');
+  const [name, setName] = useState("");
+  const [website, setWebsite] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [city, setCity] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCompanies = async () => {
@@ -60,7 +57,7 @@ export const CrmCompaniesPage: React.FC = () => {
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error('Le nom de l\'entreprise est obligatoire.');
+      toast.error("Le nom de l'entreprise est obligatoire.");
       return;
     }
 
@@ -70,29 +67,30 @@ export const CrmCompaniesPage: React.FC = () => {
         name: name.trim(),
         website: website.trim() || undefined,
         domain: website ? crmService.normalizeDomain(website) : undefined,
-        industry: industry.trim() || 'Commerce & Distribution',
-        location: { country: 'FR', city: city.trim() || 'France' },
-        lifecycle: 'prospect',
-        marketCode: 'FR',
-        source: 'manual',
+        industry: industry.trim() || "Commerce & Distribution",
+        location: { country: "FR", city: city.trim() || "France" },
+        lifecycle: "prospect",
+        marketCode: "FR",
+        source: "manual",
       });
 
       setIsCreateModalOpen(false);
-      setName('');
-      setWebsite('');
-      setIndustry('');
-      setCity('');
+      setName("");
+      setWebsite("");
+      setIndustry("");
+      setCity("");
       fetchCompanies();
-      toast.success('Entreprise ajoutée avec succès.', 'Entreprise créée');
+      toast.success("Entreprise ajoutée avec succès.", "Entreprise créée");
     } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de la création.');
+      toast.error(err.message || "Erreur lors de la création.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const filteredCompanies = companies.filter((c) => {
-    if (lifecycleFilter !== 'all' && c.lifecycle !== lifecycleFilter) return false;
+    if (lifecycleFilter !== "all" && c.lifecycle !== lifecycleFilter)
+      return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       const nameMatch = c.name.toLowerCase().includes(q);
@@ -111,7 +109,9 @@ export const CrmCompaniesPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
             Entreprises & Vendeurs B2B
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">{t('admin.crmCompaniesPage.repertoireDesBoutiquesProMarques')}</p>
+          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+            {t("admin.crmCompaniesPage.repertoireDesBoutiquesProMarques")}
+          </p>
         </div>
 
         <Button
@@ -133,23 +133,27 @@ export const CrmCompaniesPage: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur')}
-                aria-label={t('admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur')}
+            placeholder={t(
+              "admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur",
+            )}
+            aria-label={t(
+              "admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur",
+            )}
             className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
         <Select
-          aria-label={t('admin.crmCompaniesPage.filtrerLesEntreprisesParCycle')}
+          aria-label={t("admin.crmCompaniesPage.filtrerLesEntreprisesParCycle")}
           value={lifecycleFilter}
           onChange={(e) => setLifecycleFilter(e.target.value)}
           options={[
-            { value: 'all', label: 'Tous les statuts' },
-            { value: 'prospect', label: 'Prospects' },
-            { value: 'qualified', label: 'Qualifiés' },
-            { value: 'customer', label: 'Clients Shongre Pro' },
-            { value: 'partner', label: 'Partenaires' },
-            { value: 'do_not_contact', label: 'Ne pas contacter' },
+            { value: "all", label: "Tous les statuts" },
+            { value: "prospect", label: "Prospects" },
+            { value: "qualified", label: "Qualifiés" },
+            { value: "customer", label: "Clients Shongre Pro" },
+            { value: "partner", label: "Partenaires" },
+            { value: "do_not_contact", label: "Ne pas contacter" },
           ]}
         />
       </div>
@@ -163,7 +167,9 @@ export const CrmCompaniesPage: React.FC = () => {
             ))}
           </div>
         ) : filteredCompanies.length === 0 ? (
-          <div className="text-center py-12 text-stone-500 text-xs">{t('admin.crmCompaniesPage.aucuneEntrepriseTrouvee')}</div>
+          <div className="text-center py-12 text-stone-500 text-xs">
+            {t("admin.crmCompaniesPage.aucuneEntrepriseTrouvee")}
+          </div>
         ) : (
           <div className="divide-y divide-border-subtle">
             {filteredCompanies.map((comp) => {
@@ -186,7 +192,9 @@ export const CrmCompaniesPage: React.FC = () => {
                           {comp.name}
                         </span>
                         {comp.linkedSellerId && (
-                          <Badge variant="pro" size="sm">{t('admin.crmCompaniesPage.vendeurProActif')}</Badge>
+                          <Badge variant="pro" size="sm">
+                            {t("admin.crmCompaniesPage.vendeurProActif")}
+                          </Badge>
                         )}
                         {comp.aiFitScore && (
                           <span className="text-micro px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold flex items-center gap-1">
@@ -197,7 +205,7 @@ export const CrmCompaniesPage: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-3 text-micro text-stone-500 truncate">
-                        <span>{comp.industry || 'Secteur non spécifié'}</span>
+                        <span>{comp.industry || "Secteur non spécifié"}</span>
                         {comp.location?.city && (
                           <>
                             <span>•</span>
@@ -207,7 +215,9 @@ export const CrmCompaniesPage: React.FC = () => {
                         {comp.website && (
                           <>
                             <span>•</span>
-                            <span className="text-stone-600 font-mono truncate">{comp.domain || comp.website}</span>
+                            <span className="text-stone-600 font-mono truncate">
+                              {comp.domain || comp.website}
+                            </span>
                           </>
                         )}
                       </div>
@@ -235,11 +245,16 @@ export const CrmCompaniesPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title={t('admin.crmCompaniesPage.ajouterUneEntreprise')}
-        description={t('admin.crmCompaniesPage.enregistrezUneNouvelleEntrepriseOu')}
+        title={t("admin.crmCompaniesPage.ajouterUneEntreprise")}
+        description={t(
+          "admin.crmCompaniesPage.enregistrezUneNouvelleEntrepriseOu",
+        )}
       >
         <form onSubmit={handleCreateCompany} className="space-y-3.5 text-xs">
-          <FormField label={t('admin.crmCompaniesPage.nomCommercialDeLEntreprise')} required>
+          <FormField
+            label={t("admin.crmCompaniesPage.nomCommercialDeLEntreprise")}
+            required
+          >
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -257,14 +272,14 @@ export const CrmCompaniesPage: React.FC = () => {
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label={t('admin.crmCompaniesPage.secteurDActivite')}>
+            <FormField label={t("admin.crmCompaniesPage.secteurDActivite")}>
               <Input
                 value={industry}
                 onChange={(e) => setIndustry(e.target.value)}
-                placeholder={t('admin.crmCompaniesPage.exMobilierDecoration')}
+                placeholder={t("admin.crmCompaniesPage.exMobilierDecoration")}
               />
             </FormField>
-            <FormField label={t('admin.crmCompaniesPage.villeRegion')}>
+            <FormField label={t("admin.crmCompaniesPage.villeRegion")}>
               <Input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
@@ -289,7 +304,7 @@ export const CrmCompaniesPage: React.FC = () => {
               disabled={isSubmitting}
               className="font-bold"
             >
-              {isSubmitting ? 'Création...' : 'Créer l\'entreprise'}
+              {isSubmitting ? "Création..." : "Créer l'entreprise"}
             </Button>
           </div>
         </form>

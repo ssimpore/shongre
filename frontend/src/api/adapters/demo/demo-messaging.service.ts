@@ -1,9 +1,12 @@
-import { MessagingServiceContract, SendMessageInput } from '../../contracts/messaging.contract';
-import { messagingRepository } from '../../../repositories/messaging.repository';
-import { userRepository } from '../../../repositories/user.repository';
-import { storageService } from '../../../services/storage.service';
-import { Conversation, Message } from '../../../types';
-import { simulateNetworkDelay } from '../../client/api-client.config';
+import {
+  MessagingServiceContract,
+  SendMessageInput,
+} from "../../contracts/messaging.contract";
+import { messagingRepository } from "../../../repositories/messaging.repository";
+import { userRepository } from "../../../repositories/user.repository";
+import { storageService } from "../../../services/storage.service";
+import { Conversation, Message } from "../../../types";
+import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoMessagingService implements MessagingServiceContract {
   async getUserConversations(userId: string): Promise<Conversation[]> {
@@ -19,41 +22,74 @@ export class DemoMessagingService implements MessagingServiceContract {
   async sendMessage(input: SendMessageInput): Promise<Message> {
     await simulateNetworkDelay();
     const user = storageService.getCurrentUser();
-    const senderName = user?.name || 'Utilisateur Shongre';
-    const attachmentUrl = input.attachments && input.attachments.length > 0 ? input.attachments[0] : undefined;
+    const senderName = user?.name || "Utilisateur Shongre";
+    const attachmentUrl =
+      input.attachments && input.attachments.length > 0
+        ? input.attachments[0]
+        : undefined;
 
     return messagingRepository.sendMessage(
       input.conversationId,
       input.senderId,
       senderName,
       input.text,
-      input.offerPrice ? 'offer' : 'text',
+      input.offerPrice ? "offer" : "text",
       input.offerPrice,
       attachmentUrl,
-      attachmentUrl ? 'image' : undefined
+      attachmentUrl ? "image" : undefined,
     );
   }
 
-  async makeOffer(conversationId: string, senderId: string, senderName: string, amount: number): Promise<Message> {
+  async makeOffer(
+    conversationId: string,
+    senderId: string,
+    senderName: string,
+    amount: number,
+  ): Promise<Message> {
     await simulateNetworkDelay();
-    return messagingRepository.makeOffer(conversationId, senderId, senderName, amount);
+    return messagingRepository.makeOffer(
+      conversationId,
+      senderId,
+      senderName,
+      amount,
+    );
   }
 
-  async respondToOffer(conversationId: string, userId: string, userName: string, accept: boolean): Promise<Message> {
+  async respondToOffer(
+    conversationId: string,
+    userId: string,
+    userName: string,
+    accept: boolean,
+  ): Promise<Message> {
     await simulateNetworkDelay();
-    return messagingRepository.respondToOffer(conversationId, userId, userName, accept);
+    return messagingRepository.respondToOffer(
+      conversationId,
+      userId,
+      userName,
+      accept,
+    );
   }
 
-  async schedulePickup(conversationId: string, date: string, timeSlot: string, address: string): Promise<Message> {
+  async schedulePickup(
+    conversationId: string,
+    date: string,
+    timeSlot: string,
+    address: string,
+  ): Promise<Message> {
     await simulateNetworkDelay();
-    await messagingRepository.schedulePickup(conversationId, date, timeSlot, address);
+    await messagingRepository.schedulePickup(
+      conversationId,
+      date,
+      timeSlot,
+      address,
+    );
     return {
       id: `msg-${Date.now()}`,
       conversationId,
-      senderId: 'system',
-      senderName: 'Shongre',
+      senderId: "system",
+      senderName: "Shongre",
       content: `Rendez-vous planifié le ${date} (${timeSlot}) à ${address}`,
-      type: 'system',
+      type: "system",
       createdAt: new Date().toISOString(),
       isRead: true,
     };

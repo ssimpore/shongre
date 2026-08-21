@@ -1,8 +1,8 @@
-import React from 'react';
-import { AlertTriangle, SearchX, Lock, ServerCrash } from 'lucide-react';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React from "react";
+import { AlertTriangle, SearchX, Lock, ServerCrash } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
 
-export type StatePanelVariant = 'error' | 'notFound' | 'restricted' | 'offline';
+export type StatePanelVariant = "error" | "notFound" | "restricted" | "offline";
 
 export interface StatePanelProps {
   variant?: StatePanelVariant;
@@ -27,10 +27,22 @@ const VARIANT_META: Record<
   StatePanelVariant,
   { Icon: React.ComponentType<{ className?: string }>; tone: string }
 > = {
-  error: { Icon: AlertTriangle, tone: 'bg-danger-surface text-danger border-danger-border' },
-  notFound: { Icon: SearchX, tone: 'bg-bg-subtle text-text-secondary border-border-base' },
-  restricted: { Icon: Lock, tone: 'bg-warning-surface text-warning border-warning-border' },
-  offline: { Icon: ServerCrash, tone: 'bg-info-surface text-info border-info-border' },
+  error: {
+    Icon: AlertTriangle,
+    tone: "bg-danger-surface text-danger border-danger-border",
+  },
+  notFound: {
+    Icon: SearchX,
+    tone: "bg-bg-subtle text-text-secondary border-border-base",
+  },
+  restricted: {
+    Icon: Lock,
+    tone: "bg-warning-surface text-warning border-warning-border",
+  },
+  offline: {
+    Icon: ServerCrash,
+    tone: "bg-info-surface text-info border-info-border",
+  },
 };
 
 /**
@@ -43,23 +55,25 @@ const VARIANT_META: Record<
  * different markup and no next step.
  */
 export const StatePanel: React.FC<StatePanelProps> = ({
-  variant = 'error',
+  variant = "error",
   title,
   description,
   action,
   secondaryAction,
   technicalDetail,
-  className = '',
+  className = "",
 }) => {
   const { t } = useTranslation();
   const { Icon, tone } = VARIANT_META[variant];
 
   return (
     <div
-      role={variant === 'error' || variant === 'offline' ? 'alert' : undefined}
+      role={variant === "error" || variant === "offline" ? "alert" : undefined}
       className={`flex flex-col items-center justify-center text-center px-6 py-12 sm:py-16 rounded-card bg-bg-surface border border-border-base shadow-xs ${className}`}
     >
-      <div className={`w-14 h-14 rounded-card border flex items-center justify-center mb-4 ${tone}`}>
+      <div
+        className={`w-14 h-14 rounded-card border flex items-center justify-center mb-4 ${tone}`}
+      >
         <Icon className="w-6 h-6" />
       </div>
 
@@ -77,7 +91,9 @@ export const StatePanel: React.FC<StatePanelProps> = ({
 
       {technicalDetail && (
         <details className="mt-6 w-full max-w-md text-left">
-          <summary className="text-micro font-semibold text-text-muted cursor-pointer hover:text-text-secondary">{t('ui.statePanel.detailsTechniques')}</summary>
+          <summary className="text-micro font-semibold text-text-muted cursor-pointer hover:text-text-secondary">
+            {t("ui.statePanel.detailsTechniques")}
+          </summary>
           <p className="mt-2 p-3 rounded-control bg-bg-subtle border border-border-base text-micro font-mono text-text-secondary break-words">
             {technicalDetail}
           </p>

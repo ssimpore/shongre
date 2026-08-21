@@ -2,22 +2,23 @@ import {
   UserProfile,
   UserSession,
   AuthSecurityEvent,
-  
   AuthResult,
-  
-  PlatformRole
-  
-} from '../../types';
-import { storageService } from '../../services/storage.service';
-import { auditService } from '../../security/audit.service';
-import { getMarketDefinition, validateBusinessIdentifier, formatBusinessIdentifier } from '../../configuration/market.config';
+  PlatformRole,
+} from "../../types";
+import { storageService } from "../../services/storage.service";
+import { auditService } from "../../security/audit.service";
+import {
+  getMarketDefinition,
+  validateBusinessIdentifier,
+  formatBusinessIdentifier,
+} from "../../configuration/market.config";
 
-const SESSIONS_STORAGE_KEY = 'shongre_auth_sessions_v1';
-const SECURITY_EVENTS_STORAGE_KEY = 'shongre_auth_security_events_v1';
-const VERIFICATION_TOKENS_KEY = 'shongre_auth_verification_tokens_v1';
-const RESET_TOKENS_KEY = 'shongre_auth_reset_tokens_v1';
-const PHONE_CODES_KEY = 'shongre_auth_phone_codes_v1';
-const RATE_LIMITS_KEY = 'shongre_auth_rate_limits_v1';
+const SESSIONS_STORAGE_KEY = "shongre_auth_sessions_v1";
+const SECURITY_EVENTS_STORAGE_KEY = "shongre_auth_security_events_v1";
+const VERIFICATION_TOKENS_KEY = "shongre_auth_verification_tokens_v1";
+const RESET_TOKENS_KEY = "shongre_auth_reset_tokens_v1";
+const PHONE_CODES_KEY = "shongre_auth_phone_codes_v1";
+const RATE_LIMITS_KEY = "shongre_auth_rate_limits_v1";
 
 export interface EmailVerificationToken {
   token: string;
@@ -66,34 +67,41 @@ export function hashPassword(password: string): string {
 export function verifyPasswordHash(password: string, hash?: string): boolean {
   if (!hash) {
     // For demo accounts without explicit passwordHash, accept standard passwords
-    return password === 'Shongre2026!' || password.length >= 6;
+    return password === "Shongre2026!" || password.length >= 6;
   }
-  return hash === hashPassword(password) || (hash.startsWith('demo_') && password.length >= 6);
+  return (
+    hash === hashPassword(password) ||
+    (hash.startsWith("demo_") && password.length >= 6)
+  );
 }
 
 // Browser/OS detection helper
-export function detectClientEnvironment(): { browser: string; os: string; deviceType: 'desktop' | 'mobile' | 'tablet' } {
-  if (typeof window === 'undefined') {
-    return { browser: 'Navigateur Web', os: 'Système', deviceType: 'desktop' };
+export function detectClientEnvironment(): {
+  browser: string;
+  os: string;
+  deviceType: "desktop" | "mobile" | "tablet";
+} {
+  if (typeof window === "undefined") {
+    return { browser: "Navigateur Web", os: "Système", deviceType: "desktop" };
   }
   const ua = navigator.userAgent;
-  let browser = 'Navigateur Moderne';
-  let os = 'Appareil';
-  let deviceType: 'desktop' | 'mobile' | 'tablet' = 'desktop';
+  let browser = "Navigateur Moderne";
+  let os = "Appareil";
+  let deviceType: "desktop" | "mobile" | "tablet" = "desktop";
 
-  if (/Mobi|Android/i.test(ua)) deviceType = 'mobile';
-  if (/iPad|Tablet/i.test(ua)) deviceType = 'tablet';
+  if (/Mobi|Android/i.test(ua)) deviceType = "mobile";
+  if (/iPad|Tablet/i.test(ua)) deviceType = "tablet";
 
-  if (/Chrome/i.test(ua) && !/Edg|OPR/i.test(ua)) browser = 'Google Chrome';
-  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Apple Safari';
-  else if (/Firefox/i.test(ua)) browser = 'Mozilla Firefox';
-  else if (/Edg/i.test(ua)) browser = 'Microsoft Edge';
+  if (/Chrome/i.test(ua) && !/Edg|OPR/i.test(ua)) browser = "Google Chrome";
+  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = "Apple Safari";
+  else if (/Firefox/i.test(ua)) browser = "Mozilla Firefox";
+  else if (/Edg/i.test(ua)) browser = "Microsoft Edge";
 
-  if (/Windows/i.test(ua)) os = 'Windows';
-  else if (/Macintosh|Mac OS/i.test(ua)) os = 'macOS';
-  else if (/iPhone|iPad|iOS/i.test(ua)) os = 'iOS';
-  else if (/Android/i.test(ua)) os = 'Android';
-  else if (/Linux/i.test(ua)) os = 'Linux';
+  if (/Windows/i.test(ua)) os = "Windows";
+  else if (/Macintosh|Mac OS/i.test(ua)) os = "macOS";
+  else if (/iPhone|iPad|iOS/i.test(ua)) os = "iOS";
+  else if (/Android/i.test(ua)) os = "Android";
+  else if (/Linux/i.test(ua)) os = "Linux";
 
   return { browser, os, deviceType };
 }
@@ -115,15 +123,22 @@ class AuthService {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
-      console.warn('Storage error in AuthService', e);
+      console.warn("Storage error in AuthService", e);
     }
   }
 
   // -------------------------------------------------------------
   // Rate Limiting & Brute Force Protection
   // -------------------------------------------------------------
-  public checkRateLimit(key: string, maxAttempts = 5, lockDurationMinutes = 15): { allowed: boolean; remainingSeconds?: number } {
-    const limits = this.getStorage<Record<string, RateLimitEntry>>(RATE_LIMITS_KEY, {});
+  public checkRateLimit(
+    key: string,
+    maxAttempts = 5,
+    lockDurationMinutes = 15,
+  ): { allowed: boolean; remainingSeconds?: number } {
+    const limits = this.getStorage<Record<string, RateLimitEntry>>(
+      RATE_LIMITS_KEY,
+      {},
+    );
     const entry = limits[key];
 
     if (!entry) return { allowed: true };
@@ -150,16 +165,28 @@ class AuthService {
     return { allowed: true };
   }
 
-  public recordFailedAttempt(key: string, maxAttempts = 5, lockDurationMinutes = 15): void {
-    const limits = this.getStorage<Record<string, RateLimitEntry>>(RATE_LIMITS_KEY, {});
+  public recordFailedAttempt(
+    key: string,
+    maxAttempts = 5,
+    lockDurationMinutes = 15,
+  ): void {
+    const limits = this.getStorage<Record<string, RateLimitEntry>>(
+      RATE_LIMITS_KEY,
+      {},
+    );
     const now = new Date();
-    const entry = limits[key] || { attempts: 0, lastAttemptAt: now.toISOString() };
+    const entry = limits[key] || {
+      attempts: 0,
+      lastAttemptAt: now.toISOString(),
+    };
 
     entry.attempts += 1;
     entry.lastAttemptAt = now.toISOString();
 
     if (entry.attempts >= maxAttempts) {
-      const lockUntil = new Date(now.getTime() + lockDurationMinutes * 60 * 1000);
+      const lockUntil = new Date(
+        now.getTime() + lockDurationMinutes * 60 * 1000,
+      );
       entry.lockedUntil = lockUntil.toISOString();
     }
 
@@ -168,7 +195,10 @@ class AuthService {
   }
 
   public resetRateLimit(key: string): void {
-    const limits = this.getStorage<Record<string, RateLimitEntry>>(RATE_LIMITS_KEY, {});
+    const limits = this.getStorage<Record<string, RateLimitEntry>>(
+      RATE_LIMITS_KEY,
+      {},
+    );
     if (limits[key]) {
       delete limits[key];
       this.setStorage(RATE_LIMITS_KEY, limits);
@@ -180,11 +210,14 @@ class AuthService {
   // -------------------------------------------------------------
   public logSecurityEvent(
     userId: string,
-    eventType: AuthSecurityEvent['eventType'],
+    eventType: AuthSecurityEvent["eventType"],
     details?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): AuthSecurityEvent {
-    const events = this.getStorage<AuthSecurityEvent[]>(SECURITY_EVENTS_STORAGE_KEY, []);
+    const events = this.getStorage<AuthSecurityEvent[]>(
+      SECURITY_EVENTS_STORAGE_KEY,
+      [],
+    );
     const { browser, os } = detectClientEnvironment();
 
     const newEvent: AuthSecurityEvent = {
@@ -193,7 +226,7 @@ class AuthService {
       userId,
       eventType,
       details,
-      ipAddress: '194.254.119.42',
+      ipAddress: "194.254.119.42",
       userAgent: `${browser} sur ${os}`,
       metadata,
     };
@@ -204,22 +237,22 @@ class AuthService {
 
     // Also bridge to system audit log if it is an account/administrative event
     if (
-      eventType === 'account_type_upgraded_to_pro' ||
-      eventType === 'account_deleted' ||
-      eventType === 'password_reset_completed' ||
-      eventType === 'mfa_enabled' ||
-      eventType === 'mfa_disabled'
+      eventType === "account_type_upgraded_to_pro" ||
+      eventType === "account_deleted" ||
+      eventType === "password_reset_completed" ||
+      eventType === "mfa_enabled" ||
+      eventType === "mfa_disabled"
     ) {
       const user = this.getUserById(userId);
       auditService.logEvent({
         actorId: userId,
-        actorName: user?.name || 'Utilisateur',
-        actorRole: (user?.primaryRole as any) || (user?.role as any) || 'buyer',
+        actorName: user?.name || "Utilisateur",
+        actorRole: (user?.primaryRole as any) || (user?.role as any) || "buyer",
         targetId: userId,
-        targetName: user?.name || 'Compte utilisateur',
+        targetName: user?.name || "Compte utilisateur",
         action: eventType,
         details: details || `Événement de sécurité : ${eventType}`,
-        market: user?.country || 'FR',
+        market: user?.country || "FR",
       });
     }
 
@@ -227,7 +260,10 @@ class AuthService {
   }
 
   public getAccountSecurityEvents(userId: string): AuthSecurityEvent[] {
-    const events = this.getStorage<AuthSecurityEvent[]>(SECURITY_EVENTS_STORAGE_KEY, []);
+    const events = this.getStorage<AuthSecurityEvent[]>(
+      SECURITY_EVENTS_STORAGE_KEY,
+      [],
+    );
     return events.filter((e) => e.userId === userId);
   }
 
@@ -237,15 +273,16 @@ class AuthService {
   public getUserByEmail(email: string): UserProfile | null {
     const normalized = email.trim().toLowerCase();
     const users = storageService.getUsers();
-    return Object.values(users).find((u) => u.email.toLowerCase() === normalized) || null;
+    return (
+      Object.values(users).find((u) => u.email.toLowerCase() === normalized) ||
+      null
+    );
   }
 
   public getUserById(userId: string): UserProfile | null {
     const users = storageService.getUsers();
     return (
-      users[userId] ||
-      Object.values(users).find((u) => u.id === userId) ||
-      null
+      users[userId] || Object.values(users).find((u) => u.id === userId) || null
     );
   }
 
@@ -265,12 +302,12 @@ class AuthService {
       userId,
       createdAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
-      ipAddress: '194.254.119.42',
-      userAgent: navigator?.userAgent || 'Browser',
+      ipAddress: "194.254.119.42",
+      userAgent: navigator?.userAgent || "Browser",
       browser,
       os,
       deviceType,
-      locationText: 'Paris, France (Actuelle)',
+      locationText: "Paris, France (Actuelle)",
       isCurrent: true,
     };
 
@@ -280,14 +317,17 @@ class AuthService {
     this.setStorage(SESSIONS_STORAGE_KEY, updated);
 
     // Save active session ID in storage
-    this.setStorage('shongre_current_session_id', newSession.id);
+    this.setStorage("shongre_current_session_id", newSession.id);
 
     return newSession;
   }
 
   public getUserSessions(userId: string): UserSession[] {
     const sessions = this.getStorage<UserSession[]>(SESSIONS_STORAGE_KEY, []);
-    const currentSessionId = this.getStorage<string>('shongre_current_session_id', '');
+    const currentSessionId = this.getStorage<string>(
+      "shongre_current_session_id",
+      "",
+    );
 
     return sessions
       .filter((s) => s.userId === userId)
@@ -304,23 +344,39 @@ class AuthService {
     this.setStorage(SESSIONS_STORAGE_KEY, sessions);
 
     if (session) {
-      this.logSecurityEvent(session.userId, 'session_revoked', `Session révoquée : ${session.browser} (${session.os})`);
+      this.logSecurityEvent(
+        session.userId,
+        "session_revoked",
+        `Session révoquée : ${session.browser} (${session.os})`,
+      );
     }
 
-    const currentSessionId = this.getStorage<string>('shongre_current_session_id', '');
+    const currentSessionId = this.getStorage<string>(
+      "shongre_current_session_id",
+      "",
+    );
     if (sessionId === currentSessionId) {
       this.logout();
     }
   }
 
   public revokeAllOtherSessions(userId: string): void {
-    const currentSessionId = this.getStorage<string>('shongre_current_session_id', '');
+    const currentSessionId = this.getStorage<string>(
+      "shongre_current_session_id",
+      "",
+    );
     let sessions = this.getStorage<UserSession[]>(SESSIONS_STORAGE_KEY, []);
 
-    sessions = sessions.filter((s) => s.userId !== userId || s.id === currentSessionId);
+    sessions = sessions.filter(
+      (s) => s.userId !== userId || s.id === currentSessionId,
+    );
     this.setStorage(SESSIONS_STORAGE_KEY, sessions);
 
-    this.logSecurityEvent(userId, 'all_sessions_revoked', 'Toutes les autres sessions connectées ont été déconnectées.');
+    this.logSecurityEvent(
+      userId,
+      "all_sessions_revoked",
+      "Toutes les autres sessions connectées ont été déconnectées.",
+    );
   }
 
   // -------------------------------------------------------------
@@ -329,7 +385,7 @@ class AuthService {
   public async login(
     email: string,
     password: string,
-    options?: { rememberMe?: boolean }
+    options?: { rememberMe?: boolean },
   ): Promise<AuthResult> {
     const normalizedEmail = email.trim().toLowerCase();
     const rateLimitCheck = this.checkRateLimit(`login_${normalizedEmail}`);
@@ -337,7 +393,7 @@ class AuthService {
     if (!rateLimitCheck.allowed) {
       return {
         success: false,
-        errorCode: 'RATE_LIMITED',
+        errorCode: "RATE_LIMITED",
         errorMessage: `Trop de tentatives infructueuses. Veuillez patienter ${rateLimitCheck.remainingSeconds} secondes avant de réessayer.`,
       };
     }
@@ -348,28 +404,36 @@ class AuthService {
       this.recordFailedAttempt(`login_${normalizedEmail}`);
       return {
         success: false,
-        errorCode: 'INVALID_CREDENTIALS',
-        errorMessage: 'Adresse email ou mot de passe incorrect.',
+        errorCode: "INVALID_CREDENTIALS",
+        errorMessage: "Adresse email ou mot de passe incorrect.",
       };
     }
 
     // Check account status: suspended, deleted, disabled
-    if (user.status === 'suspended' || user.isSuspended) {
-      this.logSecurityEvent(user.id, 'login_failed', 'Tentative de connexion sur un compte suspendu');
+    if (user.status === "suspended" || user.isSuspended) {
+      this.logSecurityEvent(
+        user.id,
+        "login_failed",
+        "Tentative de connexion sur un compte suspendu",
+      );
       return {
         success: false,
-        errorCode: 'ACCOUNT_SUSPENDED',
+        errorCode: "ACCOUNT_SUSPENDED",
         errorMessage: user.suspendedReason
           ? `Ce compte est suspendu par la modération : "${user.suspendedReason}".`
-          : 'Ce compte est temporairement suspendu pour des raisons de sécurité ou de conformité.',
+          : "Ce compte est temporairement suspendu pour des raisons de sécurité ou de conformité.",
       };
     }
 
-    if (user.status === 'deleted' || user.status === 'disabled' || user.isDeactivated) {
+    if (
+      user.status === "deleted" ||
+      user.status === "disabled" ||
+      user.isDeactivated
+    ) {
       return {
         success: false,
-        errorCode: 'ACCOUNT_DISABLED',
-        errorMessage: 'Ce compte utilisateur a été désactivé ou supprimé.',
+        errorCode: "ACCOUNT_DISABLED",
+        errorMessage: "Ce compte utilisateur a été désactivé ou supprimé.",
       };
     }
 
@@ -377,11 +441,11 @@ class AuthService {
     const isPasswordValid = verifyPasswordHash(password, user.passwordHash);
     if (!isPasswordValid) {
       this.recordFailedAttempt(`login_${normalizedEmail}`);
-      this.logSecurityEvent(user.id, 'login_failed', 'Échec de mot de passe');
+      this.logSecurityEvent(user.id, "login_failed", "Échec de mot de passe");
       return {
         success: false,
-        errorCode: 'INVALID_CREDENTIALS',
-        errorMessage: 'Adresse email ou mot de passe incorrect.',
+        errorCode: "INVALID_CREDENTIALS",
+        errorMessage: "Adresse email ou mot de passe incorrect.",
       };
     }
 
@@ -391,13 +455,18 @@ class AuthService {
     // Check if MFA is required
     if (user.mfa?.isEnabled) {
       const tempToken = `mfa_temp_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-      this.setStorage(`mfa_pending_${tempToken}`, { userId: user.id, email: user.email, expiresAt: Date.now() + 5 * 60 * 1000 });
+      this.setStorage(`mfa_pending_${tempToken}`, {
+        userId: user.id,
+        email: user.email,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+      });
 
       return {
         success: false,
         requiresMfa: true,
         tempMfaToken: tempToken,
-        errorMessage: 'Authentification à deux facteurs requise. Veuillez saisir votre code 2FA.',
+        errorMessage:
+          "Authentification à deux facteurs requise. Veuillez saisir votre code 2FA.",
       };
     }
 
@@ -411,9 +480,11 @@ class AuthService {
     // Create session and set active user in storage
     const session = this.createSession(user.id, options?.rememberMe);
     storageService.setCurrentUserKey(user.id);
-    storageService.setCurrentRole(user.primaryRole || (user.role as any) || 'buyer');
+    storageService.setCurrentRole(
+      user.primaryRole || (user.role as any) || "buyer",
+    );
 
-    this.logSecurityEvent(user.id, 'login_succeeded', 'Connexion réussie');
+    this.logSecurityEvent(user.id, "login_succeeded", "Connexion réussie");
 
     return {
       success: true,
@@ -425,17 +496,22 @@ class AuthService {
   // -------------------------------------------------------------
   // Authentication: MFA Verification
   // -------------------------------------------------------------
-  public async verifyMFALogin(tempToken: string, code: string): Promise<AuthResult> {
-    const pendingData = this.getStorage<{ userId: string; email: string; expiresAt: number } | null>(
-      `mfa_pending_${tempToken}`,
-      null
-    );
+  public async verifyMFALogin(
+    tempToken: string,
+    code: string,
+  ): Promise<AuthResult> {
+    const pendingData = this.getStorage<{
+      userId: string;
+      email: string;
+      expiresAt: number;
+    } | null>(`mfa_pending_${tempToken}`, null);
 
     if (!pendingData || Date.now() > pendingData.expiresAt) {
       return {
         success: false,
-        errorCode: 'SESSION_EXPIRED',
-        errorMessage: 'La session de validation 2FA a expiré. Veuillez vous reconnecter.',
+        errorCode: "SESSION_EXPIRED",
+        errorMessage:
+          "La session de validation 2FA a expiré. Veuillez vous reconnecter.",
       };
     }
 
@@ -443,25 +519,30 @@ class AuthService {
     if (!user) {
       return {
         success: false,
-        errorCode: 'INVALID_CREDENTIALS',
-        errorMessage: 'Utilisateur introuvable.',
+        errorCode: "INVALID_CREDENTIALS",
+        errorMessage: "Utilisateur introuvable.",
       };
     }
 
-    const cleanCode = code.trim().replace(/\s/g, '');
+    const cleanCode = code.trim().replace(/\s/g, "");
 
     // Check backup codes
     const backupCodes = user.mfa?.backupCodes || [];
-    const matchedBackupIndex = backupCodes.findIndex((b) => b.code.replace(/[-\s]/g, '') === cleanCode && !b.isUsed);
+    const matchedBackupIndex = backupCodes.findIndex(
+      (b) => b.code.replace(/[-\s]/g, "") === cleanCode && !b.isUsed,
+    );
 
-    const isTotpValid = cleanCode === '123456' || cleanCode.length === 6 || matchedBackupIndex >= 0;
+    const isTotpValid =
+      cleanCode === "123456" ||
+      cleanCode.length === 6 ||
+      matchedBackupIndex >= 0;
 
     if (!isTotpValid) {
-      this.logSecurityEvent(user.id, 'login_failed', 'Code 2FA invalide');
+      this.logSecurityEvent(user.id, "login_failed", "Code 2FA invalide");
       return {
         success: false,
-        errorCode: 'INVALID_MFA_CODE',
-        errorMessage: 'Le code de sécurité ou code de secours est invalide.',
+        errorCode: "INVALID_MFA_CODE",
+        errorMessage: "Le code de sécurité ou code de secours est invalide.",
       };
     }
 
@@ -469,9 +550,17 @@ class AuthService {
     if (matchedBackupIndex >= 0 && user.mfa) {
       user.mfa.backupCodes![matchedBackupIndex].isUsed = true;
       this.saveUserProfile(user);
-      this.logSecurityEvent(user.id, 'login_succeeded', `Connexion effectuée via code de secours à usage unique.`);
+      this.logSecurityEvent(
+        user.id,
+        "login_succeeded",
+        `Connexion effectuée via code de secours à usage unique.`,
+      );
     } else {
-      this.logSecurityEvent(user.id, 'login_succeeded', 'Connexion réussie avec double authentification TOTP.');
+      this.logSecurityEvent(
+        user.id,
+        "login_succeeded",
+        "Connexion réussie avec double authentification TOTP.",
+      );
     }
 
     // Clean pending token
@@ -486,7 +575,9 @@ class AuthService {
 
     const session = this.createSession(user.id, true);
     storageService.setCurrentUserKey(user.id);
-    storageService.setCurrentRole(user.primaryRole || (user.role as any) || 'buyer');
+    storageService.setCurrentRole(
+      user.primaryRole || (user.role as any) || "buyer",
+    );
 
     return {
       success: true,
@@ -514,34 +605,39 @@ class AuthService {
     if (this.getUserByEmail(normalizedEmail)) {
       return {
         success: false,
-        errorCode: 'EMAIL_ALREADY_EXISTS',
-        errorMessage: 'Un compte avec cette adresse email existe déjà. Connectez-vous ou réinitialisez votre mot de passe.',
+        errorCode: "EMAIL_ALREADY_EXISTS",
+        errorMessage:
+          "Un compte avec cette adresse email existe déjà. Connectez-vous ou réinitialisez votre mot de passe.",
       };
     }
 
     if (!data.termsAccepted) {
       return {
         success: false,
-        errorCode: 'GENERIC_ERROR',
-        errorMessage: 'Vous devez accepter les conditions générales d\'utilisation pour créer un compte.',
+        errorCode: "GENERIC_ERROR",
+        errorMessage:
+          "Vous devez accepter les conditions générales d'utilisation pour créer un compte.",
       };
     }
 
-    const country = (data.country || 'FR').toUpperCase();
+    const country = (data.country || "FR").toUpperCase();
     const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     const newUser: UserProfile = {
       id: userId,
       slug: `${slug}-${Math.floor(100 + Math.random() * 900)}`,
       email: normalizedEmail,
       name: data.name.trim(),
-      accountType: 'individual',
-      primaryRole: 'buyer',
-      role: 'buyer',
-      roles: ['buyer', 'seller'],
-      sellerType: 'individual',
-      status: 'active',
+      accountType: "individual",
+      primaryRole: "buyer",
+      role: "buyer",
+      roles: ["buyer", "seller"],
+      sellerType: "individual",
+      status: "active",
       city: data.city.trim(),
       postalCode: data.postalCode.trim(),
       country,
@@ -554,12 +650,12 @@ class AuthService {
       rating: 5.0,
       reviewCount: 0,
       responseRatePercent: 100,
-      responseTimeText: 'nouveau membre',
-      bio: 'Membre Shongre particulier.',
+      responseTimeText: "nouveau membre",
+      bio: "Membre Shongre particulier.",
       passwordHash: hashPassword(data.password),
       legalConsent: {
         termsAccepted: true,
-        termsVersion: 'v2026.1',
+        termsVersion: "v2026.1",
         termsAcceptedAt: new Date().toISOString(),
         privacyAcknowledged: true,
         marketingConsent: Boolean(data.marketingConsent),
@@ -573,9 +669,13 @@ class AuthService {
     // Create session
     const session = this.createSession(newUser.id, true);
     storageService.setCurrentUserKey(newUser.id);
-    storageService.setCurrentRole('buyer');
+    storageService.setCurrentRole("buyer");
 
-    this.logSecurityEvent(newUser.id, 'account_created', `Création du compte Particulier (${newUser.email})`);
+    this.logSecurityEvent(
+      newUser.id,
+      "account_created",
+      `Création du compte Particulier (${newUser.email})`,
+    );
 
     return {
       success: true,
@@ -608,19 +708,20 @@ class AuthService {
     if (this.getUserByEmail(normalizedEmail)) {
       return {
         success: false,
-        errorCode: 'EMAIL_ALREADY_EXISTS',
-        errorMessage: 'Un compte avec cette adresse email existe déjà. Connectez-vous ou réinitialisez votre mot de passe.',
+        errorCode: "EMAIL_ALREADY_EXISTS",
+        errorMessage:
+          "Un compte avec cette adresse email existe déjà. Connectez-vous ou réinitialisez votre mot de passe.",
       };
     }
 
-    const country = (data.country || 'FR').toUpperCase();
+    const country = (data.country || "FR").toUpperCase();
     const formattedSiret = formatBusinessIdentifier(data.sirenSiret, country);
 
     if (!data.companyName.trim()) {
       return {
         success: false,
-        errorCode: 'GENERIC_ERROR',
-        errorMessage: 'La raison sociale de votre entreprise est requise.',
+        errorCode: "GENERIC_ERROR",
+        errorMessage: "La raison sociale de votre entreprise est requise.",
       };
     }
 
@@ -628,13 +729,16 @@ class AuthService {
       const market = getMarketDefinition(country);
       return {
         success: false,
-        errorCode: 'GENERIC_ERROR',
+        errorCode: "GENERIC_ERROR",
         errorMessage: `Identifiant d'entreprise invalide. ${market.businessIdentifierHelper}`,
       };
     }
 
     const userId = `user_pro_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const storeSlug = data.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const storeSlug = data.companyName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     const newUser: UserProfile = {
       id: userId,
@@ -649,12 +753,12 @@ class AuthService {
       legalForm: data.legalForm,
       businessAddress: data.businessAddress.trim(),
       phone: data.phone?.trim(),
-      accountType: 'professional',
-      primaryRole: 'pro_seller',
-      role: 'pro_seller',
-      roles: ['pro_seller', 'seller', 'buyer'],
-      sellerType: 'pro',
-      status: 'pending', // Pending professional review or onboarding
+      accountType: "professional",
+      primaryRole: "pro_seller",
+      role: "pro_seller",
+      roles: ["pro_seller", "seller", "buyer"],
+      sellerType: "pro",
+      status: "pending", // Pending professional review or onboarding
       city: data.city.trim(),
       postalCode: data.postalCode.trim(),
       country,
@@ -665,25 +769,25 @@ class AuthService {
       isPhoneVerified: false,
       isIdentityVerified: false,
       professionalVerification: {
-        status: 'pending',
+        status: "pending",
         submittedAt: new Date().toISOString(),
-        documentType: 'kbis',
+        documentType: "kbis",
         siret: formattedSiret,
         companyName: data.companyName.trim(),
         legalForm: data.legalForm,
         vatNumber: data.vatNumber?.trim(),
-        notes: 'Dossier d\'immatriculation professionnelle en cours d\'analyse.',
+        notes: "Dossier d'immatriculation professionnelle en cours d'analyse.",
       },
-      activePlanId: 'pro_starter',
+      activePlanId: "pro_starter",
       rating: 5.0,
       reviewCount: 0,
       responseRatePercent: 100,
-      responseTimeText: 'en attente de validation',
+      responseTimeText: "en attente de validation",
       bio: `Boutique professionnelle ${data.companyName.trim()}. Vendeur certifié Shongre Pro.`,
       passwordHash: hashPassword(data.password),
       legalConsent: {
         termsAccepted: true,
-        termsVersion: 'v2026.1-pro',
+        termsVersion: "v2026.1-pro",
         termsAcceptedAt: new Date().toISOString(),
         privacyAcknowledged: true,
         marketingConsent: Boolean(data.marketingConsent),
@@ -698,12 +802,12 @@ class AuthService {
     // Create session
     const session = this.createSession(newUser.id, true);
     storageService.setCurrentUserKey(newUser.id);
-    storageService.setCurrentRole('pro_seller');
+    storageService.setCurrentRole("pro_seller");
 
     this.logSecurityEvent(
       newUser.id,
-      'account_created',
-      `Création du compte Professionnel ${newUser.companyName} (SIRET: ${formattedSiret})`
+      "account_created",
+      `Création du compte Professionnel ${newUser.companyName} (SIRET: ${formattedSiret})`,
     );
 
     return {
@@ -725,60 +829,79 @@ class AuthService {
       vatNumber?: string;
       businessAddress: string;
       phone?: string;
-    }
+    },
   ): Promise<AuthResult> {
     const user = this.getUserById(userId);
     if (!user) {
-      return { success: false, errorCode: 'INVALID_CREDENTIALS', errorMessage: 'Utilisateur introuvable.' };
+      return {
+        success: false,
+        errorCode: "INVALID_CREDENTIALS",
+        errorMessage: "Utilisateur introuvable.",
+      };
     }
 
-    const country = (user.country || 'FR').toUpperCase();
-    const formattedSiret = formatBusinessIdentifier(proData.sirenSiret, country);
+    const country = (user.country || "FR").toUpperCase();
+    const formattedSiret = formatBusinessIdentifier(
+      proData.sirenSiret,
+      country,
+    );
 
     if (!validateBusinessIdentifier(proData.sirenSiret, country)) {
       return {
         success: false,
-        errorCode: 'GENERIC_ERROR',
-        errorMessage: 'Numéro SIRET ou identifiant légal invalide.',
+        errorCode: "GENERIC_ERROR",
+        errorMessage: "Numéro SIRET ou identifiant légal invalide.",
       };
     }
 
-    const storeSlug = proData.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const storeSlug = proData.companyName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     const upgradedUser: UserProfile = {
       ...user,
-      accountType: 'professional',
-      primaryRole: 'pro_seller',
-      role: 'pro_seller',
-      roles: Array.from(new Set([...(user.roles || []), 'pro_seller', 'seller', 'buyer'] as PlatformRole[])),
-      sellerType: 'pro',
+      accountType: "professional",
+      primaryRole: "pro_seller",
+      role: "pro_seller",
+      roles: Array.from(
+        new Set([
+          ...(user.roles || []),
+          "pro_seller",
+          "seller",
+          "buyer",
+        ] as PlatformRole[]),
+      ),
+      sellerType: "pro",
       companyName: proData.companyName.trim(),
       sirenSiret: formattedSiret,
       siret: formattedSiret,
       legalForm: proData.legalForm,
-      vatNumber: proData.vatNumber?.trim() || `FR ${formattedSiret.slice(0, 9)}`,
+      vatNumber:
+        proData.vatNumber?.trim() || `FR ${formattedSiret.slice(0, 9)}`,
       businessAddress: proData.businessAddress.trim(),
       storeSlug: user.storeSlug || storeSlug,
       phone: proData.phone?.trim() || user.phone,
-      activePlanId: user.activePlanId || 'pro_starter',
+      activePlanId: user.activePlanId || "pro_starter",
       professionalVerification: {
-        status: 'pending',
+        status: "pending",
         submittedAt: new Date().toISOString(),
-        documentType: 'kbis',
+        documentType: "kbis",
         companyName: proData.companyName.trim(),
         siret: formattedSiret,
         legalForm: proData.legalForm,
-        notes: 'Mise à niveau Particulier -> Professionnel soumise à validation.',
+        notes:
+          "Mise à niveau Particulier -> Professionnel soumise à validation.",
       },
     };
 
     this.saveUserProfile(upgradedUser);
-    storageService.setCurrentRole('pro_seller');
+    storageService.setCurrentRole("pro_seller");
 
     this.logSecurityEvent(
       userId,
-      'account_type_upgraded_to_pro',
-      `Passage en Compte Professionnel (${upgradedUser.companyName} - SIRET: ${formattedSiret})`
+      "account_type_upgraded_to_pro",
+      `Passage en Compte Professionnel (${upgradedUser.companyName} - SIRET: ${formattedSiret})`,
     );
 
     return {
@@ -790,8 +913,14 @@ class AuthService {
   // -------------------------------------------------------------
   // Email Verification Flow
   // -------------------------------------------------------------
-  public generateEmailVerificationToken(userId: string, email: string): EmailVerificationToken {
-    const tokens = this.getStorage<EmailVerificationToken[]>(VERIFICATION_TOKENS_KEY, []);
+  public generateEmailVerificationToken(
+    userId: string,
+    email: string,
+  ): EmailVerificationToken {
+    const tokens = this.getStorage<EmailVerificationToken[]>(
+      VERIFICATION_TOKENS_KEY,
+      [],
+    );
     const token = `verify_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 
     const tokenObj: EmailVerificationToken = {
@@ -809,25 +938,39 @@ class AuthService {
     return tokenObj;
   }
 
-  public verifyEmail(token: string): { success: boolean; message: string; user?: UserProfile } {
-    const tokens = this.getStorage<EmailVerificationToken[]>(VERIFICATION_TOKENS_KEY, []);
+  public verifyEmail(token: string): {
+    success: boolean;
+    message: string;
+    user?: UserProfile;
+  } {
+    const tokens = this.getStorage<EmailVerificationToken[]>(
+      VERIFICATION_TOKENS_KEY,
+      [],
+    );
     const tokenEntry = tokens.find((t) => t.token === token);
 
     if (!tokenEntry) {
-      return { success: false, message: 'Lien de confirmation invalide ou inexistant.' };
+      return {
+        success: false,
+        message: "Lien de confirmation invalide ou inexistant.",
+      };
     }
 
     if (tokenEntry.isUsed) {
       const user = this.getUserById(tokenEntry.userId);
       return {
         success: true,
-        message: 'Cette adresse email a déjà été confirmée avec succès.',
+        message: "Cette adresse email a déjà été confirmée avec succès.",
         user: user || undefined,
       };
     }
 
     if (new Date() > new Date(tokenEntry.expiresAt)) {
-      return { success: false, message: 'Ce lien de confirmation a expiré. Veuillez demander un nouvel email.' };
+      return {
+        success: false,
+        message:
+          "Ce lien de confirmation a expiré. Veuillez demander un nouvel email.",
+      };
     }
 
     tokenEntry.isUsed = true;
@@ -836,25 +979,35 @@ class AuthService {
     const user = this.getUserById(tokenEntry.userId);
     if (user) {
       user.isEmailVerified = true;
-      user.isVerified = Boolean(user.isPhoneVerified || user.isIdentityVerified);
+      user.isVerified = Boolean(
+        user.isPhoneVerified || user.isIdentityVerified,
+      );
       this.saveUserProfile(user);
-      this.logSecurityEvent(user.id, 'email_verified', `Adresse email ${user.email} vérifiée avec succès.`);
+      this.logSecurityEvent(
+        user.id,
+        "email_verified",
+        `Adresse email ${user.email} vérifiée avec succès.`,
+      );
     }
 
     return {
       success: true,
-      message: 'Votre adresse email a été confirmée avec succès !',
+      message: "Votre adresse email a été confirmée avec succès !",
       user: user || undefined,
     };
   }
 
-  public resendEmailVerification(email: string): { success: boolean; message: string } {
+  public resendEmailVerification(email: string): {
+    success: boolean;
+    message: string;
+  } {
     const user = this.getUserByEmail(email);
     if (!user) {
       // Return success to prevent email enumeration
       return {
         success: true,
-        message: 'Si cette adresse email est associée à un compte, un nouveau lien de validation a été envoyé.',
+        message:
+          "Si cette adresse email est associée à un compte, un nouveau lien de validation a été envoyé.",
       };
     }
 
@@ -871,14 +1024,19 @@ class AuthService {
 
     return {
       success: true,
-      message: 'Un nouvel email de validation a été envoyé dans votre boîte de réception.',
+      message:
+        "Un nouvel email de validation a été envoyé dans votre boîte de réception.",
     };
   }
 
   // -------------------------------------------------------------
   // Password Reset Flow
   // -------------------------------------------------------------
-  public requestPasswordReset(email: string): { success: boolean; message: string; demoToken?: string } {
+  public requestPasswordReset(email: string): {
+    success: boolean;
+    message: string;
+    demoToken?: string;
+  } {
     const normalized = email.trim().toLowerCase();
     const user = this.getUserByEmail(normalized);
 
@@ -886,7 +1044,8 @@ class AuthService {
       // Anti-enumeration: Return generic reassurance message
       return {
         success: true,
-        message: 'Si cette adresse email est associée à un compte, un lien de réinitialisation sécurisé vous a été envoyé.',
+        message:
+          "Si cette adresse email est associée à un compte, un lien de réinitialisation sécurisé vous a été envoyé.",
       };
     }
 
@@ -905,34 +1064,58 @@ class AuthService {
     tokens.push(resetEntry);
     this.setStorage(RESET_TOKENS_KEY, tokens);
 
-    this.logSecurityEvent(user.id, 'password_reset_requested', 'Demande de réinitialisation de mot de passe');
+    this.logSecurityEvent(
+      user.id,
+      "password_reset_requested",
+      "Demande de réinitialisation de mot de passe",
+    );
 
     return {
       success: true,
-      message: 'Un lien de réinitialisation sécurisé valable 15 minutes a été envoyé à votre adresse email.',
+      message:
+        "Un lien de réinitialisation sécurisé valable 15 minutes a été envoyé à votre adresse email.",
       demoToken: token,
     };
   }
 
-  public validateResetToken(token: string): { valid: boolean; email?: string; message?: string } {
+  public validateResetToken(token: string): {
+    valid: boolean;
+    email?: string;
+    message?: string;
+  } {
     const tokens = this.getStorage<PasswordResetToken[]>(RESET_TOKENS_KEY, []);
     const entry = tokens.find((t) => t.token === token);
 
-    if (!entry) return { valid: false, message: 'Ce lien de réinitialisation est invalide.' };
-    if (entry.isUsed) return { valid: false, message: 'Ce lien a déjà été utilisé pour modifier votre mot de passe.' };
-    if (new Date() > new Date(entry.expiresAt)) return { valid: false, message: 'Ce lien a expiré (validité 15 min).' };
+    if (!entry)
+      return {
+        valid: false,
+        message: "Ce lien de réinitialisation est invalide.",
+      };
+    if (entry.isUsed)
+      return {
+        valid: false,
+        message: "Ce lien a déjà été utilisé pour modifier votre mot de passe.",
+      };
+    if (new Date() > new Date(entry.expiresAt))
+      return { valid: false, message: "Ce lien a expiré (validité 15 min)." };
 
     return { valid: true, email: entry.email };
   }
 
-  public resetPassword(token: string, newPassword: string): { success: boolean; message: string } {
+  public resetPassword(
+    token: string,
+    newPassword: string,
+  ): { success: boolean; message: string } {
     const check = this.validateResetToken(token);
     if (!check.valid) {
-      return { success: false, message: check.message || 'Lien invalide.' };
+      return { success: false, message: check.message || "Lien invalide." };
     }
 
     if (newPassword.length < 8) {
-      return { success: false, message: 'Le mot de passe doit contenir au moins 8 caractères.' };
+      return {
+        success: false,
+        message: "Le mot de passe doit contenir au moins 8 caractères.",
+      };
     }
 
     const tokens = this.getStorage<PasswordResetToken[]>(RESET_TOKENS_KEY, []);
@@ -947,49 +1130,74 @@ class AuthService {
 
       // Invalidate all existing sessions for security
       this.revokeAllOtherSessions(user.id);
-      this.logSecurityEvent(user.id, 'password_reset_completed', 'Mot de passe réinitialisé avec succès via lien sécurisé.');
+      this.logSecurityEvent(
+        user.id,
+        "password_reset_completed",
+        "Mot de passe réinitialisé avec succès via lien sécurisé.",
+      );
     }
 
     return {
       success: true,
-      message: 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
+      message:
+        "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
     };
   }
 
-  public changePassword(userId: string, currentPassword: string, newPassword: string): { success: boolean; message: string } {
+  public changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): { success: boolean; message: string } {
     const user = this.getUserById(userId);
-    if (!user) return { success: false, message: 'Utilisateur introuvable.' };
+    if (!user) return { success: false, message: "Utilisateur introuvable." };
 
     if (!verifyPasswordHash(currentPassword, user.passwordHash)) {
-      return { success: false, message: 'Le mot de passe actuel est incorrect.' };
+      return {
+        success: false,
+        message: "Le mot de passe actuel est incorrect.",
+      };
     }
 
     if (newPassword.length < 8) {
-      return { success: false, message: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' };
+      return {
+        success: false,
+        message: "Le nouveau mot de passe doit contenir au moins 8 caractères.",
+      };
     }
 
     user.passwordHash = hashPassword(newPassword);
     this.saveUserProfile(user);
 
-    this.logSecurityEvent(userId, 'password_changed', 'Mot de passe modifié depuis l\'espace sécurité.');
+    this.logSecurityEvent(
+      userId,
+      "password_changed",
+      "Mot de passe modifié depuis l'espace sécurité.",
+    );
 
     return {
       success: true,
-      message: 'Votre mot de passe a été modifié avec succès.',
+      message: "Votre mot de passe a été modifié avec succès.",
     };
   }
 
   // -------------------------------------------------------------
   // Phone Verification (OTP)
   // -------------------------------------------------------------
-  public sendPhoneCode(userId: string, phone: string): { success: boolean; message: string; demoCode?: string } {
+  public sendPhoneCode(
+    userId: string,
+    phone: string,
+  ): { success: boolean; message: string; demoCode?: string } {
     const cleanPhone = phone.trim();
     if (!cleanPhone || cleanPhone.length < 8) {
-      return { success: false, message: 'Numéro de téléphone invalide.' };
+      return { success: false, message: "Numéro de téléphone invalide." };
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const codes = this.getStorage<Record<string, PhoneVerificationCode>>(PHONE_CODES_KEY, {});
+    const codes = this.getStorage<Record<string, PhoneVerificationCode>>(
+      PHONE_CODES_KEY,
+      {},
+    );
 
     codes[userId] = {
       userId,
@@ -1009,26 +1217,41 @@ class AuthService {
     };
   }
 
-  public verifyPhoneCode(userId: string, inputCode: string): { success: boolean; message: string } {
-    const codes = this.getStorage<Record<string, PhoneVerificationCode>>(PHONE_CODES_KEY, {});
+  public verifyPhoneCode(
+    userId: string,
+    inputCode: string,
+  ): { success: boolean; message: string } {
+    const codes = this.getStorage<Record<string, PhoneVerificationCode>>(
+      PHONE_CODES_KEY,
+      {},
+    );
     const entry = codes[userId];
 
     if (!entry) {
-      return { success: false, message: 'Aucun code de validation en attente pour ce compte.' };
+      return {
+        success: false,
+        message: "Aucun code de validation en attente pour ce compte.",
+      };
     }
 
     if (new Date() > new Date(entry.expiresAt)) {
-      return { success: false, message: 'Le code de validation a expiré. Veuillez en redemander un.' };
+      return {
+        success: false,
+        message: "Le code de validation a expiré. Veuillez en redemander un.",
+      };
     }
 
     if (entry.attempts >= 5) {
-      return { success: false, message: 'Trop de tentatives erronées. Veuillez redemander un code.' };
+      return {
+        success: false,
+        message: "Trop de tentatives erronées. Veuillez redemander un code.",
+      };
     }
 
-    if (inputCode.trim() !== entry.code && inputCode.trim() !== '123456') {
+    if (inputCode.trim() !== entry.code && inputCode.trim() !== "123456") {
       entry.attempts += 1;
       this.setStorage(PHONE_CODES_KEY, codes);
-      return { success: false, message: 'Code de vérification SMS incorrect.' };
+      return { success: false, message: "Code de vérification SMS incorrect." };
     }
 
     const user = this.getUserById(userId);
@@ -1036,25 +1259,38 @@ class AuthService {
       user.phone = entry.phone;
       user.isPhoneVerified = true;
       this.saveUserProfile(user);
-      this.logSecurityEvent(userId, 'phone_verified', `Numéro de téléphone ${entry.phone} vérifié.`);
+      this.logSecurityEvent(
+        userId,
+        "phone_verified",
+        `Numéro de téléphone ${entry.phone} vérifié.`,
+      );
     }
 
     delete codes[userId];
     this.setStorage(PHONE_CODES_KEY, codes);
 
-    return { success: true, message: 'Numéro de téléphone validé avec succès !' };
+    return {
+      success: true,
+      message: "Numéro de téléphone validé avec succès !",
+    };
   }
 
   // -------------------------------------------------------------
   // MFA (Two-Factor Authentication) Engine
   // -------------------------------------------------------------
-  public generateMFASetup(userId: string): { secret: string; qrCodeUrl: string; backupCodes: string[] } {
+  public generateMFASetup(userId: string): {
+    secret: string;
+    qrCodeUrl: string;
+    backupCodes: string[];
+  } {
     const user = this.getUserById(userId);
-    const email = user?.email || 'user@shongre.fr';
-    const secret = 'JBSWY3DPEHPK3PXP'; // Base32 secret standard
+    const email = user?.email || "user@shongre.fr";
+    const secret = "JBSWY3DPEHPK3PXP"; // Base32 secret standard
 
-    const backupCodes = Array.from({ length: 8 }, () =>
-      `${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`
+    const backupCodes = Array.from(
+      { length: 8 },
+      () =>
+        `${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
     );
 
     const otpauth = `otpauth://totp/Shongre:${encodeURIComponent(email)}?secret=${secret}&issuer=Shongre`;
@@ -1063,13 +1299,20 @@ class AuthService {
     return { secret, qrCodeUrl, backupCodes };
   }
 
-  public enableMFA(userId: string, code: string, backupCodes: string[]): { success: boolean; message: string } {
-    if (code.trim().length !== 6 && code.trim() !== '123456') {
-      return { success: false, message: 'Le code de vérification à 6 chiffres est invalide.' };
+  public enableMFA(
+    userId: string,
+    code: string,
+    backupCodes: string[],
+  ): { success: boolean; message: string } {
+    if (code.trim().length !== 6 && code.trim() !== "123456") {
+      return {
+        success: false,
+        message: "Le code de vérification à 6 chiffres est invalide.",
+      };
     }
 
     const user = this.getUserById(userId);
-    if (!user) return { success: false, message: 'Utilisateur introuvable.' };
+    if (!user) return { success: false, message: "Utilisateur introuvable." };
 
     user.mfa = {
       isEnabled: true,
@@ -1078,38 +1321,57 @@ class AuthService {
     };
 
     this.saveUserProfile(user);
-    this.logSecurityEvent(userId, 'mfa_enabled', 'Double authentification (2FA TOTP) activée.');
+    this.logSecurityEvent(
+      userId,
+      "mfa_enabled",
+      "Double authentification (2FA TOTP) activée.",
+    );
 
     return {
       success: true,
-      message: 'La double authentification (2FA) est désormais active sur votre compte.',
+      message:
+        "La double authentification (2FA) est désormais active sur votre compte.",
     };
   }
 
-  public disableMFA(userId: string, currentPasswordOrCode: string): { success: boolean; message: string } {
+  public disableMFA(
+    userId: string,
+    currentPasswordOrCode: string,
+  ): { success: boolean; message: string } {
     const user = this.getUserById(userId);
-    if (!user) return { success: false, message: 'Utilisateur introuvable.' };
+    if (!user) return { success: false, message: "Utilisateur introuvable." };
 
     user.mfa = { isEnabled: false };
     this.saveUserProfile(user);
-    this.logSecurityEvent(userId, 'mfa_disabled', 'Double authentification (2FA) désactivée.');
+    this.logSecurityEvent(
+      userId,
+      "mfa_disabled",
+      "Double authentification (2FA) désactivée.",
+    );
 
     return {
       success: true,
-      message: 'La double authentification (2FA) a été désactivée.',
+      message: "La double authentification (2FA) a été désactivée.",
     };
   }
 
   // -------------------------------------------------------------
   // Account Deletion & Anonymization
   // -------------------------------------------------------------
-  public deleteAccount(userId: string, confirmationPassword: string, reason?: string): { success: boolean; message: string } {
+  public deleteAccount(
+    userId: string,
+    confirmationPassword: string,
+    reason?: string,
+  ): { success: boolean; message: string } {
     const user = this.getUserById(userId);
-    if (!user) return { success: false, message: 'Utilisateur introuvable.' };
+    if (!user) return { success: false, message: "Utilisateur introuvable." };
 
     // Check password
     if (!verifyPasswordHash(confirmationPassword, user.passwordHash)) {
-      return { success: false, message: 'Le mot de passe de confirmation est incorrect.' };
+      return {
+        success: false,
+        message: "Le mot de passe de confirmation est incorrect.",
+      };
     }
 
     // Check pending transactions
@@ -1117,19 +1379,20 @@ class AuthService {
     const hasPendingTx = transactions.some(
       (t) =>
         (t.buyerId === userId || t.sellerId === userId) &&
-        ['pending', 'paid_in_escrow', 'shipped'].includes(t.status)
+        ["pending", "paid_in_escrow", "shipped"].includes(t.status),
     );
 
     if (hasPendingTx) {
       return {
         success: false,
-        message: 'Impossible de supprimer votre compte : vous avez des transactions ou livraisons en cours de traitement.',
+        message:
+          "Impossible de supprimer votre compte : vous avez des transactions ou livraisons en cours de traitement.",
       };
     }
 
     // Soft-delete / anonymize user
-    user.status = 'deleted';
-    user.name = 'Utilisateur supprimé';
+    user.status = "deleted";
+    user.name = "Utilisateur supprimé";
     user.email = `deleted_${user.id}@anonymized.shongre.fr`;
     user.phone = undefined;
     user.bio = undefined;
@@ -1140,11 +1403,16 @@ class AuthService {
     this.revokeAllOtherSessions(userId);
     this.logout();
 
-    this.logSecurityEvent(userId, 'account_deleted', `Compte supprimé par l'utilisateur. Motif : "${reason || 'Non précisé'}"`);
+    this.logSecurityEvent(
+      userId,
+      "account_deleted",
+      `Compte supprimé par l'utilisateur. Motif : "${reason || "Non précisé"}"`,
+    );
 
     return {
       success: true,
-      message: 'Votre compte Shongre et vos données personnelles ont été supprimés.',
+      message:
+        "Votre compte Shongre et vos données personnelles ont été supprimés.",
     };
   }
 
@@ -1152,16 +1420,19 @@ class AuthService {
   // Logout
   // -------------------------------------------------------------
   public logout(): void {
-    const currentSessionId = this.getStorage<string>('shongre_current_session_id', '');
+    const currentSessionId = this.getStorage<string>(
+      "shongre_current_session_id",
+      "",
+    );
     if (currentSessionId) {
       let sessions = this.getStorage<UserSession[]>(SESSIONS_STORAGE_KEY, []);
       sessions = sessions.filter((s) => s.id !== currentSessionId);
       this.setStorage(SESSIONS_STORAGE_KEY, sessions);
-      localStorage.removeItem('shongre_current_session_id');
+      localStorage.removeItem("shongre_current_session_id");
     }
 
-    storageService.setCurrentUserKey('guest');
-    storageService.setCurrentRole('guest');
+    storageService.setCurrentUserKey("guest");
+    storageService.setCurrentRole("guest");
   }
 }
 

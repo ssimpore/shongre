@@ -11,7 +11,7 @@ import type {
   LegalConsent,
   AuthErrorCode,
   AuthResult,
-} from './auth.types';
+} from "./auth.types";
 
 export type {
   AccountStatus,
@@ -28,37 +28,37 @@ export type {
   AuthResult,
 };
 
-export * from '../domains/market/market.types';
-export * from '../domains/verification/verification.types';
+export * from "../domains/market/market.types";
+export * from "../domains/verification/verification.types";
 
-export type AccountType = 'individual' | 'professional' | 'internal';
+export type AccountType = "individual" | "professional" | "internal";
 
 export type PlatformRole =
-  | 'guest'
-  | 'buyer'
-  | 'seller'
-  | 'pro_seller'
-  | 'support'
-  | 'moderator'
-  | 'operations'
-  | 'finance'
-  | 'commercial'
-  | 'content_manager'
-  | 'market_manager'
-  | 'admin'
-  | 'super_admin';
+  | "guest"
+  | "buyer"
+  | "seller"
+  | "pro_seller"
+  | "support"
+  | "moderator"
+  | "operations"
+  | "finance"
+  | "commercial"
+  | "content_manager"
+  | "market_manager"
+  | "admin"
+  | "super_admin";
 
 // Compatibility alias with existing code
 export type UserRole =
-  | 'guest'
-  | 'individual_buyer'
-  | 'individual_seller'
-  | 'pro_seller'
-  | 'moderator'
-  | 'admin'
+  | "guest"
+  | "individual_buyer"
+  | "individual_seller"
+  | "pro_seller"
+  | "moderator"
+  | "admin"
   | PlatformRole;
 
-export type SellerType = 'individual' | 'pro';
+export type SellerType = "individual" | "pro";
 
 export interface MarketScope {
   countries: string[]; // e.g. ['FR'], ['BE'], ['*'] for global
@@ -67,125 +67,125 @@ export interface MarketScope {
 
 export type Permission =
   // Profile
-  | 'profile.read'
-  | 'profile.update.own'
-  | 'seller.profile.read'
-  | 'seller.profile.update.own'
+  | "profile.read"
+  | "profile.update.own"
+  | "seller.profile.read"
+  | "seller.profile.update.own"
   // Listings
-  | 'listing.read'
-  | 'listing.create'
-  | 'listing.update.own'
-  | 'listing.delete.own'
-  | 'listing.publish'
-  | 'listing.mark_reserved'
-  | 'listing.mark_sold'
-  | 'listing.promote'
-  | 'listing.moderate'
-  | 'listing.feature'
-  | 'listing.bulk_import'
+  | "listing.read"
+  | "listing.create"
+  | "listing.update.own"
+  | "listing.delete.own"
+  | "listing.publish"
+  | "listing.mark_reserved"
+  | "listing.mark_sold"
+  | "listing.promote"
+  | "listing.moderate"
+  | "listing.feature"
+  | "listing.bulk_import"
   // Messaging
-  | 'message.read.own'
-  | 'message.send'
-  | 'message.block'
-  | 'conversation.manage.own'
-  | 'conversation.audit.privileged'
+  | "message.read.own"
+  | "message.send"
+  | "message.block"
+  | "conversation.manage.own"
+  | "conversation.audit.privileged"
   // Favorites & Searches
-  | 'favorite.manage.own'
-  | 'saved_search.manage.own'
+  | "favorite.manage.own"
+  | "saved_search.manage.own"
   // Orders & Escrow
-  | 'order.create'
-  | 'order.read.own'
-  | 'order.manage.seller'
-  | 'order.refund'
-  | 'transaction.audit.finance'
+  | "order.create"
+  | "order.read.own"
+  | "order.manage.seller"
+  | "order.refund"
+  | "transaction.audit.finance"
   // Payments
-  | 'payment.initiate'
-  | 'payment.refund'
+  | "payment.initiate"
+  | "payment.refund"
   // Reviews
-  | 'review.create'
-  | 'review.update.own'
-  | 'review.moderate'
+  | "review.create"
+  | "review.update.own"
+  | "review.moderate"
   // Storefront & Analytics
-  | 'store.manage.own'
-  | 'store.analytics.read.own'
-  | 'store.customization.manage'
+  | "store.manage.own"
+  | "store.analytics.read.own"
+  | "store.customization.manage"
   // Subscription & Monetization
-  | 'subscription.manage.own'
-  | 'subscription.upgrade'
-  | 'monetization.manage'
-  | 'monetization.pricing.update'
+  | "subscription.manage.own"
+  | "subscription.upgrade"
+  | "monetization.manage"
+  | "monetization.pricing.update"
   // Users & Staff
-  | 'user.read'
-  | 'user.manage'
-  | 'user.suspend'
-  | 'user.reactivate'
-  | 'user.verify'
-  | 'staff.support.access'
-  | 'staff.operations.access'
-  | 'staff.finance.access'
-  | 'staff.commercial.access'
+  | "user.read"
+  | "user.manage"
+  | "user.suspend"
+  | "user.reactivate"
+  | "user.verify"
+  | "staff.support.access"
+  | "staff.operations.access"
+  | "staff.finance.access"
+  | "staff.commercial.access"
   // Moderation & Safety
-  | 'report.create'
-  | 'report.review'
-  | 'moderation.review'
-  | 'moderation.action'
+  | "report.create"
+  | "report.review"
+  | "moderation.review"
+  | "moderation.action"
   // Markets & Taxonomy
-  | 'market.manage'
-  | 'market.configure'
-  | 'taxonomy.manage'
+  | "market.manage"
+  | "market.configure"
+  | "taxonomy.manage"
   // Providers & External Integrations
-  | 'provider.read'
-  | 'provider.manage'
-  | 'provider.configuration.read'
-  | 'provider.configuration.manage'
-  | 'provider.routing.manage'
-  | 'provider.credentials.status.read'
-  | 'provider.credentials.manage'
-  | 'provider.health.read'
-  | 'provider.test'
+  | "provider.read"
+  | "provider.manage"
+  | "provider.configuration.read"
+  | "provider.configuration.manage"
+  | "provider.routing.manage"
+  | "provider.credentials.status.read"
+  | "provider.credentials.manage"
+  | "provider.health.read"
+  | "provider.test"
   // Administration
-  | 'admin.access'
-  | 'role.manage'
-  | 'permission.manage'
-  | 'audit.read'
+  | "admin.access"
+  | "role.manage"
+  | "permission.manage"
+  | "audit.read"
   // CRM & Commercial
-  | 'crm.access'
-  | 'crm.contact.read'
-  | 'crm.contact.manage'
-  | 'crm.company.read'
-  | 'crm.company.manage'
-  | 'crm.opportunity.read'
-  | 'crm.opportunity.manage'
-  | 'crm.ai_prospecting.use';
+  | "crm.access"
+  | "crm.contact.read"
+  | "crm.contact.manage"
+  | "crm.company.read"
+  | "crm.company.manage"
+  | "crm.opportunity.read"
+  | "crm.opportunity.manage"
+  | "crm.ai_prospecting.use";
 
 export type SecurityAuditAction =
-  | 'role_assigned'
-  | 'role_removed'
-  | 'user_suspended'
-  | 'user_reactivated'
-  | 'verification_approved'
-  | 'verification_rejected'
-  | 'listing_moderated'
-  | 'market_scope_updated'
-  | 'plan_modified'
-  | 'permission_overridden'
-  | 'listing_hidden'
-  | 'listing_restored'
-  | 'password_reset_completed'
-  | 'mfa_enabled'
-  | 'mfa_disabled'
-  | 'account_type_upgraded_to_pro'
-  | 'account_deleted'
-  | 'email_verified'
-  | 'phone_verified'
-  | 'provider_configured'
-  | 'provider_enabled'
-  | 'provider_disabled'
-  | 'provider_market_override_set'
-  | 'provider_market_override_reset'
-  | 'provider_priority_changed'
-  | 'provider_fallback_changed'
-  | 'provider_credential_status_updated';
+  | "role_assigned"
+  | "role_removed"
+  | "user_suspended"
+  | "user_reactivated"
+  | "verification_approved"
+  | "verification_rejected"
+  | "listing_moderated"
+  | "market_scope_updated"
+  | "plan_modified"
+  | "permission_overridden"
+  | "listing_hidden"
+  | "listing_restored"
+  | "password_reset_completed"
+  | "mfa_enabled"
+  | "mfa_disabled"
+  | "account_type_upgraded_to_pro"
+  | "account_deleted"
+  | "email_verified"
+  | "phone_verified"
+  | "provider_configured"
+  | "provider_enabled"
+  | "provider_disabled"
+  | "provider_market_override_set"
+  | "provider_market_override_reset"
+  | "provider_priority_changed"
+  | "provider_fallback_changed"
+  | "provider_credential_status_updated";
 
 /**
  * Human labels for audit actions.
@@ -196,41 +196,42 @@ export type SecurityAuditAction =
  * `auditActionLabel` so a missing entry degrades to something legible rather
  * than to a snake_case identifier.
  */
-export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> = {
-  role_assigned: 'Rôle attribué',
-  role_removed: 'Rôle retiré',
-  user_suspended: 'Compte suspendu',
-  user_reactivated: 'Compte réactivé',
-  verification_approved: 'Vérification approuvée',
-  verification_rejected: 'Vérification refusée',
-  listing_moderated: 'Annonce modérée',
-  market_scope_updated: 'Périmètre de marché modifié',
-  plan_modified: 'Forfait modifié',
-  permission_overridden: 'Permission surchargée',
-  listing_hidden: 'Annonce masquée',
-  listing_restored: 'Annonce restaurée',
-  password_reset_completed: 'Mot de passe réinitialisé',
-  mfa_enabled: 'Double authentification activée',
-  mfa_disabled: 'Double authentification désactivée',
-  account_type_upgraded_to_pro: 'Compte passé en Pro',
-  account_deleted: 'Compte supprimé',
-  email_verified: 'Email vérifié',
-  phone_verified: 'Téléphone vérifié',
-  provider_configured: 'Fournisseur configuré',
-  provider_enabled: 'Fournisseur activé',
-  provider_disabled: 'Fournisseur désactivé',
-  provider_market_override_set: 'Surcharge marché appliquée',
-  provider_market_override_reset: 'Surcharge marché réinitialisée',
-  provider_priority_changed: 'Priorité fournisseur modifiée',
-  provider_fallback_changed: 'Repli fournisseur modifié',
-  provider_credential_status_updated: 'Identifiants fournisseur mis à jour',
-};
+export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> =
+  {
+    role_assigned: "Rôle attribué",
+    role_removed: "Rôle retiré",
+    user_suspended: "Compte suspendu",
+    user_reactivated: "Compte réactivé",
+    verification_approved: "Vérification approuvée",
+    verification_rejected: "Vérification refusée",
+    listing_moderated: "Annonce modérée",
+    market_scope_updated: "Périmètre de marché modifié",
+    plan_modified: "Forfait modifié",
+    permission_overridden: "Permission surchargée",
+    listing_hidden: "Annonce masquée",
+    listing_restored: "Annonce restaurée",
+    password_reset_completed: "Mot de passe réinitialisé",
+    mfa_enabled: "Double authentification activée",
+    mfa_disabled: "Double authentification désactivée",
+    account_type_upgraded_to_pro: "Compte passé en Pro",
+    account_deleted: "Compte supprimé",
+    email_verified: "Email vérifié",
+    phone_verified: "Téléphone vérifié",
+    provider_configured: "Fournisseur configuré",
+    provider_enabled: "Fournisseur activé",
+    provider_disabled: "Fournisseur désactivé",
+    provider_market_override_set: "Surcharge marché appliquée",
+    provider_market_override_reset: "Surcharge marché réinitialisée",
+    provider_priority_changed: "Priorité fournisseur modifiée",
+    provider_fallback_changed: "Repli fournisseur modifié",
+    provider_credential_status_updated: "Identifiants fournisseur mis à jour",
+  };
 
 /** Falls back to a de-slugified label so an unmapped action never renders raw. */
 export function auditActionLabel(action: SecurityAuditAction | string): string {
   const known = SECURITY_AUDIT_ACTION_LABELS[action as SecurityAuditAction];
   if (known) return known;
-  const spaced = String(action).replace(/_/g, ' ');
+  const spaced = String(action).replace(/_/g, " ");
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
@@ -264,7 +265,7 @@ export interface UserProfile {
   isDeactivated?: boolean;
   suspendedReason?: string;
   suspendedAt?: string;
-  
+
   // Verification
   isVerified: boolean;
   isIdentityVerified?: boolean;
@@ -274,7 +275,7 @@ export interface UserProfile {
   professionalVerification?: ProfessionalVerification;
   identityVerification?: IdentityVerification;
   bankPayoutVerification?: BankPayoutVerification;
-  
+
   // Market Scoping
   marketScope?: MarketScope;
   country?: string; // e.g. 'FR', 'BE', 'CH', 'ES'
@@ -282,7 +283,7 @@ export interface UserProfile {
   postalCode: string;
   department?: string;
   region?: string;
-  
+
   // Direct permission grants / revokes
   customPermissions?: Permission[];
   revokedPermissions?: Permission[];
@@ -304,7 +305,7 @@ export interface UserProfile {
   mfa?: MFASettings;
   legalConsent?: LegalConsent;
   sessions?: UserSession[];
-  
+
   // Professional fields
   companyName?: string;
   sirenSiret?: string;
@@ -317,16 +318,30 @@ export interface UserProfile {
   businessAddress?: string;
   deliveryZones?: string[];
   websiteUrl?: string;
-  activePlanId?: 'free' | 'pro_starter' | 'pro_business' | 'pro_enterprise';
+  activePlanId?: "free" | "pro_starter" | "pro_business" | "pro_enterprise";
   services?: string[];
   returnPolicy?: string;
   featuredListingIds?: string[];
   defaultPublicationMarkets?: string[];
 }
 
-export type ListingCondition = 'new_with_tag' | 'new_without_tag' | 'very_good' | 'good' | 'fair' | 'for_parts' | 'not_applicable';
+export type ListingCondition =
+  | "new_with_tag"
+  | "new_without_tag"
+  | "very_good"
+  | "good"
+  | "fair"
+  | "for_parts"
+  | "not_applicable";
 
-export type ListingStatus = 'active' | 'draft' | 'pending_review' | 'reserved' | 'sold' | 'expired' | 'archived';
+export type ListingStatus =
+  | "active"
+  | "draft"
+  | "pending_review"
+  | "reserved"
+  | "sold"
+  | "expired"
+  | "archived";
 
 export interface ListingDraft extends Partial<Listing> {
   step?: number;
@@ -335,7 +350,8 @@ export interface ListingDraft extends Partial<Listing> {
   photos?: any[];
 }
 
-export type DeliveryType = 'hand_delivery' | 'relay_point' | 'home_delivery' | 'custom_carrier';
+export type DeliveryType =
+  "hand_delivery" | "relay_point" | "home_delivery" | "custom_carrier";
 
 export interface DeliveryOption {
   type: DeliveryType;
@@ -389,7 +405,7 @@ export interface Listing {
   deliveryOptions: DeliveryOption[];
   isOnlinePaymentAvailable: boolean;
   isReservable?: boolean;
-  reservationType?: 'instant' | 'request';
+  reservationType?: "instant" | "request";
   activeReservationId?: string;
   attributes: Record<string, any>;
   status: ListingStatus;
@@ -401,13 +417,15 @@ export interface Listing {
   favoritesCount: number;
   contactCount: number;
   isBoosted?: boolean;
-  boostType?: 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight';
+  boostType?:
+    "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight";
   boostExpiresAt?: string;
   marketCode?: string; // Primary market code e.g. 'FR'
   marketCodes?: string[]; // All markets in which this listing is published e.g. ['FR', 'BE']
   marketPublications?: Array<{
     marketCode: string;
-    status: 'active' | 'pending' | 'suspended' | 'rejected' | 'draft' | 'paused';
+    status:
+      "active" | "pending" | "suspended" | "rejected" | "draft" | "paused";
     isPrimary?: boolean;
     publishedAt?: string;
     customPrice?: number;
@@ -448,7 +466,14 @@ export interface SubCategory {
   attributesSchema: CategoryAttributeSchema[];
 }
 
-export type AttributeInputType = 'select' | 'text' | 'number' | 'radio' | 'checkbox_group' | 'boolean' | 'year';
+export type AttributeInputType =
+  | "select"
+  | "text"
+  | "number"
+  | "radio"
+  | "checkbox_group"
+  | "boolean"
+  | "year";
 
 export interface CategoryAttributeSchema {
   key: string;
@@ -484,13 +509,13 @@ export interface SearchFilters {
   minPrice?: number;
   maxPrice?: number;
   conditions?: ListingCondition[];
-  sellerType?: 'all' | 'individual' | 'pro';
+  sellerType?: "all" | "individual" | "pro";
   deliveryAvailable?: boolean;
   onlinePaymentAvailable?: boolean;
   onlyDeals?: boolean;
   publishedToday?: boolean;
   attributes?: Record<string, string | string[] | number | boolean>;
-  sortBy?: 'date_desc' | 'price_asc' | 'price_desc' | 'relevance' | 'distance';
+  sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
   marketCode?: string; // Scopes search to active market (e.g. 'FR', 'BE', 'ES', 'CH')
   page?: number;
   limit?: number;
@@ -515,8 +540,16 @@ export interface RecentSearch {
   createdAt?: string;
 }
 
-export type MessageType = 'text' | 'image' | 'file' | 'offer' | 'offer_accepted' | 'offer_declined' | 'reservation' | 'system';
-export type OfferStatus = 'pending' | 'accepted' | 'declined' | 'countered';
+export type MessageType =
+  | "text"
+  | "image"
+  | "file"
+  | "offer"
+  | "offer_accepted"
+  | "offer_declined"
+  | "reservation"
+  | "system";
+export type OfferStatus = "pending" | "accepted" | "declined" | "countered";
 
 export interface Message {
   id: string;
@@ -527,7 +560,7 @@ export interface Message {
   type: MessageType;
   offerAmount?: number;
   attachmentUrl?: string;
-  attachmentType?: 'image' | 'file';
+  attachmentType?: "image" | "file";
   createdAt: string;
   isRead: boolean;
 }
@@ -549,7 +582,7 @@ export interface Conversation {
   lastMessage: string;
   lastMessageAt: string;
   unreadCount: number;
-  status: 'active' | 'archived' | 'blocked';
+  status: "active" | "archived" | "blocked";
   messages?: Message[];
   currentOffer?: {
     amount: number;
@@ -560,7 +593,7 @@ export interface Conversation {
     scheduledDate?: string;
     scheduledTimeSlot?: string;
     address?: string;
-    status: 'pending' | 'agreed' | 'completed';
+    status: "pending" | "agreed" | "completed";
   };
 }
 
@@ -569,33 +602,40 @@ export interface NotificationItem {
   userId: string;
   title: string;
   message: string;
-  type: 'message' | 'offer' | 'listing_approved' | 'listing_sold' | 'price_drop' | 'saved_search' | 'system';
+  type:
+    | "message"
+    | "offer"
+    | "listing_approved"
+    | "listing_sold"
+    | "price_drop"
+    | "saved_search"
+    | "system";
   linkUrl?: string;
   link?: string;
   isRead: boolean;
   createdAt: string;
 }
 
-export type TransactionStatus = 
-  | 'offer_accepted' 
-  | 'payment_pending' 
-  | 'payment_escrowed'
-  | 'escrow_secured' 
-  | 'pending_seller_confirmation'
-  | 'seller_confirmed'
-  | 'seller_rejected'
-  | 'ready_for_pickup'
-  | 'pickup_scheduled' 
-  | 'shipped' 
-  | 'delivered' 
-  | 'handover_confirmed'
-  | 'completed' 
-  | 'cancelled'
-  | 'cancelled_by_buyer'
-  | 'cancelled_by_seller'
-  | 'expired' 
-  | 'disputed'
-  | 'refunded';
+export type TransactionStatus =
+  | "offer_accepted"
+  | "payment_pending"
+  | "payment_escrowed"
+  | "escrow_secured"
+  | "pending_seller_confirmation"
+  | "seller_confirmed"
+  | "seller_rejected"
+  | "ready_for_pickup"
+  | "pickup_scheduled"
+  | "shipped"
+  | "delivered"
+  | "handover_confirmed"
+  | "completed"
+  | "cancelled"
+  | "cancelled_by_buyer"
+  | "cancelled_by_seller"
+  | "expired"
+  | "disputed"
+  | "refunded";
 
 export interface TransactionStatusHistoryEntry {
   status: TransactionStatus;
@@ -607,11 +647,12 @@ export interface TransactionStatusHistoryEntry {
 
 export interface TransactionPaymentDetails {
   intentId: string;
-  provider: 'mangopay_escrow' | 'stripe_connect';
-  paymentMethod: 'card' | 'apple_pay' | 'google_pay' | 'sepa';
+  provider: "mangopay_escrow" | "stripe_connect";
+  paymentMethod: "card" | "apple_pay" | "google_pay" | "sepa";
   cardBrand?: string;
   cardLast4?: string;
-  escrowStatus: 'pending' | 'held' | 'released' | 'refunded' | 'partially_refunded';
+  escrowStatus:
+    "pending" | "held" | "released" | "refunded" | "partially_refunded";
   authorizedAt: string;
   capturedAt?: string;
   releasedAt?: string;
@@ -631,15 +672,17 @@ export interface TransactionDispute {
   id: string;
   openedBy: string;
   openedByName: string;
-  role: 'buyer' | 'seller';
+  role: "buyer" | "seller";
   reason: string;
   description: string;
   evidenceUrls?: string[];
-  status: 'open' | 'under_review' | 'resolved_refund' | 'resolved_payout' | 'closed';
+  status:
+    "open" | "under_review" | "resolved_refund" | "resolved_payout" | "closed";
   createdAt: string;
   resolvedAt?: string;
   resolutionNote?: string;
-  resolutionAction?: 'full_refund' | 'partial_refund' | 'seller_payout' | 'closed';
+  resolutionAction?:
+    "full_refund" | "partial_refund" | "seller_payout" | "closed";
   refundAmount?: number;
 }
 
@@ -679,7 +722,7 @@ export interface Transaction {
   };
   pickupDetails?: TransactionPickupDetails;
   verificationCode?: string; // 6-digit PIN for hand delivery verification
-  verificationCodeStatus?: 'pending' | 'verified';
+  verificationCodeStatus?: "pending" | "verified";
   status: TransactionStatus;
   statusHistory?: TransactionStatusHistoryEntry[];
   payment?: TransactionPaymentDetails;
@@ -715,10 +758,10 @@ export interface SellerPayoutRequest {
   amount: number;
   fee: number;
   netAmount: number;
-  payoutType: 'standard' | 'instant';
+  payoutType: "standard" | "instant";
   ibanLast4: string;
   bankName: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   requestedAt: string;
   completedAt?: string;
 }

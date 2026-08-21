@@ -1,23 +1,21 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 import {
   ExternalLink,
   DollarSign,
   Calendar,
   ShieldCheck,
-  Package
-  
-  
-} from 'lucide-react';
+  Package,
+} from "lucide-react";
 import {
   ListingConversationContext,
   TransactionConversationContext,
-} from '../../../domains/messaging/messaging.types';
-import { formatPrice } from '../../../utilities/formatters';
-import { Badge } from '../../../design-system/primitives/Badge';
-import { Button } from '../../../design-system/primitives/Button';
-import { Image } from '../../../design-system/primitives/Image';
-import { useTranslation } from '../../../i18n/I18nProvider';
+} from "../../../domains/messaging/messaging.types";
+import { formatPrice } from "../../../utilities/formatters";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { Button } from "../../../design-system/primitives/Button";
+import { Image } from "../../../design-system/primitives/Image";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface ConversationContextBarProps {
   listingContext?: ListingConversationContext | null;
@@ -64,11 +62,15 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 <span>{listingContext.listingTitle}</span>
                 <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              {listingContext.listingStatus === 'reserved' && (
-                <Badge variant="warning" size="sm">{t('messaging.conversationContextBar.reservee')}</Badge>
+              {listingContext.listingStatus === "reserved" && (
+                <Badge variant="warning" size="sm">
+                  {t("messaging.conversationContextBar.reservee")}
+                </Badge>
               )}
-              {listingContext.listingStatus === 'sold' && (
-                <Badge variant="neutral" size="sm">Vendue</Badge>
+              {listingContext.listingStatus === "sold" && (
+                <Badge variant="neutral" size="sm">
+                  Vendue
+                </Badge>
               )}
             </div>
             <div className="text-xs font-black text-primary">
@@ -87,7 +89,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             onClick={onViewTransaction}
             leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-success" />}
             className="text-xs"
-          >{t('messaging.conversationContextBar.suiviDeCommande')}</Button>
+          >
+            {t("messaging.conversationContextBar.suiviDeCommande")}
+          </Button>
         ) : (
           <>
             {onMakeOffer && (
@@ -97,7 +101,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 onClick={onMakeOffer}
                 leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 className="text-xs"
-              >{t('messaging.conversationContextBar.faireUneOffre')}</Button>
+              >
+                {t("messaging.conversationContextBar.faireUneOffre")}
+              </Button>
             )}
             {onSchedulePickup && (
               <Button
@@ -106,7 +112,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 onClick={onSchedulePickup}
                 leftIcon={<Calendar className="w-3.5 h-3.5 text-primary" />}
                 className="text-xs"
-              >{t('messaging.conversationContextBar.fixerRendezVous')}</Button>
+              >
+                {t("messaging.conversationContextBar.fixerRendezVous")}
+              </Button>
             )}
           </>
         )}

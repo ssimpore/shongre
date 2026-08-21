@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface SelectableCardProps {
   /** Whether this card is the currently chosen option. */
@@ -10,7 +10,7 @@ export interface SelectableCardProps {
    * text content, which is usually right — pass it when the card's visible copy
    * is not a usable name on its own (a bare price, an icon-led row).
    */
-  'aria-label'?: string;
+  "aria-label"?: string;
   className?: string;
   children: React.ReactNode;
 }
@@ -35,13 +35,13 @@ export const SelectableCard: React.FC<SelectableCardProps> = ({
   selected,
   onSelect,
   disabled = false,
-  className = '',
+  className = "",
   children,
   ...rest
 }) => {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
+    if (event.key !== "Enter" && event.key !== " ") return;
     // Only the card itself responds. Without this, Space typed into a nested
     // phone field would re-toggle the card instead of inserting a space.
     if (event.target !== event.currentTarget) return;
@@ -58,7 +58,7 @@ export const SelectableCard: React.FC<SelectableCardProps> = ({
       onClick={disabled ? undefined : onSelect}
       onKeyDown={handleKeyDown}
       className={`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
       } ${className}`}
       {...rest}
     >

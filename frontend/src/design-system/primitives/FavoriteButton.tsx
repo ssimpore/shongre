@@ -1,9 +1,12 @@
-import React from 'react';
-import { Heart } from 'lucide-react';
-import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+import React from "react";
+import { Heart } from "lucide-react";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../utils/controlMetrics";
 
-export type FavoriteButtonSize = 'sm' | 'md' | 'lg';
-export type FavoriteButtonVariant = 'bare' | 'floating';
+export type FavoriteButtonSize = "sm" | "md" | "lg";
+export type FavoriteButtonVariant = "bare" | "floating";
 
 export interface FavoriteButtonProps {
   isFavorite: boolean;
@@ -16,16 +19,16 @@ export interface FavoriteButtonProps {
 }
 
 const ICON: Record<FavoriteButtonSize, string> = {
-  sm: 'w-3.5 h-3.5',
-  md: 'w-4 h-4',
-  lg: 'w-5 h-5',
+  sm: "w-3.5 h-3.5",
+  md: "w-4 h-4",
+  lg: "w-5 h-5",
 };
 
 /** The painted size of the control. Never grows — see `TOUCH_EXPANSION`. */
 const BOX: Record<FavoriteButtonSize, string> = {
-  sm: 'w-6 h-6',
-  md: 'w-8 h-8',
-  lg: 'w-9 h-9',
+  sm: "w-6 h-6",
+  md: "w-8 h-8",
+  lg: "w-9 h-9",
 };
 
 /**
@@ -44,9 +47,9 @@ const BOX: Record<FavoriteButtonSize, string> = {
  */
 const TOUCH_EXPANSION =
   "pointer-coarse:after:content-[''] pointer-coarse:after:absolute " +
-  'pointer-coarse:after:left-1/2 pointer-coarse:after:top-1/2 ' +
-  'pointer-coarse:after:-translate-x-1/2 pointer-coarse:after:-translate-y-1/2 ' +
-  'pointer-coarse:after:w-control-touch pointer-coarse:after:h-control-touch';
+  "pointer-coarse:after:left-1/2 pointer-coarse:after:top-1/2 " +
+  "pointer-coarse:after:-translate-x-1/2 pointer-coarse:after:-translate-y-1/2 " +
+  "pointer-coarse:after:w-control-touch pointer-coarse:after:h-control-touch";
 
 /**
  * `relative` establishes the containing block for the touch expansion above —
@@ -84,25 +87,27 @@ const POSITIONED_BY_CALLER = /(?:^|\s)(?:absolute|fixed|sticky|static)(?:\s|$)/;
 export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   isFavorite,
   onToggle,
-  size = 'md',
-  variant = 'bare',
-  className = '',
+  size = "md",
+  variant = "bare",
+  className = "",
 }) => {
-  const position = POSITIONED_BY_CALLER.test(className) ? '' : 'relative';
+  const position = POSITIONED_BY_CALLER.test(className) ? "" : "relative";
   const surface =
-    variant === 'floating'
-      ? 'rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-stone-600 hover:bg-bg-surface'
-      : 'rounded-full text-stone-500 hover:bg-stone-100';
+    variant === "floating"
+      ? "rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-stone-600 hover:bg-bg-surface"
+      : "rounded-full text-stone-500 hover:bg-stone-100";
 
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={isFavorite}
-      aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+      aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
       className={`${position} flex items-center justify-center shrink-0 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary active:scale-90 cursor-pointer ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
     >
-      <Heart className={`${ICON[size]} ${isFavorite ? 'fill-primary text-primary' : ''}`} />
+      <Heart
+        className={`${ICON[size]} ${isFavorite ? "fill-primary text-primary" : ""}`}
+      />
     </button>
   );
 };

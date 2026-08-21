@@ -1,8 +1,11 @@
-import { MarketsServiceContract } from '../../contracts/markets.contract';
-import { getMarketDefinition, CountryMarketDefinition } from '../../../configuration/market.config';
-import { marketService } from '../../../domains/market/market.service';
-import { storageService } from '../../../services/storage.service';
-import { simulateNetworkDelay } from '../../client/api-client.config';
+import { MarketsServiceContract } from "../../contracts/markets.contract";
+import {
+  getMarketDefinition,
+  CountryMarketDefinition,
+} from "../../../configuration/market.config";
+import { marketService } from "../../../domains/market/market.service";
+import { storageService } from "../../../services/storage.service";
+import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoMarketsService implements MarketsServiceContract {
   async getAllMarkets(): Promise<CountryMarketDefinition[]> {
@@ -17,13 +20,13 @@ export class DemoMarketsService implements MarketsServiceContract {
 
   async getActiveMarket(): Promise<CountryMarketDefinition> {
     await simulateNetworkDelay();
-    const stored = storageService.get<string>('shongre_active_market_v1', 'FR');
+    const stored = storageService.get<string>("shongre_active_market_v1", "FR");
     return getMarketDefinition(stored);
   }
 
   async setActiveMarket(code: string): Promise<CountryMarketDefinition> {
     await simulateNetworkDelay();
-    storageService.set('shongre_active_market_v1', code);
+    storageService.set("shongre_active_market_v1", code);
     return getMarketDefinition(code);
   }
 

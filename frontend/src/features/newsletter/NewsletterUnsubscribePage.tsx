@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Mail, CheckCircle2, ShieldCheck  } from 'lucide-react';
-import { Button } from '../../design-system/primitives/Button';
-import { FormField, Input } from '../../design-system/primitives/FormField';
-import { newsletterRepository } from '../../repositories/newsletter.repository';
-import { newsletterService } from '../../domains/newsletter/newsletter.service';
-import { useToast } from '../../app/providers/ToastProvider';
-import { useTranslation } from '../../i18n/I18nProvider';
-import { usePageMeta } from '../../hooks/usePageMeta';
+import React, { useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Mail, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Button } from "../../design-system/primitives/Button";
+import { FormField, Input } from "../../design-system/primitives/FormField";
+import { newsletterRepository } from "../../repositories/newsletter.repository";
+import { newsletterService } from "../../domains/newsletter/newsletter.service";
+import { useToast } from "../../app/providers/ToastProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const NewsletterUnsubscribePage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
-    title: t('meta.newsletterUnsubscribe.title'),
-    description: t('meta.newsletterUnsubscribe.description'),
-    canonicalPath: '/newsletter/desabonnement',
+    title: t("meta.newsletterUnsubscribe.title"),
+    description: t("meta.newsletterUnsubscribe.description"),
+    canonicalPath: "/newsletter/desabonnement",
     noIndex: true,
   });
 
@@ -22,7 +22,7 @@ export const NewsletterUnsubscribePage: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const [email, setEmail] = useState(searchParams.get('email') || '');
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [isUnsubscribed, setIsUnsubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export const NewsletterUnsubscribePage: React.FC = () => {
 
     const validation = newsletterService.validateEmail(email);
     if (!validation.isValid) {
-      setError(validation.error || 'Email invalide.');
+      setError(validation.error || "Email invalide.");
       return;
     }
 
@@ -41,7 +41,10 @@ export const NewsletterUnsubscribePage: React.FC = () => {
     try {
       await newsletterRepository.unsubscribe(email.trim());
       setIsUnsubscribed(true);
-      toast.info('Vous êtes désabonné de la newsletter.', 'Désinscription confirmée');
+      toast.info(
+        "Vous êtes désabonné de la newsletter.",
+        "Désinscription confirmée",
+      );
     } catch (err: any) {
       // In demo mode or if email wasn't found, still show confirmation to prevent enumeration
       setIsUnsubscribed(true);
@@ -55,9 +58,12 @@ export const NewsletterUnsubscribePage: React.FC = () => {
     try {
       await newsletterRepository.subscribe({ email: email.trim() });
       setIsUnsubscribed(false);
-      toast.success('Votre réabonnement a bien été pris en compte.', 'Réabonné');
+      toast.success(
+        "Votre réabonnement a bien été pris en compte.",
+        "Réabonné",
+      );
     } catch (err: any) {
-      setError(err.message || 'Erreur lors du réabonnement.');
+      setError(err.message || "Erreur lors du réabonnement.");
     } finally {
       setIsSubmitting(false);
     }
@@ -71,38 +77,76 @@ export const NewsletterUnsubscribePage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">{t('newsletter.newsletterUnsubscribePage.desabonnementNewsletter')}</h1>
-          <p className="text-xs sm:text-sm text-stone-500">{t('newsletter.newsletterUnsubscribePage.vousPouvezVousDesabonnerEn')}</p>
+          <h1 className="text-2xl font-black text-stone-900">
+            {t("newsletter.newsletterUnsubscribePage.desabonnementNewsletter")}
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-500">
+            {t(
+              "newsletter.newsletterUnsubscribePage.vousPouvezVousDesabonnerEn",
+            )}
+          </p>
         </div>
 
         {isUnsubscribed ? (
           <div className="space-y-5 animate-fadeIn">
             <div className="p-4 bg-success-surface border border-success-border rounded-2xl text-success text-xs space-y-1 text-left">
               <span className="font-bold block flex items-center gap-1.5 text-success">
-                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />{t('newsletter.newsletterUnsubscribePage.desabonnementPrisEnCompte')}</span>
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                {t(
+                  "newsletter.newsletterUnsubscribePage.desabonnementPrisEnCompte",
+                )}
+              </span>
               <p className="text-success leading-relaxed">
-                L'adresse <strong>{email}</strong> ne recevra plus nos communications promotionnelles.
+                L'adresse <strong>{email}</strong> ne recevra plus nos
+                communications promotionnelles.
               </p>
             </div>
 
             <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-micro text-stone-500 text-left flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-              <span>{t('newsletter.newsletterUnsubscribePage.vousContinuerezARecevoirLes')}</span>
+              <span>
+                {t(
+                  "newsletter.newsletterUnsubscribePage.vousContinuerezARecevoirLes",
+                )}
+              </span>
             </div>
 
             <div className="space-y-2 pt-2">
-              <Button variant="outline" size="sm" fullWidth onClick={handleResubscribe} disabled={isSubmitting}>{t('newsletter.newsletterUnsubscribePage.jeMeSuisTrompeMe')}</Button>
-              <Button variant="primary" fullWidth onClick={() => navigate('/')} className="font-bold">{t('newsletter.newsletterUnsubscribePage.retourALAccueil')}</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                fullWidth
+                onClick={handleResubscribe}
+                disabled={isSubmitting}
+              >
+                {t("newsletter.newsletterUnsubscribePage.jeMeSuisTrompeMe")}
+              </Button>
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => navigate("/")}
+                className="font-bold"
+              >
+                {t("newsletter.newsletterUnsubscribePage.retourALAccueil")}
+              </Button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleUnsubscribe} className="space-y-4 text-left">
-            <FormField label={t('newsletter.newsletterUnsubscribePage.votreAdresseEmail')} required error={error || undefined}>
+            <FormField
+              label={t(
+                "newsletter.newsletterUnsubscribePage.votreAdresseEmail",
+              )}
+              required
+              error={error || undefined}
+            >
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('newsletter.newsletterUnsubscribePage.votreEmailExempleFr')}
+                placeholder={t(
+                  "newsletter.newsletterUnsubscribePage.votreEmailExempleFr",
+                )}
               />
             </FormField>
 
@@ -114,7 +158,9 @@ export const NewsletterUnsubscribePage: React.FC = () => {
               disabled={isSubmitting}
               className="font-bold"
             >
-              {isSubmitting ? 'Désinscription...' : 'Confirmer le désabonnement'}
+              {isSubmitting
+                ? "Désinscription..."
+                : "Confirmer le désabonnement"}
             </Button>
           </form>
         )}

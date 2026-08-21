@@ -4,56 +4,48 @@
  * payment lifecycles, refunds, disputes, and seller payouts.
  */
 
-import { SellerType, TransactionStatus, TransactionDispute } from '../../types';
+import { SellerType, TransactionStatus, TransactionDispute } from "../../types";
 
-export type TransactionMode = 'CONTACT_ONLY' | 'DIRECT_PURCHASE' | 'RESERVATION';
+export type TransactionMode =
+  "CONTACT_ONLY" | "DIRECT_PURCHASE" | "RESERVATION";
 
 export type PaymentStatus =
-  | 'requires_payment'
-  | 'processing'
-  | 'authorized'
-  | 'paid'
-  | 'failed'
-  | 'cancelled'
-  | 'refund_pending'
-  | 'refunded';
+  | "requires_payment"
+  | "processing"
+  | "authorized"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refund_pending"
+  | "refunded";
 
-export type PaymentMethodType = 'card' | 'apple_pay' | 'google_pay' | 'sepa';
+export type PaymentMethodType = "card" | "apple_pay" | "google_pay" | "sepa";
 
 export type FulfillmentType =
-  | 'local_pickup'
-  | 'parcel'
-  | 'bulky_delivery'
-  | 'seller_delivery'
-  | 'store_pickup'
-  | 'digital'
-  | 'remote_service'
-  | 'on_site_service';
+  | "local_pickup"
+  | "parcel"
+  | "bulky_delivery"
+  | "seller_delivery"
+  | "store_pickup"
+  | "digital"
+  | "remote_service"
+  | "on_site_service";
 
 export type ShipmentStatus =
-  | 'label_pending'
-  | 'ready_to_ship'
-  | 'shipped'
-  | 'in_transit'
-  | 'out_for_delivery'
-  | 'delivered'
-  | 'delivery_exception'
-  | 'cancelled';
+  | "label_pending"
+  | "ready_to_ship"
+  | "shipped"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "delivery_exception"
+  | "cancelled";
 
 export type RefundStatus =
-  | 'not_requested'
-  | 'requested'
-  | 'processing'
-  | 'refunded'
-  | 'failed';
+  "not_requested" | "requested" | "processing" | "refunded" | "failed";
 
 export type PayoutStatus =
-  | 'not_ready'
-  | 'pending'
-  | 'processing'
-  | 'paid'
-  | 'failed'
-  | 'blocked';
+  "not_ready" | "pending" | "processing" | "paid" | "failed" | "blocked";
 
 export interface OrderPricingSnapshot {
   itemPriceMinor: number;
@@ -138,7 +130,7 @@ export interface Order {
   trackingNumber?: string;
   trackingEvents?: ShipmentTrackingEvent[];
   verificationPin?: string;
-  verificationPinStatus?: 'pending' | 'verified';
+  verificationPinStatus?: "pending" | "verified";
   payoutStatus?: PayoutStatus;
   refundStatus?: RefundStatus;
   refundAmountMinor?: number;

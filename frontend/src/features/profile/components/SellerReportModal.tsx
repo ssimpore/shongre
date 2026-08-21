@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Flag, AlertTriangle   } from 'lucide-react';
-import { UserProfile } from '../../../types';
-import { Modal } from '../../../design-system/primitives/Modal';
-import { Button } from '../../../design-system/primitives/Button';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { userRepository } from '../../../repositories/user.repository';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { Flag, AlertTriangle } from "lucide-react";
+import { UserProfile } from "../../../types";
+import { Modal } from "../../../design-system/primitives/Modal";
+import { Button } from "../../../design-system/primitives/Button";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { userRepository } from "../../../repositories/user.repository";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface SellerReportModalProps {
   isOpen: boolean;
@@ -14,12 +14,15 @@ export interface SellerReportModalProps {
 }
 
 const REPORT_REASONS = [
-  { id: 'scam', label: 'Suspicion d\'arnaque ou d\'escroquerie' },
-  { id: 'counterfeit', label: 'Contrefaçon, article interdit ou illicite' },
-  { id: 'harassment', label: 'Comportement abusif, injures ou harcèlement' },
-  { id: 'impersonation', label: 'Usurpation d\'identité ou de société' },
-  { id: 'offline_payment', label: 'Demande de paiement hors de la plateforme sécurisée' },
-  { id: 'other', label: 'Autre motif' },
+  { id: "scam", label: "Suspicion d'arnaque ou d'escroquerie" },
+  { id: "counterfeit", label: "Contrefaçon, article interdit ou illicite" },
+  { id: "harassment", label: "Comportement abusif, injures ou harcèlement" },
+  { id: "impersonation", label: "Usurpation d'identité ou de société" },
+  {
+    id: "offline_payment",
+    label: "Demande de paiement hors de la plateforme sécurisée",
+  },
+  { id: "other", label: "Autre motif" },
 ];
 
 export const SellerReportModal: React.FC<SellerReportModalProps> = ({
@@ -30,7 +33,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0].id);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,12 +49,12 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
       });
 
       toast.success(
-        'Votre signalement a été transmis à l\'équipe de modération Shongre. Merci de votre vigilance.'
+        "Votre signalement a été transmis à l'équipe de modération Shongre. Merci de votre vigilance.",
       );
-      setComment('');
+      setComment("");
       onClose();
     } catch {
-      toast.error('Une erreur est survenue lors de l\'envoi du signalement.');
+      toast.error("Une erreur est survenue lors de l'envoi du signalement.");
     } finally {
       setIsSubmitting(false);
     }
@@ -61,29 +64,31 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('profile.sellerReportModal.signalerCeProfil')}
+      title={t("profile.sellerReportModal.signalerCeProfil")}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start gap-3 p-3 bg-warning-surface rounded-xl border border-warning-border text-xs text-warning">
           <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
           <p>
-            Vous êtes sur le point de signaler le profil de{' '}
-            <strong>{seller.companyName || seller.name}</strong>. Nos équipes de sécurité
-            examineront ce dossier sous 24h.
+            Vous êtes sur le point de signaler le profil de{" "}
+            <strong>{seller.companyName || seller.name}</strong>. Nos équipes de
+            sécurité examineront ce dossier sous 24h.
           </p>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-900 mb-2">{t('profile.sellerReportModal.motifPrincipalDuSignalement')}</label>
+          <label className="block text-xs font-bold text-stone-900 mb-2">
+            {t("profile.sellerReportModal.motifPrincipalDuSignalement")}
+          </label>
           <div className="space-y-1.5">
             {REPORT_REASONS.map((r) => (
               <label
                 key={r.id}
                 className={`flex items-center gap-3 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-colors ${
                   selectedReason === r.id
-                    ? 'border-primary bg-bg-base text-stone-950 font-bold'
-                    : 'border-border-base hover:bg-bg-base text-stone-700'
+                    ? "border-primary bg-bg-base text-stone-950 font-bold"
+                    : "border-border-base hover:bg-bg-base text-stone-700"
                 }`}
               >
                 <input
@@ -101,18 +106,30 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-900 mb-1">{t('profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande')}</label>
+          <label className="block text-xs font-bold text-stone-900 mb-1">
+            {t(
+              "profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande",
+            )}
+          </label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder={t('profile.sellerReportModal.decrivezPrecisementLesFaitsConstates')}
+            placeholder={t(
+              "profile.sellerReportModal.decrivezPrecisementLesFaitsConstates",
+            )}
             rows={3}
             className="w-full p-3 bg-bg-base border border-border-base rounded-control text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary min-h-control-touch"
           />
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
-          <Button variant="ghost" size="sm" type="button" onClick={onClose} disabled={isSubmitting}>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             Annuler
           </Button>
           <Button
@@ -121,7 +138,9 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
             type="submit"
             isLoading={isSubmitting}
             leftIcon={<Flag className="w-3.5 h-3.5" />}
-          >{t('profile.sellerReportModal.envoyerLeSignalement')}</Button>
+          >
+            {t("profile.sellerReportModal.envoyerLeSignalement")}
+          </Button>
         </div>
       </form>
     </Modal>

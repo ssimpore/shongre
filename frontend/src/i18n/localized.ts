@@ -1,5 +1,5 @@
-import { storageService } from '../services/storage.service';
-import { DEFAULT_LOCALE, normaliseLocale } from './locale';
+import { storageService } from "../services/storage.service";
+import { DEFAULT_LOCALE, normaliseLocale } from "./locale";
 
 /**
  * Translations for admin-managed records, as an overlay rather than a copy.

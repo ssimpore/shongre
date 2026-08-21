@@ -18,21 +18,26 @@
  *
  * Run: node scripts/prune-unused-imports.mjs [--dry]
  */
-import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
+import { execSync } from "child_process";
+import { readFileSync, writeFileSync } from "fs";
 
-const DRY = process.argv.includes('--dry');
+const DRY = process.argv.includes("--dry");
 const MAX_PASSES = 8;
 
 function diagnostics() {
   try {
-    execSync('npx tsc --noEmit --noUnusedLocals', { encoding: 'utf8', stdio: 'pipe' });
+    execSync("npx tsc --noEmit --noUnusedLocals", {
+      encoding: "utf8",
+      stdio: "pipe",
+    });
     return [];
   } catch (error) {
-    const out = `${error.stdout || ''}${error.stderr || ''}`;
+    const out = `${error.stdout || ""}${error.stderr || ""}`;
     return out
-      .split('\n')
-      .map((line) => line.match(/^(.+?)\((\d+),(\d+)\): error TS(6133|6192): (.+)$/))
+      .split("\n")
+      .map((line) =>
+        line.match(/^(.+?)\((\d+),(\d+)\): error TS(6133|6192): (.+)$/),
+      )
       .filter(Boolean)
       .map((m) => ({
         file: m[1],
@@ -51,7 +56,12 @@ function importRegion(lines, index) {
     const text = lines[i];
     if (/^\s*import\b/.test(text)) {
       let end = i;
-      while (end < lines.length && !/from\s+['"][^'"]+['"]\s*;?\s*$|^\s*import\s+['"][^'"]+['"];?\s*$/.test(lines[end])) {
+      while (
+        end < lines.length &&
+        !/from\s+['"][^'"]+['"]\s*;?\s*$|^\s*import\s+['"][^'"]+['"];?\s*$/.test(
+          lines[end],
+        )
+      ) {
         end += 1;
         if (end - i > 40) return null;
       }
@@ -74,7 +84,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
   // Group by file, and apply from the bottom so earlier line numbers stay valid.
   const byFile = new Map();
   for (const d of found) {
-    if (!d.name && d.code !== '6192') continue;
+    if (!d.name && d.code !== "6192") continue;
     if (!byFile.has(d.file)) byFile.set(d.file, []);
     byFile.get(d.file).push(d);
   }
@@ -82,7 +92,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
   let removedThisPass = 0;
 
   for (const [file, items] of byFile) {
-    const lines = readFileSync(file, 'utf8').split('\n');
+    const lines = readFileSync(file, "utf8").split("\n");
     const dropWholeStatement = new Set();
     const dropNames = new Map(); // statement start -> names
 
@@ -90,7 +100,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
       const region = importRegion(lines, item.line - 1);
       if (!region) continue; // not an import: a parameter or another local — leave it
 
-      if (item.code === '6192') {
+      if (item.code === "6192") {
         dropWholeStatement.add(region.start);
         continue;
       }
@@ -106,7 +116,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
       .sort((a, b) => b.start - a.start);
 
     for (const region of regions) {
-      const statement = lines.slice(region.start, region.end + 1).join('\n');
+      const statement = lines.slice(region.start, region.end + 1).join("\n");
 
       if (dropWholeStatement.has(region.start)) {
         lines.splice(region.start, region.end - region.start + 1);
@@ -122,33 +132,46 @@ for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
            deleted only the alias and left a dangling `List as` — which is a
            syntax error, not a smaller import. Match the whole pair. */
         next = next.replace(
-          new RegExp(`(\\{[^}]*?)\\b\\w+\\s+as\\s+${name}\\b\\s*,?`, 's'),
+          new RegExp(`(\\{[^}]*?)\\b\\w+\\s+as\\s+${name}\\b\\s*,?`, "s"),
           (whole, head) => head,
         );
         // Plain named binding.
         next = next.replace(
-          new RegExp(`(\\{[^}]*?)\\b${name}\\b(?!\\s+as\\s)\\s*,?`, 's'),
+          new RegExp(`(\\{[^}]*?)\\b${name}\\b(?!\\s+as\\s)\\s*,?`, "s"),
           (whole, head) => head,
         );
         // Default import: `import Name, {…}` or `import Name from`.
-        next = next.replace(new RegExp(`^(\\s*import\\s+)${name}\\s*,\\s*`), '$1');
-        next = next.replace(new RegExp(`^(\\s*import\\s+)${name}(\\s+from\\s)`), '$1{}$2');
+        next = next.replace(
+          new RegExp(`^(\\s*import\\s+)${name}\\s*,\\s*`),
+          "$1",
+        );
+        next = next.replace(
+          new RegExp(`^(\\s*import\\s+)${name}(\\s+from\\s)`),
+          "$1{}$2",
+        );
       }
       next = next
-        .replace(/\{\s*,/g, '{')
-        .replace(/,\s*,/g, ',')
-        .replace(/,(\s*\})/g, '$1');
+        .replace(/\{\s*,/g, "{")
+        .replace(/,\s*,/g, ",")
+        .replace(/,(\s*\})/g, "$1");
 
       // Nothing left to bring in: drop the statement rather than leave `import {}`.
-      if (/import\s*(\{\s*\})?\s*from/.test(next) || /^\s*import\s*\{\s*\}\s*;?\s*$/.test(next)) {
+      if (
+        /import\s*(\{\s*\})?\s*from/.test(next) ||
+        /^\s*import\s*\{\s*\}\s*;?\s*$/.test(next)
+      ) {
         lines.splice(region.start, region.end - region.start + 1);
       } else {
-        lines.splice(region.start, region.end - region.start + 1, ...next.split('\n'));
+        lines.splice(
+          region.start,
+          region.end - region.start + 1,
+          ...next.split("\n"),
+        );
       }
       removedThisPass += names.size;
     }
 
-    if (!DRY) writeFileSync(file, lines.join('\n'));
+    if (!DRY) writeFileSync(file, lines.join("\n"));
   }
 
   totalRemoved += removedThisPass;

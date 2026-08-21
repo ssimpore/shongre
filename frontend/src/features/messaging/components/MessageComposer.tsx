@@ -1,17 +1,9 @@
-import React, { useState, useRef } from 'react';
-import {
-  Send,
-  
-  Image as ImageIcon,
-  X,
-  
-  ShieldAlert
-  
-} from 'lucide-react';
-import { ConversationCapabilities } from '../../../domains/messaging/messaging.types';
-import { Button } from '../../../design-system/primitives/Button';
-import { Image } from '../../../design-system/primitives/Image';
-import { useTranslation } from '../../../i18n/I18nProvider';
+import React, { useState, useRef } from "react";
+import { Send, Image as ImageIcon, X, ShieldAlert } from "lucide-react";
+import { ConversationCapabilities } from "../../../domains/messaging/messaging.types";
+import { Button } from "../../../design-system/primitives/Button";
+import { Image } from "../../../design-system/primitives/Image";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface MessageComposerProps {
   onSendMessage: (text: string, attachmentUrl?: string) => Promise<void>;
@@ -21,16 +13,25 @@ interface MessageComposerProps {
 }
 
 const SAMPLE_ATTACHMENTS = [
-  { label: 'Photo état', url: 'https://images.unsplash.com/photo-1580481077195-c3a9927b74b7?auto=format&fit=crop&w=800&q=80' },
-  { label: 'Facture / Garantie', url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80' },
-  { label: 'Accessoires inclus', url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80' },
+  {
+    label: "Photo état",
+    url: "https://images.unsplash.com/photo-1580481077195-c3a9927b74b7?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    label: "Facture / Garantie",
+    url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    label: "Accessoires inclus",
+    url: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+  },
 ];
 
 const PRO_QUICK_REPLIES = [
-  'Bonjour, oui, l\'article est disponible en stock.',
-  'Bonjour, expédition possible sous 24h avec suivi.',
-  'Bonjour, nous pouvons convenir d\'un retrait en boutique.',
-  'Bonjour, facture avec TVA fournie sur demande.',
+  "Bonjour, oui, l'article est disponible en stock.",
+  "Bonjour, expédition possible sous 24h avec suivi.",
+  "Bonjour, nous pouvons convenir d'un retrait en boutique.",
+  "Bonjour, facture avec TVA fournie sur demande.",
 ];
 
 export const MessageComposer: React.FC<MessageComposerProps> = ({
@@ -40,7 +41,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   isPro = false,
 }) => {
   const { t } = useTranslation();
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -62,20 +63,21 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
 
   const handleSubmit = async () => {
-    if ((!text.trim() && !attachedPhoto) || isSending || !capabilities.canSend) return;
+    if ((!text.trim() && !attachedPhoto) || isSending || !capabilities.canSend)
+      return;
 
     setIsSending(true);
     try {
       if (onTyping) onTyping(false);
       await onSendMessage(text.trim(), attachedPhoto || undefined);
-      setText('');
+      setText("");
       setAttachedPhoto(null);
       setShowPhotoPicker(false);
     } finally {
@@ -87,7 +89,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     return (
       <div className="p-4 bg-stone-100 border-t border-border-base text-center text-xs font-semibold text-stone-500 flex items-center justify-center gap-2 shrink-0">
         <ShieldAlert className="w-4 h-4 text-stone-400" />
-        <span>{capabilities.disabledReason || 'Vous ne pouvez pas envoyer de message dans cette conversation.'}</span>
+        <span>
+          {capabilities.disabledReason ||
+            "Vous ne pouvez pas envoyer de message dans cette conversation."}
+        </span>
       </div>
     );
   }
@@ -97,17 +102,25 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       {/* Attached Photo Preview Bubble */}
       {attachedPhoto && (
         <div className="flex items-center gap-2 p-2 bg-stone-50 border border-border-base rounded-xl w-fit">
-          <Image src={attachedPhoto} alt={t('messaging.messageComposer.apercuPieceJointe')} sizes="48px"
-  className="w-12 h-12 object-cover rounded-lg" />
+          <Image
+            src={attachedPhoto}
+            alt={t("messaging.messageComposer.apercuPieceJointe")}
+            sizes="48px"
+            className="w-12 h-12 object-cover rounded-lg"
+          />
           <div className="text-xs">
-            <span className="font-bold text-stone-800 block">{t('messaging.messageComposer.photoPreteAEtreEnvoyee')}</span>
-            <span className="text-micro text-stone-500">{t('messaging.messageComposer.seraTransmiseAvecVotreMessage')}</span>
+            <span className="font-bold text-stone-800 block">
+              {t("messaging.messageComposer.photoPreteAEtreEnvoyee")}
+            </span>
+            <span className="text-micro text-stone-500">
+              {t("messaging.messageComposer.seraTransmiseAvecVotreMessage")}
+            </span>
           </div>
           <button
             type="button"
             onClick={() => setAttachedPhoto(null)}
             className="p-1 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-200"
-            aria-label={t('messaging.messageComposer.supprimerLaPhoto')}
+            aria-label={t("messaging.messageComposer.supprimerLaPhoto")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -118,7 +131,9 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       {showPhotoPicker && (
         <div className="p-3 bg-stone-50 border border-border-base rounded-xl space-y-2 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-stone-800">{t('messaging.messageComposer.ajouterUnePhotoALa')}</span>
+            <span className="font-bold text-stone-800">
+              {t("messaging.messageComposer.ajouterUnePhotoALa")}
+            </span>
             <button
               type="button"
               onClick={() => setShowPhotoPicker(false)}
@@ -138,8 +153,12 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                 }}
                 className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border-base bg-white hover:border-primary hover:shadow-2xs transition-all text-center"
               >
-                <Image src={s.url} alt={s.label} sizes="40px"
-  className="w-10 h-10 object-cover rounded" />
+                <Image
+                  src={s.url}
+                  alt={s.label}
+                  sizes="40px"
+                  className="w-10 h-10 object-cover rounded"
+                />
                 <span className="text-micro font-semibold text-stone-700 truncate w-full">
                   {s.label}
                 </span>
@@ -172,11 +191,11 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           onClick={() => setShowPhotoPicker(!showPhotoPicker)}
           className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
             attachedPhoto || showPhotoPicker
-              ? 'bg-primary text-white border-primary'
-              : 'border-border-base text-stone-500 hover:text-stone-900 hover:bg-stone-100'
+              ? "bg-primary text-white border-primary"
+              : "border-border-base text-stone-500 hover:text-stone-900 hover:bg-stone-100"
           }`}
-          title={t('messaging.messageComposer.joindreUnePhoto')}
-          aria-label={t('messaging.messageComposer.joindreUnePhoto')}
+          title={t("messaging.messageComposer.joindreUnePhoto")}
+          aria-label={t("messaging.messageComposer.joindreUnePhoto")}
         >
           <ImageIcon className="w-4 h-4" />
         </button>
@@ -188,8 +207,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             value={text}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
-            placeholder={t('messaging.messageComposer.ecrivezVotreMessageEntreePour')}
-            aria-label={t('messaging.messageComposer.votreMessage')}
+            placeholder={t(
+              "messaging.messageComposer.ecrivezVotreMessageEntreePour",
+            )}
+            aria-label={t("messaging.messageComposer.votreMessage")}
             className="w-full min-h-control-touch max-h-32 px-3.5 py-2.5 text-xs font-semibold bg-stone-50 border border-border-base rounded-control focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400 resize-none"
           />
         </div>

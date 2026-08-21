@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Building2,
   FileCheck,
@@ -10,16 +10,18 @@ import {
   ArrowLeft,
   Search,
   Sparkles,
-  ShieldCheck
-  
-} from 'lucide-react';
-import { useDialogBehavior } from '../../../design-system/primitives/useDialogBehavior';
-import { Button } from '../../../design-system/primitives/Button';
-import { useVerification } from '../../../domains/verification/useVerification';
-import { verificationService } from '../../../domains/verification/verification.service';
-import { useToast } from '../../../app/providers/ToastProvider';
-import { SUPPORTED_MARKETS, validateBusinessIdentifier } from '../../../configuration/market.config';
-import { useTranslation } from '../../../i18n/I18nProvider';
+  ShieldCheck,
+} from "lucide-react";
+import { useDialogBehavior } from "../../../design-system/primitives/useDialogBehavior";
+import { Button } from "../../../design-system/primitives/Button";
+import { useVerification } from "../../../domains/verification/useVerification";
+import { verificationService } from "../../../domains/verification/verification.service";
+import { useToast } from "../../../app/providers/ToastProvider";
+import {
+  SUPPORTED_MARKETS,
+  validateBusinessIdentifier,
+} from "../../../configuration/market.config";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface BusinessVerificationModalProps {
   isOpen: boolean;
@@ -27,32 +29,40 @@ export interface BusinessVerificationModalProps {
   onSuccess?: () => void;
 }
 
-export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess,
-}) => {
+export const BusinessVerificationModal: React.FC<
+  BusinessVerificationModalProps
+> = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const { currentUser, submitKyb } = useVerification();
   const toast = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [siret, setSiret] = useState(currentUser?.siret || currentUser?.sirenSiret || '');
-  const [companyName, setCompanyName] = useState(currentUser?.companyName || '');
-  const [legalForm, setLegalForm] = useState(currentUser?.legalForm || 'Société par actions simplifiée (SAS)');
-  const [vatNumber, setVatNumber] = useState(currentUser?.vatNumber || '');
-  const [businessAddress, setBusinessAddress] = useState(currentUser?.businessAddress || '');
-  const [city, setCity] = useState(currentUser?.city || 'Paris');
-  const [postalCode, setPostalCode] = useState(currentUser?.postalCode || '75001');
-  const [country, ] = useState(currentUser?.country || 'FR');
-  
-  const [legalRepName, setLegalRepName] = useState(currentUser?.name || '');
-  const [legalRepRole, setLegalRepRole] = useState('Gérant / Président');
-  
+  const [siret, setSiret] = useState(
+    currentUser?.siret || currentUser?.sirenSiret || "",
+  );
+  const [companyName, setCompanyName] = useState(
+    currentUser?.companyName || "",
+  );
+  const [legalForm, setLegalForm] = useState(
+    currentUser?.legalForm || "Société par actions simplifiée (SAS)",
+  );
+  const [vatNumber, setVatNumber] = useState(currentUser?.vatNumber || "");
+  const [businessAddress, setBusinessAddress] = useState(
+    currentUser?.businessAddress || "",
+  );
+  const [city, setCity] = useState(currentUser?.city || "Paris");
+  const [postalCode, setPostalCode] = useState(
+    currentUser?.postalCode || "75001",
+  );
+  const [country] = useState(currentUser?.country || "FR");
+
+  const [legalRepName, setLegalRepName] = useState(currentUser?.name || "");
+  const [legalRepRole, setLegalRepRole] = useState("Gérant / Président");
+
   const [kbisUploaded, setKbisUploaded] = useState(false);
   const [ribUploaded, setRibUploaded] = useState(false);
   const [uboAccepted, setUboAccepted] = useState(false);
-  
+
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupFound, setLookupFound] = useState(false);
   const [instantApproval, setInstantApproval] = useState(true);
@@ -63,12 +73,12 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
 
   if (!isOpen) return null;
 
-  const currentMarket = SUPPORTED_MARKETS[country] || SUPPORTED_MARKETS['FR'];
+  const currentMarket = SUPPORTED_MARKETS[country] || SUPPORTED_MARKETS["FR"];
 
   const handleSiretLookup = () => {
     setError(null);
     if (!siret.trim()) {
-      setError('Veuillez renseigner un numéro SIRET.');
+      setError("Veuillez renseigner un numéro SIRET.");
       return;
     }
 
@@ -87,7 +97,9 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         setPostalCode(info.postalCode);
         setLookupFound(true);
       } else {
-        setError('Aucune entreprise trouvée pour ce numéro. Vous pouvez saisir les informations manuellement.');
+        setError(
+          "Aucune entreprise trouvée pour ce numéro. Vous pouvez saisir les informations manuellement.",
+        );
       }
     } finally {
       setIsLookingUp(false);
@@ -97,7 +109,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyName.trim() || !siret.trim() || !businessAddress.trim()) {
-      setError('Veuillez renseigner tous les champs obligatoires.');
+      setError("Veuillez renseigner tous les champs obligatoires.");
       return;
     }
 
@@ -113,7 +125,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
   const handleStep2Submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!legalRepName.trim() || !legalRepRole.trim()) {
-      setError('Veuillez renseigner les informations du mandataire social.');
+      setError("Veuillez renseigner les informations du mandataire social.");
       return;
     }
     setError(null);
@@ -123,7 +135,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
   const handleStep3Submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!kbisUploaded) {
-      setError('Veuillez téléverser votre extrait KBIS ou avis SIRENE récent.');
+      setError("Veuillez téléverser votre extrait KBIS ou avis SIRENE récent.");
       return;
     }
     setError(null);
@@ -133,7 +145,9 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uboAccepted) {
-      setError('Vous devez certifier la déclaration des bénéficiaires effectifs.');
+      setError(
+        "Vous devez certifier la déclaration des bénéficiaires effectifs.",
+      );
       return;
     }
 
@@ -153,11 +167,13 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
           country,
           legalRepresentativeName: legalRepName.trim(),
           legalRepresentativeRole: legalRepRole.trim(),
-          kbisDocumentUrl: 'blob:https://shongre.market/mock-kbis.pdf',
-          ribDocumentUrl: ribUploaded ? 'blob:https://shongre.market/mock-rib.pdf' : undefined,
+          kbisDocumentUrl: "blob:https://shongre.market/mock-kbis.pdf",
+          ribDocumentUrl: ribUploaded
+            ? "blob:https://shongre.market/mock-rib.pdf"
+            : undefined,
           uboDeclarationAccepted: true,
         },
-        instantApproval
+        instantApproval,
       );
 
       if (res.success) {
@@ -168,7 +184,7 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         setError(res.message);
       }
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la validation entreprise.');
+      setError(err.message || "Erreur lors de la validation entreprise.");
     } finally {
       setIsLoading(false);
     }
@@ -204,11 +220,20 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             <Building2 className="w-5 h-5" />
           </div>
           <div>
-            <h3 id={titleId} className="text-lg font-black text-stone-900 leading-tight">{t('verification.businessVerificationModal.verificationEntrepriseKybKbis')}</h3>
+            <h3
+              id={titleId}
+              className="text-lg font-black text-stone-900 leading-tight"
+            >
+              {t(
+                "verification.businessVerificationModal.verificationEntrepriseKybKbis",
+              )}
+            </h3>
             <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
               <span>Étape {step} sur 4</span>
               <span>•</span>
-              <span className="text-warning font-bold">Immatriculation RCS & INSEE</span>
+              <span className="text-warning font-bold">
+                Immatriculation RCS & INSEE
+              </span>
             </div>
           </div>
         </div>
@@ -233,7 +258,8 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
           <form onSubmit={handleStep1Submit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                {currentMarket.businessIdentifierLabel} (SIRET / SIREN) <span className="text-primary">*</span>
+                {currentMarket.businessIdentifierLabel} (SIRET / SIREN){" "}
+                <span className="text-primary">*</span>
               </label>
               <div className="flex gap-2">
                 <input
@@ -251,21 +277,32 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                   onClick={handleSiretLookup}
                   isLoading={isLookingUp}
                   leftIcon={<Search className="w-4 h-4" />}
-                >{t('verification.businessVerificationModal.verifier')}</Button>
+                >
+                  {t("verification.businessVerificationModal.verifier")}
+                </Button>
               </div>
-              <p className="text-micro text-stone-500 mt-1">{t('verification.businessVerificationModal.saisissezVotreSiretPourRemplir')}</p>
+              <p className="text-micro text-stone-500 mt-1">
+                {t(
+                  "verification.businessVerificationModal.saisissezVotreSiretPourRemplir",
+                )}
+              </p>
             </div>
 
             {lookupFound && (
               <div className="p-3 rounded-xl bg-success-surface border border-success-border text-xs text-success flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                <span>{t('verification.businessVerificationModal.entrepriseIdentifieeDansLeRepertoire')}</span>
+                <span>
+                  {t(
+                    "verification.businessVerificationModal.entrepriseIdentifieeDansLeRepertoire",
+                  )}
+                </span>
               </div>
             )}
 
             <div>
               <label className="block text-xs font-bold text-stone-800 mb-1">
-                Raison sociale / Nom commercial <span className="text-primary">*</span>
+                Raison sociale / Nom commercial{" "}
+                <span className="text-primary">*</span>
               </label>
               <input
                 type="text"
@@ -309,13 +346,19 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.businessVerificationModal.adresseDuSiegeSocial')}<span className="text-primary">*</span>
+              <label className="block text-xs font-bold text-stone-800 mb-1">
+                {t(
+                  "verification.businessVerificationModal.adresseDuSiegeSocial",
+                )}
+                <span className="text-primary">*</span>
               </label>
               <input
                 type="text"
                 value={businessAddress}
                 onChange={(e) => setBusinessAddress(e.target.value)}
-                placeholder={t('verification.businessVerificationModal.14RueDeLArtisanat')}
+                placeholder={t(
+                  "verification.businessVerificationModal.14RueDeLArtisanat",
+                )}
                 required
                 className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
               />
@@ -354,7 +397,9 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 variant="primary"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-              >{t('verification.businessVerificationModal.representantLegal')}</Button>
+              >
+                {t("verification.businessVerificationModal.representantLegal")}
+              </Button>
             </div>
           </form>
         )}
@@ -362,10 +407,18 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         {/* Step 2: Legal Representative */}
         {step === 2 && (
           <form onSubmit={handleStep2Submit} className="space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed">{t('verification.businessVerificationModal.indiquezLIdentiteDuMandataire')}</p>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              {t(
+                "verification.businessVerificationModal.indiquezLIdentiteDuMandataire",
+              )}
+            </p>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.businessVerificationModal.nomCompletDuRepresentantLegal')}<span className="text-primary">*</span>
+              <label className="block text-xs font-bold text-stone-800 mb-1">
+                {t(
+                  "verification.businessVerificationModal.nomCompletDuRepresentantLegal",
+                )}
+                <span className="text-primary">*</span>
               </label>
               <input
                 type="text"
@@ -378,23 +431,39 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">{t('verification.businessVerificationModal.fonctionQualiteAuSeinDe')}<span className="text-primary">*</span>
+              <label className="block text-xs font-bold text-stone-800 mb-1">
+                {t(
+                  "verification.businessVerificationModal.fonctionQualiteAuSeinDe",
+                )}
+                <span className="text-primary">*</span>
               </label>
               <select
                 value={legalRepRole}
                 onChange={(e) => setLegalRepRole(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-amber-600 h-control-touch"
               >
-                <option value="Gérant / Président">{t('verification.businessVerificationModal.presidentDirecteurGeneralGerant')}</option>
-                <option value="Entrepreneur individuel">Entrepreneur individuel / Auto-entrepreneur</option>
-                <option value="Mandataire habilité">{t('verification.businessVerificationModal.mandataireExpressementHabiliteDelegationDe')}</option>
+                <option value="Gérant / Président">
+                  {t(
+                    "verification.businessVerificationModal.presidentDirecteurGeneralGerant",
+                  )}
+                </option>
+                <option value="Entrepreneur individuel">
+                  Entrepreneur individuel / Auto-entrepreneur
+                </option>
+                <option value="Mandataire habilité">
+                  {t(
+                    "verification.businessVerificationModal.mandataireExpressementHabiliteDelegationDe",
+                  )}
+                </option>
               </select>
             </div>
 
             <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-700 flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-stone-600 shrink-0 mt-0.5" />
               <div>
-                <strong>Lutte contre l'usurpation :</strong> Le représentant légal devra également disposer d'un compte utilisateur authentifié avec pièce d'identité valide.
+                <strong>Lutte contre l'usurpation :</strong> Le représentant
+                légal devra également disposer d'un compte utilisateur
+                authentifié avec pièce d'identité valide.
               </div>
             </div>
 
@@ -423,7 +492,11 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
         {/* Step 3: Document Upload (KBIS + RIB) */}
         {step === 3 && (
           <form onSubmit={handleStep3Submit} className="space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed">{t('verification.businessVerificationModal.televersezLesDocumentsOfficielsAttestant')}</p>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              {t(
+                "verification.businessVerificationModal.televersezLesDocumentsOfficielsAttestant",
+              )}
+            </p>
 
             {/* KBIS Upload */}
             <button
@@ -431,27 +504,39 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               onClick={() => setKbisUploaded(true)}
               className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 kbisUploaded
-                  ? 'border-success bg-success-surface text-success'
-                  : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
+                  ? "border-success bg-success-surface text-success"
+                  : "border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    kbisUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
+                    kbisUploaded
+                      ? "bg-success text-white"
+                      : "bg-stone-200 text-stone-600"
                   }`}
                 >
-                  {kbisUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+                  {kbisUploaded ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <Upload className="w-5 h-5" />
+                  )}
                 </div>
                 <div>
                   <div className="text-xs font-bold">
-                    {kbisUploaded ? 'Extrait KBIS / Avis SIRENE chargé' : 'Extrait KBIS de moins de 3 mois (PDF/JPG)'}
+                    {kbisUploaded
+                      ? "Extrait KBIS / Avis SIRENE chargé"
+                      : "Extrait KBIS de moins de 3 mois (PDF/JPG)"}
                   </div>
-                  <div className="text-micro text-stone-500">{t('verification.businessVerificationModal.documentObligatoireDelivreParLe')}</div>
+                  <div className="text-micro text-stone-500">
+                    {t(
+                      "verification.businessVerificationModal.documentObligatoireDelivreParLe",
+                    )}
+                  </div>
                 </div>
               </div>
               <span className="text-xs font-bold text-warning">
-                {kbisUploaded ? 'Remplacer' : 'Sélectionner'}
+                {kbisUploaded ? "Remplacer" : "Sélectionner"}
               </span>
             </button>
 
@@ -461,27 +546,39 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               onClick={() => setRibUploaded(true)}
               className={`w-full text-left p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-fast flex items-center justify-between gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 ribUploaded
-                  ? 'border-success bg-success-surface text-success'
-                  : 'border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700'
+                  ? "border-success bg-success-surface text-success"
+                  : "border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700"
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    ribUploaded ? 'bg-success text-white' : 'bg-stone-200 text-stone-600'
+                    ribUploaded
+                      ? "bg-success text-white"
+                      : "bg-stone-200 text-stone-600"
                   }`}
                 >
-                  {ribUploaded ? <CheckCircle2 className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
+                  {ribUploaded ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <Upload className="w-5 h-5" />
+                  )}
                 </div>
                 <div>
                   <div className="text-xs font-bold">
-                    {ribUploaded ? 'Relevé RIB professionnel chargé' : 'RIB bancaire professionnel (Optionnel)'}
+                    {ribUploaded
+                      ? "Relevé RIB professionnel chargé"
+                      : "RIB bancaire professionnel (Optionnel)"}
                   </div>
-                  <div className="text-micro text-stone-500">{t('verification.businessVerificationModal.pourAccelererLaValidationDes')}</div>
+                  <div className="text-micro text-stone-500">
+                    {t(
+                      "verification.businessVerificationModal.pourAccelererLaValidationDes",
+                    )}
+                  </div>
                 </div>
               </div>
               <span className="text-xs font-bold text-warning">
-                {ribUploaded ? 'Remplacer' : 'Sélectionner'}
+                {ribUploaded ? "Remplacer" : "Sélectionner"}
               </span>
             </button>
 
@@ -500,7 +597,11 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 variant="primary"
                 size="md"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
-              >{t('verification.businessVerificationModal.declarationDeConformite')}</Button>
+              >
+                {t(
+                  "verification.businessVerificationModal.declarationDeConformite",
+                )}
+              </Button>
             </div>
           </form>
         )}
@@ -510,8 +611,16 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
           <form onSubmit={handleFinalSubmit} className="space-y-4">
             <div className="p-4 rounded-xl bg-warning-surface/70 border border-warning-border/80 text-xs text-warning space-y-2">
               <div className="font-bold flex items-center gap-1.5">
-                <FileCheck className="w-4 h-4 text-warning" />{t('verification.businessVerificationModal.declarationDesBeneficiairesEffectifsRbe')}</div>
-              <p className="text-micro leading-relaxed text-warning">{t('verification.businessVerificationModal.enApplicationDeLaDirective')}</p>
+                <FileCheck className="w-4 h-4 text-warning" />
+                {t(
+                  "verification.businessVerificationModal.declarationDesBeneficiairesEffectifsRbe",
+                )}
+              </div>
+              <p className="text-micro leading-relaxed text-warning">
+                {t(
+                  "verification.businessVerificationModal.enApplicationDeLaDirective",
+                )}
+              </p>
             </div>
 
             <label className="flex items-start gap-2.5 p-3 rounded-xl border border-stone-200 bg-stone-50 cursor-pointer hover:bg-stone-100 transition-colors">
@@ -521,7 +630,11 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
                 onChange={(e) => setUboAccepted(e.target.checked)}
                 className="mt-0.5 rounded text-warning focus:ring-amber-800"
               />
-              <span className="text-xs font-semibold text-stone-800 leading-snug">{t('verification.businessVerificationModal.jeCertifieSurLHonneur')}</span>
+              <span className="text-xs font-semibold text-stone-800 leading-snug">
+                {t(
+                  "verification.businessVerificationModal.jeCertifieSurLHonneur",
+                )}
+              </span>
             </label>
 
             {/* Demo simulation toggle */}
@@ -529,8 +642,16 @@ export const BusinessVerificationModal: React.FC<BusinessVerificationModalProps>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-warning shrink-0" />
                 <div>
-                  <div className="font-bold">{t('verification.businessVerificationModal.modeDemonstrationShongre')}</div>
-                  <div className="text-micro text-stone-600">{t('verification.businessVerificationModal.validationInstantaneeParSimulationDu')}</div>
+                  <div className="font-bold">
+                    {t(
+                      "verification.businessVerificationModal.modeDemonstrationShongre",
+                    )}
+                  </div>
+                  <div className="text-micro text-stone-600">
+                    {t(
+                      "verification.businessVerificationModal.validationInstantaneeParSimulationDu",
+                    )}
+                  </div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">

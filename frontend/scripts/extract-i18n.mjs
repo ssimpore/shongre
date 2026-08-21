@@ -22,20 +22,26 @@
  * English is NOT written here. Translation is a judgement call and belongs in a
  * reviewed catalogue edit, not in a codemod.
  */
-import { readFileSync, writeFileSync } from 'fs';
-import { basename } from 'path';
+import { readFileSync, writeFileSync } from "fs";
+import { basename } from "path";
 
 const [, , target, ...flags] = process.argv;
 if (!target) {
-  console.error('usage: node scripts/extract-i18n.mjs <file> [--namespace ns] [--dry]');
+  console.error(
+    "usage: node scripts/extract-i18n.mjs <file> [--namespace ns] [--dry]",
+  );
   process.exit(1);
 }
-const DRY = flags.includes('--dry');
-const nsFlag = flags.indexOf('--namespace');
+const DRY = flags.includes("--dry");
+const nsFlag = flags.indexOf("--namespace");
 const NAMESPACE =
-  nsFlag >= 0 ? flags[nsFlag + 1] : basename(target).replace(/\.tsx$/, '').replace(/^./, (c) => c.toLowerCase());
+  nsFlag >= 0
+    ? flags[nsFlag + 1]
+    : basename(target)
+        .replace(/\.tsx$/, "")
+        .replace(/^./, (c) => c.toLowerCase());
 
-const FR_CATALOGUE = 'src/i18n/messages.fr.ts';
+const FR_CATALOGUE = "src/i18n/messages.fr.ts";
 
 const ACCENTED = /[àâäçéèêëîïôöùûüÿœÆ]/i;
 const FRENCH_WORDS =
@@ -53,27 +59,31 @@ function looksFrench(text) {
 /** `Déposer une annonce` -> `deposerUneAnnonce`, capped so keys stay readable. */
 function slugify(text) {
   const words = text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/&[a-z]+;/gi, ' ')
-    .replace(/[^A-Za-z0-9 ]/g, ' ')
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/&[a-z]+;/gi, " ")
+    .replace(/[^A-Za-z0-9 ]/g, " ")
     .trim()
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 5);
-  if (words.length === 0) return 'text';
+  if (words.length === 0) return "text";
   return words
-    .map((w, i) => (i === 0 ? w.toLowerCase() : w[0].toUpperCase() + w.slice(1).toLowerCase()))
-    .join('');
+    .map((w, i) =>
+      i === 0 ? w.toLowerCase() : w[0].toUpperCase() + w.slice(1).toLowerCase(),
+    )
+    .join("");
 }
 
-const source = readFileSync(target, 'utf8');
+const source = readFileSync(target, "utf8");
 let output = source;
 const minted = new Map(); // key -> french text
 const skipped = [];
 
-const existingCatalogue = readFileSync(FR_CATALOGUE, 'utf8');
-const usedKeys = new Set([...existingCatalogue.matchAll(/^\s*'([^']+)':/gm)].map((m) => m[1]));
+const existingCatalogue = readFileSync(FR_CATALOGUE, "utf8");
+const usedKeys = new Set(
+  [...existingCatalogue.matchAll(/^\s*'([^']+)':/gm)].map((m) => m[1]),
+);
 
 function mintKey(text) {
   const base = `${NAMESPACE}.${slugify(text)}`;
@@ -92,15 +102,12 @@ function mintKey(text) {
 const COPY_PROPS =
   /\b(aria-label|title|placeholder|alt|description|label|clearFiltersLabel|emptyMessage|confirmLabel|cancelLabel|submitLabel|helperText|errorMessage|tooltip|subtitle|heading|ctaLabel|saveSearchLabel)="([^"{}]{3,})"/g;
 
-output = output.replace(
-  COPY_PROPS,
-  (whole, prop, value) => {
-    if (!looksFrench(value)) return whole;
-    const key = mintKey(value);
-    minted.set(key, value);
-    return `${prop}={t('${key}')}`;
-  },
-);
+output = output.replace(COPY_PROPS, (whole, prop, value) => {
+  if (!looksFrench(value)) return whole;
+  const key = mintKey(value);
+  minted.set(key, value);
+  return `${prop}={t('${key}')}`;
+});
 
 /* 2. JSX text nodes --------------------------------------------------------
    Only a run of plain text bounded by tags, with no braces or nested markup —
@@ -123,7 +130,7 @@ output = output.replace(/>([^<>{}\n]{3,})</g, (whole, value) => {
    lines, which is most long-form sentences in this codebase. Still refuses
    anything containing an expression. */
 output = output.replace(/>(\s*\n\s*[^<>{}]{4,}?)\s*</g, (whole, value) => {
-  const collapsed = value.replace(/\s+/g, ' ').trim();
+  const collapsed = value.replace(/\s+/g, " ").trim();
   // A JSX comment's interior contains no braces once its `{/*` is out of range,
   // so the pattern happily matched the middle of one and replaced the code
   // around it. Anything carrying comment or template syntax is not copy.
@@ -135,15 +142,18 @@ output = output.replace(/>(\s*\n\s*[^<>{}]{4,}?)\s*</g, (whole, value) => {
 });
 
 /* 3. Report the shapes deliberately left alone ----------------------------- */
-for (const [, value] of source.matchAll(/>([^<>]*[àâäçéèêëîïôöùûüÿ][^<>]*)</g)) {
-  if (/[{}]/.test(value) && looksFrench(value.replace(/\{[^}]*\}/g, ''))) {
+for (const [, value] of source.matchAll(
+  />([^<>]*[àâäçéèêëîïôöùûüÿ][^<>]*)</g,
+)) {
+  if (/[{}]/.test(value) && looksFrench(value.replace(/\{[^}]*\}/g, ""))) {
     skipped.push(value.trim().slice(0, 80));
   }
 }
 
 if (minted.size === 0) {
   console.log(`${target}: nothing to extract`);
-  if (skipped.length) console.log(`  ${skipped.length} mixed expression(s) need a human`);
+  if (skipped.length)
+    console.log(`  ${skipped.length} mixed expression(s) need a human`);
   process.exit(0);
 }
 
@@ -162,7 +172,10 @@ function ensureHook(code) {
     const body = result.slice(start, end);
     if (!/\bt\('/.test(body)) continue;
     if (/const\s*\{\s*t\s*\}\s*=\s*useTranslation\(\)/.test(body)) continue;
-    result = result.slice(0, start) + '  const { t } = useTranslation();\n' + result.slice(start);
+    result =
+      result.slice(0, start) +
+      "  const { t } = useTranslation();\n" +
+      result.slice(start);
   }
   return result;
 }
@@ -170,28 +183,32 @@ function ensureHook(code) {
 output = ensureHook(output);
 
 if (!/from '.*i18n\/I18nProvider'/.test(output)) {
-  const depth = target.split('/').length - 2;
-  const rel = '../'.repeat(depth) + 'i18n/I18nProvider';
-  const lines = output.split('\n');
+  const depth = target.split("/").length - 2;
+  const rel = "../".repeat(depth) + "i18n/I18nProvider";
+  const lines = output.split("\n");
   const lastImport = lines.reduce(
-    (acc, line, i) => (line.startsWith('import ') && line.trimEnd().endsWith(';') ? i : acc),
+    (acc, line, i) =>
+      line.startsWith("import ") && line.trimEnd().endsWith(";") ? i : acc,
     0,
   );
   lines.splice(lastImport + 1, 0, `import { useTranslation } from '${rel}';`);
-  output = lines.join('\n');
+  output = lines.join("\n");
 }
 
 /* 5. Append the French entries -------------------------------------------- */
 const entries = [...minted.entries()]
-  .map(([key, value]) => `  '${key}': ${JSON.stringify(value).replace(/^"|"$/g, "'").replace(/'/g, "\\'")},`)
-  .join('\n');
+  .map(
+    ([key, value]) =>
+      `  '${key}': ${JSON.stringify(value).replace(/^"|"$/g, "'").replace(/'/g, "\\'")},`,
+  )
+  .join("\n");
 
 // Rebuild as proper single-quoted TS literals with escaping handled by JSON.
 const tsEntries = [...minted.entries()]
   .map(([key, value]) => `  '${key}': ${JSON.stringify(value)},`)
-  .join('\n');
+  .join("\n");
 
-const marker = '} as const;';
+const marker = "} as const;";
 const catalogueOut = existingCatalogue.replace(
   marker,
   `\n  // --- ${NAMESPACE} ---\n${tsEntries}\n${marker}`,
@@ -199,16 +216,22 @@ const catalogueOut = existingCatalogue.replace(
 
 if (DRY) {
   console.log(`${target}: would extract ${minted.size} string(s)`);
-  for (const [key, value] of minted) console.log(`  ${key} = ${value.slice(0, 70)}`);
-  if (skipped.length) console.log(`  skipped ${skipped.length} mixed expression(s)`);
+  for (const [key, value] of minted)
+    console.log(`  ${key} = ${value.slice(0, 70)}`);
+  if (skipped.length)
+    console.log(`  skipped ${skipped.length} mixed expression(s)`);
   process.exit(0);
 }
 
 writeFileSync(target, output);
 writeFileSync(FR_CATALOGUE, catalogueOut);
-console.log(`${target}: extracted ${minted.size} string(s) under "${NAMESPACE}."`);
+console.log(
+  `${target}: extracted ${minted.size} string(s) under "${NAMESPACE}."`,
+);
 if (skipped.length) {
-  console.log(`  ${skipped.length} mixed expression(s) left for manual handling:`);
+  console.log(
+    `  ${skipped.length} mixed expression(s) left for manual handling:`,
+  );
   for (const s of skipped.slice(0, 5)) console.log(`    ${s}`);
 }
 void entries;

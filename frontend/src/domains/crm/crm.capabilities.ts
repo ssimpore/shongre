@@ -3,7 +3,7 @@
  * Permission & market-scope evaluation for commercial and administrative operators.
  */
 
-import { UserProfile } from '../../types';
+import { UserProfile } from "../../types";
 
 export interface CrmCapabilities {
   canAccessCrm: boolean;
@@ -16,7 +16,10 @@ export interface CrmCapabilities {
 }
 
 export class CrmCapabilitiesService {
-  resolve(params: { viewer: UserProfile | null; marketCode?: string }): CrmCapabilities {
+  resolve(params: {
+    viewer: UserProfile | null;
+    marketCode?: string;
+  }): CrmCapabilities {
     const { viewer } = params;
     if (!viewer) {
       return {
@@ -26,24 +29,25 @@ export class CrmCapabilitiesService {
         canManageOpportunities: false,
         canUseAiProspecting: false,
         canExport: false,
-        marketScope: ['FR'],
+        marketScope: ["FR"],
       };
     }
 
     const role = viewer.role;
-    const isCommercial = role === 'commercial';
-    const isMarketManager = role === 'market_manager';
-    const isAdmin = role === 'admin' || role === 'super_admin';
-    const isSupport = role === 'support';
+    const isCommercial = role === "commercial";
+    const isMarketManager = role === "market_manager";
+    const isAdmin = role === "admin" || role === "super_admin";
+    const isSupport = role === "support";
 
-    const canAccessCrm = isCommercial || isMarketManager || isAdmin || isSupport;
+    const canAccessCrm =
+      isCommercial || isMarketManager || isAdmin || isSupport;
     const canManageContacts = isCommercial || isAdmin || isMarketManager;
     const canManageCompanies = isCommercial || isAdmin || isMarketManager;
     const canManageOpportunities = isCommercial || isAdmin;
     const canUseAiProspecting = isCommercial || isAdmin;
     const canExport = isAdmin;
 
-    const marketScope = viewer.marketScope?.countries || ['FR'];
+    const marketScope = viewer.marketScope?.countries || ["FR"];
 
     return {
       canAccessCrm,

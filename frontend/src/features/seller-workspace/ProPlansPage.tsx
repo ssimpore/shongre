@@ -1,11 +1,11 @@
-import React from 'react';
-import { Sparkles, Check,  Zap  } from 'lucide-react';
-import { PRO_PLANS, LISTING_BOOSTS } from '../../configuration/plans.config';
-import { formatPrice } from '../../utilities/formatters';
-import { Button } from '../../design-system/primitives/Button';
-import { Badge } from '../../design-system/primitives/Badge';
-import { usePageMeta } from '../../hooks/usePageMeta';
-import { useTranslation } from '../../i18n/I18nProvider';
+import React from "react";
+import { Sparkles, Check, Zap } from "lucide-react";
+import { PRO_PLANS, LISTING_BOOSTS } from "../../configuration/plans.config";
+import { formatPrice } from "../../utilities/formatters";
+import { Button } from "../../design-system/primitives/Button";
+import { Badge } from "../../design-system/primitives/Badge";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const ProPlansPage: React.FC = () => {
   const { t } = useTranslation();
@@ -18,15 +18,18 @@ export const ProPlansPage: React.FC = () => {
 
   return (
     <div className="space-y-12 pb-16">
-      
       {/* Header Banner */}
       <div className="text-center max-w-3xl mx-auto space-y-4 pt-6">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light border border-primary-border text-primary text-xs font-bold">
           <Sparkles className="w-3.5 h-3.5" />
           Offres & Forfaits Professionnels Shongre
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight">{t('sellerworkspace.proPlansPage.developpezVosVentesAvecNos')}</h1>
-        <p className="text-sm sm:text-base text-stone-600 leading-relaxed">{t('sellerworkspace.proPlansPage.sansEngagementActivezVotreVitrine')}</p>
+        <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight">
+          {t("sellerworkspace.proPlansPage.developpezVosVentesAvecNos")}
+        </h1>
+        <p className="text-sm sm:text-base text-stone-600 leading-relaxed">
+          {t("sellerworkspace.proPlansPage.sansEngagementActivezVotreVitrine")}
+        </p>
       </div>
 
       {/* Subscription Plans Grid */}
@@ -42,24 +45,30 @@ export const ProPlansPage: React.FC = () => {
              the professional route, which met someone choosing "Particulier"
              with a SIREN and VAT form they have no way to complete. */
           const signupPath =
-            plan.id === 'free' ? '/inscription/particulier' : '/inscription/professionnel';
+            plan.id === "free"
+              ? "/inscription/particulier"
+              : "/inscription/professionnel";
           return (
             <div
               key={plan.id}
               className={`bg-white rounded-2xl border p-6 sm:p-8 flex flex-col justify-between transition-all duration-normal ${
                 isPopular
-                  ? 'border-primary ring-2 ring-primary shadow-xl relative'
-                  : 'border-border-base shadow-xs hover:border-stone-400'
+                  ? "border-primary ring-2 ring-primary shadow-xl relative"
+                  : "border-border-base shadow-xs hover:border-stone-400"
               }`}
             >
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">{t('sellerworkspace.proPlansPage.lePlusPopulaire')}</div>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                  {t("sellerworkspace.proPlansPage.lePlusPopulaire")}
+                </div>
               )}
 
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
-                  <h2 className="text-lg font-black text-stone-900">{plan.name}</h2>
-                  <Badge variant={isPopular ? 'primary' : 'neutral'} size="sm">
+                  <h2 className="text-lg font-black text-stone-900">
+                    {plan.name}
+                  </h2>
+                  <Badge variant={isPopular ? "primary" : "neutral"} size="sm">
                     {plan.maxActiveListings} annonces
                   </Badge>
                 </div>
@@ -68,7 +77,9 @@ export const ProPlansPage: React.FC = () => {
                   <span className="text-3xl sm:text-4xl font-black text-stone-900">
                     {formatPrice(plan.monthlyPrice)}
                   </span>
-                  <span className="text-xs text-stone-500 font-semibold">HT / mois</span>
+                  <span className="text-xs text-stone-500 font-semibold">
+                    HT / mois
+                  </span>
                 </div>
 
                 <p className="text-xs text-stone-500 mb-6">{plan.tagline}</p>
@@ -86,7 +97,7 @@ export const ProPlansPage: React.FC = () => {
               <div className="pt-6">
                 <Button
                   to={signupPath}
-                  variant={isPopular ? 'primary' : 'outline'}
+                  variant={isPopular ? "primary" : "outline"}
                   size="lg"
                   fullWidth
                   className="font-bold shadow-xs"
@@ -102,29 +113,41 @@ export const ProPlansPage: React.FC = () => {
       {/* Visibility Boost Options Grid */}
       <div className="max-w-6xl mx-auto space-y-6 pt-6">
         <div className="text-center">
-          <h2 className="text-2xl font-black text-stone-900">{t('sellerworkspace.proPlansPage.optionsDeMiseEnAvant')}</h2>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">{t('sellerworkspace.proPlansPage.aActiverSurNImporte')}</p>
+          <h2 className="text-2xl font-black text-stone-900">
+            {t("sellerworkspace.proPlansPage.optionsDeMiseEnAvant")}
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            {t("sellerworkspace.proPlansPage.aActiverSurNImporte")}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {LISTING_BOOSTS.map((opt) => (
-            <div key={opt.id} className="bg-white rounded-xl border border-border-base p-5 shadow-xs flex flex-col justify-between">
+            <div
+              key={opt.id}
+              className="bg-white rounded-xl border border-border-base p-5 shadow-xs flex flex-col justify-between"
+            >
               <div>
                 <div className="w-9 h-9 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-3">
                   <Zap className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-sm text-stone-900">{opt.name}</h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">{opt.description}</p>
+                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                  {opt.description}
+                </p>
               </div>
               <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between">
-                <span className="text-xs text-stone-500">{opt.durationDays} jours</span>
-                <span className="text-sm font-black text-primary">{formatPrice(opt.priceEur)}</span>
+                <span className="text-xs text-stone-500">
+                  {opt.durationDays} jours
+                </span>
+                <span className="text-sm font-black text-primary">
+                  {formatPrice(opt.priceEur)}
+                </span>
               </div>
             </div>
           ))}
         </div>
       </div>
-
     </div>
   );
 };

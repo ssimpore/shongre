@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { Sparkles    } from 'lucide-react';
-import { Modal } from '../../../../design-system/primitives/Modal';
-import { Button } from '../../../../design-system/primitives/Button';
-import { CrmCompany, CompanyEnrichmentDiff } from '../../../../domains/crm/crm.types';
-import { useTranslation } from '../../../../i18n/I18nProvider';
+import React, { useState } from "react";
+import { Sparkles } from "lucide-react";
+import { Modal } from "../../../../design-system/primitives/Modal";
+import { Button } from "../../../../design-system/primitives/Button";
+import {
+  CrmCompany,
+  CompanyEnrichmentDiff,
+} from "../../../../domains/crm/crm.types";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface EnrichmentDiffModalProps {
   isOpen: boolean;
@@ -32,12 +35,16 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
     setIsApplying(true);
     try {
       const updates: Partial<CrmCompany> = {};
-      if (applyIndustry && diff.suggestedIndustry) updates.industry = diff.suggestedIndustry;
+      if (applyIndustry && diff.suggestedIndustry)
+        updates.industry = diff.suggestedIndustry;
       if (applyWebsite && diff.suggestedWebsite) {
         updates.website = diff.suggestedWebsite;
-        updates.domain = diff.suggestedWebsite.replace(/^https?:\/\//, '').replace(/^www\./, '');
+        updates.domain = diff.suggestedWebsite
+          .replace(/^https?:\/\//, "")
+          .replace(/^www\./, "");
       }
-      if (applySummary && diff.suggestedSummary) updates.aiSummary = diff.suggestedSummary;
+      if (applySummary && diff.suggestedSummary)
+        updates.aiSummary = diff.suggestedSummary;
 
       await onApply(updates);
       onClose();
@@ -51,7 +58,9 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Enrichissement IA : ${company.name}`}
-      description={t('admin.enrichmentDiffModal.examinezEtSelectionnezLesInformations')}
+      description={t(
+        "admin.enrichmentDiffModal.examinezEtSelectionnezLesInformations",
+      )}
     >
       <div className="space-y-4 text-xs">
         {/* Industry Diff */}
@@ -64,10 +73,15 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
               className="w-4 h-4 rounded text-primary focus:ring-primary border-stone-300 mt-0.5"
             />
             <div className="flex-1 space-y-1">
-              <span className="font-bold text-stone-900 block">{t('admin.enrichmentDiffModal.secteurDActivite')}</span>
+              <span className="font-bold text-stone-900 block">
+                {t("admin.enrichmentDiffModal.secteurDActivite")}
+              </span>
               <div className="grid grid-cols-2 gap-2 text-micro">
                 <div className="text-stone-500">
-                  Actuel : <strong className="text-stone-700">{company.industry || 'Non renseigné'}</strong>
+                  Actuel :{" "}
+                  <strong className="text-stone-700">
+                    {company.industry || "Non renseigné"}
+                  </strong>
                 </div>
                 <div className="text-success font-bold">
                   Suggéré : {diff.suggestedIndustry}
@@ -87,10 +101,15 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
               className="w-4 h-4 rounded text-primary focus:ring-primary border-stone-300 mt-0.5"
             />
             <div className="flex-1 space-y-1">
-              <span className="font-bold text-stone-900 block">Site internet officiel</span>
+              <span className="font-bold text-stone-900 block">
+                Site internet officiel
+              </span>
               <div className="grid grid-cols-2 gap-2 text-micro">
                 <div className="text-stone-500 truncate">
-                  Actuel : <strong className="text-stone-700">{company.website || 'Non renseigné'}</strong>
+                  Actuel :{" "}
+                  <strong className="text-stone-700">
+                    {company.website || "Non renseigné"}
+                  </strong>
                 </div>
                 <div className="text-success font-bold truncate">
                   Suggéré : {diff.suggestedWebsite}
@@ -110,7 +129,9 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
               className="w-4 h-4 rounded text-primary focus:ring-primary border-stone-300 mt-0.5"
             />
             <div className="flex-1 space-y-1">
-              <span className="font-bold text-stone-900 block">{t('admin.enrichmentDiffModal.syntheseCommercialeIa')}</span>
+              <span className="font-bold text-stone-900 block">
+                {t("admin.enrichmentDiffModal.syntheseCommercialeIa")}
+              </span>
               <p className="text-micro text-stone-700 leading-relaxed bg-white p-2 rounded-lg border border-stone-200">
                 {diff.suggestedSummary}
               </p>
@@ -120,12 +141,21 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
 
         {/* Sources Notice */}
         <div className="p-3 bg-stone-100 rounded-xl flex items-center justify-between text-micro text-stone-500">
-          <span>Sources analysées : {diff.sources.length} site(s) public(s)</span>
-          <span className="font-bold text-stone-700">{t('admin.enrichmentDiffModal.100ValideHumain')}</span>
+          <span>
+            Sources analysées : {diff.sources.length} site(s) public(s)
+          </span>
+          <span className="font-bold text-stone-700">
+            {t("admin.enrichmentDiffModal.100ValideHumain")}
+          </span>
         </div>
 
         <div className="flex justify-end gap-2.5 pt-3 border-t border-border-subtle">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isApplying}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            disabled={isApplying}
+          >
             Annuler
           </Button>
           <Button
@@ -136,7 +166,9 @@ export const EnrichmentDiffModal: React.FC<EnrichmentDiffModalProps> = ({
             className="font-bold"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{isApplying ? 'Application...' : 'Appliquer les modifications'}</span>
+            <span>
+              {isApplying ? "Application..." : "Appliquer les modifications"}
+            </span>
           </Button>
         </div>
       </div>

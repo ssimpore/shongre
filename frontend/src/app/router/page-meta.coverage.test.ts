@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { describe, it, expect } from "vitest";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 
 /**
  * Every routed page must declare its own metadata.
@@ -18,13 +18,14 @@ import { join, relative } from 'node:path';
  * a DOM, or a provider tree.
  */
 
-const FEATURES = new URL('../../features', import.meta.url).pathname;
+const FEATURES = new URL("../../features", import.meta.url).pathname;
 
 /** Components that a route element renders directly. */
 const PAGE_FILE = /(?:Page|Wizard)\.tsx$/;
 
 /** Not routed: shells, layouts and shared sub-components. */
-const NOT_ROUTED = /(?:Layout|Modal|Card|Section|Tab|Panel|Header|Row|Item)\.tsx$/;
+const NOT_ROUTED =
+  /(?:Layout|Modal|Card|Section|Tab|Panel|Header|Row|Item)\.tsx$/;
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -35,21 +36,23 @@ function walk(dir: string): string[] {
 }
 
 const pageFiles = walk(FEATURES)
-  .filter((f) => PAGE_FILE.test(f) && !NOT_ROUTED.test(f) && !/\.test\.tsx?$/.test(f))
+  .filter(
+    (f) => PAGE_FILE.test(f) && !NOT_ROUTED.test(f) && !/\.test\.tsx?$/.test(f),
+  )
   // `components/` holds pieces a page composes, never a route target.
-  .filter((f) => !f.includes('/components/'));
+  .filter((f) => !f.includes("/components/"));
 
-describe('page metadata coverage', () => {
-  it('finds the routed page modules', () => {
+describe("page metadata coverage", () => {
+  it("finds the routed page modules", () => {
     // A guard on the guard: a rename that breaks the glob would otherwise turn
     // this suite green by testing nothing.
     expect(pageFiles.length).toBeGreaterThan(40);
   });
 
   it.each(pageFiles.map((f) => [relative(FEATURES, f), f]))(
-    '%s declares usePageMeta',
+    "%s declares usePageMeta",
     (_name, file) => {
-      expect(readFileSync(file as string, 'utf8')).toContain('usePageMeta(');
+      expect(readFileSync(file as string, "utf8")).toContain("usePageMeta(");
     },
   );
 });

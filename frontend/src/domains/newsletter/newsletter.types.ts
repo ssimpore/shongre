@@ -5,28 +5,25 @@
  */
 
 export type NewsletterTopic =
-  | 'deals'
-  | 'editorial'
-  | 'new_features'
-  | 'seller_tips'
-  | 'pro_insights'
-  | 'local_trends'
-  | 'community';
+  | "deals"
+  | "editorial"
+  | "new_features"
+  | "seller_tips"
+  | "pro_insights"
+  | "local_trends"
+  | "community";
 
 export type NewsletterSubscriptionStatus =
-  | 'unsubscribed'
-  | 'pending_confirmation'
-  | 'subscribed'
-  | 'suppressed';
+  "unsubscribed" | "pending_confirmation" | "subscribed" | "suppressed";
 
 export type NewsletterSubscriptionSource =
-  | 'homepage'
-  | 'footer'
-  | 'registration'
-  | 'account'
-  | 'pro_workspace'
-  | 'newsletter_page'
-  | 'direct_link';
+  | "homepage"
+  | "footer"
+  | "registration"
+  | "account"
+  | "pro_workspace"
+  | "newsletter_page"
+  | "direct_link";
 
 export interface NewsletterConsent {
   consented: boolean;
@@ -44,7 +41,7 @@ export interface NewsletterSubscription {
   locale: string;
   status: NewsletterSubscriptionStatus;
   topics: NewsletterTopic[];
-  accountType?: 'individual' | 'pro';
+  accountType?: "individual" | "pro";
   consent: NewsletterConsent;
   createdAt: string;
   updatedAt: string;
@@ -58,7 +55,7 @@ export interface SubscribeNewsletterInput {
   marketCode?: string;
   locale?: string;
   topics?: NewsletterTopic[];
-  accountType?: 'individual' | 'pro';
+  accountType?: "individual" | "pro";
   source?: NewsletterSubscriptionSource;
   consentGiven?: boolean;
 }
@@ -73,16 +70,10 @@ export interface UpdateNewsletterPreferencesInput {
 }
 
 export type NewsletterCampaignStatus =
-  | 'draft'
-  | 'ready'
-  | 'scheduled'
-  | 'sending'
-  | 'sent'
-  | 'cancelled'
-  | 'failed';
+  "draft" | "ready" | "scheduled" | "sending" | "sent" | "cancelled" | "failed";
 
 export interface NewsletterAudienceDefinition {
-  accountTypes?: ('individual' | 'pro')[];
+  accountTypes?: ("individual" | "pro")[];
   topicIds?: NewsletterTopic[];
   taxonomyNodeIds?: string[];
   marketCode: string;

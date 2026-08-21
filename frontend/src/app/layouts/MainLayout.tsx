@@ -1,14 +1,14 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Header } from './Header';
-import { Footer } from './Footer';
-import { MobileBottomNav } from './MobileBottomNav';
-import { DemoRoleSwitcher } from './DemoRoleSwitcher';
-import { LocationPickerModal } from './LocationPickerModal';
-import { PreferencesModal } from './PreferencesModal';
-import { CookieConsent } from './CookieConsent';
-import { AppScrollRestoration } from '../router/AppScrollRestoration';
-import { SkipLink } from '../../design-system';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
+import { MobileBottomNav } from "./MobileBottomNav";
+import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
+import { LocationPickerModal } from "./LocationPickerModal";
+import { PreferencesModal } from "./PreferencesModal";
+import { CookieConsent } from "./CookieConsent";
+import { AppScrollRestoration } from "../router/AppScrollRestoration";
+import { SkipLink } from "../../design-system";
 
 export const MainLayout: React.FC = () => {
   return (
@@ -25,7 +25,11 @@ export const MainLayout: React.FC = () => {
       {/* Clearance for the fixed tab bar comes from the same token the bar
           is built from, so it tracks the bar (and the iOS home indicator,
           which the old flat 80px ignored) instead of guessing at it. */}
-      <main id="main-content" tabIndex={-1} className="flex-1 pb-[var(--mobile-nav-total-h)] md:pb-0">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 pb-[var(--mobile-nav-total-h)] md:pb-0"
+      >
         <Outlet />
       </main>
       <Footer />

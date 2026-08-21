@@ -8,7 +8,7 @@ import {
   Notification,
   NotificationFilterTab,
   NotificationPreferences,
-} from './notification.types';
+} from "./notification.types";
 
 export interface NotificationDateGroup {
   dateLabel: string;
@@ -29,7 +29,7 @@ export class NotificationService {
         date.getMonth() === now.getMonth() &&
         date.getFullYear() === now.getFullYear();
 
-      if (isToday) return 'Aujourd\'hui';
+      if (isToday) return "Aujourd'hui";
 
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
@@ -38,25 +38,29 @@ export class NotificationService {
         date.getMonth() === yesterday.getMonth() &&
         date.getFullYear() === yesterday.getFullYear();
 
-      if (isYesterday) return 'Hier';
+      if (isYesterday) return "Hier";
 
-      const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays <= 7) return 'Cette semaine';
+      const diffDays = Math.floor(
+        (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      if (diffDays <= 7) return "Cette semaine";
 
-      return new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+      return new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
       }).format(date);
     } catch {
-      return 'Plus tôt';
+      return "Plus tôt";
     }
   }
 
   /**
    * Groups a list of notifications into date-separated sections.
    */
-  groupNotificationsByDate(notifications: Notification[]): NotificationDateGroup[] {
+  groupNotificationsByDate(
+    notifications: Notification[],
+  ): NotificationDateGroup[] {
     const groups: NotificationDateGroup[] = [];
     const map = new Map<string, Notification[]>();
 
@@ -83,22 +87,27 @@ export class NotificationService {
    */
   filterNotifications(
     notifications: Notification[],
-    filter: NotificationFilterTab
+    filter: NotificationFilterTab,
   ): Notification[] {
     switch (filter) {
-      case 'unread':
+      case "unread":
         return notifications.filter((n) => !n.isRead);
-      case 'messages':
-        return notifications.filter((n) => n.category === 'messages');
-      case 'transactions':
-        return notifications.filter((n) => n.category === 'transactions' || n.category === 'delivery');
-      case 'listings':
-        return notifications.filter((n) => n.category === 'listings');
-      case 'account':
+      case "messages":
+        return notifications.filter((n) => n.category === "messages");
+      case "transactions":
         return notifications.filter(
-          (n) => n.category === 'account' || n.category === 'security' || n.category === 'monetization'
+          (n) => n.category === "transactions" || n.category === "delivery",
         );
-      case 'all':
+      case "listings":
+        return notifications.filter((n) => n.category === "listings");
+      case "account":
+        return notifications.filter(
+          (n) =>
+            n.category === "account" ||
+            n.category === "security" ||
+            n.category === "monetization",
+        );
+      case "all":
       default:
         return notifications;
     }
