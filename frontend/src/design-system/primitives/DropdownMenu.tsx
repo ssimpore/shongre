@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check,  X } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export interface DropdownOption<T = string> {
   value: T;
@@ -54,10 +55,10 @@ export interface DropdownMenuProps<T = string> {
  * Shared standard Dropdown panel classes harmonized with the Header Category Selector
  */
 export const DROPDOWN_PANEL_CLASSES =
-  'bg-white rounded-2xl shadow-dropdown border border-border-base py-2 z-popover animate-in fade-in zoom-in-95 max-h-[380px] overflow-y-auto overscroll-contain';
+  'bg-bg-surface rounded-card shadow-dropdown border border-border-base py-2 z-popover animate-in fade-in zoom-in-95 max-h-[380px] overflow-y-auto overscroll-contain';
 
 export const DROPDOWN_ITEM_CLASSES = {
-  base: 'w-full flex items-center justify-between px-3.5 py-2 text-xs transition-colors cursor-pointer text-left',
+  base: 'w-full min-h-control-sm flex items-center justify-between px-3.5 py-2 text-xs motion-interactive cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
   selected: 'bg-primary-light text-primary font-bold',
   unselected: 'text-stone-700 hover:bg-bg-subtle hover:text-stone-900 font-medium',
   disabled: 'text-stone-400 cursor-not-allowed opacity-50',
@@ -67,7 +68,7 @@ export const DROPDOWN_HEADER_CLASSES = 'px-3.5 pb-2 mb-1 border-b border-border-
 export const DROPDOWN_HEADER_TITLE_CLASSES =
   'text-micro font-bold text-stone-500 uppercase tracking-wider mb-1.5 flex items-center justify-between';
 export const DROPDOWN_SEARCH_INPUT_CLASSES =
-  'w-full h-control-sm px-2.5 bg-bg-base border border-border-base rounded-control text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white transition-colors';
+  'w-full h-control-sm px-2.5 bg-bg-base border border-border-base rounded-control text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-bg-surface motion-interactive';
 
 export function DropdownMenu<T extends string | number = string>({
   id,
@@ -172,10 +173,10 @@ export function DropdownMenu<T extends string | number = string>({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           aria-label={ariaLabel}
-          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-stone-800 font-semibold transition-all cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${
+          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-stone-800 font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${CONTROL_FOCUS_CLASS} ${
             fullWidth ? 'w-full' : ''
           } ${
-            isOpen ? 'border-primary ring-2 ring-primary/20 bg-white' : ''
+            isOpen ? 'border-primary ring-2 ring-primary/20 bg-bg-surface' : ''
           } ${sizeClasses} ${triggerClassName}`}
         >
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 truncate">

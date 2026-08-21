@@ -131,7 +131,7 @@ export const themeText = {
 export const themeFontFamilies = {
   display:
     "ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif",
-  sans: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  sans: "'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
 } as const;
 
@@ -174,6 +174,11 @@ export const themeSpacing = {
   'select-chevron-size': '0.25rem',
   'select-chevron-offset': '0.75rem',
   'listing-card': '11.75rem',
+  'collection-card': '9.6875rem',
+  'collection-card-wide': '11.875rem',
+  'recent-search-card': '17rem',
+  'recent-search-card-wide': '19rem',
+  'recent-search-card-min': '6.5rem',
   'icon-xs': '0.75rem',
   'icon-sm': '0.875rem',
   'icon-md': '1rem',

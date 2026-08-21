@@ -5,6 +5,7 @@
  */
 
 import { taxonomyService } from '../taxonomy/taxonomy.service';
+import { getCompactTaxonomyLabel } from '../taxonomy/taxonomy.display';
 import { publicationResolver } from './publication.resolver';
 import { storageService } from '../../services/storage.service';
 import {
@@ -235,8 +236,8 @@ export class PublicationService {
       isFreeDonation: draft.pricing.isFreeDonation,
       categorySlug: rootNode?.slug || 'divers',
       subCategorySlug: node?.slug || 'autres',
-      categoryLabel: rootNode?.name || 'Divers',
-      subCategoryLabel: node?.name || 'Autres',
+      categoryLabel: getCompactTaxonomyLabel(rootNode, 'Divers'),
+      subCategoryLabel: getCompactTaxonomyLabel(node, 'Autres'),
       condition: (draft.condition as any) || 'very_good',
       sellerId: user.id,
       sellerName: user.name || (isPro ? 'Boutique Pro' : 'Vendeur'),

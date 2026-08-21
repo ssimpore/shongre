@@ -17,12 +17,15 @@ describe('HeaderCategoryNav', () => {
     );
 
     expect(markup).toContain('Immobilier');
-    expect(markup).toContain('Matériel pro');
+    expect(markup).toContain('Matériel Pro');
     expect(markup).toContain('Maison &amp; Jardin');
     expect(markup).toContain('Bons plans !');
     expect(markup).not.toContain('Toutes les annonces');
     expect(markup).not.toContain('rounded-full');
     expect(markup).toContain('href="/recherche?category=loisirs-culture"');
     expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('hover:bg-bg-subtle');
+    expect(markup).toContain('focus-visible:ring-2');
+    expect(markup).toContain('rounded-control');
   });
 });

@@ -2,6 +2,7 @@ import React, { forwardRef, isValidElement, cloneElement, useId } from 'react';
 import { cn } from '../utils/variants';
 import {
   CONTROL_RADIUS_CLASS,
+  CONTROL_MOTION_CLASS,
   ControlSize,
   controlHeightClasses,
 } from '../utils/controlMetrics';
@@ -115,7 +116,7 @@ const fieldStateClasses = (error?: boolean) =>
     : 'border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-primary/20';
 
 const FIELD_BASE_CLASSES =
-  'w-full bg-bg-surface text-text-main border transition-all duration-normal placeholder:text-text-muted focus:bg-bg-surface focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed';
+  `w-full bg-bg-surface text-text-main border ${CONTROL_MOTION_CLASS} placeholder:text-text-muted focus:bg-bg-surface focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed`;
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className = '', error, leftIcon, rightIcon, size = 'md', ...props }, ref) => {
@@ -342,9 +343,9 @@ export const Switch: React.FC<SwitchProps> = ({
         aria-label={ariaLabel ?? label}
         onChange={(event) => onChange(event.currentTarget.checked)}
       />
-      <span className="flex h-6 w-11 shrink-0 items-center rounded-full bg-stone-400 p-1 transition-colors duration-normal peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">
+      <span className={`flex h-6 w-11 shrink-0 items-center rounded-full bg-stone-400 p-1 ${CONTROL_MOTION_CLASS} peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus`}>
         <span
-          className={`h-icon-md w-icon-md rounded-full bg-white shadow-sm transition-transform duration-normal ${
+          className={`h-icon-md w-icon-md rounded-full bg-bg-surface shadow-sm ${CONTROL_MOTION_CLASS} ${
             checked ? 'translate-x-5' : 'translate-x-0'
           }`}
         />

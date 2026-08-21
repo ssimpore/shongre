@@ -19,7 +19,8 @@ import {
   Briefcase,
   Sparkles,
   Cpu,
-  ChevronDown
+  ChevronDown,
+  Flame,
 } from 'lucide-react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { ROLE_DEFINITIONS } from '../../security/roles.config';
@@ -131,6 +132,12 @@ export const AdminLayout: React.FC = () => {
       label: 'Monétisation & Forfaits Pro',
       icon: CreditCard,
       show: can('monetization.manage') || can('staff.finance.access'),
+    },
+    {
+      to: '/admin/tendances',
+      label: 'Tendances de la page d’accueil',
+      icon: Flame,
+      show: can('admin.access'),
     },
     {
       to: '/admin/roles',

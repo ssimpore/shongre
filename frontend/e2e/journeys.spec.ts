@@ -25,6 +25,68 @@ test.describe('public browsing', () => {
     await expect(page.getByRole('link', { name: /.+/ }).first()).toBeVisible();
   });
 
+  test('listing rail cards expose metadata, focus state and favourite action', async ({ page }) => {
+    await usePersona(page, 'guest');
+    await page.setViewportSize({ width: 1408, height: 795 });
+    await page.goto('/');
+    await waitForStableLayout(page);
+
+    const card = page.locator('div.w-listing-card article.group.h-full').first();
+    await expect(card).toBeVisible();
+    await expect(card.locator('[aria-label^="Note "]')).toBeVisible();
+    await expect(card.locator('[aria-label$="photos"]')).toHaveCount(1);
+
+    const titleLink = card.getByRole('link').filter({ hasText: /.+/ }).last();
+    await titleLink.focus();
+    await expect.poll(() => card.evaluate((element) => element.matches(':focus-within'))).toBe(true);
+
+    const favorite = card.getByRole('button', { name: /ajouter aux favoris|retirer des favoris/i });
+    const initialState = await favorite.getAttribute('aria-pressed');
+    await favorite.click();
+    await expect(favorite).toHaveAttribute('aria-pressed', initialState === 'true' ? 'false' : 'true');
+    await favorite.click();
+  });
+
+  test('expands the desktop search while active and restores the publish CTA on handoff', async ({ page }) => {
+    await usePersona(page, 'guest');
+    await page.setViewportSize({ width: 1408, height: 795 });
+    await page.goto('/');
+    await waitForStableLayout(page);
+
+    const search = page.getByRole('combobox', { name: /rechercher une annonce/i }).first();
+    const publish = page.locator('[data-header-publish-cta]');
+    const initialSearchWidth = await search.evaluate((input) => Math.round(input.getBoundingClientRect().width));
+
+    await expect(publish).toHaveAttribute('aria-hidden', 'false');
+    await expect(publish).not.toHaveCSS('opacity', '0');
+
+    await search.focus();
+    await expect(publish).toHaveAttribute('aria-hidden', 'true');
+    await expect.poll(() => publish.evaluate((element) => Math.round(element.getBoundingClientRect().width))).toBe(0);
+    await expect
+      .poll(() => search.evaluate((input) => Math.round(input.getBoundingClientRect().width)))
+      .toBeGreaterThan(initialSearchWidth);
+
+    await search.fill('velo');
+    await expect(publish).toHaveAttribute('aria-hidden', 'true');
+    await expect.poll(() => publish.evaluate((element) => Math.round(element.getBoundingClientRect().width))).toBe(0);
+    await expect
+      .poll(() => search.evaluate((input) => Math.round(input.getBoundingClientRect().width)))
+      .toBeGreaterThan(initialSearchWidth);
+
+    await page.locator('#main-content').focus();
+    await expect(publish).toHaveAttribute('aria-hidden', 'false');
+    await expect
+      .poll(() => publish.evaluate((element) => Math.round(element.getBoundingClientRect().width)))
+      .toBeGreaterThan(0);
+
+    await search.focus();
+    await expect(publish).toHaveAttribute('aria-hidden', 'true');
+    await page.getByRole('button', { name: /effacer le texte/i }).first().click();
+    await expect(publish).toHaveAttribute('aria-hidden', 'false');
+    await expect.poll(() => publish.evaluate((element) => Math.round(element.getBoundingClientRect().width))).toBeGreaterThan(0);
+  });
+
   test('search state lives in the URL and survives a reload', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.goto('/recherche?query=velo&sortBy=price_asc');
@@ -189,6 +251,24 @@ test.describe('pro workspace', () => {
 });
 
 test.describe('admin console', () => {
+  test('shows the administrator role as an icon in the account identity', async ({ page }) => {
+    await usePersona(page, 'admin');
+    await page.goto('/compte');
+    await waitForStableLayout(page);
+
+    const identity = page.locator('aside [data-account-identity]');
+    await expect(identity).toContainText('Antoine Fabre');
+    await expect(identity).not.toContainText('(Administrateur)');
+    await expect(identity.getByRole('img', { name: 'Administrateur' })).toBeVisible();
+
+    const hero = page.locator('[data-account-hero]');
+    await expect(hero).toContainText('Antoine Fabre');
+    await expect(hero).not.toContainText('(Administrateur)');
+    await expect(hero.getByRole('img', { name: 'Administrateur' })).toBeVisible();
+    await expect(hero.getByRole('link', { name: /voir ma boutique publique/i })).toBeVisible();
+    await expect(hero.getByRole('link', { name: /déposer une annonce/i })).toBeVisible();
+  });
+
   test('the compact section menu navigates below lg', async ({ page }) => {
     await usePersona(page, 'admin');
     await page.setViewportSize({ width: 768, height: 1024 });

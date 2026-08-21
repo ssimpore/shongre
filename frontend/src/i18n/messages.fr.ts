@@ -131,6 +131,9 @@ export const messagesFr = {
   // --- shell.accountLayout ---
   'shell.accountLayout.navigationDuCompte': "Navigation du compte",
   'shell.accountLayout.comptePro': "Compte Pro",
+  'shell.accountLayout.proBadge': "Pro",
+  'shell.accountLayout.roleAdministrateur': "Administrateur",
+  'shell.accountLayout.roleSuperAdministrateur': "Super administrateur",
   'shell.accountLayout.seDeconnecter': "Se déconnecter",
 
   // --- shell.focusedLayout ---
@@ -138,6 +141,7 @@ export const messagesFr = {
 
   // --- shell.header ---
   'shell.header.fermerLeMenu': "Fermer le menu",
+  'shell.header.fermerLeMenuMobile': "Fermer le menu mobile",
   'shell.header.compteProfessionnel': "Compte Professionnel",
   'shell.header.verifie': "Vérifié",
 
@@ -187,6 +191,8 @@ export const messagesFr = {
 
   // --- ui.listingCard ---
   'ui.listingCard.annonceALaUne': "Annonce à la une",
+  'ui.listingCard.noteAvis': "Note {rating} sur 5, {count} avis",
+  'ui.listingCard.nombrePhotos': "{count} photos",
 
 
   // --- ui.noResultsFound ---
@@ -284,6 +290,12 @@ export const messagesFr = {
   'home.homePage.voirTout': "Voir tout",
   'home.homePage.toutesLesOffres': "Toutes les offres",
   'home.homePage.tousLesProfessionnels': "Tous les professionnels",
+  'home.trendingNow.kicker': "Ce qui bouge",
+  'home.trendingNow.explorerTout': "Tout explorer",
+  'home.trendingNow.topics': "Tendances du moment",
+  'home.trendingNow.voirTout': "Voir tout",
+  'home.trendingNow.annonces': "annonces",
+  'home.trendingNow.topicPosition': "thématique {position}",
 
   // --- home.homeCategoryExplorer ---
   'home.homeCategoryExplorer.5CategoriesPrincipales': "5 catégories principales",
@@ -559,6 +571,7 @@ export const messagesFr = {
   'search.searchPage.effacerTousLesFiltres': "Effacer tous les filtres",
   'search.searchPage.filtresDeRecherche': "Filtres de recherche",
   'search.searchPage.resultatsDeRecherche': "Résultats de recherche",
+  'search.searchPage.recherchePersonnalisee': "Recherche personnalisée",
   'search.searchPage.categories': "Catégories",
   'search.searchPage.sousCategories': "Sous-catégories",
   'search.searchPage.trierPar': "Trier par :",
@@ -1752,6 +1765,7 @@ export const messagesFr = {
   'home.heroBoostedScroll.next': "Annonce suivante",
   'home.heroBoostedScroll.annoncesControlees': "Annonces contrôlées",
   'home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees': "Sécurité, fiabilité et qualité assurées.",
+  'home.heroBoostedScroll.enSavoirPlus': "En savoir plus",
   'home.heroBoostedScroll.livraison': "Livraison",
 
   // --- home.homeCategoryExplorer ---

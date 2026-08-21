@@ -1,5 +1,11 @@
 import React from 'react';
 import { LayoutGrid, List, Map as MapIcon } from 'lucide-react';
+import { cn } from '../utils/variants';
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_RADIUS_CLASS,
+} from '../utils/controlMetrics';
 
 export type ListingViewMode = 'grid' | 'list' | 'map';
 
@@ -30,60 +36,68 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
          its neighbours — visible as a stagger on every listing surface. */
       className={`inline-flex items-center ${
         isSm ? 'h-control-sm' : 'h-control-md'
-      } bg-stone-100/90 border border-stone-200/90 rounded-xl p-0.5 shadow-2xs shrink-0 select-none ${className}`}
+      } bg-bg-muted/90 border border-border-base ${CONTROL_RADIUS_CLASS} p-0.5 shadow-2xs shrink-0 select-none ${className}`}
     >
-      <button
-        type="button"
-        aria-label="Affichage grille"
-        aria-pressed={viewMode === 'grid'}
+      <ViewModeButton
+        label="Affichage grille"
+        active={viewMode === 'grid'}
         onClick={() => onChange('grid')}
-        className={`${
-          isSm ? 'h-full px-1.5 sm:px-2 text-micro' : 'h-full px-2 sm:px-2.5 text-xs'
-        } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-          viewMode === 'grid'
-            ? 'bg-primary text-white shadow-xs'
-            : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
-        }`}
+        size={size}
       >
-        <LayoutGrid className={isSm ? 'w-3.5 h-3.5 sm:w-3 sm:h-3' : 'w-3.5 h-3.5'} />
+        <LayoutGrid className="w-icon-sm h-icon-sm" />
         <span className="hidden sm:inline">Grille</span>
-      </button>
+      </ViewModeButton>
 
-      <button
-        type="button"
-        aria-label="Affichage liste"
-        aria-pressed={viewMode === 'list'}
+      <ViewModeButton
+        label="Affichage liste"
+        active={viewMode === 'list'}
         onClick={() => onChange('list')}
-        className={`${
-          isSm ? 'h-full px-1.5 sm:px-2 text-micro' : 'h-full px-2 sm:px-2.5 text-xs'
-        } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-          viewMode === 'list'
-            ? 'bg-primary text-white shadow-xs'
-            : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
-        }`}
+        size={size}
       >
-        <List className={isSm ? 'w-3.5 h-3.5 sm:w-3 sm:h-3' : 'w-3.5 h-3.5'} />
+        <List className="w-icon-sm h-icon-sm" />
         <span className="hidden sm:inline">Liste</span>
-      </button>
+      </ViewModeButton>
 
       {showMap && (
-        <button
-          type="button"
-          aria-label="Affichage carte"
-          aria-pressed={viewMode === 'map'}
+        <ViewModeButton
+          label="Affichage carte"
+          active={viewMode === 'map'}
           onClick={() => onChange('map')}
-          className={`${
-            isSm ? 'h-full px-1.5 sm:px-2 text-micro' : 'h-full px-2 sm:px-2.5 text-xs'
-          } font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-            viewMode === 'map'
-              ? 'bg-primary text-white shadow-xs'
-              : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
-          }`}
+          size={size}
         >
-          <MapIcon className={isSm ? 'w-3.5 h-3.5 sm:w-3 sm:h-3' : 'w-3.5 h-3.5'} />
+          <MapIcon className="w-icon-sm h-icon-sm" />
           <span className="hidden sm:inline">Carte</span>
-        </button>
+        </ViewModeButton>
       )}
     </div>
   );
 };
+
+interface ViewModeButtonProps {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  size: 'sm' | 'md';
+  children: React.ReactNode;
+}
+
+const ViewModeButton: React.FC<ViewModeButtonProps> = ({ label, active, onClick, size, children }) => (
+  <button
+    type="button"
+    aria-label={label}
+    aria-pressed={active}
+    onClick={onClick}
+    className={cn(
+      'h-full flex items-center gap-1.5 font-bold cursor-pointer',
+      'rounded-sm px-1.5 sm:px-2 text-micro sm:text-xs',
+      CONTROL_MOTION_CLASS,
+      CONTROL_FOCUS_CLASS,
+      active
+        ? 'bg-primary text-white shadow-xs'
+        : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-bg-surface/70',
+      size === 'md' && 'sm:px-2.5',
+    )}
+  >
+    {children}
+  </button>
+);

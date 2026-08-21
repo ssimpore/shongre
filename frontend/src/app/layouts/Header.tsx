@@ -1,6 +1,6 @@
 import { routes } from '../../configuration/routes';
 import { isProSeller } from '../../domains/user/user.domain';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { HeaderCategoryNav } from './HeaderCategoryNav';
@@ -44,6 +44,14 @@ import { useTranslation } from '../../i18n/I18nProvider';
 import { PublishCtaButton } from '../../design-system/primitives/PublishCtaButton';
 import { Container } from '../../design-system';
 import { Button } from '../../design-system/primitives/Button';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../../design-system/utils/controlMetrics';
+
+const HEADER_SCROLL_BEHAVIOR = {
+  hideTravel: 48,
+  revealTravel: 32,
+  revealAtTop: 12,
+  transitionSettleMs: 300,
+} as const;
 
 export const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -70,6 +78,111 @@ export const Header: React.FC = () => {
     // Smartly hide on specialized, focused, transactional, and admin routes
     return false;
   }, [location.pathname]);
+
+  const [isCategoryNavVisible, setIsCategoryNavVisible] = useState(true);
+  const categoryNavRef = useRef<HTMLElement>(null);
+  const isCategoryNavVisibleRef = useRef(true);
+  const lastScrollYRef = useRef(0);
+  const scrollDirectionRef = useRef<-1 | 0 | 1>(0);
+  const scrollTravelRef = useRef(0);
+  const scrollSettleUntilRef = useRef(0);
+  const scrollFrameRef = useRef<number | null>(null);
+
+  const updateCategoryNavVisibility = useCallback((isVisible: boolean) => {
+    if (isCategoryNavVisibleRef.current === isVisible) return;
+
+    isCategoryNavVisibleRef.current = isVisible;
+    scrollDirectionRef.current = 0;
+    scrollTravelRef.current = 0;
+    // Collapsing a sticky element can make scroll anchoring emit a compensating
+    // scroll event. Ignore that layout-driven movement until the rail's 250ms
+    // transition has settled so it cannot be mistaken for a user reversal.
+    scrollSettleUntilRef.current = Date.now() + HEADER_SCROLL_BEHAVIOR.transitionSettleMs;
+    setIsCategoryNavVisible(isVisible);
+  }, []);
+
+  const revealCategoryNav = useCallback(() => {
+    updateCategoryNavVisibility(true);
+  }, [updateCategoryNavVisibility]);
+
+  // One scroll strategy for every discovery page that renders the category
+  // rail. Meaningful downward travel clears space for content; upward travel,
+  // top-of-page, hover and focus make the navigation available again. Direction
+  // hysteresis prevents touchpad/wheel noise from toggling the rail repeatedly.
+  useEffect(() => {
+    setIsCategoryNavVisible(true);
+    isCategoryNavVisibleRef.current = true;
+    scrollDirectionRef.current = 0;
+    scrollTravelRef.current = 0;
+    scrollSettleUntilRef.current = 0;
+    const getPageScrollY = () => Math.max(
+      window.scrollY,
+      document.scrollingElement?.scrollTop ?? 0,
+      document.body?.scrollTop ?? 0,
+    );
+
+    lastScrollYRef.current = getPageScrollY();
+
+    if (!shouldShowCategoryBar) return;
+
+    const handleScroll = () => {
+      if (scrollFrameRef.current !== null) return;
+
+      scrollFrameRef.current = window.requestAnimationFrame(() => {
+        scrollFrameRef.current = null;
+        const currentScrollY = getPageScrollY();
+        const scrollDelta = currentScrollY - lastScrollYRef.current;
+        lastScrollYRef.current = currentScrollY;
+
+        if (currentScrollY <= HEADER_SCROLL_BEHAVIOR.revealAtTop) {
+          updateCategoryNavVisibility(true);
+          return;
+        }
+
+        if (Date.now() < scrollSettleUntilRef.current || scrollDelta === 0) return;
+
+        const direction: -1 | 1 = scrollDelta > 0 ? 1 : -1;
+        if (scrollDirectionRef.current !== direction) {
+          scrollDirectionRef.current = direction;
+          scrollTravelRef.current = Math.abs(scrollDelta);
+        } else {
+          scrollTravelRef.current += Math.abs(scrollDelta);
+        }
+
+        if (
+          isCategoryNavVisibleRef.current &&
+          direction === 1 &&
+          scrollTravelRef.current >= HEADER_SCROLL_BEHAVIOR.hideTravel &&
+          !categoryNavRef.current?.contains(document.activeElement)
+        ) {
+          updateCategoryNavVisibility(false);
+          return;
+        }
+
+        if (
+          !isCategoryNavVisibleRef.current &&
+          direction === -1 &&
+          scrollTravelRef.current >= HEADER_SCROLL_BEHAVIOR.revealTravel
+        ) {
+          updateCategoryNavVisibility(true);
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Some embedded/mobile layouts make body (rather than window) the scroll
+    // owner. Capture document scroll events too so the same behavior applies
+    // to every route and browser viewport.
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('scroll', handleScroll, true);
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
+    };
+  }, [location.pathname, shouldShowCategoryBar, updateCategoryNavVisibility]);
 
   const activeCategorySlug = useMemo(() => {
     if (location.pathname === '/recherche') {
@@ -106,6 +219,7 @@ export const Header: React.FC = () => {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
+  const [isHeaderSearchExpanded, setIsHeaderSearchExpanded] = useState(false);
   // Set when the drawer is opened via the search button rather than the burger,
   // so the field takes focus instead of the user having to tap it again.
 
@@ -114,6 +228,7 @@ export const Header: React.FC = () => {
   // Close mobile menu whenever route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsHeaderSearchExpanded(false);
   }, [location.pathname]);
 
   // Close the header dropdowns on route change, Escape, or a click outside.
@@ -154,6 +269,21 @@ export const Header: React.FC = () => {
   const { count: favCount } = useFavorites();
   const unreadMessagesCount = storageService.getUnreadMessageCount(currentUser?.id);
   const publishCta = usePublishCta();
+  const handleHeaderQueryChange = useCallback((query: string) => {
+    setIsHeaderSearchExpanded(query.trim().length > 0);
+  }, []);
+  const handleHeaderSearchFocus = useCallback(() => {
+    setIsHeaderSearchExpanded(true);
+  }, []);
+  const handleHeaderSearchClear = useCallback(() => {
+    setIsHeaderSearchExpanded(false);
+  }, []);
+  const handleHeaderSearchBlur = useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+
+    setIsHeaderSearchExpanded(false);
+  }, []);
 
   return (
     <header className="sticky top-0 z-header bg-white/95 backdrop-blur-md border-b border-border-base">
@@ -166,7 +296,7 @@ export const Header: React.FC = () => {
               wider than the viewport. */}
           <div className="flex items-center gap-3 lg:gap-4 shrink-0">
             <Link to={routes.home()} className="flex items-center gap-2 select-none group min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 transition-transform shrink-0">
+              <div className={`w-9 h-9 rounded-control bg-primary text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 ${CONTROL_MOTION_CLASS} shrink-0`}>
                 S
               </div>
               <div className="flex flex-col min-w-0">
@@ -203,13 +333,20 @@ export const Header: React.FC = () => {
               accessible name — and two category dropdowns — on one screen. The
               wrapper stays mounted so the header keeps its three-part flex
               rhythm and the actions do not slide inward. */}
-          <div className="flex-1 min-w-0 max-w-xl xl:max-w-2xl hidden md:block">
+          <div
+            data-header-search-shell
+            onBlurCapture={handleHeaderSearchBlur}
+            className={`flex-1 min-w-0 hidden md:block motion-layout ${isHeaderSearchExpanded ? 'max-w-none' : 'max-w-xl xl:max-w-2xl'}`}
+          >
             {!isSearchRoute && (
               <GlobalSearchBar
                 variant="header"
                 idPrefix="header-desktop"
                 showCategory={true}
                 showLocation={true}
+                onQueryChange={handleHeaderQueryChange}
+                onFocus={handleHeaderSearchFocus}
+                onClearQuery={handleHeaderSearchClear}
               />
             )}
           </div>
@@ -223,23 +360,30 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
-            <Button
-              to={publishCta.to}
-              aria-label={t(publishCta.labelKey)}
-              variant="pro"
-              size="compact"
-              leftIcon={<PlusCircle className="w-4 h-4 text-primary" />}
-              className="hidden md:flex px-3 lg:px-4 shrink-0 mr-1 lg:mr-2"
+            <div
+              data-header-publish-cta
+              aria-hidden={isHeaderSearchExpanded}
+              className={`shrink-0 overflow-hidden motion-layout ${isHeaderSearchExpanded ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-56 opacity-100'}`}
             >
-              {/* Tablet keeps the publish action but not its label — it is the
-                  one action that must survive the narrower row. */}
-              <span className="hidden lg:inline whitespace-nowrap">{t(publishCta.labelKey)}</span>
-            </Button>
+              <Button
+                to={publishCta.to}
+                aria-label={t(publishCta.labelKey)}
+                tabIndex={isHeaderSearchExpanded ? -1 : undefined}
+                variant="pro"
+                size="compact"
+                leftIcon={<PlusCircle className="w-4 h-4 text-primary" />}
+                className="hidden md:flex px-3 lg:px-4 shrink-0 mr-1 lg:mr-2"
+              >
+                {/* Tablet keeps the publish action but not its label — it is the
+                    one action that must survive the narrower row. */}
+                <span className="hidden lg:inline whitespace-nowrap">{t(publishCta.labelKey)}</span>
+              </Button>
+            </div>
 
             {/* Favorites */}
             <Link
               to="/compte/favoris"
-              className="relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 transition-all hover:bg-stone-100 hover:text-stone-950 active:bg-stone-200 lg:flex group"
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
               aria-label="Favoris"
             >
               <Heart className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
@@ -253,7 +397,7 @@ export const Header: React.FC = () => {
             {/* Messages */}
             <Link
               to="/compte/messages"
-              className="relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 transition-all hover:bg-stone-100 hover:text-stone-950 active:bg-stone-200 lg:flex group"
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
               aria-label="Messagerie"
             >
               <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
@@ -278,7 +422,7 @@ export const Header: React.FC = () => {
                   aria-expanded={isAccountMenuOpen}
                   aria-haspopup="menu"
                   aria-label={`Menu du compte de ${currentUser.name}`}
-                  className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 transition-all cursor-pointer ${isAccountMenuOpen ? 'bg-stone-100 border-stone-300 shadow-inner' : 'bg-white border-border-base hover:bg-stone-50 hover:border-stone-300 hover:shadow-2xs'}`}
+                  className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${isAccountMenuOpen ? 'bg-bg-muted border-border-hover shadow-inner' : 'bg-bg-surface border-border-base hover:bg-bg-subtle hover:border-border-hover hover:shadow-2xs'}`}
                 >
                   <Avatar
                     src={currentUser.avatarUrl}
@@ -402,9 +546,9 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-label={isMobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
               aria-expanded={isMobileMenuOpen}
-              className="lg:hidden p-2 rounded-xl text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted transition-colors flex items-center justify-center cursor-pointer"
+              className={`lg:hidden h-control-md w-control-md rounded-control text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center cursor-pointer`}
             >
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6 text-stone-900" />
@@ -419,8 +563,18 @@ export const Header: React.FC = () => {
       {/* Category Sub-Header Bar (Smartly shown on Home and Discovery surfaces) */}
       {shouldShowCategoryBar && (
         <nav
+          ref={categoryNavRef}
           aria-label={t('ui.categoryFilterRail.filtresParCategorie')}
-          className="bg-white/95 backdrop-blur-md"
+          aria-hidden={!isCategoryNavVisible}
+          data-scroll-state={isCategoryNavVisible ? 'visible' : 'hidden'}
+          onPointerEnter={revealCategoryNav}
+          onFocusCapture={revealCategoryNav}
+          onTouchStart={revealCategoryNav}
+          className={`overflow-hidden bg-white/95 backdrop-blur-md motion-layout ${
+            isCategoryNavVisible
+              ? 'visible max-h-control-md translate-y-0 opacity-100'
+              : 'invisible pointer-events-none max-h-0 -translate-y-1 opacity-0'
+          }`}
         >
           <Container>
             <HeaderCategoryNav
@@ -457,11 +611,11 @@ export const Header: React.FC = () => {
             aria-modal="true"
             aria-labelledby={drawerTitleId}
             tabIndex={-1}
-            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-white shadow-2xl flex flex-col z-raised sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
+            className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-bg-surface shadow-overlay flex flex-col z-raised sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
           >
             
             {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
-            <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-stone-50 shrink-0 sticky top-0 z-sticky">
+            <div className="p-4 border-b border-border-base flex items-center justify-between bg-bg-subtle shrink-0 sticky top-0 z-sticky">
               <Link
                 to={routes.home()}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -483,8 +637,8 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-200/70 transition-all active:scale-95 cursor-pointer bg-white shadow-2xs border border-stone-200"
-                aria-label={t('shell.header.fermerLeMenu')}
+                className={`h-control-sm w-control-sm rounded-pill text-stone-500 hover:text-stone-900 hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
+                aria-label={t('shell.header.fermerLeMenuMobile')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -527,14 +681,14 @@ export const Header: React.FC = () => {
                       <Link
                         to="/connexion"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="w-full py-2 px-3 text-center text-xs font-bold text-stone-900 bg-white border border-border-base rounded-xl hover:bg-stone-50 transition-colors shadow-xs"
+                        className={`w-full h-control-md px-3 text-center text-xs font-bold text-stone-900 bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                       >
                         Se connecter
                       </Link>
                       <Link
                         to="/inscription"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="w-full py-2 px-3 text-center text-xs font-bold text-white bg-primary rounded-xl hover:bg-primary-hover active:bg-primary-active transition-colors shadow-xs"
+                        className={`w-full h-control-md px-3 text-center text-xs font-bold text-white bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                       >
                         S'inscrire
                       </Link>
@@ -623,7 +777,7 @@ export const Header: React.FC = () => {
                           to={`/categorie/${cat.slug}`}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-stone-700 hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
-                          title={cat.name}
+                          title={getTaxonomyLabel(cat, 'compact')}
                         >
                           <div className="flex items-center gap-2">
                             <CategoryIcon category={cat} size="xs" />

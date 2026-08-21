@@ -265,7 +265,7 @@ export const Footer: React.FC = () => {
                   onToggle={toggleSection}
                 >
                   {TAXONOMY.slice(0, 7).map((cat) => (
-                    <FooterLink key={cat.id} to={`/categorie/${cat.slug}`} title={cat.name}>
+                    <FooterLink key={cat.id} to={`/categorie/${cat.slug}`} title={getTaxonomyLabel(cat, 'compact')}>
                       {getTaxonomyLabel(cat, 'compact')}
                     </FooterLink>
                   ))}

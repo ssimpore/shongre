@@ -2,6 +2,7 @@ import React from 'react';
 import { SearchX, RotateCcw, Lightbulb, BookmarkPlus } from 'lucide-react';
 import { Button } from './Button';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export interface NoResultsFoundProps {
   /** Main heading */
@@ -71,27 +72,27 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
       id={id}
       role="status"
       aria-live="polite"
-      className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-2xl bg-bg-surface border border-border-base shadow-xs ${className}`}
+      className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-card bg-bg-surface border border-border-base shadow-xs ${className}`}
     >
       {/* Icon Badge */}
       <div
         id={`${id}-icon-container`}
-        className="w-14 h-14 rounded-2xl bg-bg-subtle border border-border-base flex items-center justify-center text-stone-500 mb-4 transition-transform duration-normal hover:scale-105"
+        className={`w-14 h-14 rounded-card bg-bg-subtle border border-border-base flex items-center justify-center text-text-muted mb-4 ${CONTROL_MOTION_CLASS} hover:scale-105`}
       >
-        {icon || <SearchX className="w-7 h-7 text-stone-600" />}
+        {icon || <SearchX className="w-7 h-7 text-text-secondary" />}
       </div>
 
       {/* Headings */}
       <h2
         id={`${id}-title`}
-        className="text-base sm:text-lg font-bold text-stone-900 tracking-tight"
+        className="text-base sm:text-lg font-bold text-text-main tracking-tight"
       >
         {displayTitle}
       </h2>
 
       <p
         id={`${id}-description`}
-        className="text-xs sm:text-sm text-stone-600 max-w-md mt-1.5 leading-relaxed"
+        className="text-xs sm:text-sm text-text-secondary max-w-md mt-1.5 leading-relaxed"
       >
         {displayDescription}
       </p>
@@ -100,13 +101,13 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
       {showSuggestions && suggestions.length > 0 && (
         <div
           id={`${id}-suggestions-box`}
-          className="mt-6 w-full max-w-md bg-bg-subtle/80 rounded-xl border border-border-subtle p-4 text-left"
+          className="mt-6 w-full max-w-md bg-bg-subtle/80 rounded-control border border-border-subtle p-4 text-left"
         >
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 mb-2">
-            <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-text-main mb-2">
+            <Lightbulb className="w-3.5 h-3.5 text-warning shrink-0" />
             <span>{t('ui.noResultsFound.conseilsPourTrouverVotreBonheur')}</span>
           </div>
-          <ul className="space-y-1.5 text-xs text-stone-600">
+          <ul className="space-y-1.5 text-xs text-text-secondary">
             {suggestions.map((tip, idx) => (
               <li key={idx} className="flex items-start gap-2">
                 <span className="text-primary font-bold select-none">•</span>
@@ -120,7 +121,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
       {/* Action Buttons */}
       <div
         id={`${id}-actions`}
-        className="flex flex-wrap items-center justify-center gap-3 mt-6 w-full max-w-md"
+        className="mt-6 grid w-full max-w-md grid-cols-1 items-stretch gap-3 sm:grid-cols-2"
       >
         {onClearFilters && (
           <Button
@@ -128,6 +129,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
             type="button"
             variant="primary"
             size="md"
+            fullWidth
             onClick={onClearFilters}
             leftIcon={<RotateCcw className="w-4 h-4" />}
           >
@@ -141,6 +143,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
             type="button"
             variant="outline"
             size="md"
+            fullWidth
             onClick={onSaveSearch}
             leftIcon={<BookmarkPlus className="w-4 h-4 text-primary" />}
           >

@@ -11,6 +11,7 @@ import { INotificationRepository, DemoNotificationRepository, PostgresNotificati
 import { IReviewRepository, DemoReviewRepository, PostgresReviewRepository } from './review.repository.js';
 import { IAdminRepository, DemoAdminRepository, PostgresAdminRepository } from './admin.repository.js';
 import { IWorkspaceRepository, DemoWorkspaceRepository, PostgresWorkspaceRepository } from './workspace.repository.js';
+import { ITrendingRepository, DemoTrendingRepository, PostgresTrendingRepository } from './trending.repository.js';
 import { logger } from '../../logging/logger.js';
 
 export interface RepositoryContainer {
@@ -26,6 +27,7 @@ export interface RepositoryContainer {
   reviews: IReviewRepository;
   admin: IAdminRepository;
   workspace: IWorkspaceRepository;
+  trending: ITrendingRepository;
 }
 
 export function createRepositoryContainer(mode: BackendDataMode = config.dataMode): RepositoryContainer {
@@ -45,6 +47,7 @@ export function createRepositoryContainer(mode: BackendDataMode = config.dataMod
       reviews: new PostgresReviewRepository(),
       admin: new PostgresAdminRepository(),
       workspace: new PostgresWorkspaceRepository(),
+      trending: new PostgresTrendingRepository(),
     };
   }
 
@@ -61,6 +64,7 @@ export function createRepositoryContainer(mode: BackendDataMode = config.dataMod
     reviews: new DemoReviewRepository(),
     admin: new DemoAdminRepository(),
     workspace: new DemoWorkspaceRepository(),
+    trending: new DemoTrendingRepository(),
   };
 }
 

@@ -6,6 +6,12 @@ import { INITIAL_MARKETS } from '../domains/market/market.defaults';
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = 'guest';
 
+/** Emitted after structured recent-search state changes in this browser tab. */
+export const RECENT_SEARCH_ITEMS_CHANGED_EVENT = 'shongre:recent-search-items-changed';
+/** Emitted after demo market configuration changes in this browser tab. */
+export const MARKETS_CHANGED_EVENT = 'shongre:markets-changed';
+export const MARKETS_STORAGE_KEY = 'shongre_markets_v2';
+
 const KEYS = {
   USERS: 'shongre_users_v1',
   LISTINGS: 'shongre_listings_v1',
@@ -25,7 +31,7 @@ const KEYS = {
   RECENTLY_VIEWED: 'shongre_recently_viewed_v1',
   LOCATION_PREF: 'shongre_location_preference_v1',
   PUBLISH_DRAFT: 'shongre_publish_draft_v1',
-  MARKETS: 'shongre_markets_v2',
+  MARKETS: MARKETS_STORAGE_KEY,
   ACTIVE_MARKET: 'shongre_active_market_v1',
   USER_LOCALE: 'shongre_user_locale_v1',
   USER_CURRENCY: 'shongre_user_currency_v1',
@@ -33,6 +39,12 @@ const KEYS = {
 
 class StorageService {
   private memoryStore = new Map<string, string>();
+
+  private notifyRecentSearchItemsChanged(): void {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(RECENT_SEARCH_ITEMS_CHANGED_EVENT));
+    }
+  }
 
   get<T>(key: string, fallback: T): T {
     try {
@@ -432,7 +444,7 @@ class StorageService {
 
   addRecentSearchItem(item: Omit<RecentSearch, 'id' | 'createdAt'>): void {
     const list = this.getRecentSearchItems().filter(
-      (s) => s.title.toLowerCase() !== item.title.toLowerCase() || s.locationLabel !== item.locationLabel,
+      (s) => s.to !== item.to,
     );
     const newItem: RecentSearch = {
       ...item,
@@ -441,15 +453,18 @@ class StorageService {
     };
     list.unshift(newItem);
     this.set(KEYS.RECENT_SEARCH_ITEMS, list.slice(0, 8));
+    this.notifyRecentSearchItemsChanged();
   }
 
   deleteRecentSearchItem(id: string): void {
     const list = this.getRecentSearchItems().filter((item) => item.id !== id);
     this.set(KEYS.RECENT_SEARCH_ITEMS, list);
+    this.notifyRecentSearchItemsChanged();
   }
 
   clearRecentSearchItems(): void {
     this.set(KEYS.RECENT_SEARCH_ITEMS, []);
+    this.notifyRecentSearchItemsChanged();
   }
 
   // Recently Viewed
@@ -619,6 +634,9 @@ class StorageService {
 
   saveMarkets(markets: Market[]): void {
     this.set(KEYS.MARKETS, markets);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(MARKETS_CHANGED_EVENT));
+    }
   }
 
   getActiveMarketCode(): string {

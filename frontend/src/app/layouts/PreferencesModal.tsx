@@ -54,10 +54,10 @@ export const PreferencesModal: React.FC = () => {
                   key={m.code}
                   type="button"
                   onClick={() => handleMarketChange(m.code)}
-                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  className={`min-h-control-touch p-2.5 rounded-control border text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary flex items-center justify-between ${
                     isSelected
                       ? 'border-primary bg-primary-light text-primary font-bold ring-1 ring-primary'
-                      : 'border-border-base bg-white hover:bg-stone-50 text-stone-800 font-medium'
+                      : 'border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
@@ -88,10 +88,10 @@ export const PreferencesModal: React.FC = () => {
                   key={c.code}
                   type="button"
                   onClick={() => setCurrency(c.code)}
-                  className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                  className={`min-h-control-touch p-2 rounded-control border text-center motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? 'border-primary bg-primary-light text-primary font-bold ring-1 ring-primary'
-                      : 'border-border-base bg-white hover:bg-stone-50 text-stone-800 font-medium'
+                      : 'border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium'
                   }`}
                 >
                   <div className="text-xs font-bold">{c.symbol} {c.code}</div>
@@ -120,12 +120,12 @@ export const PreferencesModal: React.FC = () => {
                   disabled={!lang.isAvailable}
                   aria-disabled={!lang.isAvailable}
                   onClick={() => lang.isAvailable && setLocale(lang.code)}
-                  className={`p-2 rounded-xl border text-left transition-all flex items-center justify-between ${
+                  className={`min-h-control-touch p-2 rounded-control border text-left motion-interactive flex items-center justify-between focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     !lang.isAvailable
                       ? 'border-border-subtle bg-bg-subtle text-stone-400 cursor-not-allowed'
                       : isSelected
                       ? 'border-primary bg-primary-light text-primary font-bold ring-1 ring-primary cursor-pointer'
-                      : 'border-border-base bg-white hover:bg-stone-50 text-stone-800 font-medium cursor-pointer'
+                      : 'border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium cursor-pointer'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">

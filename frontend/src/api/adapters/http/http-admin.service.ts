@@ -1,6 +1,7 @@
 import { AdminServiceContract, AdminStatsSummary } from '../../contracts/admin.contract';
 import { httpClient } from './http-client';
 import { UserProfile } from '../../../types';
+import type { TrendingAdminConfig, TrendingTopicOverride } from '../../../domains/trending/trending.types';
 
 export class HttpAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -25,6 +26,18 @@ export class HttpAdminService implements AdminServiceContract {
 
   async getAuditLogs(): Promise<Array<{ id: string; timestamp: string; actor: string; action: string; target: string }>> {
     return httpClient.get<Array<{ id: string; timestamp: string; actor: string; action: string; target: string }>>('/admin/audit-logs');
+  }
+
+  async getTrendingConfig(marketCode = 'FR'): Promise<TrendingAdminConfig> {
+    return httpClient.get<TrendingAdminConfig>(`/admin/trending/config?market=${encodeURIComponent(marketCode)}`);
+  }
+
+  async updateTrendingConfig(updates: Partial<TrendingAdminConfig>, marketCode = 'FR'): Promise<TrendingAdminConfig> {
+    return httpClient.put<TrendingAdminConfig>(`/admin/trending/config?market=${encodeURIComponent(marketCode)}`, updates);
+  }
+
+  async upsertTrendingOverride(override: TrendingTopicOverride): Promise<TrendingAdminConfig> {
+    return httpClient.put<TrendingAdminConfig>(`/admin/trending/overrides/${encodeURIComponent(override.topicKey)}`, override);
   }
 }
 

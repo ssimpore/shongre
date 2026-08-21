@@ -1,4 +1,5 @@
 import { Market, MarketConfiguration } from './market.types';
+import { RECENT_SEARCHES_LIMIT_DEFAULT } from './market.constants';
 
 /**
  * Canonical French Baseline Configuration (The Immutable Reference Standard)
@@ -186,6 +187,7 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     aiAssistantEnabled: true,
     aiSafetyAuditEnabled: true,
     savedSearchesEnabled: true,
+    recentSearchesLimit: RECENT_SEARCHES_LIMIT_DEFAULT,
     sellerFollowEnabled: true,
     proStorefrontsEnabled: true,
     disputeEscalationEnabled: true,

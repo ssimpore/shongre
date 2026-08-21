@@ -1,3 +1,4 @@
+@import "@fontsource-variable/inter/wght.css";
 @import "tailwindcss";
 
 /* =============================================================================
@@ -208,8 +209,11 @@
      goes through `font-display`. */
   --font-display: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino,
     Georgia, 'Times New Roman', serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  /* Inter is bundled through Fontsource so the marketplace keeps a stable UI
+     voice across macOS, Windows, Linux, iOS and Android. The system stack is
+     still a deliberate fallback for blocked/slow font delivery. */
+  --font-sans: 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -270,6 +274,13 @@
      ~143px of the next card visible, which is the affordance that says the row
      scrolls. */
   --spacing-listing-card: 11.75rem; /* 188px - one listing card in a rail */
+  /* Collection cards are a separate discovery pattern: taller visual tiles
+     than listing cards, with one phone and one wide-screen step. */
+  --spacing-collection-card: 9.6875rem; /* 155px */
+  --spacing-collection-card-wide: 11.875rem; /* 190px */
+  --spacing-recent-search-card: 17rem; /* 272px */
+  --spacing-recent-search-card-wide: 19rem; /* 304px */
+  --spacing-recent-search-card-min: 6.5rem; /* 104px */
 
   /* --- Layout containers -------------------------------------------------- */
   --container-task: 56rem;      /* 896px — focused forms / publication */
@@ -372,6 +383,9 @@
     background-color: var(--color-bg-base);
     color: var(--color-text-main);
     font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
@@ -423,6 +437,21 @@
       var(--spacing-select-chevron-size) var(--spacing-select-chevron-size),
       var(--spacing-select-chevron-size) var(--spacing-select-chevron-size);
     padding-inline-end: var(--spacing-control-md);
+  }
+
+  /* Search fields render their own Shongre clear action. Hide the browser's
+     second cancel affordance so every search variant exposes one clear button
+     with the same accessible name and behaviour. */
+  input[type='search'] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type='search']::-webkit-search-cancel-button,
+  input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
   }
 
   textarea {
@@ -530,6 +559,28 @@
     display: none;
   }
 
+  /* Legacy transition aliases. A few specialized routes still use Tailwind's
+     familiar transition-* names while they are migrated to the recipes above.
+     Keep those names from reintroducing `all` or an unowned timing function:
+     explicit duration-* utilities below still win when a surface needs the
+     normal or slow step. New controls should use motion-interactive or
+     motion-surface directly. */
+  .transition-all {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .transition-colors {
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .transition-transform {
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+  }
+
   /* --- Motion duration utilities ------------------------------------------
      Tailwind v4 has a theme namespace for easing (`--ease-*`) but none for
      duration: `duration-*` only accepts bare numbers, so the `--duration-fast`
@@ -546,6 +597,29 @@
   .duration-fast { transition-duration: var(--duration-fast); }
   .duration-normal { transition-duration: var(--duration-normal); }
   .duration-slow { transition-duration: var(--duration-slow); }
+
+  /* Shared interaction recipes. A control should animate only the properties
+     that communicate state; `transition-all` made layout, color and geometry
+     move together and caused small jumps when labels or borders changed. These
+     recipes keep the motion vocabulary token-backed and consistent across
+     buttons, chips, toggles and icon actions. */
+  .motion-interactive {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .motion-surface {
+    transition-property: opacity, transform, box-shadow, background-color;
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-out-soft);
+  }
+
+  .motion-layout {
+    transition-property: max-width, max-height, opacity, margin, transform;
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-out-soft);
+  }
 
   .animate-duration-fast { animation-duration: var(--duration-fast); }
   .animate-duration-normal { animation-duration: var(--duration-normal); }

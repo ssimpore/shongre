@@ -1,28 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Search, X } from 'lucide-react';
-import { storageService } from '../../../services/storage.service';
+import {
+  RECENT_SEARCH_ITEMS_CHANGED_EVENT,
+  storageService,
+} from '../../../services/storage.service';
 import { RecentSearch } from '../../../types';
 import { ScrollRail } from '../../../design-system/primitives/ScrollRail';
 import { Container } from '../../../design-system/primitives/Layout';
 import { IconButton } from '../../../design-system/primitives/IconButton';
 import { useTranslation } from '../../../i18n/I18nProvider';
 import { HomeSectionHeading } from './HomeSectionHeading';
+import { useMarketLocation } from '../../../app/providers/MarketLocationProvider';
+import { normalizeRecentSearchesLimit } from '../../../domains/market/market.constants';
 
 export const HomeRecentSearches: React.FC = () => {
   const { t } = useTranslation();
+  const { effectiveConfig } = useMarketLocation();
   // Read once during state initialisation. Rendering an empty rail and filling
   // it in an effect caused a visible layout shift after the home page mounted.
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
     storageService.getRecentSearchItems()
   );
 
+  useEffect(() => {
+    const refreshRecentSearches = () => {
+      setRecentSearches(storageService.getRecentSearchItems());
+    };
+
+    // The custom event covers same-tab writes; the native event covers another
+    // tab. Both keep the section reactive without turning storage into a second
+    // source of React state.
+    window.addEventListener(RECENT_SEARCH_ITEMS_CHANGED_EVENT, refreshRecentSearches);
+    window.addEventListener('storage', refreshRecentSearches);
+    return () => {
+      window.removeEventListener(RECENT_SEARCH_ITEMS_CHANGED_EVENT, refreshRecentSearches);
+      window.removeEventListener('storage', refreshRecentSearches);
+    };
+  }, []);
+
   const handleDelete = (id: string) => {
     storageService.deleteRecentSearchItem(id);
     setRecentSearches(storageService.getRecentSearchItems());
   };
 
-  if (recentSearches.length === 0) {
+  const visibleRecentSearches = recentSearches.slice(
+    0,
+    normalizeRecentSearchesLimit(effectiveConfig.features.recentSearchesLimit),
+  );
+
+  if (visibleRecentSearches.length === 0) {
     return null;
   }
 
@@ -45,10 +72,10 @@ export const HomeRecentSearches: React.FC = () => {
         className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible"
       >
         <div className="flex gap-3 sm:gap-4 md:grid md:grid-cols-3 min-w-max md:min-w-0">
-          {recentSearches.map((item) => (
+          {visibleRecentSearches.map((item) => (
             <div
               key={item.id}
-              className="group relative w-[272px] shrink-0 snap-start overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs transition-all duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md sm:w-[304px] md:w-auto"
+              className="group relative w-recent-search-card shrink-0 snap-start overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md sm:w-recent-search-card-wide md:w-auto"
             >
               <span
                 aria-hidden="true"
@@ -61,14 +88,14 @@ export const HomeRecentSearches: React.FC = () => {
                   controls and fails WCAG 4.1.2. */}
               <Link
                 to={item.to}
-                className="flex min-h-24 items-center gap-3.5 rounded-card p-4 pr-12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:min-h-[104px] sm:gap-4 sm:p-5 sm:pr-14"
+                className="flex min-h-24 items-center gap-3.5 rounded-card p-4 pr-12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:min-h-recent-search-card-min sm:gap-4 sm:p-5 sm:pr-14"
               >
-                <span className="flex h-control-md w-control-md shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary transition-colors duration-normal group-hover:bg-primary group-hover:text-white group-focus-within:bg-primary group-focus-within:text-white">
+                <span className="flex h-control-md w-control-md shrink-0 items-center justify-center rounded-control bg-primary-light text-primary motion-interactive group-hover:bg-primary group-hover:text-white group-focus-within:bg-primary group-focus-within:text-white">
                   <Search className="h-icon-lg w-icon-lg" aria-hidden="true" />
                 </span>
 
                 <span className="min-w-0 flex-1">
-                  <h3 className="line-clamp-2 text-sm font-bold leading-snug text-stone-900 transition-colors duration-fast group-hover:text-primary sm:text-base">
+                  <h3 className="line-clamp-2 text-sm font-bold leading-snug text-stone-900 motion-interactive group-hover:text-primary sm:text-base">
                     {item.title}
                   </h3>
 

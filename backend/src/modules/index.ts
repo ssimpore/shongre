@@ -12,3 +12,4 @@ export * from './notifications/notifications.service.js';
 export * from './reviews/reviews.service.js';
 export * from './workspace/workspace.service.js';
 export * from './admin/admin.service.js';
+export * from './trending/trending.service.js';

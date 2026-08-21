@@ -22,6 +22,7 @@ import {
 import { UserProfile } from '../../../types';
 import { Avatar, Badge } from '../../../design-system/primitives/Badge';
 import { Button } from '../../../design-system/primitives/Button';
+import { IconButton } from '../../../design-system/primitives/IconButton';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { useToast } from '../../../app/providers/ToastProvider';
 import { userRepository } from '../../../repositories/user.repository';
@@ -198,12 +199,12 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
               </div>
 
               {/* Sub-header meta row */}
-              <div className="flex items-center gap-3 mt-2 text-sm text-stone-600 flex-wrap">
+              <div className="mt-2 flex min-w-0 max-w-full items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap text-xs text-stone-600 sm:gap-3 sm:text-sm">
                 {/* Rating trigger */}
                 <button
                   type="button"
                   onClick={() => onTabChange('reviews')}
-                  className="flex items-center gap-1.5 font-bold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
+                  className="flex shrink-0 items-center gap-1.5 font-bold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
                   <Star className="w-4 h-4 fill-amber-400 text-amber-400 group-hover:scale-110 transition-transform duration-normal" />
@@ -213,20 +214,21 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   </span>
                 </button>
 
-                <span className="text-stone-300 hidden sm:inline">•</span>
+                <span className="shrink-0 text-stone-300">•</span>
 
                 {/* Location */}
-                <span className="flex items-center gap-1.5 text-stone-600">
-                  <MapPin className="w-4 h-4 text-stone-400 shrink-0" />
+                <span className="flex shrink-0 items-center gap-1.5 text-stone-600">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-stone-400 sm:h-4 sm:w-4" />
                   {seller.city} {seller.postalCode ? `(${seller.postalCode.slice(0, 2)})` : ''}
                 </span>
 
-                <span className="text-stone-300 hidden sm:inline">•</span>
+                <span className="shrink-0 text-stone-300">•</span>
 
                 {/* Seniority */}
-                <span className="flex items-center gap-1.5 text-stone-500">
-                  <Calendar className="w-4 h-4 text-stone-400 shrink-0" />
-                  Membre depuis {memberYear}
+                <span className="flex shrink-0 items-center gap-1.5 text-stone-500">
+                  <Calendar className="h-3.5 w-3.5 shrink-0 text-stone-400 sm:h-4 sm:w-4" />
+                  <span className="sm:hidden">Depuis {memberYear}</span>
+                  <span className="hidden sm:inline">Membre depuis {memberYear}</span>
                 </span>
               </div>
             </div>
@@ -289,26 +291,27 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   {isFollowing ? 'Abonné' : 'Suivre'}
                 </Button>
 
-                <button
-                  type="button"
+                <IconButton
+                  variant="outline"
+                  size="md"
                   onClick={handleShare}
-                  aria-label={t('profile.sellerProfileHeader.partagerCeProfil')}
-                  className="p-3 rounded-2xl border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer shadow-2xs hover:shadow-sm"
-                  title={t('profile.sellerProfileHeader.partagerCeProfil')}
+                  ariaLabel={t('profile.sellerProfileHeader.partagerCeProfil')}
+                  className="!h-control-touch !w-control-touch shrink-0"
                 >
                   <Share2 className="w-5 h-5" />
-                </button>
+                </IconButton>
 
                 {/* Overflow Menu */}
                 <div className="relative">
-                  <button
-                    type="button"
+                  <IconButton
+                    variant="outline"
+                    size="md"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label={t('profile.sellerProfileHeader.optionsSupplementaires')}
-                    className="p-3 rounded-2xl border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer shadow-2xs hover:shadow-sm"
+                    ariaLabel={t('profile.sellerProfileHeader.optionsSupplementaires')}
+                    className="!h-control-touch !w-control-touch"
                   >
                     <MoreVertical className="w-5 h-5" />
-                  </button>
+                  </IconButton>
 
                   {isMenuOpen && (
                     <div

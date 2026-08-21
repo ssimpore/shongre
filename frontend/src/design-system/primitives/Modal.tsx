@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-overlay backdrop-blur-xs animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -47,19 +47,19 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-white rounded-overlay shadow-xl border border-stone-200/60 overflow-hidden animate-in zoom-in-95 ${className}`}
+        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-bg-surface rounded-overlay shadow-overlay border border-border-base overflow-hidden animate-in zoom-in-95 ${className}`}
       >
-        <div className="flex items-start justify-between gap-3 p-5 sm:p-6 border-b border-stone-100 shrink-0">
+        <div className="flex items-start justify-between gap-3 p-5 sm:p-6 border-b border-border-subtle shrink-0">
           <div className="min-w-0">
             {title && (
-              <h2 id={titleId} className="text-lg font-bold text-stone-900">
+              <h2 id={titleId} className="text-lg font-bold text-text-main">
                 {title}
               </h2>
             )}
-            {description && <p className="text-xs text-stone-500 mt-0.5">{description}</p>}
+            {description && <p className="text-xs text-text-muted mt-0.5">{description}</p>}
           </div>
-          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose} className="hover:bg-stone-100 active:bg-stone-200">
-            <X className="w-5 h-5 text-stone-500" />
+          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
+            <X className="w-icon-lg h-icon-lg text-text-muted" />
           </IconButton>
         </div>
         <div className="p-5 sm:p-6 overflow-y-auto flex-1">{children}</div>
@@ -91,7 +91,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-modal bg-stone-900/60 backdrop-blur-xs flex items-end justify-center sm:items-center p-0 sm:p-4 animate-in fade-in"
+      className="fixed inset-0 z-modal bg-overlay backdrop-blur-xs flex items-end justify-center sm:items-center p-0 sm:p-4 animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -102,18 +102,18 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full max-w-lg bg-white rounded-t-overlay sm:rounded-overlay shadow-2xl border border-stone-200/60 max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
+        className={`w-full max-w-lg bg-bg-surface rounded-t-overlay sm:rounded-overlay shadow-overlay border border-border-base max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
       >
-        <div className="flex items-center justify-between p-5 border-b border-stone-100 shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-border-subtle shrink-0">
           {title ? (
-            <h2 id={titleId} className="text-base font-bold text-stone-900">
+            <h2 id={titleId} className="text-base font-bold text-text-main">
               {title}
             </h2>
           ) : (
             <div />
           )}
-          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose} className="hover:bg-stone-100 active:bg-stone-200">
-            <X className="w-5 h-5 text-stone-500" />
+          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
+            <X className="w-icon-lg h-icon-lg text-text-muted" />
           </IconButton>
         </div>
         <div className="p-5 overflow-y-auto flex-1">{children}</div>

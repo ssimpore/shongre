@@ -7,10 +7,10 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const shapeClasses = {
   line: 'h-4 rounded-lg',
-  control: 'h-control-touch rounded-xl',
-  media: 'aspect-[4/3] rounded-2xl',
+  control: 'h-control-touch rounded-control',
+  media: 'aspect-[4/3] rounded-control',
   circle: 'aspect-square rounded-full',
-  panel: 'min-h-32 rounded-2xl',
+  panel: 'min-h-32 rounded-card',
 } as const;
 
 export const Skeleton: React.FC<SkeletonProps> = ({

@@ -1,6 +1,7 @@
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { Button } from '../../design-system/primitives/Button';
 
 interface Props {
   children: ReactNode;
@@ -27,45 +28,47 @@ const ErrorFallback: React.FC<{
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-bg-base flex items-center justify-center p-4">
+    <div role="alert" className="min-h-screen bg-bg-base flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl border border-border-base p-6 sm:p-8 shadow-xl text-center space-y-5">
         <div className="w-14 h-14 rounded-2xl bg-primary-light text-primary mx-auto flex items-center justify-center">
           <AlertTriangle className="w-7 h-7" />
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-black text-text-main">
             {t('shell.errorBoundary.uneErreurInattendueEstSurvenue')}
           </h1>
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-text-secondary">
             {t('shell.errorBoundary.applicationARencontreUnProbleme')}
           </p>
         </div>
 
         {message && (
-          <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-left text-xs font-mono text-stone-600 max-h-24 overflow-y-auto">
+          <div className="p-3 bg-bg-subtle rounded-control border border-border-base text-left text-xs font-mono text-text-secondary max-h-24 overflow-y-auto">
             {message}
           </div>
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
-          <button
-            type="button"
+          <Button
             onClick={onReload}
-            className="flex-1 h-control-touch px-4 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+            variant="primary"
+            size="md"
+            fullWidth
+            leftIcon={<RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />}
           >
-            <RefreshCw className="w-4 h-4" />
-            <span>{t('shell.errorBoundary.actualiserLaPage')}</span>
-          </button>
+            {t('shell.errorBoundary.actualiserLaPage')}
+          </Button>
 
-          <button
-            type="button"
+          <Button
             onClick={onReset}
-            className="flex-1 h-control-touch px-4 rounded-control bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            variant="outline"
+            size="md"
+            fullWidth
+            leftIcon={<Home className="h-icon-md w-icon-md text-primary" aria-hidden="true" />}
           >
-            <Home className="w-4 h-4 text-primary" />
-            <span>{t('shell.errorBoundary.retourAccueil')}</span>
-          </button>
+            {t('shell.errorBoundary.retourAccueil')}
+          </Button>
         </div>
       </div>
     </div>
@@ -112,4 +115,3 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return this.props.children;
   }
 }
-

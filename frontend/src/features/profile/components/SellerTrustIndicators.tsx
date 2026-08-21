@@ -37,7 +37,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({ se
         </div>
         <div className="flex items-center gap-1.5 text-xs font-bold text-success bg-success-surface px-3 py-1 rounded-full border border-success/20 w-fit">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Indice de confiance : {trustScore.score}/100 ({trustScore.levelLabel})</span>
+          <span>Confiance : {trustScore.score}/100</span>
         </div>
       </div>
 

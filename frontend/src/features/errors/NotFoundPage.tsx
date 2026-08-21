@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { AlertCircle, Home, Search, ArrowRight } from 'lucide-react';
 import { Button } from '../../design-system/primitives/Button';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
-import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
+import { getTaxonomyLabel, taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { TaxonomyNode } from '../../domains/taxonomy/taxonomy.types';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
@@ -86,7 +86,7 @@ export const NotFoundPage: React.FC = () => {
                   className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-border-base hover:border-primary-border hover:bg-primary-light transition-colors min-h-control-touch"
                 >
                   <CategoryIcon category={cat} size="xs" />
-                  <span className="text-xs font-semibold text-stone-800 truncate">{cat.name}</span>
+                  <span className="text-xs font-semibold text-stone-800 truncate">{getTaxonomyLabel(cat, 'compact')}</span>
                 </a>
               </li>
             ))}

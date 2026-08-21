@@ -9,6 +9,7 @@ import {
 } from './DropdownMenu';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { catalogueCoverage } from '../../i18n/i18n.service';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export interface LanguageOption {
   code: string;
@@ -168,10 +169,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   const buttonClasses =
     variant === 'footer'
-      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-300 hover:text-white bg-stone-800/80 hover:bg-stone-800 border border-stone-700/80 hover:border-stone-600 transition-colors cursor-pointer select-none ${
+      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-300 hover:text-white bg-stone-800/80 hover:bg-stone-800 border border-stone-700/80 hover:border-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
           isOpen ? 'bg-stone-800 text-white border-stone-600 ring-1 ring-stone-600' : ''
         }`
-      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors cursor-pointer select-none border border-transparent hover:border-border-base ${
+      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border border-transparent hover:border-border-base ${
           isOpen ? 'bg-bg-subtle border-border-base text-stone-950' : ''
         }`;
 
@@ -253,7 +254,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               type="button"
               role="menuitem"
               onClick={handleOpenPreferences}
-              className="w-full flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-stone-700 hover:text-stone-950 hover:bg-stone-50 rounded-xl transition-colors cursor-pointer text-left group"
+              className={`w-full min-h-control-sm flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle rounded-control ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left group`}
             >
               <div className="flex items-center gap-2">
                 <Settings2 className="w-3.5 h-3.5 text-primary shrink-0" />

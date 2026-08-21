@@ -66,6 +66,7 @@ const AdminRolesMatrixPage = lazy(() => import('../../features/admin/AdminRolesM
 const AdminAuditLogsPage = lazy(() => import('../../features/admin/AdminAuditLogsPage').then((m) => ({ default: m.AdminAuditLogsPage })));
 const AdminMarketsPage = lazy(() => import('../../features/admin/AdminMarketsPage').then((m) => ({ default: m.AdminMarketsPage })));
 const AdminMonetizationPage = lazy(() => import('../../features/admin/AdminMonetizationPage').then((m) => ({ default: m.AdminMonetizationPage })));
+const AdminTrendingPage = lazy(() => import('../../features/admin/AdminTrendingPage').then((m) => ({ default: m.AdminTrendingPage })));
 const AdminTaxonomyPage = lazy(() => import('../../features/admin/AdminTaxonomyPage').then((m) => ({ default: m.AdminTaxonomyPage })));
 const AdminProvidersPage = lazy(() => import('../../features/admin/providers/AdminProvidersPage').then((m) => ({ default: m.AdminProvidersPage })));
 const AdminProviderDetailPage = lazy(() => import('../../features/admin/providers/AdminProviderDetailPage').then((m) => ({ default: m.AdminProviderDetailPage })));
@@ -299,6 +300,14 @@ export const router = createBrowserRouter([
         element: (
           <RequirePermission permission="monetization.manage">
             {withSuspense(AdminMonetizationPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: 'tendances',
+        element: (
+          <RequirePermission permission="admin.access">
+            {withSuspense(AdminTrendingPage)}
           </RequirePermission>
         ),
       },

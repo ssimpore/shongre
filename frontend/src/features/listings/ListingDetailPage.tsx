@@ -58,6 +58,7 @@ import { ListingFulfillmentSummary } from './components/ListingFulfillmentSummar
 import { ListingSellerTrustSection } from './components/ListingSellerTrustSection';
 import { ListingSafetyNotice } from './components/ListingSafetyNotice';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { getListingCategoryLabel, getListingSubCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
 
 export const ListingDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -125,6 +126,9 @@ export const ListingDetailPage: React.FC = () => {
     const marketCode = listing?.marketCode || storageService.getActiveMarketCode() || 'FR';
     return marketService.getEffectiveConfig(marketCode);
   }, [listing]);
+
+  const displayCategoryLabel = listing ? getListingCategoryLabel(listing) : '';
+  const displaySubCategoryLabel = listing ? getListingSubCategoryLabel(listing) : '';
 
   // 3. Capabilities & Actions Resolution
   const transactionCaps = useMemo(() => {
@@ -205,6 +209,25 @@ export const ListingDetailPage: React.FC = () => {
       actions.canDirectPurchase,
     ].filter(Boolean).length;
   }, [actions]);
+
+  /**
+   * Three-action layouts keep the primary CTA on its own row. Four-action
+   * layouts are a balanced 2×2 grid so the second row (Message/Acheter) aligns
+   * with the first row (Offre/Réserver) instead of stacking two full-width
+   * controls below it.
+   */
+  const mobileActionClass = (action: 'offer' | 'reservation' | 'contact' | 'direct_purchase') => {
+    if (mobileActionCount === 4) return '';
+    const isPrimary = actions.primaryAction === action;
+    if (mobileActionCount <= 2) return '';
+
+    const classes = [
+      isPrimary ? 'col-span-2' : '',
+      isPrimary ? 'order-last' : '',
+    ];
+
+    return classes.filter(Boolean).join(' ');
+  };
 
   // 4. Characteristics & Summary derivation
   const summaryAttributes = useMemo(() => {
@@ -384,9 +407,9 @@ export const ListingDetailPage: React.FC = () => {
   const showsBuyerFee = Boolean(listing.isOnlinePaymentAvailable) && listing.price > 0;
   const breadcrumbItems = [
     { label: 'Accueil', href: '/' },
-    { label: listing.categoryLabel, href: `/categorie/${listing.categorySlug}` },
-    ...(taxonomyNode && taxonomyNode.name !== listing.categoryLabel
-      ? [{ label: taxonomyNode.name, href: `/categorie/${listing.categorySlug}?sub=${taxonomyNode.slug}` }]
+    { label: displayCategoryLabel, href: `/categorie/${listing.categorySlug}` },
+    ...(displaySubCategoryLabel && displaySubCategoryLabel !== displayCategoryLabel
+      ? [{ label: displaySubCategoryLabel, href: `/categorie/${listing.categorySlug}?sub=${listing.subCategorySlug}` }]
       : []),
     { label: listing.title },
   ];
@@ -439,7 +462,7 @@ export const ListingDetailPage: React.FC = () => {
               <div className="space-y-2 flex-1">
                 {/* Badges strip: Category, Pro, Boosted */}
                 <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <Badge variant="primary" size="md">{listing.categoryLabel}</Badge>
+                  <Badge variant="primary" size="md">{displayCategoryLabel}</Badge>
                   {isProSeller(listing) && <Badge variant="pro" size="md">{t('listings.listingDetailPage.vendeurPro')}</Badge>}
                   {listing.isBoosted && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
@@ -784,7 +807,7 @@ export const ListingDetailPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg sm:text-xl font-black text-stone-900">
-                Annonces similaires dans {listing.categoryLabel}
+                Annonces similaires dans {displayCategoryLabel}
               </h2>
               <p className="text-xs text-stone-500">{t('listings.listingDetailPage.selectionDArticlesRecommandesSelon')}</p>
             </div>
@@ -961,13 +984,14 @@ export const ListingDetailPage: React.FC = () => {
           produce. From `sm` there is room for a single row again. */}
       <div
         ref={actionBarRef}
-        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        {/* One line on phones so the bar stays short; stacked once there is room. */}
-        <div className="flex items-baseline gap-2 min-w-0 sm:block sm:shrink-0">
-          <div className="text-micro text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
+        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        {/* The total is a full-width summary on phones, matching the action
+            hierarchy: amount first, choices second, primary CTA last. */}
+        <div className="flex items-baseline gap-3 min-w-0 sm:block sm:shrink-0">
+          <div className="text-sm text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
             {showsBuyerFee ? 'Total à payer' : 'Prix'}
           </div>
-          <div className="text-lg font-black text-stone-900 truncate tabular-nums leading-none">
+          <div className="text-2xl font-black text-stone-900 truncate tabular-nums leading-none">
             {listing.isFreeDonation
               ? 'Don gratuit'
               : formatPrice(showsBuyerFee ? listing.price + buyerFee : listing.price)}
@@ -1000,7 +1024,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="md"
-                  className="w-full sm:w-auto"
+                  className={`w-full sm:w-auto ${mobileActionClass('offer')}`}
                   onClick={() => setIsOfferModalOpen(true)}
                   leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 >
@@ -1011,7 +1035,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant={actions.canDirectPurchase ? 'outline' : 'primary'}
                   size="md"
-                  className="w-full sm:w-auto"
+                  className={`w-full sm:w-auto ${mobileActionClass('reservation')}`}
                   onClick={() => setIsReservationModalOpen(true)}
                   leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
                 >{t('listings.listingDetailPage.reserver')}</Button>
@@ -1020,7 +1044,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant={actions.primaryAction === 'contact' ? 'primary' : 'secondary'}
                   size="md"
-                  className="w-full sm:w-auto"
+                  className={`w-full sm:w-auto ${mobileActionClass('contact')}`}
                   onClick={() => setIsContactModalOpen(true)}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
                 >{t('listings.listingDetailPage.message')}</Button>
@@ -1029,7 +1053,7 @@ export const ListingDetailPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="md"
-                  className="w-full sm:w-auto"
+                  className={`w-full sm:w-auto ${mobileActionClass('direct_purchase')}`}
                   onClick={() => setIsDirectPurchaseModalOpen(true)}
                   leftIcon={<ShoppingBag className="w-3.5 h-3.5" />}
                 >

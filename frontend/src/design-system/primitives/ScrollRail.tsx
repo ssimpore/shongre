@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  RAIL_CONTROL_CLASS,
+  RAIL_CONTROL_ICON_CLASS,
+} from '../utils/controlMetrics';
 
 export interface ScrollRailProps {
   children: React.ReactNode;
@@ -115,9 +121,9 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(-1)}
           aria-label={t('common.scrollRailLeft', { label })}
-          className="absolute left-1 top-1/2 -translate-y-1/2 w-9 h-control-md rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-sticky"
+          className={`absolute left-1 top-1/2 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky`}
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
         </button>
       )}
 
@@ -126,9 +132,9 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(1)}
           aria-label={t('common.scrollRailRight', { label })}
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-control-md rounded-full bg-white/95 backdrop-blur-xs border border-border-base shadow-md hover:shadow-lg flex items-center justify-center text-stone-700 hover:text-primary hover:border-primary-border transition-all cursor-pointer active:scale-95 z-sticky"
+          className={`absolute right-1 top-1/2 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky`}
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
         </button>
       )}
     </div>

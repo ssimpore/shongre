@@ -1,6 +1,10 @@
 import React from 'react';
 import { createVariants } from '../utils/variants';
-import { CONTROL_RADIUS_CLASS } from '../utils/controlMetrics';
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_RADIUS_CLASS,
+} from '../utils/controlMetrics';
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
@@ -16,12 +20,14 @@ export const IconButton: React.FC<IconButtonProps> = ({
   className = '',
   ...props
 }) => {
+  const display = DISPLAY_SET_BY_CALLER.test(className) ? '' : 'inline-flex';
+
   return (
     <button
       type="button"
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={iconButtonClasses({ size, variant, className })}
+      className={`${display} ${iconButtonClasses({ size, variant, className })}`}
       {...props}
     >
       {children}
@@ -29,8 +35,11 @@ export const IconButton: React.FC<IconButtonProps> = ({
   );
 };
 
+const DISPLAY_SET_BY_CALLER =
+  /(?:^|\s)(?:hidden|block|inline|inline-block|flex|inline-flex|grid|inline-grid|contents)(?:\s|$)/;
+
 const iconButtonClasses = createVariants({
-  base: `inline-flex items-center justify-center ${CONTROL_RADIUS_CLASS} transition-colors duration-fast cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-95`,
+  base: `${CONTROL_MOTION_CLASS} items-center justify-center ${CONTROL_RADIUS_CLASS} cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed ${CONTROL_FOCUS_CLASS} active:scale-95`,
   variants: {
     size: {
       sm: 'w-control-sm h-control-sm p-1.5 text-xs',

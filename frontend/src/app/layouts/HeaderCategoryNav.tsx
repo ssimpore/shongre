@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { routes } from '../../configuration/routes';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../../design-system/utils/controlMetrics';
 import { useTranslation } from '../../i18n/I18nProvider';
 import type { MessageKey } from '../../i18n/messages.fr';
+import { getTaxonomyLabel, taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 
 interface HeaderCategoryNavProps {
   activeCategorySlug?: string;
@@ -62,9 +64,14 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       aria-label={t('nav.categoryNavigation')}
       className="no-scrollbar overflow-x-auto scroll-smooth"
     >
-      <ul className="flex min-h-12 w-max min-w-full items-stretch justify-start sm:justify-center">
+      <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
         {HEADER_NAV_ITEMS.map((item, index) => {
-          const label = t(item.labelKey);
+          const taxonomyNode = item.kind === 'category'
+            ? taxonomyService.getNodeBySlug(item.slug)
+            : undefined;
+          const label = taxonomyNode
+            ? getTaxonomyLabel(taxonomyNode, 'compact')
+            : t(item.labelKey);
           const isActive =
             item.kind === 'category'
               ? item.slug === activeCategorySlug
@@ -79,7 +86,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
               {index > 0 && (
                 <li
                   aria-hidden="true"
-                  className="flex items-center px-2.5 text-sm font-bold text-stone-700 md:px-3"
+                  className="flex items-center px-1.5 text-sm font-bold text-stone-700 md:px-2"
                 >
                   ·
                 </li>
@@ -96,12 +103,12 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                     onSelectCategory(item.slug);
                   }}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`relative inline-flex min-h-12 items-center whitespace-nowrap px-0.5 text-sm tracking-tight transition-colors duration-fast focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-primary md:text-base ${
+                  className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight md:px-2 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary/20 ${
                     isActive
-                      ? 'font-bold text-stone-900 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-stone-900'
+                      ? 'bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2'
                       : item.kind === 'link' && item.emphasis
-                        ? 'font-bold text-stone-900 hover:text-primary'
-                        : 'font-medium text-stone-800 hover:text-stone-950'
+                        ? 'font-bold text-stone-900 hover:bg-primary-light hover:text-primary'
+                        : 'font-medium text-stone-800 hover:bg-bg-subtle hover:text-primary'
                   }`}
                 >
                   {label}

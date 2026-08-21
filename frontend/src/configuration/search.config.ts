@@ -138,14 +138,16 @@ export function getSearchSuggestions(
       cat.subCategories.forEach((sub) => {
         const subNameLower = sub.name.toLowerCase();
         const subSlugLower = sub.slug.toLowerCase();
+        const subCompactLabel = getTaxonomyLabel(sub, 'compact');
+        const subCompactLower = subCompactLabel.toLowerCase();
 
-        if (subNameLower.includes(query) || subSlugLower.includes(query)) {
+        if (subNameLower.includes(query) || subSlugLower.includes(query) || subCompactLower.includes(query)) {
           matchedCategories.push({
             id: sub.id,
             name: sub.name,
             slug: sub.slug,
-            compactLabel: sub.name,
-            parentName: cat.name,
+            compactLabel: subCompactLabel,
+            parentName: getTaxonomyLabel(cat, 'compact'),
             parentSlug: cat.slug,
             isSubCategory: true,
             categoryObj: cat,
@@ -175,4 +177,3 @@ export function getSearchSuggestions(
     trending,
   };
 }
-

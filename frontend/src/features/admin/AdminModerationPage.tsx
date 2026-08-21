@@ -30,6 +30,7 @@ import { PromptModal } from '../../design-system/primitives/PromptModal';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { getListingCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
 
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation();
@@ -276,7 +277,7 @@ export const AdminModerationPage: React.FC = () => {
                         />
                         <div>
                           <div className="font-bold text-stone-900 line-clamp-1">{list.title}</div>
-                          <div className="text-xs text-stone-500">{list.categoryLabel} • {list.city}</div>
+                          <div className="text-xs text-stone-500">{getListingCategoryLabel(list)} • {list.city}</div>
                         </div>
                       </div>
                     </td>

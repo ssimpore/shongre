@@ -25,11 +25,17 @@ import { Badge } from '../../design-system/primitives/Badge';
 import { marketService } from '../../domains/market/market.service';
 import {  MarketStatus } from '../../domains/market/market.types';
 import {  plural } from '../../utilities/formatters';
-import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
+import { getTaxonomyLabel, taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { useToast } from '../../app/providers/ToastProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import {
+  normalizeRecentSearchesLimit,
+  RECENT_SEARCHES_LIMIT_DEFAULT,
+  RECENT_SEARCHES_LIMIT_MAX,
+  RECENT_SEARCHES_LIMIT_MIN,
+} from '../../domains/market/market.constants';
 
 type AdminTab = 'overview' | 'editor' | 'matrix';
 type DomainTab =
@@ -194,6 +200,9 @@ export const AdminMarketsPage: React.FC = () => {
     let parsedVal: any = editingValueInput;
     if (editingValueType === 'number') {
       parsedVal = Number(editingValueInput);
+      if (activeEditingPath === 'features.recentSearchesLimit') {
+        parsedVal = normalizeRecentSearchesLimit(parsedVal);
+      }
     } else if (editingValueType === 'boolean') {
       parsedVal = editingValueInput === 'true';
     }
@@ -652,7 +661,7 @@ export const AdminMarketsPage: React.FC = () => {
                           <div className="flex items-center gap-2.5">
                             <CategoryIcon iconName={rootCat.iconName || 'tag'} className="w-5 h-5 text-primary" />
                             <div>
-                              <div className="text-xs font-bold text-stone-900">{rootCat.name}</div>
+                              <div className="text-xs font-bold text-stone-900">{getTaxonomyLabel(rootCat, 'compact')}</div>
                               <div className="text-micro text-stone-500">Slug: {rootCat.slug}</div>
                             </div>
                           </div>
@@ -681,7 +690,7 @@ export const AdminMarketsPage: React.FC = () => {
                                   );
                                   setRefreshTrigger((prev) => prev + 1);
                                   toast.success(
-                                    `Catégorie [${rootCat.name}] ${!isRootEnabled ? 'ouverte' : 'désactivée'} sur ${selectedMarket.name}.`
+                                            `Catégorie [${getTaxonomyLabel(rootCat, 'compact')}] ${!isRootEnabled ? 'ouverte' : 'désactivée'} sur ${selectedMarket.name}.`
                                   );
                                 }}
                                 className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors cursor-pointer ${
@@ -714,7 +723,7 @@ export const AdminMarketsPage: React.FC = () => {
                                         : 'bg-stone-100 border-stone-200 text-stone-500 line-through'
                                     }`}
                                   >
-                                    <span className="truncate pr-1 font-medium">{sub.name}</span>
+                                    <span className="truncate pr-1 font-medium">{getTaxonomyLabel(sub, 'compact')}</span>
                                     {canConfigureMarkets && isRootEnabled && (
                                       <button
                                         type="button"
@@ -728,7 +737,7 @@ export const AdminMarketsPage: React.FC = () => {
                                           );
                                           setRefreshTrigger((prev) => prev + 1);
                                           toast.success(
-                                            `Sous-catégorie [${sub.name}] ${!isSubEnabled ? 'ouverte' : 'désactivée'} sur ${selectedMarket.name}.`
+                                            `Sous-catégorie [${getTaxonomyLabel(sub, 'compact')}] ${!isSubEnabled ? 'ouverte' : 'désactivée'} sur ${selectedMarket.name}.`
                                           );
                                         }}
                                         className="text-micro font-bold text-primary hover:underline ml-1"
@@ -832,6 +841,16 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow('features.aiAssistantEnabled', 'Assistant IA Gemini', 'Active la génération de descriptions et filtres IA', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
                 {renderSettingRow('features.aiSafetyAuditEnabled', 'Audit Sécurité & Anti-Fraude IA', 'Modération automatique préventive', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
                 {renderSettingRow('features.savedSearchesEnabled', 'Recherches Sauvegardées & Alertes', 'Notifications email/push sur nouveaux objets', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
+                {renderSettingRow(
+                  'features.recentSearchesLimit',
+                  'Recherches récentes affichées',
+                  `Nombre de recherches visibles sur l'accueil (de ${RECENT_SEARCHES_LIMIT_MIN} à ${RECENT_SEARCHES_LIMIT_MAX}, ${RECENT_SEARCHES_LIMIT_DEFAULT} par défaut)`,
+                  'number',
+                  (v) => {
+                    const limit = normalizeRecentSearchesLimit(v);
+                    return `${limit} recherche${limit > 1 ? 's' : ''}`;
+                  },
+                )}
                 {renderSettingRow('features.proStorefrontsEnabled', 'Boutiques Pros Personnalisées', 'Pages vitrines dédiées avec bannière', 'boolean', (v) => (v ? 'Activé' : 'Désactivé'))}
               </>
             )}
@@ -1067,7 +1086,7 @@ export const AdminMarketsPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">
+            <label htmlFor="admin-edit-override-value" className="text-xs font-bold text-stone-700 uppercase">
               Nouvelle Valeur pour {selectedMarket.name}
             </label>
 
@@ -1082,8 +1101,11 @@ export const AdminMarketsPage: React.FC = () => {
               </select>
             ) : (
               <input
+                id="admin-edit-override-value"
                 type={editingValueType === 'number' ? 'number' : 'text'}
-                step={editingValueType === 'number' ? 'any' : undefined}
+                min={editingValueType === 'number' && activeEditingPath === 'features.recentSearchesLimit' ? RECENT_SEARCHES_LIMIT_MIN : undefined}
+                max={editingValueType === 'number' && activeEditingPath === 'features.recentSearchesLimit' ? RECENT_SEARCHES_LIMIT_MAX : undefined}
+                step={editingValueType === 'number' && activeEditingPath === 'features.recentSearchesLimit' ? 1 : undefined}
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
                 className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"

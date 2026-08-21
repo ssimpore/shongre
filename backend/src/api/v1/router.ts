@@ -14,6 +14,7 @@ import {
   reviewsService,
   workspaceService,
   adminService,
+  trendingService,
 } from '../../modules/index.js';
 import { AppError } from '../../shared/errors/app-error.js';
 import { logger } from '../../infrastructure/logging/logger.js';
@@ -29,6 +30,7 @@ import {
 import { extractBearerToken } from '../../shared/auth/tokens.js';
 import { verifyStripeSignature } from '../../integrations/stripe/webhook-signature.js';
 import { config } from '../../app/config/index.js';
+import type { TrendingAdminConfig, TrendingTopicOverride } from '../../modules/trending/trending.types.js';
 
 /**
  * Every route declares who may call it.
@@ -128,6 +130,12 @@ export class ApiV1Router {
     });
     this.addRoute('GET', '/listings/:id', PUBLIC, async ({ params }) => listingsService.getListingById(params.id));
     this.addRoute('POST', '/listings/search', PUBLIC, async ({ body }) => listingsService.searchListings(body || {}));
+    this.addRoute('GET', '/home/trending', PUBLIC, async ({ query }) => trendingService.getSection({
+      marketCode: query.get('market') || query.get('country') || 'FR',
+      region: query.get('region') || undefined,
+      city: query.get('city') || undefined,
+      limit: query.get('limit') ? Number(query.get('limit')) : undefined,
+    }));
     this.addRoute('POST', '/listings/drafts', permission('listing.create'), async ({ principal }) =>
       listingsService.createListingDraft(principal.userId)
     );
@@ -374,6 +382,19 @@ export class ApiV1Router {
       return { success: true };
     });
     this.addRoute('GET', '/admin/audit-logs', permission('admin.access'), async () => adminService.getAuditLogs());
+    this.addRoute('GET', '/admin/trending/config', permission('admin.access'), async ({ query }) =>
+      trendingService.getConfig(query.get('market') || query.get('country') || 'FR')
+    );
+    this.addRoute('PUT', '/admin/trending/config', permission('admin.access'), async ({ body, query }) => {
+      const marketCode = query.get('market') || body?.marketCode || 'FR';
+      return trendingService.saveConfig(marketCode, sanitizeTrendingConfigPatch(body));
+    });
+    this.addRoute('PUT', '/admin/trending/overrides/:topicKey', permission('admin.access'), async ({ params, body, query }) =>
+      trendingService.upsertOverride(query.get('market') || body?.marketCode || 'FR', {
+        ...sanitizeTrendingOverride(body),
+        topicKey: params.topicKey,
+      })
+    );
 
     // --------------------------------------------------------------------------
     // WEBHOOKS
@@ -612,6 +633,51 @@ function sanitizeProfileUpdate(body: any, _principal: Principal): Record<string,
     if (body[key] !== undefined) clean[key] = body[key];
   }
   return clean;
+}
+
+function sanitizeTrendingConfigPatch(body: any): Partial<TrendingAdminConfig> {
+  if (!body || typeof body !== 'object') return {};
+  const allowed = [
+    'enabled',
+    'maxTopics',
+    'minTopics',
+    'maxTopicsPerParentCategory',
+    'minimumActivity',
+    'displayPeriodDays',
+    'cacheTtlMinutes',
+    'personalizationWeight',
+    'title',
+    'subtitle',
+    'mobileVisible',
+    'desktopVisible',
+    'excludedCategories',
+    'excludedTopics',
+    'weights',
+  ] as const;
+  const clean: Partial<TrendingAdminConfig> = {};
+  for (const key of allowed) {
+    if (body[key] !== undefined) (clean as Record<string, unknown>)[key] = body[key];
+  }
+  return clean;
+}
+
+function sanitizeTrendingOverride(body: any): TrendingTopicOverride {
+  if (!body || typeof body !== 'object') return { topicKey: '' };
+  return {
+    topicKey: '',
+    topicType: body.topicType,
+    isPinned: Boolean(body.isPinned),
+    isHidden: Boolean(body.isHidden),
+    boostScore: typeof body.boostScore === 'number' ? Math.min(1, Math.max(0, body.boostScore)) : 0,
+    customTitle: typeof body.customTitle === 'string' ? body.customTitle : undefined,
+    customSubtitle: typeof body.customSubtitle === 'string' ? body.customSubtitle : undefined,
+    customImage: body.customImage,
+    startsAt: typeof body.startsAt === 'string' ? body.startsAt : undefined,
+    endsAt: typeof body.endsAt === 'string' ? body.endsAt : undefined,
+    sortOrder: typeof body.sortOrder === 'number' ? body.sortOrder : undefined,
+    region: typeof body.region === 'string' ? body.region : undefined,
+    city: typeof body.city === 'string' ? body.city : undefined,
+  };
 }
 
 function hasStaffOverride(principal: Principal, override: Permission): boolean {

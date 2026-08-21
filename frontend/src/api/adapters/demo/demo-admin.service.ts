@@ -4,6 +4,8 @@ import { listingRepository } from '../../../repositories/listing.repository';
 import { transactionRepository } from '../../../repositories/transaction.repository';
 import { UserProfile, AccountStatus } from '../../../types';
 import { simulateNetworkDelay } from '../../client/api-client.config';
+import { getTrendingAdminConfig, updateTrendingAdminConfig, upsertTrendingOverride } from '../../../domains/trending/trending.store';
+import type { TrendingAdminConfig, TrendingTopicOverride } from '../../../domains/trending/trending.types';
 
 export class DemoAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -79,6 +81,21 @@ export class DemoAdminService implements AdminServiceContract {
         target: 'Listing #l12',
       },
     ];
+  }
+
+  async getTrendingConfig(marketCode = 'FR'): Promise<TrendingAdminConfig> {
+    await simulateNetworkDelay();
+    return getTrendingAdminConfig(marketCode);
+  }
+
+  async updateTrendingConfig(updates: Partial<TrendingAdminConfig>, marketCode = 'FR'): Promise<TrendingAdminConfig> {
+    await simulateNetworkDelay();
+    return updateTrendingAdminConfig(updates, marketCode);
+  }
+
+  async upsertTrendingOverride(override: TrendingTopicOverride): Promise<TrendingAdminConfig> {
+    await simulateNetworkDelay();
+    return upsertTrendingOverride(override);
   }
 }
 

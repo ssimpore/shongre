@@ -220,7 +220,7 @@ export const ReservationCheckoutModal: React.FC<ReservationCheckoutModalProps> =
                       <p className="text-xs font-medium text-stone-500 mt-0.5">{t('transactions.reservationCheckoutModal.rendezVousDirectAvecValidation')}</p>
                     </div>
                   </div>
-                  <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">0,00 €</span>
+                  <span className="font-black text-stone-900 shrink-0 whitespace-nowrap">Gratuit</span>
                 </div>
 
                 {deliveryMethod === 'hand_delivery' && (

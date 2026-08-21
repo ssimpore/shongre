@@ -154,11 +154,14 @@ export const CategoriesPage: React.FC = () => {
     return TAXONOMY.filter((cat) => {
       const matchCat =
         cat.name.toLowerCase().includes(q) ||
+        getTaxonomyLabel(cat, 'compact').toLowerCase().includes(q) ||
         cat.slug.toLowerCase().includes(q) ||
         cat.description?.toLowerCase().includes(q);
 
       const matchSub = cat.subCategories?.some((sub) =>
-        sub.name.toLowerCase().includes(q) || sub.slug.toLowerCase().includes(q)
+        sub.name.toLowerCase().includes(q) ||
+        getTaxonomyLabel(sub, 'compact').toLowerCase().includes(q) ||
+        sub.slug.toLowerCase().includes(q)
       );
 
       return matchCat || matchSub;
@@ -268,7 +271,7 @@ export const CategoriesPage: React.FC = () => {
                         to={`/categorie/${cat.slug}`}
                         className="text-lg font-black text-stone-900 group-hover:text-primary transition-colors block"
                       >
-                        {cat.name}
+                        {getTaxonomyLabel(cat, 'compact')}
                       </Link>
                                             {/* stone-400 measured 2.44:1 on the `bg-base` cream surface — an AA
                         failure (WCAG 1.4.3) on text that carries the category
@@ -287,9 +290,9 @@ export const CategoriesPage: React.FC = () => {
                             key={sub.id}
                             to={`/categorie/${cat.slug}?subCategory=${sub.slug}`}
                             className="inline-flex items-center min-h-6 text-micro font-medium text-stone-600 bg-white/95 hover:bg-white hover:text-primary hover:border-primary/40 border border-stone-200/80 px-2 py-1 rounded-lg shadow-2xs transition-all active:scale-95 truncate max-w-[170px]"
-                            title={sub.name}
+                            title={getTaxonomyLabel(sub, 'compact')}
                           >
-                            {sub.shortLabel || sub.name}
+                            {getTaxonomyLabel(sub, 'compact')}
                           </Link>
                         ))}
                       </div>

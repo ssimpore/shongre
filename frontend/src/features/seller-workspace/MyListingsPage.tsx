@@ -31,6 +31,7 @@ import { BulkImportModal } from './components/BulkImportModal';
 import { usePublishCta } from '../../security/usePublishCta';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { getListingCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
 
 type BoostPack = 'urgent' | 'highlight' | 'top_of_list' | 'gallery_boost' | 'spotlight';
 
@@ -311,7 +312,7 @@ export const MyListingsPage: React.FC = () => {
                         >
                           {listing.title}
                         </Link>
-                        <span className="text-xs text-stone-500 block truncate">{listing.categoryLabel}</span>
+                        <span className="text-xs text-stone-500 block truncate">{getListingCategoryLabel(listing)}</span>
                       </div>
                     </div>
                   ),

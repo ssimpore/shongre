@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { LocationSelection } from '../../types';
 import { Market, MarketConfiguration, MarketCity } from '../../domains/market/market.types';
 import { marketService } from '../../domains/market/market.service';
-import { storageService } from '../../services/storage.service';
+import { MARKETS_CHANGED_EVENT, MARKETS_STORAGE_KEY, storageService } from '../../services/storage.service';
 import { formatPrice as formatPriceUtil } from '../../utilities/formatters';
 import { taxonomyService } from '../../domains/taxonomy/taxonomy.service';
 import { refreshTaxonomyProjection } from '../../domains/taxonomy/taxonomy.data';
@@ -36,18 +36,38 @@ export const MarketLocationProvider: React.FC<{ children: React.ReactNode }> = (
   const [activeMarketCode, setActiveMarketCode] = useState<string>(() =>
     storageService.getActiveMarketCode() || 'FR'
   );
+  const [marketDataVersion, setMarketDataVersion] = useState(0);
+
+  useEffect(() => {
+    const refreshMarketConfiguration = () => {
+      setMarketDataVersion((version) => version + 1);
+    };
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === null || event.key === MARKETS_STORAGE_KEY) {
+        refreshMarketConfiguration();
+      }
+    };
+
+    window.addEventListener(MARKETS_CHANGED_EVENT, refreshMarketConfiguration);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener(MARKETS_CHANGED_EVENT, refreshMarketConfiguration);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const activeMarket = useMemo<Market>(() => {
     return marketService.getMarket(activeMarketCode);
-  }, [activeMarketCode]);
+  }, [activeMarketCode, marketDataVersion]);
 
   const effectiveConfig = useMemo<MarketConfiguration>(() => {
     return marketService.getEffectiveConfig(activeMarket.code);
-  }, [activeMarket]);
+  }, [activeMarket, marketDataVersion]);
 
   const availableMarkets = useMemo<Market[]>(() => {
     return marketService.getMarkets().filter((m) => m.status === 'active' || m.status === 'coming_soon');
-  }, []);
+  }, [marketDataVersion]);
 
   const [location, setLocationState] = useState<LocationSelection>(() => {
     const saved = storageService.getLocationPreference();

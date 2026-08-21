@@ -6,6 +6,7 @@ import { UserProfile } from '../../types';
 import { Avatar } from './Badge';
 import { Badge } from './Badge';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export interface SellerCardProps {
   user: UserProfile;
@@ -25,7 +26,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
   const profileUrl = isPro && user.storeSlug ? `/boutique/${user.storeSlug}` : `/profil/${user.slug || user.id}`;
 
   return (
-    <div className={`bg-white rounded-xl border border-border-base p-4 sm:p-5 ${className}`}>
+    <div className={`bg-bg-surface rounded-card border border-border-base p-4 sm:p-5 ${className}`}>
       <div className="flex items-start gap-3.5">
         <Link to={profileUrl} className="shrink-0 group">
           <Avatar
@@ -34,14 +35,14 @@ export const SellerCard: React.FC<SellerCardProps> = ({
             size="lg"
             isVerified={user.isVerified}
             isPro={isPro}
-            className="group-hover:ring-2 group-hover:ring-primary transition-all"
+            className={`group-hover:ring-2 group-hover:ring-primary ${CONTROL_MOTION_CLASS}`}
           />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link
               to={profileUrl}
-              className="text-sm sm:text-base font-bold text-stone-900 hover:text-primary transition-colors truncate"
+              className={`text-sm sm:text-base font-bold text-stone-900 hover:text-primary ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} truncate`}
             >
               {user.companyName || user.name}
             </Link>

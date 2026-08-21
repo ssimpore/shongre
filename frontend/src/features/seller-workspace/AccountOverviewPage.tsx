@@ -1,4 +1,4 @@
-import { isProSeller } from '../../domains/user/user.domain';
+import { isProSeller, showsVerifiedBadge } from '../../domains/user/user.domain';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -59,7 +59,7 @@ export const AccountOverviewPage: React.FC = () => {
     noIndex: true,
   });
 
-  const { currentUser, isEmailVerified, isPhoneVerified, refreshUser, updateProfile } = useAuth();
+  const { currentUser, platformRole, isEmailVerified, isPhoneVerified, refreshUser, updateProfile } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const publishCta = usePublishCta();
@@ -67,6 +67,11 @@ export const AccountOverviewPage: React.FC = () => {
   // A verified flag with no number on file is not a verified phone — showing the
   // badge on its own contradicts the "Non renseigné" value rendered right below it.
   const hasVerifiedPhone = isPhoneVerified && Boolean(currentUser?.phone);
+  const isAdmin = platformRole === 'admin' || platformRole === 'super_admin';
+  const adminRoleLabel = platformRole === 'super_admin'
+    ? t('shell.accountLayout.roleSuperAdministrateur')
+    : t('shell.accountLayout.roleAdministrateur');
+  const accountName = (currentUser?.companyName || currentUser?.name || 'Mon Compte').replace(/\s+\([^)]*\)\s*$/, '');
 
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showMfaModal, setShowMfaModal] = useState(false);
@@ -142,43 +147,81 @@ export const AccountOverviewPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-stone-900 to-stone-800 rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="min-w-0 w-full sm:w-auto">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h1 className="text-lg font-bold">
-              <span className="text-sm font-normal text-stone-300">Bonjour, </span>
-              {currentUser?.name}
-            </h1>
-            {isProSeller(currentUser) && <Badge variant="pro" size="sm">{t('sellerworkspace.accountOverviewPage.comptePro')}</Badge>}
-            {currentUser?.isVerified && <Badge variant="verified" size="sm" icon>{t('sellerworkspace.accountOverviewPage.verifie')}</Badge>}
+      <div
+        data-account-hero
+        className="relative isolate overflow-hidden rounded-card border border-white/10 bg-stone-900 p-5 text-white shadow-sm sm:p-6 lg:p-7"
+      >
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute -bottom-24 right-1/3 h-40 w-40 rounded-full bg-primary-on-dark/10 blur-3xl" aria-hidden="true" />
+
+        <div className="relative grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0 space-y-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-sm font-medium text-stone-300">Bonjour,</span>
+              <h1 className="min-w-0 text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+                {accountName}
+              </h1>
+              {isAdmin && (
+                <span
+                  role="img"
+                  aria-label={adminRoleLabel}
+                  title={adminRoleLabel}
+                  className="inline-flex h-control-sm w-control-sm shrink-0 items-center justify-center rounded-pill border border-primary-on-dark/40 bg-primary-on-dark/10 text-primary-on-dark"
+                >
+                  <ShieldCheck className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {isProSeller(currentUser) && (
+                <Badge variant="pro" size="md" icon>
+                  {t('shell.accountLayout.proBadge')}
+                </Badge>
+              )}
+              {!isAdmin && showsVerifiedBadge(currentUser) && (
+                <Badge variant="verified" size="md" icon>
+                  {t('sellerworkspace.accountOverviewPage.verifie')}
+                </Badge>
+              )}
+            </div>
+
+            <p className="max-w-2xl text-sm leading-relaxed text-stone-300">
+              {t('sellerworkspace.accountOverviewPage.gerezVosAnnoncesVosVentes')}
+            </p>
           </div>
-          <p className="text-xs text-stone-300">{t('sellerworkspace.accountOverviewPage.gerezVosAnnoncesVosVentes')}</p>
-        </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <Link
-            to={
-              isProSeller(currentUser)
-                ? `/boutique/${currentUser.storeSlug || currentUser.slug || currentUser.id}`
-                : `/profil/${currentUser?.slug || currentUser?.id}`
-            }
-            className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shrink-0 border border-white/20"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            {isProSeller(currentUser) ? 'Voir ma boutique publique' : 'Voir mon profil public'}
-          </Link>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row xl:justify-end">
+            <Button
+              to={
+                isProSeller(currentUser)
+                  ? `/boutique/${currentUser.storeSlug || currentUser.slug || currentUser.id}`
+                  : `/profil/${currentUser?.slug || currentUser?.id}`
+              }
+              variant="outline"
+              size="md"
+              leftIcon={<ShieldCheck className="h-icon-md w-icon-md" aria-hidden="true" />}
+              className="w-full border-white/30 bg-white/5 text-white hover:border-white/60 hover:bg-white/10 focus-visible:outline-white sm:w-auto"
+            >
+              {isProSeller(currentUser) ? 'Voir ma boutique publique' : 'Voir mon profil public'}
+            </Button>
 
-          <Link
-            to={publishCta.to}
-            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shrink-0 shadow-xs"
-          >
-            <PlusCircle className="w-4 h-4" />{t('sellerworkspace.accountOverviewPage.deposerUneAnnonce')}</Link>
+            <Button
+              to={publishCta.to}
+              variant="primary"
+              size="md"
+              leftIcon={<PlusCircle className="h-icon-md w-icon-md" aria-hidden="true" />}
+              className="w-full shadow-md shadow-primary/20 sm:w-auto"
+            >
+              {t('sellerworkspace.accountOverviewPage.deposerUneAnnonce')}
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Trust & Security Hub */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-success" />
             <h2 className="font-extrabold text-sm sm:text-base text-stone-900">{t('sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu')}</h2>
@@ -191,7 +234,7 @@ export const AccountOverviewPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
           {/* Email Verification */}
-          <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex flex-col justify-between">
+          <div className="flex flex-col justify-between rounded-control border border-border-base bg-bg-subtle/60 p-4">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center font-bold">
@@ -212,7 +255,7 @@ export const AccountOverviewPage: React.FC = () => {
                 {currentUser?.email}
               </p>
             </div>
-            <div className="mt-3 pt-2 border-t border-stone-200/60">
+            <div className="mt-3 border-t border-border-subtle pt-2">
               {isEmailVerified ? (
                 <span className="text-micro text-stone-500 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-success" /> Notifications actives
@@ -229,7 +272,7 @@ export const AccountOverviewPage: React.FC = () => {
           </div>
 
           {/* Phone Verification */}
-          <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex flex-col justify-between">
+          <div className="flex flex-col justify-between rounded-control border border-border-base bg-bg-subtle/60 p-4">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold">
@@ -248,7 +291,7 @@ export const AccountOverviewPage: React.FC = () => {
                 {currentUser?.phone || 'Non renseigné'}
               </p>
             </div>
-            <div className="mt-3 pt-2 border-t border-stone-200/60">
+            <div className="mt-3 border-t border-border-subtle pt-2">
               <button
                 type="button"
                 onClick={() => setShowPhoneModal(true)}
@@ -260,7 +303,7 @@ export const AccountOverviewPage: React.FC = () => {
           </div>
 
           {/* MFA 2FA */}
-          <div className="p-3.5 rounded-xl border border-stone-200 bg-stone-50/50 flex flex-col justify-between">
+          <div className="flex flex-col justify-between rounded-control border border-border-base bg-bg-subtle/60 p-4">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
@@ -277,7 +320,7 @@ export const AccountOverviewPage: React.FC = () => {
               <h3 className="text-xs font-bold text-stone-900">Double Authentification</h3>
               <p className="text-micro text-stone-600 mt-0.5">{t('sellerworkspace.accountOverviewPage.protectionRenforceeGoogleMicrosoftAuth')}</p>
             </div>
-            <div className="mt-3 pt-2 border-t border-stone-200/60">
+            <div className="mt-3 border-t border-border-subtle pt-2">
               <button
                 type="button"
                 onClick={() => setShowMfaModal(true)}
@@ -294,7 +337,7 @@ export const AccountOverviewPage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Link
           to="/compte/annonces"
-          className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs block"
+          className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-2">
             <List className="w-4 h-4" />
@@ -305,7 +348,7 @@ export const AccountOverviewPage: React.FC = () => {
 
         <Link
           to="/compte/messages"
-          className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs block"
+          className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center mb-2">
             <MessageSquare className="w-4 h-4" />
@@ -316,7 +359,7 @@ export const AccountOverviewPage: React.FC = () => {
 
         <Link
           to="/compte/favoris"
-          className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs block"
+          className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center mb-2">
             <Heart className="w-4 h-4" />
@@ -332,7 +375,7 @@ export const AccountOverviewPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowBillingModal(true)}
-          className="bg-white p-4 rounded-xl border border-border-base hover:border-primary transition-all shadow-xs text-left cursor-pointer group flex flex-col"
+          className="motion-surface group flex cursor-pointer flex-col rounded-control border border-border-base bg-bg-surface p-4 text-left shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <FileText className="w-4 h-4" />
@@ -340,7 +383,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="mt-auto">
             <div className="text-sm font-bold text-stone-900 flex items-center gap-1">
               Factures
-              <ChevronRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight className="motion-interactive w-3.5 h-3.5 text-stone-400 group-hover:translate-x-0.5 group-hover:text-primary" />
             </div>
             <div className="text-xs font-semibold text-stone-500 mt-0.5">{t('sellerworkspace.accountOverviewPage.recusJustificatifs')}</div>
           </div>
@@ -348,7 +391,7 @@ export const AccountOverviewPage: React.FC = () => {
       </div>
 
       {/* Profile details & Edit mode */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs">
+      <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm sm:text-base font-bold text-stone-900">{t('sellerworkspace.accountOverviewPage.coordonneesInformationsDuProfil')}</h2>
@@ -365,7 +408,7 @@ export const AccountOverviewPage: React.FC = () => {
         </div>
 
         {isEditingProfile ? (
-          <form onSubmit={handleSaveProfile} className="space-y-4 pt-2 border-t border-stone-100">
+          <form onSubmit={handleSaveProfile} className="space-y-4 border-t border-border-subtle pt-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-stone-800 mb-1">{t('sellerworkspace.accountOverviewPage.nomEtPrenomPseudonyme')}</label>
@@ -374,7 +417,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-control text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -385,7 +428,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="06 12 34 56 78"
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-control text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -400,7 +443,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Paris"
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-control text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -413,7 +456,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   placeholder="75011"
-                  className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-control text-xs font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -425,7 +468,7 @@ export const AccountOverviewPage: React.FC = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder={t('sellerworkspace.accountOverviewPage.presentezVousBrievementAuxAutres')}
-                className="w-full px-3.5 py-2 bg-stone-50 border border-stone-200 rounded-control text-xs text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-control-touch"
+                className="min-h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -450,7 +493,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
               <span className="text-stone-500 block mb-0.5 font-medium">Nom / Pseudo</span>
-              <span className="font-bold text-stone-900">{currentUser?.name}</span>
+              <span className="font-bold text-stone-900">{accountName}</span>
             </div>
             <div>
               <span className="text-stone-500 block mb-0.5 font-medium">Email</span>
@@ -472,7 +515,7 @@ export const AccountOverviewPage: React.FC = () => {
       </div>
 
       {/* My Active Listings Widget */}
-      <div className="bg-white rounded-2xl border border-border-base p-5 shadow-xs">
+      <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm sm:text-base font-bold text-stone-900">
             Mes dernières annonces ({myListings.length})
@@ -530,7 +573,7 @@ export const AccountOverviewPage: React.FC = () => {
 
       {/* Pro solutions callout */}
       {!isProSeller(currentUser) && (
-        <div className="bg-primary-light border border-primary-border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col items-center justify-between gap-4 rounded-card border border-primary-border bg-primary-light p-5 sm:flex-row">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
               <Sparkles className="w-4 h-4" />{t('sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure')}</div>

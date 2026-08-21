@@ -35,7 +35,7 @@ export const FocusedLayout: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 h-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 h-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Retour</span>
@@ -46,7 +46,7 @@ export const FocusedLayout: React.FC = () => {
             className="flex items-center gap-2 select-none min-w-0"
             aria-label="Shongre, accueil"
           >
-            <span className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center font-black text-base shrink-0">
+            <span className="w-7 h-7 rounded-control bg-primary text-white flex items-center justify-center font-black text-base shrink-0">
               S
             </span>
             <span className="text-base font-extrabold tracking-tight uppercase text-stone-900 leading-none truncate">
@@ -59,7 +59,7 @@ export const FocusedLayout: React.FC = () => {
           <Link
             to={routes.home()}
             aria-label={t('shell.focusedLayout.quitterEtRevenirAL')}
-            className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-stone-600 hover:text-stone-950 hover:bg-bg-subtle transition-colors"
+            className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-stone-600 hover:text-stone-950 hover:bg-bg-subtle motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <X className="w-5 h-5" />
           </Link>

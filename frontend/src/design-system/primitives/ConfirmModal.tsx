@@ -56,8 +56,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
       <div className="space-y-6">
-        <div className={`p-4 rounded-2xl border flex items-start gap-4 shadow-2xs ${iconConfig.bgClass}`}>
-          <div className="shrink-0 mt-0.5 bg-white p-1.5 rounded-xl shadow-xs border border-stone-100">{iconConfig.icon}</div>
+        <div className={`p-4 rounded-card border flex items-start gap-4 shadow-2xs ${iconConfig.bgClass}`}>
+          <div className="shrink-0 mt-0.5 bg-bg-surface p-1.5 rounded-control shadow-xs border border-border-subtle">{iconConfig.icon}</div>
           <p className="text-sm text-stone-800 leading-relaxed font-medium">{message}</p>
         </div>
 

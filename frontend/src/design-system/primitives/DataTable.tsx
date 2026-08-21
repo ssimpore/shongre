@@ -108,7 +108,7 @@ export function DataTable<T>({
         </thead>
         <tbody className="divide-y divide-border-subtle">
           {rows.map((row) => (
-            <tr key={getRowKey(row)} className="hover:bg-bg-base transition-colors">
+            <tr key={getRowKey(row)} className="hover:bg-bg-base motion-interactive">
               {tableColumns.map((col) => (
                 <td
                   key={col.id}

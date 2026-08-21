@@ -8,6 +8,7 @@ import {
   
 } from './market.types';
 import { INITIAL_MARKETS } from './market.defaults';
+import { normalizeRecentSearchesLimit } from './market.constants';
 import {
   marketResolver,
   setNestedValue,
@@ -129,9 +130,12 @@ export class MarketService {
     }
 
     const market = markets[targetIdx];
+    const valueToPersist = path === 'features.recentSearchesLimit'
+      ? normalizeRecentSearchesLimit(value)
+      : value;
     const prevValue = getNestedValue(market.overrides, path);
     const updatedOverrides = { ...market.overrides };
-    setNestedValue(updatedOverrides, path, value);
+    setNestedValue(updatedOverrides, path, valueToPersist);
 
     const updatedMarket: Market = {
       ...market,
@@ -149,9 +153,9 @@ export class MarketService {
       actorName: actor?.name || 'Administrateur',
       actorRole: (actor?.role as any) || 'admin',
       action: 'market_scope_updated',
-      details: `Surcharge configurée pour le marché [${market.name}] sur la clé [${path}] : ${JSON.stringify(value)}`,
+      details: `Surcharge configurée pour le marché [${market.name}] sur la clé [${path}] : ${JSON.stringify(valueToPersist)}`,
       previousValue: prevValue,
-      newValue: value,
+      newValue: valueToPersist,
       market: market.code,
     });
 

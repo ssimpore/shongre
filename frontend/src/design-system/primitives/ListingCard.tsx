@@ -11,6 +11,8 @@ import { Image } from './Image';
 import { IMAGE_SIZES } from './responsiveImage';
 import { useFavorites } from '../../app/providers/FavoritesProvider';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
+import { getListingCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
 
 export interface ListingCardProps {
   listing: Listing;
@@ -38,22 +40,23 @@ export const ListingCard: React.FC<ListingCardProps> = ({
 
 
   const hasDelivery = listing.deliveryOptions.some((d) => d.available && d.type !== 'hand_delivery');
+  const displayCategoryLabel = getListingCategoryLabel(listing);
 
   
   if (variant === 'compact') {
     return (
       <article
-        className={`group bg-white rounded-2xl border border-border-base hover:border-primary/40 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-col p-2 ${
+        className={`group bg-bg-surface rounded-card border border-border-base hover:border-primary/40 hover:shadow-md focus-within:ring-2 focus-within:ring-primary/30 focus-within:ring-offset-2 ${CONTROL_MOTION_CLASS} overflow-hidden flex flex-col p-2 ${
           listing.isBoosted ? 'ring-1 ring-primary/30' : ''
         } ${className}`}
       >
-        <div className="relative aspect-square w-full bg-stone-100 overflow-hidden rounded-xl">
-          <Link to={`/annonce/${listing.id}`} className="block w-full h-full">
+        <div className="relative aspect-square w-full bg-bg-muted overflow-hidden rounded-control">
+          <Link to={`/annonce/${listing.id}`} className={`block w-full h-full ${CONTROL_FOCUS_CLASS}`}>
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
               sizes={IMAGE_SIZES.compact}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
+              className="w-full h-full object-cover group-hover:scale-105 motion-surface"
             />
           </Link>
           {/* Tags */}
@@ -66,8 +69,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           </div>
         </div>
         <div className="px-1 pt-2 pb-1 flex-1 flex flex-col justify-between gap-1">
-          <Link to={`/annonce/${listing.id}`} className="block">
-            <h3 title={listing.title} className="text-xs font-bold text-stone-900 line-clamp-1 group-hover:text-primary transition-colors">
+          <Link to={`/annonce/${listing.id}`} className={`block ${CONTROL_FOCUS_CLASS}`}>
+            <h3 title={listing.title} className={`text-xs font-bold text-stone-900 line-clamp-1 group-hover:text-primary ${CONTROL_MOTION_CLASS}`}>
               {listing.title}
             </h3>
           </Link>
@@ -108,19 +111,19 @@ export const ListingCard: React.FC<ListingCardProps> = ({
            not have to pay. From `sm` the grid moves to three and four columns
            and that relationship stops meaning anything, so the row goes back to
            sizing from its content. */
-        className={`group relative bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-md transition-all duration-normal overflow-hidden flex flex-row gap-3 p-2 aspect-[2/1] sm:aspect-auto ${
+        className={`group relative bg-bg-surface rounded-card border border-border-base hover:border-border-hover hover:shadow-md focus-within:ring-2 focus-within:ring-primary/30 focus-within:ring-offset-2 ${CONTROL_MOTION_CLASS} overflow-hidden flex flex-row gap-3 p-2 aspect-[2/1] sm:aspect-auto ${
           listing.isBoosted ? 'ring-2 ring-primary/20' : ''
         } ${className}`}
       >
         <Link
           to={`/annonce/${listing.id}`}
-          className="relative h-full w-auto aspect-square sm:h-auto sm:w-32 rounded-xl overflow-hidden shrink-0 bg-stone-100 block"
+          className={`relative h-full w-auto aspect-square sm:h-auto sm:w-32 rounded-control overflow-hidden shrink-0 bg-bg-muted block ${CONTROL_FOCUS_CLASS}`}
         >
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
             sizes={IMAGE_SIZES.compact}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-normal"
+            className="w-full h-full object-cover group-hover:scale-105 motion-surface"
           />
           {listing.isBoosted && (
             <Badge variant="featured" size="sm" icon className="absolute top-1.5 left-1.5 px-1.5">
@@ -137,12 +140,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <div className="min-w-0">
             {/* `pr-8` keeps both lines clear of the favourite control above. */}
             <span className="block text-micro font-bold uppercase tracking-wider text-primary truncate pr-8 mb-0.5">
-              {listing.categoryLabel}
+              {displayCategoryLabel}
             </span>
-            <Link to={`/annonce/${listing.id}`} className="block">
+            <Link to={`/annonce/${listing.id}`} className={`block ${CONTROL_FOCUS_CLASS}`}>
               <h3
                 title={listing.title}
-                className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2 leading-snug pr-8 group-hover:text-primary transition-colors"
+                className={`text-xs sm:text-sm font-bold text-stone-900 line-clamp-2 leading-snug pr-8 group-hover:text-primary ${CONTROL_MOTION_CLASS}`}
               >
                 {listing.title}
               </h3>
@@ -197,17 +200,17 @@ export const ListingCard: React.FC<ListingCardProps> = ({
        footer to the bottom edge — so the footers line up across the row too,
        not just the outlines. */
     <article
-      className={`group h-full bg-white rounded-card border border-stone-200 hover:border-stone-300 hover:shadow-xl transition-all duration-normal overflow-hidden flex flex-col p-2 ${
+      className={`group h-full bg-bg-surface rounded-card border border-border-base hover:border-border-hover hover:shadow-lg focus-within:ring-2 focus-within:ring-primary/30 focus-within:ring-offset-2 ${CONTROL_MOTION_CLASS} overflow-hidden flex flex-col p-2 ${
         listing.isBoosted ? 'ring-2 ring-primary/20' : ''
       } ${className}`}
     >
-      <div className="relative aspect-[4/3] w-full bg-stone-100 overflow-hidden rounded-2xl shrink-0">
-        <Link to={`/annonce/${listing.id}`} className="block w-full h-full">
+      <div className="relative aspect-[4/3] w-full bg-bg-muted overflow-hidden rounded-control shrink-0">
+        <Link to={`/annonce/${listing.id}`} className={`block w-full h-full ${CONTROL_FOCUS_CLASS}`}>
           <Image
             src={listing.coverImageUrl}
             alt={listing.title}
             sizes={IMAGE_SIZES.card}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
+            className="w-full h-full object-cover group-hover:scale-105 motion-surface"
           />
         </Link>
 
@@ -237,8 +240,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
 
         {/* Photos count */}
         {listing.photos.length > 1 && (
-          <span className="absolute bottom-2 left-2 bg-stone-900/70 text-white text-micro px-2 py-1 rounded backdrop-blur-xs flex items-center gap-1 pointer-events-none">
-            <Camera className="w-2.5 h-2.5" />
+          <span
+            aria-label={t('ui.listingCard.nombrePhotos', { count: listing.photos.length })}
+            className="absolute bottom-2 left-2 flex items-center gap-1 rounded-control bg-stone-900/70 px-2 py-1 text-micro text-white backdrop-blur-xs pointer-events-none"
+          >
+            <Camera className="w-2.5 h-2.5" aria-hidden="true" />
             {listing.photos.length}
           </span>
         )}
@@ -269,7 +275,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                 space. */}
             <div className="min-w-0 flex-1 truncate text-xs text-stone-500">
               <span className="hidden sm:inline font-semibold">
-                {listing.categoryLabel}
+                {displayCategoryLabel}
                 {' • '}
               </span>
               <Link
@@ -278,7 +284,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                    *link* still has to clear 24px (WCAG 2.5.8), so the target is
                    grown vertically with padding and pulled back with a negative
                    margin, leaving the row's visual height untouched. */
-                className="inline-flex items-center min-h-6 -my-1 py-1 hover:opacity-80 transition-opacity"
+                className={`inline-flex items-center min-h-6 -my-1 py-1 hover:opacity-80 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 {isProSeller(listing) ? (
@@ -293,8 +299,14 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                 token in the row, so it stands down on phones to buy the seller
                 name back its space; the score itself always stays. */}
             {listing.sellerRating > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-micro font-semibold text-stone-700 bg-bg-base px-2 py-1 rounded border border-border-base/80 shrink-0">
-                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+              <span
+                aria-label={t('ui.listingCard.noteAvis', {
+                  rating: listing.sellerRating.toFixed(1),
+                  count: listing.sellerReviewCount,
+                })}
+                className="inline-flex items-center gap-0.5 rounded-control border border-border-base/80 bg-bg-base px-2 py-1 text-micro font-semibold text-stone-700 shrink-0"
+              >
+                <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" aria-hidden="true" />
                 <span>{listing.sellerRating.toFixed(1)}</span>
                 {listing.sellerReviewCount > 0 && (
                   <span className="hidden sm:inline text-stone-500 font-normal">
@@ -315,10 +327,10 @@ export const ListingCard: React.FC<ListingCardProps> = ({
               the ellipsis on every card. An em-based reservation also stays
               exact across the `text-sm` → `text-card-title` step, which a rem
               value cannot do. */}
-          <Link to={`/annonce/${listing.id}`} className="block mb-2.5">
+          <Link to={`/annonce/${listing.id}`} className={`block mb-2.5 ${CONTROL_FOCUS_CLASS}`}>
             <h3
               title={listing.title}
-              className="text-sm sm:text-card-title font-bold text-stone-900 line-clamp-2 min-h-[2.8em] group-hover:text-primary transition-colors leading-[1.4]"
+              className={`text-sm sm:text-card-title font-bold text-stone-900 line-clamp-2 min-h-[2.8em] group-hover:text-primary ${CONTROL_MOTION_CLASS} leading-snug`}
             >
               {listing.title}
             </h3>

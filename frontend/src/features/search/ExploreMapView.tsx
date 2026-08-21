@@ -21,6 +21,7 @@ import { Badge } from '../../design-system/primitives/Badge';
 import { Image } from '../../design-system/primitives/Image';
 import { showsVerifiedBadge } from '../../domains/user/user.domain';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { getListingCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -220,7 +221,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-[680px] sm:h-[720px] rounded-2xl overflow-hidden border border-border-base bg-bg-base shadow-xs flex flex-col">
+    <div className="relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs">
       {/* Top Quick Filters Bar */}
       <div className="bg-white/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
@@ -288,7 +289,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       </div>
 
       {/* Main Map Stage & Floating Sidepanel */}
-      <div className="relative flex-1 w-full h-full min-h-0 overflow-hidden flex">
+      <div className="relative flex h-[680px] min-h-0 w-full overflow-hidden sm:h-[720px]">
         {/* Collapsible left sidebar with matching listings.
             Placed before the map in the DOM as well as visually, so tab order
             follows what is on screen rather than jumping the map first. */}
@@ -364,19 +365,27 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
         {/* Leaflet Container */}
         <div ref={mapContainerRef} className="w-full h-full z-raised" />
 
-        {/* Floating Active Listing Preview Card */}
-        {activeListing && (
-          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:w-96 z-dropdown bg-white rounded-2xl shadow-xl border border-border-base p-3.5 animate-in fade-in slide-in-from-bottom-3 duration-normal">
+      </div>
+
+      {/* Selected listing details sit below the map so they never cover the
+          map or compete with a marker at the bottom edge of the viewport. */}
+      {activeListing && (
+        <div
+          className="border-t border-border-base bg-bg-surface p-3.5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-normal sm:p-4"
+          aria-live="polite"
+          data-testid="map-active-listing"
+        >
+          <div className="mx-auto flex max-w-3xl items-start gap-3 rounded-card border border-border-base bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
             <button
               type="button"
               onClick={() => setActiveListing(null)}
-              className="absolute top-2.5 right-2.5 p-1 rounded-full text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+              className="order-3 shrink-0 rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               aria-label={t('search.exploreMapView.fermerLaPrevisualisation')}
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="flex gap-3">
+            <div className="flex min-w-0 flex-1 gap-3">
               <Image
                 src={activeListing.coverImageUrl || activeListing.photos[0]?.url}
                 alt={activeListing.title}
@@ -385,10 +394,10 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                 referrerPolicy="no-referrer"
               />
 
-              <div className="flex-1 min-w-0 pr-4">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="text-xs font-semibold text-stone-500 truncate">
-                    {activeListing.categoryLabel}
+                    {getListingCategoryLabel(activeListing)}
                   </span>
                   {showsVerifiedBadge(activeListing) && (
                     <Badge variant="verified" size="sm" icon>{t('search.exploreMapView.verifie')}</Badge>
@@ -421,8 +430,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Floating status count. Anchored right: the listing panel now occupies
           the left edge, and this badge belongs over the map. */}

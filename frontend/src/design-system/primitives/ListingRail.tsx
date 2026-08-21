@@ -40,7 +40,7 @@ export const ListingRail: React.FC<ListingRailProps> = ({
     label={label}
     className={`-mx-4 px-4 sm:mx-0 sm:px-0 py-1.5 ${className}`}
   >
-    <div className="flex items-stretch gap-3 sm:gap-4">
+    <div className="flex flex-nowrap items-stretch gap-3 sm:gap-4">
       {React.Children.map(children, (child) =>
         child == null ? null : (
           <div className="w-listing-card shrink-0 snap-start">{child}</div>

@@ -235,7 +235,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
           </div>
 
           {/* Controls: Filter Toggle, View Toggle, Sort */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:shrink-0 sm:justify-start">
             {/* Price filter drawer button */}
             <button
               type="button"

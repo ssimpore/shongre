@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ImageOff } from 'lucide-react';
 import { buildSrcSet } from './responsiveImage';
 
@@ -61,12 +61,13 @@ export const Image: React.FC<ImageProps> = ({
   const [hasArrived, setHasArrived] = useState(false);
 
   // A new src deserves a fresh attempt rather than inheriting the failed state.
-  const [lastSrc, setLastSrc] = useState(src);
-  if (src !== lastSrc) {
-    setLastSrc(src);
+  // Keep this reset in an effect instead of updating state during render; the
+  // latter made a rapidly changing rail do an extra synchronous render for
+  // every image and is especially visible while filtering search results.
+  useEffect(() => {
     setHasFailed(false);
     setHasArrived(false);
-  }
+  }, [src]);
 
   if (hasFailed || !src) {
     return (

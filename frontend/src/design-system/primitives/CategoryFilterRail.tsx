@@ -5,6 +5,12 @@ import { getTaxonomyLabel } from '../../domains/taxonomy/taxonomy.service';
 import { CategoryIcon } from './CategoryIcon';
 import { Category } from '../../types';
 import { useTranslation } from '../../i18n/I18nProvider';
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  RAIL_CONTROL_CLASS,
+  RAIL_CONTROL_ICON_CLASS,
+} from '../utils/controlMetrics';
 
 export interface CategoryFilterRailProps {
   /** Currently selected top-level category slug, or undefined for "all" */
@@ -141,9 +147,9 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             type="button"
             onClick={() => handleScroll('left')}
             aria-label={t('ui.categoryFilterRail.faireDefilerLesCategoriesVers')}
-            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised w-8 h-control-sm items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -ml-2"
+            className={`hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-stone-900 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -ml-2`}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
           </button>
         )}
 
@@ -168,10 +174,10 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               }}
               aria-pressed={!selectedCategorySlug}
               title={t('ui.categoryFilterRail.afficherToutesLesAnnoncesActives')}
-              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.98] ${
+              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-[0.98] ${
                 !selectedCategorySlug
                   ? 'bg-stone-900 text-white border-stone-900 shadow-xs'
-                  : 'bg-white text-stone-700 border-border-base hover:border-stone-400 hover:bg-stone-50 shadow-2xs'
+                  : 'bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle shadow-2xs'
               }`}
             >
               <LayoutGrid className={`w-3.5 h-3.5 pointer-events-none ${!selectedCategorySlug ? 'text-primary' : 'text-stone-500'}`} />
@@ -193,11 +199,11 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 type="button"
                 onClick={() => handleCategoryClick(cat)}
                 aria-pressed={isSelected}
-                title={cat.name}
-                className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs transition-all cursor-pointer select-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 active:scale-[0.98] ${
+                title={compactLabel}
+                className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-[0.98] ${
                   isSelected
                     ? 'bg-stone-900 text-white border-stone-900 font-bold shadow-xs'
-                    : 'bg-white text-stone-700 border-border-base hover:border-stone-400 hover:bg-stone-50 font-medium shadow-2xs'
+                    : 'bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle font-medium shadow-2xs'
                 }`}
               >
                 <span className="shrink-0 pointer-events-none">
@@ -211,7 +217,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 {isSelected && (
                   <span
                     aria-hidden="true"
-                    className="ml-0.5 w-3.5 h-3.5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center pointer-events-none"
+                    className="ml-0.5 w-icon-sm h-icon-sm rounded-pill bg-bg-surface/20 hover:bg-bg-surface/30 flex items-center justify-center pointer-events-none"
                   >
                     <X className="w-2.5 h-2.5 text-white" />
                   </span>
@@ -227,9 +233,9 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             type="button"
             onClick={() => handleScroll('right')}
             aria-label={t('ui.categoryFilterRail.faireDefilerLesCategoriesVers2')}
-            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised w-8 h-control-sm items-center justify-center rounded-full bg-white/95 text-stone-700 shadow-md border border-border-base hover:bg-stone-50 hover:text-stone-900 transition-all cursor-pointer -mr-2"
+            className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-stone-900 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -mr-2`}
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
           </button>
         )}
       </div>
@@ -242,7 +248,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
           <button
             type="button"
             onClick={() => onSelectSubCategory && onSelectSubCategory(undefined)}
-            className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+            className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
               !selectedSubCategorySlug
                 ? 'bg-primary-light text-primary border-primary-border font-bold'
                 : 'bg-stone-100 text-stone-600 border-transparent hover:bg-stone-200'
@@ -267,12 +273,12 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                     onSelectSubCategory(isSubSelected ? undefined : sub.slug);
                   }
                 }}
-                className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                   isSubSelected
                     ? 'bg-primary text-white border-primary shadow-2xs font-bold'
                     : 'bg-stone-100 text-stone-700 border-transparent hover:bg-stone-200'
                 }`}
-                title={sub.name}
+                title={subLabel}
               >
                 {subLabel}
               </button>

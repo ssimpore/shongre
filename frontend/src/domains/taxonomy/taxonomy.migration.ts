@@ -4,6 +4,7 @@
  */
 
 import { taxonomyService } from './taxonomy.service';
+import { getTaxonomyLabel } from './taxonomy.labels';
 import { TaxonomyNode } from './taxonomy.types';
 
 export const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
@@ -31,8 +32,12 @@ export const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
   'sports-plein-air': 'sports_outdoors',
   'services': 'services',
   'materiel-pro': 'professional_btp',
+  'materiel-professionnel-btp': 'professional_btp',
   'emploi': 'jobs',
   'animaux': 'pets',
+  'sports': 'sports_outdoors',
+  'sports-loisirs': 'sports_outdoors',
+  'sports-hobbies': 'sports_outdoors',
   'bons-plans': 'deals_donations',
 };
 
@@ -82,9 +87,9 @@ export class TaxonomyMigration {
     return {
       categoryId: node?.id || 'home_garden',
       categorySlug: rootAncestor?.slug || 'maison-jardin',
-      categoryLabel: rootAncestor?.name || 'Maison, Meubles & Jardin',
+      categoryLabel: getTaxonomyLabel(rootAncestor, 'compact') || 'Maison, Meubles & Jardin',
       subCategorySlug: node?.slug || 'mobilier',
-      subCategoryLabel: node?.name || 'Mobilier',
+      subCategoryLabel: getTaxonomyLabel(node, 'compact') || 'Mobilier',
     };
   }
 }

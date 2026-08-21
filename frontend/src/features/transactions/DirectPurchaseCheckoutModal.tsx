@@ -36,6 +36,7 @@ import { useToast } from '../../app/providers/ToastProvider';
 import confetti from 'canvas-confetti';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { getListingCategoryLabel, getListingSubCategoryLabel } from '../../domains/taxonomy/taxonomy.display';
 
 export interface DirectPurchaseCheckoutModalProps {
   isOpen: boolean;
@@ -214,7 +215,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
             />
             <div className="min-w-0">
               <span className="text-xs font-bold text-primary uppercase tracking-wider block mb-0.5">
-                {listing.categoryLabel} › {listing.subCategoryLabel}
+                {getListingCategoryLabel(listing)} › {getListingSubCategoryLabel(listing)}
               </span>
               <h4 className="text-sm font-black text-stone-900 truncate mb-1">{listing.title}</h4>
               <div className="text-xs font-medium text-stone-500 flex items-center gap-2">
@@ -301,7 +302,7 @@ export const DirectPurchaseCheckoutModal: React.FC<DirectPurchaseCheckoutModalPr
                     </div>
 
                     <div className="text-right font-black text-sm text-stone-900">
-                      {quote.price === 0 ? '0,00 €' : formatPrice(quote.price)}
+                      {quote.price === 0 ? 'Gratuit' : formatPrice(quote.price)}
                     </div>
                   </SelectableCard>
                 );

@@ -13,6 +13,7 @@ import {
   
   
   Shield,
+  ShieldCheck,
   Settings,
   Briefcase,
   BarChart3,
@@ -27,13 +28,31 @@ import { Avatar, Badge, Container } from '../../design-system';
 import { storageService } from '../../services/storage.service';
 import { useTranslation } from '../../i18n/I18nProvider';
 
+function AdminRoleIcon({ label }: { label: string }): React.ReactElement {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      className="inline-flex h-control-sm w-control-sm shrink-0 items-center justify-center rounded-pill border border-primary-border bg-primary-light text-primary"
+    >
+      <ShieldCheck className="h-icon-sm w-icon-sm" aria-hidden="true" />
+    </span>
+  );
+}
+
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, platformRole, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
   const navigate = useNavigate();
 
   const isPro = isProSeller(currentUser);
+  const isAdmin = platformRole === 'admin' || platformRole === 'super_admin';
+  const adminRoleLabel = platformRole === 'super_admin'
+    ? t('shell.accountLayout.roleSuperAdministrateur')
+    : t('shell.accountLayout.roleAdministrateur');
+  const accountName = (currentUser?.companyName || currentUser?.name || 'Mon Compte').replace(/\s+\([^)]*\)\s*$/, '');
 
   // Every badge here must be scoped to the signed-in user — see
   // storageService.getUnreadMessageCount for why.
@@ -65,34 +84,37 @@ export const AccountLayout: React.FC = () => {
   ];
 
   return (
-    <Container className="py-6 sm:py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+    <Container className="py-5 sm:py-7">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 sm:gap-7">
         
         {/* Mobile & Tablet Navigation Header (< lg).
             `min-w-0` is required: a grid item defaults to `min-width:auto`, so
             without it the nested `overflow-x-auto` rail stretches the whole
             track and the page scrolls sideways on phones. */}
-        <div className="lg:hidden min-w-0 bg-white rounded-2xl border border-border-base p-4 shadow-xs space-y-3">
+        <div className="lg:hidden min-w-0 bg-bg-surface rounded-card border border-border-base p-4 shadow-xs space-y-3">
           {/* User Quick Info */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <Avatar
                 src={currentUser?.avatarUrl}
-                name={currentUser?.name || 'Utilisateur'}
+                name={accountName}
                 size="md"
                 isVerified={currentUser?.isVerified}
                 isPro={isPro}
               />
               <div className="min-w-0">
-                <div className="font-bold text-xs sm:text-sm text-stone-900 truncate" title={currentUser?.name}>
-                  {currentUser?.companyName || currentUser?.name || 'Mon Compte'}
+                <div className="flex min-w-0 items-center gap-1.5" data-account-identity>
+                  <span className="min-w-0 truncate font-bold text-xs text-stone-900 sm:text-sm" title={accountName}>
+                    {accountName}
+                  </span>
+                  {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
                 <div className="text-xs text-stone-500 truncate" title={currentUser?.email}>{currentUser?.email}</div>
               </div>
             </div>
             <div>
               {isPro ? (
-                <Badge variant="pro" size="sm">{t('shell.accountLayout.comptePro')}</Badge>
+                <Badge variant="pro" size="sm" icon>{t('shell.accountLayout.proBadge')}</Badge>
               ) : (
                 <Badge variant="neutral" size="sm">Particulier</Badge>
               )}
@@ -110,7 +132,7 @@ export const AccountLayout: React.FC = () => {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors shrink-0 ${
+                  `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                     isActive
                       ? 'bg-primary text-white shadow-xs'
                       : 'bg-bg-subtle text-stone-700 hover:bg-bg-muted hover:text-stone-900'
@@ -133,7 +155,7 @@ export const AccountLayout: React.FC = () => {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors shrink-0 ${
+                    `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                       isActive
                         ? 'bg-primary text-white shadow-xs'
                         : 'bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface'
@@ -149,25 +171,28 @@ export const AccountLayout: React.FC = () => {
 
         {/* Desktop Navigation Sidebar (>= lg) */}
         <aside className="hidden lg:block lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-border-base p-5 sticky top-20 shadow-xs">
+          <div className="bg-bg-surface rounded-card border border-border-base p-5 sticky top-20 shadow-xs">
             
             {/* User Header */}
-            <div className="flex items-center gap-3 pb-4 border-b border-border-subtle">
-              <Avatar
-                src={currentUser?.avatarUrl}
-                name={currentUser?.name || 'Utilisateur'}
-                size="lg"
-                isVerified={currentUser?.isVerified}
-                isPro={isPro}
-              />
+          <div className="flex items-center gap-3 pb-4 border-b border-border-subtle">
+            <Avatar
+              src={currentUser?.avatarUrl}
+              name={accountName}
+              size="xl"
+              isVerified={currentUser?.isVerified}
+              isPro={isPro}
+            />
               <div className="min-w-0 flex-1">
-                <div className="font-bold text-stone-900 truncate" title={currentUser?.name}>
-                  {currentUser?.companyName || currentUser?.name || 'Mon Compte'}
+                <div className="flex min-w-0 items-center gap-1.5" data-account-identity>
+                  <span className="min-w-0 truncate font-bold text-stone-900" title={accountName}>
+                    {accountName}
+                  </span>
+                  {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
                 <div className="text-xs text-stone-500 truncate" title={currentUser?.email}>{currentUser?.email}</div>
-                <div className="mt-1">
+                <div className="mt-1.5">
                   {isPro ? (
-                    <Badge variant="pro" size="sm">{t('shell.accountLayout.comptePro')}</Badge>
+                    <Badge variant="pro" size="sm" icon>{t('shell.accountLayout.proBadge')}</Badge>
                   ) : (
                     <Badge variant="neutral" size="sm">Particulier</Badge>
                   )}
@@ -186,7 +211,7 @@ export const AccountLayout: React.FC = () => {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                    `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                       isActive
                         ? 'bg-primary-light text-primary'
                         : 'text-stone-700 hover:bg-bg-subtle hover:text-stone-900'
@@ -216,7 +241,7 @@ export const AccountLayout: React.FC = () => {
                       key={item.to}
                       to={item.to}
                       className={({ isActive }) =>
-                        `flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                        `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                           isActive
                             ? 'bg-primary-light text-primary'
                             : 'text-stone-700 hover:bg-bg-subtle hover:text-stone-900'
@@ -240,7 +265,7 @@ export const AccountLayout: React.FC = () => {
                     logout();
                     navigate(routes.home());
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-danger hover:bg-danger-surface rounded-lg transition-colors cursor-pointer text-left"
+                  className="w-full min-h-control-sm flex items-center gap-2.5 px-3 text-xs font-semibold text-danger hover:bg-danger-surface rounded-control motion-interactive cursor-pointer text-left"
                 >
                   <LogOut className="w-4 h-4 text-danger" />
                   <span>{t('shell.accountLayout.seDeconnecter')}</span>

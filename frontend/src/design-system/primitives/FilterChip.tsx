@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export interface FilterChipProps {
   /** Human-readable filter value, e.g. `Véhicules` or `"vélo gravel"`. */
@@ -67,7 +68,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
              negative margin lets the larger box overlap the chip's padding
              instead of widening every chip on the page, and coarse pointers get
              the full 44px target. */
-          className="shrink-0 w-6 h-6 -my-1 -mr-1 pointer-coarse:w-control-touch pointer-coarse:h-control-touch inline-flex items-center justify-center rounded-full hover:bg-black/10 transition-colors cursor-pointer"
+          className={`shrink-0 w-6 h-6 -my-1 -mr-1 pointer-coarse:w-control-touch pointer-coarse:h-control-touch inline-flex items-center justify-center rounded-full ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-black/10 cursor-pointer`}
         >
           <X className="w-3 h-3" />
         </button>

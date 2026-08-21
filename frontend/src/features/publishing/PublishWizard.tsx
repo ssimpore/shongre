@@ -24,6 +24,11 @@ import {
   Check,
   ChevronRight,
   Clock,
+  Gift,
+  ArrowLeftRight,
+  KeyRound,
+  Wrench,
+  Briefcase,
   
   
   Store,
@@ -59,6 +64,7 @@ import { CategoryIcon } from '../../design-system/primitives/CategoryIcon';
 import { Image } from '../../design-system/primitives/Image';
 import { useTranslation } from '../../i18n/I18nProvider';
 import { usePageMeta } from '../../hooks/usePageMeta';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../../design-system/utils/controlMetrics';
 
 const samplePhotoUrls = [
   'https://images.unsplash.com/photo-1507034589631-9433cc6bc453?w=800&auto=format&fit=crop&q=80',
@@ -293,7 +299,7 @@ export const PublishWizard: React.FC = () => {
       const result: ListingAssistanceResult = await services.ai.generateListingAssistance({
         rawInput: promptToUse,
         condition: draft.condition as any,
-        categoryHint: schema?.node.name,
+        categoryHint: schema?.node ? getTaxonomyLabel(schema.node, 'compact') : undefined,
         existingTitle: draft.title,
         existingPrice: draft.pricing.amount,
       });
@@ -479,25 +485,37 @@ export const PublishWizard: React.FC = () => {
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">{t('publishing.publishWizard.typeDAnnonceIntention')}</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
-                { value: 'SELL', label: 'Vendre un bien', desc: 'Vente standard' },
-                { value: 'GIVE', label: 'Faire un don', desc: 'Gratuit (0 €)' },
-                { value: 'EXCHANGE', label: 'Échange de biens', desc: 'Troc / Échange' },
-                { value: 'RENT', label: 'Location', desc: 'Louer un bien' },
-                { value: 'OFFER_SERVICE', label: 'Proposer un service', desc: 'Artisan, cours, presta' },
-                { value: 'JOB_OFFER', label: 'Offre d\'emploi', desc: 'Recrutement' },
+                { value: 'SELL', label: 'Vendre un bien', desc: 'Vente standard', Icon: Tag },
+                { value: 'GIVE', label: 'Faire un don', desc: 'Gratuit (0 €)', Icon: Gift },
+                { value: 'EXCHANGE', label: 'Échange de biens', desc: 'Troc / Échange', Icon: ArrowLeftRight },
+                { value: 'RENT', label: 'Location', desc: 'Louer un bien', Icon: KeyRound },
+                { value: 'OFFER_SERVICE', label: 'Proposer un service', desc: 'Artisan, cours, presta', Icon: Wrench },
+                { value: 'JOB_OFFER', label: 'Offre d\'emploi', desc: 'Recrutement', Icon: Briefcase },
               ].map((it) => (
                 <button
                   key={it.value}
                   type="button"
                   onClick={() => updateDraft({ listingIntent: it.value as ListingIntent })}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                  aria-pressed={draft.listingIntent === it.value}
+                  className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                     draft.listingIntent === it.value
                       ? 'border-primary bg-primary-light text-primary font-bold'
-                      : 'border-border-base bg-white hover:bg-stone-50 text-stone-800'
+                      : 'border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle'
                   }`}
                 >
-                  <div className="text-xs font-bold">{it.label}</div>
-                  <div className="text-micro text-stone-500 mt-0.5">{it.desc}</div>
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
+                      draft.listingIntent === it.value
+                        ? 'bg-primary text-white'
+                        : 'bg-primary-light text-primary'
+                    }`}
+                  >
+                    <it.Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-bold">{it.label}</span>
+                    <span className="mt-0.5 block truncate text-micro text-stone-500">{it.desc}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -533,9 +551,9 @@ export const PublishWizard: React.FC = () => {
                     <div className="flex items-center gap-2.5">
                       <CategoryIcon category={n} size="sm" />
                       <div>
-                        <div className="font-bold text-stone-900">{n.name}</div>
+                        <div className="font-bold text-stone-900">{getTaxonomyLabel(n, 'compact')}</div>
                         <div className="text-micro text-stone-500">
-                          {taxonomyService.getBreadcrumbs(n.id).map((b) => b.label).join(' › ')}
+                          {taxonomyService.getBreadcrumbs(n.id, 'compact').map((b) => b.label).join(' › ')}
                         </div>
                       </div>
                     </div>
@@ -560,7 +578,7 @@ export const PublishWizard: React.FC = () => {
                     const children = taxonomyService.getChildren(cat.id);
                     updateDraft({ taxonomyNodeId: children[0]?.id || cat.id });
                   }}
-                  title={cat.name}
+                  title={getTaxonomyLabel(cat, 'compact')}
                   className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
                     schema?.ancestors[0]?.id === cat.id || draft.taxonomyNodeId === cat.id
                       ? 'border-primary bg-primary-light text-primary font-bold shadow-xs'
@@ -580,7 +598,7 @@ export const PublishWizard: React.FC = () => {
               <div>
                 <span className="font-bold block mb-0.5">{t('publishing.publishWizard.categorieActiveValidee')}</span>
                 <span className="font-mono text-success">
-                  {taxonomyService.getBreadcrumbs(schema.node.id).map((b) => b.label).join(' › ')}
+                  {taxonomyService.getBreadcrumbs(schema.node.id, 'compact').map((b) => b.label).join(' › ')}
                 </span>
               </div>
               <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
@@ -600,10 +618,10 @@ export const PublishWizard: React.FC = () => {
                 that, so the suffix is conditional rather than "(  )". */}
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
               Caractéristiques techniques
-              {schema?.node.name ? ` · ${schema.node.name}` : ''}
+              {schema?.node ? ` · ${getTaxonomyLabel(schema.node, 'compact')}` : ''}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              {schema?.node.name
+              {schema?.node
                 ? "Renseignez l'état du produit et les critères spécifiques pour optimiser la recherche."
                 : 'Choisissez une catégorie ci-dessus pour voir les critères correspondants.'}
             </p>
@@ -1299,7 +1317,7 @@ export const PublishWizard: React.FC = () => {
                 const toggleMarket = () => {
                   if (isUnavailable) {
                     toast.error(
-                      `La catégorie "${schema?.node?.name || 'actuelle'}" n'est pas encore ouverte sur le marché ${m.name}.`
+                      `La catégorie "${schema?.node ? getTaxonomyLabel(schema.node, 'compact') : 'actuelle'}" n'est pas encore ouverte sur le marché ${m.name}.`
                     );
                     return;
                   }
@@ -1459,7 +1477,7 @@ export const PublishWizard: React.FC = () => {
               <div className="p-4 bg-bg-base rounded-xl border border-border-base space-y-2.5">
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
                   <span className="text-stone-500">{t('publishing.publishWizard.categorie')}</span>
-                  <span className="font-bold text-stone-900">{schema?.node.name}</span>
+                  <span className="font-bold text-stone-900">{schema?.node ? getTaxonomyLabel(schema.node, 'compact') : ''}</span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
                   <span className="text-stone-500">Titre</span>
@@ -1528,8 +1546,8 @@ export const PublishWizard: React.FC = () => {
                   isFreeDonation: draft.pricing.isFreeDonation,
                   categorySlug: schema?.ancestors[0]?.slug || 'maison-deco',
                   subCategorySlug: schema?.node.slug || 'mobilier',
-                  categoryLabel: schema?.ancestors[0]?.name || 'Maison',
-                  subCategoryLabel: schema?.node.name || 'Mobilier',
+                  categoryLabel: schema?.ancestors[0] ? getTaxonomyLabel(schema.ancestors[0], 'compact') : 'Maison',
+                  subCategoryLabel: schema?.node ? getTaxonomyLabel(schema.node, 'compact') : 'Mobilier',
                   condition: draft.condition as any,
                   sellerId: currentUser?.id || 'demo',
                   sellerName: currentUser?.name || 'Vendeur Shongre',

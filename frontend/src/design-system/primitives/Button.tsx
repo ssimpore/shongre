@@ -2,7 +2,12 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { Link, LinkProps } from 'react-router-dom';
 import { cn, createVariants } from '../utils/variants';
-import { CONTROL_RADIUS_CLASS, controlHeightClasses } from '../utils/controlMetrics';
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_RADIUS_CLASS,
+  controlHeightClasses,
+} from '../utils/controlMetrics';
 
 export interface ButtonVisualProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'pro';
@@ -61,7 +66,7 @@ export type ButtonProps = (
 // height, so a label allowed to wrap spills out through the bottom edge.
 /** Everything except the display utility, which is applied conditionally below. */
 const baseStyles =
-  'items-center justify-center font-medium whitespace-nowrap transition-all duration-fast cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+  `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 ${CONTROL_FOCUS_CLASS}`;
 
 /**
  * A display utility supplied by the caller, which must win over the default.
@@ -113,11 +118,11 @@ const buttonClasses = createVariants({
      gives it definition while staying visibly lighter than `outline`'s 2px, so
      the two stay distinguishable when they appear side by side. */
       secondary:
-        'bg-bg-base text-stone-900 border border-border-hover hover:bg-bg-subtle hover:border-stone-400 active:bg-bg-muted shadow-2xs',
+        'bg-bg-base text-text-main border border-border-hover hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs',
       outline:
-        'border-2 border-stone-200 bg-white text-stone-800 hover:bg-stone-50 hover:border-stone-300 active:bg-stone-100 shadow-2xs',
+        'border-2 border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs',
       ghost:
-        'bg-transparent text-stone-700 hover:text-stone-950 hover:bg-stone-100 active:bg-stone-200',
+        'bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-subtle active:bg-bg-muted',
       danger: 'bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm',
       pro: 'bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:shadow-md hover:shadow-stone-900/10',
     },

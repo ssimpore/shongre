@@ -107,6 +107,22 @@ test.describe('design-token runtime contracts', () => {
     ]);
   });
 
+  test('loads the bundled UI font with a stable fallback contract', async ({ page }) => {
+    const font = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const body = getComputedStyle(document.body);
+      return {
+        family: body.fontFamily,
+        synthesis: body.fontSynthesis,
+        loaded: document.fonts.check('16px "Inter Variable"'),
+      };
+    });
+
+    expect(font.family).toContain('Inter Variable');
+    expect(font.synthesis).toBe('none');
+    expect(font.loaded).toBe(true);
+  });
+
   test('keeps native registration fields on the touch size and control radius', async ({ page }) => {
     await page.goto('/inscription/particulier', { waitUntil: 'networkidle' });
 
@@ -198,6 +214,28 @@ test.describe('design-token runtime contracts', () => {
     expect(actions).toHaveLength(5);
     expect(new Set(actions.map((action) => action.height))).toEqual(new Set([40]));
     expect(new Set(actions.map((action) => action.radius))).toEqual(new Set(['10px']));
+  });
+
+  test('keeps the category navigation compact at every viewport', async ({ page }) => {
+    const categoryNav = page.locator('header nav[aria-label="Filtres par catégorie"]');
+    const categoryLink = categoryNav.getByRole('link', { name: 'Immobilier', exact: true });
+
+    await expect(categoryLink).toBeVisible();
+
+    const readMetric = () =>
+      categoryLink.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const computed = getComputedStyle(element);
+        return { height: Math.round(rect.height), radius: computed.borderRadius };
+      });
+
+    expect(await readMetric()).toEqual({ height: 40, radius: '10px' });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await waitForStableLayout(page);
+    await expect(categoryLink).toBeVisible();
+    expect(await readMetric()).toEqual({ height: 40, radius: '10px' });
+    await expectNoHorizontalOverflow(page, 'mobile category navigation');
   });
 
   test('aligns homepage hero actions with the Pro discovery control', async ({ page }) => {

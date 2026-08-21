@@ -189,6 +189,7 @@ export interface FeaturesMarketConfig {
   aiAssistantEnabled: boolean;
   aiSafetyAuditEnabled: boolean;
   savedSearchesEnabled: boolean;
+  recentSearchesLimit: number;
   sellerFollowEnabled: boolean;
   proStorefrontsEnabled: boolean;
   disputeEscalationEnabled: boolean;

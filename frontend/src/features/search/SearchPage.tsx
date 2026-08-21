@@ -31,6 +31,7 @@ import { DropdownMenu, DropdownOption } from '../../design-system/primitives/Dro
 import { PriceRangeSlider } from '../../design-system/primitives/PriceRangeSlider';
 import { ViewModeToggle } from '../../design-system/primitives/ViewModeToggle';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../../design-system/utils/controlMetrics';
 
 // Leaflet is the heaviest optional frontend dependency. Keep it outside the
 // normal search bundle so grid/list browsing does not download a map engine or
@@ -42,7 +43,7 @@ const ExploreMapView = React.lazy(() =>
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { location: userLocation, resetLocation } = useMarketLocation();
+  const { location: userLocation, resetLocation, activeMarket } = useMarketLocation();
   const toast = useToast();
 
   const urlViewParam = searchParams.get('view') as 'grid' | 'list' | 'map' | null;
@@ -50,7 +51,7 @@ export const SearchPage: React.FC = () => {
     urlViewParam === 'map' || urlViewParam === 'list' ? urlViewParam : 'grid'
   );
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,6 +194,59 @@ export const SearchPage: React.FC = () => {
   const activeSubCat = activeCategory?.subCategories.find((s) => s.slug === subCategorySlug || s.id === subCategorySlug);
   const activeNodeId = activeSubCat?.id || activeCategory?.id;
 
+  // A search is useful on the home page only if it can be resumed with the
+  // same criteria. Store the structured URL after every meaningful search or
+  // filter change; the homepage listens for the storage event and updates the
+  // cards immediately when this happens in the same tab.
+  useEffect(() => {
+    const hasAttributeFilters = [...searchParams.keys()].some((key) => key.startsWith('attr_'));
+    const hasCriteria = Boolean(
+      query.trim() ||
+      categorySlug ||
+      subCategorySlug ||
+      city ||
+      minPrice !== undefined ||
+      maxPrice !== undefined ||
+      sellerType !== 'all' ||
+      delivery ||
+      onlinePayment ||
+      onlyDeals ||
+      hasAttributeFilters,
+    );
+    if (!hasCriteria) return;
+
+    const recentUrlParams = new URLSearchParams(searchParams.toString());
+    recentUrlParams.delete('page');
+    recentUrlParams.delete('view');
+
+    storageService.addRecentSearchItem({
+      title: query.trim() || activeSubCat?.name || activeCategory?.name || t('search.searchPage.recherchePersonnalisee'),
+      locationLabel: city || userLocation.city || activeMarket.name,
+      categorySlug: activeSubCat?.slug || activeCategory?.slug || categorySlug || undefined,
+      query: query.trim() || undefined,
+      to: `/recherche?${recentUrlParams.toString()}`,
+    });
+  }, [
+    activeCategory?.name,
+    activeCategory?.slug,
+    activeMarket.name,
+    activeSubCat?.name,
+    activeSubCat?.slug,
+    categorySlug,
+    city,
+    delivery,
+    maxPrice,
+    minPrice,
+    onlinePayment,
+    onlyDeals,
+    query,
+    searchParams,
+    sellerType,
+    subCategorySlug,
+    t,
+    userLocation.city,
+  ]);
+
   const dynamicFacets = useMemo(() => {
     return taxonomyService.resolveSearchFilters(activeNodeId);
   }, [activeNodeId]);
@@ -253,8 +307,8 @@ export const SearchPage: React.FC = () => {
    */
   const pageHeading = useMemo(() => {
     if (query) return `Recherche : ${query}`;
-    if (activeSubCat) return activeSubCat.name;
-    if (activeCategory) return activeCategory.name;
+    if (activeSubCat) return getTaxonomyLabel(activeSubCat, 'compact');
+    if (activeCategory) return getTaxonomyLabel(activeCategory, 'compact');
     return 'Toutes les annonces';
   }, [query, activeSubCat, activeCategory]);
 
@@ -331,7 +385,7 @@ export const SearchPage: React.FC = () => {
       </div>
 
       {/* Top Search bar on Search Page */}
-      <div className="bg-white p-3 sm:p-5 rounded-3xl border border-stone-200/60 shadow-sm mb-4 sm:mb-6">
+      <div className="bg-bg-surface p-3 sm:p-5 rounded-card border border-border-base shadow-sm mb-4 sm:mb-6">
         <GlobalSearchBar
           variant="search-page"
           idPrefix="search-page"
@@ -378,7 +432,7 @@ export const SearchPage: React.FC = () => {
 
             {activeCategory && (
               <FilterChip
-                label={activeCategory.name}
+                label={getTaxonomyLabel(activeCategory, 'compact')}
                 onRemove={() => updateFilter('category', undefined)}
               >
                 {getTaxonomyLabel(activeCategory, 'compact')}
@@ -387,7 +441,7 @@ export const SearchPage: React.FC = () => {
 
             {activeSubCat && (
               <FilterChip
-                label={activeSubCat.name}
+                label={getTaxonomyLabel(activeSubCat, 'compact')}
                 onRemove={() => updateFilter('subCategory', undefined)}
               >
                 {getTaxonomyLabel(activeSubCat, 'compact')}
@@ -432,7 +486,7 @@ export const SearchPage: React.FC = () => {
         {/* Desktop Sidebar Filters */}
         {showDesktopFilters && (
           <aside className="hidden lg:block lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-3xl border border-stone-200/60 p-6 space-y-6 shadow-sm">
+            <div className="bg-bg-surface rounded-card border border-border-base p-6 space-y-6 shadow-sm">
               
               {/* Header with collapse button */}
               <div className="flex items-center justify-between pb-4 border-b border-stone-100">
@@ -443,7 +497,7 @@ export const SearchPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowDesktopFilters(false)}
-                  className="text-xs font-semibold text-stone-500 hover:text-stone-700 flex items-center gap-1 transition-colors cursor-pointer px-2 py-1 rounded-md hover:bg-stone-100"
+                  className={`text-xs font-semibold text-stone-500 hover:text-stone-700 flex items-center gap-1 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer px-2 py-1 rounded-control hover:bg-bg-subtle`}
                   title={t('search.searchPage.masquerLePanneauDeFiltres')}
                 >
                   <PanelLeftClose className="w-3.5 h-3.5" />
@@ -662,7 +716,7 @@ export const SearchPage: React.FC = () => {
         <div className={showDesktopFilters ? "lg:col-span-3 space-y-4" : "w-full space-y-4"}>
           
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
-          <div className="bg-white p-4 rounded-2xl border border-stone-200/60 shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4">
+          <div className="bg-bg-surface p-4 rounded-card border border-border-base shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4">
             <div className="flex items-center gap-3 min-w-0 shrink">
               {/* The result count is the only feedback a filter change gives on
                   this page — the grid below simply rewrites itself. Announced so
@@ -681,12 +735,13 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowDesktopFilters(!showDesktopFilters)}
-                className={`hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                className={`hidden lg:inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs font-bold uppercase tracking-wider ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                   showDesktopFilters
                     ? 'bg-bg-base border-border-base text-stone-700 hover:bg-bg-subtle'
-                    : 'bg-primary-light border-primary-border text-primary hover:bg-primary-light/80'
+                    : 'text-stone-900 hover:text-primary'
                 }`}
                 title={showDesktopFilters ? "Masquer les filtres" : "Afficher les filtres"}
+                aria-label={showDesktopFilters ? "Masquer les filtres" : "Afficher les filtres"}
               >
                 {showDesktopFilters ? (
                   <>
@@ -695,23 +750,12 @@ export const SearchPage: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <PanelLeft className="w-3.5 h-3.5 text-primary" />
-                    <span>Afficher</span>
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                    <span>Filtres</span>
                   </>
                 )}
               </button>
 
-              {/* Save Search Button */}
-              <button
-                type="button"
-                onClick={handleSaveSearch}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 sm:py-1 rounded-lg border border-border-base bg-bg-base text-stone-700 hover:bg-bg-subtle hover:text-primary transition-colors cursor-pointer"
-                title={t('search.searchPage.sauvegarderCetteRecherche')}
-                aria-label={t('search.searchPage.sauvegarderCetteRecherche')}
-              >
-                <Bookmark className="w-3.5 h-3.5 text-stone-500" />
-                <span className="hidden sm:inline">Sauvegarder</span>
-              </button>
             </div>
 
             {/* Below `lg` this group wraps onto its own line, and it used to be
@@ -725,7 +769,7 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-bold transition-colors cursor-pointer shrink-0 ${
+                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 ${
                   activeFilterCount > 0
                     ? 'bg-primary text-white shadow-xs'
                     : 'bg-bg-base text-stone-800 border border-border-base hover:bg-bg-subtle'
@@ -740,6 +784,22 @@ export const SearchPage: React.FC = () => {
                   </span>
                 )}
               </button>
+
+              {/* Keep the save action with the other results controls so it
+                  remains a single, scannable toolbar at tablet widths instead
+                  of becoming a separate row beside the result count. */}
+              <Button
+                type="button"
+                onClick={handleSaveSearch}
+                variant="secondary"
+                size="sm"
+                className="shrink-0"
+                leftIcon={<Bookmark className="w-icon-sm h-icon-sm text-stone-500" />}
+                title={t('search.searchPage.sauvegarderCetteRecherche')}
+                aria-label={t('search.searchPage.sauvegarderCetteRecherche')}
+              >
+                <span className="hidden sm:inline">Sauvegarder</span>
+              </Button>
 
               {/* View Mode Toggle */}
               {/* `sm` is the toolbar size: 32px, the same control height as the
@@ -899,7 +959,7 @@ export const SearchPage: React.FC = () => {
                   key={s.value}
                   type="button"
                   onClick={() => updateFilter('sellerType', s.value)}
-                  className={`py-2.5 text-xs font-bold rounded-xl border text-center transition-colors cursor-pointer ${
+                  className={`h-control-md px-2 text-xs font-bold rounded-control border text-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                     sellerType === s.value
                       ? 'bg-primary text-white border-primary shadow-xs'
                       : 'bg-white text-stone-700 border-border-base hover:bg-stone-50'

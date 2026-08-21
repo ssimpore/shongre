@@ -15,6 +15,7 @@ import {
   PopularSearchKeyword,
 } from '../../configuration/search.config';
 import { useTranslation } from '../../i18n/I18nProvider';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export interface AutocompleteSelection {
   query?: string;
@@ -106,7 +107,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
       id={`${idPrefix}-dropdown`}
       role="listbox"
       aria-label={t('ui.searchAutocomplete.suggestionsDeRecherche')}
-      className={`absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-dropdown border border-border-base overflow-hidden z-popover animate-in fade-in zoom-in-95 max-h-[440px] overflow-y-auto ${className}`}
+      className={`absolute left-0 right-0 top-full mt-2 bg-bg-surface rounded-card shadow-dropdown border border-border-base overflow-hidden z-popover animate-in fade-in zoom-in-95 max-h-[440px] overflow-y-auto ${className}`}
     >
       {/* ----------------------------------------------------------------- */}
       {/* STATE A: User is typing a query */}
@@ -140,7 +141,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                           submitImmediately: true,
                         });
                       }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer group select-none ${
+                      className={`flex items-center justify-between min-h-control-sm px-3 py-2 rounded-control text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group select-none ${
                         isSelected
                           ? 'bg-primary-light text-primary font-semibold'
                           : 'text-stone-800 hover:bg-stone-50'
@@ -152,7 +153,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                         </div>
                         <div className="truncate">
                           <span className="font-medium">
-                            <HighlightMatch text={catSuggestion.name} highlight={trimmedQuery} />
+                            <HighlightMatch text={catSuggestion.compactLabel} highlight={trimmedQuery} />
                           </span>
                           {catSuggestion.isSubCategory && catSuggestion.parentName && (
                             <span className="text-micro text-stone-500 font-normal ml-1.5">
@@ -200,14 +201,14 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                           submitImmediately: true,
                         });
                       }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer group select-none ${
+                      className={`flex items-center justify-between min-h-control-sm px-3 py-2 rounded-control text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group select-none ${
                         isSelected
                           ? 'bg-primary-light text-primary font-semibold'
                           : 'text-stone-800 hover:bg-stone-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
-                        <Search className="w-3.5 h-3.5 text-stone-400 shrink-0 group-hover:text-primary transition-colors" />
+                        <Search className="w-3.5 h-3.5 text-stone-400 shrink-0 group-hover:text-primary motion-interactive" />
                         <span className="font-medium truncate">
                           <HighlightMatch text={kw.keyword} highlight={trimmedQuery} />
                         </span>
@@ -219,7 +220,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                         )}
                       </div>
 
-                      <ArrowUpRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-primary transition-colors shrink-0" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-primary motion-interactive shrink-0" />
                     </div>
                   );
                 })}
@@ -240,7 +241,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                   submitImmediately: true,
                 });
               }}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer select-none ${
+              className={`flex items-center justify-between min-h-control-sm px-3 py-2.5 rounded-control text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
                 selectedIndex === currentIndexTracker
                   ? 'bg-stone-900 text-white'
                   : 'bg-bg-subtle text-stone-900 hover:bg-stone-200/70'
@@ -276,7 +277,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       e.preventDefault();
                       onClearAllRecentSearches(e);
                     }}
-                    className="text-micro font-semibold text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
+                    className="text-micro font-semibold text-stone-400 hover:text-stone-700 motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >{t('ui.searchAutocomplete.effacerTout')}</button>
                 )}
               </div>
@@ -298,14 +299,14 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                           submitImmediately: true,
                         });
                       }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer group select-none ${
+                      className={`flex items-center justify-between min-h-control-sm px-3 py-2 rounded-control text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group select-none ${
                         isSelected
                           ? 'bg-primary-light text-primary font-semibold'
                           : 'text-stone-800 hover:bg-stone-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
-                        <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0 group-hover:text-primary transition-colors" />
+                        <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0 group-hover:text-primary motion-interactive" />
                         <span className="font-medium truncate">{searchStr}</span>
                       </div>
 
@@ -318,7 +319,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                             e.stopPropagation();
                             onClearRecentSearch(searchStr, e);
                           }}
-                          className="p-1 text-stone-300 hover:text-stone-600 rounded-md hover:bg-stone-200/50 transition-colors cursor-pointer"
+                          className={`p-1 text-stone-300 hover:text-stone-600 rounded-control hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -351,7 +352,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                         submitImmediately: true,
                       });
                     }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-bg-subtle hover:bg-primary-light text-stone-800 hover:text-primary border border-border-base hover:border-primary-border text-xs font-semibold transition-all cursor-pointer select-none active:scale-95"
+                    className={`inline-flex items-center gap-1.5 h-control-md px-3 rounded-control bg-bg-subtle hover:bg-primary-light text-stone-800 hover:text-primary border border-border-base hover:border-primary-border text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none active:scale-95`}
                   >
                     <TrendingUp className="w-3 h-3 text-primary shrink-0" />
                     <span>{trend.keyword}</span>

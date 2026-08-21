@@ -23,7 +23,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className }) =>
             {item.href && !isLast ? (
               <Link
                 to={item.href}
-                className="inline-flex min-h-6 items-center font-medium transition-colors hover:text-stone-900"
+                className="inline-flex min-h-6 items-center font-medium motion-interactive hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {item.label}
               </Link>

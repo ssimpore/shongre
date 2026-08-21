@@ -8,16 +8,18 @@ import {
   ShieldCheck,
   Truck,
   BadgeCheck,
+  RefreshCw,
 } from 'lucide-react';
 import { listingRepository } from '../../repositories/listing.repository';
 import { Listing } from '../../types';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
 import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { Button } from '../../design-system/primitives/Button';
-import { Container, EmptyState, Heading, ListingCardSkeleton } from '../../design-system';
+import { Container, EmptyState, Heading, ListingCardSkeleton, StatePanel } from '../../design-system';
 import { useMarketLocation } from '../../app/providers/MarketLocationProvider';
 import { HeroBoostedScroll } from './components/HeroBoostedScroll';
 import { HomeRecentSearches } from './components/HomeRecentSearches';
+import { TrendingNowSection } from './components/TrendingNowSection';
 import { HomeCollectionsSection } from './components/HomeCollectionsSection';
 import { usePublishCta } from '../../security/usePublishCta';
 import { usePageMeta } from '../../hooks/usePageMeta';
@@ -50,6 +52,8 @@ export const HomePage: React.FC = () => {
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   /**
    * Every listing rail here is scoped to the active market, and the effect
@@ -68,6 +72,7 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
+    setLoadError(false);
 
     const marketCode = activeMarket.code;
 
@@ -80,8 +85,11 @@ export const HomePage: React.FC = () => {
         setRecentListings(listingsRes.listings);
         setDealsListings(dealsRes.listings);
       })
-      .catch((err) => {
-        console.warn('Failed to load homepage data', err);
+      .catch(() => {
+        if (!isMounted) return;
+        setRecentListings([]);
+        setDealsListings([]);
+        setLoadError(true);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -90,7 +98,7 @@ export const HomePage: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [activeMarket.code]);
+  }, [activeMarket.code, loadAttempt]);
 
 
   return (
@@ -101,8 +109,8 @@ export const HomePage: React.FC = () => {
           <div className="rounded-3xl bg-gradient-to-br from-bg-surface via-bg-surface to-primary-light/40 px-5 py-7 shadow-xs sm:p-8 lg:p-10">
             <div className="grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
               {/* Column 1: Hero Pitch, Search & CTAs */}
-              <div className="flex w-full flex-col justify-center gap-6 text-left sm:gap-7">
-                <div className="space-y-4 sm:space-y-5">
+              <div className="flex w-full flex-col justify-between text-left">
+                <div className="flex flex-col gap-6 sm:gap-7">
                   <Heading as="h1" size="display-md" family="display">{t('home.homePage.trouvezLaPerleRare')}<br className="hidden sm:inline" />
                     <span className="text-primary relative inline-block">{t('home.homePage.sansTracas')}<svg
                         aria-hidden="true"
@@ -141,7 +149,7 @@ export const HomePage: React.FC = () => {
                 </div>
 
                 <ul
-                  className="flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-border-subtle pt-4 text-xs font-medium text-stone-700 sm:text-sm"
+                  className="mt-6 flex min-h-6 flex-wrap items-center gap-x-4 gap-y-3 border-t border-border-subtle pt-4 text-xs font-medium text-stone-700 sm:mt-7 sm:text-sm"
                   aria-label={t('home.homePage.garantiesShongre')}
                 >
                   <li className="inline-flex items-center gap-2">
@@ -173,9 +181,6 @@ export const HomePage: React.FC = () => {
       {/* 2. Recent searches — quick resume for visitor queries */}
       <HomeRecentSearches />
 
-      {/* 3. Curated thematic collections — editorial browse */}
-      <HomeCollectionsSection />
-
       {/* 3. Fresh listings — the first browsable inventory */}
       <Container as="section" className="mt-12 sm:mt-16">
         <div className="flex items-end justify-between gap-3 mb-6 sm:mb-8">
@@ -184,14 +189,16 @@ export const HomePage: React.FC = () => {
             <p className="text-sm text-stone-500 mt-1 hidden sm:block font-medium">{t('home.homePage.lesDernieresOffresPublieesPres')}</p>
           </div>
 
-          <Link
+          <Button
             to="/recherche?sortBy=date_desc"
-            className="text-xs sm:text-sm font-bold text-stone-900 bg-white border border-stone-200/90 hover:border-stone-300 hover:bg-stone-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 w-fit shrink-0 whitespace-nowrap mb-0.5"
+            variant="secondary"
+            size="sm"
+            rightIcon={<ArrowRight className="w-icon-sm h-icon-sm text-stone-600" />}
+            className="mb-0.5 shrink-0"
           >
             <span className="hidden sm:inline">{t('home.homePage.toutesLesNouveautes')}</span>
             <span className="sm:hidden">{t('home.homePage.voirTout')}</span>
-            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
-          </Link>
+          </Button>
         </div>
 
         {isLoading ? (
@@ -203,6 +210,28 @@ export const HomePage: React.FC = () => {
               />
             ))}
           </div>
+        ) : loadError ? (
+          <StatePanel
+            variant="offline"
+            title={t('common.error')}
+            description={t('shell.errorBoundary.applicationARencontreUnProbleme')}
+            action={
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                leftIcon={<RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />}
+                onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+              >
+                {t('common.retry')}
+              </Button>
+            }
+            secondaryAction={
+              <Button to="/recherche" variant="outline" size="md">
+                {t('home.homePage.explorerLeCatalogue')}
+              </Button>
+            }
+          />
         ) : recentListings.length === 0 ? (
           /* Scoping the rails to the active market means a market with no
              inventory yet now renders nothing rather than another market's
@@ -258,7 +287,15 @@ export const HomePage: React.FC = () => {
           </div>
         </Container>
       )}
-      {/* 5. Pro banner CTA */}
+
+      {/* 5. Dynamic marketplace discovery — placed after the commercial offer
+          so the page flows from inventory to deals, then inspiration. */}
+      <TrendingNowSection />
+
+      {/* 6. Editorial collections — retained as a complementary browse surface */}
+      <HomeCollectionsSection />
+
+      {/* 7. Pro banner CTA */}
       <Container as="section">
         <div className="bg-bg-base border border-border-base rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">

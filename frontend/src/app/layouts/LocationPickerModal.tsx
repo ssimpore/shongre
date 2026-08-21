@@ -79,7 +79,7 @@ export const LocationPickerModal: React.FC = () => {
             resetLocation();
             closeLocationModal();
           }}
-          className={`w-full p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+          className={`w-full min-h-control-touch px-3 rounded-control border flex items-center justify-between motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
             isWholeCountry
               ? 'border-primary bg-primary-light text-primary font-bold'
               : 'border-border-base hover:border-stone-400 bg-white text-stone-800'
@@ -120,7 +120,7 @@ export const LocationPickerModal: React.FC = () => {
                   key={r}
                   type="button"
                   onClick={() => setRadius(r)}
-                  className={`py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
+              className={`h-control-sm rounded-control text-xs font-semibold border motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     radius === r
                       ? 'bg-primary text-white border-primary'
                       : 'bg-stone-50 border-border-base text-stone-700 hover:bg-stone-100'
@@ -145,7 +145,7 @@ export const LocationPickerModal: React.FC = () => {
                   key={city.name}
                   type="button"
                   onClick={() => handleSelectCity(city)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
+                  className={`h-control-sm px-2.5 rounded-pill text-xs font-medium border motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     cityInput.toLowerCase() === city.name.toLowerCase()
                       ? 'bg-stone-900 text-white border-stone-900'
                       : 'bg-white border-border-base text-stone-700 hover:bg-stone-50'

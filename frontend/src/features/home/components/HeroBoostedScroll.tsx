@@ -11,6 +11,7 @@ import {
 import { Listing } from '../../../types';
 import { FavoriteButton } from '../../../design-system/primitives/FavoriteButton';
 import { IconButton } from '../../../design-system/primitives/IconButton';
+import { Badge } from '../../../design-system/primitives/Badge';
 import { listingRepository } from '../../../repositories/listing.repository';
 import { Image } from '../../../design-system/primitives/Image';
 import { IMAGE_SIZES } from '../../../design-system/primitives/responsiveImage';
@@ -18,6 +19,7 @@ import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { useMarketLocation } from '../../../app/providers/MarketLocationProvider';
 import { formatPrice } from '../../../utilities/formatters';
 import { useTranslation } from '../../../i18n/I18nProvider';
+import { getListingCategoryLabel } from '../../../domains/taxonomy/taxonomy.display';
 
 const MAX_FEATURED_LISTINGS = 8;
 const STEP_MS = 4500;
@@ -86,6 +88,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
     const list = promotedListings.length > 0 ? promotedListings : fallbackList;
     return list.slice(0, MAX_FEATURED_LISTINGS);
   }, [promotedListings, allListings]);
+  const hasPromotedInventory = promotedListings.length > 0;
 
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
@@ -153,7 +156,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
     >
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-sm">
+      <div className="relative overflow-hidden rounded-card shadow-sm">
         <div
           id="hero-boosted-track"
           ref={railRef}
@@ -161,7 +164,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
           aria-label={t('home.heroBoostedScroll.carouselLabel')}
           onScroll={handleScroll}
         >
-          {scrollSequence.map((item, index) => renderItemCard(item, index))}
+          {scrollSequence.map((item, index) => renderItemCard(item, index, hasPromotedInventory))}
         </div>
 
         {scrollSequence.length > 1 && (
@@ -193,7 +196,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
           {scrollSequence.map((item, index) => (
             <span
               key={item.id}
-              className={`h-2 rounded-full shadow-2xs transition-all duration-normal ${
+              className={`h-2 rounded-pill shadow-2xs motion-interactive ${
                 index === activeIndex ? 'w-4 bg-primary' : 'w-2 bg-white/70'
               }`}
             />
@@ -201,22 +204,32 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
         </div>
       </div>
 
-      <div className="mt-3 flex min-h-6 items-center px-1">
-        <p className="flex min-w-0 items-center gap-2 text-xs text-stone-600 sm:text-sm">
-          <ShieldCheck className="h-icon-lg w-icon-lg shrink-0 text-success" />
-          <span className="font-bold text-stone-800">{t('home.heroBoostedScroll.annoncesControlees')}</span>
-          <span className="hidden truncate font-medium sm:inline">
+      <Link
+        to="/securite"
+        className="group mt-3 flex min-h-6 min-w-0 items-center gap-2 px-1 text-xs text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:text-sm"
+        aria-label={`${t('home.heroBoostedScroll.annoncesControlees')}. ${t('home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees')} ${t('home.heroBoostedScroll.enSavoirPlus')}`}
+      >
+        <ShieldCheck className="h-icon-lg w-icon-lg shrink-0 text-success" aria-hidden="true" />
+        <span className="min-w-0 flex-1 truncate">
+          <span className="font-bold text-stone-800 group-hover:text-primary">
+            {t('home.heroBoostedScroll.annoncesControlees')}
+          </span>
+          <span className="hidden font-medium sm:inline">
             · {t('home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees')}
           </span>
-        </p>
-        <span className="sr-only" aria-live="polite">
-          {activeIndex + 1} / {scrollSequence.length}
         </span>
-      </div>
+        <span className="inline-flex shrink-0 items-center gap-1 font-bold text-primary">
+          <span>{t('home.heroBoostedScroll.enSavoirPlus')}</span>
+          <ChevronRight className="h-icon-sm w-icon-sm transition-transform duration-fast group-hover:translate-x-0.5" aria-hidden="true" />
+        </span>
+      </Link>
+      <span className="sr-only" aria-live="polite">
+        {activeIndex + 1} / {scrollSequence.length}
+      </span>
     </section>
   );
 
-  function renderItemCard(item: Listing, index: number) {
+  function renderItemCard(item: Listing, index: number, showFeaturedBadge: boolean) {
     const isFav = favorites.includes(item.id);
     const photoUrl = getListingPhotoUrl(item.coverImageUrl || item.photos?.[0]);
 
@@ -241,7 +254,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
 
           <div className="absolute inset-x-0 bottom-0 p-4 pb-5 text-white sm:p-5 sm:pb-5 sm:pr-32">
             <p className="mb-1.5 truncate text-micro font-bold uppercase tracking-wider text-orange-200 sm:text-xs">
-              {item.categoryLabel || 'Mode & Accessoires'}
+              {getListingCategoryLabel(item) || 'Mode & Accessoires'}
             </p>
             <h3 title={item.title} className="line-clamp-2 font-display text-base font-bold leading-snug sm:text-lg">
               {item.title}
@@ -271,12 +284,23 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({ onListingC
           </div>
         </Link>
 
+        {showFeaturedBadge && (
+          <Badge
+            variant="featured"
+            size="sm"
+            icon
+            className="pointer-events-none absolute left-4 top-4 z-raised px-1.5 shadow-sm"
+          >
+            <span className="sr-only">{t('ui.listingCard.annonceALaUne')}</span>
+          </Badge>
+        )}
+
         <FavoriteButton
           isFavorite={isFav}
           onToggle={(e) => handleToggleFavorite(e, item.id)}
           size="lg"
           variant="floating"
-          className="absolute left-4 top-4 z-raised"
+          className="absolute right-4 top-4 z-raised"
         />
       </article>
     );

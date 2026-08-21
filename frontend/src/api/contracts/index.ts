@@ -13,3 +13,4 @@ export * from './verification.contract';
 export * from './workspace.contract';
 export * from './admin.contract';
 export * from './reviews.contract';
+export * from './trending.contract';

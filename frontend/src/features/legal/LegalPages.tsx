@@ -3,6 +3,7 @@ import { ShieldCheck,  AlertTriangle,    Tag } from 'lucide-react';
 import { Breadcrumbs } from '../../design-system';
 import { storageService } from '../../services/storage.service';
 import { ListingCard } from '../../design-system/primitives/ListingCard';
+import { ListingRail } from '../../design-system/primitives/ListingRail';
 import { usePageMeta } from '../../hooks/usePageMeta';
 import { useTranslation } from '../../i18n/I18nProvider';
 
@@ -165,11 +166,11 @@ export const DealsPage: React.FC = () => {
           heading rather than jumping straight from the page h1. */}
       <section aria-labelledby="deals-results-heading">
         <h2 id="deals-results-heading" className="sr-only">{t('legal.legalPages.annoncesEnPromotion')}</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <ListingRail label={t('legal.legalPages.annoncesEnPromotion')}>
           {deals.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}
-        </div>
+        </ListingRail>
       </section>
     </div>
   );

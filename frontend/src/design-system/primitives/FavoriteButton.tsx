@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart } from 'lucide-react';
+import { CONTROL_FOCUS_CLASS, CONTROL_MOTION_CLASS } from '../utils/controlMetrics';
 
 export type FavoriteButtonSize = 'sm' | 'md' | 'lg';
 export type FavoriteButtonVariant = 'bare' | 'floating';
@@ -90,7 +91,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   const position = POSITIONED_BY_CALLER.test(className) ? '' : 'relative';
   const surface =
     variant === 'floating'
-      ? 'rounded-full bg-white/90 backdrop-blur-xs shadow-xs text-stone-600 hover:bg-white'
+      ? 'rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-stone-600 hover:bg-bg-surface'
       : 'rounded-full text-stone-500 hover:bg-stone-100';
 
   return (
@@ -99,7 +100,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       onClick={onToggle}
       aria-pressed={isFavorite}
       aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-      className={`${position} flex items-center justify-center shrink-0 transition-all hover:text-primary active:scale-90 cursor-pointer ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
+      className={`${position} flex items-center justify-center shrink-0 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary active:scale-90 cursor-pointer ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
     >
       <Heart className={`${ICON[size]} ${isFavorite ? 'fill-primary text-primary' : ''}`} />
     </button>

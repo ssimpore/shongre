@@ -88,7 +88,7 @@ export const Tabs: React.FC<TabsProps> = ({
             onClick={() => onChange(tab.id)}
             onKeyDown={handleKeyDown}
             className={cn(
-              'flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap font-semibold transition-colors duration-fast',
+              'flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap font-semibold motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
               isSegmented
                 ? cn(
                     'h-control-sm rounded-control px-3 text-xs sm:px-4',
