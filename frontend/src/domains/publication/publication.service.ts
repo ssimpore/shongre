@@ -14,6 +14,11 @@ import {
   ValidationError,
 } from "./publication.types";
 import { Listing, UserProfile, DeliveryOption } from "../../types";
+import {
+  getDemoDeliveryAmountMinor,
+  getDemoPublicationPolicy,
+  normalizeCommercialCategory,
+} from "../monetization/demo-commercial-catalog";
 
 const DRAFT_STORAGE_PREFIX = "shongre_publication_draft_";
 
@@ -269,7 +274,20 @@ export class PublicationService {
       const activeListings = storageService
         .getListings()
         .filter((l) => l.sellerId === user.id && l.status === "active");
-      const maxAllowed = user.role === "pro_seller" ? 500 : 25; // derived from user plan
+      const policy = getDemoPublicationPolicy({
+        marketCode: marketCode.toUpperCase(),
+        audience: user.role === "pro_seller" ? "professional" : "individual",
+        categoryId: normalizeCommercialCategory(draft.taxonomyNodeId),
+        planId: user.activePlanId,
+      });
+      const maxAllowed = policy.quotaLimit;
+      if (!policy.eligible) {
+        errors.push({
+          field: "entitlements",
+          code: policy.reasonCode,
+          message: "Votre offre actuelle ne permet pas cette publication.",
+        });
+      }
       if (activeListings.length >= maxAllowed && !draft.id) {
         errors.push({
           field: "entitlements",
@@ -301,6 +319,12 @@ export class PublicationService {
     const node = taxonomyService.getNode(draft.taxonomyNodeId);
     const ancestors = taxonomyService.getAncestors(draft.taxonomyNodeId);
     const rootNode = ancestors[0] || node;
+    const policy = getDemoPublicationPolicy({
+      marketCode: (draft.marketCode || "FR").toUpperCase(),
+      audience: user.role === "pro_seller" ? "professional" : "individual",
+      categoryId: normalizeCommercialCategory(rootNode?.slug || node?.slug),
+      planId: user.activePlanId,
+    });
 
     // Delivery Options mapping
     const deliveryOptions: DeliveryOption[] = [];
@@ -315,13 +339,13 @@ export class PublicationService {
       deliveryOptions.push({
         type: "relay_point",
         available: true,
-        price: 4.49,
+        price: getDemoDeliveryAmountMinor("relay_point") / 100,
         courierName: "Mondial Relay",
       });
       deliveryOptions.push({
         type: "home_delivery",
         available: true,
-        price: 6.99,
+        price: getDemoDeliveryAmountMinor("home") / 100,
         courierName: "Colissimo",
       });
     }
@@ -329,7 +353,7 @@ export class PublicationService {
       deliveryOptions.push({
         type: "custom_carrier",
         available: true,
-        price: 39,
+        price: getDemoDeliveryAmountMinor("bulky") / 100,
         courierName: "Transporteur Meubles Cocolis",
       });
     }
@@ -357,8 +381,8 @@ export class PublicationService {
 
     const now = new Date().toISOString();
     const expiresAt = new Date(
-      Date.now() + 60 * 24 * 60 * 60 * 1000,
-    ).toISOString(); // 60 days
+      Date.now() + policy.durationDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
 
     const isPro = user.role === "pro_seller";
 

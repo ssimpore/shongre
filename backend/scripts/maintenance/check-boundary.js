@@ -13,6 +13,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../../..');
 const frontendDir = path.resolve(rootDir, 'frontend');
+const GENERATED_DIRECTORIES = new Set([
+  'node_modules',
+  'dist',
+  '.git',
+  '.vscode',
+  '.antigravity',
+  '.next',
+  'coverage',
+  'test-results',
+  'playwright-report',
+]);
 
 const FORBIDDEN_PATTERNS = [
   'SUPABASE_SERVICE_ROLE_KEY',
@@ -38,7 +49,7 @@ function scanDirectory(dir) {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if (['node_modules', 'dist', '.git', '.vscode', '.antigravity'].includes(entry.name)) {
+      if (GENERATED_DIRECTORIES.has(entry.name)) {
         continue;
       }
       scanDirectory(fullPath);

@@ -37,6 +37,27 @@ export const routes = {
     return `/recherche${qs ? `?${qs}` : ""}`;
   },
   categories: () => "/categories",
+  courses: {
+    search: () => "/cours",
+    tutor: (slug: string) => `/cours/professeur/${slug}`,
+    request: () => "/cours/demande",
+    publish: () => "/deposer/cours",
+    workspace: () => "/compte/cours",
+    organization: () => "/compte/cours/organisation",
+  },
+  auto: {
+    search: () => "/auto",
+    vehicle: (slug: string) => `/auto/vehicule/${slug}`,
+    compare: (ids: string[] = []) => `/auto/comparer${ids.length ? `?ids=${ids.join(",")}` : ""}`,
+    publish: () => "/deposer/auto",
+    workspace: () => "/compte/auto",
+  },
+  immo: {
+    search: () => "/immo",
+    property: (slug: string) => `/immo/bien/${slug}`,
+    publish: () => "/deposer/immo",
+    workspace: () => "/compte/immo",
+  },
   collections: {
     list: () => "/collections",
     detail: (slug: string) => `/collections/${slug}`,
@@ -69,6 +90,9 @@ export const routes = {
     markets: () => `/admin/marches`,
     taxonomy: () => `/admin/taxonomie`,
     monetization: () => `/admin/monetisation`,
+    courses: () => `/admin/cours`,
+    auto: () => `/admin/auto`,
+    immo: () => `/admin/immo`,
     roles: () => `/admin/roles`,
     audit: () => `/admin/audit`,
   },

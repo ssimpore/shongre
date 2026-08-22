@@ -66,7 +66,11 @@ export function ListingCard({
 }: ListingCardProps) {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const href = `/annonce/${listing.id}`;
+  const configuredPath = listing.attributes?.canonicalPath;
+  const href =
+    typeof configuredPath === "string" && configuredPath.startsWith("/")
+      ? configuredPath
+      : `/annonce/${listing.id}`;
 
   return (
     <SharedListingCard

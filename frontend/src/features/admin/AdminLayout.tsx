@@ -18,6 +18,9 @@ import {
   Cpu,
   ChevronDown,
   Flame,
+  GraduationCap,
+  CarFront,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import {
@@ -86,6 +89,24 @@ export const AdminLayout: React.FC = () => {
         can("crm.access") ||
         can("staff.commercial.access") ||
         can("admin.access"),
+    },
+    {
+      to: "/admin/cours",
+      label: "Shongre Cours",
+      icon: GraduationCap,
+      show: can("course.admin.manage"),
+    },
+    {
+      to: "/admin/auto",
+      label: "Shongre Auto",
+      icon: CarFront,
+      show: can("auto.admin.manage"),
+    },
+    {
+      to: "/admin/immo",
+      label: "Shongre Immo",
+      icon: Building2,
+      show: can("immo.admin.manage"),
     },
     {
       to: "/admin/crm/prospection",

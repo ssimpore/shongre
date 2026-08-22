@@ -16,17 +16,8 @@ import { AuthLayout } from "./components/AuthLayout";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
-
-// Safe redirect sanitization to prevent open redirect vulnerabilities
-function getSafeRedirectUrl(target: string | null): string {
-  if (!target) return routes.home();
-  const trimmed = target.trim();
-  // Must be a relative path starting with / and not starting with //
-  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
-    return trimmed;
-  }
-  return routes.home();
-}
+import { SocialLoginButtons } from "./components/SocialLoginButtons";
+import { resolveSafeReturn } from "../../security/safe-return";
 
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
@@ -42,8 +33,9 @@ export const LoginPage: React.FC = () => {
   const { login, loginWithMFA, switchDemoUser } = useAuth();
   const toast = useToast();
 
-  const redirectUrl = getSafeRedirectUrl(
+  const redirectUrl = resolveSafeReturn(
     searchParams.get("redirect") || searchParams.get("returnTo"),
+    routes.home(),
   );
 
   const [email, setEmail] = useState("");
@@ -246,6 +238,8 @@ export const LoginPage: React.FC = () => {
           </Button>
         </form>
       )}
+
+      {!requiresMfa ? <SocialLoginButtons returnTo={redirectUrl} /> : null}
 
       {/* Quick Demo Credentials Panel for Testers */}
       <div className="mt-7 pt-5 border-t border-stone-100">

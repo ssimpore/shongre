@@ -20,6 +20,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { PasswordField } from "./components/PasswordField";
 import { AuthLayout } from "./components/AuthLayout";
 import { AccountTypeSelector } from "./components/AccountTypeSelector";
+import { SocialLoginButtons } from "./components/SocialLoginButtons";
 import {
   SUPPORTED_MARKETS,
   validateBusinessIdentifier,
@@ -382,6 +383,9 @@ export const RegisterIndividualPage: React.FC = () => {
           {t("auth.registerPages.creerMonCompteParticulier")}
         </Button>
       </form>
+      <div className="mt-6">
+        <SocialLoginButtons accountType="individual" />
+      </div>
     </AuthLayout>
   );
 };
@@ -552,6 +556,7 @@ export const RegisterProPage: React.FC = () => {
           )}
 
           {step === 1 ? (
+            <>
             <form onSubmit={handleNextStep} className="space-y-4">
               <div>
                 <label
@@ -641,6 +646,10 @@ export const RegisterProPage: React.FC = () => {
                 </Button>
               </div>
             </form>
+            <div className="mt-6">
+              <SocialLoginButtons accountType="professional" />
+            </div>
+            </>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

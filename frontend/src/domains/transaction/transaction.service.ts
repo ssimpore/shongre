@@ -13,6 +13,10 @@ import { storageService } from "../../services/storage.service";
 import { auditService } from "../../security/audit.service";
 import { marketService } from "../market/market.service";
 import { OrderPricingSnapshot } from "./transaction.types";
+import {
+  getDemoDeliveryAmountMinor,
+  getDemoTransactionCommercials,
+} from "../monetization/demo-commercial-catalog";
 
 export interface CreateReservationInput {
   listingId: string;
@@ -69,20 +73,16 @@ class TransactionService {
     const shippingFeeMinor = Math.round(shippingFee * 100);
 
     const config = marketService.getEffectiveConfig(marketCode);
-    const rate =
-      config.payments.buyerProtectionFeePercent ??
-      TRANSACTION_CONFIG.buyerProtectionRate;
-    const fixedMinor = Math.round(
-      (config.payments.buyerProtectionFixedFee ?? 0.7) * 100,
-    );
+    const commercials = getDemoTransactionCommercials(marketCode, sellerType);
+    const rate = commercials.protectionRateBps / 10_000;
+    const fixedMinor = commercials.protectionFixedMinor;
 
     const buyerProtectionFeeMinor =
       itemSubtotalMinor > 0
         ? Math.round(itemSubtotalMinor * rate) + fixedMinor
         : 0;
 
-    const commissionRate =
-      sellerType === "pro" ? TRANSACTION_CONFIG.platformCommissionRate : 0;
+    const commissionRate = commercials.commissionRateBps / 10_000;
     const platformCommissionMinor = Math.round(
       itemSubtotalMinor * commissionRate,
     );
@@ -118,12 +118,9 @@ class TransactionService {
     const config = marketService.getEffectiveConfig(mCode);
 
     // Buyer protection fee: rate + fixed fee from effective market config
-    const rate =
-      config.payments.buyerProtectionFeePercent ??
-      TRANSACTION_CONFIG.buyerProtectionRate;
-    const fixedCents = Math.round(
-      (config.payments.buyerProtectionFixedFee ?? 0.7) * 100,
-    );
+    const commercials = getDemoTransactionCommercials(mCode, sellerType);
+    const rate = commercials.protectionRateBps / 10_000;
+    const fixedCents = commercials.protectionFixedMinor;
 
     const protectionFeeCents =
       itemPriceCents > 0 ? Math.round(itemPriceCents * rate) + fixedCents : 0;
@@ -131,24 +128,19 @@ class TransactionService {
     // Shipping fee based on delivery method
     let shippingFeeCents = 0;
     if (deliveryMethod === "relay_point") {
-      shippingFeeCents = Math.round(
-        (config.delivery?.carriers?.mondialRelay?.defaultFee ?? 4.9) * 100,
-      );
+      shippingFeeCents = getDemoDeliveryAmountMinor("relay_point");
     } else if (
       deliveryMethod === "home_delivery" ||
       deliveryMethod === "custom_carrier"
     ) {
-      shippingFeeCents = Math.round(
-        (config.delivery?.carriers?.colissimo?.defaultFee ?? 6.9) * 100,
-      );
+      shippingFeeCents = getDemoDeliveryAmountMinor("home");
     }
 
     const totalAmountCents =
       itemPriceCents + protectionFeeCents + shippingFeeCents;
 
     // Platform commission (only for pro sellers in marketplace mode)
-    const commissionRate =
-      sellerType === "pro" ? TRANSACTION_CONFIG.platformCommissionRate : 0;
+    const commissionRate = commercials.commissionRateBps / 10_000;
     const platformCommissionCents = Math.round(itemPriceCents * commissionRate);
     const sellerPayoutAmountCents = itemPriceCents - platformCommissionCents;
 
@@ -1164,9 +1156,16 @@ class TransactionService {
       throw new Error("Montant invalide ou solde disponible insuffisant.");
     }
 
+    const payoutCommercials = getDemoTransactionCommercials(
+      storageService.getActiveMarketCode() || "FR",
+      "pro",
+    );
     const fee =
       payoutType === "instant"
-        ? TRANSACTION_CONFIG.instantPayoutFeeCents / 100
+        ? Math.round(
+            amount * 100 * (payoutCommercials.instantPayoutRateBps / 10_000) +
+              payoutCommercials.instantPayoutFixedMinor,
+          ) / 100
         : 0;
     const netAmount = amount - fee;
 

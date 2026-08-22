@@ -15,7 +15,14 @@ import { mobileEnvironment } from "@/config/environment";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const {
+    login,
+    loginWithProvider,
+    socialProviders,
+    pendingSocialCompletion,
+    socialNotice,
+    completePendingSocialRegistration,
+  } = useAuth();
   const [email, setEmail] = useState("thomas.laurent@example.fr");
   const [password, setPassword] = useState("ShongreDemo2024!");
   const [error, setError] = useState("");
@@ -38,6 +45,34 @@ export default function LoginScreen() {
       setError(
         reason instanceof Error ? reason.message : "Connexion impossible.",
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const socialLogin = async (provider: "google" | "apple" | "facebook") => {
+    setLoading(true);
+    setError("");
+    try {
+      await loginWithProvider(provider);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Connexion temporairement indisponible.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completeSocialProfile = async () => {
+    if (!loginRequestSchema.shape.email.safeParse(email).success) {
+      setError("Saisissez une adresse email valide.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await completePendingSocialRegistration(email.trim().toLowerCase());
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Activation impossible.");
     } finally {
       setLoading(false);
     }
@@ -77,7 +112,20 @@ export default function LoginScreen() {
           {error}
         </Text>
       ) : null}
-      <Button label="Se connecter" onPress={submit} loading={loading} />
+      {socialNotice ? <Text accessibilityRole="alert" style={styles.notice}>{socialNotice}</Text> : null}
+      {pendingSocialCompletion ? (
+        <Button label="Vérifier cette adresse" onPress={completeSocialProfile} loading={loading} />
+      ) : (
+        <>
+          <Button label="Se connecter" onPress={submit} loading={loading} />
+          {(socialProviders.google || socialProviders.apple || socialProviders.facebook) ? (
+            <Text style={styles.divider}>ou continuer avec</Text>
+          ) : null}
+          {socialProviders.google ? <Button label="Continuer avec Google" variant="secondary" onPress={() => socialLogin("google")} disabled={loading} /> : null}
+          {socialProviders.apple ? <Button label="Continuer avec Apple" variant="secondary" onPress={() => socialLogin("apple")} disabled={loading} /> : null}
+          {socialProviders.facebook ? <Button label="Continuer avec Facebook" variant="secondary" onPress={() => socialLogin("facebook")} disabled={loading} /> : null}
+        </>
+      )}
     </Screen>
   );
 }
@@ -102,5 +150,16 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
     lineHeight: nativeTypography.lineHeight.bodySm,
+  },
+  notice: {
+    color: colors.textMuted,
+    fontSize: nativeTypography.size.bodySm,
+    lineHeight: nativeTypography.lineHeight.bodySm,
+  },
+  divider: {
+    color: colors.textMuted,
+    fontSize: nativeTypography.size.caption,
+    textAlign: "center",
+    paddingVertical: spacing.xs,
   },
 });

@@ -11,8 +11,21 @@ export interface RequireAuthProps {
 
 export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, currentUser } = useAuth();
+  const { isAuthenticated, isRestoring, currentUser } = useAuth();
   const location = useLocation();
+
+  if (isRestoring) {
+    return (
+      <div
+        className="max-w-xl mx-auto px-4 py-16 text-center text-sm text-stone-600"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        Vérification de votre session…
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !currentUser) {
     return (

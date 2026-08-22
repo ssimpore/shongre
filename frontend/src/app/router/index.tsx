@@ -11,6 +11,7 @@ import { PageSuspense } from "../layouts/PageSuspense";
 
 // Security & RBAC Guards
 import { RequireAuth } from "../../security/components/RequireAuth";
+import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
 import { RequirePermission } from "../../security/components/RequirePermission";
 import { RequireRole } from "../../security/components/RequireRole";
 import { AdminLayout } from "../../features/admin/AdminLayout";
@@ -42,6 +43,81 @@ const ListingDetailPage = lazy(() =>
 const PublishWizard = lazy(() =>
   import("../../features/publishing/PublishWizard").then((m) => ({
     default: m.PublishWizard,
+  })),
+);
+const CoursesSearchPage = lazy(() =>
+  import("../../features/courses/CoursesSearchPage").then((m) => ({
+    default: m.CoursesSearchPage,
+  })),
+);
+const CourseTutorProfilePage = lazy(() =>
+  import("../../features/courses/CourseTutorProfilePage").then((m) => ({
+    default: m.CourseTutorProfilePage,
+  })),
+);
+const CourseLearnerRequestPage = lazy(() =>
+  import("../../features/courses/CourseLearnerRequestPage").then((m) => ({
+    default: m.CourseLearnerRequestPage,
+  })),
+);
+const CourseTutorOnboardingPage = lazy(() =>
+  import("../../features/courses/CourseTutorOnboardingPage").then((m) => ({
+    default: m.CourseTutorOnboardingPage,
+  })),
+);
+const CourseTutorWorkspacePage = lazy(() =>
+  import("../../features/courses/CourseTutorWorkspacePage").then((m) => ({
+    default: m.CourseTutorWorkspacePage,
+  })),
+);
+const CourseOrganizationWorkspacePage = lazy(() =>
+  import("../../features/courses/CourseOrganizationWorkspacePage").then((m) => ({
+    default: m.CourseOrganizationWorkspacePage,
+  })),
+);
+const AutoSearchPage = lazy(() =>
+  import("../../features/auto/AutoSearchPage").then((m) => ({
+    default: m.AutoSearchPage,
+  })),
+);
+const AutoVehicleDetailPage = lazy(() =>
+  import("../../features/auto/AutoVehicleDetailPage").then((m) => ({
+    default: m.AutoVehicleDetailPage,
+  })),
+);
+const AutoComparePage = lazy(() =>
+  import("../../features/auto/AutoComparePage").then((m) => ({
+    default: m.AutoComparePage,
+  })),
+);
+const AutoPublishWizardPage = lazy(() =>
+  import("../../features/auto/AutoPublishWizardPage").then((m) => ({
+    default: m.AutoPublishWizardPage,
+  })),
+);
+const AutoDealerWorkspacePage = lazy(() =>
+  import("../../features/auto/AutoDealerWorkspacePage").then((m) => ({
+    default: m.AutoDealerWorkspacePage,
+  })),
+);
+const ImmoSearchPage = lazy(() =>
+  import("../../features/real-estate/ImmoSearchPage").then((m) => ({
+    default: m.ImmoSearchPage,
+  })),
+);
+const ImmoPropertyDetailPage = lazy(() =>
+  import("../../features/real-estate/ImmoPropertyDetailPage").then((m) => ({
+    default: m.ImmoPropertyDetailPage,
+  })),
+);
+const ImmoPublishWizardPage = lazy(() =>
+  import("../../features/real-estate/ImmoPublishWizardPage").then((m) => ({
+    default: m.ImmoPublishWizardPage,
+  })),
+);
+const ImmoAgencyWorkspacePage = lazy(() =>
+  import("../../features/real-estate/ImmoAgencyWorkspacePage").then((m) => ({
+    default: m.ImmoAgencyWorkspacePage,
   })),
 );
 const MessagingPage = lazy(() =>
@@ -144,6 +220,21 @@ const VerifyEmailPage = lazy(() =>
     default: m.VerifyEmailPage,
   })),
 );
+const OAuthCallbackPage = lazy(() =>
+  import("../../features/auth/OAuthCallbackPage").then((m) => ({
+    default: m.OAuthCallbackPage,
+  })),
+);
+const AccountSecurityPage = lazy(() =>
+  import("../../features/auth/AccountSecurityPage").then((m) => ({
+    default: m.AccountSecurityPage,
+  })),
+);
+const AccountTypeOnboardingPage = lazy(() =>
+  import("../../features/auth/AccountTypeOnboardingPage").then((m) => ({
+    default: m.AccountTypeOnboardingPage,
+  })),
+);
 
 // Legal Pages
 const TermsPage = lazy(() =>
@@ -222,6 +313,21 @@ const NewsletterUnsubscribePage = lazy(() =>
 const AdminNewsletterPage = lazy(() =>
   import("../../features/admin/AdminNewsletterPage").then((m) => ({
     default: m.AdminNewsletterPage,
+  })),
+);
+const AdminCoursesPage = lazy(() =>
+  import("../../features/courses/AdminCoursesPage").then((m) => ({
+    default: m.AdminCoursesPage,
+  })),
+);
+const AdminAutoPage = lazy(() =>
+  import("../../features/auto/AdminAutoPage").then((m) => ({
+    default: m.AdminAutoPage,
+  })),
+);
+const AdminImmoPage = lazy(() =>
+  import("../../features/real-estate/AdminImmoPage").then((m) => ({
+    default: m.AdminImmoPage,
   })),
 );
 const NotFoundPage = lazy(() =>
@@ -354,20 +460,50 @@ export const router = createBrowserRouter([
           </RequirePermission>
         ),
       },
+      {
+        path: "deposer/cours",
+        element: (
+          <RequirePermission permission="course.profile.manage.own">
+            {withSuspense(CourseTutorOnboardingPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "deposer/auto",
+        element: (
+          <RequirePermission permission="auto.vehicle.manage.own">
+            {withSuspense(AutoPublishWizardPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "deposer/immo",
+        element: (
+          <RequirePermission permission="immo.property.manage.own">
+            {withSuspense(ImmoPublishWizardPage)}
+          </RequirePermission>
+        ),
+      },
 
       // Signing in and signing up are task-completion flows too: the full
       // marketplace shell around a login form offers a dozen ways to wander off
       // mid-task, and the footer's category and city links are noise to someone
       // who is three fields from being done.
-      { path: "connexion", element: withSuspense(LoginPage) },
-      { path: "inscription", element: withSuspense(RegisterChoicePage) },
+      {
+        path: "connexion",
+        element: <GuestOnlyRoute>{withSuspense(LoginPage)}</GuestOnlyRoute>,
+      },
+      {
+        path: "inscription",
+        element: <GuestOnlyRoute>{withSuspense(RegisterChoicePage)}</GuestOnlyRoute>,
+      },
       {
         path: "inscription/particulier",
-        element: withSuspense(RegisterIndividualPage),
+        element: <GuestOnlyRoute>{withSuspense(RegisterIndividualPage)}</GuestOnlyRoute>,
       },
       {
         path: "inscription/professionnel",
-        element: withSuspense(RegisterProPage),
+        element: <GuestOnlyRoute>{withSuspense(RegisterProPage)}</GuestOnlyRoute>,
       },
       {
         path: "mot-de-passe-oublie",
@@ -378,6 +514,7 @@ export const router = createBrowserRouter([
         element: withSuspense(ForgotPasswordPage),
       },
       { path: "verification-email", element: withSuspense(VerifyEmailPage) },
+      { path: "auth/callback", element: withSuspense(OAuthCallbackPage) },
     ],
   },
   {
@@ -391,6 +528,30 @@ export const router = createBrowserRouter([
       { path: "recherche", element: withSuspense(SearchPage) },
       { path: "categorie/:categorySlug", element: withSuspense(SearchPage) },
       { path: "annonce/:id", element: withSuspense(ListingDetailPage) },
+      { path: "auto", element: withSuspense(AutoSearchPage) },
+      {
+        path: "auto/vehicule/:slug",
+        element: withSuspense(AutoVehicleDetailPage),
+      },
+      { path: "auto/comparer", element: withSuspense(AutoComparePage) },
+      { path: "immo", element: withSuspense(ImmoSearchPage) },
+      {
+        path: "immo/bien/:slug",
+        element: withSuspense(ImmoPropertyDetailPage),
+      },
+      { path: "cours", element: withSuspense(CoursesSearchPage) },
+      {
+        path: "cours/professeur/:slug",
+        element: withSuspense(CourseTutorProfilePage),
+      },
+      {
+        path: "cours/demande",
+        element: (
+          <RequirePermission permission="course.request.create">
+            {withSuspense(CourseLearnerRequestPage)}
+          </RequirePermission>
+        ),
+      },
       {
         path: "publier",
         element: <Navigate to="/deposer" replace />,
@@ -459,6 +620,14 @@ export const router = createBrowserRouter([
             path: "verification",
             element: withSuspense(VerificationCenterPage),
           },
+          {
+            path: "securite-compte",
+            element: withSuspense(AccountSecurityPage),
+          },
+          {
+            path: "type-de-compte",
+            element: withSuspense(AccountTypeOnboardingPage),
+          },
           { path: "support", element: withSuspense(SupportRequestsPage) },
           {
             path: "support/:id",
@@ -469,6 +638,38 @@ export const router = createBrowserRouter([
             element: withSuspense(NewsletterPreferencesPage),
           },
           { path: "profil", element: withSuspense(AccountOverviewPage) },
+          {
+            path: "cours",
+            element: (
+              <RequirePermission permission="course.profile.manage.own">
+                {withSuspense(CourseTutorWorkspacePage)}
+              </RequirePermission>
+            ),
+          },
+          {
+            path: "cours/organisation",
+            element: (
+              <RequirePermission permission="course.organization.manage.own">
+                {withSuspense(CourseOrganizationWorkspacePage)}
+              </RequirePermission>
+            ),
+          },
+          {
+            path: "auto",
+            element: (
+              <RequirePermission permission="auto.dealer.manage.own">
+                {withSuspense(AutoDealerWorkspacePage)}
+              </RequirePermission>
+            ),
+          },
+          {
+            path: "immo",
+            element: (
+              <RequirePermission permission="immo.agency.manage.own">
+                {withSuspense(ImmoAgencyWorkspacePage)}
+              </RequirePermission>
+            ),
+          },
 
           // Pro sub-routes
           {
@@ -615,6 +816,30 @@ export const router = createBrowserRouter([
         element: (
           <RequirePermission permission="market.manage">
             {withSuspense(AdminNewsletterPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "cours",
+        element: (
+          <RequirePermission permission="course.admin.manage">
+            {withSuspense(AdminCoursesPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "auto",
+        element: (
+          <RequirePermission permission="auto.admin.manage">
+            {withSuspense(AdminAutoPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "immo",
+        element: (
+          <RequirePermission permission="immo.admin.manage">
+            {withSuspense(AdminImmoPage)}
           </RequirePermission>
         ),
       },

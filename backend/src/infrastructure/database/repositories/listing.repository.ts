@@ -79,6 +79,9 @@ export class DemoListingRepository implements IListingRepository {
     if (filters.categoryId) {
       result = result.filter((l) => l.categoryId === filters.categoryId);
     }
+    if (filters.sellerId) {
+      result = result.filter((l) => l.sellerId === filters.sellerId);
+    }
     if (filters.minPrice !== undefined) {
       result = result.filter((l) => l.price >= (filters.minPrice || 0));
     }
@@ -264,6 +267,9 @@ export class PostgresListingRepository implements IListingRepository {
       }
       if (filters.categoryId) {
         query = query.eq('category_id', filters.categoryId);
+      }
+      if (filters.sellerId) {
+        query = query.eq('seller_id', filters.sellerId);
       }
       if (filters.minPrice !== undefined) {
         query = query.gte('price', filters.minPrice);

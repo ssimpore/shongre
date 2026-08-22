@@ -1,5 +1,8 @@
 import { stripeAdapter, StripePaymentIntentParams } from '../../infrastructure/payments/stripe-adapter.js';
-import { logger } from '../../infrastructure/logging/logger.js';
+import { createHash } from 'node:crypto';
+
+const deterministicProviderId = (prefix: string, value: string) =>
+  `${prefix}_${createHash('sha256').update(value).digest('hex').slice(0, 16)}`;
 
 export interface PaymentIntentResult {
   clientSecret: string;
@@ -16,7 +19,7 @@ export interface IPaymentProvider {
 
 export class DemoPaymentProvider implements IPaymentProvider {
   async createPaymentIntent(amount: number, currency = 'EUR', metadata?: Record<string, string>): Promise<PaymentIntentResult> {
-    const id = `pi_demo_${Math.random().toString(36).substring(2, 10)}`;
+    const id = deterministicProviderId('pi_demo', `${amount}:${currency}:${JSON.stringify(metadata || {})}`);
     return {
       clientSecret: `${id}_secret_demo`,
       status: 'requires_action',
@@ -27,7 +30,7 @@ export class DemoPaymentProvider implements IPaymentProvider {
 
   async requestPayout(sellerId: string, amount: number, iban: string): Promise<{ payoutId: string; status: 'completed' | 'processing' }> {
     return {
-      payoutId: `po_demo_${Math.random().toString(36).substring(2, 10)}`,
+      payoutId: deterministicProviderId('po_demo', `${sellerId}:${amount}:${iban.slice(-4)}`),
       status: 'processing',
     };
   }

@@ -18,6 +18,9 @@ const GUEST_PERMISSIONS: Permission[] = [
   "seller.profile.read",
   "listing.read",
   "report.create",
+  "course.read",
+  "auto.read",
+  "immo.read",
 ];
 
 // 2. Individual Buyer Permissions
@@ -35,6 +38,12 @@ const BUYER_PERMISSIONS: Permission[] = [
   "payment.initiate",
   "review.create",
   "review.update.own",
+  "course.request.create",
+  "course.booking.create",
+  "course.profile.manage.own",
+  "course.offer.manage.own",
+  "course.lead.read.own",
+  "course.lead.respond.own",
 ];
 
 // 3. Individual Seller Permissions
@@ -49,6 +58,12 @@ const SELLER_PERMISSIONS: Permission[] = [
   "listing.mark_sold",
   "listing.promote",
   "order.manage.seller",
+  "course.profile.manage.own",
+  "course.offer.manage.own",
+  "course.lead.read.own",
+  "course.lead.respond.own",
+  "auto.vehicle.manage.own",
+  "immo.property.manage.own",
 ];
 
 // 4. Professional Seller Permissions
@@ -60,6 +75,13 @@ const PRO_SELLER_PERMISSIONS: Permission[] = [
   "store.customization.manage",
   "subscription.manage.own",
   "subscription.upgrade",
+  "course.organization.manage.own",
+  "auto.dealer.manage.own",
+  "auto.lead.manage.own",
+  "auto.inventory.import.own",
+  "immo.agency.manage.own",
+  "immo.lead.manage.own",
+  "immo.inventory.import.own",
 ];
 
 // 5. Support Specialist
@@ -170,6 +192,9 @@ const MARKET_MANAGER_PERMISSIONS: Permission[] = [
   "provider.configuration.read",
   "provider.configuration.manage",
   "provider.health.read",
+  "course.admin.manage",
+  "auto.admin.manage",
+  "immo.admin.manage",
 ];
 
 // 12. Administrator
@@ -217,6 +242,9 @@ const ADMIN_PERMISSIONS: Permission[] = [
   "provider.credentials.status.read",
   "provider.health.read",
   "provider.test",
+  "course.admin.manage",
+  "auto.admin.manage",
+  "immo.admin.manage",
 ];
 
 // 13. Super Administrator (Unrestricted platform access)

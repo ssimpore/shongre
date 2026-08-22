@@ -19,6 +19,10 @@ import {
   LogOut,
   Headphones,
   Mail,
+  GraduationCap,
+  CarFront,
+  Building2,
+  KeyRound,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
@@ -83,6 +87,11 @@ export const AccountLayout: React.FC = () => {
       count: myListingsCount,
     },
     {
+      to: "/compte/cours",
+      label: "Espace Cours",
+      icon: <GraduationCap className="w-4 h-4 text-primary" />,
+    },
+    {
       to: "/compte/favoris",
       label: "Mes favoris",
       icon: <Heart className="w-4 h-4" />,
@@ -117,6 +126,11 @@ export const AccountLayout: React.FC = () => {
       icon: <Shield className="w-4 h-4 text-success" />,
     },
     {
+      to: "/compte/securite-compte",
+      label: "Connexion & sécurité",
+      icon: <KeyRound className="w-4 h-4 text-primary" />,
+    },
+    {
       to: "/compte/support",
       label: "Aide & Assistance",
       icon: <Headphones className="w-4 h-4" />,
@@ -134,6 +148,16 @@ export const AccountLayout: React.FC = () => {
   ];
 
   const proNavItems = [
+    {
+      to: "/compte/immo",
+      label: "Espace Immo",
+      icon: <Building2 className="w-4 h-4 text-primary" />,
+    },
+    {
+      to: "/compte/auto",
+      label: "Espace Auto",
+      icon: <CarFront className="w-4 h-4 text-primary" />,
+    },
     {
       to: "/compte/pro/tableau-de-bord",
       label: "Dashboard Pro",

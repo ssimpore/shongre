@@ -14,3 +14,7 @@ export * from "./workspace.contract";
 export * from "./admin.contract";
 export * from "./reviews.contract";
 export * from "./trending.contract";
+export * from "./courses.contract";
+export * from "./auto.contract";
+export * from "./real-estate.contract";
+export * from "./business-rules.contract";

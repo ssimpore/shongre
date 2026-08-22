@@ -1,5 +1,31 @@
 import { Market, MarketConfiguration } from "./market.types";
 import { RECENT_SEARCHES_LIMIT_DEFAULT } from "./market.constants";
+import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import {
+  getDemoDeliveryAmountMinor,
+  getDemoTaxRateBps,
+  getDemoTransactionCommercials,
+} from "../monetization/demo-commercial-catalog";
+
+const commercialProduct = (id: string) =>
+  BASELINE_MONETIZATION_CATALOG.products.find((product) => product.id === id)!;
+const productPrice = (id: string, period: "once" | "month" | "year" = "once") => {
+  const product = commercialProduct(id);
+  return (
+    product.prices.find((price) => price.billingPeriod === period) ||
+    product.prices[0]
+  ).amount.amountMinor / 100;
+};
+const productEntitlement = (id: string, key: string) =>
+  commercialProduct(id).entitlements.find((entry) => entry.key === key)?.value;
+const planNumber = (id: string, key: string) => {
+  const value = productEntitlement(id, key);
+  return typeof value === "number" ? value : 0;
+};
+const planBoolean = (id: string, key: string) =>
+  Boolean(productEntitlement(id, key));
+const FR_INDIVIDUAL_COMMERCIALS = getDemoTransactionCommercials("FR", "individual");
+const FR_PRO_COMMERCIALS = getDemoTransactionCommercials("FR", "pro");
 
 /**
  * Canonical French Baseline Configuration (The Immutable Reference Standard)
@@ -27,11 +53,11 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     postalCodeRegex: "^[0-9]{5}$",
   },
   listings: {
-    maxActiveListingsIndividual: 20,
-    maxActiveListingsProFree: 20,
-    maxPhotosIndividual: 8,
-    maxPhotosPro: 20,
-    expirationDays: 60,
+    maxActiveListingsIndividual: planNumber("listing.standard.individual", "maxActiveListings"),
+    maxActiveListingsProFree: planNumber("listing.standard.individual", "maxActiveListings"),
+    maxPhotosIndividual: planNumber("listing.standard.individual", "maxPhotosPerListing"),
+    maxPhotosPro: planNumber("plan.pro.business", "maxPhotosPerListing"),
+    expirationDays: commercialProduct("listing.standard.individual").prices[0].durationDays || 0,
     allowFreeDonations: true,
     allowPriceNegotiation: true,
     allowInstantBuy: true,
@@ -45,10 +71,10 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
       googlePay: true,
       sepa: true,
     },
-    buyerProtectionFeePercent: 0.04, // 4%
-    buyerProtectionFixedFee: 0.7, // 0.70 €
-    minTransactionAmount: 1,
-    maxTransactionAmount: 15000,
+    buyerProtectionFeePercent: FR_INDIVIDUAL_COMMERCIALS.protectionRateBps / 10_000,
+    buyerProtectionFixedFee: FR_INDIVIDUAL_COMMERCIALS.protectionFixedMinor / 100,
+    minTransactionAmount: FR_INDIVIDUAL_COMMERCIALS.minimumAmountMinor / 100,
+    maxTransactionAmount: (FR_INDIVIDUAL_COMMERCIALS.maximumAmountMinor || 0) / 100,
   },
   reservation: {
     enabled: true,
@@ -64,77 +90,77 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
       mondialRelay: {
         enabled: true,
         label: "Mondial Relay (Point Relais)",
-        defaultFee: 4.9,
+        defaultFee: getDemoDeliveryAmountMinor("relay_point") / 100,
         trackingSupported: true,
       },
       colissimo: {
         enabled: true,
         label: "Colissimo Domicile",
-        defaultFee: 6.9,
+        defaultFee: getDemoDeliveryAmountMinor("home") / 100,
         trackingSupported: true,
       },
       chronopost: {
         enabled: true,
         label: "Chronopost Express 24h",
-        defaultFee: 12.9,
+        defaultFee: getDemoDeliveryAmountMinor("express") / 100,
         trackingSupported: true,
       },
       customCarrier: {
         enabled: false,
         label: "Transporteur sur devis",
-        defaultFee: 25.0,
+        defaultFee: getDemoDeliveryAmountMinor("bulky") / 100,
         trackingSupported: false,
       },
     },
   },
   monetization: {
-    proCommissionRate: 0.03, // 3%
-    individualCommissionRate: 0.0, // 0%
-    payoutInstantFeePercent: 0.01, // 1%
-    payoutInstantFixedFee: 0.5, // 0.50 €
+    proCommissionRate: FR_PRO_COMMERCIALS.commissionRateBps / 10_000,
+    individualCommissionRate: FR_INDIVIDUAL_COMMERCIALS.commissionRateBps / 10_000,
+    payoutInstantFeePercent: FR_PRO_COMMERCIALS.instantPayoutRateBps / 10_000,
+    payoutInstantFixedFee: FR_PRO_COMMERCIALS.instantPayoutFixedMinor / 100,
     boostPricing: {
-      urgent: 4.9,
-      highlight: 7.9,
-      top_of_list: 3.9,
-      gallery_boost: 6.9,
-      spotlight: 9.9,
+      urgent: productPrice("premium.urgent"),
+      highlight: productPrice("premium.highlight"),
+      top_of_list: productPrice("premium.search_bump"),
+      gallery_boost: productPrice("premium.visibility_bundle"),
+      spotlight: productPrice("premium.spotlight"),
     },
     plans: {
       free: {
-        priceMonthly: 0,
-        maxActiveListings: 20,
-        photosPerListing: 8,
-        storefrontCustomization: false,
-        prioritySupport: false,
-        bulkImportExport: false,
-        automaticRelisting: false,
+        priceMonthly: productPrice("listing.standard.individual"),
+        maxActiveListings: planNumber("listing.standard.individual", "maxActiveListings"),
+        photosPerListing: planNumber("listing.standard.individual", "maxPhotosPerListing"),
+        storefrontCustomization: planBoolean("listing.standard.individual", "storeEnabled"),
+        prioritySupport: planBoolean("listing.standard.individual", "prioritySupport"),
+        bulkImportExport: planBoolean("listing.standard.individual", "bulkPublish"),
+        automaticRelisting: planBoolean("listing.standard.individual", "automaticRelisting"),
       },
       starter: {
-        priceMonthly: 19.9,
-        maxActiveListings: 100,
-        photosPerListing: 15,
-        storefrontCustomization: true,
-        prioritySupport: false,
-        bulkImportExport: false,
-        automaticRelisting: true,
+        priceMonthly: productPrice("plan.pro.starter", "month"),
+        maxActiveListings: planNumber("plan.pro.starter", "maxActiveListings"),
+        photosPerListing: planNumber("plan.pro.starter", "maxPhotosPerListing"),
+        storefrontCustomization: planBoolean("plan.pro.starter", "storeEnabled"),
+        prioritySupport: planBoolean("plan.pro.starter", "prioritySupport"),
+        bulkImportExport: planBoolean("plan.pro.starter", "bulkPublish"),
+        automaticRelisting: planBoolean("plan.pro.starter", "automaticRelisting"),
       },
       business: {
-        priceMonthly: 49.9,
-        maxActiveListings: 500,
-        photosPerListing: 20,
-        storefrontCustomization: true,
-        prioritySupport: true,
-        bulkImportExport: true,
-        automaticRelisting: true,
+        priceMonthly: productPrice("plan.pro.business", "month"),
+        maxActiveListings: planNumber("plan.pro.business", "maxActiveListings"),
+        photosPerListing: planNumber("plan.pro.business", "maxPhotosPerListing"),
+        storefrontCustomization: planBoolean("plan.pro.business", "storeEnabled"),
+        prioritySupport: planBoolean("plan.pro.business", "prioritySupport"),
+        bulkImportExport: planBoolean("plan.pro.business", "bulkPublish"),
+        automaticRelisting: planBoolean("plan.pro.business", "automaticRelisting"),
       },
       enterprise: {
-        priceMonthly: 129.9,
-        maxActiveListings: 2500,
-        photosPerListing: 25,
-        storefrontCustomization: true,
-        prioritySupport: true,
-        bulkImportExport: true,
-        automaticRelisting: true,
+        priceMonthly: productPrice("plan.pro.enterprise", "month"),
+        maxActiveListings: planNumber("plan.pro.enterprise", "maxActiveListings"),
+        photosPerListing: planNumber("plan.pro.enterprise", "maxPhotosPerListing"),
+        storefrontCustomization: planBoolean("plan.pro.enterprise", "storeEnabled"),
+        prioritySupport: planBoolean("plan.pro.enterprise", "prioritySupport"),
+        bulkImportExport: planBoolean("plan.pro.enterprise", "bulkPublish"),
+        automaticRelisting: planBoolean("plan.pro.enterprise", "automaticRelisting"),
       },
     },
   },
@@ -174,7 +200,7 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
   },
   taxes: {
     taxEnabled: true,
-    vatRateStandard: 0.2, // 20%
+    vatRateStandard: getDemoTaxRateBps("FR") / 10_000,
     pricesTaxInclusive: true,
   },
   legal: {
@@ -548,11 +574,11 @@ export const INITIAL_MARKETS: Market[] = [
         postalCodeRegex: "^[1-9][0-9]{3}$",
       },
       taxes: {
-        vatRateStandard: 0.21, // 21% Belgian VAT
+        vatRateStandard: getDemoTaxRateBps("BE") / 10_000,
       },
       payments: {
-        buyerProtectionFixedFee: 0.8, // 0.80 €
-        buyerProtectionFeePercent: 0.045, // 4.5%
+        buyerProtectionFixedFee: getDemoTransactionCommercials("BE", "individual").protectionFixedMinor / 100,
+        buyerProtectionFeePercent: getDemoTransactionCommercials("BE", "individual").protectionRateBps / 10_000,
       },
       pro: {
         businessIdentifierLabel: "Numéro d'entreprise (BCE / KBO)",
@@ -680,7 +706,7 @@ export const INITIAL_MARKETS: Market[] = [
         postalCodeRegex: "^[0-9]{5}$",
       },
       taxes: {
-        vatRateStandard: 0.21,
+        vatRateStandard: getDemoTaxRateBps("ES") / 10_000,
       },
       reservation: {
         enabled: false, // Explicit false: tests that false does NOT fall back to true
@@ -795,11 +821,11 @@ export const INITIAL_MARKETS: Market[] = [
         postalCodeRegex: "^[1-9][0-9]{3}$",
       },
       payments: {
-        buyerProtectionFixedFee: 1.0, // 1.00 CHF
-        buyerProtectionFeePercent: 0.035, // 3.5%
+        buyerProtectionFixedFee: getDemoTransactionCommercials("CH", "individual").protectionFixedMinor / 100,
+        buyerProtectionFeePercent: getDemoTransactionCommercials("CH", "individual").protectionRateBps / 10_000,
       },
       taxes: {
-        vatRateStandard: 0.081, // 8.1% Swiss VAT
+        vatRateStandard: getDemoTaxRateBps("CH") / 10_000,
       },
       pro: {
         businessIdentifierLabel: "Numéro IDE / UID",
@@ -919,7 +945,7 @@ export const INITIAL_MARKETS: Market[] = [
         postalCodeRegex: "^(?:L-)?\\d{4}$",
       },
       taxes: {
-        vatRateStandard: 0.17, // 17% Luxembourg VAT
+        vatRateStandard: getDemoTaxRateBps("LU") / 10_000,
       },
       pro: {
         businessIdentifierLabel: "Numéro RCS Luxembourg",

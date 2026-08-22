@@ -8,6 +8,10 @@ import { hashPassword, verifyPassword, simulatePasswordVerification, WeakPasswor
 import { issueToken, verifyToken, TokenError } from '../../shared/auth/tokens.js';
 import { Principal, GUEST_PRINCIPAL } from '../../shared/auth/principal.js';
 import { PlatformRole } from '../../shared/auth/rbac.js';
+import { sessionService, type AuthRequestMetadata, type SessionService } from './session.service.js';
+import { authRepository, type IAuthRepository } from '../../infrastructure/database/repositories/auth.repository.js';
+import { randomOAuthValue, sha256 } from './oauth-provider.client.js';
+import { authEmailSender, type AuthEmailSender } from './auth-email.sender.js';
 
 export interface LoginCredentials {
   email: string;
@@ -27,6 +31,9 @@ export interface RegisterInput {
 export interface AuthResult {
   user: UserProfile;
   token: string;
+  refreshToken?: string;
+  expiresAt?: string;
+  sessionId?: string;
 }
 
 export const DEMO_PROFILES = CANONICAL_DEMO_USERS;
@@ -60,7 +67,10 @@ function invalidCredentials(): AppError {
 export class AuthService {
   constructor(
     private userRepo: IUserRepository = repositories.users,
-    private kyc: IKYCProvider = providers.kyc
+    private kyc: IKYCProvider = providers.kyc,
+    private sessions: SessionService = sessionService,
+    private authRepo: IAuthRepository = authRepository,
+    private emailSender: AuthEmailSender = authEmailSender,
   ) {}
 
   /**
@@ -85,13 +95,18 @@ export class AuthService {
     // The token is authentic, but authority comes from the account's current
     // state, not from claims minted possibly hours ago. A user suspended after
     // their token was issued must lose access immediately.
+    if (claims.sid && !(await this.sessions.isActive(claims.sid, claims.sub))) return GUEST_PRINCIPAL;
+
     const user = await this.userRepo.findById(claims.sub);
     if (!user || user.status !== 'active') return GUEST_PRINCIPAL;
+
+    if (claims.sid) await this.sessions.touch(claims.sid);
 
     return {
       userId: user.id,
       email: user.email,
       role: (user.primaryRole || user.role) as PlatformRole,
+      sessionId: claims.sid,
     };
   }
 
@@ -100,12 +115,23 @@ export class AuthService {
     return this.userRepo.findById(principal.userId);
   }
 
-  async login(credentials: LoginCredentials): Promise<AuthResult> {
+  async login(credentials: LoginCredentials, metadata: AuthRequestMetadata = {}): Promise<AuthResult> {
     const email = (credentials?.email || '').toLowerCase().trim();
     const password = credentials?.password || '';
 
+    if (!config.emailPasswordAuthEnabled) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Cette méthode de connexion est temporairement indisponible.' });
+    }
+
     if (!email || !password) {
       throw invalidCredentials();
+    }
+
+    const limitKey = sha256(`${email}:${metadata.ipPrefix || 'unknown'}`);
+    const rateLimit = await this.authRepo.consumeRateLimit(limitKey, 'login', 10, 900, 900);
+    if (!rateLimit.allowed) {
+      await this.authRepo.recordSecurityEvent({ eventType: 'rate_limit_tripped', failureReason: 'login', ipPrefix: metadata.ipPrefix });
+      throw new AppError({ code: 'RATE_LIMITED', message: 'Trop de tentatives. Réessayez dans quelques minutes.', details: { retryAfterSeconds: rateLimit.retryAfterSeconds } });
     }
 
     const user = await this.userRepo.findByEmail(email);
@@ -113,12 +139,14 @@ export class AuthService {
       // Spend comparable CPU to a real verification so that a missing account
       // and a wrong password are not distinguishable by response time.
       await simulatePasswordVerification();
+      await this.authRepo.recordSecurityEvent({ eventType: 'login_failed', provider: 'password', failureReason: 'invalid_credentials', ipPrefix: metadata.ipPrefix });
       throw invalidCredentials();
     }
 
     const credential = await this.userRepo.findCredentialByUserId(user.id);
     const passwordMatches = await verifyPassword(password, credential?.passwordHash);
     if (!passwordMatches) {
+      await this.authRepo.recordSecurityEvent({ userId: user.id, eventType: 'login_failed', provider: 'password', failureReason: 'invalid_credentials', ipPrefix: metadata.ipPrefix });
       throw invalidCredentials();
     }
 
@@ -129,16 +157,35 @@ export class AuthService {
       throw invalidCredentials();
     }
 
+    await this.authRepo.clearRateLimit(limitKey, 'login');
+    await this.authRepo.recordSecurityEvent({ userId: user.id, eventType: 'login_succeeded', provider: 'password', ipPrefix: metadata.ipPrefix });
     logger.info(`Authentication succeeded for profile ${user.id}`);
-    return { user, token: this.issueFor(user) };
+    const tokens = await this.sessions.create(user, 'password', metadata);
+    return { user, ...tokens };
   }
 
-  async register(input: RegisterInput): Promise<AuthResult> {
+  async register(input: RegisterInput, metadata: AuthRequestMetadata = {}): Promise<AuthResult> {
     const email = (input?.email || '').toLowerCase().trim();
     const password = input?.password || '';
 
+    if (!config.emailPasswordAuthEnabled) {
+      throw new AppError({ code: 'VALIDATION_ERROR', message: 'Cette méthode de connexion est temporairement indisponible.' });
+    }
+
     if (!email || !input?.name) {
       throw new AppError({ code: 'VALIDATION_ERROR', message: 'Email et nom sont requis.' });
+    }
+
+    const registrationLimit = await this.authRepo.consumeRateLimit(
+      sha256(`${email}:${metadata.ipPrefix || 'unknown'}`),
+      'registration',
+      5,
+      3600,
+      3600,
+    );
+    if (!registrationLimit.allowed) {
+      await this.authRepo.recordSecurityEvent({ eventType: 'rate_limit_tripped', failureReason: 'registration', ipPrefix: metadata.ipPrefix });
+      throw new AppError({ code: 'RATE_LIMITED', message: 'Trop de tentatives. Réessayez plus tard.', details: { retryAfterSeconds: registrationLimit.retryAfterSeconds } });
     }
 
     const existing = await this.userRepo.findByEmail(email);
@@ -199,20 +246,41 @@ export class AuthService {
     const saved = await this.userRepo.save(newUser);
     await this.userRepo.saveCredential({ userId: saved.id, passwordHash });
 
+    // Demo repositories do not run the SQL backfill migration, so register the
+    // password method explicitly. Do not swallow storage outages: an auth
+    // method silently missing from the security overview is not idempotency.
+    const existingPasswordIdentity = (await this.authRepo.listIdentities(saved.id))
+      .some((identity) => identity.provider === 'password');
+    if (!existingPasswordIdentity) {
+      await this.authRepo.linkIdentity({
+        userId: saved.id,
+        provider: 'password',
+        providerSubject: saved.id,
+        providerEmail: saved.email,
+        providerEmailVerified: saved.isEmailVerified,
+        providerDisplayName: saved.name,
+        isPrivateRelay: false,
+      });
+    }
+
     logger.info(`New account registered: profile ${saved.id} (${role})`);
-    return { user: saved, token: this.issueFor(saved) };
+    await this.authRepo.recordSecurityEvent({ userId: saved.id, eventType: 'registered', provider: 'password', ipPrefix: metadata.ipPrefix });
+    try {
+      await this.sendEmailVerification(saved.email, metadata, true);
+    } catch (error: any) {
+      // The account remains recoverable through resend. Do not roll back a
+      // completed registration merely because the delivery provider is down.
+      logger.error(`Email verification delivery failed: ${error?.message || 'unknown delivery error'}`);
+    }
+    const tokens = await this.sessions.create(saved, 'password', metadata);
+    return { user: saved, ...tokens };
   }
 
-  /**
-   * Logout is a client-side token discard.
-   *
-   * Tokens are stateless and short-lived, so there is nothing to clear
-   * server-side yet. Genuine server-side revocation needs a rejected-jti store;
-   * until that exists this is honest about doing nothing rather than implying a
-   * guarantee it cannot make.
-   */
+  /** Revokes the current server-side refresh session and its access-token sid. */
   async logout(principal: Principal): Promise<void> {
     if (principal.userId) {
+      if (principal.sessionId) await this.authRepo.revokeSession(principal.sessionId, 'logout');
+      await this.authRepo.recordSecurityEvent({ userId: principal.userId, eventType: 'logout' });
       logger.info(`Session ended for profile ${principal.userId}`);
     }
   }
@@ -246,7 +314,13 @@ export class AuthService {
     // Returning only the profile would leave the caller holding a token that
     // still asserts the old one.
     const updated: UserProfile = { ...user, role, primaryRole: role };
-    return { user: updated, token: this.issueFor(updated) };
+    return {
+      user: updated,
+      token: principal.sessionId
+        ? this.sessions.issueAccessToken(updated, principal.sessionId)
+        : this.issueFor(updated),
+      sessionId: principal.sessionId,
+    };
   }
 
   /**
@@ -282,43 +356,176 @@ export class AuthService {
     return valid;
   }
 
-  /**
-   * Confirms an email address from a signed verification token.
-   *
-   * The previous implementation ignored the token entirely and returned true,
-   * which made "verified email" a badge anyone could award themselves.
-   */
+  /** Confirms an email from a purpose-bound, one-time opaque token. */
   async verifyEmail(token: string): Promise<boolean> {
     if (!token) {
       throw new AppError({ code: 'VALIDATION_ERROR', message: 'Jeton de vérification manquant.' });
     }
 
-    let claims;
-    try {
-      claims = verifyToken(token, config.jwtSecret);
-    } catch {
-      throw new AppError({
-        code: 'VALIDATION_ERROR',
-        message: 'Lien de vérification invalide ou expiré.',
-      });
-    }
-
-    const user = await this.userRepo.findById(claims.sub);
+    const action = await this.authRepo.consumeActionToken(sha256(token), 'verify_email');
+    const user = action ? await this.userRepo.findById(action.userId) : null;
     if (!user) {
       throw new AppError({ code: 'VALIDATION_ERROR', message: 'Lien de vérification invalide ou expiré.' });
     }
 
-    await this.userRepo.update(user.id, { isEmailVerified: true });
+    await this.userRepo.update(user.id, {
+      isEmailVerified: true,
+      status: user.status === 'pending_verification' ? 'active' : user.status,
+    });
+    await this.authRepo.recordSecurityEvent({ userId: user.id, eventType: 'email_verified' });
     return true;
   }
 
-  /** Mints the email-confirmation token that verifyEmail consumes. */
-  issueEmailVerificationToken(user: UserProfile): string {
-    return issueToken(
-      { sub: user.id, email: user.email, role: (user.primaryRole || user.role) as PlatformRole },
-      config.jwtSecret,
-      60 * 60 * 24
-    );
+  async sendEmailVerification(
+    email: string,
+    metadata: AuthRequestMetadata = {},
+    skipRateLimit = false,
+  ): Promise<{ accepted: true; demoToken?: string }> {
+    const normalized = (email || '').trim().toLowerCase();
+    const key = sha256(`${normalized}:${metadata.ipPrefix || 'unknown'}`);
+    if (!skipRateLimit) {
+      const decision = await this.authRepo.consumeRateLimit(key, 'verify_email', 3, 300, 300);
+      if (!decision.allowed) throw new AppError({ code: 'RATE_LIMITED', message: 'Veuillez patienter avant de renvoyer un email.', details: { retryAfterSeconds: decision.retryAfterSeconds } });
+    }
+    const user = await this.userRepo.findByEmail(normalized);
+    if (!user || user.isEmailVerified) return { accepted: true };
+    const rawToken = await this.createActionToken(user.id, 'verify_email', 24 * 60 * 60);
+    const actionUrl = new URL('/verification-email', config.frontendUrl || 'http://localhost:3000');
+    actionUrl.searchParams.set('token', rawToken);
+    await this.emailSender.send({ to: user.email, template: 'verify_email', actionUrl: actionUrl.toString() });
+    await this.authRepo.recordSecurityEvent({ userId: user.id, eventType: 'email_verification_sent', ipPrefix: metadata.ipPrefix });
+    return config.dataMode === 'demo' ? { accepted: true, demoToken: rawToken } : { accepted: true };
+  }
+
+  async requestPasswordReset(email: string, metadata: AuthRequestMetadata = {}): Promise<{ accepted: true; demoToken?: string }> {
+    const normalized = (email || '').trim().toLowerCase();
+    const key = sha256(`${normalized}:${metadata.ipPrefix || 'unknown'}`);
+    const decision = await this.authRepo.consumeRateLimit(key, 'password_reset', 3, 900, 900);
+    if (!decision.allowed) {
+      // Keep the public response generic even when throttled; revealing the
+      // bucket would make it possible to test whether someone else requested a
+      // reset for an address.
+      return { accepted: true };
+    }
+    const user = await this.userRepo.findByEmail(normalized);
+    if (!user || user.status !== 'active') return { accepted: true };
+    const rawToken = await this.createActionToken(user.id, 'password_reset', 15 * 60);
+    const actionUrl = new URL('/reinitialisation-mot-de-passe', config.frontendUrl || 'http://localhost:3000');
+    actionUrl.searchParams.set('token', rawToken);
+    await this.emailSender.send({ to: user.email, template: 'password_reset', actionUrl: actionUrl.toString() });
+    await this.authRepo.recordSecurityEvent({ userId: user.id, eventType: 'password_reset_requested', ipPrefix: metadata.ipPrefix });
+    return config.dataMode === 'demo' ? { accepted: true, demoToken: rawToken } : { accepted: true };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const action = token ? await this.authRepo.consumeActionToken(sha256(token), 'password_reset') : null;
+    if (!action) throw new AppError({ code: 'VALIDATION_ERROR', message: 'Lien de réinitialisation invalide ou expiré.' });
+    let passwordHash: string;
+    try {
+      passwordHash = await hashPassword(newPassword);
+    } catch (error) {
+      if (error instanceof WeakPasswordError) throw new AppError({ code: 'VALIDATION_ERROR', message: error.message });
+      throw error;
+    }
+    await this.userRepo.saveCredential({ userId: action.userId, passwordHash });
+    await this.sessions.revokeAll(action.userId, undefined, 'password_reset');
+    await this.authRepo.recordSecurityEvent({ userId: action.userId, eventType: 'password_reset_completed', provider: 'password' });
+  }
+
+  async refresh(refreshToken: string, metadata: AuthRequestMetadata = {}): Promise<AuthResult> {
+    const rotated = await this.sessions.rotate(refreshToken, metadata);
+    const user = await this.userRepo.findById(rotated.userId);
+    if (!user || user.status !== 'active') throw invalidCredentials();
+    rotated.tokens.token = this.sessions.issueAccessToken(user, rotated.tokens.sessionId);
+    await this.authRepo.recordSecurityEvent({ userId: user.id, eventType: 'session_refreshed', provider: (await this.authRepo.findSessionById(rotated.tokens.sessionId))?.provider || 'password', ipPrefix: metadata.ipPrefix });
+    return { user, ...rotated.tokens };
+  }
+
+  async logoutAll(principal: Principal, keepCurrent = false): Promise<void> {
+    if (!principal.userId) throw new AppError({ code: 'UNAUTHENTICATED', message: 'Non connecté' });
+    await this.sessions.revokeAll(principal.userId, keepCurrent ? principal.sessionId : undefined, 'logout_all');
+    await this.authRepo.recordSecurityEvent({ userId: principal.userId, eventType: 'logout_all' });
+  }
+
+  async listSessions(principal: Principal) {
+    if (!principal.userId) throw new AppError({ code: 'UNAUTHENTICATED', message: 'Non connecté' });
+    return this.sessions.list(principal.userId, principal.sessionId);
+  }
+
+  async revokeSession(principal: Principal, sessionId: string): Promise<void> {
+    if (!principal.userId) throw new AppError({ code: 'UNAUTHENTICATED', message: 'Non connecté' });
+    await this.sessions.revoke(sessionId, principal.userId);
+    await this.authRepo.recordSecurityEvent({ userId: principal.userId, eventType: 'session_revoked' });
+  }
+
+  async reauthenticate(principal: Principal, password: string): Promise<{ reauthenticated: true }> {
+    if (!principal.userId || !principal.sessionId) throw new AppError({ code: 'UNAUTHENTICATED', message: 'Non connecté' });
+    const credential = await this.userRepo.findCredentialByUserId(principal.userId);
+    if (!(await verifyPassword(password || '', credential?.passwordHash))) throw invalidCredentials();
+    await this.sessions.markReauthenticated(principal.sessionId);
+    await this.authRepo.recordSecurityEvent({ userId: principal.userId, eventType: 'reauthenticated', provider: 'password' });
+    return { reauthenticated: true };
+  }
+
+  async changePassword(principal: Principal, currentPassword: string, newPassword: string): Promise<void> {
+    await this.reauthenticate(principal, currentPassword);
+    let passwordHash: string;
+    try {
+      passwordHash = await hashPassword(newPassword);
+    } catch (error) {
+      if (error instanceof WeakPasswordError) throw new AppError({ code: 'VALIDATION_ERROR', message: error.message });
+      throw error;
+    }
+    await this.userRepo.saveCredential({ userId: principal.userId, passwordHash });
+    await this.sessions.revokeAll(principal.userId, principal.sessionId, 'password_changed');
+    await this.authRepo.recordSecurityEvent({ userId: principal.userId, eventType: 'password_changed', provider: 'password' });
+  }
+
+  async addPassword(principal: Principal, newPassword: string): Promise<void> {
+    if (!principal.userId || !principal.sessionId || !(await this.sessions.hasRecentAuthentication(principal.sessionId))) {
+      throw new AppError({ code: 'UNAUTHENTICATED', message: 'Confirmez votre identité avant d’ajouter un mot de passe.' });
+    }
+    if (await this.userRepo.findCredentialByUserId(principal.userId)) {
+      throw new AppError({ code: 'CONFLICT', message: 'Un mot de passe est déjà défini.' });
+    }
+    let passwordHash: string;
+    try {
+      passwordHash = await hashPassword(newPassword);
+    } catch (error) {
+      if (error instanceof WeakPasswordError) throw new AppError({ code: 'VALIDATION_ERROR', message: error.message });
+      throw error;
+    }
+    await this.userRepo.saveCredential({ userId: principal.userId, passwordHash });
+    const existingPasswordIdentity = (await this.authRepo.listIdentities(principal.userId))
+      .some((identity) => identity.provider === 'password');
+    if (!existingPasswordIdentity) {
+      const user = await this.userRepo.findById(principal.userId);
+      await this.authRepo.linkIdentity({
+        userId: principal.userId,
+        provider: 'password',
+        providerSubject: principal.userId,
+        providerEmail: user?.email || null,
+        providerEmailVerified: Boolean(user?.isEmailVerified),
+        providerDisplayName: user?.name || null,
+        isPrivateRelay: false,
+      });
+    }
+    await this.authRepo.recordSecurityEvent({ userId: principal.userId, eventType: 'password_changed', provider: 'password', metadata: { passwordAdded: true } });
+  }
+
+  private async createActionToken(
+    userId: string,
+    purpose: 'verify_email' | 'password_reset' | 'account_recovery',
+    ttlSeconds: number,
+  ): Promise<string> {
+    const rawToken = randomOAuthValue(40);
+    await this.authRepo.createActionToken({
+      userId,
+      purpose,
+      tokenHash: sha256(rawToken),
+      expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
+    });
+    return rawToken;
   }
 
   private issueFor(user: UserProfile): string {

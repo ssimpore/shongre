@@ -4,12 +4,18 @@ import { IUserRepository, repositories } from '../../infrastructure/database/rep
 import type { IOrderRepository, IAdminRepository } from '../../infrastructure/database/repositories/index.js';
 import { verifyPassword } from '../../shared/auth/password.js';
 import { accountDeletionRequestSchema } from '@shongre/contracts/account';
+import {
+  authRepository,
+  type IAuthRepository,
+} from '../../infrastructure/database/repositories/auth.repository.js';
+import type { AuthProvider } from '../../shared/auth/identity.js';
 
 export class UsersService {
   constructor(
     private userRepo: IUserRepository = repositories.users,
     private orderRepo: IOrderRepository = repositories.orders,
-    private adminRepo: IAdminRepository = repositories.admin
+    private adminRepo: IAdminRepository = repositories.admin,
+    private authRepo: IAuthRepository = authRepository,
   ) {}
 
   async getUserById(id: string): Promise<UserProfile | null> {
@@ -40,6 +46,32 @@ export class UsersService {
       throw new AppError({ code: 'UNAUTHENTICATED', message: 'Le mot de passe de confirmation est incorrect.' });
     }
 
+    await this.deleteAccountData(user, request.reason?.trim() || undefined);
+    return { status: 'completed' };
+  }
+
+  async deleteFromVerifiedProvider(
+    userId: string,
+    provider: Exclude<AuthProvider, 'password'>,
+    providerSubject: string,
+  ): Promise<{ status: 'completed' }> {
+    const [user, identity] = await Promise.all([
+      this.userRepo.findById(userId),
+      this.authRepo.findIdentity(provider, providerSubject),
+    ]);
+    if (!user || !identity || identity.userId !== userId) {
+      throw new AppError({ code: 'NOT_FOUND', message: 'Compte introuvable.' });
+    }
+    if (user.status === 'deleted') return { status: 'completed' };
+    if (user.status !== 'active') {
+      throw new AppError({ code: 'CONFLICT', message: 'La suppression doit être examinée par le support.' });
+    }
+    await this.deleteAccountData(user, `Verified ${provider} data-deletion request`);
+    return { status: 'completed' };
+  }
+
+  private async deleteAccountData(user: UserProfile, reason?: string): Promise<void> {
+    const userId = user.id;
     const [purchases, sales] = await Promise.all([
       this.orderRepo.getPurchases(userId),
       this.orderRepo.getSales(userId),
@@ -52,7 +84,12 @@ export class UsersService {
       });
     }
 
-    await this.userRepo.anonymize(userId, request.reason?.trim() || undefined);
+    await this.userRepo.anonymize(userId, reason);
+    await Promise.all([
+      this.authRepo.revokeSessions(userId, 'account_deleted'),
+      this.authRepo.deleteIdentities(userId),
+    ]);
+    await this.authRepo.recordSecurityEvent({ userId, eventType: 'account_deleted' });
     await this.adminRepo.saveAuditLog({
       actorId: userId,
       actorName: 'Self-service account deletion',
@@ -62,7 +99,6 @@ export class UsersService {
       action: 'account_deleted',
       details: 'Access revoked and eligible profile data anonymized.',
     });
-    return { status: 'completed' };
   }
 }
 

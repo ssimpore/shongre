@@ -66,9 +66,9 @@ describe("FulfillmentResolver", () => {
 
     expect(pricing.itemSubtotal).toBe(800);
     expect(pricing.deliveryFee).toBe(6.9);
-    // 0.99 + 800 * 0.04 = 32.99 EUR
-    expect(pricing.buyerServiceFee).toBe(32.99);
-    expect(pricing.buyerTotal).toBe(839.89);
+    // Published FR rule: 0.70 + 800 * 0.04 = 32.70 EUR.
+    expect(pricing.buyerServiceFee).toBe(32.7);
+    expect(pricing.buyerTotal).toBe(839.6);
     expect(pricing.sellerNet).toBe(800);
   });
 });

@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createHttpServer } from '../../src/app/server/index.js';
-import { seedDemoCredentials, DEMO_ACCOUNT_PASSWORD } from '../../src/app/bootstrap/seed-demo-credentials.js';
-import { Server } from 'http';
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { createHttpServer } from "../../src/app/server/index.js";
+import {
+  seedDemoCredentials,
+  DEMO_ACCOUNT_PASSWORD,
+} from "../../src/app/bootstrap/seed-demo-credentials.js";
+import { Server } from "http";
 
-describe('API v1 Endpoints Integration', () => {
+describe("API v1 Endpoints Integration", () => {
   let server: Server;
   let baseUrl: string;
   let buyerToken: string;
@@ -11,17 +14,25 @@ describe('API v1 Endpoints Integration', () => {
 
   async function login(email: string): Promise<string> {
     const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shongre-Client": "native",
+      },
       body: JSON.stringify({ email, password: DEMO_ACCOUNT_PASSWORD }),
     });
     if (res.status !== 200) {
-      throw new Error(`Login failed for ${email}: ${res.status} ${await res.text()}`);
+      throw new Error(
+        `Login failed for ${email}: ${res.status} ${await res.text()}`,
+      );
     }
     return (await res.json()).token;
   }
 
-  const auth = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+  const auth = (token: string) => ({
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  });
 
   beforeAll(async () => {
     // The demo personas need password hashes before login can verify anything.
@@ -36,35 +47,35 @@ describe('API v1 Endpoints Integration', () => {
       });
     });
 
-    buyerToken = await login('thomas.laurent@example.fr');
-    adminToken = await login('admin@shongre.com');
+    buyerToken = await login("thomas.laurent@example.fr");
+    adminToken = await login("admin@shongre.com");
   });
 
   afterAll(async () => {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   });
 
-  it('GET /health returns 200 OK', async () => {
+  it("GET /health returns 200 OK", async () => {
     const res = await fetch(`${baseUrl}/health`);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.status).toBe('ok');
-    expect(body.service).toBe('shongre-backend');
+    expect(body.status).toBe("ok");
+    expect(body.service).toBe("shongre-backend");
   });
 
   // ---------------------------------------------------------------------------
   // Public surface
   // ---------------------------------------------------------------------------
 
-  it('GET /api/v1/markets returns all markets', async () => {
+  it("GET /api/v1/markets returns all markets", async () => {
     const res = await fetch(`${baseUrl}/api/v1/markets`);
     expect(res.status).toBe(200);
     const markets = await res.json();
     expect(Array.isArray(markets)).toBe(true);
-    expect(markets.some((m: any) => m.code === 'FR')).toBe(true);
+    expect(markets.some((m: any) => m.code === "FR")).toBe(true);
   });
 
-  it('GET /api/v1/taxonomy/root returns categories', async () => {
+  it("GET /api/v1/taxonomy/root returns categories", async () => {
     const res = await fetch(`${baseUrl}/api/v1/taxonomy/root`);
     expect(res.status).toBe(200);
     const categories = await res.json();
@@ -72,7 +83,7 @@ describe('API v1 Endpoints Integration', () => {
     expect(categories.length).toBeGreaterThan(0);
   });
 
-  it('GET /api/v1/listings returns paginated listings', async () => {
+  it("GET /api/v1/listings returns paginated listings", async () => {
     const res = await fetch(`${baseUrl}/api/v1/listings`);
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -81,26 +92,26 @@ describe('API v1 Endpoints Integration', () => {
     expect(data.total).toBeGreaterThanOrEqual(1);
   });
 
-  it('GET /api/v1/listings/list_1 returns listing detail', async () => {
+  it("GET /api/v1/listings/list_1 returns listing detail", async () => {
     const res = await fetch(`${baseUrl}/api/v1/listings/list_1`);
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.id).toBe('list_1');
-    expect(data.title).toContain('Vélo');
+    expect(data.id).toBe("list_1");
+    expect(data.title).toContain("Vélo");
   });
 
-  it('POST /api/v1/listings/search executes structured search query', async () => {
+  it("POST /api/v1/listings/search executes structured search query", async () => {
     const res = await fetch(`${baseUrl}/api/v1/listings/search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: 'Vélo' }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "Vélo" }),
     });
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(Array.isArray(data.items)).toBe(true);
   });
 
-  it('GET /api/v1/promotions/boosts returns boost offers', async () => {
+  it("GET /api/v1/promotions/boosts returns boost offers", async () => {
     const res = await fetch(`${baseUrl}/api/v1/promotions/boosts`);
     expect(res.status).toBe(200);
     const boosts = await res.json();
@@ -108,83 +119,156 @@ describe('API v1 Endpoints Integration', () => {
     expect(boosts.length).toBeGreaterThanOrEqual(3);
   });
 
+  it("serves the public Immo catalog, spatial-shaped search, and privacy-safe property projection", async () => {
+    const catalogResponse = await fetch(
+      `${baseUrl}/api/v1/real-estate/catalog?market=FR`,
+    );
+    expect(catalogResponse.status).toBe(200);
+    const catalog = await catalogResponse.json();
+    expect(catalog.activation.verticalType).toBe("real_estate");
+    expect(
+      catalog.offers.some((offer: any) => offer.id === "immo_owner_free"),
+    ).toBe(true);
+
+    const searchResponse = await fetch(`${baseUrl}/api/v1/real-estate/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        marketCode: "FR",
+        transactionTypes: ["sale"],
+        center: { latitude: 45.76, longitude: 4.84 },
+        radiusKm: 30,
+        sort: "promoted",
+      }),
+    });
+    expect(searchResponse.status).toBe(200);
+    const search = await searchResponse.json();
+    expect(search.items.length).toBeGreaterThan(0);
+
+    const propertyResponse = await fetch(
+      `${baseUrl}/api/v1/real-estate/properties/property_apartment_lyon`,
+    );
+    expect(propertyResponse.status).toBe(200);
+    const property = await propertyResponse.json();
+    expect(property.address).not.toHaveProperty("exactAddress");
+    expect(property).not.toHaveProperty("documents");
+    expect(property).not.toHaveProperty("riskSignals");
+  });
+
   // ---------------------------------------------------------------------------
   // Authentication
   // ---------------------------------------------------------------------------
 
-  it('POST /api/v1/auth/login authenticates with a correct password', async () => {
+  it("POST /api/v1/auth/login creates a cookie-only browser session", async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'thomas.laurent@example.fr', password: DEMO_ACCOUNT_PASSWORD }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "thomas.laurent@example.fr",
+        password: DEMO_ACCOUNT_PASSWORD,
+      }),
     });
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.user.email).toBe('thomas.laurent@example.fr');
-    // A signed JWT, not the previous `jwt_<random>` placeholder.
-    expect(data.token.split('.')).toHaveLength(3);
+    expect(data.user.email).toBe("thomas.laurent@example.fr");
+    expect(data).not.toHaveProperty("token");
+    expect(data).not.toHaveProperty("refreshToken");
+    expect(res.headers.get("set-cookie")).toContain("HttpOnly");
   });
 
-  it('POST /api/v1/auth/login rejects a login with no password', async () => {
+  it("returns Shongre tokens only to an explicit native client", async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'thomas.laurent@example.fr' }),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shongre-Client": "native",
+      },
+      body: JSON.stringify({
+        email: "thomas.laurent@example.fr",
+        password: DEMO_ACCOUNT_PASSWORD,
+      }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.token.split(".")).toHaveLength(3);
+    expect(data.refreshToken).toBeTruthy();
+  });
+
+  it("POST /api/v1/auth/login rejects a login with no password", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "thomas.laurent@example.fr" }),
     });
     expect(res.status).toBe(401);
   });
 
-  it('POST /api/v1/auth/login rejects a wrong password', async () => {
+  it("POST /api/v1/auth/login rejects a wrong password", async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'thomas.laurent@example.fr', password: 'not-the-password' }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "thomas.laurent@example.fr",
+        password: "not-the-password",
+      }),
     });
     expect(res.status).toBe(401);
   });
 
-  it('POST /api/v1/auth/login does not reveal whether an account exists', async () => {
+  it("POST /api/v1/auth/login does not reveal whether an account exists", async () => {
     const unknown = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'nobody@example.fr', password: 'whatever-password' }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "nobody@example.fr",
+        password: "whatever-password",
+      }),
     });
     const wrongPassword = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'thomas.laurent@example.fr', password: 'whatever-password' }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "thomas.laurent@example.fr",
+        password: "whatever-password",
+      }),
     });
 
     expect(unknown.status).toBe(wrongPassword.status);
     expect(await unknown.json()).toEqual(await wrongPassword.json());
   });
 
-  it('GET /api/v1/auth/me returns null without a token and the profile with one', async () => {
+  it("GET /api/v1/auth/me returns null without a token and the profile with one", async () => {
     const anonymous = await fetch(`${baseUrl}/api/v1/auth/me`);
     expect(anonymous.status).toBe(200);
     expect(await anonymous.json()).toBeNull();
 
-    const authenticated = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: auth(buyerToken) });
-    expect((await authenticated.json()).email).toBe('thomas.laurent@example.fr');
+    const authenticated = await fetch(`${baseUrl}/api/v1/auth/me`, {
+      headers: auth(buyerToken),
+    });
+    expect((await authenticated.json()).email).toBe(
+      "thomas.laurent@example.fr",
+    );
   });
 
-  it('rejects a token with a tampered payload', async () => {
-    const [header, , signature] = buyerToken.split('.');
+  it("rejects a token with a tampered payload", async () => {
+    const [header, , signature] = buyerToken.split(".");
     const forgedPayload = Buffer.from(
       JSON.stringify({
-        sub: 'user_admin',
-        email: 'admin@shongre.com',
-        role: 'super_admin',
+        sub: "user_admin",
+        email: "admin@shongre.com",
+        role: "super_admin",
         exp: Math.floor(Date.now() / 1000) + 3600,
-      })
+      }),
     )
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
 
     const res = await fetch(`${baseUrl}/api/v1/admin/stats`, {
-      headers: { Authorization: `Bearer ${header}.${forgedPayload}.${signature}` },
+      headers: {
+        Authorization: `Bearer ${header}.${forgedPayload}.${signature}`,
+      },
     });
     expect(res.status).toBe(401);
   });
@@ -193,28 +277,36 @@ describe('API v1 Endpoints Integration', () => {
   // Authorization: unauthenticated access is refused
   // ---------------------------------------------------------------------------
 
-  it('refuses unauthenticated access to protected endpoints', async () => {
+  it("refuses unauthenticated access to protected endpoints", async () => {
     const protectedCalls: Array<[string, RequestInit]> = [
-      ['/api/v1/admin/stats', {}],
-      ['/api/v1/admin/users', {}],
-      ['/api/v1/admin/audit-logs', {}],
-      ['/api/v1/favorites', {}],
-      ['/api/v1/verification/status/user_thomas', {}],
-      ['/api/v1/orders/purchases/user_thomas', {}],
-      ['/api/v1/messaging/conversations/user_camille', {}],
-      ['/api/v1/notifications/user_camille', {}],
-      ['/api/v1/payments/balance/user_camille', {}],
-      ['/api/v1/workspace/summary/user_thomas', {}],
+      ["/api/v1/admin/stats", {}],
+      ["/api/v1/admin/users", {}],
+      ["/api/v1/admin/audit-logs", {}],
+      ["/api/v1/favorites", {}],
+      ["/api/v1/verification/status/user_thomas", {}],
+      ["/api/v1/orders/purchases/user_thomas", {}],
+      ["/api/v1/messaging/conversations/user_camille", {}],
+      ["/api/v1/notifications/user_camille", {}],
+      ["/api/v1/payments/balance/user_camille", {}],
+      ["/api/v1/workspace/summary/user_thomas", {}],
+      ["/api/v1/real-estate/drafts/draft-private", {}],
       [
-        '/api/v1/payments/intent',
-        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: 150 }) },
+        "/api/v1/payments/intent",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: 150 }),
+        },
       ],
       [
-        '/api/v1/orders/direct-purchase',
+        "/api/v1/orders/direct-purchase",
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ listingId: 'list_1', deliveryMethod: 'hand_delivery' }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            listingId: "list_1",
+            deliveryMethod: "hand_delivery",
+          }),
         },
       ],
     ];
@@ -229,54 +321,85 @@ describe('API v1 Endpoints Integration', () => {
   // Authorization: authenticated but insufficient
   // ---------------------------------------------------------------------------
 
-  it('refuses admin endpoints to an ordinary buyer', async () => {
-    for (const path of ['/api/v1/admin/stats', '/api/v1/admin/users', '/api/v1/admin/audit-logs']) {
-      const res = await fetch(`${baseUrl}${path}`, { headers: auth(buyerToken) });
+  it("refuses admin endpoints to an ordinary buyer", async () => {
+    for (const path of [
+      "/api/v1/admin/stats",
+      "/api/v1/admin/users",
+      "/api/v1/admin/audit-logs",
+    ]) {
+      const res = await fetch(`${baseUrl}${path}`, {
+        headers: auth(buyerToken),
+      });
       expect(res.status, path).toBe(403);
     }
   });
 
-  it('allows admin endpoints to an administrator', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/admin/stats`, { headers: auth(adminToken) });
+  it("allows admin endpoints to an administrator", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/admin/stats`, {
+      headers: auth(adminToken),
+    });
     expect(res.status).toBe(200);
     const stats = await res.json();
     expect(stats.totalUsers).toBeGreaterThan(0);
   });
 
-  it('refuses a privilege escalation through /auth/switch-role', async () => {
+  it("protects Immo administration with the vertical permission", async () => {
+    const forbidden = await fetch(
+      `${baseUrl}/api/v1/real-estate/admin/overview`,
+      {
+        headers: auth(buyerToken),
+      },
+    );
+    expect(forbidden.status).toBe(403);
+
+    const allowed = await fetch(
+      `${baseUrl}/api/v1/real-estate/admin/overview?market=FR`,
+      {
+        headers: auth(adminToken),
+      },
+    );
+    expect(allowed.status).toBe(200);
+    expect((await allowed.json()).catalog.activation.verticalType).toBe(
+      "real_estate",
+    );
+  });
+
+  it("refuses a privilege escalation through /auth/switch-role", async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/switch-role`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
-      body: JSON.stringify({ role: 'super_admin' }),
+      body: JSON.stringify({ role: "super_admin" }),
     });
     expect(res.status).toBe(403);
 
     // And the session must not have gained anything from the attempt.
-    const after = await fetch(`${baseUrl}/api/v1/admin/stats`, { headers: auth(buyerToken) });
+    const after = await fetch(`${baseUrl}/api/v1/admin/stats`, {
+      headers: auth(buyerToken),
+    });
     expect(after.status).toBe(403);
   });
 
-  it('allows switching to a role the account actually holds', async () => {
+  it("allows switching to a role the account actually holds", async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/switch-role`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
-      body: JSON.stringify({ role: 'individual_seller' }),
+      body: JSON.stringify({ role: "individual_seller" }),
     });
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.user.role).toBe('individual_seller');
-    expect(data.token.split('.')).toHaveLength(3);
+    expect(data.user.role).toBe("individual_seller");
+    expect(data.token.split(".")).toHaveLength(3);
   });
 
-  it('refuses registration that claims a staff role', async () => {
+  it("refuses registration that claims a staff role", async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: 'escalation@example.fr',
-        name: 'Escalation Attempt',
-        role: 'admin',
-        password: 'a-perfectly-long-password',
+        email: "escalation@example.fr",
+        name: "Escalation Attempt",
+        role: "admin",
+        password: "a-perfectly-long-password",
       }),
     });
     expect(res.status).toBe(403);
@@ -287,28 +410,37 @@ describe('API v1 Endpoints Integration', () => {
   // ---------------------------------------------------------------------------
 
   it("refuses to return another user's conversations", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/messaging/conversations/user_camille`, {
-      headers: auth(buyerToken),
-    });
+    const res = await fetch(
+      `${baseUrl}/api/v1/messaging/conversations/user_camille`,
+      {
+        headers: auth(buyerToken),
+      },
+    );
     expect(res.status).toBe(404);
   });
 
   it("refuses to return another user's notifications and orders", async () => {
     for (const path of [
-      '/api/v1/notifications/user_camille',
-      '/api/v1/orders/purchases/user_camille',
-      '/api/v1/workspace/summary/user_camille',
+      "/api/v1/notifications/user_camille",
+      "/api/v1/orders/purchases/user_camille",
+      "/api/v1/workspace/summary/user_camille",
     ]) {
-      const res = await fetch(`${baseUrl}${path}`, { headers: auth(buyerToken) });
+      const res = await fetch(`${baseUrl}${path}`, {
+        headers: auth(buyerToken),
+      });
       expect(res.status, path).toBe(404);
     }
   });
 
-  it('scopes owner-addressed routes to the caller', async () => {
-    const byId = await fetch(`${baseUrl}/api/v1/notifications/user_thomas`, { headers: auth(buyerToken) });
+  it("scopes owner-addressed routes to the caller", async () => {
+    const byId = await fetch(`${baseUrl}/api/v1/notifications/user_thomas`, {
+      headers: auth(buyerToken),
+    });
     expect(byId.status).toBe(200);
 
-    const byAlias = await fetch(`${baseUrl}/api/v1/notifications/me`, { headers: auth(buyerToken) });
+    const byAlias = await fetch(`${baseUrl}/api/v1/notifications/me`, {
+      headers: auth(buyerToken),
+    });
     expect(byAlias.status).toBe(200);
 
     // Compare identity rather than the whole payload: the demo repository
@@ -317,156 +449,176 @@ describe('API v1 Endpoints Integration', () => {
     expect(idsOf(await byAlias.json())).toEqual(idsOf(await byId.json()));
   });
 
-  it('ignores a body-supplied identity and uses the authenticated caller', async () => {
+  it("ignores a body-supplied identity and uses the authenticated caller", async () => {
     const res = await fetch(`${baseUrl}/api/v1/orders/direct-purchase`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
       body: JSON.stringify({
-        listingId: 'list_1',
-        buyerId: 'user_camille', // attacker-supplied; must be ignored
-        deliveryMethod: 'hand_delivery',
-        paymentMethod: 'card',
+        listingId: "list_1",
+        buyerId: "user_camille", // attacker-supplied; must be ignored
+        deliveryMethod: "hand_delivery",
+        paymentMethod: "card",
       }),
     });
     expect(res.status).toBe(200);
     const order = await res.json();
-    expect(order.buyerId).toBe('user_thomas');
+    expect(order.buyerId).toBe("user_thomas");
     expect(order.totalCharged).toBeGreaterThan(0);
   });
 
-  it('refuses profile updates that try to change role or verification state', async () => {
+  it("refuses profile updates that try to change role or verification state", async () => {
     const res = await fetch(`${baseUrl}/api/v1/users/user_thomas`, {
-      method: 'PUT',
+      method: "PUT",
       headers: auth(buyerToken),
       body: JSON.stringify({
-        name: 'Thomas Renamed',
-        primaryRole: 'super_admin',
-        status: 'active',
+        name: "Thomas Renamed",
+        primaryRole: "super_admin",
+        status: "active",
         isIdentityVerified: true,
       }),
     });
     expect(res.status).toBe(200);
     const updated = await res.json();
-    expect(updated.name).toBe('Thomas Renamed');
-    expect(updated.primaryRole).not.toBe('super_admin');
+    expect(updated.name).toBe("Thomas Renamed");
+    expect(updated.primaryRole).not.toBe("super_admin");
   });
 
   // ---------------------------------------------------------------------------
   // Authenticated happy paths
   // ---------------------------------------------------------------------------
 
-  it('GET /api/v1/verification/status returns the caller status', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/verification/status/user_thomas`, { headers: auth(buyerToken) });
+  it("GET /api/v1/verification/status returns the caller status", async () => {
+    const res = await fetch(
+      `${baseUrl}/api/v1/verification/status/user_thomas`,
+      { headers: auth(buyerToken) },
+    );
     expect(res.status).toBe(200);
     const status = await res.json();
     expect(status.state).toBeDefined();
     expect(status.isPhoneVerified).toBe(true);
   });
 
-  it('POST /api/v1/payments/intent generates a payment intent for an authenticated buyer', async () => {
+  it("POST /api/v1/payments/intent rejects a client-supplied amount without an authoritative quote", async () => {
     const res = await fetch(`${baseUrl}/api/v1/payments/intent`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
-      body: JSON.stringify({ amount: 150, currency: 'EUR' }),
+      body: JSON.stringify({ amount: 150, currency: "EUR" }),
     });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.clientSecret).toBeDefined();
-    expect(data.amount).toBe(150);
+    expect(data.error?.code || data.code).toBeDefined();
+    expect(data.clientSecret).toBeUndefined();
   });
 
   // ---------------------------------------------------------------------------
   // Mobile safety and account lifecycle
   // ---------------------------------------------------------------------------
 
-  it('accepts an authenticated user report for moderation', async () => {
+  it("accepts an authenticated user report for moderation", async () => {
     const res = await fetch(`${baseUrl}/api/v1/reports`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
       body: JSON.stringify({
-        listingId: 'list_1',
-        reason: 'other',
-        details: 'Le contenu de cette annonce doit être vérifié par la modération.',
+        listingId: "list_1",
+        reason: "other",
+        details:
+          "Le contenu de cette annonce doit être vérifié par la modération.",
       }),
     });
     expect(res.status).toBe(200);
-    expect((await res.json()).status).toBe('pending');
+    expect((await res.json()).status).toBe("pending");
   });
 
-  it('enforces a block on subsequent message sends and supports explicit unblock', async () => {
-    const sellerToken = await login('camille.martin@example.fr');
+  it("enforces a block on subsequent message sends and supports explicit unblock", async () => {
+    const sellerToken = await login("camille.martin@example.fr");
     const block = await fetch(`${baseUrl}/api/v1/messaging/block`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
-      body: JSON.stringify({ targetUserId: 'user_camille' }),
+      body: JSON.stringify({ targetUserId: "user_camille" }),
     });
     expect(block.status).toBe(200);
 
     const refused = await fetch(`${baseUrl}/api/v1/messaging/send`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(sellerToken),
-      body: JSON.stringify({ conversationId: 'conv_1', text: 'Ce message doit être refusé.' }),
+      body: JSON.stringify({
+        conversationId: "conv_1",
+        text: "Ce message doit être refusé.",
+      }),
     });
     expect(refused.status).toBe(403);
 
     const unblock = await fetch(`${baseUrl}/api/v1/messaging/unblock`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
-      body: JSON.stringify({ targetUserId: 'user_camille' }),
+      body: JSON.stringify({ targetUserId: "user_camille" }),
     });
     expect(unblock.status).toBe(200);
   });
 
-  it('registers and removes only the caller push device token', async () => {
-    const token = 'ExpoPushToken[mobile-test-token]';
+  it("registers and removes only the caller push device token", async () => {
+    const token = "ExpoPushToken[mobile-test-token]";
     const register = await fetch(`${baseUrl}/api/v1/notifications/devices`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
-      body: JSON.stringify({ token, platform: 'ios', appVersion: '1.0.0' }),
+      body: JSON.stringify({ token, platform: "ios", appVersion: "1.0.0" }),
     });
     expect(register.status).toBe(200);
 
-    const remove = await fetch(`${baseUrl}/api/v1/notifications/devices/unregister`, {
-      method: 'POST',
-      headers: auth(buyerToken),
-      body: JSON.stringify({ token }),
-    });
+    const remove = await fetch(
+      `${baseUrl}/api/v1/notifications/devices/unregister`,
+      {
+        method: "POST",
+        headers: auth(buyerToken),
+        body: JSON.stringify({ token }),
+      },
+    );
     expect(remove.status).toBe(200);
   });
 
-  it('blocks deletion while an order is active', async () => {
+  it("blocks deletion while an order is active", async () => {
     const res = await fetch(`${baseUrl}/api/v1/account/delete`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(buyerToken),
       body: JSON.stringify({ password: DEMO_ACCOUNT_PASSWORD }),
     });
     expect(res.status).toBe(409);
   });
 
-  it('anonymizes an eligible account, revokes access, and removes its credential', async () => {
-    const email = 'mobile-delete-test@example.fr';
-    const password = 'DeleteThisAccount2026!';
+  it("anonymizes an eligible account, revokes access, and removes its credential", async () => {
+    const email = "mobile-delete-test@example.fr";
+    const password = "DeleteThisAccount2026!";
     const registration = await fetch(`${baseUrl}/api/v1/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name: 'Deletion Test', role: 'individual_buyer', password }),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shongre-Client": "native",
+      },
+      body: JSON.stringify({
+        email,
+        name: "Deletion Test",
+        role: "individual_buyer",
+        password,
+      }),
     });
     expect(registration.status).toBe(200);
     const session = await registration.json();
 
     const deletion = await fetch(`${baseUrl}/api/v1/account/delete`, {
-      method: 'POST',
+      method: "POST",
       headers: auth(session.token),
-      body: JSON.stringify({ password, reason: 'Test automatisé' }),
+      body: JSON.stringify({ password, reason: "Test automatisé" }),
     });
     expect(deletion.status).toBe(200);
-    expect((await deletion.json()).status).toBe('completed');
+    expect((await deletion.json()).status).toBe("completed");
 
-    const me = await fetch(`${baseUrl}/api/v1/auth/me`, { headers: auth(session.token) });
+    const me = await fetch(`${baseUrl}/api/v1/auth/me`, {
+      headers: auth(session.token),
+    });
     expect(await me.json()).toBeNull();
     const relogin = await fetch(`${baseUrl}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
     expect(relogin.status).toBe(401);
@@ -476,11 +628,11 @@ describe('API v1 Endpoints Integration', () => {
   // Webhooks
   // ---------------------------------------------------------------------------
 
-  it('refuses an unsigned Stripe webhook', async () => {
+  it("refuses an unsigned Stripe webhook", async () => {
     const res = await fetch(`${baseUrl}/api/v1/webhooks/stripe`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'payment_intent.succeeded' }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "payment_intent.succeeded" }),
     });
     expect(res.status).toBe(403);
   });

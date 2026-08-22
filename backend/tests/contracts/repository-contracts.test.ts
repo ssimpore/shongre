@@ -24,6 +24,8 @@ import {
   PostgresAdminRepository,
   DemoWorkspaceRepository,
   PostgresWorkspaceRepository,
+  DemoCoursesRepository,
+  PostgresCoursesRepository,
   createRepositoryContainer,
 } from '../../src/infrastructure/database/repositories/index.js';
 import { UserProfile, Listing } from '../../src/shared/types/index.js';
@@ -189,6 +191,29 @@ describe('Repository Contract & Dual-Mode Compatibility Tests', () => {
       expect(typeof postgresRepo.getActive).toBe('function');
       expect(typeof postgresRepo.setActive).toBe('function');
       expect(typeof postgresRepo.getEffective).toBe('function');
+    });
+  });
+
+  describe('Cours Repository Contract', () => {
+    const demoRepo = new DemoCoursesRepository();
+    const postgresRepo = new PostgresCoursesRepository();
+
+    it('exposes a deterministic normalized demo catalog', async () => {
+      const catalog = await demoRepo.getCatalog('FR');
+      expect(catalog.subjects.some((subject) => subject.id === 'subject_mathematics')).toBe(true);
+      expect(catalog.plans.some((plan) => plan.id === 'school_organization')).toBe(true);
+      expect(catalog.config.featureFlags.paymentsEnabled).toBe(false);
+    });
+
+    it('keeps the Postgres adapter compatible with the complete course repository contract', () => {
+      for (const method of [
+        'getCatalog', 'saveMarketConfig', 'saveSubject', 'savePlan', 'searchTutors',
+        'getTutorProfile', 'saveTutorProfile', 'getCourseOffers', 'saveCourseOffer',
+        'createLearnerRequest', 'getLearnerRequest', 'getTutorLeads', 'saveLead',
+        'getTutorWorkspace', 'getOrganization', 'getOrganizationWorkspace',
+      ]) {
+        expect(typeof (postgresRepo as unknown as Record<string, unknown>)[method]).toBe('function');
+      }
     });
   });
 

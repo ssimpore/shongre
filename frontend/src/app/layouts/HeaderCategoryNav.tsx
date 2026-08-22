@@ -60,6 +60,7 @@ const HEADER_NAV_ITEMS: readonly HeaderNavItem[] = [
     slug: "loisirs-culture",
   },
   { kind: "link", labelKey: "nav.category.autres", to: routes.categories() },
+  { kind: "link", labelKey: "nav.category.cours", to: routes.courses.search() },
   {
     kind: "link",
     labelKey: "nav.category.bonsPlans",
@@ -112,11 +113,19 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
             : t(item.labelKey);
           const isActive =
             item.kind === "category"
-              ? item.slug === activeCategorySlug
+              ? item.slug === "vehicules"
+                ? currentPath.startsWith("/auto") || item.slug === activeCategorySlug
+                : item.slug === "immobilier"
+                  ? currentPath.startsWith("/immo") || item.slug === activeCategorySlug
+                : item.slug === activeCategorySlug
               : currentPath === item.to;
           const destination =
             item.kind === "category"
-              ? routes.search({ category: item.slug })
+              ? item.slug === "vehicules"
+                ? routes.auto.search()
+                : item.slug === "immobilier"
+                  ? routes.immo.search()
+                : routes.search({ category: item.slug })
               : item.to;
 
           return (
@@ -134,6 +143,8 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                   to={destination}
                   onClick={(event) => {
                     if (item.kind !== "category") return;
+                    if (item.slug === "vehicules") return;
+                    if (item.slug === "immobilier") return;
                     if (
                       event.button !== 0 ||
                       event.metaKey ||

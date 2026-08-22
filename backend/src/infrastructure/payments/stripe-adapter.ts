@@ -1,4 +1,4 @@
-import { logger } from '../logging/logger.js';
+import { AppError } from '../../shared/errors/app-error.js';
 
 export interface StripePaymentIntentParams {
   amount: number; // in EUR cents or full euros
@@ -7,8 +7,6 @@ export interface StripePaymentIntentParams {
 }
 
 export class StripeAdapter {
-  private apiKey = process.env.STRIPE_SECRET_KEY || '';
-
   async createPaymentIntent(params: StripePaymentIntentParams): Promise<{
     id: string;
     clientSecret: string;
@@ -16,28 +14,22 @@ export class StripeAdapter {
     amount: number;
     currency: string;
   }> {
-    logger.info(`Creating Stripe PaymentIntent for amount ${params.amount} ${params.currency}`);
-    
-    // Generates simulated/live client secret
-    const intentId = `pi_${Math.random().toString(36).substring(2, 15)}`;
-    return {
-      id: intentId,
-      clientSecret: `${intentId}_secret_${Math.random().toString(36).substring(2, 10)}`,
-      status: 'requires_action',
-      amount: params.amount,
-      currency: params.currency.toLowerCase(),
-    };
+    void params;
+    throw new AppError({
+      code: 'CONFLICT',
+      message: 'Les PaymentIntents libres sont désactivés. Utilisez un devis immuable et Checkout.',
+    });
   }
 
   async createPayout(sellerId: string, amount: number, iban: string): Promise<{
     payoutId: string;
     status: 'completed' | 'processing';
   }> {
-    logger.info(`Executing Stripe Connect Payout to ${sellerId} (IBAN: ...${iban.slice(-4)}) for ${amount} EUR`);
-    return {
-      payoutId: `po_${Math.random().toString(36).substring(2, 15)}`,
-      status: 'processing',
-    };
+    void sellerId; void amount; void iban;
+    throw new AppError({
+      code: 'CONFLICT',
+      message: 'Le compte Stripe Connect du vendeur doit être validé avant un virement.',
+    });
   }
 }
 

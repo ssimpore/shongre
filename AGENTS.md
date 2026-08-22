@@ -3955,9 +3955,11 @@ When in doubt, prefer:
 
 # 151. API authentication and authorization
 
-The backend authenticates every request from a signed bearer token. There is no
-ambient "current user" — identity is per-request state and must be threaded as
-such.
+The backend authenticates web requests with Shongre-owned HttpOnly cookies and
+native requests with Shongre bearer tokens stored in Keychain/Keystore. Both
+carry a short-lived access token with a server-side session id; neither client
+ever stores provider credentials. There is no ambient "current user" — identity
+is per-request state and must be threaded as such.
 
 ## Where the pieces live
 
@@ -3965,10 +3967,34 @@ such.
 | :--- | :--- |
 | Password hashing (scrypt) | `backend/src/shared/auth/password.ts` |
 | Token signing/verification (HS256) | `backend/src/shared/auth/tokens.ts` |
+| Cookie, CSRF and request metadata | `backend/src/shared/auth/http-session.ts` |
+| Identities, sessions and OAuth persistence | `backend/src/infrastructure/database/repositories/auth.repository.ts` |
+| Session rotation/revocation | `backend/src/modules/auth/session.service.ts` |
+| OAuth/OIDC validation and identity resolution | `backend/src/modules/auth/oauth-provider.client.ts`, `social-auth.service.ts` |
 | Principal + ownership guards | `backend/src/shared/auth/principal.ts` |
 | Role → permission matrix | `backend/src/shared/auth/rbac.ts` |
 | Route access declarations | `backend/src/api/v1/router.ts` |
-| Credential storage | `user_credentials` table, migration `00006` |
+| Credential/identity/session storage | `user_credentials`, `user_identities`, `auth_sessions`; migrations `00006`, `00012` |
+
+## Identity and session invariants
+
+* Social identity matching uses `(provider, provider_subject)`, never email.
+* A matching verified email never silently merges profiles. The user signs in,
+  recently reauthenticates, and explicitly links the provider.
+* Unlinking the last usable method is rejected by both service logic and a
+  database trigger.
+* Provider authorization codes, access tokens and refresh tokens are exchanged
+  only by the backend and are never persisted in web or mobile clients.
+* Web refresh tokens are HttpOnly and cookie-authenticated mutations require a
+  double-submit CSRF token. Native refresh tokens live only in SecureStore.
+* Refresh tokens rotate on every use. Reuse revokes the entire token family.
+* Link, unlink, password changes, deletion and other sensitive operations
+  require recent authentication.
+* OAuth `state`, nonce and PKCE are mandatory. State and one-time native
+  exchange handles are consumed atomically and expire quickly.
+
+The complete flow, callback registry and rollout procedure live in
+`docs/architecture/authentication.md`.
 
 ## Every route declares its access rule
 
@@ -3983,8 +4009,11 @@ this.addRoute('GET',  '/admin/users',  permission('user.read'),       handler);
 ```
 
 Use `PUBLIC` only for genuinely public marketplace surface (listings, taxonomy,
-markets, public seller profiles) and for endpoints that cannot carry a session
-token (login, register, Stripe webhooks).
+markets, public seller profiles) and credential/session entry points that must
+authenticate themselves (login, register, provider callbacks, refresh, Stripe
+webhooks). `PUBLIC` means the route guard does not authenticate the request; it
+does not make CSRF, rate limiting, state verification or signature validation
+optional.
 
 ## Never take identity from the client
 
@@ -4027,14 +4056,17 @@ the token because the role is a signed claim.
 ## Secrets and configuration
 
 `JWT_SECRET` is required in production; the server refuses to boot if it is
-missing, under 32 characters, or still a placeholder. Demo credentials are never
-seeded in production.
+missing, under 32 characters, or still a placeholder. Enabled OAuth providers
+must have complete backend-only credentials and exact callback URLs. Production
+uses secure cookies, exact CORS/OAuth origins and a configured transactional
+email boundary. Demo credentials are never seeded in production.
 
 ## Frontend data mode
 
-`VITE_DATA_MODE` must be set explicitly to build. Demo mode's login accepts any
-password of six or more characters for the seeded personas by design, so an
-unconfigured production build is rejected in `vite.config.ts`.
+`NEXT_PUBLIC_DATA_MODE` is the canonical web selector; the `VITE_*` alias exists
+only during the router migration. Demo mode's deterministic credentials and
+social callbacks remain entirely inside the demo adapter. API mode uses the same
+`AuthService` contract and must never silently fall back to demo or Supabase.
 
 ## When adding a feature
 

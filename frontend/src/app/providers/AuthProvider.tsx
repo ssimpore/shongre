@@ -15,8 +15,8 @@ import {
   AuthResult,
 } from "../../types";
 import { userRepository } from "../../repositories/user.repository";
-import { storageService } from "../../services/storage.service";
-import { authService } from "../../domains/auth/auth.service";
+import { services } from "../../api/client/service-registry";
+import { authService as demoProfileUpgradeService } from "../../domains/auth/auth.service";
 import {
   authorizationService,
   ResourceOwnershipContext,
@@ -36,6 +36,7 @@ interface AuthContextType {
   accountType: AccountType;
   effectivePermissions: Permission[];
   isAuthenticated: boolean;
+  isRestoring: boolean;
   isSuspended: boolean;
   isLimited: boolean;
   isPro: boolean;
@@ -82,7 +83,7 @@ interface AuthContextType {
     businessAddress: string;
     phone?: string;
   }) => Promise<AuthResult>;
-  refreshUser: () => void;
+  refreshUser: () => Promise<void>;
   switchRole: (role: UserRole) => Promise<void>;
   switchDemoUser: (userKey: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
@@ -99,33 +100,58 @@ interface AuthContextType {
       | "automaticRelisting",
   ) => boolean;
   canAccessMarket: (countryCode?: string) => boolean;
-  logout: () => void;
+  logout: () => Promise<void>;
   loginAs: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const AUTH_CHANNEL = "shongre-auth-v1";
+
+function announceAuthChange(type: "login" | "logout"): void {
+  if (typeof BroadcastChannel === "undefined") return;
+  const channel = new BroadcastChannel(AUTH_CHANNEL);
+  channel.postMessage({ type });
+  channel.close();
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [currentKey, setCurrentKey] = useState<string>(() =>
-    storageService.getCurrentUserKey(),
-  );
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(() =>
-    storageService.getCurrentUser(),
-  );
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isRestoring, setIsRestoring] = useState(true);
 
-  const refreshUser = useCallback(() => {
-    const key = storageService.getCurrentUserKey();
-    setCurrentKey(key);
-    const user = storageService.getCurrentUser(key);
-    setCurrentUser(user);
+  const refreshUser = useCallback(async () => {
+    setCurrentUser(await services.auth.getCurrentUser());
   }, []);
 
   useEffect(() => {
-    const user = storageService.getCurrentUser(currentKey);
-    setCurrentUser(user);
-  }, [currentKey]);
+    let active = true;
+    services.auth
+      .getCurrentUser()
+      .then((user) => {
+        if (active) setCurrentUser(user);
+      })
+      .finally(() => {
+        if (active) setIsRestoring(false);
+      });
+
+    if (typeof BroadcastChannel === "undefined") {
+      return () => {
+        active = false;
+      };
+    }
+    const channel = new BroadcastChannel(AUTH_CHANNEL);
+    channel.onmessage = () => {
+      void services.auth.getCurrentUser().then((user) => {
+        if (active) setCurrentUser(user);
+      });
+    };
+    return () => {
+      active = false;
+      channel.close();
+    };
+  }, []);
 
   const platformRole = useMemo<PlatformRole>(() => {
     if (!currentUser) return "guest";
@@ -157,10 +183,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     password: string,
     options?: { rememberMe?: boolean },
   ): Promise<AuthResult> => {
-    const result = await authService.login(email, password, options);
+    const result = await services.auth.login({ email, password, rememberMe: options?.rememberMe });
     if (result.success && result.user) {
-      setCurrentKey(result.user.id);
       setCurrentUser(result.user);
+      announceAuthChange("login");
     }
     return result;
   };
@@ -169,10 +195,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     tempToken: string,
     code: string,
   ): Promise<AuthResult> => {
-    const result = await authService.verifyMFALogin(tempToken, code);
+    const result = await services.auth.loginWithMFA(tempToken, code);
     if (result.success && result.user) {
-      setCurrentKey(result.user.id);
       setCurrentUser(result.user);
+      announceAuthChange("login");
     }
     return result;
   };
@@ -187,10 +213,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     termsAccepted: boolean;
     marketingConsent?: boolean;
   }): Promise<AuthResult> => {
-    const result = await authService.registerIndividual(data);
+    const result = await services.auth.registerIndividual(data);
     if (result.success && result.user) {
-      setCurrentKey(result.user.id);
       setCurrentUser(result.user);
+      announceAuthChange("login");
     }
     return result;
   };
@@ -211,10 +237,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     termsAccepted: boolean;
     marketingConsent?: boolean;
   }): Promise<AuthResult> => {
-    const result = await authService.registerProfessional(data);
+    const result = await services.auth.registerProfessional(data);
     if (result.success && result.user) {
-      setCurrentKey(result.user.id);
       setCurrentUser(result.user);
+      announceAuthChange("login");
     }
     return result;
   };
@@ -233,7 +259,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         errorMessage: "Vous devez être connecté pour effectuer cette action.",
       };
     }
-    const result = await authService.upgradeIndividualToPro(
+    const result = await demoProfileUpgradeService.upgradeIndividualToPro(
       currentUser.id,
       proData,
     );
@@ -244,23 +270,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const switchRole = async (newRole: UserRole) => {
-    storageService.setCurrentRole(newRole);
-    const updatedKey = storageService.getCurrentUserKey();
-    setCurrentKey(updatedKey);
-    const user = storageService.getCurrentUser(updatedKey);
+    const user = await services.auth.switchRole(newRole);
     setCurrentUser(user);
   };
 
   const switchDemoUser = async (userKey: string) => {
-    storageService.setCurrentUserKey(userKey);
-    setCurrentKey(userKey);
-    const user = storageService.getCurrentUser(userKey);
-    if (user) {
-      storageService.setCurrentRole(
-        user.primaryRole || normalizePlatformRole(user.role),
-      );
-    }
+    const user = await services.auth.switchDemoUser(userKey);
     setCurrentUser(user);
+    if (user) announceAuthChange("login");
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -291,10 +308,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return authorizationService.canAccessMarket(currentUser, countryCode);
   };
 
-  const logout = () => {
-    authService.logout();
-    setCurrentKey("guest");
+  const logout = async () => {
+    await services.auth.logout();
     setCurrentUser(null);
+    announceAuthChange("logout");
   };
 
   const loginAs = (targetRole: UserRole) => {
@@ -310,6 +327,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         accountType,
         effectivePermissions,
         isAuthenticated: Boolean(currentUser && platformRole !== "guest"),
+        isRestoring,
         isSuspended,
         isLimited,
         isPro,

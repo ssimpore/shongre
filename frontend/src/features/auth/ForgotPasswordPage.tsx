@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { authService } from "../../domains/auth/auth.service";
+import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { PasswordField } from "./components/PasswordField";
@@ -49,7 +49,7 @@ export const ForgotPasswordPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const res = await authService.requestPasswordReset(email.trim());
+      const res = await services.auth.requestPasswordReset(email.trim());
       if (res.success) {
         setSuccessMessage(res.message);
         if (res.demoToken) {
@@ -84,7 +84,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const res = await authService.resetPassword(token.trim(), newPassword);
+      const res = await services.auth.resetPassword(token.trim(), newPassword);
       if (res.success) {
         toast.success(
           "Votre mot de passe a été mis à jour ! Vous pouvez vous connecter.",

@@ -26,6 +26,12 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     expect(authorizationService.can(buyer as UserProfile, "user.suspend")).toBe(
       false,
     );
+    expect(
+      authorizationService.can(buyer as UserProfile, "course.request.create"),
+    ).toBe(true);
+    expect(
+      authorizationService.can(buyer as UserProfile, "course.admin.manage"),
+    ).toBe(false);
   });
 
   it("enforces resource ownership when editing an announcement", () => {
@@ -106,5 +112,8 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     expect(authorizationService.can(admin as UserProfile, "user.suspend")).toBe(
       true,
     );
+    expect(
+      authorizationService.can(admin as UserProfile, "course.admin.manage"),
+    ).toBe(true);
   });
 });

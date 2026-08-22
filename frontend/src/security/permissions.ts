@@ -12,12 +12,150 @@ export interface PermissionDefinition {
     | "Modération & Signalements"
     | "Utilisateurs & Équipe"
     | "Marchés & Configuration"
+    | "Cours & Formation"
+    | "Auto & Véhicules"
+    | "Immobilier"
     | "Administration Système";
   description: string;
   isSensitive?: boolean;
 }
 
 export const ALL_PERMISSIONS: PermissionDefinition[] = [
+  // Shongre Immo
+  {
+    id: "immo.read",
+    name: "Consulter Shongre Immo",
+    category: "Immobilier",
+    description: "Rechercher et consulter les biens immobiliers publics.",
+  },
+  {
+    id: "immo.property.manage.own",
+    name: "Gérer ses biens immobiliers",
+    category: "Immobilier",
+    description: "Créer, reprendre et publier ses propres biens.",
+  },
+  {
+    id: "immo.agency.manage.own",
+    name: "Gérer son agence",
+    category: "Immobilier",
+    description: "Administrer biens, agences, équipe, abonnement et visibilité.",
+  },
+  {
+    id: "immo.lead.manage.own",
+    name: "Gérer ses leads Immo",
+    category: "Immobilier",
+    description: "Qualifier, affecter et suivre les contacts et visites.",
+  },
+  {
+    id: "immo.inventory.import.own",
+    name: "Importer ses biens",
+    category: "Immobilier",
+    description: "Créer des imports CSV, XML ou API autorisés par la formule.",
+  },
+  {
+    id: "immo.admin.manage",
+    name: "Administrer Shongre Immo",
+    category: "Immobilier",
+    description: "Configurer marchés, champs, offres, conformité et modération Immo.",
+    isSensitive: true,
+  },
+
+  // Shongre Auto
+  {
+    id: "auto.read",
+    name: "Consulter Shongre Auto",
+    category: "Auto & Véhicules",
+    description: "Rechercher, comparer et consulter les véhicules publics.",
+  },
+  {
+    id: "auto.vehicle.manage.own",
+    name: "Gérer ses véhicules",
+    category: "Auto & Véhicules",
+    description: "Créer, reprendre et publier ses propres annonces automobiles.",
+  },
+  {
+    id: "auto.dealer.manage.own",
+    name: "Gérer sa concession",
+    category: "Auto & Véhicules",
+    description: "Administrer stock, sites, équipe, abonnement et vitrine automobile.",
+  },
+  {
+    id: "auto.lead.manage.own",
+    name: "Gérer ses demandes Auto",
+    category: "Auto & Véhicules",
+    description: "Qualifier, affecter et suivre les demandes adressées à sa concession.",
+  },
+  {
+    id: "auto.inventory.import.own",
+    name: "Importer son stock Auto",
+    category: "Auto & Véhicules",
+    description: "Créer des travaux d’import de stock autorisés par la formule.",
+  },
+  {
+    id: "auto.admin.manage",
+    name: "Administrer Shongre Auto",
+    category: "Auto & Véhicules",
+    description: "Configurer marchés, schémas, types, formules, sécurité et modération Auto.",
+    isSensitive: true,
+  },
+
+  // Shongre Cours
+  {
+    id: "course.read",
+    name: "Consulter Shongre Cours",
+    category: "Cours & Formation",
+    description: "Rechercher les professeurs et consulter leurs offres publiques.",
+  },
+  {
+    id: "course.request.create",
+    name: "Créer une demande de cours",
+    category: "Cours & Formation",
+    description: "Décrire un besoin élève et recevoir des propositions pertinentes.",
+  },
+  {
+    id: "course.profile.manage.own",
+    name: "Gérer son profil professeur",
+    category: "Cours & Formation",
+    description: "Créer et mettre à jour son profil professeur et ses disponibilités.",
+  },
+  {
+    id: "course.offer.manage.own",
+    name: "Gérer ses cours",
+    category: "Cours & Formation",
+    description: "Créer, modifier, publier et suspendre ses offres de cours.",
+  },
+  {
+    id: "course.lead.read.own",
+    name: "Consulter ses demandes qualifiées",
+    category: "Cours & Formation",
+    description: "Lire les demandes routées vers son profil ou son organisme.",
+  },
+  {
+    id: "course.lead.respond.own",
+    name: "Répondre à ses demandes qualifiées",
+    category: "Cours & Formation",
+    description: "Accepter, refuser ou contester une demande reçue.",
+  },
+  {
+    id: "course.organization.manage.own",
+    name: "Gérer son organisme de cours",
+    category: "Cours & Formation",
+    description: "Administrer équipe, rôles, lieux et boîte de réception de son organisme.",
+  },
+  {
+    id: "course.booking.create",
+    name: "Réserver un cours",
+    category: "Cours & Formation",
+    description: "Créer une réservation lorsque la Phase 2 est activée sur le marché.",
+  },
+  {
+    id: "course.admin.manage",
+    name: "Administrer Shongre Cours",
+    category: "Cours & Formation",
+    description: "Configurer taxonomie, formules, routage, sécurité et activation par marché.",
+    isSensitive: true,
+  },
+
   // Profil & Compte
   {
     id: "profile.read",

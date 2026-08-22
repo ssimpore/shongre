@@ -2,22 +2,7 @@ export interface TransactionConfig {
   sellerConfirmationTimeoutHours: number;
   buyerInspectionWindowHours: number;
   pickupSchedulingTimeoutDays: number;
-  buyerProtectionRate: number; // e.g. 0.04 (4%)
-  buyerProtectionFixedCents: number; // e.g. 70 (0.70 EUR)
-  platformCommissionRate: number; // e.g. 0.03 (3% for pro sellers)
-  instantPayoutFeeCents: number; // e.g. 90 (0.90 EUR)
-  standardPayoutFeeCents: number; // 0 EUR
-  minTransactionAmountCents: number; // 100 (1.00 EUR)
-  maxTransactionAmountCents: number; // 1500000 (15,000.00 EUR)
   verificationCodeLength: number;
-  deliveryMethods: {
-    id: "hand_delivery" | "relay_point" | "home_delivery";
-    name: string;
-    description: string;
-    defaultPriceCents: number;
-    carriers: string[];
-    requiresPinCode: boolean;
-  }[];
   disputeReasons: {
     id: string;
     label: string;
@@ -34,43 +19,7 @@ export const TRANSACTION_CONFIG: TransactionConfig = {
   sellerConfirmationTimeoutHours: 48,
   buyerInspectionWindowHours: 48,
   pickupSchedulingTimeoutDays: 7,
-  buyerProtectionRate: 0.04, // 4%
-  buyerProtectionFixedCents: 70, // 0.70 €
-  platformCommissionRate: 0.03, // 3%
-  instantPayoutFeeCents: 90, // 0.90 €
-  standardPayoutFeeCents: 0,
-  minTransactionAmountCents: 100, // 1.00 €
-  maxTransactionAmountCents: 1500000, // 15 000.00 €
   verificationCodeLength: 6,
-  deliveryMethods: [
-    {
-      id: "hand_delivery",
-      name: "Remise en main propre",
-      description:
-        "Échange physique sécurisé avec validation par code secret à 6 chiffres.",
-      defaultPriceCents: 0,
-      carriers: ["Remise directe"],
-      requiresPinCode: true,
-    },
-    {
-      id: "relay_point",
-      name: "Point Relais (Mondial Relay / Shop2Shop)",
-      description:
-        "Dépôt et retrait en point commerçant avec étiquette prépayée et suivi colis.",
-      defaultPriceCents: 490, // 4.90 €
-      carriers: ["Mondial Relay", "Shop2Shop by Chronopost", "Relais Colis"],
-      requiresPinCode: false,
-    },
-    {
-      id: "home_delivery",
-      name: "Livraison à domicile (Colissimo)",
-      description:
-        "Livraison directement chez l'acheteur en 48h avec signature et assurance.",
-      defaultPriceCents: 690, // 6.90 €
-      carriers: ["Colissimo La Poste", "Chronopost Express"],
-      requiresPinCode: false,
-    },
-  ],
   disputeReasons: [
     {
       id: "not_received",

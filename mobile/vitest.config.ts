@@ -7,6 +7,10 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    env: {
+      EXPO_PUBLIC_DATA_MODE: "demo",
+      EXPO_PUBLIC_WEB_URL: "https://mobile-test.shongre.invalid",
+    },
     include: ["tests/**/*.test.ts"],
   },
 });

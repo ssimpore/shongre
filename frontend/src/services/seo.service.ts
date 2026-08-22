@@ -119,7 +119,21 @@ function upsertMeta(
   value?: string,
 ) {
   if (typeof document === "undefined") return;
-  const existing = document.head.querySelector<HTMLMetaElement>(selector);
+  // App Router streams route metadata through the body before browsers hoist
+  // it. Search the whole document so the client updater adopts/removes those
+  // nodes instead of creating a second head tag beside them.
+  const matches = Array.from(
+    document.querySelectorAll<HTMLMetaElement>(selector),
+  );
+  const existing = matches[0];
+
+  // Next.js can stream its static metadata into the head after the client app
+  // has mounted. Keep the first canonical tag and remove later duplicates so
+  // route metadata still has one unambiguous owner after hydration.
+  matches.slice(1).forEach((duplicate) => duplicate.remove());
+  if (existing && existing.parentElement !== document.head) {
+    document.head.appendChild(existing);
+  }
 
   if (!value) {
     // Only retract what this module added; static tags are left as authored.
@@ -141,9 +155,14 @@ function upsertMeta(
 
 function upsertCanonical(url: string) {
   if (typeof document === "undefined") return;
-  let link = document.head.querySelector<HTMLLinkElement>(
-    'link[rel="canonical"]',
+  const links = Array.from(
+    document.querySelectorAll<HTMLLinkElement>('link[rel="canonical"]'),
   );
+  let link = links[0];
+  links.slice(1).forEach((duplicate) => duplicate.remove());
+  if (link && link.parentElement !== document.head) {
+    document.head.appendChild(link);
+  }
   if (!link) {
     link = document.createElement("link");
     link.setAttribute("rel", "canonical");

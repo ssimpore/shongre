@@ -218,10 +218,26 @@ function renderBackendHomePage(port: number, prefix: string, frontendUrl: string
 export function createHttpServer() {
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', config.corsOrigin);
+    const requestOrigin = String(req.headers.origin || '');
+    const configuredOrigins = new Set([
+      ...config.corsOrigin.split(',').map((value) => value.trim()).filter(Boolean),
+      ...config.oauthAllowedReturnOrigins,
+    ]);
+    const allowWildcard = configuredOrigins.has('*') && config.nodeEnv !== 'production';
+    if (requestOrigin && configuredOrigins.has(requestOrigin)) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Vary', 'Origin');
+    } else if (allowWildcard) {
+      // Credentialed wildcard CORS is invalid in browsers; development's
+      // wildcard stays explicitly non-credentialed.
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Request-Id');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-store');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(204);

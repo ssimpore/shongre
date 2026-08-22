@@ -4,27 +4,48 @@ import { AppError, AppErrorCode } from "../../errors/app-error";
 export interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   timeoutMs?: number;
+  /** Internal guard against recursive refresh retries. */
+  _retried?: boolean;
 }
 
 export class HttpClient {
   private baseUrl: string;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseUrl: string = apiClientConfig.apiBaseUrl) {
     this.baseUrl = baseUrl;
   }
 
-  private getAuthToken(): string | null {
-    if (typeof localStorage !== "undefined") {
-      return localStorage.getItem("shongre_auth_token");
-    }
-    return null;
+  private getCsrfToken(): string | null {
+    if (typeof document === "undefined") return null;
+    const entry = document.cookie
+      .split(";")
+      .map((value) => value.trim())
+      .find((value) => value.startsWith("shongre_csrf="));
+    return entry ? decodeURIComponent(entry.slice("shongre_csrf=".length)) : null;
+  }
+
+  private async refreshSession(): Promise<boolean> {
+    if (this.refreshPromise) return this.refreshPromise;
+    this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: "{}",
+    })
+      .then((response) => response.ok)
+      .catch(() => false)
+      .finally(() => {
+        this.refreshPromise = null;
+      });
+    return this.refreshPromise;
   }
 
   async request<T>(
     endpoint: string,
     options: HttpRequestOptions = {},
   ): Promise<T> {
-    const { params, headers, timeoutMs = 15000, ...customConfig } = options;
+    const { params, headers, timeoutMs = 15000, _retried = false, ...customConfig } = options;
 
     let url = `${this.baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
     if (params) {
@@ -40,12 +61,15 @@ export class HttpClient {
       }
     }
 
-    const token = this.getAuthToken();
+    const method = String(customConfig.method || "GET").toUpperCase();
+    const csrfToken = this.getCsrfToken();
     const defaultHeaders: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
       "X-Request-Id": `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)
+        ? { "X-CSRF-Token": csrfToken }
+        : {}),
       ...(headers as Record<string, string>),
     };
 
@@ -55,11 +79,26 @@ export class HttpClient {
     try {
       const response = await fetch(url, {
         ...customConfig,
+        credentials: "include",
         signal: controller.signal,
         headers: defaultHeaders,
       });
 
       clearTimeout(timeoutId);
+
+      if (
+        response.status === 401 &&
+        !endpoint.startsWith("/auth/login") &&
+        !endpoint.startsWith("/auth/register") &&
+        !endpoint.startsWith("/auth/refresh") &&
+        !_retried &&
+        (await this.refreshSession())
+      ) {
+        return this.request<T>(endpoint, {
+          ...options,
+          _retried: true,
+        });
+      }
 
       if (!response.ok) {
         let errorData: any = {};
@@ -137,6 +176,18 @@ export class HttpClient {
     return this.request<T>(endpoint, {
       ...options,
       method: "PUT",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  }
+
+  patch<T>(
+    endpoint: string,
+    body?: unknown,
+    options?: HttpRequestOptions,
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   }

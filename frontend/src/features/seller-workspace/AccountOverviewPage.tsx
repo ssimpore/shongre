@@ -3,7 +3,7 @@ import {
   showsVerifiedBadge,
 } from "../../domains/user/user.domain";
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   List,
   Heart,
@@ -65,6 +65,7 @@ export const AccountOverviewPage: React.FC = () => {
   } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const publishCta = usePublishCta();
 
   // A verified flag with no number on file is not a verified phone — showing the
@@ -85,6 +86,14 @@ export const AccountOverviewPage: React.FC = () => {
   const [showMfaModal, setShowMfaModal] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("onboarding") !== "professional") return;
+    setShowProModal(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete("onboarding");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   // Profile Edit
   const [isEditingProfile, setIsEditingProfile] = useState(false);

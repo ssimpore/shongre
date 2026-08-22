@@ -3,6 +3,12 @@ import { calculateOrderTotal } from '../../shared/money/escrow.js';
 import { AppError } from '../../shared/errors/app-error.js';
 import { IOrderRepository, IListingRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { logger } from '../../infrastructure/logging/logger.js';
+import { BASELINE_MONETIZATION_CATALOG } from '@shongre/contracts/monetization-catalog';
+
+const DEFAULT_HOME_DELIVERY_MINOR =
+  BASELINE_MONETIZATION_CATALOG.products.find(
+    (product) => product.id === 'delivery.home',
+  )?.prices[0]?.amount.amountMinor || 0;
 
 export interface CreateDirectPurchaseInput {
   listingId: string;
@@ -54,7 +60,10 @@ export class OrdersService {
       throw new AppError({ code: 'CONFLICT', message: "L'annonce n'est plus disponible à l'achat" });
     }
 
-    const shippingFee = input.deliveryMethod === 'hand_delivery' ? 0 : (listing.shippingCost || 5.0);
+    const shippingFee =
+      input.deliveryMethod === 'hand_delivery'
+        ? 0
+        : (listing.shippingCost || DEFAULT_HOME_DELIVERY_MINOR / 100);
     const breakdown = calculateOrderTotal({
       itemAmount: listing.price,
       shippingFee,

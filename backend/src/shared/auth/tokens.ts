@@ -25,6 +25,8 @@ export interface TokenClaims {
   exp: number;
   /** Token id, so individual sessions can be revoked later. */
   jti: string;
+  /** Server-side session row. Absent only on legacy tokens during rollout. */
+  sid?: string;
 }
 
 export class TokenError extends Error {

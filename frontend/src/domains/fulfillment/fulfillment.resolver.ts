@@ -19,6 +19,10 @@ import {
   PackageSizeTier,
 } from "../publication/publication.types";
 import { Listing } from "../../types";
+import {
+  getDemoDeliveryAmountMinor,
+  getDemoTransactionCommercials,
+} from "../monetization/demo-commercial-catalog";
 
 export interface ResolveFulfillmentCapabilitiesParams {
   taxonomyNodeId: string;
@@ -190,26 +194,10 @@ export class FulfillmentResolver {
     // 3. Parcel Shipping Quotes (if enabled by seller and market supports it)
     if (hasParcelDelivery) {
       const tier: PackageSizeTier = packageSpecs?.sizeTier || "medium";
-      let relayPrice =
-        effectiveMarket.delivery?.carriers?.mondialRelay?.defaultFee ?? 4.49;
-      let homePrice =
-        effectiveMarket.delivery?.carriers?.colissimo?.defaultFee ?? 6.99;
-      let expressPrice =
-        effectiveMarket.delivery?.carriers?.chronopost?.defaultFee ?? 11.99;
-
-      if (tier === "small") {
-        relayPrice = Math.max(3.49, relayPrice - 0.5);
-        homePrice = Math.max(4.99, homePrice - 1.0);
-        expressPrice = Math.max(8.99, expressPrice - 2.0);
-      } else if (tier === "large") {
-        relayPrice = relayPrice + 1.5;
-        homePrice = homePrice + 2.0;
-        expressPrice = expressPrice + 3.0;
-      } else if (tier === "xlarge") {
-        relayPrice = relayPrice + 5.0;
-        homePrice = homePrice + 8.0;
-        expressPrice = expressPrice + 12.0;
-      }
+      const commercialTier = tier === "heavy" ? "xlarge" : tier;
+      const relayPrice = getDemoDeliveryAmountMinor("relay_point", commercialTier) / 100;
+      const homePrice = getDemoDeliveryAmountMinor("home", commercialTier) / 100;
+      const expressPrice = getDemoDeliveryAmountMinor("express", commercialTier) / 100;
 
       // Mondial Relay (Check market config and provider availability)
       const isRelayAvailable = providerService.isCapabilityAvailable(
@@ -308,7 +296,7 @@ export class FulfillmentResolver {
         description:
           "Transport sécurisé sur rendez-vous pour meubles et objets lourds",
         deliveryType: "home_delivery",
-        price: 29.9,
+        price: getDemoDeliveryAmountMinor("bulky") / 100,
         currency: effectiveMarket.localization.defaultCurrency || "EUR",
         estimatedDeliveryDays: "3 à 7 jours ouvrés",
         isGuaranteed: true,
@@ -328,7 +316,7 @@ export class FulfillmentResolver {
         title: "Livraison directe par le vendeur",
         description: `Livraison effectuée par le vendeur (${listing.city} et environs)`,
         deliveryType: "home_delivery",
-        price: 15.0,
+        price: getDemoDeliveryAmountMinor("seller_direct") / 100,
         currency: effectiveMarket.localization.defaultCurrency || "EUR",
         estimatedDeliveryDays: "1 à 3 jours ouvrés",
         isGuaranteed: true,
@@ -351,18 +339,26 @@ export class FulfillmentResolver {
     const itemSubtotal = (listing.price || 0) * quantity;
     const deliveryFee = selectedQuote ? selectedQuote.price : 0;
 
-    // Buyer protection service fee (e.g. 0.99 € + 4% of item subtotal, capped at 49 €)
+    const commercials = getDemoTransactionCommercials(
+      marketCode,
+      listing.sellerType === "pro" ? "pro" : "individual",
+    );
+    const itemSubtotalMinor = Math.round(itemSubtotal * 100);
+
+    // Server-shaped demo fee; API mode receives the immutable order quote.
     let buyerServiceFee = 0;
     if (itemSubtotal > 0 && selectedQuote?.code !== "HAND_DELIVERY") {
-      buyerServiceFee = Number((0.99 + itemSubtotal * 0.04).toFixed(2));
-      if (buyerServiceFee > 49) buyerServiceFee = 49;
+      buyerServiceFee =
+        Math.round(
+          itemSubtotalMinor * (commercials.protectionRateBps / 10_000) +
+            commercials.protectionFixedMinor,
+        ) / 100;
     }
 
-    // Seller commission (0% for Particuliers, 5% for Pros unless plan exemption)
-    let sellerCommission = 0;
-    if (listing.sellerType === "pro") {
-      sellerCommission = Number((itemSubtotal * 0.05).toFixed(2));
-    }
+    const sellerCommission =
+      Math.round(
+        itemSubtotalMinor * (commercials.commissionRateBps / 10_000),
+      ) / 100;
 
     const discount = 0;
     const tax = 0; // VAT included in prices for consumers

@@ -6,6 +6,28 @@ if (dataMode !== 'demo' && dataMode !== 'api') {
   throw new Error(`[Web Config] NEXT_PUBLIC_DATA_MODE must be "demo" or "api", received "${dataMode}".`);
 }
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? process.env.VITE_API_URL ?? '';
+let apiOrigin = '';
+try {
+  apiOrigin = apiUrl ? new URL(apiUrl).origin : '';
+} catch {
+  throw new Error('[Web Config] NEXT_PUBLIC_API_URL must be an absolute URL when provided.');
+}
+const isProduction = process.env.NODE_ENV === 'production';
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ''}${isProduction ? '' : ' http: ws: wss:'}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(isProduction ? ['upgrade-insecure-requests'] : []),
+].join('; ');
+
 const nextConfig: NextConfig = {
   agentRules: false,
   output: 'standalone',
@@ -21,7 +43,21 @@ const nextConfig: NextConfig = {
   ],
   env: {
     NEXT_PUBLIC_DATA_MODE: dataMode,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? process.env.VITE_API_URL ?? '',
+    NEXT_PUBLIC_API_URL: apiUrl,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+        ],
+      },
+    ];
   },
   turbopack: {
     root: path.resolve(process.cwd(), '..'),

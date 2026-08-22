@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Landmark, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 import { UserProfile, SellerPayoutRequest } from "../../../types";
-import { TRANSACTION_CONFIG } from "../../../configuration/transaction.config";
 import { transactionService } from "../../../domains/transaction/transaction.service";
+import { getDemoTransactionCommercials } from "../../../domains/monetization/demo-commercial-catalog";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { SelectableCard } from "../../../design-system/primitives/SelectableCard";
@@ -37,9 +37,16 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const amount = parseFloat(amountStr) || 0;
+  const payoutCommercials = getDemoTransactionCommercials(
+    currentUser.country || "FR",
+    "pro",
+  );
   const fee =
     payoutType === "instant"
-      ? TRANSACTION_CONFIG.instantPayoutFeeCents / 100
+      ? Math.round(
+          amount * 100 * (payoutCommercials.instantPayoutRateBps / 10_000) +
+            payoutCommercials.instantPayoutFixedMinor,
+        ) / 100
       : 0;
   const netTransfer = Math.max(0, amount - fee);
 

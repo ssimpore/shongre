@@ -87,6 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       associatedDomains: [`applinks:${webHost}`],
       entitlements: {
         "com.apple.developer.associated-domains": [`applinks:${webHost}`],
+        "com.apple.developer.applesignin": ["Default"],
       },
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,

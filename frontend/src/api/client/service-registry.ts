@@ -16,6 +16,10 @@ import {
   demoReviewsService,
   demoAiService,
   demoTrendingService,
+  demoCoursesService,
+  demoAutoService,
+  demoRealEstateService,
+  demoBusinessRulesService,
 } from "../adapters/demo";
 
 import {
@@ -35,6 +39,10 @@ import {
   httpReviewsService,
   httpAiService,
   httpTrendingService,
+  httpCoursesService,
+  httpAutoService,
+  httpRealEstateService,
+  httpBusinessRulesService,
 } from "../adapters/http";
 
 import {
@@ -54,6 +62,10 @@ import {
   ReviewsServiceContract,
   AiServiceContract,
   TrendingServiceContract,
+  CoursesServiceContract,
+  AutoServiceContract,
+  RealEstateServiceContract,
+  BusinessRulesServiceContract,
 } from "../contracts";
 
 export interface ServiceRegistry {
@@ -73,6 +85,10 @@ export interface ServiceRegistry {
   reviews: ReviewsServiceContract;
   ai: AiServiceContract;
   trending: TrendingServiceContract;
+  courses: CoursesServiceContract;
+  auto: AutoServiceContract;
+  realEstate: RealEstateServiceContract;
+  businessRules: BusinessRulesServiceContract;
 }
 
 export function createServiceRegistry(
@@ -99,6 +115,10 @@ export function createServiceRegistry(
     reviews: useDemo ? demoReviewsService : httpReviewsService,
     ai: useDemo ? demoAiService : httpAiService,
     trending: useDemo ? demoTrendingService : httpTrendingService,
+    courses: useDemo ? demoCoursesService : httpCoursesService,
+    auto: useDemo ? demoAutoService : httpAutoService,
+    realEstate: useDemo ? demoRealEstateService : httpRealEstateService,
+    businessRules: useDemo ? demoBusinessRulesService : httpBusinessRulesService,
   };
 }
 

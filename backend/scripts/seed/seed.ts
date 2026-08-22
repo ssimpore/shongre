@@ -5,7 +5,7 @@ import { getSupabaseAdminClient } from '../../src/infrastructure/supabase/supaba
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const seedSqlPath = path.resolve(__dirname, '../../supabase/migrations/00004_seed_data.sql');
+const seedSqlPath = path.resolve(__dirname, '../../supabase/seed/seed.sql');
 
 async function runSeed() {
   console.log('🌱 Seeding Shongre Database with Canonical Reference Data...');

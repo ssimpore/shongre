@@ -14,9 +14,15 @@ import { mobileEnvironment } from "@/config/environment";
 export interface AuthService {
   restore(): Promise<AuthUser | null>;
   login(input: LoginRequest): Promise<AuthUser>;
+  getSocialProviders(): Promise<Record<SocialProvider, boolean>>;
+  startSocialLogin(provider: SocialProvider): Promise<string>;
+  completeSocialLogin(exchangeCode: string): Promise<AuthUser>;
+  completePendingSocialRegistration(completionHandle: string, email: string): Promise<void>;
   logout(): Promise<void>;
   deleteAccount(input: AccountDeletionRequest): Promise<void>;
 }
+
+export type SocialProvider = "google" | "apple" | "facebook";
 
 const demoSession: AuthSession = {
   token: "demo-mobile-session",
@@ -47,6 +53,31 @@ export class DemoAuthService implements AuthService {
     };
     await sessionStorage.write(session);
     return session.user;
+  }
+
+  async startSocialLogin(provider: SocialProvider): Promise<string> {
+    return `shongre://auth/callback#status=success&exchange=demo-${provider}`;
+  }
+
+  async getSocialProviders(): Promise<Record<SocialProvider, boolean>> {
+    return { google: true, apple: true, facebook: true };
+  }
+
+  async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
+    const provider = exchangeCode.replace(/^demo-/, "");
+    if (!['google', 'apple', 'facebook'].includes(provider)) throw new Error("Réponse de connexion invalide.");
+    const session = {
+      ...demoSession,
+      token: `demo-mobile-${provider}-session`,
+      user: { ...demoSession.user, email: `${provider}.demo@shongre.fr` },
+    };
+    await sessionStorage.write(session);
+    return session.user;
+  }
+
+  async completePendingSocialRegistration(_completionHandle: string, _email: string): Promise<void> {
+    // Demo providers always assert a verified deterministic email. The method
+    // remains asynchronous so demo and API adapters keep the same contract.
   }
 
   async logout(): Promise<void> {
@@ -82,6 +113,37 @@ export class HttpAuthService implements AuthService {
     );
     await sessionStorage.write(session);
     return session.user;
+  }
+
+  async startSocialLogin(provider: SocialProvider): Promise<string> {
+    const response = await apiRequest<{ authorizationUrl: string }>(`/auth/oauth/${provider}/start`, {
+      method: "POST",
+      body: JSON.stringify({ provider, clientKind: "native", returnTo: "/compte" }),
+    });
+    return response.authorizationUrl;
+  }
+
+  async getSocialProviders(): Promise<Record<SocialProvider, boolean>> {
+    const response = await apiRequest<Record<SocialProvider, boolean> & { linking: boolean }>("/auth/oauth/providers");
+    return { google: response.google, apple: response.apple, facebook: response.facebook };
+  }
+
+  async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
+    const session = authSessionSchema.parse(
+      await apiRequest<unknown>("/auth/oauth/native-exchange", {
+        method: "POST",
+        body: JSON.stringify({ code: exchangeCode }),
+      }),
+    );
+    await sessionStorage.write(session);
+    return session.user;
+  }
+
+  async completePendingSocialRegistration(completionHandle: string, email: string): Promise<void> {
+    await apiRequest("/auth/oauth/complete-profile", {
+      method: "POST",
+      body: JSON.stringify({ completionHandle, email, accountType: "individual" }),
+    });
   }
 
   async logout(): Promise<void> {

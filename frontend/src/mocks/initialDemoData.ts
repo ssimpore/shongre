@@ -7,6 +7,7 @@ import {
   SavedSearch,
   ReviewItem,
 } from "../types";
+import { IMMO_GENERIC_LISTINGS } from "./realEstateDemoData";
 
 export const DEMO_USERS: Record<string, UserProfile> = {
   buyer_thomas: {
@@ -1665,6 +1666,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     favoritesCount: 35,
     contactCount: 15,
   },
+  ...IMMO_GENERIC_LISTINGS,
 ];
 
 export const INITIAL_CONVERSATIONS: Conversation[] = [

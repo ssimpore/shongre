@@ -1,5 +1,9 @@
 # Shongre
 
+Authentication architecture, provider-console setup, session lifecycle and
+rollout instructions are documented in
+[`docs/architecture/authentication.md`](docs/architecture/authentication.md).
+
 Shongre is a multi-market classifieds and transactional marketplace for individual and professional sellers. The repository contains a Next.js Web application, a modular Node.js backend, and one Expo/React Native mobile application for iOS and Android.
 
 ## Architecture
@@ -18,6 +22,8 @@ Runtime/deployment tooling:  infrastructure/ + scripts/ + Makefile
 ```
 
 The web and mobile clients are adapter-based. Their default `demo` mode is deterministic, asynchronous, and works with the backend stopped. `api` mode uses the same service contracts with HTTP adapters. UI components do not import backend implementation or branch on data mode.
+
+Specialized verticals reuse that platform boundary. Shongre Immo is documented in [`docs/architecture/shongre-immo.md`](docs/architecture/shongre-immo.md); its current standalone routes are `/immo`, `/deposer/immo`, `/compte/immo`, and `/admin/immo`.
 
 Supabase remains canonical under `backend/supabase/`; `infrastructure/` owns cross-cutting templates and operations rather than a duplicate database stack.
 
@@ -183,6 +189,16 @@ Production credentials, keystores, certificates, App Store Connect keys, Play se
 - physical marketplace payments are separated from digital promotion/subscription features, which remain unavailable in mobile until a current billing-policy review approves an implementation.
 
 The final privacy policy, exact retention periods, processor list, store-console declarations, reviewer credentials, ratings, signing, signed-artifact checks, metadata, and rollout remain human/legal/operations responsibilities.
+
+## Business rules and monetization
+
+Commercial configuration is versioned and backend-authoritative. Start with:
+
+- `docs/architecture/business-rules-monetization.md` for the domain, APIs, precedence, security, quote, payment, and entitlement lifecycle;
+- `docs/implementation/monetization-migration-map.md` for the audited sources and consumer migration evidence;
+- `docs/operations/monetization-admin-guide.md` for safe draft, approval, scheduling, rollback, and incident procedures.
+
+The machine-readable baseline and localized reason-code reference are exported from `@shongre/contracts/monetization-catalog`.
 
 ## Repository map
 

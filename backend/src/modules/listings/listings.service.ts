@@ -5,6 +5,7 @@ import { IAIProvider, providers } from '../../integrations/providers/index.js';
 import { logger } from '../../infrastructure/logging/logger.js';
 import { randomUUID } from 'node:crypto';
 import { taxonomyValidationService, TaxonomyValidationService } from '../taxonomy/taxonomy.validation.js';
+import { businessRulesService, BusinessRulesService } from '../business-rules/business-rules.service.js';
 
 export interface PublicationDraftInput {
   title?: string;
@@ -28,6 +29,7 @@ export class ListingsService {
     private listingRepo: IListingRepository = repositories.listings,
     private ai: IAIProvider = providers.ai,
     private taxonomyValidation: TaxonomyValidationService = taxonomyValidationService,
+    private businessRules: BusinessRulesService = businessRulesService,
   ) {}
 
   async getListings(filter?: SearchFilters): Promise<{ listings: Listing[]; total: number }> {
@@ -84,6 +86,32 @@ export class ListingsService {
       });
     }
 
+    const marketCode = (draft.marketCode || 'FR').toUpperCase();
+    const [existingTotal, existingCategory] = await Promise.all([
+      this.listingRepo.search({ sellerId, marketCode, limit: 1 }),
+      this.listingRepo.search({
+        sellerId,
+        marketCode,
+        categoryId: draft.categoryId,
+        limit: 1,
+      }),
+    ]);
+    const publicationPolicy = await this.businessRules.authorizePublication(
+      sellerId,
+      {
+        marketCode,
+        countryCode: marketCode,
+        currency: 'EUR',
+        categoryId: draft.categoryId,
+        userType: 'individual',
+        listingType: 'standard',
+        publicationChannel: 'web',
+        usageLevel: existingTotal.total,
+        featureFlags: [],
+      },
+      { total: existingTotal.total, category: existingCategory.total },
+    );
+
     const safety = await this.ai.analyzeListingContent(
       draft.title,
       draft.description || '',
@@ -104,7 +132,7 @@ export class ListingsService {
       condition: draft.condition || 'bon-etat',
       brand: draft.brand,
       model: draft.model,
-      marketCode: draft.marketCode || 'FR',
+      marketCode,
       city: draft.city || 'Paris',
       postalCode: draft.postalCode || '75000',
       country: 'FR',
@@ -119,7 +147,9 @@ export class ListingsService {
       attributes: draft.attributes || {},
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+      expiresAt: new Date(
+        Date.now() + (publicationPolicy.durationDays || 60) * 24 * 60 * 60 * 1000,
+      ).toISOString(),
     };
 
     const saved = await this.listingRepo.save(listing);

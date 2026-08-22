@@ -12,6 +12,8 @@ export interface Principal {
   userId: string;
   email: string;
   role: PlatformRole;
+  /** Present for revocable sessions; absent on rollout-compatible legacy JWTs. */
+  sessionId?: string;
 }
 
 /** An anonymous caller. Kept explicit so route handlers never see `null` unexpectedly. */

@@ -1,8 +1,11 @@
+import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+
 export interface ProPlan {
   id: "free" | "pro_starter" | "pro_business" | "pro_enterprise";
+  productId: string;
   name: string;
   tagline: string;
-  monthlyPrice: number; // in EUR HT
+  monthlyPrice: number;
   annualPriceMonthlyEquivalent: number;
   maxActiveListings: number;
   photosPerListing: number;
@@ -16,104 +19,57 @@ export interface ProPlan {
   features: string[];
 }
 
-export const PRO_PLANS: ProPlan[] = [
-  {
-    id: "free",
-    name: "Particulier",
-    tagline: "Pour vendre et acheter en toute simplicité",
-    monthlyPrice: 0,
-    annualPriceMonthlyEquivalent: 0,
-    maxActiveListings: 15,
-    photosPerListing: 8,
-    storefrontCustomization: false,
-    prioritySupport: false,
-    analyticsLevel: "basic",
-    verifiedBadge: false,
-    automaticRelisting: false,
-    bulkImportExport: false,
-    features: [
-      "Jusqu'à 15 annonces actives simultanément",
-      "Paiement sécurisé et livraison intégrée",
-      "Messagerie directe acheteur/vendeur",
-      "Statistiques de vues et favoris",
-      "Protection acheteurs Shongre",
-    ],
-  },
-  {
-    id: "pro_starter",
-    name: "Pro Découverte",
-    tagline: "Idéal pour les auto-entrepreneurs et artisans débutants",
-    monthlyPrice: 29,
-    annualPriceMonthlyEquivalent: 24,
-    maxActiveListings: 50,
-    photosPerListing: 15,
-    storefrontCustomization: true,
-    prioritySupport: false,
-    analyticsLevel: "standard",
-    verifiedBadge: true,
-    automaticRelisting: true,
-    bulkImportExport: false,
-    features: [
-      "Jusqu'à 50 annonces en ligne",
-      "Badge Pro & Vérification SIRET/TVA",
-      "Vitrine boutique personnalisable",
-      "15 photos HD par annonce",
-      "Statistiques de consultation détaillées",
-      "Remontée automatique 1x / mois",
-    ],
-  },
-  {
-    id: "pro_business",
-    name: "Pro Performance",
-    tagline: "Pour les commerçants, concessions et professionnels actifs",
-    monthlyPrice: 79,
-    annualPriceMonthlyEquivalent: 65,
-    maxActiveListings: 250,
-    photosPerListing: 20,
-    storefrontCustomization: true,
-    prioritySupport: true,
-    analyticsLevel: "advanced",
-    verifiedBadge: true,
-    automaticRelisting: true,
-    bulkImportExport: true,
-    isPopular: true,
-    features: [
-      "Jusqu'à 250 annonces actives",
-      "Vitrine Pro enrichie avec logo, bannière, horaires",
-      "Import/export catalogue CSV / XML",
-      "Gestionnaire de leads & réponses rapides",
-      "Tableau de bord de rentabilité avancé",
-      "Support dédié prioritaire par téléphone/chat",
-      "3 boosts offerts chaque mois",
-    ],
-  },
-  {
-    id: "pro_enterprise",
-    name: "Pro Envergure",
-    tagline: "Grands comptes, réseaux multi-boutiques et concessionnaires",
-    monthlyPrice: 199,
-    annualPriceMonthlyEquivalent: 169,
-    maxActiveListings: 2000,
-    photosPerListing: 25,
-    storefrontCustomization: true,
-    prioritySupport: true,
-    analyticsLevel: "enterprise",
-    verifiedBadge: true,
-    automaticRelisting: true,
-    bulkImportExport: true,
-    features: [
-      "Volume sur mesure (jusqu'à 2000+ annonces)",
-      "Accès API passerelle de publication automatisée",
-      "Comptes multi-utilisateurs & permissions d'équipe",
-      "Bannière publicitaire sponsorisée régionale",
-      "Account Manager dédié",
-      "Remise sur les packs de visibilité et boosts",
-    ],
-  },
-];
+const LEGACY_PLAN_IDS: Record<string, ProPlan["id"]> = {
+  "listing.standard.individual": "free",
+  "plan.pro.starter": "pro_starter",
+  "plan.pro.business": "pro_business",
+  "plan.pro.enterprise": "pro_enterprise",
+};
+
+const entitlement = (
+  product: (typeof BASELINE_MONETIZATION_CATALOG.products)[number],
+  key: string,
+) => product.entitlements.find((entry) => entry.key === key)?.value;
+
+/**
+ * Compatibility presentation derived from the canonical demo catalog. It
+ * contains no independent prices or quotas and can be removed when the last
+ * synchronous entitlement consumer has migrated to BusinessRulesService.
+ */
+export const PRO_PLANS: ProPlan[] = BASELINE_MONETIZATION_CATALOG.products
+  .filter((product) => product.id in LEGACY_PLAN_IDS)
+  .map((product) => {
+    const monthly = product.prices.find((price) => price.billingPeriod === "month") || product.prices[0];
+    const annual = product.prices.find((price) => price.billingPeriod === "year");
+    const maxListings = entitlement(product, "maxActiveListings");
+    const maxPhotos = entitlement(product, "maxPhotosPerListing");
+    const analytics = entitlement(product, "analyticsLevel");
+    return {
+      id: LEGACY_PLAN_IDS[product.id],
+      productId: product.id,
+      name: product.name,
+      tagline: product.description,
+      monthlyPrice: monthly.amount.amountMinor / 100,
+      annualPriceMonthlyEquivalent: annual ? annual.amount.amountMinor / 1200 : 0,
+      maxActiveListings: typeof maxListings === "number" ? maxListings : 0,
+      photosPerListing: typeof maxPhotos === "number" ? maxPhotos : 0,
+      storefrontCustomization: Boolean(entitlement(product, "storeEnabled")),
+      prioritySupport: Boolean(entitlement(product, "prioritySupport")),
+      analyticsLevel:
+        analytics === "standard" || analytics === "advanced" || analytics === "enterprise"
+          ? analytics
+          : "basic",
+      verifiedBadge: Boolean(entitlement(product, "verifiedBadge")),
+      automaticRelisting: Boolean(entitlement(product, "automaticRelisting")),
+      bulkImportExport: Boolean(entitlement(product, "bulkPublish")),
+      isPopular: product.recommended,
+      features: product.entitlements.map((entry) => `${entry.label} : ${String(entry.value)}`),
+    };
+  });
 
 export interface ListingBoostOption {
   id: "urgent" | "highlight" | "top_of_list" | "gallery_boost";
+  productId: string;
   name: string;
   description: string;
   durationDays: number;
@@ -122,45 +78,26 @@ export interface ListingBoostOption {
   multiplierEstimate: string;
 }
 
-export const LISTING_BOOSTS: ListingBoostOption[] = [
-  {
-    id: "urgent",
-    name: "Badge Urgent",
-    description:
-      'Affiche un macaron "Urgent" attirant immédiatement l\'attention dans les résultats.',
-    durationDays: 7,
-    priceEur: 3.5,
-    badgeLabel: "Urgent",
-    multiplierEstimate: "x2 contacts",
-  },
-  {
-    id: "top_of_list",
-    name: "Remontée en tête de liste",
-    description:
-      "Remonte votre annonce tout en haut des résultats de recherche chaque jour pendant 7 jours.",
-    durationDays: 7,
-    priceEur: 6.9,
-    badgeLabel: "À la une",
-    multiplierEstimate: "x4 contacts",
-  },
-  {
-    id: "highlight",
-    name: "Cadre Terracotta Vedette",
-    description:
-      "Bordure terracotta distinctive et fond contrasté pour émerger des autres annonces.",
-    durationDays: 14,
-    priceEur: 8.5,
-    badgeLabel: "En vedette",
-    multiplierEstimate: "x3.5 contacts",
-  },
-  {
-    id: "gallery_boost",
-    name: "Pack Visibilité Intégrale",
-    description:
-      "Encart grand format sur la page d'accueil + remontée quotidienne + badge urgent.",
-    durationDays: 14,
-    priceEur: 14.9,
-    badgeLabel: "Sponsorisé",
-    multiplierEstimate: "x7 contacts",
-  },
-];
+const LEGACY_BOOST_IDS: Record<string, ListingBoostOption["id"]> = {
+  "premium.urgent": "urgent",
+  "premium.search_bump": "top_of_list",
+  "premium.highlight": "highlight",
+  "premium.visibility_bundle": "gallery_boost",
+};
+
+export const LISTING_BOOSTS: ListingBoostOption[] =
+  BASELINE_MONETIZATION_CATALOG.products
+    .filter((product) => product.id in LEGACY_BOOST_IDS)
+    .map((product) => {
+      const price = product.prices[0];
+      return {
+        id: LEGACY_BOOST_IDS[product.id],
+        productId: product.id,
+        name: product.name,
+        description: product.description,
+        durationDays: price.durationDays || 1,
+        priceEur: price.amount.amountMinor / 100,
+        badgeLabel: product.name,
+        multiplierEstimate: "Visibilité payante",
+      };
+    });

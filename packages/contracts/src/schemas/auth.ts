@@ -16,5 +16,8 @@ export type LoginRequest = z.infer<typeof loginRequestSchema>;
 export const authSessionSchema = z.object({
   user: authUserSchema,
   token: z.string().min(1),
+  refreshToken: z.string().min(1).optional(),
+  expiresAt: z.string().datetime().optional(),
+  sessionId: z.string().min(1).optional(),
 });
 export type AuthSession = z.infer<typeof authSessionSchema>;

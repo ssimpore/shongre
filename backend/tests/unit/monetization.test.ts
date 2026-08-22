@@ -19,12 +19,14 @@ describe('Monetization & Subscriptions', () => {
     expect(planIds).toContain('enterprise');
   });
 
-  it('calculates boost expiry duration accurately', async () => {
-    const res = await monetizationService.applyBoost('list_1', 'boost_urgent_7d', 'card');
-    expect(res.success).toBe(true);
-    const expiry = new Date(res.expiresAt).getTime();
-    const now = Date.now();
-    const diffDays = Math.round((expiry - now) / (1000 * 60 * 60 * 24));
-    expect(diffDays).toBe(7);
+  it('routes a legacy boost id through the authoritative quote checkout', async () => {
+    const order = await monetizationService.beginProductCheckout({
+      accountId: 'individual_legacy_boost_test',
+      listingId: 'list_1',
+      productId: 'boost_urgent_7d',
+      idempotencyKey: 'legacy-boost-checkout-01',
+    });
+    expect(order.status).toBe('paid');
+    expect(order.quoteId).toMatch(/^quote_/);
   });
 });

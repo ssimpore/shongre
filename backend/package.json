@@ -19,6 +19,7 @@
     "benchmark": "tsx scripts/benchmark/benchmark.ts",
     "db:migrate": "tsx scripts/database/migrate.ts",
     "db:seed": "tsx scripts/seed/seed.ts",
+    "db:backfill:monetization": "tsx scripts/monetization/import-baseline.ts",
     "db:types": "tsx scripts/generate-types/generate-types.ts",
     "check:boundary": "node scripts/maintenance/check-boundary.js"
   },

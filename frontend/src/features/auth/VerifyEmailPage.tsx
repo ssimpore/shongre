@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   Mail,
 } from "lucide-react";
-import { authService } from "../../domains/auth/auth.service";
+import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
@@ -50,14 +50,14 @@ export const VerifyEmailPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const res = await authService.verifyEmail(tokenToVerify.trim());
-      if (res.success) {
+      const verified = await services.auth.verifyEmail(tokenToVerify.trim());
+      if (verified) {
         setStatus("success");
-        refreshUser();
+        await refreshUser();
         toast.success("Votre adresse email a été confirmée avec succès !");
       } else {
         setStatus("error");
-        setErrorMessage(res.message);
+        setErrorMessage("Ce lien de validation est invalide ou a expiré.");
       }
     } catch (err: any) {
       setStatus("error");
@@ -65,7 +65,7 @@ export const VerifyEmailPage: React.FC = () => {
     }
   };
 
-  const handleResendVerification = () => {
+  const handleResendVerification = async () => {
     if (!currentUser) {
       setErrorMessage(
         "Vous devez être connecté pour demander un nouveau lien de validation.",
@@ -73,7 +73,7 @@ export const VerifyEmailPage: React.FC = () => {
       return;
     }
 
-    const res = authService.resendEmailVerification(currentUser.email);
+    const res = await services.auth.resendEmailVerification(currentUser.email);
     if (res.success) {
       setResendStatus("Un nouvel email de confirmation vient d'être envoyé.");
     } else {
@@ -193,7 +193,7 @@ export const VerifyEmailPage: React.FC = () => {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={handleResendVerification}
+                onClick={() => void handleResendVerification()}
                 className="text-primary"
                 leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
               >

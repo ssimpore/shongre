@@ -1,0 +1,1152 @@
+import type {
+  AgencyWorkspace,
+  PropertyAppointment,
+  PropertyDocument,
+  PropertyImport,
+  PropertyLead,
+  PropertyLeadNote,
+  PropertyPrivate,
+  PropertyPublic,
+  RealEstateAdminOverview,
+  RealEstateCatalog,
+} from "@shongre/contracts/real-estate";
+import type { Listing } from "../types";
+
+export const IMMO_DEMO_NOW = "2026-08-22T10:00:00.000Z";
+
+const immoAssetUrl = (fileName: string) => {
+  const path = `/images/immo/${fileName}`;
+  return typeof window === "undefined"
+    ? `https://demo.shongre.test${path}`
+    : new URL(path, window.location.origin).toString();
+};
+
+export const IMMO_DEMO_MEDIA = {
+  apartment: immoAssetUrl("appartement-lyon.webp"),
+  house: immoAssetUrl("maison-ecully.webp"),
+  rental: immoAssetUrl("location-lyon.webp"),
+};
+
+const allPropertyTypes = [
+  "apartment",
+  "house",
+  "land",
+  "parking_garage",
+  "commercial",
+  "office",
+  "building",
+  "new_development",
+  "holiday_rental",
+  "room_shared",
+  "other",
+] as const;
+const allTransactions = [
+  "sale",
+  "long_term_rental",
+  "seasonal_rental",
+  "shared_accommodation",
+  "life_annuity",
+  "other",
+] as const;
+
+const baseEntitlements = {
+  maxActiveListings: 1,
+  maxMedia: 12,
+  maxTeamMembers: 1,
+  maxBranches: 1,
+  basicAnalytics: true,
+  detailedAnalytics: false,
+  virtualTour: false,
+  qualifiedContactForm: false,
+  csvImport: false,
+  xmlImport: false,
+  automaticSync: false,
+  leadAssignment: false,
+  advancedReports: false,
+  apiAccess: false,
+  centralizedBilling: false,
+  branchPermissions: false,
+  includedVisibilityCredits: 0,
+};
+
+export const IMMO_DEMO_CATALOG: RealEstateCatalog = {
+  activation: {
+    marketCode: "FR",
+    verticalType: "real_estate",
+    categoryIds: ["real-estate"],
+    subcategoryIds: ["real-estate-sale", "real-estate-rent"],
+    schemaVersion: 1,
+    isActive: true,
+    featureFlags: {
+      verticalEnabled: true,
+      mapSearchEnabled: true,
+      savedSearchesEnabled: true,
+      recentlyViewedEnabled: true,
+      comparablesEnabled: true,
+      structuredLeadsEnabled: true,
+      appointmentsEnabled: true,
+      paidOffersEnabled: true,
+      professionalImportsEnabled: true,
+      professionalApiSyncEnabled: false,
+      privateDocumentsEnabled: true,
+    },
+  },
+  config: {
+    marketCode: "FR",
+    schemaVersion: 1,
+    locale: "fr-FR",
+    currency: "EUR",
+    timezone: "Europe/Paris",
+    isEnabled: true,
+    defaultSearchRadiusKm: 25,
+    leadRetentionDays: 730,
+    draftRetentionDays: 180,
+    approximateLocationRadiusM: 300,
+    featureFlags: {
+      verticalEnabled: true,
+      mapSearchEnabled: true,
+      savedSearchesEnabled: true,
+      recentlyViewedEnabled: true,
+      comparablesEnabled: true,
+      structuredLeadsEnabled: true,
+      appointmentsEnabled: true,
+      paidOffersEnabled: true,
+      professionalImportsEnabled: true,
+      professionalApiSyncEnabled: false,
+      privateDocumentsEnabled: true,
+    },
+    regulatoryContentVersion: "fr-immo-2026-08",
+  },
+  propertyTypes: [
+    ["apartment", "appartements", "Appartement", "Building2", 10],
+    ["house", "maisons", "Maison", "House", 20],
+    ["land", "terrains", "Terrain", "LandPlot", 30],
+    [
+      "parking_garage",
+      "parkings-garages",
+      "Parking ou garage",
+      "SquareParking",
+      40,
+    ],
+    ["commercial", "locaux-commerciaux", "Local commercial", "Store", 50],
+    ["office", "bureaux", "Bureau", "BriefcaseBusiness", 60],
+    ["building", "immeubles", "Immeuble", "Landmark", 70],
+    ["new_development", "programmes-neufs", "Programme neuf", "Blocks", 80],
+    [
+      "holiday_rental",
+      "locations-vacances",
+      "Location saisonnière",
+      "Palmtree",
+      90,
+    ],
+    [
+      "room_shared",
+      "chambres-colocation",
+      "Chambre ou colocation",
+      "BedDouble",
+      100,
+    ],
+    ["other", "autres-biens", "Autre bien", "CircleEllipsis", 110],
+  ].map(([type, slug, label, iconName, sortOrder]) => ({
+    type: type as (typeof allPropertyTypes)[number],
+    marketCode: "FR",
+    slug: String(slug),
+    label: String(label),
+    description: `${String(label)} disponibles à la vente ou à la location selon le marché.`,
+    iconName: String(iconName),
+    transactionTypes:
+      type === "land" || type === "building" || type === "new_development"
+        ? (["sale"] as const)
+        : type === "holiday_rental"
+          ? (["seasonal_rental"] as const)
+          : type === "room_shared"
+            ? (["shared_accommodation", "long_term_rental"] as const)
+            : (["sale", "long_term_rental"] as const),
+    requiredFieldIds: ["price", "livingArea", "address"],
+    filterFieldIds: [
+      "price",
+      "livingArea",
+      "rooms",
+      "bedrooms",
+      "dpe",
+      "amenities",
+    ],
+    schemaVersion: 1,
+    isActive: true,
+    sortOrder: Number(sortOrder),
+  })),
+  attributes: [
+    ["livingArea", "Surface habitable", "number", "m²", true, true],
+    ["landArea", "Surface du terrain", "number", "m²", false, true],
+    ["rooms", "Nombre de pièces", "number", undefined, true, true],
+    ["bedrooms", "Chambres", "number", undefined, false, true],
+    ["bathrooms", "Salles de bain", "number", undefined, false, false],
+    ["furnished", "Meublé", "boolean", undefined, false, true],
+    ["dpe", "Classe DPE", "single_select", undefined, false, true],
+    ["ges", "Classe GES", "single_select", undefined, false, true],
+    ["coOwnership", "Copropriété", "boolean", undefined, false, true],
+    ["coOwnershipLots", "Nombre de lots", "number", undefined, false, false],
+    [
+      "riskInformationStatus",
+      "Information sur les risques",
+      "single_select",
+      undefined,
+      false,
+      false,
+    ],
+    [
+      "professionalIdentity",
+      "Identification professionnelle",
+      "text",
+      undefined,
+      false,
+      false,
+    ],
+    [
+      "diagnostics",
+      "Diagnostics et documents",
+      "document_status",
+      undefined,
+      false,
+      false,
+    ],
+    ["amenities", "Équipements", "multi_select", undefined, false, true],
+  ].map(([id, label, fieldType, unit, isRequired, isFilterable], index) => ({
+    id: String(id),
+    marketCode: "FR" as const,
+    propertyTypes: [...allPropertyTypes],
+    transactionTypes: [...allTransactions],
+    label: String(label),
+    helpText:
+      id === "diagnostics"
+        ? "Les fichiers restent privés et nécessitent une autorisation."
+        : undefined,
+    fieldType: fieldType as
+      | "text"
+      | "number"
+      | "boolean"
+      | "single_select"
+      | "multi_select"
+      | "document_status",
+    unit: unit ? String(unit) : undefined,
+    options:
+      id === "dpe" || id === "ges"
+        ? ["A", "B", "C", "D", "E", "F", "G"].map((value, optionIndex) => ({
+            value,
+            label: value,
+            sortOrder: optionIndex * 10,
+          }))
+        : id === "amenities"
+          ? [
+              ["lift", "Ascenseur"],
+              ["balcony", "Balcon"],
+              ["terrace", "Terrasse"],
+              ["garden", "Jardin"],
+              ["parking", "Parking"],
+              ["cellar", "Cave"],
+              ["accessible", "Accessible PMR"],
+            ].map(([value, optionLabel], optionIndex) => ({
+              value,
+              label: optionLabel,
+              sortOrder: optionIndex * 10,
+            }))
+          : undefined,
+    privacy: id === "diagnostics" ? "reviewer_only" : "public",
+    isRequired: Boolean(isRequired),
+    isFilterable: Boolean(isFilterable),
+    isActive: true,
+    schemaVersion: 1,
+    sortOrder: index * 10,
+  })),
+  fieldRules: [
+    {
+      id: "rule_fr_dpe",
+      fieldId: "dpe",
+      requirement: "required",
+      condition: {
+        path: "energy.dpeClass",
+        excludedPropertyTypes: ["land", "parking_garage"],
+      },
+    },
+    {
+      id: "rule_fr_ges",
+      fieldId: "ges",
+      requirement: "required",
+      condition: {
+        path: "energy.gesClass",
+        excludedPropertyTypes: ["land", "parking_garage"],
+      },
+    },
+    {
+      id: "rule_fr_coownership_lots",
+      propertyType: "apartment",
+      fieldId: "coOwnershipLots",
+      requirement: "required",
+      condition: {
+        path: "regulatory.coOwnershipLots",
+        whenPath: "regulatory.coOwnershipApplicable",
+        whenEquals: true,
+      },
+    },
+    {
+      id: "rule_fr_risk_information",
+      fieldId: "riskInformationStatus",
+      requirement: "required",
+      condition: { path: "regulatory.riskInformationStatus" },
+    },
+    {
+      id: "rule_fr_professional_identity",
+      fieldId: "professionalIdentity",
+      requirement: "required",
+      condition: {
+        path: "seller.professionalIdentity",
+        sellerTypes: ["agency", "developer", "property_manager"],
+      },
+    },
+  ].map((rule) => ({
+    ...rule,
+    marketCode: "FR" as const,
+    propertyType: rule.propertyType as
+      (typeof allPropertyTypes)[number] | undefined,
+    transactionType: undefined,
+    requirement: rule.requirement as "required",
+    schemaVersion: 1,
+    isActive: true,
+  })),
+  offers: [
+    {
+      id: "immo_owner_free",
+      audience: "individual",
+      kind: "free",
+      name: "Propriétaire Gratuit",
+      description:
+        "Publication standard, contacts et statistiques essentielles.",
+      price: 0,
+      durationDays: 60,
+      recommended: false,
+      patch: {},
+    },
+    {
+      id: "immo_owner_visibility",
+      audience: "individual",
+      kind: "pack",
+      name: "Pack Visibilité Propriétaire",
+      description:
+        "Médias renforcés, visite virtuelle, statistiques détaillées et crédits visibilité.",
+      price: 2990,
+      durationDays: 30,
+      recommended: true,
+      patch: {
+        maxActiveListings: 3,
+        maxMedia: 30,
+        virtualTour: true,
+        qualifiedContactForm: true,
+        detailedAnalytics: true,
+        includedBumpCredits: 3,
+        includedUrgentCredits: 1,
+        includedFeaturedCredits: 1,
+      },
+    },
+    {
+      id: "immo_agency_starter",
+      audience: "professional",
+      kind: "subscription",
+      name: "Agency Starter",
+      description: "Profil agence, équipe, leads et statistiques essentielles.",
+      price: 7900,
+      recommended: false,
+      patch: {
+        maxActiveListings: 25,
+        maxTeamMembers: 3,
+        agencyProfile: true,
+        leadInbox: true,
+      },
+    },
+    {
+      id: "immo_agency_growth",
+      audience: "professional",
+      kind: "subscription",
+      name: "Agency Growth",
+      description:
+        "Imports, synchronisation, assignation des leads et rapports avancés.",
+      price: 16900,
+      recommended: true,
+      patch: {
+        maxActiveListings: 200,
+        maxTeamMembers: 20,
+        csvImport: true,
+        xmlImport: true,
+        automaticSync: true,
+        leadAssignment: true,
+        advancedReports: true,
+        includedVisibilityCredits: 2000,
+      },
+    },
+    {
+      id: "immo_agency_network",
+      audience: "organization",
+      kind: "custom",
+      name: "Agency Network",
+      description:
+        "Agences multiples, facturation centralisée, API et quotas sur mesure.",
+      price: 39900,
+      recommended: false,
+      patch: {
+        maxActiveListings: 1000,
+        maxTeamMembers: 100,
+        maxBranches: 50,
+        centralizedBilling: true,
+        branchPermissions: true,
+        apiAccess: true,
+        customPricing: true,
+      },
+    },
+  ].map((offer, index) => ({
+    id: offer.id,
+    verticalType: "real_estate" as const,
+    marketCode: "FR" as const,
+    audience: offer.audience as "individual" | "professional" | "organization",
+    kind: offer.kind as "free" | "pack" | "subscription" | "custom",
+    name: offer.name,
+    description: offer.description,
+    prices: [
+      {
+        id: `${offer.id}_price`,
+        amount: { amountMinor: offer.price, currency: "EUR" },
+        billingPeriod:
+          offer.kind === "subscription" || offer.kind === "custom"
+            ? "month"
+            : "once",
+        durationDays: offer.durationDays,
+        trialDays: offer.kind === "subscription" ? 14 : undefined,
+        taxRateBps: offer.price ? 2000 : 0,
+        isActive: true,
+      },
+    ],
+    entitlements: Object.fromEntries(
+      Object.entries({ ...baseEntitlements, ...offer.patch }).filter(
+        ([, value]) => value !== undefined,
+      ),
+    ) as RealEstateCatalog["offers"][number]["entitlements"],
+    isActive: true,
+    isRecommended: offer.recommended,
+    sortOrder: (index + 1) * 10,
+  })),
+  addOns: [
+    ["immo_urgent", "urgent", "Urgent", 790, 7],
+    ["immo_bump", "search_bump", "Remonter l’annonce", 490, 1],
+    ["immo_featured", "featured", "À la une", 1490, 7],
+    ["immo_home_spotlight", "homepage_spotlight", "Spotlight accueil", 2990, 7],
+    ["immo_local_spotlight", "local_spotlight", "Spotlight local", 1990, 7],
+    [
+      "immo_qualified_lead",
+      "qualified_lead",
+      "Crédit lead qualifié",
+      590,
+      undefined,
+    ],
+    [
+      "immo_sponsored_agency",
+      "sponsored_professional",
+      "Agence sponsorisée",
+      4990,
+      30,
+    ],
+  ].map(([id, type, name, price, days], index) => ({
+    id: String(id),
+    verticalType: "real_estate" as const,
+    marketCode: "FR" as const,
+    categoryIds: ["real-estate"],
+    geographicAreaIds: [],
+    type: type as
+      | "urgent"
+      | "search_bump"
+      | "featured"
+      | "homepage_spotlight"
+      | "local_spotlight"
+      | "qualified_lead"
+      | "sponsored_professional",
+    name: String(name),
+    description:
+      "Option payante clairement identifiable, activée selon la configuration du marché.",
+    price: { amountMinor: Number(price), currency: "EUR" },
+    taxRateBps: 2000,
+    validityDays: days ? Number(days) : undefined,
+    creditQuantity: 1,
+    scheduleModes:
+      type === "search_bump"
+        ? ["immediate", "daily", "scheduled"]
+        : ["immediate", "scheduled"],
+    isActive: true,
+    sortOrder: (index + 1) * 10,
+  })),
+};
+
+const documents: PropertyDocument[] = [
+  {
+    id: "doc_dpe_1",
+    type: "dpe",
+    status: "uploaded",
+    issuedAt: "2025-05-12",
+    expiresAt: "2035-05-11",
+    privateStorageKey: "documents-private/immo/property_apartment_lyon/dpe.pdf",
+    reviewLabel: "Document reçu — contenu non vérifié par Shongre",
+  },
+];
+
+const makeProperty = (
+  patch: Partial<PropertyPrivate> &
+    Pick<PropertyPrivate, "id" | "slug" | "title">,
+): PropertyPrivate => {
+  const { id, slug, title, ...overrides } = patch;
+  return {
+    id,
+    listingId: `listing_${patch.id}`,
+    slug,
+    schemaVersion: 1,
+    marketCodes: ["FR"],
+    propertyType: "apartment",
+    transactionType: "sale",
+    lifecycle: "published",
+    title,
+    description:
+      "Un bien lumineux, présenté avec des informations structurées et une localisation respectueuse de la vie privée.",
+    financials: {
+      price: { amountMinor: 48500000, currency: "EUR" },
+      pricePerSquareMeter: { amountMinor: 527200, currency: "EUR" },
+      period: "total",
+      feesPaidBy: "seller",
+      isNegotiable: false,
+    },
+    characteristics: {
+      livingAreaSquareMeters: 92,
+      rooms: 4,
+      bedrooms: 3,
+      bathrooms: 1,
+      floor: 3,
+      floorCount: 6,
+      hasLift: true,
+      isFurnished: false,
+      constructionYear: 1932,
+      condition: "excellent",
+      heatingType: "individual",
+      energyType: "gas",
+      amenities: ["lift", "balcony", "cellar"],
+      accessibilityFeatures: [],
+      availabilityDate: "2026-09-15",
+    },
+    energy: {
+      dpeClass: "B",
+      gesClass: "B",
+      diagnosticDate: "2025-05-12",
+      consumptionKwhPerSquareMeterYear: 92,
+      emissionsKgCo2PerSquareMeterYear: 9,
+    },
+    regulatory: {
+      coOwnershipApplicable: true,
+      coOwnershipLots: 48,
+      annualCoOwnershipCharges: { amountMinor: 216000, currency: "EUR" },
+      coOwnershipProcedureStatus: "none",
+      riskInformationUrl: "https://www.georisques.gouv.fr/",
+      riskInformationStatus: "available",
+      ownershipDeclared: true,
+      legalNotices: [],
+    },
+    address: {
+      city: "Lyon",
+      postalCode: "69003",
+      administrativeArea: "Auvergne-Rhône-Alpes",
+      countryCode: "FR",
+      latitude: 45.7503,
+      longitude: 4.8881,
+      precision: "district",
+      publicLabel: "Lyon 3e · Montchat",
+      exactAddress: "Adresse privée — Montchat, Lyon 3e",
+    },
+    media: { photos: [IMMO_DEMO_MEDIA.apartment], floorPlans: [] },
+    seller: {
+      type: "owner",
+      id: "owner_marie",
+      displayName: "Marie D.",
+      verificationLabels: ["Téléphone vérifié"],
+      responseTimeLabel: "Répond généralement dans la journée",
+    },
+    promotion: {
+      urgent: false,
+      featured: true,
+      sponsored: true,
+      endsAt: "2026-09-01T10:00:00.000Z",
+    },
+    customAttributes: {},
+    moderationStatus: "approved",
+    documents,
+    createdByUserId: "owner_marie",
+    ownerUserId: "owner_marie",
+    planId: "immo_owner_visibility",
+    riskSignals: [],
+    createdAt: "2026-08-18T10:00:00.000Z",
+    publishedAt: "2026-08-20T10:00:00.000Z",
+    sortDate: "2026-08-22T08:00:00.000Z",
+    ...overrides,
+  };
+};
+
+export const IMMO_DEMO_PROPERTIES: PropertyPrivate[] = [
+  makeProperty({
+    id: "property_apartment_lyon",
+    slug: "appartement-lumineux-lyon-montchat",
+    title: "Appartement lumineux avec balcon",
+  }),
+  makeProperty({
+    id: "property_rental_lyon",
+    slug: "appartement-meuble-lyon-jean-mace",
+    title: "Appartement meublé proche Jean Macé",
+    transactionType: "long_term_rental",
+    financials: {
+      price: { amountMinor: 129000, currency: "EUR" },
+      charges: { amountMinor: 9000, currency: "EUR" },
+      deposit: { amountMinor: 258000, currency: "EUR" },
+      pricePerSquareMeter: { amountMinor: 1897, currency: "EUR" },
+      period: "month",
+      feesPaidBy: "tenant",
+      isNegotiable: false,
+    },
+    characteristics: {
+      livingAreaSquareMeters: 68,
+      rooms: 3,
+      bedrooms: 2,
+      bathrooms: 1,
+      floor: 4,
+      floorCount: 7,
+      hasLift: true,
+      isFurnished: true,
+      constructionYear: 2008,
+      condition: "good",
+      heatingType: "collective",
+      energyType: "district",
+      amenities: ["lift", "balcony"],
+      accessibilityFeatures: [],
+      availabilityDate: "2026-09-01",
+    },
+    energy: { dpeClass: "C", gesClass: "C", diagnosticDate: "2024-10-10" },
+    address: {
+      city: "Lyon",
+      postalCode: "69007",
+      countryCode: "FR",
+      latitude: 45.7461,
+      longitude: 4.8424,
+      precision: "district",
+      publicLabel: "Lyon 7e · Jean Macé",
+      exactAddress: "Adresse privée — Jean Macé",
+    },
+    media: { photos: [IMMO_DEMO_MEDIA.rental], floorPlans: [] },
+    seller: {
+      type: "agency",
+      id: "agency_canopee",
+      displayName: "Agence Canopée",
+      slug: "agence-canopee-lyon",
+      verificationLabels: ["Professionnel vérifié"],
+      responseTimeLabel: "Répond généralement sous 2 h",
+      professionalIdentity:
+        "Carte professionnelle déclarée · CPI 6901 2024 000 000 001",
+    },
+    promotion: { urgent: false, featured: false, sponsored: false },
+    createdByUserId: "member_clara",
+    ownerUserId: undefined,
+    organizationId: "agency_canopee",
+    branchId: "branch_lyon",
+    planId: "immo_agency_growth",
+    documents: [],
+    sortDate: "2026-08-21T09:00:00.000Z",
+  }),
+  makeProperty({
+    id: "property_house_ecully",
+    slug: "maison-familiale-ecully-jardin",
+    title: "Maison familiale avec jardin",
+    propertyType: "house",
+    financials: {
+      price: { amountMinor: 69500000, currency: "EUR" },
+      pricePerSquareMeter: { amountMinor: 543000, currency: "EUR" },
+      period: "total",
+      feesPaidBy: "seller",
+      isNegotiable: true,
+    },
+    characteristics: {
+      livingAreaSquareMeters: 128,
+      landAreaSquareMeters: 510,
+      rooms: 5,
+      bedrooms: 4,
+      bathrooms: 2,
+      floorCount: 2,
+      isFurnished: false,
+      constructionYear: 1978,
+      condition: "good",
+      heatingType: "individual",
+      energyType: "gas",
+      amenities: ["garden", "terrace", "parking", "cellar"],
+      accessibilityFeatures: [],
+      availabilityDate: "2026-11-01",
+    },
+    energy: { dpeClass: "D", gesClass: "D", diagnosticDate: "2025-02-02" },
+    regulatory: {
+      coOwnershipApplicable: false,
+      coOwnershipProcedureStatus: "not_applicable",
+      riskInformationUrl: "https://www.georisques.gouv.fr/",
+      riskInformationStatus: "available",
+      ownershipDeclared: true,
+      legalNotices: [],
+    },
+    address: {
+      city: "Écully",
+      postalCode: "69130",
+      countryCode: "FR",
+      latitude: 45.775,
+      longitude: 4.778,
+      precision: "city",
+      publicLabel: "Écully",
+      exactAddress: "Adresse privée — Écully",
+    },
+    media: { photos: [IMMO_DEMO_MEDIA.house], floorPlans: [] },
+    seller: {
+      type: "agency",
+      id: "agency_canopee",
+      displayName: "Agence Canopée",
+      slug: "agence-canopee-lyon",
+      verificationLabels: ["Professionnel vérifié"],
+      responseTimeLabel: "Répond généralement sous 2 h",
+      professionalIdentity:
+        "Carte professionnelle déclarée · CPI 6901 2024 000 000 001",
+    },
+    promotion: { urgent: false, featured: false, sponsored: false },
+    createdByUserId: "member_clara",
+    ownerUserId: undefined,
+    organizationId: "agency_canopee",
+    branchId: "branch_ecully",
+    planId: "immo_agency_growth",
+    documents: [],
+    sortDate: "2026-08-20T09:00:00.000Z",
+  }),
+  makeProperty({
+    id: "property_apartment_floch",
+    slug: "appartement-terrasse-lyon-foch",
+    title: "Appartement traversant avec terrasse",
+    financials: {
+      price: { amountMinor: 62000000, currency: "EUR" },
+      pricePerSquareMeter: { amountMinor: 673900, currency: "EUR" },
+      period: "total",
+      feesPaidBy: "seller",
+      isNegotiable: false,
+    },
+    characteristics: {
+      livingAreaSquareMeters: 92,
+      rooms: 4,
+      bedrooms: 3,
+      bathrooms: 2,
+      floor: 5,
+      floorCount: 6,
+      hasLift: true,
+      isFurnished: false,
+      constructionYear: 1895,
+      condition: "excellent",
+      heatingType: "individual",
+      energyType: "electricity",
+      amenities: ["terrace", "lift", "parking"],
+      accessibilityFeatures: [],
+    },
+    address: {
+      city: "Lyon",
+      postalCode: "69006",
+      countryCode: "FR",
+      latitude: 45.768,
+      longitude: 4.844,
+      precision: "district",
+      publicLabel: "Lyon 6e · Foch",
+      exactAddress: "Adresse privée — Foch",
+    },
+    media: { photos: [IMMO_DEMO_MEDIA.apartment], floorPlans: [] },
+    seller: {
+      type: "agency",
+      id: "agency_canopee",
+      displayName: "Agence Canopée",
+      slug: "agence-canopee-lyon",
+      verificationLabels: ["Professionnel vérifié"],
+      responseTimeLabel: "Répond généralement sous 2 h",
+      professionalIdentity:
+        "Carte professionnelle déclarée · CPI 6901 2024 000 000 001",
+    },
+    promotion: {
+      urgent: true,
+      featured: true,
+      sponsored: false,
+      bumpedAt: "2026-08-22T07:00:00.000Z",
+    },
+    createdByUserId: "member_clara",
+    ownerUserId: undefined,
+    organizationId: "agency_canopee",
+    branchId: "branch_lyon",
+    planId: "immo_agency_growth",
+    documents: [],
+  }),
+];
+
+export const toPublicProperty = (property: PropertyPrivate): PropertyPublic => {
+  const {
+    moderationStatus: _moderationStatus,
+    moderationReason: _moderationReason,
+    documents: _documents,
+    createdByUserId: _createdByUserId,
+    ownerUserId: _ownerUserId,
+    organizationId: _organizationId,
+    branchId: _branchId,
+    planId: _planId,
+    riskSignals: _riskSignals,
+    createdAt: _createdAt,
+    ...publicProperty
+  } = property;
+  const { exactAddress: _exactAddress, ...publicAddress } = property.address;
+  const step = {
+    exact: 0.001,
+    street: 0.001,
+    district: 0.005,
+    city: 0.02,
+  }[property.address.precision];
+  return {
+    ...publicProperty,
+    address: {
+      ...publicAddress,
+      latitude: Math.round(property.address.latitude / step) * step,
+      longitude: Math.round(property.address.longitude / step) * step,
+    },
+    isFavorite: false,
+  };
+};
+
+export const IMMO_GENERIC_LISTINGS: Listing[] = IMMO_DEMO_PROPERTIES.map(
+  (privateProperty) => {
+    const property = toPublicProperty(privateProperty);
+    const coverImageUrl = property.media.photos[0] || IMMO_DEMO_MEDIA.apartment;
+    return {
+      id: property.listingId,
+      title: property.title,
+      description: property.description,
+      price: property.financials.price.amountMinor / 100,
+      currency: property.financials.price.currency,
+      isNegotiable: property.financials.isNegotiable,
+      isFreeDonation: false,
+      categorySlug: "immobilier",
+      subCategorySlug:
+        property.transactionType === "sale"
+          ? "ventes-immobilieres"
+          : "locations-immobilieres",
+      categoryLabel: "Immobilier",
+      subCategoryLabel:
+        property.transactionType === "sale" ? "Ventes" : "Locations",
+      condition: "not_applicable",
+      sellerId: property.seller.id,
+      sellerName: property.seller.displayName,
+      sellerType: property.seller.type === "owner" ? "individual" : "pro",
+      sellerAvatarUrl: property.seller.logoUrl,
+      sellerRating: 0,
+      sellerReviewCount: 0,
+      sellerIsVerified: property.seller.verificationLabels.length > 0,
+      sellerCity: property.address.city,
+      sellerPostalCode: property.address.postalCode,
+      city: property.address.publicLabel,
+      postalCode: property.address.postalCode,
+      department: property.address.administrativeArea || "",
+      region: property.address.administrativeArea || "",
+      latitude: property.address.latitude,
+      longitude: property.address.longitude,
+      photos: property.media.photos.map((url, index) => ({
+        id: `${property.listingId}-photo-${index + 1}`,
+        url,
+        isCover: index === 0,
+        alt: property.title,
+      })),
+      coverImageUrl,
+      deliveryOptions: [{ type: "hand_delivery", available: true, price: 0 }],
+      isOnlinePaymentAvailable: false,
+      isReservable: false,
+      attributes: {
+        verticalType: "real_estate",
+        verticalEntityId: property.id,
+        verticalSchemaVersion: property.schemaVersion,
+        canonicalPath: `/immo/bien/${property.slug}`,
+        propertyType: property.propertyType,
+        transactionType: property.transactionType,
+        livingAreaSquareMeters: property.characteristics.livingAreaSquareMeters,
+        rooms: property.characteristics.rooms,
+        bedrooms: property.characteristics.bedrooms,
+        dpeClass: property.energy.dpeClass,
+      },
+      status: "active",
+      createdAt: property.publishedAt || property.sortDate,
+      updatedAt: property.sortDate,
+      expiresAt: "2026-10-20T10:00:00.000Z",
+      viewsCount: 0,
+      favoritesCount: 0,
+      contactCount: 0,
+      isBoosted:
+        property.promotion.featured || property.promotion.urgent || undefined,
+      boostType: property.promotion.featured
+        ? "highlight"
+        : property.promotion.urgent
+          ? "urgent"
+          : undefined,
+      boostExpiresAt: property.promotion.endsAt,
+      marketCode: property.marketCodes[0],
+      marketCodes: property.marketCodes,
+    };
+  },
+);
+
+export const IMMO_DEMO_LEADS: PropertyLead[] = [
+  {
+    id: "lead_lucas",
+    propertyId: "property_apartment_lyon",
+    organizationId: "agency_canopee",
+    requesterUserId: "buyer_lucas",
+    type: "visit",
+    status: "new",
+    requesterName: "Lucas Martin",
+    requesterEmail: "lucas@example.test",
+    requesterPhone: "+33600000001",
+    message: "Je souhaite visiter ce bien cette semaine.",
+    desiredMoveDate: "2026-10-01",
+    preferredContactChannel: "message",
+    consentGiven: true,
+    qualificationAnswers: { financing: "Accord de principe obtenu" },
+    assignedUserId: "member_clara",
+    nextReminderAt: "2026-08-22T15:00:00.000Z",
+    contactDetailsReleased: true,
+    createdAt: "2026-08-22T09:41:13.000Z",
+    updatedAt: "2026-08-22T09:41:13.000Z",
+  },
+  {
+    id: "lead_emma",
+    propertyId: "property_house_ecully",
+    organizationId: "agency_canopee",
+    requesterUserId: "buyer_emma",
+    type: "information",
+    status: "qualified",
+    requesterName: "Emma Bernard",
+    requesterEmail: "emma@example.test",
+    requesterPhone: "+33600000002",
+    message: "La maison est-elle disponible avant novembre ?",
+    preferredContactChannel: "phone",
+    consentGiven: true,
+    qualificationAnswers: { saleRequiredFirst: "Non" },
+    assignedUserId: "member_thomas",
+    nextReminderAt: "2026-08-23T10:00:00.000Z",
+    firstRespondedAt: "2026-08-22T09:50:00.000Z",
+    contactDetailsReleased: true,
+    createdAt: "2026-08-22T08:30:00.000Z",
+    updatedAt: "2026-08-22T09:50:00.000Z",
+  },
+];
+
+export const IMMO_DEMO_LEAD_NOTES: PropertyLeadNote[] = [
+  {
+    id: "lead_note_001",
+    leadId: "lead_lucas",
+    authorUserId: "member_clara",
+    body: "Vérifier la disponibilité pour une visite samedi matin.",
+    createdAt: "2026-08-22T09:10:00.000Z",
+  },
+];
+
+export const IMMO_DEMO_APPOINTMENTS: PropertyAppointment[] = [
+  {
+    id: "visit_lucas",
+    propertyId: "property_apartment_lyon",
+    leadId: "lead_lucas",
+    organizationId: "agency_canopee",
+    assignedUserId: "member_clara",
+    startsAt: "2026-08-22T16:00:00.000Z",
+    endsAt: "2026-08-22T16:30:00.000Z",
+    status: "confirmed",
+    privateNotes: "Confirmer l’accès à l’immeuble avant la visite.",
+  },
+];
+
+export const IMMO_DEMO_IMPORTS: PropertyImport[] = [
+  {
+    id: "import_001",
+    organizationId: "agency_canopee",
+    type: "xml",
+    status: "completed_with_errors",
+    fileName: "flux-canopee.xml",
+    importedCount: 32,
+    rejectedCount: 3,
+    errorReportKey: "documents-private/imports/agency_canopee/import_001.csv",
+    idempotencyKey: "immo-import-demo-001",
+    createdAt: "2026-08-21T09:15:00.000Z",
+    completedAt: "2026-08-21T09:17:00.000Z",
+  },
+];
+
+export const IMMO_DEMO_WORKSPACE: AgencyWorkspace = {
+  organization: {
+    id: "agency_canopee",
+    name: "Agence Canopée",
+    slug: "agence-canopee-lyon",
+    planId: "immo_agency_growth",
+    verificationStatus: "verified",
+    branchCount: 2,
+    memberCount: 4,
+    profile: {
+      description:
+        "Agence indépendante spécialisée dans Lyon et l’Ouest lyonnais.",
+      website: "https://agence-canopee.example.test",
+      publicEmail: "contact@canopee.example.test",
+      publicPhone: "+33400000000",
+    },
+  },
+  properties: IMMO_DEMO_PROPERTIES.filter(
+    (property) => property.organizationId,
+  ),
+  drafts: [
+    {
+      id: "draft_agency_lyon_001",
+      ownerUserId: "member_clara",
+      organizationId: "agency_canopee",
+      schemaVersion: 1,
+      marketCode: "FR",
+      currentStep: 6,
+      completedSteps: [1, 2, 3, 4, 5],
+      data: {
+        transactionType: "sale",
+        propertyType: "apartment",
+        title: "Appartement T3 en préparation",
+        description: "Brouillon partagé par l’équipe Lyon centre.",
+        address: IMMO_DEMO_PROPERTIES[0].address,
+        characteristics: IMMO_DEMO_PROPERTIES[0].characteristics,
+        financials: IMMO_DEMO_PROPERTIES[0].financials,
+        energy: IMMO_DEMO_PROPERTIES[0].energy,
+        regulatory: IMMO_DEMO_PROPERTIES[0].regulatory,
+        media: IMMO_DEMO_PROPERTIES[0].media,
+        seller: IMMO_DEMO_PROPERTIES[0].seller,
+        offerId: "immo_agency_growth",
+      },
+      validationIssues: [],
+      updatedAt: "2026-08-22T09:30:00.000Z",
+    },
+  ],
+  leads: IMMO_DEMO_LEADS,
+  leadNotes: IMMO_DEMO_LEAD_NOTES,
+  appointments: IMMO_DEMO_APPOINTMENTS,
+  imports: IMMO_DEMO_IMPORTS,
+  metrics: {
+    activeProperties: 42,
+    newLeads: 18,
+    upcomingVisits: 6,
+    responseRatePercent: 87,
+    medianResponseMinutes: 43,
+    views: 4821,
+    searchToContactRatePercent: 3.8,
+  },
+  visibilityCredits: { available: 1250, included: 2000 },
+  subscription: {
+    offerId: "immo_agency_growth",
+    offerName: "Agency Growth",
+    status: "active",
+    renewsAt: "2026-09-22T00:00:00.000Z",
+  },
+  invoices: [
+    {
+      id: "checkout_agency_august",
+      invoiceId: "invoice_agency_august",
+      offerId: "immo_agency_growth",
+      total: { amountMinor: 16900, currency: "EUR" },
+      status: "paid",
+      issuedAt: "2026-08-22T08:00:00.000Z",
+    },
+  ],
+  integrationSettings: {
+    csvImportEnabled: true,
+    xmlImportEnabled: true,
+    automaticSyncEnabled: true,
+    apiAccessEnabled: false,
+    lastSuccessfulSyncAt: "2026-08-22T06:00:00.000Z",
+  },
+  members: [
+    {
+      id: "member_clara",
+      name: "Clara Dupont",
+      role: "manager",
+      branchIds: ["branch_lyon"],
+    },
+    {
+      id: "member_thomas",
+      name: "Thomas Girard",
+      role: "agent",
+      branchIds: ["branch_lyon", "branch_ecully"],
+    },
+  ],
+  branches: [
+    {
+      id: "branch_lyon",
+      name: "Lyon centre",
+      city: "Lyon",
+      activePropertyCount: 31,
+    },
+    {
+      id: "branch_ecully",
+      name: "Écully",
+      city: "Écully",
+      activePropertyCount: 11,
+    },
+  ],
+};
+
+export const IMMO_DEMO_ADMIN: RealEstateAdminOverview = {
+  catalog: IMMO_DEMO_CATALOG,
+  metrics: {
+    activeProperties: 2841,
+    pendingModeration: 37,
+    verifiedProfessionals: 126,
+    importErrors: 9,
+    leads: 6210,
+    visits: 814,
+    leadsPerListing: 2.19,
+    medianResponseMinutes: 43,
+    searchToContactRatePercent: 3.8,
+    agencyRetentionPercent: 91.4,
+    freeToPaidConversionPercent: 8.4,
+    subscriptionMrr: { amountMinor: 2146000, currency: "EUR" },
+    addOnRevenue: { amountMinor: 486000, currency: "EUR" },
+    costPerLead: { amountMinor: 184, currency: "EUR" },
+    revenuePerLead: { amountMinor: 424, currency: "EUR" },
+  },
+  moderationQueue: [
+    {
+      id: "moderation_1",
+      propertyId: "property_apartment_lyon",
+      reasonLabel: "Prix significativement inférieur aux biens comparables",
+      createdAt: "2026-08-22T08:00:00.000Z",
+    },
+  ],
+  syncErrors: [
+    {
+      id: "sync_1",
+      organizationName: "Agence Canopée",
+      message: "3 lignes rejetées : référence externe absente",
+      createdAt: "2026-08-21T09:17:00.000Z",
+    },
+  ],
+};
+
+export const IMMO_DEMO_DRAFT_DATA = {
+  transactionType: "sale",
+  propertyType: "apartment",
+  title: "Appartement lumineux avec balcon",
+  description: "Appartement traversant au calme, à proximité des commerces.",
+  address: IMMO_DEMO_PROPERTIES[0].address,
+  characteristics: IMMO_DEMO_PROPERTIES[0].characteristics,
+  financials: IMMO_DEMO_PROPERTIES[0].financials,
+  energy: IMMO_DEMO_PROPERTIES[0].energy,
+  regulatory: IMMO_DEMO_PROPERTIES[0].regulatory,
+  media: IMMO_DEMO_PROPERTIES[0].media,
+  seller: IMMO_DEMO_PROPERTIES[0].seller,
+  offerId: "immo_owner_free",
+};
