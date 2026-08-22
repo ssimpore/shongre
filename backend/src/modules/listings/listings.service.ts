@@ -6,11 +6,13 @@ import { logger } from '../../infrastructure/logging/logger.js';
 import { randomUUID } from 'node:crypto';
 import { taxonomyValidationService, TaxonomyValidationService } from '../taxonomy/taxonomy.validation.js';
 import { businessRulesService, BusinessRulesService } from '../business-rules/business-rules.service.js';
+import { taxonomyService } from '../taxonomy/taxonomy.service.js';
 
 export interface PublicationDraftInput {
   title?: string;
   description?: string;
   price?: number;
+  priceModel?: 'fixed' | 'negotiable' | 'free' | 'on_request' | 'hourly' | 'daily' | 'monthly' | 'rent_plus_charges';
   categoryId?: string;
   marketCode?: string;
   city?: string;
@@ -54,14 +56,25 @@ export class ListingsService {
   }
 
   async publishListing(draft: PublicationDraftInput, sellerId: string): Promise<Listing> {
-    if (!draft.title || draft.price === undefined || !draft.categoryId) {
+    if (!draft.title || !draft.categoryId) {
       throw new AppError({
         code: 'VALIDATION_ERROR',
-        message: 'Titre, prix et catégorie obligatoires pour publier une annonce.',
+        message: 'Titre et catégorie obligatoires pour publier une annonce.',
       });
     }
 
-    if (!Number.isFinite(Number(draft.price)) || Number(draft.price) < 0) {
+    const taxonomyNode = await taxonomyService.getNodeById(draft.categoryId);
+    const acceptsUndisclosedAmount =
+      taxonomyNode?.listingFamily === 'job' || draft.priceModel === 'on_request';
+    if (draft.price === undefined && !acceptsUndisclosedAmount) {
+      throw new AppError({
+        code: 'VALIDATION_ERROR',
+        message: 'Un prix ou un tarif est obligatoire pour cette catégorie.',
+      });
+    }
+    const effectivePrice = draft.price ?? 0;
+
+    if (!Number.isFinite(Number(effectivePrice)) || Number(effectivePrice) < 0) {
       throw new AppError({
         code: 'VALIDATION_ERROR',
         message: 'Le prix doit être un montant positif ou nul.',
@@ -115,7 +128,7 @@ export class ListingsService {
     const safety = await this.ai.analyzeListingContent(
       draft.title,
       draft.description || '',
-      draft.price
+      effectivePrice
     );
 
     const newId = `list_${randomUUID()}`;
@@ -126,7 +139,7 @@ export class ListingsService {
       categoryId: draft.categoryId,
       title: draft.title,
       description: draft.description || '',
-      price: Number(draft.price),
+      price: Number(effectivePrice),
       currency: 'EUR',
       status: safety.riskScore >= 50 ? 'flagged' : 'published',
       condition: draft.condition || 'bon-etat',

@@ -1,5 +1,11 @@
 import { Category } from '../../../shared/types/index.js';
 import type { TaxonomyAttribute as ContractTaxonomyAttribute } from '@shongre/contracts/taxonomy';
+import {
+  CANONICAL_TAXONOMY_IDENTITIES,
+  CANONICAL_TAXONOMY_IDENTITY_BY_ID,
+  CANONICAL_TAXONOMY_ALIASES,
+} from '@shongre/contracts/taxonomy-catalog';
+import type { CanonicalTaxonomyIdentity } from '@shongre/contracts/taxonomy-catalog';
 import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
 import { logger } from '../../logging/logger.js';
 
@@ -11,109 +17,87 @@ export type TaxonomyAttribute = ContractTaxonomyAttribute & {
 
 export interface TaxonomyNode {
   id: string;
+  code: string;
   slug: string;
   name: string;
+  labels: Record<string, string>;
   shortLabel?: string;
   parentId?: string | null;
   iconName: string;
   sortOrder: number;
   isActive: boolean;
+  level: CanonicalTaxonomyIdentity['level'];
+  publishable: boolean;
+  listingFamily: string;
+  supportedIntents: string[];
   attributes?: TaxonomyAttribute[];
   children?: TaxonomyNode[];
 }
 
-export const CANONICAL_DEMO_CATEGORIES: Category[] = [
-  {
-    id: 'vehicles',
-    slug: 'vehicles',
-    name: 'Véhicules',
-    shortLabel: 'Véhicules',
-    iconName: 'Car',
-    sortOrder: 1,
+function identityToTaxonomyNode(identity: CanonicalTaxonomyIdentity): TaxonomyNode {
+  return {
+    id: identity.id,
+    code: identity.code,
+    slug: identity.slug,
+    name: identity.labels['fr-FR'],
+    labels: identity.labels,
+    shortLabel: identity.shortLabels?.['fr-FR'],
+    parentId: identity.parentId,
+    iconName: identity.iconName,
+    sortOrder: identity.sortOrder,
     isActive: true,
-    subcategories: [
-      { id: 'cars', slug: 'cars', name: "Voitures d'occasion", shortLabel: 'Voitures', parentId: 'vehicles', iconName: 'Car', sortOrder: 1, isActive: true },
-      { id: 'motorcycles', slug: 'motorcycles', name: 'Motos & Scooters', shortLabel: 'Motos', parentId: 'vehicles', iconName: 'Bike', sortOrder: 2, isActive: true },
-      { id: 'bicycles', slug: 'bicycles', name: 'Vélos & Mobilité douce', shortLabel: 'Vélos', parentId: 'vehicles', iconName: 'Bike', sortOrder: 3, isActive: true },
-    ],
-  },
-  {
-    id: 'real-estate',
-    slug: 'real-estate',
-    name: 'Immobilier',
-    shortLabel: 'Immobilier',
-    iconName: 'Home',
-    sortOrder: 2,
+    level: identity.level,
+    publishable: identity.publishable,
+    listingFamily: identity.listingFamily,
+    supportedIntents: [...identity.supportedIntents],
+  };
+}
+
+function identityToCategory(identity: CanonicalTaxonomyIdentity): Category {
+  const children = CANONICAL_TAXONOMY_IDENTITIES.filter(
+    (candidate) => candidate.parentId === identity.id,
+  ).map(identityToCategory);
+  return {
+    id: identity.id,
+    slug: identity.slug,
+    name: identity.labels['fr-FR'],
+    shortLabel: identity.shortLabels?.['fr-FR'],
+    parentId: identity.parentId,
+    iconName: identity.iconName,
+    sortOrder: identity.sortOrder,
     isActive: true,
-    subcategories: [
-      { id: 'real-estate-sale', slug: 'real-estate-sale', name: 'Ventes immobilières', shortLabel: 'Ventes', parentId: 'real-estate', iconName: 'Home', sortOrder: 1, isActive: true },
-      { id: 'real-estate-rent', slug: 'real-estate-rent', name: 'Locations', shortLabel: 'Locations', parentId: 'real-estate', iconName: 'Key', sortOrder: 2, isActive: true },
-    ],
-  },
-  {
-    id: 'multimedia',
-    slug: 'multimedia',
-    name: 'Multimédia & High-Tech',
-    shortLabel: 'Multimédia',
-    iconName: 'Smartphone',
-    sortOrder: 3,
-    isActive: true,
-    subcategories: [
-      { id: 'smartphones', slug: 'smartphones', name: 'Smartphones & Téléphonie', shortLabel: 'Téléphonie', parentId: 'multimedia', iconName: 'Smartphone', sortOrder: 1, isActive: true },
-      { id: 'computers', slug: 'computers', name: 'Informatique & Ordinateurs', shortLabel: 'Informatique', parentId: 'multimedia', iconName: 'Laptop', sortOrder: 2, isActive: true },
-      { id: 'gaming', slug: 'gaming', name: 'Consoles & Jeux vidéo', shortLabel: 'Gaming', parentId: 'multimedia', iconName: 'Gamepad2', sortOrder: 3, isActive: true },
-    ],
-  },
-  {
-    id: 'home-garden',
-    slug: 'home-garden',
-    name: 'Maison & Jardin',
-    shortLabel: 'Maison',
-    iconName: 'Armchair',
-    sortOrder: 4,
-    isActive: true,
-    subcategories: [
-      { id: 'furniture', slug: 'furniture', name: 'Meubles & Salon', shortLabel: 'Meubles', parentId: 'home-garden', iconName: 'Armchair', sortOrder: 1, isActive: true },
-      { id: 'appliances', slug: 'appliances', name: 'Électroménager', shortLabel: 'Électroménager', parentId: 'home-garden', iconName: 'Tv', sortOrder: 2, isActive: true },
-    ],
-  },
-  {
-    id: 'fashion',
-    slug: 'fashion',
-    name: 'Mode & Accessoires',
-    shortLabel: 'Mode',
-    iconName: 'Shirt',
-    sortOrder: 5,
-    isActive: true,
-    subcategories: [
-      { id: 'clothing-women', slug: 'clothing-women', name: 'Vêtements Femme', shortLabel: 'Femme', parentId: 'fashion', iconName: 'Shirt', sortOrder: 1, isActive: true },
-      { id: 'clothing-men', slug: 'clothing-men', name: 'Vêtements Homme', shortLabel: 'Homme', parentId: 'fashion', iconName: 'Shirt', sortOrder: 2, isActive: true },
-      { id: 'luxury-watches', slug: 'luxury-watches', name: 'Montres & Bijoux', shortLabel: 'Horlogerie', parentId: 'fashion', iconName: 'Watch', sortOrder: 3, isActive: true },
-    ],
-  },
-  {
-    id: 'leisure-sports',
-    slug: 'leisure-sports',
-    name: 'Loisirs & Sport',
-    shortLabel: 'Loisirs',
-    iconName: 'Trophy',
-    sortOrder: 6,
-    isActive: true,
-    subcategories: [
-      { id: 'musical-instruments', slug: 'musical-instruments', name: 'Instruments de Musique', shortLabel: 'Musique', parentId: 'leisure-sports', iconName: 'Music', sortOrder: 1, isActive: true },
-      { id: 'sport-equipment', slug: 'sport-equipment', name: 'Équipements Sportifs', shortLabel: 'Sport', parentId: 'leisure-sports', iconName: 'Trophy', sortOrder: 2, isActive: true },
-    ],
-  },
-  {
-    id: 'professional',
-    slug: 'professional',
-    name: 'Matériel Professionnel',
-    shortLabel: 'Pro',
-    iconName: 'Briefcase',
-    sortOrder: 7,
-    isActive: true,
-  },
-];
+    subcategories: children.length > 0 ? children : undefined,
+  };
+}
+
+function databaseRowToTaxonomyNode(row: any): TaxonomyNode {
+  return {
+    id: String(row.id),
+    code: String(row.code || row.id).toUpperCase(),
+    slug: String(row.slug),
+    name: String(row.name),
+    labels: (row.labels || { 'fr-FR': row.name }) as Record<string, string>,
+    shortLabel: row.short_label || undefined,
+    parentId: row.parent_id || undefined,
+    iconName: row.icon_name || 'Package',
+    sortOrder: row.sort_order || 0,
+    isActive: Boolean(row.is_active),
+    level: (row.level || (row.parent_id ? 'subcategory' : 'category')) as TaxonomyNode['level'],
+    publishable: Boolean(row.publishable),
+    listingFamily: row.listing_family || 'physical_product',
+    supportedIntents: Array.isArray(row.supported_intents) ? row.supported_intents : [],
+  };
+}
+
+/**
+ * The backend demo adapter consumes the same stable identity catalog as every
+ * other client. Legacy identities exist only in the database migration map and
+ * are never kept as a second runtime taxonomy.
+ */
+export const CANONICAL_DEMO_CATEGORIES: Category[] =
+  CANONICAL_TAXONOMY_IDENTITIES.filter((node) => !node.parentId).map(
+    identityToCategory,
+  );
 
 export interface ITaxonomyRepository {
   getRootCategories(): Promise<Category[]>;
@@ -131,71 +115,36 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
   }
 
   async getNodeById(id: string): Promise<TaxonomyNode | null> {
-    for (const cat of this.categories) {
-      if (cat.id === id) {
-        return {
-          id: cat.id,
-          slug: cat.slug,
-          name: cat.name,
-          shortLabel: cat.shortLabel,
-          iconName: cat.iconName || 'Package',
-          sortOrder: cat.sortOrder || 0,
-          isActive: true,
-        };
-      }
-      if (cat.subcategories) {
-        const sub = cat.subcategories.find((s) => s.id === id);
-        if (sub) {
-          return {
-            id: sub.id,
-            slug: sub.slug,
-            name: sub.name,
-            shortLabel: sub.shortLabel,
-            parentId: sub.parentId,
-            iconName: sub.iconName || 'Package',
-            sortOrder: sub.sortOrder || 0,
-            isActive: true,
-          };
-        }
-      }
-    }
-    return null;
+    const node = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(
+      CANONICAL_TAXONOMY_ALIASES[id] || id,
+    );
+    return node ? identityToTaxonomyNode(node) : null;
   }
 
   async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
-    for (const cat of this.categories) {
-      if (cat.slug === slug) return this.getNodeById(cat.id);
-      if (cat.subcategories) {
-        const sub = cat.subcategories.find((s) => s.slug === slug);
-        if (sub) return this.getNodeById(sub.id);
-      }
-    }
-    return null;
+    const node = CANONICAL_TAXONOMY_IDENTITIES.find(
+      (candidate) => candidate.slug === slug,
+    );
+    return this.getNodeById(node?.id || CANONICAL_TAXONOMY_ALIASES[slug] || slug);
   }
 
   async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
-    const parent = this.categories.find((c) => c.id === nodeId);
-    if (!parent || !parent.subcategories) return [];
-    return parent.subcategories.map((sub) => ({
-      id: sub.id,
-      slug: sub.slug,
-      name: sub.name,
-      shortLabel: sub.shortLabel,
-      parentId: sub.parentId,
-      iconName: sub.iconName || 'Package',
-      sortOrder: sub.sortOrder || 0,
-      isActive: true,
-    }));
+    return CANONICAL_TAXONOMY_IDENTITIES.filter(
+      (node) => node.parentId === nodeId,
+    ).map(identityToTaxonomyNode);
   }
 
   async getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]> {
+    const identity = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(
+      CANONICAL_TAXONOMY_ALIASES[categoryId] || categoryId,
+    );
     const commonAttributes: TaxonomyAttribute[] = [
       { id: 'condition', code: 'condition', name: 'condition', label: 'État général', dataType: 'select', type: 'select', required: true },
       { id: 'brand', code: 'brand', name: 'brand', label: 'Marque', dataType: 'text', type: 'text' },
       { id: 'color', code: 'color', name: 'color', label: 'Couleur', dataType: 'text', type: 'text' },
     ];
 
-    if (categoryId.includes('car') || categoryId === 'vehicles') {
+    if (identity?.listingFamily === 'vehicle') {
       return [
         ...commonAttributes,
         { id: 'mileage', code: 'mileage', name: 'mileage', label: 'Kilométrage', dataType: 'number', type: 'number', unit: 'km', required: true },
@@ -205,7 +154,7 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
       ];
     }
 
-    if (categoryId.includes('real-estate')) {
+    if (identity?.listingFamily === 'real_estate') {
       return [
         { id: 'surface', code: 'surface', name: 'surface', label: 'Surface habitable', dataType: 'number', type: 'number', unit: 'm²', required: true },
         { id: 'rooms', code: 'rooms', name: 'rooms', label: 'Nombre de pièces', dataType: 'number', type: 'number', required: true },
@@ -265,19 +214,10 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
   async getNodeById(id: string): Promise<TaxonomyNode | null> {
     try {
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await (supabase.from('categories' as any) as any).select('*').eq('id', id).single();
+      const canonicalId = CANONICAL_TAXONOMY_ALIASES[id] || id;
+      const { data, error } = await (supabase.from('categories' as any) as any).select('*').eq('id', canonicalId).single();
       if (error || !data) return null;
-      const d = data as any;
-      return {
-        id: d.id,
-        slug: d.slug,
-        name: d.name,
-        shortLabel: d.short_label || undefined,
-        parentId: d.parent_id || undefined,
-        iconName: d.icon_name || 'Package',
-        sortOrder: d.sort_order || 0,
-        isActive: Boolean(d.is_active),
-      };
+      return databaseRowToTaxonomyNode(data);
     } catch {
       return null;
     }
@@ -285,20 +225,12 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
 
   async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
     try {
+      const mappedId = CANONICAL_TAXONOMY_ALIASES[slug];
+      if (mappedId) return this.getNodeById(mappedId);
       const supabase = getSupabaseAdminClient();
       const { data, error } = await (supabase.from('categories' as any) as any).select('*').eq('slug', slug).single();
       if (error || !data) return null;
-      const d = data as any;
-      return {
-        id: d.id,
-        slug: d.slug,
-        name: d.name,
-        shortLabel: d.short_label || undefined,
-        parentId: d.parent_id || undefined,
-        iconName: d.icon_name || 'Package',
-        sortOrder: d.sort_order || 0,
-        isActive: Boolean(d.is_active),
-      };
+      return databaseRowToTaxonomyNode(data);
     } catch {
       return null;
     }
@@ -313,16 +245,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
         .eq('parent_id', nodeId)
         .order('sort_order', { ascending: true });
       if (error || !data) return [];
-      return data.map((d: any) => ({
-        id: d.id,
-        slug: d.slug,
-        name: d.name,
-        shortLabel: d.short_label || undefined,
-        parentId: d.parent_id || undefined,
-        iconName: d.icon_name || 'Package',
-        sortOrder: d.sort_order || 0,
-        isActive: Boolean(d.is_active),
-      }));
+      return data.map(databaseRowToTaxonomyNode);
     } catch {
       return [];
     }

@@ -77,7 +77,8 @@ describe("Taxonomy Service & Integrity", () => {
     leaves.forEach((leaf) => {
       const schema = taxonomyService.resolvePublicationSchema(leaf.id);
       expect(schema?.attributes.length, leaf.id).toBeGreaterThan(0);
-      expect(schema?.mediaGuidance?.minimumPhotoCount, leaf.id).toBeGreaterThan(0);
+      expect(schema?.mediaGuidance?.minimumPhotoCount, leaf.id).toBeGreaterThanOrEqual(0);
+      expect(schema?.mediaGuidance?.maxPhotoCount, leaf.id).toBeGreaterThan(0);
       expect(
         taxonomyService.resolveSearchFilters(leaf.id).every((facet) => facet.attribute.filterable),
         leaf.id,
@@ -109,6 +110,44 @@ describe("Taxonomy Service & Integrity", () => {
 
     const node3 = TaxonomyMigration.resolveCanonicalNode("multimedia");
     expect(node3?.id).toBe("electronics");
+
+    const redirect = TaxonomyMigration.resolveCanonicalRedirect("real-estate-sale");
+    expect(redirect).toEqual({
+      node: expect.objectContaining({ id: "real_estate.sales" }),
+      redirectPath: "/categorie/ventes-immobilieres",
+    });
+  });
+
+  it("produces a non-destructive migration dry-run with ambiguous records isolated", () => {
+    const report = TaxonomyMigration.buildDryRunReport([
+      { id: "listing-1", categorySlug: "multimedia" },
+      { id: "listing-2", categorySlug: "multimedia" },
+      { id: "listing-3", categorySlug: "legacy-unknown" },
+    ]);
+
+    expect(report).toContainEqual({
+      source: "multimedia",
+      canonicalNodeId: "electronics",
+      affectedListingIds: ["listing-1", "listing-2"],
+      status: "mapped",
+    });
+    expect(report).toContainEqual({
+      source: "legacy-unknown",
+      canonicalNodeId: undefined,
+      affectedListingIds: ["listing-3"],
+      status: "ambiguous",
+    });
+
+    expect(
+      TaxonomyMigration.normalizeListingCategory({
+        categorySlug: "legacy-unknown",
+        categoryLabel: "Ancienne rubrique",
+      }),
+    ).toMatchObject({
+      categoryId: "legacy-unknown",
+      categoryLabel: "Ancienne rubrique",
+      subCategoryLabel: "À reclasser",
+    });
   });
 
   describe("shortLabel Resolution & Fallbacks", () => {

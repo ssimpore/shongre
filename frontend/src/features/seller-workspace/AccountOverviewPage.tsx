@@ -1,7 +1,4 @@
-import {
-  isProSeller,
-  showsVerifiedBadge,
-} from "../../domains/user/user.domain";
+import { isProSeller } from "../../domains/user/user.domain";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -207,14 +204,6 @@ export const AccountOverviewPage: React.FC = () => {
                     aria-hidden="true"
                   />
                 </span>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {!isAdmin && showsVerifiedBadge(currentUser) && (
-                <Badge variant="verified" size="md" icon>
-                  {t("sellerworkspace.accountOverviewPage.verifie")}
-                </Badge>
               )}
             </div>
 

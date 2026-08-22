@@ -6,41 +6,37 @@
 import { taxonomyService } from "./taxonomy.service";
 import { getTaxonomyLabel } from "./taxonomy.labels";
 import { TaxonomyNode } from "./taxonomy.types";
+import { CANONICAL_TAXONOMY_ALIASES } from "@shongre/contracts/taxonomy-catalog";
 
 export const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
-  // Top-level mappings
-  vehicules: "vehicles",
-  voitures: "vehicles.cars",
-  motos: "vehicles.motos",
-  immobilier: "real_estate",
-  "ventes-immobilieres": "real_estate.sales",
-  locations: "real_estate.rentals",
-  multimedia: "electronics",
-  smartphones: "electronics.smartphones",
-  "electronics.telephony.smartphones": "electronics.smartphones",
-  informatique: "electronics.computers",
-  "consoles-jeux": "electronics.gaming",
-  "maison-deco": "home_garden",
-  mobilier: "home_garden.furniture",
-  electromenager: "home_garden.appliances",
-  "bricolage-jardin": "home_garden.diy_garden",
-  mode: "fashion",
-  "mode-beaute": "fashion",
-  "mode-accessoires": "fashion",
-  "vetements-femme": "fashion.women",
-  "vetements-homme": "fashion.men",
-  "loisirs-sport": "leisure_culture",
-  "sports-plein-air": "sports_outdoors",
-  services: "services",
-  "materiel-pro": "professional_btp",
-  "materiel-professionnel-btp": "professional_btp",
-  emploi: "jobs",
-  animaux: "pets",
-  sports: "sports_outdoors",
-  "sports-loisirs": "sports_outdoors",
-  "sports-hobbies": "sports_outdoors",
-  "bons-plans": "deals_donations",
+  ...CANONICAL_TAXONOMY_ALIASES,
 };
+
+export interface TaxonomyMigrationListingReference {
+  id: string;
+  categorySlug?: string;
+  subCategorySlug?: string;
+}
+
+export interface TaxonomyMigrationDryRunEntry {
+  source: string;
+  canonicalNodeId?: string;
+  affectedListingIds: string[];
+  status: "canonical" | "mapped" | "ambiguous";
+}
+
+function normalizeLookup(value: string): string {
+  let decoded = value;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch {
+    // Preserve malformed legacy input for the unresolved dry-run report.
+  }
+  return decoded
+    .trim()
+    .toLocaleLowerCase("fr-FR")
+    .replace(/^\/+|\/+$/g, "");
+}
 
 export class TaxonomyMigration {
   /**
@@ -48,7 +44,7 @@ export class TaxonomyMigration {
    */
   static resolveCanonicalNode(slugOrId?: string): TaxonomyNode | undefined {
     if (!slugOrId) return undefined;
-    const clean = slugOrId.toLowerCase().trim();
+    const clean = normalizeLookup(slugOrId);
 
     // 1. Direct ID match
     const direct = taxonomyService.getNode(clean);
@@ -64,7 +60,61 @@ export class TaxonomyMigration {
       return taxonomyService.getNode(mappedId);
     }
 
+    // Admin-managed aliases remain attached to their canonical record. They
+    // are resolved after explicit legacy mappings so an old URL can never
+    // shadow a deliberate migration decision.
+    const aliasMatch = taxonomyService
+      .getAllNodes()
+      .find((node) =>
+        [...(node.aliases || []), ...(node.synonyms || [])].some(
+          (alias) => normalizeLookup(alias) === clean,
+        ),
+      );
+    if (aliasMatch) return aliasMatch;
+
     return undefined;
+  }
+
+  static resolveCanonicalRedirect(slugOrId?: string):
+    | { node: TaxonomyNode; redirectPath?: string }
+    | undefined {
+    const node = this.resolveCanonicalNode(slugOrId);
+    if (!node) return undefined;
+    const clean = slugOrId ? normalizeLookup(slugOrId) : "";
+    return {
+      node,
+      redirectPath:
+        clean && clean !== normalizeLookup(node.slug)
+          ? `/categorie/${node.slug}`
+          : undefined,
+    };
+  }
+
+  static buildDryRunReport(
+    listings: TaxonomyMigrationListingReference[],
+  ): TaxonomyMigrationDryRunEntry[] {
+    const entries = new Map<string, TaxonomyMigrationDryRunEntry>();
+    listings.forEach((listing) => {
+      const source =
+        listing.subCategorySlug?.trim() || listing.categorySlug?.trim() || "";
+      if (!source) return;
+      const node = this.resolveCanonicalNode(source);
+      const directCanonical =
+        node &&
+        [node.id, node.slug].map(normalizeLookup).includes(normalizeLookup(source));
+      const key = `${source}:${node?.id || "ambiguous"}`;
+      const current = entries.get(key) || {
+        source,
+        canonicalNodeId: node?.id,
+        affectedListingIds: [],
+        status: node ? (directCanonical ? "canonical" : "mapped") : "ambiguous",
+      };
+      current.affectedListingIds.push(listing.id);
+      entries.set(key, current);
+    });
+    return Array.from(entries.values()).sort((left, right) =>
+      left.source.localeCompare(right.source),
+    );
   }
 
   /**
@@ -78,8 +128,19 @@ export class TaxonomyMigration {
   }) {
     const node =
       this.resolveCanonicalNode(listing.subCategorySlug) ||
-      this.resolveCanonicalNode(listing.categorySlug) ||
-      taxonomyService.getNode("home_garden");
+      this.resolveCanonicalNode(listing.categorySlug);
+
+    if (!node) {
+      const unresolvedId =
+        listing.subCategorySlug || listing.categorySlug || "unclassified";
+      return {
+        categoryId: unresolvedId,
+        categorySlug: listing.categorySlug || "autres",
+        categoryLabel: listing.categoryLabel || "Autres",
+        subCategorySlug: listing.subCategorySlug || "non-classee",
+        subCategoryLabel: listing.subCategoryLabel || "À reclasser",
+      };
+    }
 
     const rootAncestor =
       node?.ancestorIds && node.ancestorIds.length > 0
@@ -87,12 +148,12 @@ export class TaxonomyMigration {
         : node;
 
     return {
-      categoryId: node?.id || "home_garden",
-      categorySlug: rootAncestor?.slug || "maison-jardin",
+      categoryId: node.id,
+      categorySlug: rootAncestor?.slug || node.slug,
       categoryLabel:
-        getTaxonomyLabel(rootAncestor, "compact") || "Maison, Meubles & Jardin",
-      subCategorySlug: node?.slug || "mobilier",
-      subCategoryLabel: getTaxonomyLabel(node, "compact") || "Mobilier",
+        getTaxonomyLabel(rootAncestor, "compact") || node.name,
+      subCategorySlug: node.slug,
+      subCategoryLabel: getTaxonomyLabel(node, "compact") || node.name,
     };
   }
 }

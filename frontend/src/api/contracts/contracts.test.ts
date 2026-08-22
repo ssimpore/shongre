@@ -22,11 +22,31 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   it("handles authentication and role switching deterministically", async () => {
     const user = await services.auth.switchRole("pro_seller");
     expect(user).toBeDefined();
-    expect(user.role).toBe("pro_seller");
-    expect(user.sellerType).toBe("pro");
+    expect(user?.role).toBe("pro_seller");
+    expect(user?.sellerType).toBe("pro");
 
     const currentUser = await services.auth.getCurrentUser();
     expect(currentUser?.role).toBe("pro_seller");
+  });
+
+  it("treats the guest persona as a signed-out session and restores exact accounts", async () => {
+    await expect(services.auth.switchRole("guest")).resolves.toBeNull();
+    await expect(services.auth.getCurrentUser()).resolves.toBeNull();
+
+    const seller = await services.auth.switchDemoUser("seller_camille");
+    expect(seller?.id).toBe("user_camille");
+    expect(seller?.primaryRole).toBe("seller");
+    await expect(services.auth.getCurrentUser()).resolves.toMatchObject({
+      id: "user_camille",
+    });
+
+    await services.auth.switchDemoUser("buyer_thomas");
+    await expect(
+      services.auth.switchDemoUser("missing_persona"),
+    ).rejects.toThrow("profil de démonstration");
+    await expect(services.auth.getCurrentUser()).resolves.toMatchObject({
+      id: "user_thomas",
+    });
   });
 
   it("resolves effective market configurations through service contract", async () => {

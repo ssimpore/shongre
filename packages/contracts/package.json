@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./account": "./src/schemas/account.ts",
     "./taxonomy": "./src/schemas/taxonomy.ts",
+    "./taxonomy-catalog": "./src/fixtures/taxonomy-catalog.ts",
     "./courses": "./src/schemas/courses.ts",
     "./auto": "./src/schemas/auto.ts",
     "./vertical": "./src/schemas/vertical.ts",

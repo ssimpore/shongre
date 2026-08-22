@@ -19,6 +19,7 @@ import {
 } from "../mocks/initialDemoData";
 import { Market } from "../domains/market/market.types";
 import { INITIAL_MARKETS } from "../domains/market/market.defaults";
+import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -104,22 +105,7 @@ class StorageService {
   getListings(): Listing[] {
     const list = this.get<Listing[]>(KEYS.LISTINGS, INITIAL_LISTINGS);
     return list.map((l) => {
-      let catSlug = l.categorySlug;
-      if (catSlug === "maison-deco" || catSlug === "home_garden")
-        catSlug = "maison-jardin";
-      if (catSlug === "multimedia") catSlug = "multimedia-electronique";
-      if (
-        catSlug === "mode" ||
-        catSlug === "mode-beaute" ||
-        catSlug === "fashion"
-      )
-        catSlug = "mode-accessoires";
-      if (catSlug === "loisirs-sport" || catSlug === "leisure_culture")
-        catSlug = "loisirs-culture";
-      if (catSlug === "bebe-puericulture" || catSlug === "baby_kids")
-        catSlug = "bebe-puericulture-enfants";
-      if (catSlug === "vehicles") catSlug = "vehicules";
-      if (catSlug === "real_estate") catSlug = "immobilier";
+      const canonicalCategory = normalizeListingTaxonomyIdentity(l);
 
       const primaryMarket = ((l as any).marketCode || "FR").toUpperCase();
       const rawCodes =
@@ -149,7 +135,7 @@ class StorageService {
 
       return {
         ...l,
-        categorySlug: catSlug,
+        ...canonicalCategory,
         marketCode: primaryMarket,
         marketCodes,
         marketPublications,

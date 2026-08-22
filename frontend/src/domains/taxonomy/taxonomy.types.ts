@@ -65,7 +65,7 @@ export interface AttributeOption {
 export interface AttributeDependency {
   attributeId: string;
   operator: "equals" | "in" | "not_equals";
-  value: any;
+  value: unknown;
 }
 
 export interface AttributeValidation {
@@ -177,6 +177,55 @@ export type ListingFamily =
   | "professional_equipment"
   | "digital";
 
+export type TaxonomyPrimaryCta =
+  | "contact_seller"
+  | "apply"
+  | "request_quote"
+  | "request_visit"
+  | "request_test_drive"
+  | "request_lesson"
+  | "check_availability"
+  | "propose_exchange";
+
+export type TaxonomyPublicationStep =
+  | "intent"
+  | "taxonomy"
+  | "essential"
+  | "condition_history"
+  | "price_compensation"
+  | "fulfillment_location"
+  | "media_documents"
+  | "contact_preferences"
+  | "preview"
+  | "standard_or_upgrades"
+  | "confirmation";
+
+export interface TaxonomyStandardPublicationPolicy {
+  enabled: boolean;
+  label: "Publication standard gratuite";
+  eligibleSellerTypes: Array<"individual" | "professional">;
+  durationDays: number;
+  mediaAllowance: number;
+  includesMessaging: boolean;
+  includesListingManagement: boolean;
+  includesStandardStatistics: boolean;
+  paidUpgradesOptional: true;
+}
+
+export interface TaxonomyPublicationConfiguration {
+  steps: TaxonomyPublicationStep[];
+  primaryCta: TaxonomyPrimaryCta;
+  standardPolicy: TaxonomyStandardPublicationPolicy;
+}
+
+export interface TaxonomyModerationPolicy {
+  policyId: string;
+  reviewMode: "standard" | "enhanced" | "manual";
+  prohibitedItemRuleIds: string[];
+  safetyNoticeKeys: string[];
+  sensitiveAttributeIds: string[];
+}
+
 export interface TaxonomyNodeBase {
   id: string;
   slug: string;
@@ -234,6 +283,10 @@ export interface TaxonomyNode extends TaxonomyNodeBase {
   presentation?: TaxonomyPresentationRules;
   mediaGuidance?: TaxonomyMediaGuidance;
   taxonomyVersion?: number;
+  schemaVersion?: number;
+  schemaStatus?: "draft" | "published" | "deprecated";
+  publication?: TaxonomyPublicationConfiguration;
+  moderation?: TaxonomyModerationPolicy;
   synonyms?: string[];
   aliases?: string[];
   replacedById?: string; // For deprecated categories: successor node ID
@@ -252,6 +305,9 @@ export interface ResolvedPublicationSchema {
   summaryAttributeIds: string[];
   presentation?: TaxonomyPresentationRules;
   mediaGuidance?: TaxonomyMediaGuidance;
+  schemaVersion: number;
+  publication: TaxonomyPublicationConfiguration;
+  moderation: TaxonomyModerationPolicy;
 }
 
 export interface SearchFacetDefinition {
@@ -360,6 +416,9 @@ export interface CreateTaxonomyNodeInput {
   sellerEligibility?: Partial<SellerEligibilityRules>;
   presentation?: TaxonomyPresentationRules;
   mediaGuidance?: TaxonomyMediaGuidance;
+  schemaVersion?: number;
+  publication?: TaxonomyPublicationConfiguration;
+  moderation?: TaxonomyModerationPolicy;
 }
 
 export interface UpdateTaxonomyNodeInput {
@@ -387,4 +446,8 @@ export interface UpdateTaxonomyNodeInput {
   replacedById?: string;
   presentation?: TaxonomyPresentationRules;
   mediaGuidance?: TaxonomyMediaGuidance;
+  schemaVersion?: number;
+  schemaStatus?: "draft" | "published" | "deprecated";
+  publication?: TaxonomyPublicationConfiguration;
+  moderation?: TaxonomyModerationPolicy;
 }

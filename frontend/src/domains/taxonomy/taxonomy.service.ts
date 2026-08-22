@@ -35,7 +35,7 @@ export type { TaxonomyLabelMode, TaxonomyLabelOptions };
  * - shortLabel is strictly a presentation alias and must never be used as an identifier.
  */
 
-class TaxonomyService {
+export class TaxonomyService {
   private nodesMap: Map<string, TaxonomyNode> = new Map();
   private slugMap: Map<string, TaxonomyNode> = new Map();
   private rootNodes: TaxonomyNode[] = [];
@@ -404,7 +404,34 @@ class TaxonomyService {
       summaryAttributeIds: summaryIds || [],
       presentation: node.presentation,
       mediaGuidance: node.mediaGuidance,
+      schemaVersion: node.schemaVersion || node.taxonomyVersion || 1,
+      publication: node.publication!,
+      moderation: node.moderation!,
     };
+  }
+
+  getComparisonAttributes(nodeId: string): TaxonomyAttribute[] {
+    const schema = this.resolvePublicationSchema(nodeId);
+    if (!schema) return [];
+    return (schema.presentation?.comparisonAttributeIds || [])
+      .map((id) => ATTRIBUTE_REGISTRY[id])
+      .filter(
+        (attribute): attribute is TaxonomyAttribute =>
+          attribute !== undefined && attribute.comparable === true,
+      );
+  }
+
+  canCompare(nodeIds: string[]): boolean {
+    if (nodeIds.length < 2) return false;
+    const nodes = nodeIds.map((id) => this.getNode(id));
+    if (nodes.some((node) => !node || !this.isPublishable(node.id))) {
+      return false;
+    }
+
+    // A comparison is meaningful only inside the same publishable leaf. This
+    // prevents, for example, comparing a parking space with a house merely
+    // because both happen to inherit a surface field.
+    return nodes.every((node) => node!.id === nodes[0]!.id);
   }
 
   resolveSearchFilters(
@@ -475,6 +502,7 @@ class TaxonomyService {
     const errors: string[] = [];
     const seenIds = new Set<string>();
     const seenSlugs = new Set<string>();
+    const seenCodes = new Set<string>();
     const seenShortLabels = new Set<string>();
 
     this.nodesMap.forEach((node) => {
@@ -484,14 +512,17 @@ class TaxonomyService {
       }
       seenIds.add(node.id);
 
-      // 2. Unique slug among siblings
-      const siblingKey = `${node.parentId || "root"}:${node.slug}`;
-      if (seenSlugs.has(siblingKey)) {
-        errors.push(
-          `Duplicate sibling slug: ${node.slug} under parent ${node.parentId || "root"}`,
-        );
+      if (seenCodes.has(node.code)) {
+        errors.push(`Duplicate canonical code: ${node.code}`);
       }
-      seenSlugs.add(siblingKey);
+      seenCodes.add(node.code);
+
+      // 2. Unique slug among siblings
+      const normalizedSlug = node.slug.toLowerCase().trim();
+      if (seenSlugs.has(normalizedSlug)) {
+        errors.push(`Duplicate active slug: ${node.slug}`);
+      }
+      seenSlugs.add(normalizedSlug);
 
       // 3. Parent exists if parentId set
       if (node.parentId && !this.nodesMap.has(node.parentId)) {
@@ -533,6 +564,32 @@ class TaxonomyService {
             errors.push(`Node ${node.id} references unknown card attribute ${attrId}`);
           }
         });
+      }
+
+
+      if (this.isPublishable(node.id)) {
+        const schema = this.resolvePublicationSchema(node.id);
+        if (!schema?.attributes.length) {
+          errors.push(`Publishable node ${node.id} has no publication attributes`);
+        }
+        if (!node.supportedIntents?.length) {
+          errors.push(`Publishable node ${node.id} has no publication intent`);
+        }
+        if (!node.publication?.steps.length) {
+          errors.push(`Publishable node ${node.id} has no publication steps`);
+        }
+        if (!node.publication?.primaryCta) {
+          errors.push(`Publishable node ${node.id} has no primary CTA`);
+        }
+        if (!node.publication?.standardPolicy.enabled) {
+          errors.push(`Publishable node ${node.id} has no standard publication policy`);
+        }
+        if (!node.moderation?.policyId) {
+          errors.push(`Publishable node ${node.id} has no moderation policy`);
+        }
+        if (!node.labels["fr-FR"] || !node.labels["en-US"]) {
+          errors.push(`Publishable node ${node.id} has incomplete translations`);
+        }
       }
 
       // 5. shortLabel format check (must not be empty string if defined)

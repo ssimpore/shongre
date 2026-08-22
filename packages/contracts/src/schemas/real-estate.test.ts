@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CANONICAL_TAXONOMY_IDS } from "../fixtures/taxonomy-catalog";
 import {
   REAL_ESTATE_SCHEMA_VERSION,
   propertyPrivateSchema,
@@ -133,7 +134,7 @@ describe("Shongre Immo contracts", () => {
       activation: {
         marketCode: "FR",
         verticalType: "real_estate",
-        categoryIds: ["real-estate"],
+        categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
         subcategoryIds: [],
         schemaVersion: 1,
         isActive: true,

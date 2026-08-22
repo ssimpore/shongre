@@ -210,9 +210,10 @@ export const themeSpacing = {
   "control-target": "1.5rem",
   "select-chevron-size": "0.25rem",
   "select-chevron-offset": "0.75rem",
-  /* Fixed width of a card in a horizontal rail. Compact on purpose: a rail is
-     scrolled, so showing more inventory per screen is the point. */
-  "listing-card": "11.75rem",
+  /* Shared width for standard listing cards in rails and desktop grids. This
+     leaves room for titles and attributes while keeping the next card visible
+     as an affordance that the rail continues horizontally. */
+  "listing-card": "13.5rem",
   /* Standard vertical footprint for grid and rail cards. It includes the
      wrapping delivery/publication metadata row, so long labels remain fully
      readable without changing the rhythm between listing sections. */

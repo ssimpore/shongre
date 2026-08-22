@@ -25,7 +25,7 @@ test.describe('design-token runtime contracts', () => {
     await waitForStableLayout(page);
   });
 
-  test('loads the current token sheet and keeps listing rails compact', async ({ page }) => {
+  test('loads the current token sheet and keeps listing rails consistently sized', async ({ page }) => {
     const contract = await page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
       const cells = [...document.querySelectorAll<HTMLElement>('.w-listing-card')];
@@ -39,10 +39,10 @@ test.describe('design-token runtime contracts', () => {
     });
 
     expect(contract.version).toBe('4');
-    expect(contract.tokenWidth).toBe('11.75rem');
+    expect(contract.tokenWidth).toBe('13.5rem');
     expect(contract.widths.length, 'the recent-listings rail did not render').toBeGreaterThanOrEqual(6);
     for (const width of contract.widths) {
-      expect(width).toBeCloseTo(188, 0);
+      expect(width).toBeCloseTo(216, 0);
     }
   });
 
@@ -60,10 +60,10 @@ test.describe('design-token runtime contracts', () => {
     });
 
     expect(contract.cells.length, 'no standard listing rails rendered').toBeGreaterThanOrEqual(6);
-    expect(contract.tokenWidth).toBe('11.75rem');
+    expect(contract.tokenWidth).toBe('13.5rem');
     for (const item of contract.cells) {
-      expect(item.cell).toBeCloseTo(188, 0);
-      expect(item.card).toBeCloseTo(188, 0);
+      expect(item.cell).toBeCloseTo(216, 0);
+      expect(item.card).toBeCloseTo(216, 0);
     }
   });
 
@@ -87,10 +87,10 @@ test.describe('design-token runtime contracts', () => {
       };
     });
 
-    expect(contract.tokenWidth).toBe('11.75rem');
+    expect(contract.tokenWidth).toBe('13.5rem');
     expect(contract.tokenHeight).toBe('25rem');
-    expect(contract.gridColumns.split(' ').every((column) => column === '188px')).toBe(true);
-    expect(contract.cardWidth).toBeCloseTo(188, 0);
+    expect(contract.gridColumns.split(' ').every((column) => column === '216px')).toBe(true);
+    expect(contract.cardWidth).toBeCloseTo(216, 0);
     expect(contract.cardHeight).toBeCloseTo(400, 0);
     expect(contract.cardHeightToken).toBe('400px');
   });

@@ -48,6 +48,9 @@ export interface ResolvedPublicationEngineSchema {
   defaultPriceModel: PriceModel;
   presentation: TaxonomyNode["presentation"];
   mediaGuidance: TaxonomyNode["mediaGuidance"];
+  schemaVersion: number;
+  publication: NonNullable<TaxonomyNode["publication"]>;
+  moderation: NonNullable<TaxonomyNode["moderation"]>;
 }
 
 export interface ResolvePublicationParams {
@@ -55,7 +58,7 @@ export interface ResolvePublicationParams {
   marketCode?: string;
   sellerRole?: string;
   listingIntent?: ListingIntent;
-  currentValues?: Record<string, any>;
+  currentValues?: Record<string, unknown>;
 }
 
 export class PublicationResolver {
@@ -274,6 +277,9 @@ export class PublicationResolver {
       defaultPriceModel,
       presentation: node.presentation,
       mediaGuidance: node.mediaGuidance,
+      schemaVersion: node.schemaVersion || node.taxonomyVersion || 1,
+      publication: node.publication!,
+      moderation: node.moderation!,
     };
   }
 }

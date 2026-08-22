@@ -9,7 +9,7 @@ describe('taxonomy publication validation', () => {
   );
 
   it('rejects missing required vehicle fields and rogue attributes', async () => {
-    const result = await validation.validateListingAttributes('vehicles', {
+    const result = await validation.validateListingAttributes('vehicles.cars.citadines', {
       mileage: 120000,
       unknown_field: 'not allowed',
     });
@@ -21,7 +21,7 @@ describe('taxonomy publication validation', () => {
   });
 
   it('accepts a complete vehicle attribute payload', async () => {
-    const result = await validation.validateListingAttributes('vehicles', {
+    const result = await validation.validateListingAttributes('vehicles.cars.citadines', {
       condition: 'bon-etat',
       brand: 'Renault',
       mileage: 120000,

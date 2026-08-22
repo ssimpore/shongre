@@ -343,7 +343,7 @@
 .z-modal { z-index: var(--z-modal, 50); }
 .z-toast { z-index: var(--z-toast, 60); }
 .z-tooltip { z-index: var(--z-tooltip, 70); }
-.w-listing-card { width: var(--spacing-listing-card, 11.75rem); }
+.w-listing-card { width: var(--spacing-listing-card, 13.5rem); }
 
 /* Standard listing cards own their vertical footprint. The rules are kept
    outside Tailwind's layers so page-level utility classes cannot make one
@@ -399,9 +399,9 @@
 
 @media (min-width: 40rem) {
   .listing-card-standard {
-    width: var(--spacing-listing-card, 11.75rem);
-    min-width: var(--spacing-listing-card, 11.75rem);
-    max-width: var(--spacing-listing-card, 11.75rem);
+    width: var(--spacing-listing-card, 13.5rem);
+    min-width: var(--spacing-listing-card, 13.5rem);
+    max-width: var(--spacing-listing-card, 13.5rem);
   }
 }
 
@@ -411,8 +411,8 @@
 .listing-rail-cell {
   display: flex;
   flex-direction: column;
-  flex: 0 0 var(--spacing-listing-card, 11.75rem);
-  min-width: var(--spacing-listing-card, 11.75rem);
+  flex: 0 0 var(--spacing-listing-card, 13.5rem);
+  min-width: var(--spacing-listing-card, 13.5rem);
 }
 
 .listing-rail-cell > * {

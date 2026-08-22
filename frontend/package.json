@@ -9,7 +9,7 @@
   "scripts": {
     "predev": "npm run build --workspace=@shongre/design-tokens",
     "dev": "node scripts/next-cli.mjs dev",
-    "prebuild": "npm run build --workspace=@shongre/design-tokens",
+    "prebuild": "npm run build --workspace=@shongre/design-tokens && npm run check:taxonomy",
     "build": "next build",
     "preview": "node scripts/next-cli.mjs start",
     "start": "node scripts/next-cli.mjs start",
@@ -27,7 +27,8 @@
     "test:e2e:responsive": "playwright test responsive.spec.ts --project=chromium",
     "test:e2e:a11y": "playwright test accessibility.spec.ts --project=chromium",
     "test:e2e:ui": "playwright test --ui",
-    "check:i18n": "node scripts/check-i18n-coverage.mjs"
+    "check:i18n": "node scripts/check-i18n-coverage.mjs",
+    "check:taxonomy": "tsx scripts/check-taxonomy-coverage.ts"
   },
   "dependencies": {
     "@shongre/brand": "1.0.0",
@@ -58,6 +59,7 @@
     "axe-core": "^4.13.0",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",
+    "tsx": "^4.20.6",
     "vitest": "^4.1.10"
   }
 }

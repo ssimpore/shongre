@@ -3,6 +3,22 @@ import { usePersona } from './personas';
 import { waitForStableLayout } from './overflow';
 
 test.describe('account identity badges', () => {
+  test('moves the individual verification mark beside the account name', async ({ page }) => {
+    await usePersona(page, 'individual_buyer');
+    await page.setViewportSize({ width: 1408, height: 795 });
+    await page.goto('/compte', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    const sidebarIdentity = page.locator('aside [data-account-identity]');
+    await expect(sidebarIdentity).toContainText('Thomas Laurent');
+    await expect(
+      sidebarIdentity.locator('[data-account-verified-icon]'),
+    ).toHaveAttribute('aria-label', 'Profil vérifié');
+    await expect(
+      page.locator('[data-account-hero]').getByText('Vérifié', { exact: true }),
+    ).toHaveCount(0);
+  });
+
   test('keeps the account hero free of a redundant Pro badge for administrators', async ({ page }) => {
     await usePersona(page, 'admin');
     await page.setViewportSize({ width: 1408, height: 795 });

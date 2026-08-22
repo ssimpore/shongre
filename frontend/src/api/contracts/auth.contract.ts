@@ -90,7 +90,7 @@ export interface AuthServiceContract {
   registerProfessional(input: RegisterProfessionalInput): Promise<AuthResult>;
   logout(): Promise<void>;
   logoutAll(keepCurrent?: boolean): Promise<void>;
-  switchRole(role: UserRole): Promise<UserProfile>;
+  switchRole(role: UserRole): Promise<UserProfile | null>;
   switchDemoUser(userKey: string): Promise<UserProfile | null>;
   verifyPhone(phone: string, code: string): Promise<boolean>;
   verifyEmail(token: string): Promise<boolean>;

@@ -5,6 +5,7 @@ import type {
   MonetizationProduct,
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import {
   AlertTriangle,
   ArrowRight,
@@ -96,7 +97,7 @@ export const AdminMonetizationPage: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [simulation, setSimulation] = useState({
     userType: "individual" as "individual" | "professional" | "organization",
-    categoryId: "vehicles",
+    categoryId: CANONICAL_TAXONOMY_IDS.vehicles as string,
     usageLevel: 0,
   });
   const [evaluation, setEvaluation] = useState<RuleEvaluationResult | null>(null);
@@ -470,7 +471,7 @@ export const AdminMonetizationPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <label className="text-micro font-bold text-stone-600">Compte<select value={simulation.userType} onChange={(event) => setSimulation((current) => ({ ...current, userType: event.target.value as typeof current.userType }))} className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-2 text-xs"><option value="individual">Particulier</option><option value="professional">Professionnel</option><option value="organization">Organisation</option></select></label>
-              <label className="text-micro font-bold text-stone-600">Catégorie<select value={simulation.categoryId} onChange={(event) => setSimulation((current) => ({ ...current, categoryId: event.target.value }))} className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-2 text-xs"><option value="vehicles">Auto</option><option value="real-estate">Immobilier</option><option value="courses">Cours</option><option value="electronics">Générique</option></select></label>
+              <label className="text-micro font-bold text-stone-600">Catégorie<select value={simulation.categoryId} onChange={(event) => setSimulation((current) => ({ ...current, categoryId: event.target.value }))} className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-2 text-xs"><option value={CANONICAL_TAXONOMY_IDS.vehicles}>Auto</option><option value={CANONICAL_TAXONOMY_IDS.realEstate}>Immobilier</option><option value={CANONICAL_TAXONOMY_IDS.courses}>Cours</option><option value={CANONICAL_TAXONOMY_IDS.electronics}>Générique</option></select></label>
               <label className="col-span-2 text-micro font-bold text-stone-600">Utilisation actuelle<input type="number" min={0} value={simulation.usageLevel} onChange={(event) => setSimulation((current) => ({ ...current, usageLevel: Math.max(0, Number(event.target.value)) }))} className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs" /></label>
             </div>
             <Button size="sm" fullWidth onClick={() => void runSimulation()} disabled={simulating}>{simulating ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <ListFilter className="w-4 h-4" />} Simuler</Button>

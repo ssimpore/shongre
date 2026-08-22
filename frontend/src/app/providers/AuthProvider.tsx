@@ -272,12 +272,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const switchRole = async (newRole: UserRole) => {
     const user = await services.auth.switchRole(newRole);
     setCurrentUser(user);
+    announceAuthChange(user ? "login" : "logout");
   };
 
   const switchDemoUser = async (userKey: string) => {
     const user = await services.auth.switchDemoUser(userKey);
     setCurrentUser(user);
-    if (user) announceAuthChange("login");
+    announceAuthChange(user ? "login" : "logout");
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {

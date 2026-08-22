@@ -11,6 +11,7 @@ import type {
   RealEstateCatalog,
 } from "@shongre/contracts/real-estate";
 import type { Listing } from "../types";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 export const IMMO_DEMO_NOW = "2026-08-22T10:00:00.000Z";
 
@@ -73,8 +74,11 @@ export const IMMO_DEMO_CATALOG: RealEstateCatalog = {
   activation: {
     marketCode: "FR",
     verticalType: "real_estate",
-    categoryIds: ["real-estate"],
-    subcategoryIds: ["real-estate-sale", "real-estate-rent"],
+    categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
+    subcategoryIds: [
+      CANONICAL_TAXONOMY_IDS.realEstateSales,
+      CANONICAL_TAXONOMY_IDS.realEstateRentals,
+    ],
     schemaVersion: 1,
     isActive: true,
     featureFlags: {
@@ -456,7 +460,7 @@ export const IMMO_DEMO_CATALOG: RealEstateCatalog = {
     id: String(id),
     verticalType: "real_estate" as const,
     marketCode: "FR" as const,
-    categoryIds: ["real-estate"],
+    categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     geographicAreaIds: [],
     type: type as
       | "urgent"

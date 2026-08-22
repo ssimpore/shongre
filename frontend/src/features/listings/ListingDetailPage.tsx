@@ -178,7 +178,7 @@ export const ListingDetailPage: React.FC = () => {
       sellerIsVerified: listing.sellerIsVerified,
       price: listing.price,
     });
-  }, [listing]);
+  }, [listing, taxonomyNode]);
 
   const actions = useMemo(() => {
     if (!listing) {
@@ -198,8 +198,30 @@ export const ListingDetailPage: React.FC = () => {
       viewer: currentUser,
       seller,
       transactionCapabilities: transactionCaps,
+      taxonomyPrimaryCta: taxonomyNode?.publication?.primaryCta,
     });
-  }, [listing, currentUser, seller, transactionCaps]);
+  }, [listing, currentUser, seller, transactionCaps, taxonomyNode]);
+
+  const contactActionLabel = useMemo(() => {
+    switch (taxonomyNode?.publication?.primaryCta) {
+      case "apply":
+        return "Postuler";
+      case "request_quote":
+        return "Demander un devis";
+      case "request_visit":
+        return "Demander une visite";
+      case "request_test_drive":
+        return "Demander un essai";
+      case "request_lesson":
+        return "Demander un cours";
+      case "check_availability":
+        return "Vérifier la disponibilité";
+      case "propose_exchange":
+        return "Proposer un échange";
+      default:
+        return t("listings.listingDetailPage.message");
+    }
+  }, [taxonomyNode, t]);
 
   /**
    * Publishes the action bar's real height so the layout can reserve room below
@@ -850,7 +872,11 @@ export const ListingDetailPage: React.FC = () => {
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
                   <Button
-                    variant="primary"
+                    variant={
+                      actions.primaryAction === "direct_purchase"
+                        ? "primary"
+                        : "outline"
+                    }
                     size="md"
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
@@ -920,7 +946,7 @@ export const ListingDetailPage: React.FC = () => {
                       onClick={() => setIsContactModalOpen(true)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
                     >
-                      {t("listings.listingDetailPage.message")}
+                      {contactActionLabel}
                     </Button>
                   )}
                 </div>
@@ -1213,7 +1239,11 @@ export const ListingDetailPage: React.FC = () => {
               )}
               {actions.canReserve && (
                 <Button
-                  variant={actions.canDirectPurchase ? "outline" : "primary"}
+                  variant={
+                    actions.primaryAction === "reservation"
+                      ? "primary"
+                      : "outline"
+                  }
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("reservation")}`}
                   onClick={() => setIsReservationModalOpen(true)}
@@ -1234,12 +1264,16 @@ export const ListingDetailPage: React.FC = () => {
                   onClick={() => setIsContactModalOpen(true)}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
                 >
-                  {t("listings.listingDetailPage.message")}
+                  {contactActionLabel}
                 </Button>
               )}
               {actions.canDirectPurchase && (
                 <Button
-                  variant="primary"
+                  variant={
+                    actions.primaryAction === "direct_purchase"
+                      ? "primary"
+                      : "outline"
+                  }
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
                   onClick={() => setIsDirectPurchaseModalOpen(true)}

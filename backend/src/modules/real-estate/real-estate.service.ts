@@ -23,6 +23,7 @@ import {
 } from "@shongre/contracts/real-estate";
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import {
   IRealEstateRepository,
   repositories,
@@ -792,7 +793,7 @@ export class RealEstateService {
         productIds,
         priceIds,
         marketCode: catalog.config.marketCode,
-        categoryId: "real-estate",
+        categoryId: CANONICAL_TAXONOMY_IDS.realEstate,
         idempotencyKey: `immo-quote:${body.idempotencyKey}`,
       });
       const order = await this.commercialRules.createCheckout(

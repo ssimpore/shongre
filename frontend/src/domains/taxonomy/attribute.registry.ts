@@ -364,6 +364,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: true,
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 1,
     options: [
@@ -392,6 +393,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     required: true,
     filterable: true,
     sortable: true,
+    comparable: true,
     publicationGroup: "dimensions",
     displayOrder: 2,
     validation: { min: 5, max: 10000 },
@@ -404,6 +406,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     unit: "m²",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "dimensions",
     displayOrder: 3,
     validation: { min: 0, max: 500000 },
@@ -423,6 +426,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     },
     required: true,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 4,
     options: [
@@ -442,6 +446,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     unit: "ch.",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 5,
     validation: { min: 0, max: 30 },
@@ -453,6 +458,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 6,
     options: [
@@ -478,6 +484,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     },
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "legal",
     displayOrder: 7,
     options: [
@@ -526,6 +533,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     label: "Étage",
     dataType: "number",
     required: false,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 9,
     validation: { min: -2, max: 100 },
@@ -537,6 +545,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "boolean",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 10,
   },
@@ -547,6 +556,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "boolean",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 11,
   },
@@ -570,6 +580,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: true,
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 1,
     options: [
@@ -618,6 +629,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 3,
     options: [
@@ -634,6 +646,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: false,
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 4,
     options: [
@@ -652,6 +665,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     required: false,
     filterable: true,
     sortable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 5,
     validation: { min: 10, max: 300 },
@@ -667,6 +681,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: true,
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 1,
     options: [
@@ -683,6 +698,7 @@ const BASE_ATTRIBUTE_REGISTRY: Record<string, TaxonomyAttribute> = {
     dataType: "select",
     required: true,
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 2,
     options: [
@@ -1149,6 +1165,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     fieldRole: "required",
     filterable: true,
     sortable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 15,
     validation: { min: 0, max: 1000000, step: 1 },
@@ -1159,6 +1176,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     code: "charges_amount",
     label: "Charges mensuelles",
     dataType: "money",
+    comparable: true,
     publicationGroup: "legal",
     displayOrder: 16,
     validation: { min: 0, max: 100000, step: 1 },
@@ -1196,6 +1214,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Mode de chauffage",
     dataType: "select",
     filterable: true,
+    comparable: true,
     publicationGroup: "performance",
     displayOrder: 20,
     options: [
@@ -1212,6 +1231,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Extérieur",
     dataType: "multi_select",
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 21,
     options: [
@@ -1227,6 +1247,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Stationnement",
     dataType: "multi_select",
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 22,
     options: [
@@ -1253,6 +1274,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Public concerné / niveau",
     dataType: "multi_select",
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 11,
     options: [
@@ -1270,6 +1292,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     dataType: "multi_select",
     fieldRole: "required",
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 12,
     options: [
@@ -1285,6 +1308,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     dataType: "number",
     unit: "km",
     filterable: true,
+    comparable: true,
     publicationGroup: "dimensions",
     displayOrder: 13,
     validation: { min: 0, max: 500, step: 1 },
@@ -1296,6 +1320,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     dataType: "number",
     unit: "min",
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 14,
     validation: { min: 15, max: 1440, step: 15, integer: true },
@@ -1306,6 +1331,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Langues proposées",
     dataType: "multi_select",
     filterable: true,
+    comparable: true,
     publicationGroup: "general",
     displayOrder: 15,
     options: [
@@ -1332,6 +1358,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Durée du contrat",
     dataType: "select",
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 12,
     options: [
@@ -1357,6 +1384,7 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     label: "Horaires",
     dataType: "multi_select",
     filterable: true,
+    comparable: true,
     publicationGroup: "specifications",
     displayOrder: 14,
     options: [

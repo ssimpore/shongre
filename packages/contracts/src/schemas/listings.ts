@@ -12,6 +12,8 @@ export const listingCardSchema = z.object({
   marketCode: marketCodeSchema,
   categoryLabel: z.string().optional(),
   conditionLabel: z.string(),
+  /** Taxonomy-configured decision fields, already formatted for display. */
+  characteristics: z.array(z.string().min(1)).max(5).default([]),
   publishedAt: z.string(),
   photoCount: z.number().int().nonnegative().optional(),
   deliveryAvailable: z.boolean().optional(),

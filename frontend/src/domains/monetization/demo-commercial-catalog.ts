@@ -1,9 +1,10 @@
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 export type DemoCommercialCategory =
-  | "vehicles"
-  | "real-estate"
-  | "courses"
+  | typeof CANONICAL_TAXONOMY_IDS.vehicles
+  | typeof CANONICAL_TAXONOMY_IDS.realEstate
+  | typeof CANONICAL_TAXONOMY_IDS.courses
   | undefined;
 
 const PLAN_PRODUCT_IDS: Record<string, string> = {
@@ -66,8 +67,7 @@ export function getDemoTaxRateBps(marketCode: string) {
 }
 
 /**
- * Maps the existing taxonomy vocabulary to the deliberately small commercial
- * category vocabulary used by the shared catalog. This stays in the demo
+ * Resolves legacy UI vocabulary to canonical taxonomy identities at the demo
  * adapter boundary so publication components do not learn rule identifiers.
  */
 export function normalizeCommercialCategory(
@@ -81,21 +81,24 @@ export function normalizeCommercialCategory(
     normalized.includes("auto") ||
     normalized.includes("moto")
   ) {
-    return "vehicles";
+    return CANONICAL_TAXONOMY_IDS.vehicles;
   }
   if (
     normalized.includes("real-estate") ||
+    normalized.includes("real_estate") ||
     normalized.includes("immobilier") ||
     normalized.includes("immo")
   ) {
-    return "real-estate";
+    return CANONICAL_TAXONOMY_IDS.realEstate;
   }
   if (
+    normalized === CANONICAL_TAXONOMY_IDS.courses ||
     normalized.includes("course") ||
     normalized.includes("cours") ||
-    normalized.includes("lesson")
+    normalized.includes("lesson") ||
+    normalized.includes("tutoring")
   ) {
-    return "courses";
+    return CANONICAL_TAXONOMY_IDS.courses;
   }
   return undefined;
 }

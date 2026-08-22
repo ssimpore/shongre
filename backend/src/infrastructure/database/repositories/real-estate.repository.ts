@@ -31,6 +31,7 @@ import type {
   VerticalOffer,
 } from "@shongre/contracts/vertical";
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 
 const NOW = "2026-08-22T10:00:00.000Z";
@@ -139,8 +140,11 @@ export const DEFAULT_REAL_ESTATE_CATALOG: RealEstateCatalog = {
   activation: {
     marketCode: "FR",
     verticalType: "real_estate",
-    categoryIds: ["real-estate"],
-    subcategoryIds: ["real-estate-sale", "real-estate-rent"],
+    categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
+    subcategoryIds: [
+      CANONICAL_TAXONOMY_IDS.realEstateSales,
+      CANONICAL_TAXONOMY_IDS.realEstateRentals,
+    ],
     schemaVersion: 1,
     isActive: true,
     featureFlags,
@@ -434,7 +438,7 @@ export const DEFAULT_REAL_ESTATE_CATALOG: RealEstateCatalog = {
     id: String(id),
     verticalType: "real_estate",
     marketCode: "FR",
-    categoryIds: ["real-estate"],
+    categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     geographicAreaIds: [],
     type: type as VerticalAddOn["type"],
     name: String(name),

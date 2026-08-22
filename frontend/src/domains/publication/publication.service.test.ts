@@ -218,6 +218,38 @@ describe("Publication System & Schema Resolvers", () => {
     );
   });
 
+  it("keeps employment publication contact-led without product media or purchase pricing", () => {
+    const schema = publicationResolver.resolve({
+      taxonomyNodeId: "jobs.offers",
+      marketCode: "FR",
+    });
+    expect(schema?.supportedIntents).toEqual(["JOB_OFFER"]);
+    expect(schema?.supportedPriceModels).toEqual(["monthly", "on_request"]);
+    expect(schema?.mediaGuidance?.minimumPhotoCount).toBe(0);
+    expect(schema?.publication.primaryCta).toBe("apply");
+    expect(schema?.publication.standardPolicy.eligibleSellerTypes).toEqual([
+      "professional",
+    ]);
+
+    const result = publicationService.validateDraft({
+      taxonomyNodeId: "jobs.offers",
+      listingIntent: "JOB_OFFER",
+      title: "Développeur frontend senior",
+      description: "CDI basé à Paris avec deux jours de télétravail par semaine.",
+      photos: [],
+      pricing: {
+        priceModel: "on_request",
+        amount: 0,
+        currency: "EUR",
+        isNegotiable: false,
+        isFreeDonation: false,
+      },
+      location: { city: "Paris", postalCode: "75011", countryCode: "FR", hideExactAddress: true },
+      attributes: {},
+    });
+    expect(result.errors.some((error) => error.field === "photos")).toBe(false);
+  });
+
   it("saves, retrieves and restores draft seamlessly", () => {
     const mockDraft: PublicationDraftState = {
       marketCode: "FR",

@@ -37,6 +37,7 @@ function toListingCardView(listing: Listing): ListingCardView {
     conditionLabel: listingDisplayResolver.resolveConditionLabel(
       listing.condition,
     ),
+    characteristics: listingDisplayResolver.resolveSummaryAttributes(listing),
     publishedAt: listing.createdAt,
     photoCount: listing.photos.length,
     deliveryAvailable: listing.deliveryOptions.some(

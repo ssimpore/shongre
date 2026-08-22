@@ -18,7 +18,7 @@ describe('Listing & Order Lifecycle', () => {
         title: 'Appareil photo Sony Alpha 7 IV',
         description: 'Excellent état, vendu avec objectif 28-70mm et 2 batteries.',
         price: 1850,
-        categoryId: 'multimedia',
+        categoryId: 'electronics.smartphones',
         marketCode: 'FR',
         condition: 'tres-bon-etat',
         city: 'Lyon',

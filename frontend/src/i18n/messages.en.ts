@@ -1359,6 +1359,23 @@ export const messagesEn: MessageCatalogue = {
     "-- Choose from the registry --",
   "admin.taxonomyNodeEditor.schemaDePublicationResoluEffectif":
     "Resolved publication schema (effective for the seller)",
+  "admin.taxonomyNodeEditor.primaryCta": "Primary action",
+  "admin.taxonomyNodeEditor.moderationReviewMode": "Moderation level",
+  "admin.taxonomyNodeEditor.standardDurationDays": "Standard duration (days)",
+  "admin.taxonomyNodeEditor.standardMediaAllowance": "Included photos",
+  "admin.taxonomyNodeEditor.savePublicationConfiguration":
+    "Save configuration",
+  "admin.taxonomyNodeEditor.cta.contactSeller": "Contact seller",
+  "admin.taxonomyNodeEditor.cta.apply": "Apply",
+  "admin.taxonomyNodeEditor.cta.requestQuote": "Request a quote",
+  "admin.taxonomyNodeEditor.cta.requestVisit": "Request a viewing",
+  "admin.taxonomyNodeEditor.cta.requestTestDrive": "Request a test drive",
+  "admin.taxonomyNodeEditor.cta.requestLesson": "Request a lesson",
+  "admin.taxonomyNodeEditor.cta.checkAvailability": "Check availability",
+  "admin.taxonomyNodeEditor.cta.proposeExchange": "Propose an exchange",
+  "admin.taxonomyNodeEditor.review.standard": "Standard",
+  "admin.taxonomyNodeEditor.review.enhanced": "Enhanced",
+  "admin.taxonomyNodeEditor.review.manual": "Manual review",
   "admin.taxonomyNodeEditor.optionsDEtat": "Condition options:",
   "admin.taxonomyNodeEditor.venteAutorisee": "Selling allowed:",
   "admin.taxonomyNodeEditor.sequestreCbActif": "Card escrow active:",
@@ -1492,7 +1509,16 @@ export const messagesEn: MessageCatalogue = {
   "shell.demoRoleSwitcher.modeDemo": "Demo mode",
   "shell.demoRoleSwitcher.testerLes6ProfilsEt":
     "Try the 6 profiles and journeys without a password:",
-  "shell.demoRoleSwitcher.changerDeRolePourTester": "Switch role to test",
+  "shell.demoRoleSwitcher.changerDeRolePourTester":
+    "Switch user profile to test",
+  "shell.demoRoleSwitcher.sessionUpdated": "Demo session updated",
+  "shell.demoRoleSwitcher.sessionUnchanged": "Session unchanged",
+  "shell.demoRoleSwitcher.guestActivated":
+    "You are now browsing as a signed-out visitor.",
+  "shell.demoRoleSwitcher.personaActivated":
+    "The {profile} profile is now active with its own data and permissions.",
+  "shell.demoRoleSwitcher.switchFailed":
+    "Unable to switch profile. Please try again.",
   "shell.demoRoleSwitcher.accesDirectAuxProfilsPublics":
     "Direct access to public profiles",
   "shell.demoRoleSwitcher.0AnnonceParticulier": "📦 0 listings (private)",
@@ -2230,6 +2256,13 @@ export const messagesEn: MessageCatalogue = {
     "Visibility & boost options (optional)",
   "publishing.publishWizard.multipliezVosVuesEnPositionnant":
     "Multiply your views by placing your listing at the top of results across all your selected markets.",
+  "publishing.publishWizard.paidOptionsUnavailable":
+    "Paid options are temporarily unavailable. Free standard publication remains available.",
+  "publishing.publishWizard.standardIncludes":
+    "Includes {photos} photos, messaging and listing management for {days} days.",
+  "publishing.publishWizard.free": "Free",
+  "publishing.publishWizard.loadingOptionalOffers":
+    "Loading optional offers…",
   "publishing.publishWizard.recapitulatifDeVotreAnnonce":
     "Summary of your listing",
   "publishing.publishWizard.relisezVotreAnnonceVousPourrez":

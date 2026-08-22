@@ -3,6 +3,7 @@ import {
   TaxonomyNode,
   TaxonomyCapabilities,
   FulfillmentMode,
+  TaxonomyPrimaryCta,
 } from "../../../../domains/taxonomy/taxonomy.types";
 import { taxonomyAdminRepository } from "../../../../repositories/taxonomy.repository";
 import { taxonomyService } from "../../../../domains/taxonomy/taxonomy.service";
@@ -108,6 +109,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
   const [metaTitleTemplate, setMetaTitleTemplate] = useState("");
   const [metaDescriptionTemplate, setMetaDescriptionTemplate] = useState("");
   const [indexable, setIndexable] = useState(true);
+  const [primaryCta, setPrimaryCta] =
+    useState<TaxonomyPrimaryCta>("contact_seller");
+  const [standardDurationDays, setStandardDurationDays] = useState(60);
+  const [standardMediaAllowance, setStandardMediaAllowance] = useState(12);
+  const [moderationReviewMode, setModerationReviewMode] = useState<
+    "standard" | "enhanced" | "manual"
+  >("standard");
 
   // Market Overrides State
   const [selectedMarketCode, setSelectedMarketCode] = useState("BE");
@@ -163,6 +171,14 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
       setMetaTitleTemplate(node.seo?.metaTitleTemplate || "");
       setMetaDescriptionTemplate(node.seo?.metaDescriptionTemplate || "");
       setIndexable(node.seo?.indexable ?? true);
+      setPrimaryCta(node.publication?.primaryCta || "contact_seller");
+      setStandardDurationDays(
+        node.publication?.standardPolicy.durationDays || 60,
+      );
+      setStandardMediaAllowance(
+        node.publication?.standardPolicy.mediaAllowance || 12,
+      );
+      setModerationReviewMode(node.moderation?.reviewMode || "standard");
 
       // Market override sync for selected market
       const override = node.marketOverrides?.[selectedMarketCode];
@@ -300,6 +316,47 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             metaDescriptionTemplate:
               metaDescriptionTemplate.trim() || undefined,
             indexable,
+          },
+          publication: {
+            steps: node.publication?.steps || [
+              "intent",
+              "taxonomy",
+              "essential",
+              "condition_history",
+              "price_compensation",
+              "fulfillment_location",
+              "media_documents",
+              "contact_preferences",
+              "preview",
+              "standard_or_upgrades",
+              "confirmation",
+            ],
+            primaryCta,
+            standardPolicy: {
+              enabled: true,
+              label: "Publication standard gratuite",
+              eligibleSellerTypes:
+                node.publication?.standardPolicy.eligibleSellerTypes || [
+                  "individual",
+                  "professional",
+                ],
+              durationDays: standardDurationDays,
+              mediaAllowance: standardMediaAllowance,
+              includesMessaging: true,
+              includesListingManagement: true,
+              includesStandardStatistics: true,
+              paidUpgradesOptional: true,
+            },
+          },
+          moderation: {
+            policyId: node.moderation?.policyId || `moderation.${node.id}.v1`,
+            reviewMode: moderationReviewMode,
+            prohibitedItemRuleIds:
+              node.moderation?.prohibitedItemRuleIds || ["prohibited.illegal"],
+            safetyNoticeKeys:
+              node.moderation?.safetyNoticeKeys || ["safety.general"],
+            sensitiveAttributeIds:
+              node.moderation?.sensitiveAttributeIds || [],
           },
         },
         actor,
@@ -957,6 +1014,74 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {/* ========================================================================= */}
         {activeTab === "publication_filters" && resolvedSchema && (
           <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 rounded-xl border border-border-base bg-white p-4 sm:grid-cols-2">
+              <FormField label={t("admin.taxonomyNodeEditor.primaryCta")}>
+                <select
+                  value={primaryCta}
+                  onChange={(event) =>
+                    setPrimaryCta(event.target.value as TaxonomyPrimaryCta)
+                  }
+                  className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 text-xs font-semibold"
+                >
+                  <option value="contact_seller">{t("admin.taxonomyNodeEditor.cta.contactSeller")}</option>
+                  <option value="apply">{t("admin.taxonomyNodeEditor.cta.apply")}</option>
+                  <option value="request_quote">{t("admin.taxonomyNodeEditor.cta.requestQuote")}</option>
+                  <option value="request_visit">{t("admin.taxonomyNodeEditor.cta.requestVisit")}</option>
+                  <option value="request_test_drive">{t("admin.taxonomyNodeEditor.cta.requestTestDrive")}</option>
+                  <option value="request_lesson">{t("admin.taxonomyNodeEditor.cta.requestLesson")}</option>
+                  <option value="check_availability">{t("admin.taxonomyNodeEditor.cta.checkAvailability")}</option>
+                  <option value="propose_exchange">{t("admin.taxonomyNodeEditor.cta.proposeExchange")}</option>
+                </select>
+              </FormField>
+              <FormField label={t("admin.taxonomyNodeEditor.moderationReviewMode")}>
+                <select
+                  value={moderationReviewMode}
+                  onChange={(event) =>
+                    setModerationReviewMode(
+                      event.target.value as "standard" | "enhanced" | "manual",
+                    )
+                  }
+                  className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 text-xs font-semibold"
+                >
+                  <option value="standard">{t("admin.taxonomyNodeEditor.review.standard")}</option>
+                  <option value="enhanced">{t("admin.taxonomyNodeEditor.review.enhanced")}</option>
+                  <option value="manual">{t("admin.taxonomyNodeEditor.review.manual")}</option>
+                </select>
+              </FormField>
+              <FormField label={t("admin.taxonomyNodeEditor.standardDurationDays")}>
+                <Input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={standardDurationDays}
+                  onChange={(event) =>
+                    setStandardDurationDays(Number(event.target.value))
+                  }
+                />
+              </FormField>
+              <FormField label={t("admin.taxonomyNodeEditor.standardMediaAllowance")}>
+                <Input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={standardMediaAllowance}
+                  onChange={(event) =>
+                    setStandardMediaAllowance(Number(event.target.value))
+                  }
+                />
+              </FormField>
+              <div className="sm:col-span-2 flex justify-end">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSaveGeneral}
+                  disabled={isSubmitting}
+                >
+                  {t("admin.taxonomyNodeEditor.savePublicationConfiguration")}
+                </Button>
+              </div>
+            </div>
+
             {/* Resolved publication schema summary */}
             <div className="p-4 bg-bg-subtle rounded-xl border border-border-subtle space-y-3">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">

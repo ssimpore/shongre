@@ -3,6 +3,7 @@ import type { ListingCardView } from "@shongre/contracts";
 import { formatMoney, formatRelativeTime } from "@shongre/shared";
 import { Badge, Card, SemanticIcon, Text } from "@shongre/ui/web";
 import {
+  getListingCardCharacteristics,
   getListingPromotionBadges,
   listingAccessibilityLabel,
 } from "./presentation";
@@ -41,6 +42,7 @@ export function ListingCard({
     : undefined;
   const published = formatRelativeTime(listing.publishedAt, { style: "short" });
   const badges = getListingPromotionBadges(listing);
+  const characteristics = getListingCardCharacteristics(listing).slice(0, 3);
   const horizontal = variant === "list";
   const toggle = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -146,9 +148,26 @@ export function ListingCard({
             </Text>
           ) : null}
         </div>
-        <Text as="div" size="caption" tone="muted" className="mt-1">
-          {listing.conditionLabel}
-        </Text>
+        {listing.conditionLabel ? (
+          <Text as="div" size="caption" tone="muted" className="mt-1">
+            {listing.conditionLabel}
+          </Text>
+        ) : null}
+        {characteristics.length ? (
+          <ul
+            className="mt-2 flex min-w-0 flex-wrap gap-1.5"
+            aria-label="Caractéristiques principales"
+          >
+            {characteristics.map((characteristic) => (
+              <li
+                key={characteristic}
+                className="max-w-full truncate rounded-control bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
+              >
+                {characteristic}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div className="mt-auto grid min-w-0 gap-1 border-t border-border-subtle pt-2 text-micro text-text-muted">
           <span className="inline-flex min-w-0 items-center gap-1">
             <SemanticIcon name="map-pin" size="xs" />

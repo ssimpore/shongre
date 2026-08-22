@@ -36,6 +36,12 @@ export class TaxonomyValidationService {
         issues: [{ field: 'categoryId', code: 'INVALID_NODE', message: 'La catégorie sélectionnée est invalide.' }],
       };
     }
+    if (!node.isActive || !node.publishable) {
+      return {
+        isValid: false,
+        issues: [{ field: 'categoryId', code: 'NODE_NOT_PUBLISHABLE', message: 'Sélectionnez une catégorie finale active.' }],
+      };
+    }
 
     const definitions = await this.taxonomy.getAttributesForCategory(categoryId);
     const definitionByKey = new Map<string, TaxonomyAttribute>();

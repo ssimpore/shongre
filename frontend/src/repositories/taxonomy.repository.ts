@@ -377,7 +377,11 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       sellerEligibility: input.sellerEligibility || parent?.sellerEligibility,
       presentation: input.presentation,
       mediaGuidance: input.mediaGuidance,
-      taxonomyVersion: 2,
+      taxonomyVersion: 3,
+      schemaVersion: input.schemaVersion || parent?.schemaVersion || 2,
+      schemaStatus: "draft",
+      publication: input.publication || parent?.publication,
+      moderation: input.moderation || parent?.moderation,
       capabilities:
         input.capabilities ||
         (parent?.capabilities ?? {
@@ -1120,6 +1124,95 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
               "Retirez l'expédition de colis pour les transactions immobilières.",
           });
         }
+      }
+
+      if (node.status === "active" && node.publishable) {
+        const resolvedAttributes = new Set<string>();
+        [...(node.ancestorIds || []), node.id].forEach((nodeId) => {
+          this.getNode(nodeId)?.attributeIds?.forEach((attributeId) =>
+            resolvedAttributes.add(attributeId),
+          );
+        });
+        const requiredConfiguration: Array<{
+          valid: boolean;
+          code: string;
+          message: string;
+          field: string;
+        }> = [
+          {
+            valid: resolvedAttributes.size > 0,
+            code: "MISSING_PUBLICATION_SCHEMA",
+            message: "Le nœud publiable ne possède aucun champ de publication résolu.",
+            field: "attributeIds",
+          },
+          {
+            valid: Boolean(node.publication?.steps.length),
+            code: "MISSING_PUBLICATION_STEPS",
+            message: "Le parcours de publication n'est pas configuré.",
+            field: "publication.steps",
+          },
+          {
+            valid: Boolean(node.presentation?.cardAttributeIds?.length),
+            code: "MISSING_CARD_CONFIGURATION",
+            message: "La carte d'annonce ne possède aucun attribut prioritaire.",
+            field: "presentation.cardAttributeIds",
+          },
+          {
+            valid: Boolean(node.presentation?.detailGroupOrder?.length),
+            code: "MISSING_DETAIL_CONFIGURATION",
+            message: "La page détail ne possède aucun ordre de sections.",
+            field: "presentation.detailGroupOrder",
+          },
+          {
+            valid: Boolean(node.filterFacetIds?.length),
+            code: "MISSING_SEARCH_CONFIGURATION",
+            message: "Aucune facette de recherche indexable n'est configurée.",
+            field: "filterFacetIds",
+          },
+          {
+            valid: Boolean(node.publication?.primaryCta),
+            code: "MISSING_PRIMARY_CTA",
+            message: "L'action principale de la page détail est absente.",
+            field: "publication.primaryCta",
+          },
+          {
+            valid: Boolean(node.moderation?.policyId),
+            code: "MISSING_MODERATION_POLICY",
+            message: "La politique de modération est absente.",
+            field: "moderation",
+          },
+          {
+            valid: Boolean(node.labels?.["fr-FR"] && node.labels?.["en-US"]),
+            code: "MISSING_TRANSLATION",
+            message: "Les libellés français et anglais doivent être renseignés.",
+            field: "labels",
+          },
+          {
+            valid: Boolean(
+              node.publication?.standardPolicy.enabled &&
+                node.publication.standardPolicy.paidUpgradesOptional,
+            ),
+            code: "MISSING_STANDARD_PUBLICATION",
+            message: "La publication standard gratuite et les options facultatives ne sont pas garanties.",
+            field: "publication.standardPolicy",
+          },
+        ];
+
+        requiredConfiguration
+          .filter((requirement) => !requirement.valid)
+          .forEach((requirement) => {
+            issues.push({
+              id: `val_${requirement.code.toLowerCase()}_${node.id}`,
+              nodeId: node.id,
+              nodeLabel: node.name,
+              severity: "error",
+              code: requirement.code,
+              message: requirement.message,
+              field: requirement.field,
+              remediation:
+                "Complétez cette configuration avant d'activer ou publier le nœud.",
+            });
+          });
       }
 
       // 6. shortLabel formatting & length checks

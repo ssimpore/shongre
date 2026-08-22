@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getListingPromotionBadges, resolveNotificationTone } from "../src";
+import {
+  getListingCardCharacteristics,
+  getListingPromotionBadges,
+  resolveNotificationTone,
+} from "../src";
 
 describe("shared feature presentation", () => {
   it("marks paid placement transparently on every platform", () => {
@@ -11,5 +15,18 @@ describe("shared feature presentation", () => {
   });
   it("uses one notification tone mapping", () => {
     expect(resolveNotificationTone("listing_rejected")).toBe("error");
+  });
+  it("does not repeat condition or duplicate values in listing-card chips", () => {
+    expect(
+      getListingCardCharacteristics({
+        conditionLabel: "Très bon état",
+        characteristics: [
+          "Sézane",
+          "Très bon état",
+          "  SÉZANE ",
+          "Laine",
+        ],
+      }),
+    ).toEqual(["Sézane", "Laine"]);
   });
 });

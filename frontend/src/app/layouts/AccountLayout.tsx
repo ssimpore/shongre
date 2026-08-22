@@ -1,5 +1,8 @@
 import { routes } from "../../configuration/routes";
-import { isProSeller } from "../../domains/user/user.domain";
+import {
+  isProSeller,
+  showsVerifiedBadge,
+} from "../../domains/user/user.domain";
 import React from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
@@ -43,6 +46,20 @@ function AdminRoleIcon({ label }: { label: string }): React.ReactElement {
   );
 }
 
+function VerifiedAccountIcon({ label }: { label: string }): React.ReactElement {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      data-account-verified-icon
+      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-control border border-success-border bg-success-surface text-success"
+    >
+      <ShieldCheck className="h-icon-xs w-icon-xs" aria-hidden="true" />
+    </span>
+  );
+}
+
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, platformRole, logout } = useAuth();
@@ -50,6 +67,7 @@ export const AccountLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const isPro = isProSeller(currentUser);
+  const isVerified = showsVerifiedBadge(currentUser);
   const isAdmin = platformRole === "admin" || platformRole === "super_admin";
   const adminRoleLabel =
     platformRole === "super_admin"
@@ -195,7 +213,7 @@ export const AccountLayout: React.FC = () => {
               />
               <div className="min-w-0">
                 <div
-                  className="flex min-w-0 items-center gap-1.5"
+                  className="flex min-w-0 items-center gap-1"
                   data-account-identity
                 >
                   <span
@@ -204,6 +222,9 @@ export const AccountLayout: React.FC = () => {
                   >
                     {accountName}
                   </span>
+                  {isVerified && (
+                    <VerifiedAccountIcon label={t("ui.badge.profilVerifie")} />
+                  )}
                   {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
                 <div
@@ -289,15 +310,18 @@ export const AccountLayout: React.FC = () => {
               />
               <div className="min-w-0 flex-1">
                 <div
-                  className="flex min-w-0 items-center gap-1.5"
+                  className="flex min-w-0 items-center gap-1"
                   data-account-identity
                 >
                   <span
-                    className="min-w-0 truncate font-bold text-stone-900"
+                    className="min-w-0 truncate text-sm font-bold text-stone-900"
                     title={accountName}
                   >
                     {accountName}
                   </span>
+                  {isVerified && (
+                    <VerifiedAccountIcon label={t("ui.badge.profilVerifie")} />
+                  )}
                   {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
                 <div

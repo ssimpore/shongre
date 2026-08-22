@@ -6,6 +6,7 @@
 
 import { Listing, UserProfile } from "../../types";
 import { TransactionCapabilitiesResult } from "../publication/publication.types";
+import type { TaxonomyPrimaryCta } from "../taxonomy/taxonomy.types";
 
 export interface ListingStatusNotice {
   type: "reserved" | "sold" | "expired" | "paused" | "moderated";
@@ -33,11 +34,12 @@ export interface ResolveListingActionsParams {
   viewer?: UserProfile | null;
   seller?: UserProfile | null;
   transactionCapabilities: TransactionCapabilitiesResult;
+  taxonomyPrimaryCta?: TaxonomyPrimaryCta;
 }
 
 export class ListingActionsResolver {
   resolve(params: ResolveListingActionsParams): ResolvedListingActions {
-    const { listing, viewer, transactionCapabilities } = params;
+    const { listing, viewer, transactionCapabilities, taxonomyPrimaryCta } = params;
     const isOwner = !!(viewer && viewer.id === listing.sellerId);
 
     // 1. Owner Actions Resolution
@@ -124,7 +126,11 @@ export class ListingActionsResolver {
     );
 
     const canContact = transactionCapabilities.canContact;
+    const contactLed = Boolean(
+      taxonomyPrimaryCta && taxonomyPrimaryCta !== "contact_seller",
+    );
     const canMakeOffer = !!(
+      !contactLed &&
       listing.isNegotiable &&
       listing.price > 0 &&
       !listing.isFreeDonation
@@ -132,7 +138,9 @@ export class ListingActionsResolver {
 
     // 4. Primary CTA Priority
     let primaryAction: PrimaryBuyerAction = "contact";
-    if (canDirectPurchase) {
+    if (contactLed && canContact) {
+      primaryAction = "contact";
+    } else if (canDirectPurchase) {
       primaryAction = "direct_purchase";
     } else if (canReserve) {
       primaryAction = "reservation";

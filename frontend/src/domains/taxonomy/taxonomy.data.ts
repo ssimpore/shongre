@@ -1349,6 +1349,27 @@ const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
         sortOrder: 2,
         status: "active",
       },
+      {
+        id: "sports_outdoors.water_sports",
+        code: "SPORT_WATER",
+        slug: "sports-nautiques",
+        parentId: "sports_outdoors",
+        ancestorIds: ["sports_outdoors"],
+        level: "subcategory",
+        labels: {
+          "fr-FR": "Sports nautiques & Glisse",
+          "en-US": "Water Sports & Boardsports",
+        },
+        shortLabels: {
+          "fr-FR": "Sports nautiques",
+          "en-US": "Water Sports",
+        },
+        name: "Sports nautiques & Glisse",
+        label: "Sports nautiques & Glisse",
+        shortLabel: "Sports nautiques",
+        sortOrder: 3,
+        status: "active",
+      },
     ],
   },
 
@@ -1818,6 +1839,7 @@ const TAXONOMY_DOMAIN_ATTRIBUTES: Record<string, string[]> = {
   sports_outdoors: ["product.condition_cosmetic", "product.dimensions"],
   "sports_outdoors.fitness": ["sport.activity", "sport.size"],
   "sports_outdoors.outdoor": ["sport.activity", "sport.size"],
+  "sports_outdoors.water_sports": ["sport.activity", "sport.size"],
   pets: ["pets.species", "pets.age_years", "pets.breed", "pets.gender"],
   "pets.accessories": [
     "product.brand",
@@ -1872,6 +1894,82 @@ const TAXONOMY_FAMILIES: Record<string, TaxonomyNode["listingFamily"]> = {
   deals_donations: "physical_product",
 };
 
+const STANDARD_PUBLICATION_STEPS: NonNullable<
+  TaxonomyNode["publication"]
+>["steps"] = [
+  "intent",
+  "taxonomy",
+  "essential",
+  "condition_history",
+  "price_compensation",
+  "fulfillment_location",
+  "media_documents",
+  "contact_preferences",
+  "preview",
+  "standard_or_upgrades",
+  "confirmation",
+];
+
+function resolveDefaultIntents(
+  nodeId: string,
+  family: NonNullable<TaxonomyNode["listingFamily"]>,
+): string[] {
+  if (family === "job") return ["JOB_OFFER"];
+  if (family === "service") return ["OFFER_SERVICE"];
+  if (family === "real_estate") {
+    return nodeId.includes("rentals") ? ["RENT"] : ["SELL", "RENT"];
+  }
+  if (nodeId === "deals_donations") return ["GIVE", "EXCHANGE"];
+  if (family === "professional_equipment") return ["SELL", "RENT"];
+  return ["SELL", "GIVE", "EXCHANGE"];
+}
+
+function resolvePrimaryCta(
+  nodeId: string,
+  family: NonNullable<TaxonomyNode["listingFamily"]>,
+): NonNullable<TaxonomyNode["publication"]>["primaryCta"] {
+  if (family === "job") return "apply";
+  if (family === "real_estate") return "request_visit";
+  if (family === "vehicle") return "request_test_drive";
+  if (nodeId === "services.tutoring") return "request_lesson";
+  if (family === "service" || family === "professional_equipment") {
+    return "request_quote";
+  }
+  return "contact_seller";
+}
+
+function resolveModerationPolicy(
+  rootId: string,
+  family: NonNullable<TaxonomyNode["listingFamily"]>,
+): NonNullable<TaxonomyNode["moderation"]> {
+  const enhancedRoots = new Set([
+    "vehicles",
+    "real_estate",
+    "baby_kids",
+    "pets",
+    "fashion",
+  ]);
+  return {
+    policyId: `moderation.${rootId}.v1`,
+    reviewMode:
+      enhancedRoots.has(rootId) || family === "professional_equipment"
+        ? "enhanced"
+        : "standard",
+    prohibitedItemRuleIds: [
+      "prohibited.illegal",
+      "prohibited.counterfeit",
+      `prohibited.${rootId}`,
+    ],
+    safetyNoticeKeys: [`safety.${rootId}.general`],
+    sensitiveAttributeIds:
+      family === "vehicle"
+        ? ["vehicle.vin", "vehicle.registration_number"]
+        : family === "job"
+          ? ["job.application_documents"]
+          : [],
+  };
+}
+
 function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
   const children = node.children?.map((child) => enrichTaxonomyNode(child, rootId));
   const attributeIds = Array.from(
@@ -1903,13 +2001,39 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
   );
   const isLeaf = !children || children.length === 0;
   const listingFamily = node.listingFamily || TAXONOMY_FAMILIES[rootId] || "physical_product";
+  const mediaGuidance = node.mediaGuidance || {
+    minimumPhotoCount:
+      listingFamily === "real_estate"
+        ? 5
+        : listingFamily === "job" || listingFamily === "service"
+          ? 0
+          : listingFamily === "vehicle" ||
+              listingFamily === "professional_equipment"
+            ? 3
+            : 1,
+    maxPhotoCount:
+      listingFamily === "job" ? 4 : listingFamily === "real_estate" ? 20 : 12,
+    recommendedViews:
+      listingFamily === "job"
+        ? ["company_logo", "workplace"]
+        : listingFamily === "service"
+          ? ["work_sample", "context"]
+          : ["front", "detail", "context"],
+  };
+  const supportedIntents =
+    node.supportedIntents && node.supportedIntents.length > 0
+      ? node.supportedIntents
+      : resolveDefaultIntents(node.id, listingFamily);
 
   return {
     ...node,
     children,
     listingFamily,
-    taxonomyVersion: node.taxonomyVersion || 2,
+    taxonomyVersion: node.taxonomyVersion || 3,
+    schemaVersion: node.schemaVersion || 2,
+    schemaStatus: node.schemaStatus || "published",
     publishable: node.publishable ?? isLeaf,
+    supportedIntents,
     attributeIds,
     summaryAttributeIds,
     filterFacetIds,
@@ -1933,11 +2057,33 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
         "price_desc",
       ],
     },
-    mediaGuidance: node.mediaGuidance || {
-      minimumPhotoCount: listingFamily === "real_estate" ? 5 : 3,
-      maxPhotoCount: 12,
-      recommendedViews: ["front", "detail", "context"],
+    mediaGuidance,
+    seo: {
+      metaTitleTemplate: `${node.name} : annonces sur Shongre`,
+      metaDescriptionTemplate: `Découvrez les annonces ${node.name.toLocaleLowerCase("fr-FR")} disponibles sur Shongre.`,
+      canonicalPath: `/categorie/${node.slug}`,
+      indexable: node.status === "active",
+      ...node.seo,
     },
+    publication: node.publication || {
+      steps: STANDARD_PUBLICATION_STEPS,
+      primaryCta: resolvePrimaryCta(node.id, listingFamily),
+      standardPolicy: {
+        enabled: true,
+        label: "Publication standard gratuite",
+        eligibleSellerTypes:
+          listingFamily === "job"
+            ? ["professional"]
+            : ["individual", "professional"],
+        durationDays: 60,
+        mediaAllowance: mediaGuidance.maxPhotoCount || 12,
+        includesMessaging: true,
+        includesListingManagement: true,
+        includesStandardStatistics: true,
+        paidUpgradesOptional: true,
+      },
+    },
+    moderation: node.moderation || resolveModerationPolicy(rootId, listingFamily),
   };
 }
 

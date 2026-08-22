@@ -39,7 +39,7 @@ test.describe("Shongre Immo", () => {
     const stored = await page.evaluate(() =>
       localStorage.getItem("shongre_saved_searches_v1"),
     );
-    expect(stored).toContain("real-estate");
+    expect(stored).toContain("real_estate");
     expect(await page.locator("body").innerText()).not.toContain(
       "Adresse privée",
     );

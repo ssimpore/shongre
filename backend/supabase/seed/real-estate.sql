@@ -6,8 +6,8 @@ INSERT INTO public.vertical_market_activations (
   schema_version, is_active, feature_flags
 )
 VALUES (
-  'real_estate', 'FR', ARRAY['real-estate'],
-  ARRAY['real-estate-sale','real-estate-rent'], 1, TRUE,
+  'real_estate', 'FR', ARRAY['real_estate'],
+  ARRAY['real_estate.sales','real_estate.rentals'], 1, TRUE,
   '{"verticalEnabled":true,"mapSearchEnabled":true,"savedSearchesEnabled":true,"recentlyViewedEnabled":true,"comparablesEnabled":true,"structuredLeadsEnabled":true,"appointmentsEnabled":true,"paidOffersEnabled":true,"professionalImportsEnabled":true,"professionalApiSyncEnabled":false,"privateDocumentsEnabled":true}'::jsonb
 )
 ON CONFLICT (vertical_type, market_code) DO UPDATE SET

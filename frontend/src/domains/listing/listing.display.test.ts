@@ -292,6 +292,25 @@ describe("Listing Detail Display & Action Resolvers", () => {
       expect(actions.statusNotice).toBeNull();
     });
 
+    it("keeps an exchange taxonomy contact-led even when commerce is available", () => {
+      const caps = transactionCapabilitiesService.resolve({
+        taxonomyNodeId: activeDirectListing.subCategorySlug,
+        price: activeDirectListing.price,
+      });
+
+      const actions = listingActionsResolver.resolve({
+        listing: activeDirectListing,
+        viewer: mockBuyer,
+        seller: mockSeller,
+        transactionCapabilities: caps,
+        taxonomyPrimaryCta: "propose_exchange",
+      });
+
+      expect(actions.primaryAction).toBe("contact");
+      expect(actions.canContact).toBe(true);
+      expect(actions.canMakeOffer).toBe(false);
+    });
+
     it("disables purchase and shows status notice when listing is reserved", () => {
       const reservedListing: Listing = {
         ...activeDirectListing,

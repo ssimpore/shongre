@@ -1669,6 +1669,24 @@ export const messagesFr = {
     "-- Choisir dans le Registre --",
   "admin.taxonomyNodeEditor.schemaDePublicationResoluEffectif":
     "Schéma de Publication Résolu (Effectif pour le vendeur)",
+  "admin.taxonomyNodeEditor.primaryCta": "Action principale",
+  "admin.taxonomyNodeEditor.moderationReviewMode": "Niveau de modération",
+  "admin.taxonomyNodeEditor.standardDurationDays": "Durée standard (jours)",
+  "admin.taxonomyNodeEditor.standardMediaAllowance": "Photos incluses",
+  "admin.taxonomyNodeEditor.savePublicationConfiguration":
+    "Enregistrer la configuration",
+  "admin.taxonomyNodeEditor.cta.contactSeller": "Contacter le vendeur",
+  "admin.taxonomyNodeEditor.cta.apply": "Postuler",
+  "admin.taxonomyNodeEditor.cta.requestQuote": "Demander un devis",
+  "admin.taxonomyNodeEditor.cta.requestVisit": "Demander une visite",
+  "admin.taxonomyNodeEditor.cta.requestTestDrive": "Demander un essai",
+  "admin.taxonomyNodeEditor.cta.requestLesson": "Demander un cours",
+  "admin.taxonomyNodeEditor.cta.checkAvailability":
+    "Vérifier la disponibilité",
+  "admin.taxonomyNodeEditor.cta.proposeExchange": "Proposer un échange",
+  "admin.taxonomyNodeEditor.review.standard": "Standard",
+  "admin.taxonomyNodeEditor.review.enhanced": "Renforcée",
+  "admin.taxonomyNodeEditor.review.manual": "Revue manuelle",
   "admin.taxonomyNodeEditor.optionsDEtat": "Options d'état :",
   "admin.taxonomyNodeEditor.venteAutorisee": "Vente autorisée :",
   "admin.taxonomyNodeEditor.sequestreCbActif": "Séquestre CB actif :",
@@ -1825,7 +1843,15 @@ export const messagesFr = {
   "shell.demoRoleSwitcher.testerLes6ProfilsEt":
     "Tester les 6 profils et parcours sans mot de passe :",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
-    "Changer de rôle pour tester",
+    "Changer de profil utilisateur pour tester",
+  "shell.demoRoleSwitcher.sessionUpdated": "Session de démonstration actualisée",
+  "shell.demoRoleSwitcher.sessionUnchanged": "Session inchangée",
+  "shell.demoRoleSwitcher.guestActivated":
+    "Vous naviguez maintenant comme visiteur non connecté.",
+  "shell.demoRoleSwitcher.personaActivated":
+    "Le profil {profile} est maintenant actif avec ses données et permissions.",
+  "shell.demoRoleSwitcher.switchFailed":
+    "Impossible de changer de profil. Réessayez.",
   "shell.demoRoleSwitcher.accesDirectAuxProfilsPublics":
     "Accès direct aux profils publics",
   "shell.demoRoleSwitcher.0AnnonceParticulier": "📦 0 annonce (Particulier)",
@@ -2799,6 +2825,13 @@ export const messagesFr = {
     "Options de visibilité & Boost (Facultatif)",
   "publishing.publishWizard.multipliezVosVuesEnPositionnant":
     "Multipliez vos vues en positionnant votre annonce en tête des résultats sur tous vos marchés sélectionnés.",
+  "publishing.publishWizard.paidOptionsUnavailable":
+    "Les options payantes sont temporairement indisponibles. La publication standard gratuite reste disponible.",
+  "publishing.publishWizard.standardIncludes":
+    "Inclut {photos} photos, la messagerie et la gestion de l'annonce pendant {days} jours.",
+  "publishing.publishWizard.free": "Gratuit",
+  "publishing.publishWizard.loadingOptionalOffers":
+    "Chargement des options facultatives…",
   "publishing.publishWizard.recapitulatifDeVotreAnnonce":
     "Récapitulatif de votre annonce",
   "publishing.publishWizard.relisezVotreAnnonceVousPourrez":

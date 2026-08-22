@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { UserRole } from "../../types";
+import type { LucideIcon } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
-import { normalizePlatformRole, roleLabel } from "../../security/roles.config";
+import { roleLabel } from "../../security/roles.config";
 import {
   Shield,
   Sparkles,
@@ -9,83 +9,123 @@ import {
   Briefcase,
   ChevronDown,
   Check,
+  LoaderCircle,
 } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useToast } from "../providers/ToastProvider";
+
+interface DemoPersona {
+  userKey: string;
+  userId?: string;
+  label: string;
+  desc: string;
+  Icon: LucideIcon;
+  iconClassName: string;
+}
+
+const DEMO_PERSONAS: readonly DemoPersona[] = [
+  {
+    userKey: "guest",
+    label: "1. Visiteur non connecté",
+    desc: "Navigation publique, recherche, découverte sans compte",
+    Icon: User,
+    iconClassName: "text-stone-400",
+  },
+  {
+    userKey: "buyer_thomas",
+    userId: "user_thomas",
+    label: "2. Acheteur Particulier (Thomas)",
+    desc: "Favoris, offres, achats, messagerie acheteur",
+    Icon: User,
+    iconClassName: "text-info",
+  },
+  {
+    userKey: "seller_camille",
+    userId: "user_camille",
+    label: "3. Vendeur Particulier (Camille)",
+    desc: "Publication, gestion d'annonces, offres reçues",
+    Icon: Sparkles,
+    iconClassName: "text-warning",
+  },
+  {
+    userKey: "pro_atelier",
+    userId: "user_pro_atelier",
+    label: "4. Vendeur Pro (Atelier Nordique SAS)",
+    desc: "Boutique Pro, SIRET, catalogue, statistiques avancées",
+    Icon: Briefcase,
+    iconClassName: "text-primary",
+  },
+  {
+    userKey: "moderator_claire",
+    userId: "user_mod_claire",
+    label: "5. Modérateur Shongre (Claire)",
+    desc: "Validation annonces, signalements, sécurité",
+    Icon: Shield,
+    iconClassName: "text-indigo-600",
+  },
+  {
+    userKey: "admin_antoine",
+    userId: "user_admin_antoine",
+    label: "6. Administrateur Système (Antoine)",
+    desc: "Accès intégral plateforme, plans, configuration",
+    Icon: Shield,
+    iconClassName: "text-success",
+  },
+];
 
 export const DemoRoleSwitcher: React.FC = () => {
   const { t } = useTranslation();
-  const { platformRole, currentUser, switchRole } = useAuth();
+  const { platformRole, currentUser, switchDemoUser } = useAuth();
+  const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [switchingUserKey, setSwitchingUserKey] = useState<string | null>(null);
 
-  const roles: {
-    role: UserRole;
-    label: string;
-    desc: string;
-    icon: React.ReactNode;
-  }[] = [
-    {
-      role: "guest",
-      label: "1. Visiteur non connecté",
-      desc: "Navigation publique, recherche, découverte sans compte",
-      icon: <User className="w-4 h-4 text-stone-400" />,
-    },
-    {
-      role: "individual_buyer",
-      label: "2. Acheteur Particulier (Thomas)",
-      desc: "Favoris, offres, achats, messagerie acheteur",
-      icon: <User className="w-4 h-4 text-info" />,
-    },
-    {
-      role: "individual_seller",
-      label: "3. Vendeur Particulier (Camille)",
-      desc: "Publication, gestion d'annonces, offres reçues",
-      icon: <Sparkles className="w-4 h-4 text-warning" />,
-    },
-    {
-      role: "pro_seller",
-      label: "4. Vendeur Pro (Atelier Nordique SAS)",
-      desc: "Boutique Pro, SIRET, catalogue, statistiques avancées",
-      icon: <Briefcase className="w-4 h-4 text-primary" />,
-    },
-    {
-      role: "moderator",
-      label: "5. Modérateur Shongre (Claire)",
-      desc: "Validation annonces, signalements, sécurité",
-      icon: <Shield className="w-4 h-4 text-indigo-600" />,
-    },
-    {
-      role: "admin",
-      label: "6. Administrateur Système (Antoine)",
-      desc: "Accès intégral plateforme, plans, configuration",
-      icon: <Shield className="w-4 h-4 text-success" />,
-    },
-  ];
-
-  // Match on the normalised platform role, not the raw switcher id. The list
-  // is keyed by `individual_seller` while the demo user carries `primaryRole:
-  // 'seller'`, so a direct comparison never matched and the switcher fell back
-  // to entry zero — it reported "Visiteur non connecté" while signed in as
-  // Camille, the one thing this control exists to tell you.
   /**
-   * The six entries above are the demo *personas*, not the full role set. The
-   * platform has fourteen roles, so signing in as `super_admin`, `support`,
-   * `finance`, `commercial`, `content_manager`, `operations` or `market_manager`
-   * matched nothing — and `|| roles[0]` then displayed "1. Visiteur non
-   * connecté" while the session was an authenticated super administrator. The
-   * one thing this control exists to report, it got wrong, in front of whoever
-   * the demo was for.
-   *
-   * Falling back to the real role's own label is honest and needs no new entry
-   * each time a role is added.
+   * Match the exact account rather than the role: several demo accounts can
+   * legitimately share one permission set. Staff roles outside these six
+   * personas fall back to their real platform label instead of appearing as a
+   * signed-out visitor.
    */
-  const matchedRole = roles.find(
-    (r) => normalizePlatformRole(r.role) === platformRole,
+  const matchedRole = DEMO_PERSONAS.find(
+    (persona) =>
+      persona.userId ? persona.userId === currentUser?.id : !currentUser,
   );
   const currentRoleObj = matchedRole ?? {
-    role: platformRole,
     label: roleLabel(platformRole),
     desc: t("shell.demoRoleSwitcher.roleHorsPersonasDemo"),
-    icon: <Shield className="w-4 h-4 text-stone-400" />,
+    Icon: Shield,
+    iconClassName: "text-stone-400",
+  };
+
+  const handlePersonaSwitch = async (persona: DemoPersona) => {
+    const isActive = persona.userId
+      ? persona.userId === currentUser?.id
+      : !currentUser;
+    if (isActive) {
+      setIsOpen(false);
+      return;
+    }
+
+    setSwitchingUserKey(persona.userKey);
+    try {
+      await switchDemoUser(persona.userKey);
+      setIsOpen(false);
+      toast.success(
+        persona.userKey === "guest"
+          ? t("shell.demoRoleSwitcher.guestActivated")
+          : t("shell.demoRoleSwitcher.personaActivated", {
+              profile: persona.label.replace(/^\d+\.\s*/, ""),
+            }),
+        t("shell.demoRoleSwitcher.sessionUpdated"),
+      );
+    } catch {
+      toast.error(
+        t("shell.demoRoleSwitcher.switchFailed"),
+        t("shell.demoRoleSwitcher.sessionUnchanged"),
+      );
+    } finally {
+      setSwitchingUserKey(null);
+    }
   };
 
   return (
@@ -112,9 +152,16 @@ export const DemoRoleSwitcher: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
+            aria-haspopup="menu"
+            aria-expanded={isOpen}
+            aria-controls="demo-persona-menu"
+            aria-busy={Boolean(switchingUserKey)}
             className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white px-2.5 py-1 rounded-md transition-colors cursor-pointer border border-stone-700"
           >
-            <span className="shrink-0">{currentRoleObj.icon}</span>
+            <currentRoleObj.Icon
+              className={`w-4 h-4 shrink-0 ${currentRoleObj.iconClassName}`}
+              aria-hidden="true"
+            />
             <span className="font-semibold">
               {currentRoleObj.label.split("(")[0]}
             </span>
@@ -127,36 +174,53 @@ export const DemoRoleSwitcher: React.FC = () => {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-dropdown border border-stone-200 py-1.5 z-popover animate-in fade-in zoom-in-95 duration-fast">
+            <div
+              id="demo-persona-menu"
+              role="menu"
+              aria-label={t("shell.demoRoleSwitcher.changerDeRolePourTester")}
+              className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-dropdown border border-stone-200 py-1.5 z-popover animate-in fade-in zoom-in-95 duration-fast"
+            >
               <div className="px-3 py-1.5 border-b border-stone-100 text-xs font-bold text-stone-400 uppercase tracking-wider">
                 {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
               </div>
-              {roles.map((r) => {
-                const isActive = normalizePlatformRole(r.role) === platformRole;
+              {DEMO_PERSONAS.map((persona) => {
+                const isActive = persona.userId
+                  ? persona.userId === currentUser?.id
+                  : !currentUser;
+                const isSwitching = switchingUserKey === persona.userKey;
                 return (
                   <button
-                    key={r.role}
+                    key={persona.userKey}
                     type="button"
-                    onClick={() => {
-                      switchRole(r.role);
-                      setIsOpen(false);
-                    }}
+                    role="menuitemradio"
+                    aria-checked={isActive}
+                    aria-busy={isSwitching}
+                    disabled={Boolean(switchingUserKey)}
+                    onClick={() => void handlePersonaSwitch(persona)}
                     className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-stone-50 transition-colors cursor-pointer ${
                       isActive
                         ? "bg-primary-light text-primary"
                         : "text-stone-800"
-                    }`}
+                    } disabled:cursor-wait disabled:opacity-70`}
                   >
-                    <span className="mt-0.5 shrink-0">{r.icon}</span>
+                    <persona.Icon
+                      className={`w-4 h-4 mt-0.5 shrink-0 ${persona.iconClassName}`}
+                      aria-hidden="true"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-xs flex items-center justify-between">
-                        <span>{r.label}</span>
-                        {isActive && (
+                        <span>{persona.label}</span>
+                        {isSwitching ? (
+                          <LoaderCircle
+                            className="w-3.5 h-3.5 text-primary animate-spin"
+                            aria-hidden="true"
+                          />
+                        ) : isActive ? (
                           <Check className="w-3.5 h-3.5 text-primary" />
-                        )}
+                        ) : null}
                       </div>
                       <div className="text-xs text-stone-400 font-normal leading-tight mt-0.5">
-                        {r.desc}
+                        {persona.desc}
                       </div>
                     </div>
                   </button>

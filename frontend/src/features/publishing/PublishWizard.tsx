@@ -40,6 +40,7 @@ import {
   PublicationDraftState,
   ListingIntent,
   PackageSizeTier,
+  PriceModel,
 } from "../../domains/publication/publication.types";
 import { Button } from "../../design-system/primitives/Button";
 import {
@@ -54,6 +55,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { services } from "../../api/client/service-registry";
 import { ListingAssistanceResult } from "../../api/contracts/ai.contract";
+import type { ListingBoostOption } from "../../configuration/plans.config";
 import { formatPrice, plural } from "../../utilities/formatters";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { Image } from "../../design-system/primitives/Image";
@@ -109,6 +111,17 @@ const PHASES = [
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
 
+const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
+  fixed: "Prix fixe",
+  negotiable: "Prix négociable",
+  free: "Gratuit",
+  on_request: "Sur demande / sur devis",
+  hourly: "Tarif horaire",
+  daily: "Tarif journalier",
+  monthly: "Montant mensuel",
+  rent_plus_charges: "Loyer + charges",
+};
+
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
@@ -129,6 +142,10 @@ export const PublishWizard: React.FC = () => {
   const [aiPromptKeyword] = useState("");
   const [, setAiGeneratedTips] = useState<string[]>([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
+  const [visibilityOffers, setVisibilityOffers] = useState<ListingBoostOption[]>([]);
+  const [visibilityOffersState, setVisibilityOffersState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
 
   // Draft State initialized with default or restored values
   const [draft, setDraft] = useState<PublicationDraftState>(() => {
@@ -147,7 +164,7 @@ export const PublishWizard: React.FC = () => {
       marketPublications: {
         FR: { status: "active", isPrimary: true, currency: "EUR" },
       },
-      taxonomyNodeId: "home.furniture.sofas",
+      taxonomyNodeId: "home_garden.furniture.sofas",
       listingIntent: "SELL",
       title: "",
       description: "",
@@ -201,6 +218,26 @@ export const PublishWizard: React.FC = () => {
     publicationService.saveDraft(draft, currentUser?.id);
   }, [draft, currentUser]);
 
+  useEffect(() => {
+    let active = true;
+    setVisibilityOffersState("loading");
+    services.promotions
+      .getAvailableBoosts()
+      .then((offers) => {
+        if (!active) return;
+        setVisibilityOffers(offers);
+        setVisibilityOffersState("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setVisibilityOffers([]);
+        setVisibilityOffersState("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const updateDraft = (updates: Partial<PublicationDraftState>) => {
     setDraft((prev) => ({ ...prev, ...updates }));
   };
@@ -231,6 +268,58 @@ export const PublishWizard: React.FC = () => {
     draft.listingIntent,
     draft.attributes,
   ]);
+
+  useEffect(() => {
+    if (!schema) return;
+    setDraft((current) => {
+      const listingIntent = schema.supportedIntents.includes(
+        current.listingIntent,
+      )
+        ? current.listingIntent
+        : schema.defaultIntent;
+      const priceModel = schema.supportedPriceModels.includes(
+        current.pricing.priceModel,
+      )
+        ? current.pricing.priceModel
+        : schema.defaultPriceModel;
+      if (
+        listingIntent === current.listingIntent &&
+        priceModel === current.pricing.priceModel &&
+        current.listingFamily === schema.listingFamily
+      ) {
+        return current;
+      }
+      return {
+        ...current,
+        listingIntent,
+        listingFamily: schema.listingFamily,
+        pricing: {
+          ...current.pricing,
+          priceModel,
+          amount: priceModel === "on_request" ? 0 : current.pricing.amount,
+          isFreeDonation: priceModel === "free",
+          isNegotiable: priceModel === "negotiable",
+        },
+      };
+    });
+  }, [schema]);
+
+  const resolveSelectableNodeId = (nodeId: string): string => {
+    if (taxonomyService.isPublishable(nodeId)) return nodeId;
+    return (
+      taxonomyService
+        .getDescendants(nodeId)
+        .find((candidate) => taxonomyService.isPublishable(candidate.id))?.id ||
+      nodeId
+    );
+  };
+
+  const minimumPhotoCount = schema?.mediaGuidance?.minimumPhotoCount ?? 1;
+  const maximumPhotoCount = schema?.mediaGuidance?.maxPhotoCount ?? 8;
+  const isProductLike =
+    schema?.listingFamily === "physical_product" ||
+    schema?.listingFamily === "vehicle" ||
+    schema?.listingFamily === "professional_equipment";
 
   // Resolve Transaction & Fulfillment capabilities
   const transactionCaps = useMemo(() => {
@@ -370,8 +459,8 @@ export const PublishWizard: React.FC = () => {
     if (phase === 1) {
       if (!draft.taxonomyNodeId)
         return "Veuillez sélectionner une catégorie finale pour continuer.";
-      if (draft.photos.length === 0)
-        return "Veuillez ajouter au moins une photo pour illustrer votre annonce.";
+      if (draft.photos.length < minimumPhotoCount)
+        return `Veuillez ajouter au moins ${minimumPhotoCount} photo${minimumPhotoCount > 1 ? "s" : ""} pour cette catégorie.`;
     } else if (phase === 2) {
       if (!draft.title.trim())
         return "Veuillez renseigner un titre pour votre annonce.";
@@ -678,7 +767,7 @@ export const PublishWizard: React.FC = () => {
                     key={n.id}
                     type="button"
                     onClick={() => {
-                      updateDraft({ taxonomyNodeId: n.id });
+                      updateDraft({ taxonomyNodeId: resolveSelectableNodeId(n.id) });
                       setCategorySearchQuery("");
                     }}
                     className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
@@ -717,8 +806,9 @@ export const PublishWizard: React.FC = () => {
                   key={cat.id}
                   type="button"
                   onClick={() => {
-                    const children = taxonomyService.getChildren(cat.id);
-                    updateDraft({ taxonomyNodeId: children[0]?.id || cat.id });
+                    updateDraft({
+                      taxonomyNodeId: resolveSelectableNodeId(cat.id),
+                    });
                   }}
                   title={getTaxonomyLabel(cat, "compact")}
                   className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
@@ -774,7 +864,11 @@ export const PublishWizard: React.FC = () => {
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
               {schema?.node
-                ? "Renseignez l'état du produit et les critères spécifiques pour optimiser la recherche."
+                ? schema.listingFamily === "job"
+                  ? "Précisez la disponibilité du poste et les critères utiles aux candidats."
+                  : schema.listingFamily === "service"
+                    ? "Précisez la disponibilité de la prestation et les critères utiles aux clients."
+                    : "Renseignez l'état du bien et les critères spécifiques pour optimiser la recherche."
                 : "Choisissez une catégorie ci-dessus pour voir les critères correspondants."}
             </p>
           </div>
@@ -782,7 +876,11 @@ export const PublishWizard: React.FC = () => {
           {/* Condition Scheme Selector */}
           <div>
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              {t("publishing.publishWizard.etatDuBienProduit")}
+              {schema?.listingFamily === "job"
+                ? "Disponibilité du poste"
+                : schema?.listingFamily === "service"
+                  ? "Disponibilité de la prestation"
+                  : t("publishing.publishWizard.etatDuBienProduit")}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {(schema?.conditionScheme || []).map((c) => (
@@ -1048,7 +1146,9 @@ export const PublishWizard: React.FC = () => {
               {t("publishing.publishWizard.photosDeVotreAnnonce")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              {t("publishing.publishWizard.lesAnnoncesAvecAuMoins")}
+              {minimumPhotoCount > 0
+                ? `${minimumPhotoCount} photo${minimumPhotoCount > 1 ? "s" : ""} minimum · ${maximumPhotoCount} maximum pour cette catégorie.`
+                : `Média facultatif · ${maximumPhotoCount} maximum pour cette catégorie.`}
             </p>
           </div>
 
@@ -1107,7 +1207,7 @@ export const PublishWizard: React.FC = () => {
               </div>
             ))}
 
-            {draft.photos.length < 8 && (
+            {draft.photos.length < maximumPhotoCount && (
               <button
                 type="button"
                 onClick={handleAddSamplePhoto}
@@ -1207,35 +1307,54 @@ export const PublishWizard: React.FC = () => {
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              {t("publishing.publishWizard.prixDeVenteStock")}
+              {schema?.listingFamily === "job"
+                ? "Rémunération"
+                : schema?.listingFamily === "service"
+                  ? "Tarification de la prestation"
+                  : schema?.listingFamily === "real_estate"
+                    ? "Prix ou loyer"
+                    : t("publishing.publishWizard.prixDeVenteStock")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Définissez votre tarification en {schema?.currency.symbol || "€"}.
+              {schema?.listingFamily === "job"
+                ? "Indiquez une fourchette ou choisissez de communiquer la rémunération sur demande."
+                : `Définissez votre tarification en ${schema?.currency.symbol || "€"}.`}
             </p>
           </div>
 
           <div className="space-y-4">
-            <Checkbox
-              label={t("publishing.publishWizard.faireUnDonGratuit0")}
-              description={t(
-                "publishing.publishWizard.idealPourDesencombrerEtDonner",
-              )}
-              checked={draft.pricing.isFreeDonation}
-              onChange={(e) =>
-                updateDraft({
-                  pricing: {
-                    ...draft.pricing,
-                    isFreeDonation: e.target.checked,
-                    amount: e.target.checked ? 0 : 50,
-                  },
-                })
-              }
-            />
+            {schema && schema.supportedPriceModels.length > 1 && (
+              <FormField label="Mode de tarification" required>
+                <select
+                  value={draft.pricing.priceModel}
+                  onChange={(event) => {
+                    const priceModel = event.target.value as PriceModel;
+                    updateDraft({
+                      pricing: {
+                        ...draft.pricing,
+                        priceModel,
+                        amount: priceModel === "on_request" || priceModel === "free" ? 0 : draft.pricing.amount,
+                        isFreeDonation: priceModel === "free",
+                        isNegotiable: priceModel === "negotiable",
+                      },
+                    });
+                  }}
+                  className={`h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                >
+                  {schema.supportedPriceModels.map((model) => (
+                    <option key={model} value={model}>
+                      {PRICE_MODEL_LABELS[model]}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            )}
 
-            {!draft.pricing.isFreeDonation && (
+            {draft.pricing.priceModel !== "free" &&
+              draft.pricing.priceModel !== "on_request" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
-                  label={`Prix de vente (${schema?.currency.symbol || "€"})`}
+                  label={`${PRICE_MODEL_LABELS[draft.pricing.priceModel]} (${schema?.currency.symbol || "€"})`}
                   required
                 >
                   <Input
@@ -1253,6 +1372,7 @@ export const PublishWizard: React.FC = () => {
                   />
                 </FormField>
 
+                {isProductLike && (
                 <div className="flex items-center pt-6">
                   <Checkbox
                     label={t("publishing.publishWizard.prixNegociable")}
@@ -1270,11 +1390,12 @@ export const PublishWizard: React.FC = () => {
                     }
                   />
                 </div>
+                )}
               </div>
             )}
 
             {/* Pro Inventory section if Pro Seller */}
-            {currentUser?.role === "pro_seller" && (
+            {currentUser?.role === "pro_seller" && isProductLike && (
               <div className="pt-4 border-t border-border-subtle space-y-3">
                 <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
                   <Store className="w-3.5 h-3.5 text-primary" />
@@ -1946,26 +2067,28 @@ export const PublishWizard: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {visibilityOffersState === "error" && (
+              <div className="rounded-xl border border-warning-border bg-warning-surface p-3 text-xs text-warning">
+                {t("publishing.publishWizard.paidOptionsUnavailable")}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 {
                   id: "standard",
-                  name: "Publication Standard",
-                  price: 0,
-                  desc: "Visible dans les résultats de recherche classiques.",
+                  name:
+                    schema?.publication.standardPolicy.label ||
+                    "Publication standard gratuite",
+                  priceEur: 0,
+                  description: t("publishing.publishWizard.standardIncludes", {
+                    photos:
+                      schema?.publication.standardPolicy.mediaAllowance || 12,
+                    days:
+                      schema?.publication.standardPolicy.durationDays || 60,
+                  }),
                 },
-                {
-                  id: "highlight",
-                  name: "Encadré Jaune Urgent",
-                  price: 4.9,
-                  desc: "Bordure dorée et badge Urgent pour attirer l'attention.",
-                },
-                {
-                  id: "top_of_list",
-                  name: "Remontée en tête 7 jours",
-                  price: 9.9,
-                  desc: "Repositionne l'annonce en 1ère position chaque matin.",
-                },
+                ...visibilityOffers,
               ].map((pack) => (
                 <button
                   key={pack.id}
@@ -1988,15 +2111,22 @@ export const PublishWizard: React.FC = () => {
                       {pack.name}
                     </div>
                     <div className="text-micro text-stone-500 mt-1">
-                      {pack.desc}
+                      {pack.description}
                     </div>
                   </div>
                   <div className="text-sm font-black text-primary mt-3">
-                    {pack.price === 0 ? "Gratuit" : formatPrice(pack.price)}
+                    {pack.priceEur === 0
+                      ? t("publishing.publishWizard.free")
+                      : formatPrice(pack.priceEur)}
                   </div>
                 </button>
               ))}
             </div>
+            {visibilityOffersState === "loading" && (
+              <p className="text-xs text-stone-500" role="status">
+                {t("publishing.publishWizard.loadingOptionalOffers")}
+              </p>
+            )}
           </div>
         </div>
       )}

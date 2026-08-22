@@ -4,6 +4,7 @@ export * from "./schemas/listings";
 export * from "./schemas/auth";
 export * from "./schemas/publication";
 export * from "./schemas/taxonomy";
+export * from "./fixtures/taxonomy-catalog";
 export * from "./schemas/moderation";
 export * from "./schemas/account";
 export * from "./schemas/courses";

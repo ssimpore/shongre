@@ -34,6 +34,15 @@ export class PublicationService {
     const warnings: string[] = [];
 
     const marketCode = draft.marketCode || "FR";
+    const resolvedSchema = draft.taxonomyNodeId
+      ? publicationResolver.resolve({
+          taxonomyNodeId: draft.taxonomyNodeId,
+          marketCode,
+          sellerRole: user?.role,
+          listingIntent: draft.listingIntent,
+          currentValues: draft.attributes || {},
+        })
+      : null;
 
     // 1. Taxonomy & Publishable Leaf check
     if (!draft.taxonomyNodeId) {
@@ -84,11 +93,13 @@ export class PublicationService {
     }
 
     // 3. Photos
-    if (!draft.photos || draft.photos.length === 0) {
+    const minimumPhotoCount =
+      resolvedSchema?.mediaGuidance?.minimumPhotoCount ?? 1;
+    if ((draft.photos?.length || 0) < minimumPhotoCount) {
       errors.push({
         field: "photos",
         code: "PHOTOS_REQUIRED",
-        message: "Veuillez ajouter au moins une photo.",
+        message: `Veuillez ajouter au moins ${minimumPhotoCount} photo${minimumPhotoCount > 1 ? "s" : ""}.`,
       });
     }
 
@@ -120,7 +131,11 @@ export class PublicationService {
       });
     }
 
-    if (user?.role === "pro_seller" || draft.proInventory) {
+    const usesInventory =
+      resolvedSchema?.listingFamily === "physical_product" ||
+      resolvedSchema?.listingFamily === "vehicle" ||
+      resolvedSchema?.listingFamily === "professional_equipment";
+    if (usesInventory && (user?.role === "pro_seller" || draft.proInventory)) {
       const stock = draft.proInventory?.stock ?? 1;
       if (stock < 1) {
         errors.push({
@@ -133,12 +148,7 @@ export class PublicationService {
 
     // 6. Schema-driven Attribute Validation & Rogue Attribute Sanitization
     if (draft.taxonomyNodeId) {
-      const schema = publicationResolver.resolve({
-        taxonomyNodeId: draft.taxonomyNodeId,
-        marketCode,
-        sellerRole: user?.role,
-        currentValues: draft.attributes || {},
-      });
+      const schema = resolvedSchema;
 
       if (schema) {
         const allowedAttrCodes = new Set(schema.attributes.map((a) => a.code));

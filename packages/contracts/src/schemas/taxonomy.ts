@@ -124,6 +124,57 @@ const taxonomyMediaGuidanceSchema = z.object({
   maxPhotoCount: z.number().int().positive().optional(),
 });
 
+export const taxonomyPrimaryCtaSchema = z.enum([
+  "contact_seller",
+  "apply",
+  "request_quote",
+  "request_visit",
+  "request_test_drive",
+  "request_lesson",
+  "check_availability",
+  "propose_exchange",
+]);
+
+export const taxonomyPublicationStepSchema = z.enum([
+  "intent",
+  "taxonomy",
+  "essential",
+  "condition_history",
+  "price_compensation",
+  "fulfillment_location",
+  "media_documents",
+  "contact_preferences",
+  "preview",
+  "standard_or_upgrades",
+  "confirmation",
+]);
+
+const taxonomyStandardPublicationPolicySchema = z.object({
+  enabled: z.boolean(),
+  label: z.literal("Publication standard gratuite"),
+  eligibleSellerTypes: z.array(z.enum(["individual", "professional"])).min(1),
+  durationDays: z.number().int().positive(),
+  mediaAllowance: z.number().int().positive(),
+  includesMessaging: z.boolean(),
+  includesListingManagement: z.boolean(),
+  includesStandardStatistics: z.boolean(),
+  paidUpgradesOptional: z.literal(true),
+});
+
+const taxonomyPublicationConfigurationSchema = z.object({
+  steps: z.array(taxonomyPublicationStepSchema).min(1),
+  primaryCta: taxonomyPrimaryCtaSchema,
+  standardPolicy: taxonomyStandardPublicationPolicySchema,
+});
+
+const taxonomyModerationPolicySchema = z.object({
+  policyId: z.string().min(1),
+  reviewMode: z.enum(["standard", "enhanced", "manual"]),
+  prohibitedItemRuleIds: z.array(z.string().min(1)),
+  safetyNoticeKeys: z.array(z.string().min(1)),
+  sensitiveAttributeIds: z.array(z.string().min(1)),
+});
+
 export const taxonomyNodeSchema: z.ZodTypeAny = z.lazy(() =>
   z.object({
     id: z.string().min(1),
@@ -176,6 +227,10 @@ export const taxonomyNodeSchema: z.ZodTypeAny = z.lazy(() =>
     presentation: taxonomyPresentationSchema.optional(),
     mediaGuidance: taxonomyMediaGuidanceSchema.optional(),
     taxonomyVersion: z.number().int().positive().optional(),
+    schemaVersion: z.number().int().positive().optional(),
+    schemaStatus: z.enum(["draft", "published", "deprecated"]).optional(),
+    publication: taxonomyPublicationConfigurationSchema.optional(),
+    moderation: taxonomyModerationPolicySchema.optional(),
     children: z.array(taxonomyNodeSchema).optional(),
   }),
 );

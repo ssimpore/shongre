@@ -10,6 +10,7 @@ import {
 import { formatMoney, formatRelativeTime } from "@shongre/shared";
 import { Badge, Card, Heading, SemanticIcon, Text } from "@shongre/ui/native";
 import {
+  getListingCardCharacteristics,
   getListingPromotionBadges,
   listingAccessibilityLabel,
 } from "./presentation";
@@ -29,6 +30,7 @@ export function ListingCard({
     ? formatMoney(listing.originalPrice)
     : undefined;
   const badges = getListingPromotionBadges(listing);
+  const characteristics = getListingCardCharacteristics(listing).slice(0, 3);
   const horizontal = variant === "list";
   return (
     <Pressable
@@ -128,9 +130,25 @@ export function ListingCard({
               </Text>
             ) : null}
           </View>
-          <Text size="caption" tone="muted">
-            {listing.conditionLabel}
-          </Text>
+          {listing.conditionLabel ? (
+            <Text size="caption" tone="muted">
+              {listing.conditionLabel}
+            </Text>
+          ) : null}
+          {characteristics.length ? (
+            <View
+              style={styles.characteristics}
+              accessibilityLabel={`Caractéristiques principales : ${characteristics.join(", ")}`}
+            >
+              {characteristics.map((characteristic) => (
+                <View key={characteristic} style={styles.characteristic}>
+                  <Text size="caption" tone="secondary" numberOfLines={1}>
+                    {characteristic}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
           <View style={styles.footer}>
             <View style={[styles.inline, styles.flex]}>
               <SemanticIcon
@@ -210,6 +228,18 @@ const styles = StyleSheet.create({
     gap: nativeSpacing.sm,
   },
   strike: { textDecorationLine: "line-through" },
+  characteristics: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeSpacing.xs,
+  },
+  characteristic: {
+    maxWidth: "100%",
+    borderRadius: nativeRadius.control,
+    paddingHorizontal: nativeSpacing.sm,
+    paddingVertical: nativeSpacing.xs,
+    backgroundColor: nativeColors.surface.muted,
+  },
   footer: {
     flexDirection: "row",
     alignItems: "center",

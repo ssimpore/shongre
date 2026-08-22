@@ -82,17 +82,34 @@ export class DemoAuthService implements AuthServiceContract {
     if (!keepCurrent) demoEngine.logout();
   }
 
-  async switchRole(role: UserRole): Promise<UserProfile> {
+  async switchRole(role: UserRole): Promise<UserProfile | null> {
     await simulateNetworkDelay();
     const user = await userRepository.switchDemoRole(role);
+    if (role === "guest") return null;
     if (!user) throw new Error("Ce rôle de démonstration n’est pas disponible.");
+    storageService.mergeGuestFavorites();
     return user;
   }
 
   async switchDemoUser(userKey: string): Promise<UserProfile | null> {
     await simulateNetworkDelay();
+    if (userKey === "guest") {
+      storageService.setCurrentRole("guest");
+      return null;
+    }
+
+    const user = storageService.getUsers()[userKey];
+    if (!user) {
+      throw new Error("Ce profil de démonstration n’est pas disponible.");
+    }
+
+    // Keep the persisted role and exact persona key in sync. `setCurrentRole`
+    // maps to the default account for that role, so the explicit key is written
+    // last to preserve non-default personas that share the same permission set.
+    storageService.setCurrentRole(user.primaryRole || user.role);
     storageService.setCurrentUserKey(userKey);
-    return storageService.getCurrentUser(userKey);
+    storageService.mergeGuestFavorites(userKey);
+    return user;
   }
 
   async verifyPhone(phone: string, code: string): Promise<boolean> {
