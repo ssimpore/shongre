@@ -19,3 +19,4 @@ export * from "./demo-auto.service";
 export * from "./demo-real-estate.service";
 export * from "./demo-employment.service";
 export * from "./demo-business-rules.service";
+export * from "./demo-finance.service";

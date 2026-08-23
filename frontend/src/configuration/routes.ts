@@ -181,6 +181,7 @@ export const routes = {
     notificationPreferences: () => "/compte/notifications/preferences",
     purchases: (transactionId?: string) =>
       withQuery("/compte/achats", { transactionId }),
+    finances: () => "/compte/finances",
     verification: () => "/compte/verification",
     security: () => "/compte/securite-compte",
     profile: () => "/compte/profil",
@@ -193,6 +194,7 @@ export const routes = {
       dashboard: () => `/compte/pro/tableau-de-bord`,
       storefront: () => "/compte/pro/vitrine",
       subscriptions: () => "/compte/pro/abonnements",
+      finances: () => "/compte/pro/finances",
     },
   },
   auth: {
@@ -228,6 +230,7 @@ export const routes = {
     taxonomy: (params: { tab?: string; node?: string } = {}) =>
       withQuery("/admin/taxonomie", params),
     monetization: () => `/admin/monetisation`,
+    finance: () => `/admin/finance`,
     courses: () => `/admin/cours`,
     auto: () => `/admin/auto`,
     immo: () => `/admin/immo`,

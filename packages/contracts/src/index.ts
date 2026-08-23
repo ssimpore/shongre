@@ -16,5 +16,7 @@ export * from "./schemas/employment";
 export * from "./fixtures/employment-catalog";
 export * from "./fixtures/employment-demo";
 export * from "./schemas/monetization";
+export * from "./schemas/finance";
+export * from "./fixtures/finance-demo";
 export * from "./types/pagination";
 export * from "./access-control";

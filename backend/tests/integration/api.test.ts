@@ -520,6 +520,58 @@ describe("API v1 Endpoints Integration", () => {
     expect(refund.status).not.toBe(403);
   });
 
+  it("enforces account, organization, platform and reconciliation finance scopes", async () => {
+    const ownAccount = await fetch(`${baseUrl}/api/v1/finance/account/overview`, {
+      headers: auth(buyerToken),
+    });
+    expect(ownAccount.status).toBe(200);
+    expect((await ownAccount.json()).accountKind).toBe("individual");
+
+    const buyerPlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview`, {
+      headers: auth(buyerToken),
+    });
+    expect(buyerPlatform.status).toBe(403);
+
+    const buyerOrganization = await fetch(`${baseUrl}/api/v1/finance/organization/overview`, {
+      headers: auth(buyerToken),
+    });
+    expect(buyerOrganization.status).toBe(403);
+
+    const proOrganization = await fetch(`${baseUrl}/api/v1/finance/organization/overview`, {
+      headers: auth(proToken),
+    });
+    expect(proOrganization.status).toBe(200);
+    expect((await proOrganization.json()).accountKind).toBe("professional");
+
+    const financePlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview?period=30d&marketCode=FR&currency=EUR`, {
+      headers: auth(financeToken),
+    });
+    expect(financePlatform.status).toBe(200);
+    const overview = await financePlatform.json();
+    expect(overview.metrics.platformRevenue.amount.amountMinor).not.toBe(
+      overview.metrics.grossCollected.amount.amountMinor,
+    );
+
+    const financeReconciliation = await fetch(`${baseUrl}/api/v1/finance/platform/reconciliation`, {
+      headers: auth(financeToken),
+    });
+    expect(financeReconciliation.status).toBe(200);
+
+    const adminPlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview`, {
+      headers: auth(adminToken),
+    });
+    expect(adminPlatform.status).toBe(200);
+    const adminReconciliation = await fetch(`${baseUrl}/api/v1/finance/platform/reconciliation`, {
+      headers: auth(adminToken),
+    });
+    expect(adminReconciliation.status).toBe(403);
+
+    const moderatorPlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview`, {
+      headers: auth(moderatorToken),
+    });
+    expect(moderatorPlatform.status).toBe(403);
+  });
+
   it("protects Immo administration with the vertical permission", async () => {
     const forbidden = await fetch(
       `${baseUrl}/api/v1/real-estate/admin/overview`,

@@ -21,6 +21,7 @@ import {
   demoRealEstateService,
   demoEmploymentService,
   demoBusinessRulesService,
+  demoFinanceService,
 } from "../adapters/demo";
 
 import {
@@ -45,6 +46,7 @@ import {
   httpRealEstateService,
   httpEmploymentService,
   httpBusinessRulesService,
+  httpFinanceService,
 } from "../adapters/http";
 
 import {
@@ -69,6 +71,7 @@ import {
   RealEstateServiceContract,
   EmploymentServiceContract,
   BusinessRulesServiceContract,
+  FinanceServiceContract,
 } from "../contracts";
 
 export interface ServiceRegistry {
@@ -93,6 +96,7 @@ export interface ServiceRegistry {
   realEstate: RealEstateServiceContract;
   employment: EmploymentServiceContract;
   businessRules: BusinessRulesServiceContract;
+  finance: FinanceServiceContract;
 }
 
 export function createServiceRegistry(
@@ -126,6 +130,7 @@ export function createServiceRegistry(
     businessRules: useDemo
       ? demoBusinessRulesService
       : httpBusinessRulesService,
+    finance: useDemo ? demoFinanceService : httpFinanceService,
   };
 }
 

@@ -27,6 +27,7 @@ import {
   Building2,
   KeyRound,
   Users,
+  BadgeEuro,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
@@ -138,6 +139,12 @@ export const AccountLayout: React.FC = () => {
       visible: canAccessRoute("accountPurchases"),
     },
     {
+      to: routes.workspace.finances(),
+      label: "Paiements & Revenus",
+      icon: <BadgeEuro className="w-4 h-4" />,
+      visible: canAccessRoute("accountFinances"),
+    },
+    {
       to: "/compte/verification",
       label: "Sécurité & Vérification",
       icon: <Shield className="w-4 h-4 text-success" />,
@@ -211,6 +218,12 @@ export const AccountLayout: React.FC = () => {
       label: "Mon forfait & Facturation",
       icon: <Sparkles className="w-4 h-4 text-amber-500" />,
       visible: canAccessRoute("accountProSubscriptions"),
+    },
+    {
+      to: routes.workspace.pro.finances(),
+      label: "Finances de l’organisation",
+      icon: <BadgeEuro className="w-4 h-4 text-success" />,
+      visible: canAccessRoute("accountProFinances"),
     },
   ].filter((item) => item.visible);
 

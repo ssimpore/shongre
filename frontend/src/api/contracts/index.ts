@@ -19,3 +19,4 @@ export * from "./auto.contract";
 export * from "./real-estate.contract";
 export * from "./employment.contract";
 export * from "./business-rules.contract";
+export * from "./finance.contract";

@@ -20,3 +20,4 @@ export * from "./http-auto.service";
 export * from "./http-real-estate.service";
 export * from "./http-employment.service";
 export * from "./http-business-rules.service";
+export * from "./http-finance.service";

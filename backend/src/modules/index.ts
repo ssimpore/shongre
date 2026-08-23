@@ -11,6 +11,7 @@ export * from "./publishers/publisher-entitlements.service.js";
 export * from "./orders/orders.service.js";
 export * from "./payments/payments.service.js";
 export * from "./monetization/monetization.service.js";
+export * from "./finance/finance.service.js";
 export * from "./business-rules/business-rules.service.js";
 export * from "./business-rules/configuration-validator.js";
 export * from "./verification/verification.service.js";

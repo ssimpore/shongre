@@ -68,6 +68,7 @@ export const ROUTE_POLICIES = {
   accountNotifications: customer("/compte/notifications"),
   accountNotificationPreferences: customer("/compte/notifications/preferences"),
   accountPurchases: customer("/compte/achats", "order.read.own"),
+  accountFinances: customer("/compte/finances", "finance.account.read.own"),
   accountVerification: customer("/compte/verification"),
   accountSecurity: customer("/compte/securite-compte"),
   accountType: customer("/compte/type-de-compte"),
@@ -102,6 +103,10 @@ export const ROUTE_POLICIES = {
     "/compte/pro/abonnements",
     "subscription.manage.own",
   ),
+  accountProFinances: professional(
+    "/compte/pro/finances",
+    "finance.organization.read.own",
+  ),
 
   adminOverview: staff("/admin", "admin.access"),
   adminModeration: {
@@ -122,6 +127,7 @@ export const ROUTE_POLICIES = {
   adminTaxonomy: staff("/admin/taxonomie", "taxonomy.manage"),
   adminTaxonomyAlias: staff("/admin/taxonomy", "taxonomy.manage"),
   adminMonetization: staff("/admin/monetisation", "monetization.manage"),
+  adminFinance: staff("/admin/finance", "finance.platform.read"),
   adminTrending: staff("/admin/tendances", "admin.configuration.manage"),
   adminRoles: {
     ...staff("/admin/roles", "role.manage"),

@@ -21,6 +21,7 @@ import {
   GraduationCap,
   CarFront,
   Building2,
+  Landmark,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import {
@@ -168,6 +169,12 @@ export const AdminLayout: React.FC = () => {
       label: "Monétisation & Forfaits Pro",
       icon: CreditCard,
       show: canAccessRoute("adminMonetization"),
+    },
+    {
+      to: routes.admin.finance(),
+      label: "Finance & Revenus",
+      icon: Landmark,
+      show: canAccessRoute("adminFinance"),
     },
     {
       to: "/admin/tendances",

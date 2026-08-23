@@ -24,6 +24,7 @@ import {
   unifiedDiscoveryService,
   socialAuthService,
   facebookDataDeletionService,
+  financeService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -1530,6 +1531,75 @@ export class ApiV1Router {
       AUTHENTICATED,
       async ({ principal }) =>
         businessRulesService.getBillingOverview(principal.userId),
+    );
+
+    // ------------------------------------------------------------------------
+    // FINANCE & REVENUE ROUTES
+    // Platform aggregation is never computed in the browser. Account routes
+    // derive their scope from the authenticated principal; caller-supplied
+    // account or organization ids are intentionally absent.
+    // ------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/finance/account/overview",
+      permission("finance.account.read.own"),
+      async ({ principal }) => financeService.getAccountDashboard(principal.userId),
+    );
+    this.addRoute(
+      "GET",
+      "/finance/organization/overview",
+      permission("finance.organization.read.own"),
+      async ({ principal }) => financeService.getOrganizationDashboard(principal.userId),
+    );
+    this.addRoute(
+      "GET",
+      "/finance/platform/overview",
+      permission("finance.platform.read"),
+      async ({ query }) => financeService.getPlatformDashboard({
+        period: query.get("period") ?? undefined,
+        marketCode: query.get("marketCode") ?? undefined,
+        currency: query.get("currency") ?? undefined,
+      } as any),
+    );
+    this.addRoute(
+      "GET",
+      "/finance/platform/transactions",
+      permission("finance.transactions.read"),
+      async ({ query }) => financeService.listTransactions({
+        period: query.get("period") ?? undefined,
+        marketCode: query.get("marketCode") ?? undefined,
+        currency: query.get("currency") ?? undefined,
+        query: query.get("query") ?? undefined,
+        status: (query.get("status") ?? undefined) as any,
+        needsReviewOnly: query.get("needsReviewOnly") === "true",
+        cursor: query.get("cursor") ?? undefined,
+        limit: query.get("limit") ? Number(query.get("limit")) : undefined,
+      } as any),
+    );
+    this.addRoute(
+      "GET",
+      "/finance/platform/transactions/:id",
+      permission("finance.transactions.read"),
+      async ({ params }) => financeService.getTransaction(params.id),
+    );
+    this.addRoute(
+      "GET",
+      "/finance/platform/reconciliation",
+      permission("finance.reconciliation.manage"),
+      async () => financeService.listReconciliationCases(),
+    );
+    this.addRoute(
+      "GET",
+      "/finance/platform/exports/transactions",
+      permission("finance.exports.read"),
+      async ({ query }) => financeService.exportTransactions({
+        period: query.get("period") ?? undefined,
+        marketCode: query.get("marketCode") ?? undefined,
+        currency: query.get("currency") ?? undefined,
+        query: query.get("query") ?? undefined,
+        status: (query.get("status") ?? undefined) as any,
+        needsReviewOnly: query.get("needsReviewOnly") === "true",
+      } as any),
     );
     this.addRoute(
       "GET",

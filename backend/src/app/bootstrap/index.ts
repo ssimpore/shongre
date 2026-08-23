@@ -5,6 +5,7 @@ import { seedDemoCredentials } from "./seed-demo-credentials.js";
 import { providerDataDeletionWorker } from "../../workers/auth/provider-data-deletion-worker.js";
 import { commercialConfigurationWorker } from "../../workers/monetization/commercial-configuration-worker.js";
 import { monetizationLifecycleWorker } from "../../workers/monetization/monetization-lifecycle-worker.js";
+import { revenueRecognitionWorker } from "../../workers/finance/revenue-recognition-worker.js";
 
 export async function bootstrapApp(): Promise<void> {
   logger.info("Bootstrapping Shongre Backend Services...");
@@ -38,6 +39,9 @@ export async function bootstrapApp(): Promise<void> {
       `Monetization lifecycle worker failed at startup: ${err.message}`,
     );
   });
+  await revenueRecognitionWorker.run().catch((err) => {
+    logger.error(`Revenue recognition worker failed at startup: ${err.message}`);
+  });
   setInterval(() => {
     commercialConfigurationWorker.run().catch((err) => {
       logger.error(`Commercial configuration worker failed: ${err.message}`);
@@ -50,6 +54,14 @@ export async function bootstrapApp(): Promise<void> {
       });
     },
     5 * 60 * 1000,
+  );
+  setInterval(
+    () => {
+      revenueRecognitionWorker.run().catch((err) => {
+        logger.error(`Revenue recognition worker failed: ${err.message}`);
+      });
+    },
+    60 * 60 * 1000,
   );
   setInterval(
     () => {

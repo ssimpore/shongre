@@ -184,6 +184,11 @@ const TransactionsPage = lazy(() =>
     default: m.TransactionsPage,
   })),
 );
+const AccountFinancePage = lazy(() =>
+  import("../../features/account/AccountFinancePage").then((m) => ({
+    default: m.AccountFinancePage,
+  })),
+);
 const VerificationCenterPage = lazy(() =>
   import("../../features/verification/VerificationCenterPage").then((m) => ({
     default: m.VerificationCenterPage,
@@ -411,6 +416,11 @@ const AdminMonetizationPage = lazy(() =>
     default: m.AdminMonetizationPage,
   })),
 );
+const AdminFinancePage = lazy(() =>
+  import("../../features/admin/AdminFinancePage").then((m) => ({
+    default: m.AdminFinancePage,
+  })),
+);
 const AdminTrendingPage = lazy(() =>
   import("../../features/admin/AdminTrendingPage").then((m) => ({
     default: m.AdminTrendingPage,
@@ -483,6 +493,9 @@ const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<PageSuspense />}>
     <Component />
   </Suspense>
+);
+const OrganizationFinancePage: React.FC = () => (
+  <AccountFinancePage scope="organization" />
 );
 
 export const router = createBrowserRouter([
@@ -743,6 +756,14 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: "finances",
+            element: (
+              <RequireRoutePolicy policyId="accountFinances">
+                {withSuspense(AccountFinancePage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
             path: "verification",
             element: (
               <RequireRoutePolicy policyId="accountVerification">
@@ -872,6 +893,14 @@ export const router = createBrowserRouter([
               </RequireRoutePolicy>
             ),
           },
+          {
+            path: "pro/finances",
+            element: (
+              <RequireRoutePolicy policyId="accountProFinances">
+                {withSuspense(OrganizationFinancePage)}
+              </RequireRoutePolicy>
+            ),
+          },
         ],
       },
 
@@ -959,6 +988,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRoutePolicy policyId="adminMonetization">
             {withSuspense(AdminMonetizationPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
+        path: "finance",
+        element: (
+          <RequireRoutePolicy policyId="adminFinance">
+            {withSuspense(AdminFinancePage)}
           </RequireRoutePolicy>
         ),
       },

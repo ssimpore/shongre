@@ -422,6 +422,69 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
   {
+    id: "finance.account.read.own",
+    name: "Consulter ses propres finances",
+    category: "Transactions & Paiements",
+    description:
+      "Consulter uniquement ses dépenses, revenus vendeur, remboursements, paiements et factures.",
+  },
+  {
+    id: "finance.organization.read.own",
+    name: "Consulter les finances de son organisation",
+    category: "Transactions & Paiements",
+    description:
+      "Consulter les données financières d’une organisation avec une adhésion et un périmètre finance autorisés.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.platform.read",
+    name: "Consulter les revenus de la plateforme",
+    category: "Transactions & Paiements",
+    description:
+      "Consulter les agrégats globaux de revenus, GMV, encaissements, taxes et dettes vendeurs.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.transactions.read",
+    name: "Consulter le registre des transactions financières",
+    category: "Transactions & Paiements",
+    description:
+      "Rechercher les transactions et examiner leurs écritures comptables équilibrées.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.reconciliation.manage",
+    name: "Gérer le rapprochement financier",
+    category: "Transactions & Paiements",
+    description:
+      "Examiner et résoudre les écarts entre paiements, factures, fournisseurs et grand livre.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.payouts.manage",
+    name: "Gérer les virements vendeurs",
+    category: "Transactions & Paiements",
+    description:
+      "Examiner, approuver et suivre les virements dus aux vendeurs autorisés.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.adjustments.create",
+    name: "Créer un ajustement financier",
+    category: "Transactions & Paiements",
+    description:
+      "Créer une écriture corrective auditée sans modifier l’historique comptable publié.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.exports.read",
+    name: "Exporter les données financières",
+    category: "Transactions & Paiements",
+    description:
+      "Télécharger les transactions autorisées avec montants en unités monétaires mineures.",
+    isSensitive: true,
+  },
+  {
     id: "payment.initiate",
     name: "Initier un paiement",
     category: "Transactions & Paiements",

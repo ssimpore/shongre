@@ -67,6 +67,7 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
 ];
 
 export const BUYER_ROUTES: RouteUnderTest[] = [
+  { path: "/compte/finances", name: "account-finance", persona: "individual_buyer" },
   { path: "/compte/favoris", name: "favorites", persona: "individual_buyer" },
   { path: "/compte/messages", name: "messaging", persona: "individual_buyer" },
   { path: "/compte/achats", name: "transactions", persona: "individual_buyer" },
@@ -123,6 +124,11 @@ export const SELLER_ROUTES: RouteUnderTest[] = [
 
 export const PRO_ROUTES: RouteUnderTest[] = [
   {
+    path: "/compte/pro/finances",
+    name: "pro-organization-finance",
+    persona: "pro_seller",
+  },
+  {
     path: "/compte/pro/tableau-de-bord",
     name: "pro-dashboard",
     persona: "pro_seller",
@@ -160,6 +166,7 @@ export const PRO_ROUTES: RouteUnderTest[] = [
 ];
 
 export const ADMIN_ROUTES: RouteUnderTest[] = [
+  { path: "/admin/finance", name: "platform-finance", persona: "finance" },
   { path: "/admin", name: "admin-overview", persona: "admin" },
   { path: "/admin/moderation", name: "admin-moderation", persona: "moderator" },
   { path: "/admin/utilisateurs", name: "admin-users", persona: "admin" },

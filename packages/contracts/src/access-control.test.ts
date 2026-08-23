@@ -66,9 +66,14 @@ describe("canonical access-control policy", () => {
     expect(admin.has("admin.configuration.manage")).toBe(true);
     expect(admin.has("moderation.action")).toBe(false);
     expect(admin.has("order.refund")).toBe(false);
+    expect(admin.has("finance.platform.read")).toBe(true);
+    expect(admin.has("finance.reconciliation.manage")).toBe(false);
     expect(moderator.has("moderation.action")).toBe(true);
     expect(moderator.has("user.suspend")).toBe(false);
+    expect(moderator.has("finance.platform.read")).toBe(false);
     expect(finance.has("order.refund")).toBe(true);
+    expect(finance.has("finance.platform.read")).toBe(true);
+    expect(finance.has("finance.reconciliation.manage")).toBe(true);
     expect(finance.has("admin.configuration.manage")).toBe(false);
   });
 

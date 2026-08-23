@@ -95,6 +95,9 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(moderator, "adminModeration")).toBe(true);
     expect(canAccessRoutePolicy(moderator, "adminTrending")).toBe(false);
     expect(canAccessRoutePolicy(finance, "adminMonetization")).toBe(false);
+    expect(canAccessRoutePolicy(finance, "adminFinance")).toBe(true);
+    expect(canAccessRoutePolicy(admin, "adminFinance")).toBe(true);
+    expect(canAccessRoutePolicy(moderator, "adminFinance")).toBe(false);
     expect(canAccessRoutePolicy(finance, "adminAudit")).toBe(true);
   });
 });
