@@ -71,11 +71,30 @@ export default function ListingDetailScreen() {
 
   const blockSeller = async () => {
     if (!listing?.seller || !requireLogin()) return;
+    const sellerId = listing.seller.id;
     try {
-      await moderationService.blockUser(listing.seller.id);
+      await moderationService.blockUser(sellerId);
       Alert.alert(
         "Utilisateur bloqué",
-        "Cet utilisateur ne peut plus vous contacter. Vous pouvez le débloquer depuis vos réglages.",
+        "Cet utilisateur ne peut plus vous contacter.",
+        [
+          { text: "Fermer", style: "cancel" },
+          {
+            text: "Débloquer",
+            onPress: () => {
+              void moderationService
+                .unblockUser(sellerId)
+                .catch((reason) =>
+                  Alert.alert(
+                    "Déblocage impossible",
+                    reason instanceof Error
+                      ? reason.message
+                      : "Réessayez plus tard.",
+                  ),
+                );
+            },
+          },
+        ],
       );
     } catch (reason) {
       Alert.alert(

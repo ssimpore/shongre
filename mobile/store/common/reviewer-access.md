@@ -7,7 +7,7 @@ Recommended review scenario:
 1. Browse and search without signing in.
 2. Sign in with the dedicated reviewer account.
 3. Open a seeded listing, contact its seller, then exercise report and block controls.
-4. Create a draft listing and demonstrate contextual camera/photo/location prompts; cancellation must preserve a usable path.
+4. Create a draft listing and demonstrate the contextual photo-library prompt; cancellation must preserve a usable path and location remains manually editable.
 5. Open notification settings and explain the benefit before the OS prompt.
 6. Open account deletion; use a separate disposable reviewer account if the reviewer must complete deletion.
 

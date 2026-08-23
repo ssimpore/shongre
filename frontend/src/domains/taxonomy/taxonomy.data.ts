@@ -2031,11 +2031,7 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
   const cardAttributeIds = node.presentation?.cardAttributeIds?.length
     ? Array.from(new Set(node.presentation.cardAttributeIds))
     : Array.from(
-        new Set([
-          ...summaryAttributeIds,
-          ...filterFacetIds,
-          ...attributeIds,
-        ]),
+        new Set([...summaryAttributeIds, ...filterFacetIds, ...attributeIds]),
       );
   const isLeaf = !children || children.length === 0;
   const listingFamily =

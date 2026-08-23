@@ -1156,7 +1156,7 @@ export const messagesFr = {
   "admin.adminAuditLogsPage.actionSysteme": "Action Système",
   "admin.adminAuditLogsPage.detailsMotif": "Détails & Motif",
   "admin.adminAuditLogsPage.detail": "Détail",
-  "admin.adminAuditLogsPage.role": "Rôle :",
+  "admin.adminAuditLogsPage.role": "Rôle",
   "admin.adminAuditLogsPage.details": "Détails :",
   "admin.adminAuditLogsPage.etatPrecedent": "État précédent :",
   "admin.adminAuditLogsPage.nouvelEtat": "Nouvel état :",
@@ -1285,7 +1285,7 @@ export const messagesFr = {
 
   // --- admin.adminRolesMatrixPage ---
   "admin.adminRolesMatrixPage.filtrerUnePermissionExListing":
-    "Filtrer une permission (ex: listing.create, user.suspend)...",
+    "Filtrer une permission (ex. déposer une annonce, suspendre un compte)…",
   "admin.adminRolesMatrixPage.filtrerLesPermissionsParCategorie":
     "Filtrer les permissions par catégorie",
   "admin.adminRolesMatrixPage.matriceDesPermissionsParRole":
@@ -3377,7 +3377,7 @@ export const messagesFr = {
   "admin.crmPipelinePage.etapeSuivanteOpp":
     "Déplacer « {name} » à l'étape suivante",
   "admin.adminAuditLogsPage.voirLePayloadDe":
-    "Voir le payload complet de « {action} »",
+    "Voir le détail de l’événement « {action} »",
 
   /* Accessible names for controls that previously had only a placeholder. */
   "messaging.messageComposer.votreMessage": "Votre message",

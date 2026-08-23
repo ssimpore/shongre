@@ -66,6 +66,8 @@ export interface MarketScope {
 export type Permission = Capability;
 
 export type SecurityAuditAction =
+  | "MARKET_CONFIG_UPDATE"
+  | "AUTO_FLAG_SUSPICIOUS_PRICE"
   | "role_assigned"
   | "role_removed"
   | "user_suspended"
@@ -105,6 +107,8 @@ export type SecurityAuditAction =
  */
 export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> =
   {
+    MARKET_CONFIG_UPDATE: "Configuration du marché modifiée",
+    AUTO_FLAG_SUSPICIOUS_PRICE: "Prix suspect signalé automatiquement",
     role_assigned: "Rôle attribué",
     role_removed: "Rôle retiré",
     user_suspended: "Compte suspendu",
@@ -152,8 +156,8 @@ export interface SecurityAuditLog {
   targetName?: string;
   action: SecurityAuditAction;
   details: string;
-  previousValue?: any;
-  newValue?: any;
+  previousValue?: unknown;
+  newValue?: unknown;
   ipAddress?: string;
   market?: string;
 }

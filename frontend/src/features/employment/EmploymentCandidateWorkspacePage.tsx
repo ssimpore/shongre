@@ -37,6 +37,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentDate } from "./employment-format";
 import { JobCard } from "./components/JobCard";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 type Tab =
   "applications" | "profile" | "saved" | "interviews" | "messages" | "privacy";
@@ -808,7 +809,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-black">
-                          Entretien {interview.modeId}
+                          Entretien {labelIdentifier(interview.modeId)}
                         </h3>
                         <Badge
                           variant={
@@ -819,7 +820,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                                 : "warning"
                           }
                         >
-                          {interview.status}
+                          {labelIdentifier(interview.status)}
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-text-secondary">

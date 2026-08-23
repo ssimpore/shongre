@@ -3,6 +3,7 @@ import type {
   CommercialConfigurationVersion,
   MonetizationAdminOverview,
   MonetizationProduct,
+  CommercialRuleOutcome,
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
@@ -39,6 +40,7 @@ import { Modal } from "../../design-system/primitives/Modal";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AdminDiscoveryConfigurationPanel } from "./AdminDiscoveryConfigurationPanel";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 type TabId =
   | "catalog"
@@ -92,6 +94,23 @@ function statusLabel(status: CommercialConfigurationVersion["status"]) {
     disabled: "Désactivée",
     archived: "Archivée",
   }[status];
+}
+
+function formatRuleOutcomeValue(
+  key: keyof CommercialRuleOutcome | string,
+  value: unknown,
+): string {
+  if (typeof value === "boolean") return value ? "Oui" : "Non";
+  if (typeof value === "number") {
+    if (key.endsWith("Minor")) return formatMinor(value);
+    if (key.endsWith("Bps")) {
+      return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(value / 100)} %`;
+    }
+    if (key.endsWith("Days")) return `${value} jours`;
+    return new Intl.NumberFormat("fr-FR").format(value);
+  }
+  if (Array.isArray(value)) return value.map(String).join(", ");
+  return labelIdentifier(String(value));
 }
 
 export const AdminMonetizationPage: React.FC = () => {
@@ -563,7 +582,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             rule.status === "active" ? "success" : "neutral"
                           }
                         >
-                          {rule.status}
+                          {statusLabel(rule.status)}
                         </Badge>
                       </div>
                       <p className="mt-1 text-micro text-stone-500">
@@ -576,7 +595,8 @@ export const AdminMonetizationPage: React.FC = () => {
                             key={key}
                             className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-stone-700"
                           >
-                            {key}: {String(value)}
+                            {labelIdentifier(key)} :{" "}
+                            {formatRuleOutcomeValue(key, value)}
                           </span>
                         ))}
                       </div>
@@ -606,7 +626,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       {promotion.discountType === "percentage"
                         ? `${promotion.discountValue / 100} %`
                         : formatMinor(promotion.discountValue)}{" "}
-                      · empilement {promotion.stackingPolicy}
+                      · {labelIdentifier(promotion.stackingPolicy)}
                     </p>
                   </article>
                 ))}
@@ -641,7 +661,8 @@ export const AdminMonetizationPage: React.FC = () => {
                               key={key}
                               className="text-xs font-bold text-stone-800"
                             >
-                              {key}: {String(value)}
+                              {labelIdentifier(key)} :{" "}
+                              {formatRuleOutcomeValue(key, value)}
                             </div>
                           ))}
                       </div>
@@ -690,9 +711,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">
-                      Factures
-                    </div>
+                    <div className="text-micro text-stone-500">Factures</div>
                     <div className="mt-1 text-lg font-black text-stone-950">
                       {overview.invoices.length}
                     </div>
@@ -723,7 +742,10 @@ export const AdminMonetizationPage: React.FC = () => {
                           <th className="px-3 py-2 font-bold" scope="col">
                             Statut
                           </th>
-                          <th className="px-3 py-2 text-right font-bold" scope="col">
+                          <th
+                            className="px-3 py-2 text-right font-bold"
+                            scope="col"
+                          >
                             Montant
                           </th>
                         </tr>
@@ -734,8 +756,12 @@ export const AdminMonetizationPage: React.FC = () => {
                             <td className="px-3 py-2 font-mono font-bold text-stone-900">
                               {invoice.number}
                             </td>
-                            <td className="px-3 py-2 text-stone-600">Facture</td>
-                            <td className="px-3 py-2 text-stone-600">{invoice.status}</td>
+                            <td className="px-3 py-2 text-stone-600">
+                              Facture
+                            </td>
+                            <td className="px-3 py-2 text-stone-600">
+                              {labelIdentifier(invoice.status)}
+                            </td>
                             <td className="px-3 py-2 text-right font-black text-stone-950">
                               {formatMinor(
                                 invoice.total.amountMinor,
@@ -752,9 +778,12 @@ export const AdminMonetizationPage: React.FC = () => {
                             <td className="px-3 py-2 text-stone-600">
                               Remboursement
                             </td>
-                            <td className="px-3 py-2 text-stone-600">{refund.status}</td>
+                            <td className="px-3 py-2 text-stone-600">
+                              {labelIdentifier(refund.status)}
+                            </td>
                             <td className="px-3 py-2 text-right font-black text-stone-950">
-                              − {formatMinor(
+                              −{" "}
+                              {formatMinor(
                                 refund.amount.amountMinor,
                                 refund.amount.currency,
                               )}
@@ -764,7 +793,10 @@ export const AdminMonetizationPage: React.FC = () => {
                         {overview.invoices.length === 0 &&
                           overview.refunds.length === 0 && (
                             <tr>
-                              <td colSpan={4} className="px-3 py-5 text-center text-stone-500">
+                              <td
+                                colSpan={4}
+                                className="px-3 py-5 text-center text-stone-500"
+                              >
                                 Aucun mouvement financier à afficher.
                               </td>
                             </tr>
@@ -788,7 +820,8 @@ export const AdminMonetizationPage: React.FC = () => {
                             {order.id}
                           </div>
                           <div className="text-micro text-stone-500">
-                            {order.provider} · {order.status}
+                            {labelIdentifier(order.provider)} ·{" "}
+                            {labelIdentifier(order.status)}
                           </div>
                         </div>
                         <div className="font-black text-stone-950">

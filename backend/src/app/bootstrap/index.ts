@@ -34,18 +34,23 @@ export async function bootstrapApp(): Promise<void> {
     );
   });
   await monetizationLifecycleWorker.run().catch((err) => {
-    logger.error(`Monetization lifecycle worker failed at startup: ${err.message}`);
+    logger.error(
+      `Monetization lifecycle worker failed at startup: ${err.message}`,
+    );
   });
   setInterval(() => {
     commercialConfigurationWorker.run().catch((err) => {
       logger.error(`Commercial configuration worker failed: ${err.message}`);
     });
   }, 60 * 1000);
-  setInterval(() => {
-    monetizationLifecycleWorker.run().catch((err) => {
-      logger.error(`Monetization lifecycle worker failed: ${err.message}`);
-    });
-  }, 5 * 60 * 1000);
+  setInterval(
+    () => {
+      monetizationLifecycleWorker.run().catch((err) => {
+        logger.error(`Monetization lifecycle worker failed: ${err.message}`);
+      });
+    },
+    5 * 60 * 1000,
+  );
   setInterval(
     () => {
       lifecycleWorker.runExpiredListingsCleanup().catch((err) => {

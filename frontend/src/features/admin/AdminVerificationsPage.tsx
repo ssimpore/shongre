@@ -17,6 +17,7 @@ import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { Tabs, TabPanel } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 export const AdminVerificationsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -445,8 +446,9 @@ export const AdminVerificationsPage: React.FC = () => {
                 >
                   <div>
                     <div className="text-xs font-bold text-stone-900">
-                      {log.dimension.toUpperCase()} : {log.previousState} ➔{" "}
-                      {log.newState}
+                      {labelIdentifier(log.dimension)} :{" "}
+                      {labelIdentifier(log.previousState)} ➔{" "}
+                      {labelIdentifier(log.newState)}
                     </div>
                     <div className="text-micro text-stone-500">
                       Utilisateur ID: {log.userId} • Par: {log.performedBy}

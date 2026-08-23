@@ -18,6 +18,7 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { Badge, Button, Skeleton, Switch } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatImmoMoney } from "./immo-format";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 const featureFlagLabels: Record<string, string> = {
   verticalEnabled: "Verticale disponible",
@@ -230,9 +231,11 @@ export const AdminImmoPage: React.FC = () => {
                   <tr key={offer.id}>
                     <td className="p-3">
                       <p className="font-black">{offer.name}</p>
-                      <p className="text-micro text-text-muted">{offer.kind}</p>
+                      <p className="text-micro text-text-muted">
+                        {labelIdentifier(offer.kind)}
+                      </p>
                     </td>
-                    <td className="p-3">{offer.audience}</td>
+                    <td className="p-3">{labelIdentifier(offer.audience)}</td>
                     <td className="p-3 font-bold">
                       {offer.prices[0] ? (
                         <input

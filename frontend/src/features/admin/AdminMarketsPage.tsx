@@ -39,6 +39,7 @@ import {
   RECENT_SEARCHES_LIMIT_MAX,
   RECENT_SEARCHES_LIMIT_MIN,
 } from "../../domains/market/market.constants";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 type AdminTab = "overview" | "editor" | "matrix";
 type DomainTab =
@@ -277,7 +278,7 @@ export const AdminMarketsPage: React.FC = () => {
           <Badge variant="neutral">{t("admin.adminMarketsPage.archive")}</Badge>
         );
       default:
-        return <Badge variant="neutral">{status}</Badge>;
+        return <Badge variant="neutral">{labelIdentifier(status)}</Badge>;
     }
   };
 

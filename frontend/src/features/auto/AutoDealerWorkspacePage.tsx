@@ -38,6 +38,7 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatAutoMileage, formatAutoMoney } from "./auto-format";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 const TABS = [
   "Vue d’ensemble",
@@ -397,7 +398,9 @@ export const AutoDealerWorkspacePage: React.FC = () => {
               <span>
                 {transfer.fromLocationId} → {transfer.toLocationId}
               </span>
-              <Badge variant="neutral">{transfer.status}</Badge>
+              <Badge variant="neutral">
+                {labelIdentifier(transfer.status)}
+              </Badge>
             </div>
           ))}
         </div>
@@ -556,7 +559,8 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           >
             <div>
               <p className="font-bold">
-                {item.fileName || `Synchronisation ${item.type.toUpperCase()}`}
+                {item.fileName ||
+                  `Synchronisation ${labelIdentifier(item.type)}`}
               </p>
               <p className="mt-1 text-text-muted">
                 Demandé le {new Date(item.requestedAt).toLocaleString("fr-FR")}
@@ -633,11 +637,11 @@ export const AutoDealerWorkspacePage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge>{member.role}</Badge>
+              <Badge>{labelIdentifier(member.role)}</Badge>
               <Badge
                 variant={member.status === "active" ? "success" : "warning"}
               >
-                {member.status === "active" ? "Actif" : member.status}
+                {labelIdentifier(member.status)}
               </Badge>
             </div>
           </div>

@@ -31,6 +31,7 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatImmoMoney } from "./immo-format";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 type Tab =
   | "overview"
@@ -130,7 +131,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             }
           : current,
       );
-      toast.success(`Import ${type.toUpperCase()} mis en file d’attente.`);
+      toast.success(`Import ${labelIdentifier(type)} mis en file d’attente.`);
     } catch (cause) {
       toast.error(
         cause instanceof Error ? cause.message : "Import impossible.",
@@ -710,7 +711,8 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 >
                   <div>
                     <p className="text-xs font-black">
-                      {job.fileName || `${job.type.toUpperCase()} automatique`}
+                      {job.fileName ||
+                        `${labelIdentifier(job.type)} automatique`}
                     </p>
                     <p className="text-micro text-text-muted">
                       {job.importedCount} importés · {job.rejectedCount} rejetés
@@ -725,7 +727,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                           : "warning"
                     }
                   >
-                    {job.status}
+                    {labelIdentifier(job.status)}
                   </Badge>
                 </div>
               ))}
@@ -750,7 +752,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                       {member.branchIds.length} agence(s)
                     </p>
                   </div>
-                  <Badge>{member.role}</Badge>
+                  <Badge>{labelIdentifier(member.role)}</Badge>
                 </div>
               ))}
             </div>
@@ -843,8 +845,9 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               {workspace.subscription.offerName}
             </h2>
             <p className="mt-2 text-xs text-text-secondary">
-              Statut : {workspace.subscription.status}. Les droits effectifs
-              restent issus du catalogue d’entitlements du marché.
+              Statut : {labelIdentifier(workspace.subscription.status)}. Les
+              droits effectifs restent issus du catalogue d’entitlements du
+              marché.
             </p>
             {workspace.subscription.renewsAt ? (
               <p className="mt-3 text-micro text-text-muted">

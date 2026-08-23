@@ -76,7 +76,7 @@ const EmploymentFilters: React.FC<{
   ) =>
     catalog.dictionaries.filter(
       (entry) => entry.kind === kind && entry.isActive,
-  );
+    );
   return (
     <FilterPanel
       title="Filtres"
@@ -615,15 +615,15 @@ export const EmploymentSearchPage: React.FC = () => {
           onClose={() => setMobileFilters(false)}
           title="Filtres emploi"
         >
-            <EmploymentFilters
-              catalog={catalog}
-              params={params}
-              setParam={setParam}
-              onReset={resetFilters}
-              presentation="drawer"
-              resultCount={total}
-              onApply={() => setMobileFilters(false)}
-            />
+          <EmploymentFilters
+            catalog={catalog}
+            params={params}
+            setParam={setParam}
+            onReset={resetFilters}
+            presentation="drawer"
+            resultCount={total}
+            onApply={() => setMobileFilters(false)}
+          />
         </Drawer>
       ) : null}
     </main>

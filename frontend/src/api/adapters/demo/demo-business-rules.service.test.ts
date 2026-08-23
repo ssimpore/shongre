@@ -63,8 +63,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     expect(initial.currentSubscription?.productId).toBe("plan.pro.business");
     expect(
       initial.invoices.find(
-        (invoice) =>
-          invoice.subscriptionId === initial.currentSubscription?.id,
+        (invoice) => invoice.subscriptionId === initial.currentSubscription?.id,
       )?.total.amountMinor,
     ).toBe(9_480);
 

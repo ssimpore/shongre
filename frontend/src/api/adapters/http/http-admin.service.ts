@@ -38,10 +38,10 @@ export class HttpAdminService implements AdminServiceContract {
     approve: boolean,
     notes: string,
   ): Promise<UserProfile> {
-    return httpClient.put<UserProfile>(
-      `/admin/users/${userId}/verification`,
-      { approve, notes },
-    );
+    return httpClient.put<UserProfile>(`/admin/users/${userId}/verification`, {
+      approve,
+      notes,
+    });
   }
 
   async getPendingReports(): Promise<

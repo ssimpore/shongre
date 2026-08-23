@@ -28,6 +28,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { getPermissionDisplayName } from "../../security/permissions";
 
 const ROLE_LABELS = {
   owner: "Propriétaire",
@@ -225,7 +226,10 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                         {ROLE_LABELS[member.role]}
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {member.permissions.slice(0, 2).join(" · ")}
+                        {member.permissions
+                          .slice(0, 2)
+                          .map(getPermissionDisplayName)
+                          .join(" · ")}
                         {member.permissions.length > 2
                           ? ` +${member.permissions.length - 2}`
                           : ""}

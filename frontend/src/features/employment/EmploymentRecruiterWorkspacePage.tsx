@@ -32,6 +32,7 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentDate } from "./employment-format";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 type Tab =
   | "overview"
@@ -213,7 +214,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
         },
       );
       setImportPreview(preview);
-      toast.success(`Prévisualisation ${sourceType.toUpperCase()} prête.`);
+      toast.success(`Prévisualisation ${labelIdentifier(sourceType)} prête.`);
     } catch (cause) {
       toast.error(
         cause instanceof Error ? cause.message : "Prévisualisation impossible.",
@@ -244,7 +245,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
           : current,
       );
       toast.success(
-        `Import ${importJob.sourceType.toUpperCase()} mis en file d’attente.`,
+        `Import ${labelIdentifier(importJob.sourceType)} mis en file d’attente.`,
       );
       setImportPreview(undefined);
     } catch (cause) {
@@ -460,7 +461,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       className="min-w-0 rounded-control bg-bg-subtle p-3"
                     >
                       <dt className="break-all text-xs font-medium text-text-secondary">
-                        {key}
+                        {labelIdentifier(key)}
                       </dt>
                       <dd className="mt-1 text-sm font-black">
                         {typeof value === "boolean"
@@ -692,7 +693,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       }).format(new Date(interview.startsAt))}
                     </p>
                     <p className="text-xs text-text-muted">
-                      {interview.timezone} · {interview.modeId}
+                      {interview.timezone} · {labelIdentifier(interview.modeId)}
                     </p>
                   </div>
                   <Badge
@@ -700,7 +701,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       interview.status === "confirmed" ? "success" : "warning"
                     }
                   >
-                    {interview.status}
+                    {labelIdentifier(interview.status)}
                   </Badge>
                 </div>
               </article>
@@ -803,7 +804,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                               : "primary"
                         }
                       >
-                        {item.status}
+                        {labelIdentifier(item.status)}
                       </Badge>
                     </td>
                     <td className="p-3">{item.createdCount}</td>
@@ -840,7 +841,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       {member.displayName || member.userId}
                     </p>
                     <p className="mt-1 text-xs text-text-muted">
-                      {member.role.replaceAll("_", " ")} ·{" "}
+                      {labelIdentifier(member.role)} ·{" "}
                       {member.branchIds.length
                         ? `${member.branchIds.length} périmètre(s) agence`
                         : "périmètre employeur"}
@@ -849,12 +850,12 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                   <Badge
                     variant={member.status === "active" ? "success" : "neutral"}
                   >
-                    {member.status}
+                    {labelIdentifier(member.status)}
                   </Badge>
                 </div>
                 <p className="mt-3 text-xs text-text-secondary">
                   {member.permissions.length
-                    ? member.permissions.join(" · ")
+                    ? member.permissions.map(labelIdentifier).join(" · ")
                     : "Lecture limitée selon le rôle"}
                 </p>
               </article>

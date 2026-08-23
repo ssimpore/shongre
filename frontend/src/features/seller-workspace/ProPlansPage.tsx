@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type {
   BillingOverview,
   MonetizationCatalog,
@@ -208,7 +214,9 @@ export const ProPlansPage: React.FC = () => {
           .find((entry) => entry.key === key);
         return source ? { key, label: source.label } : null;
       })
-      .filter((entry): entry is { key: string; label: string } => Boolean(entry));
+      .filter((entry): entry is { key: string; label: string } =>
+        Boolean(entry),
+      );
   }, [plans]);
 
   const currentSubscription = billing?.currentSubscription;
@@ -260,7 +268,9 @@ export const ProPlansPage: React.FC = () => {
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Impossible de préparer l’offre.",
+        error instanceof Error
+          ? error.message
+          : "Impossible de préparer l’offre.",
       );
       closeCheckout();
     } finally {
@@ -382,12 +392,18 @@ export const ProPlansPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {!catalog && !catalogError && (
-          <div className="my-8 rounded-card border border-border-base bg-bg-surface p-8 text-center text-sm font-semibold text-text-secondary" aria-live="polite">
+          <div
+            className="my-8 rounded-card border border-border-base bg-bg-surface p-8 text-center text-sm font-semibold text-text-secondary"
+            aria-live="polite"
+          >
             Chargement des offres actives…
           </div>
         )}
         {catalogError && (
-          <div className="my-8 rounded-card border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger" role="alert">
+          <div
+            className="my-8 rounded-card border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger"
+            role="alert"
+          >
             {catalogError}
           </div>
         )}
@@ -397,15 +413,20 @@ export const ProPlansPage: React.FC = () => {
             <section aria-labelledby="plans-title" className="py-8 sm:py-10">
               <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <h2 id="plans-title" className="text-xl sm:text-2xl font-black text-text-main">
+                  <h2
+                    id="plans-title"
+                    className="text-xl sm:text-2xl font-black text-text-main"
+                  >
                     Un forfait pour chaque étape
                   </h2>
                   <p className="mt-1 text-sm text-text-secondary">
-                    Quatre niveaux lisibles, issus du catalogue commercial actif.
+                    Quatre niveaux lisibles, issus du catalogue commercial
+                    actif.
                   </p>
                 </div>
                 <span className="text-xs text-text-muted">
-                  Catalogue v{catalog.versionNumber} · marché {catalog.marketCode}
+                  Catalogue v{catalog.versionNumber} · marché{" "}
+                  {catalog.marketCode}
                 </span>
               </div>
 
@@ -421,7 +442,8 @@ export const ProPlansPage: React.FC = () => {
                   );
                   const annualSaving =
                     monthly && annual
-                      ? monthly.amount.amountMinor * 12 - annual.amount.amountMinor
+                      ? monthly.amount.amountMinor * 12 -
+                        annual.amount.amountMinor
                       : 0;
                   return (
                     <article
@@ -453,7 +475,11 @@ export const ProPlansPage: React.FC = () => {
                         )}
                       </div>
                       <div className="mt-5">
-                        <PriceDisplay product={plan} price={price} interval={interval} />
+                        <PriceDisplay
+                          product={plan}
+                          price={price}
+                          interval={interval}
+                        />
                         {interval === "year" && annualSaving > 0 && (
                           <p className="mt-1 text-xs font-bold text-success">
                             Économie annuelle : {formatMoney(annualSaving)}
@@ -463,8 +489,14 @@ export const ProPlansPage: React.FC = () => {
                       <div className="my-5 border-t border-border-subtle" />
                       <ul className="flex-1 space-y-2.5 text-xs text-text-secondary">
                         {plan.entitlements.slice(0, 6).map((entitlement) => (
-                          <li key={entitlement.key} className="flex items-start gap-2.5">
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+                          <li
+                            key={entitlement.key}
+                            className="flex items-start gap-2.5"
+                          >
+                            <Check
+                              className="mt-0.5 h-4 w-4 shrink-0 text-success"
+                              aria-hidden="true"
+                            />
                             <span>
                               {entitlement.label} :{" "}
                               <strong className="font-bold text-text-main">
@@ -476,11 +508,19 @@ export const ProPlansPage: React.FC = () => {
                       </ul>
                       <div className="mt-6">
                         {plan.audience === "individual" ? (
-                          <Button to="/inscription/particulier" variant="outline" fullWidth>
+                          <Button
+                            to="/inscription/particulier"
+                            variant="outline"
+                            fullWidth
+                          >
                             Commencer gratuitement
                           </Button>
                         ) : !isAuthenticated ? (
-                          <Button to="/inscription/professionnel" variant={plan.recommended ? "primary" : "outline"} fullWidth>
+                          <Button
+                            to="/inscription/professionnel"
+                            variant={plan.recommended ? "primary" : "outline"}
+                            fullWidth
+                          >
                             Créer un compte Pro
                           </Button>
                         ) : (
@@ -490,7 +530,11 @@ export const ProPlansPage: React.FC = () => {
                             disabled={isCurrent}
                             onClick={() => void prepareOffer(plan, price)}
                           >
-                            {isCurrent ? "Forfait actuel" : currentSubscription ? "Changer de forfait" : "Choisir ce forfait"}
+                            {isCurrent
+                              ? "Forfait actuel"
+                              : currentSubscription
+                                ? "Changer de forfait"
+                                : "Choisir ce forfait"}
                           </Button>
                         )}
                       </div>
@@ -503,7 +547,10 @@ export const ProPlansPage: React.FC = () => {
             <section aria-labelledby="comparison-title" className="pb-10">
               <div className="mb-4 flex items-end justify-between gap-4">
                 <div>
-                  <h2 id="comparison-title" className="text-xl font-black text-text-main">
+                  <h2
+                    id="comparison-title"
+                    className="text-xl font-black text-text-main"
+                  >
                     Comparez les fonctionnalités
                   </h2>
                   <p className="mt-1 text-sm text-text-secondary">
@@ -516,9 +563,15 @@ export const ProPlansPage: React.FC = () => {
                 <table className="w-full min-w-[760px] border-collapse text-xs">
                   <thead>
                     <tr className="bg-bg-subtle text-left text-text-main">
-                      <th scope="col" className="px-4 py-3 font-black">Fonctionnalité</th>
+                      <th scope="col" className="px-4 py-3 font-black">
+                        Fonctionnalité
+                      </th>
                       {plans.map((plan) => (
-                        <th key={plan.id} scope="col" className="px-4 py-3 text-center font-black">
+                        <th
+                          key={plan.id}
+                          scope="col"
+                          className="px-4 py-3 text-center font-black"
+                        >
                           {plan.name}
                         </th>
                       ))}
@@ -527,7 +580,10 @@ export const ProPlansPage: React.FC = () => {
                   <tbody className="divide-y divide-border-subtle">
                     {comparisonRows.map((row) => (
                       <tr key={row.key}>
-                        <th scope="row" className="px-4 py-3 text-left font-semibold text-text-secondary">
+                        <th
+                          scope="row"
+                          className="px-4 py-3 text-left font-semibold text-text-secondary"
+                        >
                           {row.label}
                         </th>
                         {plans.map((plan) => {
@@ -535,8 +591,13 @@ export const ProPlansPage: React.FC = () => {
                             (entry) => entry.key === row.key,
                           );
                           return (
-                            <td key={plan.id} className="px-4 py-3 text-center font-semibold text-text-main">
-                              {entitlement ? displayEntitlement(entitlement.value) : "—"}
+                            <td
+                              key={plan.id}
+                              className="px-4 py-3 text-center font-semibold text-text-main"
+                            >
+                              {entitlement
+                                ? displayEntitlement(entitlement.value)
+                                : "—"}
                             </td>
                           );
                         })}
@@ -547,29 +608,43 @@ export const ProPlansPage: React.FC = () => {
               </div>
             </section>
 
-            <section aria-labelledby="boosts-title" className="border-t border-border-subtle py-10">
+            <section
+              aria-labelledby="boosts-title"
+              className="border-t border-border-subtle py-10"
+            >
               <div className="mb-5">
-                <h2 id="boosts-title" className="text-xl sm:text-2xl font-black text-text-main">
+                <h2
+                  id="boosts-title"
+                  className="text-xl sm:text-2xl font-black text-text-main"
+                >
                   Options de visibilité, à la carte
                 </h2>
                 <p className="mt-1 text-sm text-text-secondary">
-                  Choisissez d’abord l’annonce à promouvoir : aucun achat n’est présélectionné.
+                  Choisissez d’abord l’annonce à promouvoir : aucun achat n’est
+                  présélectionné.
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {boosts.slice(0, 4).map((boost) => {
                   const price = boost.prices[0];
                   return (
-                    <article key={boost.id} className="flex rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
+                    <article
+                      key={boost.id}
+                      className="flex rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
+                    >
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="mb-4 flex items-start gap-3">
                           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary-border bg-primary-light text-primary">
                             <Zap className="h-5 w-5" aria-hidden="true" />
                           </span>
                           <div className="min-w-0">
-                            <h3 className="font-black text-text-main">{boost.name}</h3>
+                            <h3 className="font-black text-text-main">
+                              {boost.name}
+                            </h3>
                             <p className="mt-0.5 text-xs text-text-muted">
-                              {price.durationDays ? `${price.durationDays} jours` : "Activation unique"}
+                              {price.durationDays
+                                ? `${price.durationDays} jours`
+                                : "Activation unique"}
                             </p>
                           </div>
                         </div>
@@ -578,9 +653,22 @@ export const ProPlansPage: React.FC = () => {
                         </p>
                         <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3">
                           <strong className="text-base text-text-main">
-                            {formatMoney(price.amount.amountMinor, price.amount.currency)} HT
+                            {formatMoney(
+                              price.amount.amountMinor,
+                              price.amount.currency,
+                            )}{" "}
+                            HT
                           </strong>
-                          <Button to={isAuthenticated ? "/compte/annonces" : "/connexion"} variant="outline" size="sm" rightIcon={<ChevronRight className="h-4 w-4" />}>
+                          <Button
+                            to={
+                              isAuthenticated
+                                ? "/compte/annonces"
+                                : "/connexion"
+                            }
+                            variant="outline"
+                            size="sm"
+                            rightIcon={<ChevronRight className="h-4 w-4" />}
+                          >
                             Choisir l’annonce
                           </Button>
                         </div>
@@ -590,29 +678,46 @@ export const ProPlansPage: React.FC = () => {
                 })}
               </div>
               <p className="mt-3 text-xs text-text-muted">
-                Les placements rémunérés restent identifiables. Leur disponibilité dépend de l’annonce, du marché et de la catégorie.
+                Les placements rémunérés restent identifiables. Leur
+                disponibilité dépend de l’annonce, du marché et de la catégorie.
               </p>
             </section>
 
-            <section aria-labelledby="billing-title" className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-6 shadow-xs">
+            <section
+              aria-labelledby="billing-title"
+              className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-6 shadow-xs"
+            >
               <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 id="billing-title" className="text-xl font-black text-text-main">
+                  <h2
+                    id="billing-title"
+                    className="text-xl font-black text-text-main"
+                  >
                     Votre abonnement et votre usage
                   </h2>
                   <p className="mt-1 text-sm text-text-secondary">
-                    État du forfait, quotas, échéance et documents au même endroit.
+                    État du forfait, quotas, échéance et documents au même
+                    endroit.
                   </p>
                 </div>
                 {currentSubscription && (
-                  <Badge variant={currentSubscription.status === "past_due" ? "urgent" : "verified"}>
-                    {STATUS_LABELS[currentSubscription.status] || currentSubscription.status}
+                  <Badge
+                    variant={
+                      currentSubscription.status === "past_due"
+                        ? "urgent"
+                        : "verified"
+                    }
+                  >
+                    {STATUS_LABELS[currentSubscription.status] ||
+                      currentSubscription.status}
                   </Badge>
                 )}
               </div>
               <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr_1fr] lg:divide-x lg:divide-border-subtle">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Forfait actuel</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+                    Forfait actuel
+                  </p>
                   <p className="mt-2 text-lg font-black text-text-main">
                     {currentProduct?.name || "Aucun forfait actif"}
                   </p>
@@ -623,49 +728,97 @@ export const ProPlansPage: React.FC = () => {
                   </p>
                   {currentSubscription?.scheduledProductId && (
                     <p className="mt-3 rounded-control bg-info-surface px-3 py-2 text-xs font-semibold text-info">
-                      Changement programmé au {formatDate(currentSubscription.scheduledChangeAt)}.
+                      Changement programmé au{" "}
+                      {formatDate(currentSubscription.scheduledChangeAt)}.
                     </p>
                   )}
                 </div>
                 <div className="lg:px-6">
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Usage de la période</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+                    Usage de la période
+                  </p>
                   <div className="mt-3 space-y-4">
                     {billing?.usage.length ? (
                       billing.usage.map((usage) => {
                         const percent = usage.limit
-                          ? Math.min(100, Math.round((usage.used / usage.limit) * 100))
+                          ? Math.min(
+                              100,
+                              Math.round((usage.used / usage.limit) * 100),
+                            )
                           : 0;
                         return (
                           <div key={usage.key}>
                             <div className="mb-1.5 flex items-center justify-between gap-4 text-xs">
-                              <span className="font-semibold text-text-secondary">{usage.label}</span>
+                              <span className="font-semibold text-text-secondary">
+                                {usage.label}
+                              </span>
                               <span className="font-bold text-text-main">
                                 {usage.used} / {usage.limit ?? "∞"}
                               </span>
                             </div>
-                            <div className="h-1.5 overflow-hidden rounded-full bg-bg-muted" role="progressbar" aria-label={usage.label} aria-valuenow={usage.used} aria-valuemin={0} aria-valuemax={usage.limit ?? undefined}>
-                              <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+                            <div
+                              className="h-1.5 overflow-hidden rounded-full bg-bg-muted"
+                              role="progressbar"
+                              aria-label={usage.label}
+                              aria-valuenow={usage.used}
+                              aria-valuemin={0}
+                              aria-valuemax={usage.limit ?? undefined}
+                            >
+                              <div
+                                className="h-full rounded-full bg-primary"
+                                style={{ width: `${percent}%` }}
+                              />
                             </div>
                           </div>
                         );
                       })
                     ) : (
-                      <p className="text-xs text-text-muted">Aucun quota consommé pour le moment.</p>
+                      <p className="text-xs text-text-muted">
+                        Aucun quota consommé pour le moment.
+                      </p>
                     )}
                   </div>
                 </div>
                 <div className="space-y-2 lg:pl-6">
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">Actions</p>
-                  <button type="button" onClick={() => setBillingHistoryOpen(true)} className="flex w-full items-center justify-between rounded-control px-2 py-2 text-left text-xs font-semibold text-text-secondary hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-primary">
-                    <span className="inline-flex items-center gap-2"><FileText className="h-4 w-4" aria-hidden="true" /> Factures ({billing?.invoices.length || 0})</span>
+                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+                    Actions
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setBillingHistoryOpen(true)}
+                    className="flex w-full items-center justify-between rounded-control px-2 py-2 text-left text-xs font-semibold text-text-secondary hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FileText className="h-4 w-4" aria-hidden="true" />{" "}
+                      Factures ({billing?.invoices.length || 0})
+                    </span>
                     <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   </button>
-                  <Button to="/compte" variant="ghost" size="sm" fullWidth className="justify-between" rightIcon={<ChevronRight className="h-4 w-4" />}>
+                  <Button
+                    to="/compte"
+                    variant="ghost"
+                    size="sm"
+                    fullWidth
+                    className="justify-between"
+                    rightIcon={<ChevronRight className="h-4 w-4" />}
+                  >
                     Gérer le profil de facturation
                   </Button>
                   {currentSubscription && (
-                    <Button variant={currentSubscription.cancelAtPeriodEnd ? "outline" : "ghost"} size="sm" fullWidth onClick={() => void toggleCancellation()} leftIcon={<RotateCcw className="h-4 w-4" />}>
-                      {currentSubscription.cancelAtPeriodEnd ? "Réactiver le forfait" : "Résilier à l’échéance"}
+                    <Button
+                      variant={
+                        currentSubscription.cancelAtPeriodEnd
+                          ? "outline"
+                          : "ghost"
+                      }
+                      size="sm"
+                      fullWidth
+                      onClick={() => void toggleCancellation()}
+                      leftIcon={<RotateCcw className="h-4 w-4" />}
+                    >
+                      {currentSubscription.cancelAtPeriodEnd
+                        ? "Réactiver le forfait"
+                        : "Résilier à l’échéance"}
                     </Button>
                   )}
                 </div>
@@ -674,28 +827,72 @@ export const ProPlansPage: React.FC = () => {
 
             <section aria-labelledby="faq-title" className="py-10">
               <div className="mb-4 flex items-center gap-2">
-                <CircleHelp className="h-5 w-5 text-primary" aria-hidden="true" />
-                <h2 id="faq-title" className="text-xl font-black text-text-main">Questions fréquentes</h2>
+                <CircleHelp
+                  className="h-5 w-5 text-primary"
+                  aria-hidden="true"
+                />
+                <h2
+                  id="faq-title"
+                  className="text-xl font-black text-text-main"
+                >
+                  Questions fréquentes
+                </h2>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {[
-                  ["La TVA est-elle incluse ?", "Non. Les prix Pro sont affichés HT. Le récapitulatif contractuel détaille le sous-total, la remise éventuelle, la TVA et le total TTC avant confirmation."],
-                  ["Puis-je changer de forfait ?", "Oui. Une montée en gamme peut être immédiate avec prorata. Une baisse est programmée à la prochaine échéance afin de préserver les droits déjà payés."],
-                  ["Comment fonctionne la résiliation ?", "La résiliation prend effet à la fin de la période payée. Vous pouvez la retirer avant cette date depuis le même espace."],
-                  ["Mes annonces sont-elles conservées ?", "Oui. Le changement de forfait ne duplique ni ne supprime vos annonces. Les limites applicables sont recalculées à la date d’effet annoncée."],
+                  [
+                    "La TVA est-elle incluse ?",
+                    "Non. Les prix Pro sont affichés HT. Le récapitulatif contractuel détaille le sous-total, la remise éventuelle, la TVA et le total TTC avant confirmation.",
+                  ],
+                  [
+                    "Puis-je changer de forfait ?",
+                    "Oui. Une montée en gamme peut être immédiate avec prorata. Une baisse est programmée à la prochaine échéance afin de préserver les droits déjà payés.",
+                  ],
+                  [
+                    "Comment fonctionne la résiliation ?",
+                    "La résiliation prend effet à la fin de la période payée. Vous pouvez la retirer avant cette date depuis le même espace.",
+                  ],
+                  [
+                    "Mes annonces sont-elles conservées ?",
+                    "Oui. Le changement de forfait ne duplique ni ne supprime vos annonces. Les limites applicables sont recalculées à la date d’effet annoncée.",
+                  ],
                 ].map(([question, answer]) => (
-                  <details key={question} className="group rounded-card border border-border-base bg-bg-surface p-4">
+                  <details
+                    key={question}
+                    className="group rounded-card border border-border-base bg-bg-surface p-4"
+                  >
                     <summary className="cursor-pointer list-none font-bold text-sm text-text-main focus-visible:outline-2 focus-visible:outline-primary">
-                      <span className="flex items-center justify-between gap-3">{question}<ChevronRight className="h-4 w-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden="true" /></span>
+                      <span className="flex items-center justify-between gap-3">
+                        {question}
+                        <ChevronRight
+                          className="h-4 w-4 shrink-0 transition-transform group-open:rotate-90"
+                          aria-hidden="true"
+                        />
+                      </span>
                     </summary>
-                    <p className="mt-3 text-xs leading-relaxed text-text-secondary">{answer}</p>
+                    <p className="mt-3 text-xs leading-relaxed text-text-secondary">
+                      {answer}
+                    </p>
                   </details>
                 ))}
               </div>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-border-subtle pt-6 text-xs text-text-muted">
-                <span className="inline-flex items-center gap-2"><LockKeyhole className="h-4 w-4" aria-hidden="true" /> Paiement sécurisé par le prestataire configuré</span>
-                <span className="inline-flex items-center gap-2"><CreditCard className="h-4 w-4" aria-hidden="true" /> Aucun achat présélectionné</span>
-                <Button to="/support" variant="ghost" size="sm" rightIcon={<ArrowRight className="h-4 w-4" />}>Contacter le support</Button>
+                <span className="inline-flex items-center gap-2">
+                  <LockKeyhole className="h-4 w-4" aria-hidden="true" />{" "}
+                  Paiement sécurisé par le prestataire configuré
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" aria-hidden="true" /> Aucun
+                  achat présélectionné
+                </span>
+                <Button
+                  to="/support"
+                  variant="ghost"
+                  size="sm"
+                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                >
+                  Contacter le support
+                </Button>
               </div>
             </section>
           </>
@@ -705,7 +902,11 @@ export const ProPlansPage: React.FC = () => {
       <Modal
         isOpen={Boolean(selectedProduct)}
         onClose={closeCheckout}
-        title={completedMessage ? "Opération confirmée" : `Confirmer ${selectedProduct?.name || "l’offre"}`}
+        title={
+          completedMessage
+            ? "Opération confirmée"
+            : `Confirmer ${selectedProduct?.name || "l’offre"}`
+        }
         description="Le récapitulatif est calculé par le service commercial à partir du catalogue actif."
         maxWidth="lg"
       >
@@ -715,10 +916,15 @@ export const ProPlansPage: React.FC = () => {
               <Check className="h-6 w-6" aria-hidden="true" />
             </span>
             <p className="font-bold text-text-main">{completedMessage}</p>
-            <Button onClick={closeCheckout} fullWidth>Fermer</Button>
+            <Button onClick={closeCheckout} fullWidth>
+              Fermer
+            </Button>
           </div>
         ) : isPreparing || (!quote && !changePreview) ? (
-          <div className="py-8 text-center text-sm font-semibold text-text-secondary" aria-live="polite">
+          <div
+            className="py-8 text-center text-sm font-semibold text-text-secondary"
+            aria-live="polite"
+          >
             Calcul du prix, des taxes et de la date d’effet…
           </div>
         ) : (
@@ -726,36 +932,121 @@ export const ProPlansPage: React.FC = () => {
             <div className="rounded-card border border-border-base bg-bg-subtle p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-black text-text-main">{selectedProduct?.name}</p>
-                  <p className="mt-1 text-xs text-text-secondary">{selectedProduct?.description}</p>
+                  <p className="font-black text-text-main">
+                    {selectedProduct?.name}
+                  </p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    {selectedProduct?.description}
+                  </p>
                 </div>
-                <Badge variant="neutral">{selectedPrice?.billingPeriod === "year" ? "Annuel" : "Mensuel"}</Badge>
+                <Badge variant="neutral">
+                  {selectedPrice?.billingPeriod === "year"
+                    ? "Annuel"
+                    : "Mensuel"}
+                </Badge>
               </div>
             </div>
             {quote && (
               <dl className="space-y-3 text-sm">
-                <div className="flex justify-between gap-4"><dt className="text-text-secondary">Sous-total HT</dt><dd className="font-bold text-text-main">{formatMoney(quote.subtotalMinor, quote.currency)}</dd></div>
-                {quote.discountMinor > 0 && <div className="flex justify-between gap-4 text-success"><dt>Remise</dt><dd className="font-bold">− {formatMoney(quote.discountMinor, quote.currency)}</dd></div>}
-                <div className="flex justify-between gap-4"><dt className="text-text-secondary">TVA</dt><dd className="font-bold text-text-main">{formatMoney(quote.taxMinor, quote.currency)}</dd></div>
-                <div className="flex justify-between gap-4 border-t border-border-base pt-3 text-base"><dt className="font-black text-text-main">Total TTC</dt><dd className="font-black text-text-main">{formatMoney(quote.totalMinor, quote.currency)}</dd></div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">Sous-total HT</dt>
+                  <dd className="font-bold text-text-main">
+                    {formatMoney(quote.subtotalMinor, quote.currency)}
+                  </dd>
+                </div>
+                {quote.discountMinor > 0 && (
+                  <div className="flex justify-between gap-4 text-success">
+                    <dt>Remise</dt>
+                    <dd className="font-bold">
+                      − {formatMoney(quote.discountMinor, quote.currency)}
+                    </dd>
+                  </div>
+                )}
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">TVA</dt>
+                  <dd className="font-bold text-text-main">
+                    {formatMoney(quote.taxMinor, quote.currency)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-border-base pt-3 text-base">
+                  <dt className="font-black text-text-main">Total TTC</dt>
+                  <dd className="font-black text-text-main">
+                    {formatMoney(quote.totalMinor, quote.currency)}
+                  </dd>
+                </div>
               </dl>
             )}
             {changePreview && (
               <dl className="space-y-3 text-sm">
-                <div className="flex justify-between gap-4"><dt className="text-text-secondary">Date d’effet</dt><dd className="font-bold text-text-main">{changePreview.effectiveAt === "immediately" ? "Immédiatement" : formatDate(changePreview.nextBillingAt)}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-text-secondary">Prorata HT</dt><dd className="font-bold text-text-main">{formatMoney(changePreview.proration.amountMinor, changePreview.proration.currency)}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-text-secondary">TVA due maintenant</dt><dd className="font-bold text-text-main">{formatMoney(changePreview.tax.amountMinor, changePreview.tax.currency)}</dd></div>
-                <div className="flex justify-between gap-4 border-t border-border-base pt-3"><dt className="font-black text-text-main">Total dû maintenant</dt><dd className="font-black text-text-main">{formatMoney(changePreview.totalDueNow.amountMinor, changePreview.totalDueNow.currency)}</dd></div>
-                <div className="flex justify-between gap-4"><dt className="text-text-secondary">Prochaine période TTC</dt><dd className="font-bold text-text-main">{formatMoney(changePreview.nextPeriodTotal.amountMinor, changePreview.nextPeriodTotal.currency)}</dd></div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">Date d’effet</dt>
+                  <dd className="font-bold text-text-main">
+                    {changePreview.effectiveAt === "immediately"
+                      ? "Immédiatement"
+                      : formatDate(changePreview.nextBillingAt)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">Prorata HT</dt>
+                  <dd className="font-bold text-text-main">
+                    {formatMoney(
+                      changePreview.proration.amountMinor,
+                      changePreview.proration.currency,
+                    )}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">TVA due maintenant</dt>
+                  <dd className="font-bold text-text-main">
+                    {formatMoney(
+                      changePreview.tax.amountMinor,
+                      changePreview.tax.currency,
+                    )}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-border-base pt-3">
+                  <dt className="font-black text-text-main">
+                    Total dû maintenant
+                  </dt>
+                  <dd className="font-black text-text-main">
+                    {formatMoney(
+                      changePreview.totalDueNow.amountMinor,
+                      changePreview.totalDueNow.currency,
+                    )}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">Prochaine période TTC</dt>
+                  <dd className="font-bold text-text-main">
+                    {formatMoney(
+                      changePreview.nextPeriodTotal.amountMinor,
+                      changePreview.nextPeriodTotal.currency,
+                    )}
+                  </dd>
+                </div>
               </dl>
             )}
             <p className="rounded-control bg-info-surface px-3 py-2 text-xs leading-relaxed text-info">
-              En confirmant, vous acceptez la date d’effet, les droits associés et le montant affiché. Aucun prix n’est recalculé dans cette interface.
+              En confirmant, vous acceptez la date d’effet, les droits associés
+              et le montant affiché. Aucun prix n’est recalculé dans cette
+              interface.
             </p>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button variant="outline" onClick={closeCheckout} disabled={isConfirming}>Annuler</Button>
-              <Button onClick={() => void confirmOffer()} isLoading={isConfirming} leftIcon={<CreditCard className="h-4 w-4" />}>
-                {changePreview?.effectiveAt === "period_end" ? "Programmer le changement" : "Confirmer"}
+              <Button
+                variant="outline"
+                onClick={closeCheckout}
+                disabled={isConfirming}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={() => void confirmOffer()}
+                isLoading={isConfirming}
+                leftIcon={<CreditCard className="h-4 w-4" />}
+              >
+                {changePreview?.effectiveAt === "period_end"
+                  ? "Programmer le changement"
+                  : "Confirmer"}
               </Button>
             </div>
           </div>

@@ -144,12 +144,18 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
         </div>
 
         {loading && (
-          <div className="rounded-card border border-border-base p-8 text-center text-sm font-semibold text-text-secondary" aria-live="polite">
+          <div
+            className="rounded-card border border-border-base p-8 text-center text-sm font-semibold text-text-secondary"
+            aria-live="polite"
+          >
             Chargement des documents…
           </div>
         )}
         {error && (
-          <div className="rounded-card border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger" role="alert">
+          <div
+            className="rounded-card border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger"
+            role="alert"
+          >
             {error}
           </div>
         )}
@@ -171,24 +177,42 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                           {invoice.number}
                         </h3>
                         <Badge
-                          variant={invoice.status === "paid" ? "verified" : "neutral"}
+                          variant={
+                            invoice.status === "paid" ? "verified" : "neutral"
+                          }
                           size="sm"
                         >
                           {STATUS_LABELS[invoice.status]}
                         </Badge>
                       </div>
                       <p className="mt-1 text-xs text-text-secondary">
-                        Émise le {new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}
-                        {invoice.subscriptionId ? " · abonnement" : " · achat ponctuel"}
+                        Émise le{" "}
+                        {new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}
+                        {invoice.subscriptionId
+                          ? " · abonnement"
+                          : " · achat ponctuel"}
                       </p>
                       <p className="mt-1 text-micro text-text-muted">
-                        HT {formatMoney(invoice.subtotal.amountMinor, invoice.subtotal.currency)} · TVA {formatMoney(invoice.tax.amountMinor, invoice.tax.currency)}
+                        HT{" "}
+                        {formatMoney(
+                          invoice.subtotal.amountMinor,
+                          invoice.subtotal.currency,
+                        )}{" "}
+                        · TVA{" "}
+                        {formatMoney(
+                          invoice.tax.amountMinor,
+                          invoice.tax.currency,
+                        )}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-border-subtle pt-3 sm:border-0 sm:pt-0">
                     <strong className="text-sm text-text-main">
-                      {formatMoney(invoice.total.amountMinor, invoice.total.currency)} TTC
+                      {formatMoney(
+                        invoice.total.amountMinor,
+                        invoice.total.currency,
+                      )}{" "}
+                      TTC
                     </strong>
                     <Button
                       variant="outline"
@@ -211,7 +235,10 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
         )}
 
         <div className="flex flex-col gap-3 border-t border-border-subtle pt-4 text-xs text-text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>Les documents proviennent du même registre que les paiements et remboursements.</span>
+          <span>
+            Les documents proviennent du même registre que les paiements et
+            remboursements.
+          </span>
           <Button variant="outline" size="sm" onClick={onClose}>
             Fermer
           </Button>

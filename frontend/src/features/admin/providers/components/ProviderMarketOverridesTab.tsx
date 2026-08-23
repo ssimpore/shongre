@@ -9,6 +9,7 @@ import { providerService } from "../../../../domains/providers/provider.service"
 import { Button } from "../../../../design-system/primitives/Button";
 import { useToast } from "../../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { labelIdentifier } from "../../../../utilities/identifier-label";
 
 interface ProviderMarketOverridesTabProps {
   provider: Provider;
@@ -159,7 +160,7 @@ export const ProviderMarketOverridesTab: React.FC<
             <div className="flex justify-between py-1">
               <span className="text-stone-500">Environnement :</span>
               <span className="font-bold text-stone-900 uppercase font-mono">
-                {configuration.environment}
+                {labelIdentifier(configuration.environment)}
               </span>
             </div>
           </div>

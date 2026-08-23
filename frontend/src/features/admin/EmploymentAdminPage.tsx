@@ -25,6 +25,7 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentMoney } from "../employment/employment-format";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 type FeatureFlag = keyof EmploymentMarketConfig["featureFlags"];
 
@@ -407,8 +408,8 @@ export const EmploymentAdminPage: React.FC = () => {
                         {offer.description}
                       </p>
                     </td>
-                    <td className="p-3">{offer.audience}</td>
-                    <td className="p-3">{offer.kind}</td>
+                    <td className="p-3">{labelIdentifier(offer.audience)}</td>
+                    <td className="p-3">{labelIdentifier(offer.kind)}</td>
                     <td className="p-3 font-bold">
                       {price && price.amountMinor
                         ? formatEmploymentMoney(

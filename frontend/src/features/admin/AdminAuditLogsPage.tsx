@@ -9,6 +9,70 @@ import { roleLabel } from "../../security/roles.config";
 import { Button } from "../../design-system/primitives/Button";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { formatLogTimestamp } from "../../utilities/formatters";
+import {
+  auditFieldLabel,
+  formatAuditDateTime,
+  formatAuditValue,
+  isAuditRecord,
+  isSensitiveAuditField,
+} from "../../security/audit-presentation";
+
+interface AuditValueViewProps {
+  value: unknown;
+  field?: string;
+}
+
+const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
+  if (field && isSensitiveAuditField(field)) {
+    return <span className="text-stone-600">Valeur masquée</span>;
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0)
+      return <span className="text-stone-500">Aucune donnée</span>;
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {value.map((item, index) => (
+          <span
+            key={`${String(item)}-${index}`}
+            className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-micro text-stone-700"
+          >
+            {formatAuditValue(item, field)}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  if (isAuditRecord(value)) {
+    const entries = Object.entries(value);
+    if (entries.length === 0) {
+      return <span className="text-stone-500">Aucune donnée</span>;
+    }
+    return (
+      <dl className="space-y-2">
+        {entries.map(([key, item]) => (
+          <div
+            key={key}
+            className="grid gap-1 rounded-control border border-stone-200 bg-white p-2 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-3"
+          >
+            <dt className="font-semibold text-stone-600">
+              {auditFieldLabel(key)}
+            </dt>
+            <dd className="min-w-0 text-stone-900">
+              <AuditValueView value={item} field={key} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+
+  return (
+    <span className="text-stone-900">{formatAuditValue(value, field)}</span>
+  );
+};
 
 export const AdminAuditLogsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -65,6 +129,7 @@ export const AdminAuditLogsPage: React.FC = () => {
       const q = searchQuery.toLowerCase().trim();
       return (
         log.action.toLowerCase().includes(q) ||
+        auditActionLabel(log.action).toLowerCase().includes(q) ||
         log.actorName.toLowerCase().includes(q) ||
         log.details.toLowerCase().includes(q) ||
         log.targetName?.toLowerCase().includes(q)
@@ -161,7 +226,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             <thead className="bg-stone-100 text-stone-700 font-bold border-b border-stone-200">
               <tr>
                 <th scope="col" className="p-3">
-                  Horodatage (UTC)
+                  Date et heure
                 </th>
                 <th scope="col" className="p-3">
                   Acteur (Initiateur)
@@ -195,8 +260,11 @@ export const AdminAuditLogsPage: React.FC = () => {
                     key={log.id}
                     className="hover:bg-stone-50 transition-colors"
                   >
-                    <td className="p-3 font-mono text-xs text-stone-500 whitespace-nowrap">
-                      {new Date(log.timestamp).toLocaleString()}
+                    <td
+                      className="p-3 text-xs text-stone-500 whitespace-nowrap"
+                      title={`Horodatage ISO : ${log.timestamp}`}
+                    >
+                      {formatLogTimestamp(log.timestamp)}
                     </td>
                     <td className="p-3">
                       <div className="font-bold text-stone-900">
@@ -206,18 +274,23 @@ export const AdminAuditLogsPage: React.FC = () => {
                         {roleLabel(log.actorRole)}
                       </div>
                     </td>
-                    {/* Human label leads; the raw key stays underneath because this
-                        is a forensic table and operators filter and grep by it. */}
                     <td className="p-3">
-                      <div className="font-semibold text-stone-900">
+                      <div
+                        className="font-semibold text-stone-900"
+                        title={`Code action : ${log.action}`}
+                      >
                         {auditActionLabel(log.action)}
                       </div>
-                      <div className="text-micro text-stone-500 font-mono">
-                        {log.action}
-                      </div>
                     </td>
-                    <td className="p-3 text-stone-800">
-                      {log.targetName || log.targetId || "-"}
+                    <td
+                      className="p-3 text-stone-800"
+                      title={
+                        log.targetId
+                          ? `Identifiant cible : ${log.targetId}`
+                          : undefined
+                      }
+                    >
+                      {log.targetName || "Ressource technique"}
                     </td>
                     <td
                       className="p-3 text-stone-600 max-w-xs truncate"
@@ -249,58 +322,122 @@ export const AdminAuditLogsPage: React.FC = () => {
       <Modal
         isOpen={!!selectedLog}
         onClose={() => setSelectedLog(null)}
-        title={`Enregistrement d'Audit #${selectedLog?.id}`}
+        title="Détail de l’événement d’audit"
+        maxWidth="lg"
       >
         {selectedLog && (
-          <div className="space-y-4">
-            <div className="space-y-2 text-xs">
-              <div>
-                <strong className="text-stone-700">Horodatage :</strong>{" "}
-                {selectedLog.timestamp}
-              </div>
-              <div>
-                <strong className="text-stone-700">Acteur :</strong>{" "}
-                {selectedLog.actorName} (ID: {selectedLog.actorId})
-              </div>
-              <div>
-                <strong className="text-stone-700">
-                  {t("admin.adminAuditLogsPage.role")}
-                </strong>{" "}
+          <div className="space-y-5">
+            <dl className="grid gap-x-4 gap-y-3 text-xs sm:grid-cols-[9rem_minmax(0,1fr)]">
+              <dt className="font-semibold text-stone-600">Date et heure</dt>
+              <dd className="text-stone-900">
+                <time
+                  dateTime={selectedLog.timestamp}
+                  title={`Horodatage ISO : ${selectedLog.timestamp}`}
+                >
+                  {formatAuditDateTime(selectedLog.timestamp)}
+                </time>
+              </dd>
+
+              <dt className="font-semibold text-stone-600">Acteur</dt>
+              <dd className="text-stone-900">{selectedLog.actorName}</dd>
+
+              <dt className="font-semibold text-stone-600">
+                {t("admin.adminAuditLogsPage.role")}
+              </dt>
+              <dd className="text-stone-900">
                 {roleLabel(selectedLog.actorRole)}
-              </div>
-              <div>
-                <strong className="text-stone-700">Action :</strong>{" "}
-                {selectedLog.action}
-              </div>
-              <div>
-                <strong className="text-stone-700">
-                  {t("admin.adminAuditLogsPage.details")}
-                </strong>{" "}
+              </dd>
+
+              <dt className="font-semibold text-stone-600">Action</dt>
+              <dd className="text-stone-900">
+                {auditActionLabel(selectedLog.action)}
+              </dd>
+
+              {(selectedLog.targetName || selectedLog.targetId) && (
+                <>
+                  <dt className="font-semibold text-stone-600">Cible</dt>
+                  <dd className="text-stone-900">
+                    {selectedLog.targetName || "Ressource technique"}
+                  </dd>
+                </>
+              )}
+
+              {selectedLog.market && (
+                <>
+                  <dt className="font-semibold text-stone-600">Marché</dt>
+                  <dd className="text-stone-900">
+                    {formatAuditValue(selectedLog.market, "marketCode")}
+                  </dd>
+                </>
+              )}
+            </dl>
+
+            <section className="space-y-1.5 text-xs">
+              <h3 className="font-semibold text-stone-700">
+                {t("admin.adminAuditLogsPage.details")}
+              </h3>
+              <p className="rounded-control bg-stone-50 p-3 leading-relaxed text-stone-700">
                 {selectedLog.details}
-              </div>
+              </p>
+            </section>
 
-              {selectedLog.previousValue && (
-                <div>
-                  <strong className="text-stone-700">
-                    {t("admin.adminAuditLogsPage.etatPrecedent")}
-                  </strong>
-                  <pre className="mt-1 p-2 bg-stone-100 rounded-sm font-mono text-micro overflow-x-auto">
-                    {JSON.stringify(selectedLog.previousValue, null, 2)}
-                  </pre>
+            {selectedLog.previousValue !== undefined && (
+              <section className="space-y-1.5 text-xs">
+                <h3 className="font-semibold text-stone-700">
+                  {t("admin.adminAuditLogsPage.etatPrecedent")}
+                </h3>
+                <div className="rounded-control bg-stone-50 p-2">
+                  <AuditValueView value={selectedLog.previousValue} />
                 </div>
-              )}
+              </section>
+            )}
 
-              {selectedLog.newValue && (
-                <div>
-                  <strong className="text-stone-700">
-                    {t("admin.adminAuditLogsPage.nouvelEtat")}
-                  </strong>
-                  <pre className="mt-1 p-2 bg-stone-100 rounded-sm font-mono text-micro overflow-x-auto">
-                    {JSON.stringify(selectedLog.newValue, null, 2)}
-                  </pre>
+            {selectedLog.newValue !== undefined && (
+              <section className="space-y-1.5 text-xs">
+                <h3 className="font-semibold text-stone-700">
+                  {t("admin.adminAuditLogsPage.nouvelEtat")}
+                </h3>
+                <div className="rounded-control bg-stone-50 p-2">
+                  <AuditValueView value={selectedLog.newValue} />
                 </div>
-              )}
-            </div>
+              </section>
+            )}
+
+            <details className="rounded-control border border-stone-200 bg-white text-xs">
+              <summary className="cursor-pointer px-3 py-2 font-semibold text-stone-600">
+                Données techniques
+              </summary>
+              <dl className="grid gap-2 border-t border-stone-200 p-3 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt className="text-stone-500">Événement</dt>
+                <dd className="break-all font-mono text-micro text-stone-700">
+                  {selectedLog.id}
+                </dd>
+                <dt className="text-stone-500">Identifiant acteur</dt>
+                <dd className="break-all font-mono text-micro text-stone-700">
+                  {selectedLog.actorId}
+                </dd>
+                {selectedLog.targetId && (
+                  <>
+                    <dt className="text-stone-500">Identifiant cible</dt>
+                    <dd className="break-all font-mono text-micro text-stone-700">
+                      {selectedLog.targetId}
+                    </dd>
+                  </>
+                )}
+                <dt className="text-stone-500">Code action</dt>
+                <dd className="break-all font-mono text-micro text-stone-700">
+                  {selectedLog.action}
+                </dd>
+                {selectedLog.ipAddress && (
+                  <>
+                    <dt className="text-stone-500">Adresse IP</dt>
+                    <dd className="break-all font-mono text-micro text-stone-700">
+                      {selectedLog.ipAddress}
+                    </dd>
+                  </>
+                )}
+              </dl>
+            </details>
 
             <div className="pt-3 border-t border-stone-200 text-right">
               <Button

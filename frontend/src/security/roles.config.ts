@@ -42,7 +42,10 @@ export const STAFF_ROLE_PRESENTATION: Record<
 > = {
   support_agent: { title: "Agent Support Client", shortLabel: "Support" },
   moderator: { title: "Modérateur", shortLabel: "Modération" },
-  trust_safety: { title: "Analyste Trust & Safety", shortLabel: "Trust & Safety" },
+  trust_safety: {
+    title: "Analyste Trust & Safety",
+    shortLabel: "Trust & Safety",
+  },
   compliance: { title: "Analyste Conformité", shortLabel: "Conformité" },
   finance: { title: "Responsable Finance", shortLabel: "Finance" },
   operations: { title: "Spécialiste Opérations", shortLabel: "Opérations" },
@@ -50,7 +53,7 @@ export const STAFF_ROLE_PRESENTATION: Record<
   content_manager: { title: "Gestionnaire de contenu", shortLabel: "Contenu" },
   market_manager: { title: "Responsable Marché", shortLabel: "Marché" },
   admin: { title: "Administrateur Plateforme", shortLabel: "Administrateur" },
-  owner: { title: "Propriétaire Plateforme", shortLabel: "Owner" },
+  owner: { title: "Propriétaire Plateforme", shortLabel: "Propriétaire" },
 };
 
 const permissionsFor = (role: PlatformRole): Permission[] =>
@@ -173,7 +176,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
   market_manager: {
     id: "market_manager",
     title: "Responsable Marché & Pays",
-    shortLabel: "Market Manager",
+    shortLabel: "Responsable Marché",
     accountType: "staff",
     hierarchyLevel: 75,
     badgeColor: "bg-info-surface text-info border-info-border",
@@ -197,7 +200,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
   super_admin: {
     id: "super_admin",
     title: "Propriétaire Plateforme",
-    shortLabel: "Owner",
+    shortLabel: "Propriétaire",
     accountType: "staff",
     hierarchyLevel: 100,
     badgeColor: "bg-purple-100 text-purple-950 border-purple-400 font-black",

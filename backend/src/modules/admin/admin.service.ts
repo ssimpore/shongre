@@ -100,9 +100,7 @@ export class AdminService {
       actorRole: input.actor.staffRole || input.actor.role,
       targetId: input.userId,
       targetName: updated.name,
-      action: input.approve
-        ? "verification_approved"
-        : "verification_rejected",
+      action: input.approve ? "verification_approved" : "verification_rejected",
       details: input.notes.trim(),
       metadata: {
         previousBusinessVerification: previous.isBusinessVerified,

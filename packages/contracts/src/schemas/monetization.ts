@@ -603,7 +603,10 @@ export const creditTransactionSchema = z.object({
   id: z.string(),
   accountId: z.string(),
   creditType: z.string().min(1),
-  quantity: z.number().int().refine((value) => value !== 0),
+  quantity: z
+    .number()
+    .int()
+    .refine((value) => value !== 0),
   reason: z.string().min(1),
   sourceType: z.enum([
     "subscription",

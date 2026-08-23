@@ -25,6 +25,7 @@ import { Button } from "../../../design-system/primitives/Button";
 import { StatePanel } from "../../../design-system/primitives/StatePanel";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { labelIdentifier } from "../../../utilities/identifier-label";
 
 type DetailTab =
   "configuration" | "markets" | "health" | "dependencies" | "audit";
@@ -191,7 +192,7 @@ export const AdminProviderDetailPage: React.FC = () => {
             </span>
 
             <span className="text-xs font-mono font-bold bg-stone-800 text-stone-200 px-2.5 py-1 rounded-full uppercase">
-              {configuration.environment}
+              {labelIdentifier(configuration.environment)}
             </span>
           </div>
         </div>
@@ -204,9 +205,10 @@ export const AdminProviderDetailPage: React.FC = () => {
           {provider.capabilities.map((cap) => (
             <span
               key={cap}
-              className="text-xs font-mono bg-stone-100 text-stone-800 px-2 py-0.5 rounded border border-stone-200 font-medium"
+              title={cap}
+              className="text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded border border-stone-200 font-medium"
             >
-              {cap}
+              {getCapabilityMetadata(cap).name}
             </span>
           ))}
         </div>

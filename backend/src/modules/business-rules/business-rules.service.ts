@@ -814,14 +814,20 @@ export class BusinessRulesService {
       (entry) => entry.id === request.targetProductId,
     );
     const currentPrice =
-      currentProduct?.prices.find((entry) => entry.id === subscription.priceId) ||
+      currentProduct?.prices.find(
+        (entry) => entry.id === subscription.priceId,
+      ) ||
       currentProduct?.prices.find(
         (entry) => entry.billingPeriod === subscription.billingPeriod,
       );
     const targetPrice = targetProduct?.prices.find(
       (entry) => entry.id === request.targetPriceId,
     );
-    if (!targetProduct || targetProduct.kind !== "subscription" || !targetPrice) {
+    if (
+      !targetProduct ||
+      targetProduct.kind !== "subscription" ||
+      !targetPrice
+    ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Le forfait cible n’est pas disponible.",
@@ -833,7 +839,10 @@ export class BusinessRulesService {
     const periodEnd = new Date(subscription.currentPeriodEnd).getTime();
     const remainingRatio = Math.max(
       0,
-      Math.min(1, (periodEnd - Date.now()) / Math.max(1, periodEnd - periodStart)),
+      Math.min(
+        1,
+        (periodEnd - Date.now()) / Math.max(1, periodEnd - periodStart),
+      ),
     );
     const prorationMinor = isUpgrade
       ? Math.max(

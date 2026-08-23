@@ -20,6 +20,7 @@ import { DisputeModal } from "./DisputeModal";
 import { LeaveReviewModal } from "./LeaveReviewModal";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { labelIdentifier } from "../../../utilities/identifier-label";
 
 interface TransactionDetailModalProps {
   isOpen: boolean;
@@ -784,7 +785,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
                   <div className="flex-1">
                     <p className="text-stone-800 font-medium">
-                      {h.note || h.status}
+                      {h.note || labelIdentifier(h.status)}
                     </p>
                     <span className="text-stone-500 text-micro">
                       {formatRelativeDate(h.timestamp)} • par {h.actorName}

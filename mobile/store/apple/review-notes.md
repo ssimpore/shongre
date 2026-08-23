@@ -7,7 +7,7 @@ Provide securely at submission:
 - reviewer username/password and any verification bypass;
 - current staging/API availability and supported market;
 - seeded listing/conversation identifiers for report/block testing;
-- why camera, selected photos, coarse foreground location, and notifications are requested;
+- why selected photos and notifications are requested;
 - account deletion path: Account → Settings → Delete account;
 - disposable account instructions if deletion must be completed;
 - any KYC, order, payment, or market gate and how to exercise it;

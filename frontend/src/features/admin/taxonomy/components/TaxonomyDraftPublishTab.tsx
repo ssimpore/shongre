@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { ConfirmModal } from "../../../../design-system/primitives/ConfirmModal";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { labelIdentifier } from "../../../../utilities/identifier-label";
 
 export interface TaxonomyDraftPublishTabProps {
   onPublishSuccess: () => void;
@@ -239,7 +240,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                   </td>
                   <td className="py-3 px-3">
                     <span className="px-2 py-0.5 rounded-full text-micro font-bold uppercase bg-success-surface text-success">
-                      {ver.status}
+                      {labelIdentifier(ver.status)}
                     </span>
                   </td>
                   <td className="py-3 px-3 font-mono">

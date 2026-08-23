@@ -155,11 +155,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
                     <span
                       className={`text-micro font-bold px-2 py-1 rounded-full border ${r.badgeColor}`}
                     >
-                      Lvl {r.hierarchyLevel}
+                      Niv. {r.hierarchyLevel}
                     </span>
                     {r.isInternalStaff && (
-                      <span className="text-micro bg-stone-800 text-stone-200 font-mono px-1 rounded-xs">
-                        STAFF
+                      <span className="text-micro bg-stone-800 text-stone-200 font-bold px-1 rounded-xs">
+                        INTERNE
                       </span>
                     )}
                   </div>
@@ -172,7 +172,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-stone-200/60 flex items-center justify-between text-micro text-stone-500">
-                  <span>{r.permissionsCount} perms</span>
+                  <span>{r.permissionsCount} droits</span>
                   <span className="font-semibold text-stone-700">
                     {r.percentageOfAll}%
                   </span>
@@ -279,11 +279,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
                       className={`p-2.5 text-center min-w-[90px] border-l border-stone-800 ${
                         isCurrent ? "bg-primary-hover text-white" : ""
                       }`}
-                      title={`${def.title} (Lvl ${def.hierarchyLevel})`}
+                      title={`${def.title} (niveau ${def.hierarchyLevel})`}
                     >
                       <div className="text-xs truncate">{def.shortLabel}</div>
                       <div className="text-micro font-normal opacity-80 truncate">
-                        {r}
+                        {def.defaultPermissions.length} droits
                       </div>
                     </th>
                   );
@@ -343,10 +343,10 @@ export const AdminRolesMatrixPage: React.FC = () => {
                               <td className="p-3 sticky left-0 bg-white hover:bg-stone-50 border-r border-stone-200 z-raised">
                                 <div className="flex items-start justify-between gap-2">
                                   <div>
-                                    <div className="font-bold text-stone-900 font-mono text-xs">
-                                      {row.permission.id}
-                                    </div>
-                                    <div className="text-stone-600 text-xs font-medium mt-0.5">
+                                    <div
+                                      className="font-bold text-stone-900 text-xs"
+                                      title={row.permission.id}
+                                    >
                                       {row.permission.name}
                                     </div>
                                     <div className="text-micro text-stone-500 mt-0.5">

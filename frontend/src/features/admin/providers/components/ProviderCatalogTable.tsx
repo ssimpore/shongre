@@ -17,6 +17,7 @@ import {
 import {
   PROVIDER_CATEGORIES,
   getCategoryMetadata,
+  getCapabilityMetadata,
 } from "../../../../domains/providers/provider-capabilities";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
@@ -59,9 +60,13 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
         const matchesName = p.name.toLowerCase().includes(q);
         const matchesCode = p.code.toLowerCase().includes(q);
         const matchesCat = p.category.toLowerCase().includes(q);
-        const matchesCap = p.capabilities.some((c) =>
-          c.toLowerCase().includes(q),
-        );
+        const matchesCap = p.capabilities.some((c) => {
+          const metadata = getCapabilityMetadata(c);
+          return (
+            c.toLowerCase().includes(q) ||
+            metadata.name.toLowerCase().includes(q)
+          );
+        });
         if (!matchesName && !matchesCode && !matchesCat && !matchesCap)
           return false;
       }
@@ -302,13 +307,20 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           {p.capabilities.slice(0, 3).map((cap) => (
                             <span
                               key={cap}
-                              className="text-micro bg-stone-100 text-stone-700 font-mono px-1.5 py-0.5 rounded border border-stone-200"
+                              title={cap}
+                              className="max-w-[14rem] whitespace-normal break-words text-micro leading-tight bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded border border-stone-200"
                             >
-                              {cap}
+                              {getCapabilityMetadata(cap).name}
                             </span>
                           ))}
                           {p.capabilities.length > 3 && (
-                            <span className="text-micro text-stone-500 font-medium self-center">
+                            <span
+                              className="text-micro text-stone-500 font-medium self-center"
+                              title={p.capabilities
+                                .slice(3)
+                                .map((cap) => getCapabilityMetadata(cap).name)
+                                .join(", ")}
+                            >
                               +{p.capabilities.length - 3}
                             </span>
                           )}

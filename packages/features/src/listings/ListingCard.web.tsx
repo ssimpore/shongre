@@ -97,7 +97,9 @@ export function ListingCard({
           <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted">
             <span className="flex min-w-0 items-center gap-1.5">
               {listing.categoryLabel ? (
-                <span className="min-w-0 truncate">{listing.categoryLabel}</span>
+                <span className="min-w-0 truncate">
+                  {listing.categoryLabel}
+                </span>
               ) : null}
               {listing.categoryLabel &&
               (listing.seller?.organizationName || listing.seller?.name) ? (

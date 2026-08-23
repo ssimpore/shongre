@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react-native";
 import type { ComponentType } from "react";
-import type { ColorValue } from "react-native";
+import { Platform, type ColorValue } from "react-native";
 import { nativeSizing } from "@shongre/design-tokens/native";
 import type { IconName } from "./Icon.web";
 export type { IconName } from "./Icon.web";
@@ -76,13 +76,16 @@ export function SemanticIcon({
   color,
 }: SemanticIconProps) {
   const Glyph = icons[name];
+  const accessibilityProps =
+    Platform.OS === "web"
+      ? { accessibilityLabel: label }
+      : { accessible: Boolean(label), accessibilityLabel: label };
   return (
     <Glyph
       size={sizes[size]}
       color={color}
       strokeWidth={2}
-      accessible={Boolean(label)}
-      accessibilityLabel={label}
+      {...accessibilityProps}
     />
   );
 }

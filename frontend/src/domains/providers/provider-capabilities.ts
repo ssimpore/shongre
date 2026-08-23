@@ -3,7 +3,11 @@
  * Authoritative descriptions, category taxonomy, and feature dependencies.
  */
 
-import { ProviderCategory, ProviderCapability } from "./provider.types";
+import type {
+  ProviderAuditEvent,
+  ProviderCapability,
+  ProviderCategory,
+} from "./provider.types";
 
 export interface CategoryMetadata {
   id: ProviderCategory;
@@ -23,6 +27,21 @@ export interface CapabilityMetadata {
   usedByFeatures: string[];
   isRedundancyRecommended: boolean;
 }
+
+export const PROVIDER_AUDIT_ACTION_LABELS: Record<
+  ProviderAuditEvent["action"],
+  string
+> = {
+  configured: "Configuration mise à jour",
+  enabled: "Fournisseur activé",
+  disabled: "Fournisseur désactivé",
+  priority_changed: "Priorité de routage modifiée",
+  environment_changed: "Environnement modifié",
+  credentials_updated: "Identifiants mis à jour",
+  market_override_set: "Surcharge de marché appliquée",
+  market_override_reset: "Surcharge de marché réinitialisée",
+  health_simulated: "Test de santé exécuté",
+};
 
 export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
   PAYMENT: {

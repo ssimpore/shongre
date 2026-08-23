@@ -51,6 +51,20 @@ describe("Canonical Provider Registry", () => {
     });
   });
 
+  it("gives every capability a human-readable display name", () => {
+    Object.entries(PROVIDER_CAPABILITIES).forEach(([capability, metadata]) => {
+      expect(metadata.name.trim(), capability).not.toBe("");
+      expect(metadata.name, capability).not.toBe(capability);
+      expect(metadata.name, capability).not.toMatch(
+        /^[a-z][a-z0-9]*[._][a-z0-9_.]+$/,
+      );
+    });
+
+    expect(PROVIDER_CAPABILITIES["delivery.relay_point"].name).toBe(
+      "Livraison en Point Relais & Lockers",
+    );
+  });
+
   it("correctly filters providers by category and capability", () => {
     const paymentProviders = getProvidersByCategory("PAYMENT");
     expect(paymentProviders.some((p) => p.id === "mangopay")).toBe(true);

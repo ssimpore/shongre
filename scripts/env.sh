@@ -12,6 +12,16 @@ export SHONGRE_ENV_LOADED=1
 SHONGRE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export SHONGRE_ROOT
 
+# Android tooling does not discover the default macOS SDK location reliably
+# outside Android Studio. Respect an explicit value, otherwise expose the
+# standard per-user installation used by the Android command-line tools.
+if [[ -z "${ANDROID_HOME:-}" && -d "${HOME}/Library/Android/sdk" ]]; then
+  export ANDROID_HOME="${HOME}/Library/Android/sdk"
+fi
+if [[ -z "${ANDROID_SDK_ROOT:-}" && -n "${ANDROID_HOME:-}" ]]; then
+  export ANDROID_SDK_ROOT="${ANDROID_HOME}"
+fi
+
 shongre_load_env_file() {
   local env_file="$1" line key value
   [[ -f "$env_file" ]] || return 0

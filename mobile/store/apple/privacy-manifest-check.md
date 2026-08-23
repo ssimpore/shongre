@@ -3,7 +3,7 @@
 Generated evidence: `mobile/ios/Shongre/PrivacyInfo.xcprivacy`.
 
 - `NSPrivacyTracking` is false and tracking domains are empty.
-- Collected data types cover email, user ID, listing photos/video, other user content, and coarse location for app functionality.
+- Collected data types cover email, user ID, listing photos/video, and other user content for app functionality.
 - `NSPrivacyAccessedAPICategoryUserDefaults` uses reason `CA92.1`, matching app-accessible preferences.
 - Expo privacy-manifest aggregation is enabled in generated Pod properties.
 

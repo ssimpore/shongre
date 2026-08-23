@@ -36,7 +36,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       resizeMode: "contain",
       backgroundColor: configColors.surface,
     },
-    runtimeVersion: { policy: "appVersion" },
     experiments: { typedRoutes: true },
     plugins: [
       "expo-router",
@@ -52,6 +51,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             buildToolsVersion: "36.0.0",
             useLegacyPackaging: false,
           },
+          ios: {
+            deploymentTarget: "16.4",
+          },
         },
       ],
       [
@@ -59,23 +61,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           photosPermission:
             "Shongre accède aux photos choisies pour illustrer vos annonces.",
-          cameraPermission:
-            "Shongre utilise l’appareil photo lorsque vous prenez une photo pour une annonce.",
+          cameraPermission: false,
           microphonePermission: false,
-        },
-      ],
-      [
-        "expo-location",
-        {
-          locationWhenInUsePermission:
-            "Shongre utilise votre position, à votre demande, pour proposer une localisation d’annonce. Vous pouvez aussi la saisir manuellement.",
-          locationAlwaysAndWhenInUsePermission: false,
-          locationAlwaysPermission: false,
-          motionUsagePermission: false,
-          isIosBackgroundLocationEnabled: false,
-          isAndroidBackgroundLocationEnabled: false,
-          isAndroidForegroundServiceEnabled: false,
-          isAndroidMotionActivityEnabled: false,
         },
       ],
     ],
@@ -83,12 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       bundleIdentifier,
       buildNumber: required("IOS_BUILD_NUMBER"),
       supportsTablet: true,
-      deploymentTarget: "16.4",
       associatedDomains: [`applinks:${webHost}`],
-      entitlements: {
-        "com.apple.developer.associated-domains": [`applinks:${webHost}`],
-        "com.apple.developer.applesignin": ["Default"],
-      },
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -138,15 +120,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
               "NSPrivacyCollectedDataTypePurposeAppFunctionality",
             ],
           },
-          {
-            NSPrivacyCollectedDataType:
-              "NSPrivacyCollectedDataTypeCoarseLocation",
-            NSPrivacyCollectedDataTypeLinked: true,
-            NSPrivacyCollectedDataTypeTracking: false,
-            NSPrivacyCollectedDataTypePurposes: [
-              "NSPrivacyCollectedDataTypePurposeAppFunctionality",
-            ],
-          },
         ],
       },
     },
@@ -157,8 +130,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: configColors.brand,
       },
-      permissions: ["CAMERA", "ACCESS_COARSE_LOCATION", "POST_NOTIFICATIONS"],
+      allowBackup: false,
+      permissions: ["POST_NOTIFICATIONS"],
       blockedPermissions: [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.READ_CONTACTS",

@@ -3,6 +3,7 @@ import { Clock } from "lucide-react";
 import { providerService } from "../../../../domains/providers/provider.service";
 import { roleLabel } from "../../../../security/roles.config";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { PROVIDER_AUDIT_ACTION_LABELS } from "../../../../domains/providers/provider-capabilities";
 
 interface ProviderAuditLogsTabProps {
   providerId?: string;
@@ -42,7 +43,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-stone-900">
-                    {log.action.toUpperCase()}
+                    {PROVIDER_AUDIT_ACTION_LABELS[log.action]}
                   </span>
                   {log.marketCode && (
                     <span className="text-micro font-bold bg-info-surface text-info px-1.5 py-0.2 rounded">

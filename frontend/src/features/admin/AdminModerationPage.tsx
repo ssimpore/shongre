@@ -25,6 +25,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation();
@@ -204,49 +205,55 @@ export const AdminModerationPage: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex border-b border-border-base gap-4 text-xs font-bold overflow-x-auto no-scrollbar">
-        {canReviewReports && (<button
-          type="button"
-          onClick={() => setActiveTab("reports")}
-          className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === "reports"
-              ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
-        >
-          <ShieldAlert className="w-4 h-4" />
-          <span>
-            Signalements Reçus (
-            {reports.filter((r) => r.status !== "resolved").length})
-          </span>
-        </button>)}
+        {canReviewReports && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("reports")}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === "reports"
+                ? "border-primary text-primary"
+                : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4" />
+            <span>
+              Signalements Reçus (
+              {reports.filter((r) => r.status !== "resolved").length})
+            </span>
+          </button>
+        )}
 
-        {canModerateListings && (<button
-          type="button"
-          onClick={() => setActiveTab("listings")}
-          className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === "listings"
-              ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
-        >
-          <Eye className="w-4 h-4" />
-          <span>Contrôle & Audit IA Annonces ({listings.length})</span>
-        </button>)}
+        {canModerateListings && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("listings")}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === "listings"
+                ? "border-primary text-primary"
+                : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            <span>Contrôle & Audit IA Annonces ({listings.length})</span>
+          </button>
+        )}
 
-        {(canSuspendUsers || canReactivateUsers) && (<button
-          type="button"
-          onClick={() => setActiveTab("users")}
-          className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
-            activeTab === "users"
-              ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
-        >
-          <Lock className="w-4 h-4" />
-          <span>
-            Comptes Suspendus ({users.filter((u) => u.isSuspended).length})
-          </span>
-        </button>)}
+        {(canSuspendUsers || canReactivateUsers) && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("users")}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === "users"
+                ? "border-primary text-primary"
+                : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <Lock className="w-4 h-4" />
+            <span>
+              Comptes Suspendus ({users.filter((u) => u.isSuspended).length})
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Tab: Reports */}
@@ -387,7 +394,7 @@ export const AdminModerationPage: React.FC = () => {
                           list.status === "active" ? "success" : "warning"
                         }
                       >
-                        {list.status}
+                        {labelIdentifier(list.status)}
                       </Badge>
                     </td>
                     <td className="p-3.5 text-right">
@@ -466,15 +473,17 @@ export const AdminModerationPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {canReactivateUsers && (<Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleReactivateUser(u.id)}
-                    className="text-xs text-success border-success-border hover:bg-success-surface"
-                  >
-                    <Unlock className="w-3.5 h-3.5 mr-1" />
-                    {t("admin.adminModerationPage.leverLaSuspension")}
-                  </Button>)}
+                  {canReactivateUsers && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleReactivateUser(u.id)}
+                      className="text-xs text-success border-success-border hover:bg-success-surface"
+                    >
+                      <Unlock className="w-3.5 h-3.5 mr-1" />
+                      {t("admin.adminModerationPage.leverLaSuspension")}
+                    </Button>
+                  )}
                 </div>
               ))}
           </div>
@@ -537,7 +546,7 @@ export const AdminModerationPage: React.FC = () => {
                           : "verified"
                     }
                   >
-                    {aiAnalysis.verdict.toUpperCase()}
+                    {labelIdentifier(aiAnalysis.verdict)}
                   </Badge>
                 </div>
 

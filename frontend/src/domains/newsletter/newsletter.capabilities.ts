@@ -26,10 +26,7 @@ export class NewsletterCapabilitiesService {
   }): NewsletterCapabilities {
     const { viewer } = params;
     const isPro = isProSeller(viewer);
-    const canAdminCampaigns = authorizationService.can(
-      viewer,
-      "market.manage",
-    );
+    const canAdminCampaigns = authorizationService.can(viewer, "market.manage");
 
     const availableTopics = newsletterTopicsService.getTopicsForAudience(isPro);
 

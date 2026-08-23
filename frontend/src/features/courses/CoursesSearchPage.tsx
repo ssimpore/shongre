@@ -89,7 +89,6 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         ) : undefined
       }
     >
-
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Matière
@@ -287,7 +286,6 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
           </select>
         </label>
       </fieldset>
-
     </FilterPanel>
   );
 };

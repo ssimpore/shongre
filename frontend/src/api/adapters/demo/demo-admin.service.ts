@@ -69,9 +69,7 @@ export class DemoAdminService implements AdminServiceContract {
     const currentUser = await userRepository.getCurrentUser();
     authorizationService.assertCan(
       currentUser,
-      status === "restricted"
-        ? "compliance.restrict_account"
-        : "user.suspend",
+      status === "restricted" ? "compliance.restrict_account" : "user.suspend",
     );
     const user = await userRepository.getUserById(userId);
     if (!user) throw new Error("Utilisateur introuvable");

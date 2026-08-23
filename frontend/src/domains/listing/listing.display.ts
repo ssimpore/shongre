@@ -127,11 +127,7 @@ export class ListingDisplayResolver {
       if (val !== undefined && val !== null && val !== "") {
         const formattedValue = this.formatAttributeValue(attrDef, val);
         summary.push(
-          this.compactEmploymentCardValue(
-            effectiveNode,
-            code,
-            formattedValue,
-          ),
+          this.compactEmploymentCardValue(effectiveNode, code, formattedValue),
         );
       }
     });

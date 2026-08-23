@@ -1,5 +1,6 @@
 import { Permission } from "../types";
 import { CAPABILITIES } from "@shongre/contracts/access-control";
+import { labelIdentifier } from "../utilities/identifier-label";
 
 export interface PermissionDefinition {
   id: Permission;
@@ -679,6 +680,243 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
       "Visualiser les journaux d'événements critiques (changements de rôles, suspensions, etc.).",
     isSensitive: true,
   },
+
+  // Monétisation & commandes
+  {
+    id: "monetization.orders.read",
+    name: "Consulter les commandes de monétisation",
+    category: "Transactions & Paiements",
+    description:
+      "Consulter les commandes liées aux formules, options payantes et crédits de visibilité.",
+    isSensitive: true,
+  },
+
+  // Assistance & conformité
+  {
+    id: "support.case.read",
+    name: "Consulter les dossiers d’assistance",
+    category: "Utilisateurs & Équipe",
+    description:
+      "Lire les demandes d’assistance et leur historique dans son périmètre autorisé.",
+    isSensitive: true,
+  },
+  {
+    id: "support.case.manage",
+    name: "Gérer les dossiers d’assistance",
+    category: "Utilisateurs & Équipe",
+    description:
+      "Affecter, traiter et clôturer les demandes d’assistance autorisées.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.review",
+    name: "Examiner les contrôles de conformité",
+    category: "Modération & Signalements",
+    description:
+      "Consulter et instruire les contrôles de conformité nécessitant une décision humaine.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.restrict_account",
+    name: "Restreindre un compte pour conformité",
+    category: "Modération & Signalements",
+    description:
+      "Limiter les capacités d’un compte lorsqu’une exigence de conformité le justifie.",
+    isSensitive: true,
+  },
+
+  // Fournisseurs & intégrations
+  {
+    id: "provider.read",
+    name: "Consulter les fournisseurs et intégrations",
+    category: "Administration Système",
+    description:
+      "Accéder au catalogue des fournisseurs externes et à leur état opérationnel.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.manage",
+    name: "Gérer les fournisseurs et intégrations",
+    category: "Administration Système",
+    description:
+      "Activer, désactiver et administrer les fournisseurs externes autorisés.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.configuration.read",
+    name: "Consulter la configuration des fournisseurs",
+    category: "Administration Système",
+    description:
+      "Lire les paramètres non secrets et les surcharges de marché des fournisseurs.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.configuration.manage",
+    name: "Modifier la configuration des fournisseurs",
+    category: "Administration Système",
+    description:
+      "Modifier les paramètres et les surcharges de marché des fournisseurs.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.routing.manage",
+    name: "Gérer le routage et les fournisseurs de secours",
+    category: "Administration Système",
+    description:
+      "Définir les priorités, bascules et solutions de secours par capacité.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.credentials.status.read",
+    name: "Consulter l’état des identifiants fournisseurs",
+    category: "Administration Système",
+    description:
+      "Vérifier si les identifiants sont configurés sans accéder à leur valeur secrète.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.credentials.manage",
+    name: "Gérer les identifiants fournisseurs",
+    category: "Administration Système",
+    description:
+      "Créer, renouveler ou révoquer les identifiants secrets des fournisseurs.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.health.read",
+    name: "Consulter la santé des fournisseurs",
+    category: "Administration Système",
+    description:
+      "Consulter les indicateurs de disponibilité et de latence des intégrations.",
+    isSensitive: true,
+  },
+  {
+    id: "provider.test",
+    name: "Tester une intégration fournisseur",
+    category: "Administration Système",
+    description:
+      "Exécuter un diagnostic contrôlé de connectivité et de configuration.",
+    isSensitive: true,
+  },
+
+  // Gouvernance de l’administration
+  {
+    id: "admin.configuration.manage",
+    name: "Gérer la configuration de l’administration",
+    category: "Administration Système",
+    description:
+      "Modifier les paramètres globaux du workspace d’administration.",
+    isSensitive: true,
+  },
+  {
+    id: "admin.staff.manage",
+    name: "Gérer les membres de l’équipe interne",
+    category: "Administration Système",
+    description:
+      "Inviter, suspendre et administrer les comptes du personnel Shongre.",
+    isSensitive: true,
+  },
+  {
+    id: "admin.permissions.manage",
+    name: "Gérer les permissions de l’administration",
+    category: "Administration Système",
+    description:
+      "Configurer les droits du personnel et les périmètres d’accès internes.",
+    isSensitive: true,
+  },
+
+  // CRM
+  {
+    id: "crm.access",
+    name: "Accéder au CRM",
+    category: "Boutique & Vitrine",
+    description: "Ouvrir le workspace CRM et ses tableaux de bord autorisés.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.contact.read",
+    name: "Consulter les contacts CRM",
+    category: "Boutique & Vitrine",
+    description:
+      "Lire les contacts et leurs informations commerciales autorisées.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.contact.manage",
+    name: "Gérer les contacts CRM",
+    category: "Boutique & Vitrine",
+    description: "Créer, modifier et qualifier les contacts commerciaux.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.company.read",
+    name: "Consulter les entreprises CRM",
+    category: "Boutique & Vitrine",
+    description: "Lire les fiches entreprises et leur historique commercial.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.company.manage",
+    name: "Gérer les entreprises CRM",
+    category: "Boutique & Vitrine",
+    description: "Créer, modifier et qualifier les fiches entreprises.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.opportunity.read",
+    name: "Consulter les opportunités CRM",
+    category: "Boutique & Vitrine",
+    description: "Lire les opportunités et leur progression commerciale.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.opportunity.manage",
+    name: "Gérer les opportunités CRM",
+    category: "Boutique & Vitrine",
+    description:
+      "Créer, affecter et faire progresser les opportunités commerciales.",
+    isSensitive: true,
+  },
+  {
+    id: "crm.ai_prospecting.use",
+    name: "Utiliser la prospection assistée par IA",
+    category: "Boutique & Vitrine",
+    description:
+      "Lancer les outils de recherche et de qualification assistés par IA dans le CRM.",
+    isSensitive: true,
+  },
+
+  // Règles commerciales
+  {
+    id: "commercial_rules.read",
+    name: "Consulter les règles commerciales",
+    category: "Marchés & Configuration",
+    description: "Lire les règles de prix, d’éligibilité et de monétisation.",
+    isSensitive: true,
+  },
+  {
+    id: "commercial_rules.edit",
+    name: "Modifier les règles commerciales",
+    category: "Marchés & Configuration",
+    description: "Créer et modifier les brouillons de règles commerciales.",
+    isSensitive: true,
+  },
+  {
+    id: "commercial_rules.approve",
+    name: "Approuver les règles commerciales",
+    category: "Marchés & Configuration",
+    description:
+      "Valider les règles commerciales avant leur mise en production.",
+    isSensitive: true,
+  },
+  {
+    id: "commercial_rules.publish",
+    name: "Publier les règles commerciales",
+    category: "Marchés & Configuration",
+    description:
+      "Activer une version approuvée des règles commerciales sur les marchés ciblés.",
+    isSensitive: true,
+  },
 ];
 
 const describedById = new Map(
@@ -706,12 +944,20 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = CAPABILITIES.map(
   (capability) =>
     describedById.get(capability) ?? {
       id: capability,
-      name: capability
-        .split(".")
-        .map((part) => part.replace(/_/g, " "))
-        .join(" · "),
+      name: labelIdentifier(capability),
       category: fallbackCategory(capability),
       description: "Capacité explicite de la politique d'accès Shongre.",
       isSensitive: true,
     },
 );
+
+const permissionDefinitionsById = new Map(
+  ALL_PERMISSIONS.map((definition) => [definition.id, definition]),
+);
+
+export function getPermissionDisplayName(permission: string): string {
+  return (
+    permissionDefinitionsById.get(permission as Permission)?.name ??
+    labelIdentifier(permission)
+  );
+}

@@ -184,8 +184,8 @@ Production credentials, keystores, certificates, App Store Connect keys, Play se
 - account deletion is available in mobile and on the public web, with reauthentication, active-order protection, anonymization, credential/token revocation, and audit state;
 - UGC users can report and server-authoritatively block/unblock, and blocked users cannot send messages;
 - push registration is associated with the authenticated account and removed on logout/deletion;
-- declared native permissions are limited to camera, selected photos, coarse foreground location, and notifications with usable fallbacks;
-- analytics, advertising, tracking, contacts, microphone, precise/background location, and crash-reporting SDKs are not enabled today;
+- declared native permissions are limited to selected photos and notifications with usable fallbacks;
+- analytics, advertising, tracking, camera, contacts, microphone, device location, and crash-reporting SDKs are not enabled today;
 - physical marketplace payments are separated from digital promotion/subscription features, which remain unavailable in mobile until a current billing-policy review approves an implementation.
 
 The final privacy policy, exact retention periods, processor list, store-console declarations, reviewer credentials, ratings, signing, signed-artifact checks, metadata, and rollout remain human/legal/operations responsibilities.

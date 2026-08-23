@@ -19,6 +19,7 @@ import { Button } from "../../../design-system/primitives/Button";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { getCapabilityMetadata } from "../../../domains/providers/provider-capabilities";
 
 type MainTab = "overview" | "catalog" | "matrix" | "routing" | "audit";
 
@@ -249,7 +250,9 @@ export const AdminProvidersPage: React.FC = () => {
                   {t("admin.adminProvidersPage.capacitesTestees")}{" "}
                 </span>
                 <strong className="text-stone-800">
-                  {activeTestProvider.capabilities.join(", ")}
+                  {activeTestProvider.capabilities
+                    .map((capability) => getCapabilityMetadata(capability).name)
+                    .join(", ")}
                 </strong>
               </div>
             </div>

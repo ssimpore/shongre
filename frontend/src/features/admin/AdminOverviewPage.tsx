@@ -24,7 +24,7 @@ import type {
   AdminAuditLogEntry,
   AdminStatsSummary,
 } from "../../api/contracts/admin.contract";
-import type { UserProfile } from "../../types";
+import { auditActionLabel, type UserProfile } from "../../types";
 import { useAuthorization } from "../../security/useAuthorization";
 
 export const AdminOverviewPage: React.FC = () => {
@@ -316,7 +316,7 @@ export const AdminOverviewPage: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-bold text-stone-900 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        {log.action}
+                        {auditActionLabel(log.action)}
                       </span>
                       <span className="text-micro text-stone-500 shrink-0">
                         {formatLogTimestamp(log.timestamp)}

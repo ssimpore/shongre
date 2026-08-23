@@ -21,6 +21,7 @@ import { NewsletterPreviewModal } from "../newsletter/components/NewsletterPrevi
 import { Skeleton, EmptyState } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 export const AdminNewsletterPage: React.FC = () => {
   const { t } = useTranslation();
@@ -155,7 +156,7 @@ export const AdminNewsletterPage: React.FC = () => {
       default:
         return (
           <Badge variant="neutral" size="sm">
-            {status}
+            {labelIdentifier(status)}
           </Badge>
         );
     }

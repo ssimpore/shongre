@@ -939,7 +939,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminAuditLogsPage.actionSysteme": "System action",
   "admin.adminAuditLogsPage.detailsMotif": "Details & reason",
   "admin.adminAuditLogsPage.detail": "Detail",
-  "admin.adminAuditLogsPage.role": "Role:",
+  "admin.adminAuditLogsPage.role": "Role",
   "admin.adminAuditLogsPage.details": "Details:",
   "admin.adminAuditLogsPage.etatPrecedent": "Previous state:",
   "admin.adminAuditLogsPage.nouvelEtat": "New state:",
@@ -1048,7 +1048,7 @@ export const messagesEn: MessageCatalogue = {
     "Pro verifications pending",
   "admin.adminOverviewPage.catalogueDAnnonces": "Listing catalogue",
   "admin.adminRolesMatrixPage.filtrerUnePermissionExListing":
-    "Filter a permission (e.g. listing.create, user.suspend)…",
+    "Filter a permission (e.g. publish a listing, suspend an account)…",
   "admin.adminRolesMatrixPage.filtrerLesPermissionsParCategorie":
     "Filter permissions by category",
   "admin.adminRolesMatrixPage.matriceDesPermissionsParRole":
@@ -2727,7 +2727,7 @@ export const messagesEn: MessageCatalogue = {
     "Move “{name}” to the previous stage",
   "admin.crmPipelinePage.etapeSuivanteOpp": "Move “{name}” to the next stage",
   "admin.adminAuditLogsPage.voirLePayloadDe":
-    "View the full payload for “{action}”",
+    "View details for the “{action}” event",
 
   /* Accessible names for controls that previously had only a placeholder. */
   "messaging.messageComposer.votreMessage": "Your message",

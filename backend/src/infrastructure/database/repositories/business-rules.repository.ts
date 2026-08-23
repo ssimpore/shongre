@@ -410,9 +410,13 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     const accountSubscriptions = subscriptions as MonetizationSubscription[];
     const accountEntitlements = entitlements as ActiveEntitlement[];
     const currentSubscription = accountSubscriptions.find((entry) =>
-      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
-        entry.status,
-      ),
+      [
+        "trialing",
+        "active",
+        "past_due",
+        "paused",
+        "cancellation_pending",
+      ].includes(entry.status),
     );
     const limits = accountEntitlements.filter(
       (entry) =>
@@ -473,9 +477,7 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     if (!subscription || subscription.accountId !== accountId)
       throw new Error("subscription not found");
     subscription.cancelAtPeriodEnd = cancelAtPeriodEnd;
-    subscription.status = cancelAtPeriodEnd
-      ? "cancellation_pending"
-      : "active";
+    subscription.status = cancelAtPeriodEnd ? "cancellation_pending" : "active";
     subscription.updatedAt = now();
     return structuredClone(subscription);
   }
@@ -877,9 +879,13 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     const accountSubscriptions = subscriptions as MonetizationSubscription[];
     const accountEntitlements = entitlements as ActiveEntitlement[];
     const currentSubscription = accountSubscriptions.find((entry) =>
-      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
-        entry.status,
-      ),
+      [
+        "trialing",
+        "active",
+        "past_due",
+        "paused",
+        "cancellation_pending",
+      ].includes(entry.status),
     );
     const creditTransactions: CreditTransaction[] = (
       creditsResult.data || []
@@ -895,7 +901,9 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       idempotencyKey: String(row.idempotency_key),
       createdAt: String(row.created_at),
     }));
-    const creditTypes = [...new Set(creditTransactions.map((entry) => entry.creditType))];
+    const creditTypes = [
+      ...new Set(creditTransactions.map((entry) => entry.creditType)),
+    ];
     const usageRows = usageResult.data || [];
     const usageByKey = new Map<string, number>();
     for (const row of usageRows) {
@@ -942,7 +950,10 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         accountId: String(row.account_id),
         orderId: String(row.order_id),
         status: row.status,
-        amount: { amountMinor: Number(row.amount_minor), currency: row.currency },
+        amount: {
+          amountMinor: Number(row.amount_minor),
+          currency: row.currency,
+        },
         provider: row.provider,
         providerPaymentId: row.provider_payment_id || undefined,
         failureCode: row.failure_code || undefined,
@@ -958,12 +969,24 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         subscriptionId: row.subscription_id || undefined,
         number: String(row.invoice_number),
         status: row.status,
-        subtotal: { amountMinor: Number(row.subtotal_minor), currency: row.currency },
-        discount: { amountMinor: Number(row.discount_minor), currency: row.currency },
+        subtotal: {
+          amountMinor: Number(row.subtotal_minor),
+          currency: row.currency,
+        },
+        discount: {
+          amountMinor: Number(row.discount_minor),
+          currency: row.currency,
+        },
         tax: { amountMinor: Number(row.tax_minor), currency: row.currency },
         total: { amountMinor: Number(row.total_minor), currency: row.currency },
-        amountPaid: { amountMinor: Number(row.amount_paid_minor), currency: row.currency },
-        amountDue: { amountMinor: Number(row.amount_due_minor), currency: row.currency },
+        amountPaid: {
+          amountMinor: Number(row.amount_paid_minor),
+          currency: row.currency,
+        },
+        amountDue: {
+          amountMinor: Number(row.amount_due_minor),
+          currency: row.currency,
+        },
         issuedAt: String(row.issued_at),
         dueAt: row.due_at || undefined,
         paidAt: row.paid_at || undefined,
@@ -976,7 +999,10 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         orderId: String(row.order_id),
         paymentId: String(row.payment_id),
         status: row.status,
-        amount: { amountMinor: Number(row.amount_minor), currency: row.currency },
+        amount: {
+          amountMinor: Number(row.amount_minor),
+          currency: row.currency,
+        },
         reason: String(row.reason),
         providerRefundId: row.provider_refund_id || undefined,
         requestedBy: String(row.requested_by),
@@ -1083,9 +1109,7 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       "transition_monetization_subscription",
       {
         p_subscription_id: subscriptionId,
-        p_target_status: cancelAtPeriodEnd
-          ? "cancellation_pending"
-          : "active",
+        p_target_status: cancelAtPeriodEnd ? "cancellation_pending" : "active",
         p_event_type: cancelAtPeriodEnd
           ? "cancellation_scheduled"
           : "reactivated",

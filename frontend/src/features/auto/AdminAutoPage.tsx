@@ -23,6 +23,8 @@ import { Badge, Button, Skeleton, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { routes } from "../../configuration/routes";
 import { formatAutoMoney } from "./auto-format";
+import { autoFeatureFlagLabel } from "./auto-feature-flag-labels";
+import { labelIdentifier } from "../../utilities/identifier-label";
 
 const TABS = [
   "Vue d’ensemble",
@@ -178,8 +180,8 @@ export const AdminAutoPage: React.FC = () => {
                     key={flag}
                     className="flex items-center justify-between py-2.5"
                   >
-                    <dt className="font-mono text-micro text-text-secondary">
-                      {flag}
+                    <dt className="text-xs font-medium text-text-secondary">
+                      {autoFeatureFlagLabel(flag)}
                     </dt>
                     <dd>
                       <Badge variant={enabled ? "success" : "neutral"}>
@@ -308,7 +310,9 @@ export const AdminAutoPage: React.FC = () => {
               {overview.catalog.plans.map((plan) => (
                 <tr key={plan.id}>
                   <td className="px-4 py-3 font-bold">{plan.name}</td>
-                  <td className="px-4 py-3">{plan.audience}</td>
+                  <td className="px-4 py-3">
+                    {labelIdentifier(plan.audience)}
+                  </td>
                   <td className="px-4 py-3">
                     {plan.monthlyPrice
                       ? formatAutoMoney(plan.monthlyPrice)
@@ -362,7 +366,8 @@ export const AdminAutoPage: React.FC = () => {
                 <div>
                   <p className="font-bold">{addOn.name}</p>
                   <p className="mt-1 text-micro text-text-muted">
-                    {formatAutoMoney(addOn.price)} · {addOn.type}
+                    {formatAutoMoney(addOn.price)} ·{" "}
+                    {labelIdentifier(addOn.type)}
                   </p>
                 </div>
                 <button
@@ -395,7 +400,7 @@ export const AdminAutoPage: React.FC = () => {
             >
               <div>
                 <p className="font-bold">
-                  {item.fileName || item.type.toUpperCase()}
+                  {item.fileName || labelIdentifier(item.type)}
                 </p>
                 <p className="text-micro text-text-muted">{item.requestedAt}</p>
               </div>
@@ -404,7 +409,7 @@ export const AdminAutoPage: React.FC = () => {
                 {item.errorCount} erreur
               </p>
               <Badge variant={item.errorCount ? "warning" : "success"}>
-                {item.status}
+                {labelIdentifier(item.status)}
               </Badge>
             </div>
           ))}

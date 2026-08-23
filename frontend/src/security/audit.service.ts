@@ -45,7 +45,7 @@ const INITIAL_AUDIT_LOGS: SecurityAuditLog[] = [
     targetName: "Sophie Vandamme",
     action: "role_assigned",
     details:
-      "Attribution du rôle Market Manager avec portée territoriale limitée au marché Belgique (BE).",
+      "Attribution du rôle Responsable Marché avec portée territoriale limitée au marché Belgique (BE).",
     newValue: { role: "market_manager", scope: { countries: ["BE"] } },
     ipAddress: "90.84.144.12",
     market: "BE",
@@ -60,7 +60,7 @@ const INITIAL_AUDIT_LOGS: SecurityAuditLog[] = [
     targetName: "Smartphone haut de gamme prix bradé",
     action: "listing_hidden",
     details:
-      "Masquage immédiat de l'annonce list-fake-99 pour suspicion de contrefaçon / escroquerie.",
+      "Masquage immédiat de l’annonce pour suspicion de contrefaçon ou d’escroquerie.",
     previousValue: { status: "active" },
     newValue: { status: "pending_review" },
     ipAddress: "82.64.12.89",

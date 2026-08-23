@@ -85,9 +85,7 @@ export const AdminUsersPage: React.FC = () => {
       setSuspendModalUser(null);
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Erreur lors de la suspension",
+        error instanceof Error ? error.message : "Erreur lors de la suspension",
       );
     }
   };
@@ -256,8 +254,7 @@ export const AdminUsersPage: React.FC = () => {
                 const isPro = isProSeller(u);
                 const isPendingPro =
                   isPro && u.professionalVerification?.status === "pending";
-                const isSuspended =
-                  u.isSuspended || u.status === "suspended";
+                const isSuspended = u.isSuspended || u.status === "suspended";
 
                 return (
                   <tr key={u.id} className="hover:bg-bg-base transition-colors">

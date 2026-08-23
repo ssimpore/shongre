@@ -134,9 +134,9 @@ describe("Listing Detail Display & Action Resolvers", () => {
         .flatMap((group) => group.items);
 
       expect(summary).toEqual(["CDI", "Télétravail hybride"]);
-      expect(detailItems.find((item) => item.code === "job_sector")?.value).toBe(
-        "Informatique / Tech / Data & IA",
-      );
+      expect(
+        detailItems.find((item) => item.code === "job_sector")?.value,
+      ).toBe("Informatique / Tech / Data & IA");
       expect(detailItems.find((item) => item.code === "telework")?.value).toBe(
         "Télétravail hybride (2-3 jours/semaine)",
       );

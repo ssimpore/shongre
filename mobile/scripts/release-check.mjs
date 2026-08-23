@@ -52,6 +52,10 @@ function file(path) {
   return readFileSync(join(root, path), "utf8");
 }
 
+function declaresRoute(source, route) {
+  return source.includes(`"${route}"`) || source.includes(`'${route}'`);
+}
+
 function add(name, status, detail) {
   results.push({ name, status, detail });
 }
@@ -309,16 +313,16 @@ function checkPermissions() {
     const plist = readFileSync(infoPath, "utf8");
     const unwantedIos = [
       "NSFaceIDUsageDescription",
+      "NSCameraUsageDescription",
+      "NSLocationWhenInUseUsageDescription",
       "NSLocationAlwaysUsageDescription",
       "NSLocationAlwaysAndWhenInUseUsageDescription",
       "NSMotionUsageDescription",
       "NSMicrophoneUsageDescription",
     ].filter((key) => plist.includes(key));
-    const requiredIos = [
-      "NSCameraUsageDescription",
-      "NSLocationWhenInUseUsageDescription",
-      "NSPhotoLibraryUsageDescription",
-    ].filter((key) => !plist.includes(key));
+    const requiredIos = ["NSPhotoLibraryUsageDescription"].filter(
+      (key) => !plist.includes(key),
+    );
     add(
       "iOS purpose strings",
       unwantedIos.length || requiredIos.length ? STATUS.fail : STATUS.pass,
@@ -326,14 +330,12 @@ function checkPermissions() {
         ? `Unexpected: ${unwantedIos.join(", ")}`
         : requiredIos.length
           ? `Missing: ${requiredIos.join(", ")}`
-          : "Camera, chosen photos, and foreground location only.",
+          : "User-selected photos only; camera and location remain absent.",
     );
 
     const manifest = readFileSync(androidPath, "utf8");
     const active = activeAndroidPermissions(manifest);
     const allowed = new Set([
-      "android.permission.ACCESS_COARSE_LOCATION",
-      "android.permission.CAMERA",
       "android.permission.INTERNET",
       "android.permission.POST_NOTIFICATIONS",
       "android.permission.READ_EXTERNAL_STORAGE",
@@ -359,7 +361,7 @@ function checkPermissions() {
     add(
       "Runtime permission timing",
       STATUS.manual,
-      "Verify on physical devices that camera, location, photos, and notifications are requested only after an explained user action.",
+      "Verify on physical devices that photos and notifications are requested only after an explained user action.",
     );
   });
 }
@@ -501,7 +503,7 @@ function checkAccountDeletionAndUgc() {
     );
     add(
       "In-app account deletion",
-      router.includes("'/account/delete'") &&
+      declaresRoute(router, "/account/delete") &&
         existsSync(join(root, "mobile/app/settings/delete-account.tsx"))
         ? STATUS.pass
         : STATUS.fail,
@@ -517,9 +519,9 @@ function checkAccountDeletionAndUgc() {
       `${env.PRODUCTION_ACCOUNT_DELETION_URL || "URL not configured"}`,
     );
     const ugc =
-      router.includes("'/reports'") &&
-      router.includes("'/messaging/block'") &&
-      router.includes("'/messaging/unblock'") &&
+      declaresRoute(router, "/reports") &&
+      declaresRoute(router, "/messaging/block") &&
+      declaresRoute(router, "/messaging/unblock") &&
       migration.includes("blocked_users");
     add(
       "UGC report and block controls",
@@ -536,15 +538,25 @@ function checkAccountDeletionAndUgc() {
 
 function checkBilling() {
   once("billing", () => {
-    const implemented =
-      existsSync(
-        join(root, "mobile/src/features/billing/billing.service.ts"),
-      ) &&
-      existsSync(join(root, "mobile/store/common/billing-classification.md"));
+    const runtimeFiles = walk(join(mobileRoot, "app")).concat(
+      walk(join(mobileRoot, "src")),
+    );
+    const digitalCheckoutSurface = runtimeFiles.some(
+      (path) =>
+        /\.(ts|tsx|js|jsx)$/.test(path) &&
+        /\/monetization\/checkouts|createCheckout\s*\(/.test(
+          readFileSync(path, "utf8"),
+        ),
+    );
+    const documented = existsSync(
+      join(root, "mobile/store/common/billing-classification.md"),
+    );
     add(
       "Billing classification",
-      implemented ? STATUS.pass : STATUS.fail,
-      "Physical marketplace transactions are separated from digital visibility/subscription features.",
+      documented && !digitalCheckoutSurface ? STATUS.pass : STATUS.fail,
+      digitalCheckoutSurface
+        ? "A mobile digital checkout surface is present without an approved store billing implementation."
+        : "No digital checkout ships in mobile; physical marketplace payments remain separately classified.",
     );
     add(
       "Regional/store billing decision",
@@ -561,7 +573,7 @@ function checkPush() {
       "mobile/src/services/notifications/notifications.service.ts",
     );
     const valid =
-      router.includes("'/notifications/devices'") &&
+      declaresRoute(router, "/notifications/devices") &&
       service.includes("unregisterCurrentDevice");
     add(
       "Push token lifecycle",
@@ -607,6 +619,14 @@ function checkContent() {
       findings.length
         ? `Debug/incomplete markers: ${findings.join(", ")}`
         : "No TODO/FIXME/debugger/console.log markers in mobile runtime source.",
+    );
+    const sourceGraph = command("node", ["mobile/scripts/dead-code-check.mjs"]);
+    add(
+      "Mobile source reachability",
+      sourceGraph.startsWith("Mobile source graph is clean:")
+        ? STATUS.pass
+        : STATUS.fail,
+      sourceGraph || "The source graph check did not return a result.",
     );
     add(
       "Store metadata and screenshots",
@@ -660,14 +680,27 @@ function checkIosEntitlements() {
   once("ios-entitlements", () => {
     const path = join(mobileRoot, "ios/Shongre/Shongre.entitlements");
     const source = existsSync(path) ? readFileSync(path, "utf8") : "";
+    const keys = [...source.matchAll(/<key>([^<]+)<\/key>/g)].map(
+      (match) => match[1],
+    );
+    const allowed = new Set([
+      "aps-environment",
+      "com.apple.developer.associated-domains",
+    ]);
+    const unexpected = keys.filter((key) => !allowed.has(key));
+    const required = [...allowed].filter((key) => !keys.includes(key));
     add(
       "iOS entitlements",
-      source.includes("com.apple.developer.associated-domains")
+      source && unexpected.length === 0 && required.length === 0
         ? STATUS.pass
         : STATUS.fail,
-      source
-        ? "Only the required associated-domain capability is configured."
-        : "Generated entitlements missing.",
+      !source
+        ? "Generated entitlements missing."
+        : unexpected.length
+          ? `Unexpected entitlements: ${unexpected.join(", ")}`
+          : required.length
+            ? `Missing entitlements: ${required.join(", ")}`
+            : "Only Associated Domains and APNs capabilities are configured.",
     );
   });
 }

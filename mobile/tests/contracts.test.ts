@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { publicationInputSchema } from "@shongre/contracts";
 import { mapBackendListing } from "@/features/listings/listing.mapper";
-import { classifyBillingProduct } from "@/features/billing/billing-policy";
 
 describe("mobile public contracts", () => {
   it("maps backend major-unit prices into integer minor units", () => {
@@ -31,14 +30,5 @@ describe("mobile public contracts", () => {
       images: [],
     });
     expect(result.success).toBe(false);
-  });
-
-  it("keeps digital promotions behind a store-policy decision", () => {
-    expect(classifyBillingProduct("digital-listing-promotion")).toBe(
-      "store-policy-review-required",
-    );
-    expect(classifyBillingProduct("physical-marketplace-transaction")).toBe(
-      "external-payment-eligible",
-    );
   });
 });

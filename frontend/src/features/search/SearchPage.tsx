@@ -1698,7 +1698,6 @@ export const SearchPage: React.FC = () => {
               })}
             </div>
           )}
-
         </FilterPanel>
       </Drawer>
     </div>
