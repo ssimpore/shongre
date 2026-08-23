@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { usePersona } from './personas';
 import { expectNoHorizontalOverflow, waitForStableLayout } from './overflow';
 import { ALL_ROUTES } from './routes';
+import { VIEWPORTS } from './viewports';
 
 const seedConsentDecision = async (page: Page) => {
   await page.addInitScript(() => {
@@ -30,19 +31,33 @@ test.describe('design-token runtime contracts', () => {
       const root = getComputedStyle(document.documentElement);
       const cells = [...document.querySelectorAll<HTMLElement>('.w-listing-card')];
       const widths = cells.slice(0, 6).map((cell) => cell.getBoundingClientRect().width);
+      const firstTrack = document.querySelector<HTMLElement>('.listing-rail-track');
+      const firstScroller = firstTrack?.parentElement;
+      const scrollerRect = firstScroller?.getBoundingClientRect();
+      const fullyVisibleCards =
+        firstTrack && scrollerRect
+          ? [...firstTrack.querySelectorAll<HTMLElement>('.listing-rail-cell')].filter(
+              (cell) => {
+                const rect = cell.getBoundingClientRect();
+                return rect.left >= scrollerRect.left - 1 && rect.right <= scrollerRect.right + 1;
+              },
+            ).length
+          : 0;
 
       return {
         version: root.getPropertyValue('--design-system-contract-version').trim(),
         tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
         widths,
+        fullyVisibleCards,
       };
     });
 
     expect(contract.version).toBe('4');
-    expect(contract.tokenWidth).toBe('13.5rem');
+    expect(contract.tokenWidth).toBe('15rem');
+    expect(contract.fullyVisibleCards).toBe(4);
     expect(contract.widths.length, 'the recent-listings rail did not render').toBeGreaterThanOrEqual(6);
     for (const width of contract.widths) {
-      expect(width).toBeCloseTo(216, 0);
+      expect(width).toBeCloseTo(240, 0);
     }
   });
 
@@ -60,10 +75,10 @@ test.describe('design-token runtime contracts', () => {
     });
 
     expect(contract.cells.length, 'no standard listing rails rendered').toBeGreaterThanOrEqual(6);
-    expect(contract.tokenWidth).toBe('13.5rem');
+    expect(contract.tokenWidth).toBe('15rem');
     for (const item of contract.cells) {
-      expect(item.cell).toBeCloseTo(216, 0);
-      expect(item.card).toBeCloseTo(216, 0);
+      expect(item.cell).toBeCloseTo(240, 0);
+      expect(item.card).toBeCloseTo(240, 0);
     }
   });
 
@@ -87,12 +102,96 @@ test.describe('design-token runtime contracts', () => {
       };
     });
 
-    expect(contract.tokenWidth).toBe('13.5rem');
+    expect(contract.tokenWidth).toBe('15rem');
     expect(contract.tokenHeight).toBe('25rem');
-    expect(contract.gridColumns.split(' ').every((column) => column === '216px')).toBe(true);
-    expect(contract.cardWidth).toBeCloseTo(216, 0);
+    expect(contract.gridColumns.split(' ').every((column) => column === '240px')).toBe(true);
+    expect(contract.cardWidth).toBeCloseTo(240, 0);
     expect(contract.cardHeight).toBeCloseTo(400, 0);
     expect(contract.cardHeightToken).toBe('400px');
+  });
+
+  test('keeps listing rails and grids responsive across the supported viewport matrix', async ({ page }) => {
+    test.setTimeout(90_000);
+
+    for (const viewport of VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await waitForStableLayout(page);
+
+      const rail = await page.evaluate(() => {
+        const root = getComputedStyle(document.documentElement);
+        const track = document.querySelector<HTMLElement>('.listing-rail-track');
+        const scroller = track?.parentElement;
+        const scrollerRect = scroller?.getBoundingClientRect();
+        const cells = track
+          ? [...track.querySelectorAll<HTMLElement>('.listing-rail-cell')]
+          : [];
+
+        return {
+          tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
+          cardWidths: cells.slice(0, 6).map((cell) => cell.getBoundingClientRect().width),
+          scrollerWidth: scroller?.clientWidth ?? 0,
+          scrollWidth: scroller?.scrollWidth ?? 0,
+          fullyVisibleCards: scrollerRect
+            ? cells.filter((cell) => {
+                const rect = cell.getBoundingClientRect();
+                return rect.left >= scrollerRect.left - 1 && rect.right <= scrollerRect.right + 1;
+              }).length
+            : 0,
+        };
+      });
+
+      expect(rail.tokenWidth, `${viewport.name}: listing-card token`).toBe('15rem');
+      expect(rail.cardWidths.length, `${viewport.name}: listing rail rendered`).toBeGreaterThan(0);
+      for (const width of rail.cardWidths) {
+        expect(width, `${viewport.name}: rail card width`).toBeCloseTo(240, 0);
+      }
+      expect(rail.scrollerWidth, `${viewport.name}: one complete rail card fits`).toBeGreaterThanOrEqual(240);
+      expect(rail.scrollWidth, `${viewport.name}: rail remains horizontally discoverable`).toBeGreaterThan(
+        rail.scrollerWidth,
+      );
+      expect(rail.fullyVisibleCards, `${viewport.name}: complete rail cards visible`).toBeGreaterThanOrEqual(1);
+      await expectNoHorizontalOverflow(page, `listing rail at ${viewport.name}`);
+    }
+
+    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'networkidle' });
+
+    for (const viewport of VIEWPORTS) {
+      await page.setViewportSize(viewport);
+      await waitForStableLayout(page);
+
+      const grid = await page.evaluate(() => {
+        const element = document.querySelector<HTMLElement>('.listing-grid');
+        const cards = element
+          ? [...element.querySelectorAll<HTMLElement>('article.listing-card-standard')]
+          : [];
+        const columns = element
+          ? getComputedStyle(element)
+              .gridTemplateColumns.split(' ')
+              .map((column) => Number.parseFloat(column))
+          : [];
+
+        return {
+          columns,
+          cardWidths: cards.slice(0, 6).map((card) => card.getBoundingClientRect().width),
+        };
+      });
+
+      expect(grid.cardWidths.length, `${viewport.name}: listing grid rendered`).toBeGreaterThan(0);
+      if (viewport.width < 640) {
+        expect(grid.columns, `${viewport.name}: mobile grid column count`).toHaveLength(2);
+        expect(grid.columns[0], `${viewport.name}: mobile columns stay balanced`).toBeCloseTo(grid.columns[1] ?? 0, 0);
+        expect(grid.columns[0], `${viewport.name}: mobile cards shrink below the desktop token`).toBeLessThan(240);
+      } else {
+        expect(grid.columns.length, `${viewport.name}: desktop grid columns rendered`).toBeGreaterThan(0);
+        for (const width of grid.columns) {
+          expect(width, `${viewport.name}: desktop grid column width`).toBeCloseTo(240, 0);
+        }
+      }
+      for (const width of grid.cardWidths) {
+        expect(width, `${viewport.name}: card follows its grid column`).toBeCloseTo(grid.columns[0] ?? 0, 0);
+      }
+      await expectNoHorizontalOverflow(page, `listing grid at ${viewport.name}`);
+    }
   });
 
   test('keeps list cards uniform and scales their image slot with the viewport', async ({ page }) => {

@@ -14,6 +14,9 @@
     "./auto": "./src/schemas/auto.ts",
     "./vertical": "./src/schemas/vertical.ts",
     "./real-estate": "./src/schemas/real-estate.ts",
+    "./employment": "./src/schemas/employment.ts",
+    "./employment-catalog": "./src/fixtures/employment-catalog.ts",
+    "./employment-demo": "./src/fixtures/employment-demo.ts",
     "./monetization": "./src/schemas/monetization.ts",
     "./monetization-catalog": "./src/fixtures/monetization-catalog.ts",
     "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts"

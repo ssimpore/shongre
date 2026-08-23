@@ -27,10 +27,13 @@ import type {
 } from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
+import { routes } from "../../configuration/routes";
 import {
   Badge,
   Button,
   Container,
+  Input,
+  ScrollableRegion,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -98,6 +101,8 @@ export const AutoDealerWorkspacePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [inventoryFiltersOpen, setInventoryFiltersOpen] = useState(false);
+  const [inventoryQuery, setInventoryQuery] = useState("");
 
   usePageMeta({
     title: "Espace Auto professionnel",
@@ -165,6 +170,34 @@ export const AutoDealerWorkspacePage: React.FC = () => {
     toast.success("Statut de la demande mis à jour.");
   };
 
+  const exportInventory = () => {
+    if (!workspace) return;
+    const rows = workspace.vehicles.map((vehicle) => [
+      vehicle.stockReference,
+      vehicle.makeLabel,
+      vehicle.modelLabel,
+      vehicle.trimLabel,
+      vehicle.technical.modelYear,
+      vehicle.price.amountMinor,
+      vehicle.price.currency,
+    ]);
+    const csv = [
+      ["reference", "marque", "modele", "finition", "annee", "montant_minor", "devise"],
+      ...rows,
+    ]
+      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(
+      new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "stock-auto-shongre.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast.success("Le stock a été exporté au format CSV.");
+  };
+
   if (loading)
     return (
       <Container className="py-7">
@@ -183,24 +216,66 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       </Container>
     );
 
+  const normalizedInventoryQuery = inventoryQuery.trim().toLocaleLowerCase("fr");
+  const visibleVehicles = normalizedInventoryQuery
+    ? workspace.vehicles.filter((vehicle) =>
+        [
+          vehicle.stockReference,
+          vehicle.makeLabel,
+          vehicle.modelLabel,
+          vehicle.trimLabel,
+        ].some((value) =>
+          String(value ?? "")
+            .toLocaleLowerCase("fr")
+            .includes(normalizedInventoryQuery),
+        ),
+      )
+    : workspace.vehicles;
+
   const inventory = (
     <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
         <h2 className="text-sm font-black">
-          Stock actif ({workspace.vehicles.length})
+          Stock actif ({visibleVehicles.length}
+          {visibleVehicles.length !== workspace.vehicles.length
+            ? ` sur ${workspace.vehicles.length}`
+            : ""}
+          )
         </h2>
         <div className="flex gap-2">
-          <Button size="sm" variant="ghost">
+          <Button size="sm" variant="ghost" onClick={exportInventory}>
             Exporter
           </Button>
-          <Button size="sm" variant="outline">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setInventoryFiltersOpen((current) => !current)}
+            aria-expanded={inventoryFiltersOpen}
+            aria-controls="auto-inventory-filters"
+          >
             Filtres
           </Button>
         </div>
       </div>
-      <div className="overflow-x-auto">
+      {inventoryFiltersOpen && (
+        <div
+          id="auto-inventory-filters"
+          className="border-b border-border-subtle bg-bg-subtle px-4 py-3"
+        >
+          <label className="block max-w-sm text-xs font-bold text-text-main">
+            Rechercher dans le stock
+            <Input
+              value={inventoryQuery}
+              onChange={(event) => setInventoryQuery(event.target.value)}
+              placeholder="Référence, marque, modèle ou finition"
+              className="mt-1"
+            />
+          </label>
+        </div>
+      )}
+      <ScrollableRegion aria-label="Tableau du stock automobile">
         <table className="w-full min-w-[50rem] text-left text-xs">
-          <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-muted">
+          <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-secondary">
             <tr>
               <th className="px-4 py-3">Réf. stock</th>
               <th className="px-4 py-3">Véhicule</th>
@@ -214,7 +289,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle">
-            {workspace.vehicles.map((vehicle) => {
+            {visibleVehicles.map((vehicle) => {
               const vehicleMetric = workspace.vehicleMetrics.find(
                 (metric) => metric.vehicleId === vehicle.id,
               );
@@ -261,16 +336,22 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                   <Badge variant="success">Approuvé</Badge>
                 </td>
                 <td className="px-4 py-3">
-                  <button aria-label={`Actions pour ${vehicle.title}`}>
+                  <Button
+                    to={routes.auto.vehicle(vehicle.slug)}
+                    variant="ghost"
+                    size="sm"
+                    aria-label={`Voir ${vehicle.title}`}
+                    className="touch-square h-control-sm w-control-sm p-0"
+                  >
                     <MoreHorizontal className="h-icon-sm w-icon-sm" />
-                  </button>
+                  </Button>
                 </td>
               </tr>
               );
             })}
           </tbody>
         </table>
-      </div>
+      </ScrollableRegion>
     </section>
   );
 
@@ -329,9 +410,9 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           Voir toutes
         </button>
       </div>
-      <div className="overflow-x-auto">
+      <ScrollableRegion aria-label="Tableau des demandes automobiles">
         <table className="w-full min-w-[45rem] text-left text-xs">
-          <thead className="bg-bg-subtle text-micro uppercase text-text-muted">
+          <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
             <tr>
               <th className="px-4 py-3">Intention</th>
               <th className="px-4 py-3">Véhicule</th>
@@ -375,6 +456,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <select
+                      aria-label={`Affecter la demande de ${lead.contactName}`}
                       value={lead.assignedUserId || ""}
                       onChange={(event) =>
                         services.auto
@@ -397,6 +479,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <select
+                      aria-label={`Statut de la demande de ${lead.contactName}`}
                       value={lead.status}
                       onChange={(event) =>
                         moveLead(lead, event.target.value as AutoLead["status"])
@@ -420,7 +503,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             })}
           </tbody>
         </table>
-      </div>
+      </ScrollableRegion>
     </section>
   );
 
@@ -515,6 +598,11 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         <Button
           size="compact"
           leftIcon={<Plus className="h-icon-sm w-icon-sm" />}
+          onClick={() =>
+            toast.info(
+              "L’invitation d’équipe sera disponible dès que le service d’organisation sera activé.",
+            )
+          }
         >
           Inviter
         </Button>
@@ -562,7 +650,12 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           max={Math.max(1, plan.entitlements.maxActiveVehicles)}
           aria-label="Utilisation du quota de véhicules"
         />
-        <Button className="mt-5" variant="outline" size="compact">
+        <Button
+          to={routes.workspace.pro.subscriptions()}
+          className="mt-5"
+          variant="outline"
+          size="compact"
+        >
           Gérer l’abonnement
         </Button>
       </div>

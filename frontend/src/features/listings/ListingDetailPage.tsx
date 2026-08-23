@@ -5,7 +5,12 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  useParams,
+  Link,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import {
   Heart,
   Share2,
@@ -82,6 +87,7 @@ export const ListingDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
   const toast = useToast();
   const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
@@ -356,6 +362,19 @@ export const ListingDetailPage: React.FC = () => {
 
   usePageMeta(pageMeta);
 
+  useEffect(() => {
+    if (!listing || !currentUser) return;
+    const shouldContact = searchParams.get("contact") === "1";
+    const shouldOffer = searchParams.get("offer") === "1";
+    if (!shouldContact && !shouldOffer) return;
+    if (shouldContact) setIsContactModalOpen(true);
+    if (shouldOffer) setIsOfferModalOpen(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete("contact");
+    next.delete("offer");
+    setSearchParams(next, { replace: true });
+  }, [currentUser, listing, searchParams, setSearchParams]);
+
   // Handlers
   /**
    * Saving goes through the shared favourites store, not straight to storage.
@@ -400,7 +419,7 @@ export const ListingDetailPage: React.FC = () => {
     const buyerId = currentUser ? currentUser.id : "guest-user";
     const buyerName = currentUser ? currentUser.name : "Visiteur";
 
-    await messagingRepository.createOrGetConversation({
+    const conversation = await messagingRepository.createOrGetConversation({
       listingId: listing.id,
       buyerId,
       buyerName,
@@ -412,7 +431,7 @@ export const ListingDetailPage: React.FC = () => {
     setIsContactModalOpen(false);
     setMessageText("");
     toast.success("Votre message a bien été envoyé au vendeur !");
-    navigate("/compte/messages");
+    navigate(routes.workspace.messages(conversation.id));
   };
 
   const handleSendOffer = async () => {
@@ -447,7 +466,7 @@ export const ListingDetailPage: React.FC = () => {
     toast.success(
       `Votre offre de ${formatPrice(numPrice)} a été transmise au vendeur.`,
     );
-    navigate("/compte/messages");
+    navigate(routes.workspace.messages(conv.id));
   };
 
   // Loading skeleton state
@@ -499,14 +518,19 @@ export const ListingDetailPage: React.FC = () => {
   const showsBuyerFee =
     Boolean(listing.isOnlinePaymentAvailable) && listing.price > 0;
   const breadcrumbItems = [
-    { label: "Accueil", href: "/" },
-    { label: displayCategoryLabel, href: `/categorie/${listing.categorySlug}` },
+    { label: "Accueil", href: routes.home() },
+    {
+      label: displayCategoryLabel,
+      href: routes.category(listing.categorySlug),
+    },
     ...(displaySubCategoryLabel &&
     displaySubCategoryLabel !== displayCategoryLabel
       ? [
           {
             label: displaySubCategoryLabel,
-            href: `/categorie/${listing.categorySlug}?sub=${listing.subCategorySlug}`,
+            href: routes.category(listing.categorySlug, {
+              subCategory: listing.subCategorySlug,
+            }),
           },
         ]
       : []),
@@ -686,7 +710,7 @@ export const ListingDetailPage: React.FC = () => {
               <strong className="font-mono text-stone-700">{listing.id}</strong>
             </span>
             <Link
-              to={`/contact?context=listing&listingId=${listing.id}`}
+              to={routes.contact({ context: "listing", listingId: listing.id })}
               className="text-primary hover:underline font-bold inline-flex items-center gap-1"
             >
               {t("listings.listingDetailPage.signalerOuDemanderDeL")}
@@ -741,8 +765,10 @@ export const ListingDetailPage: React.FC = () => {
               <Link
                 to={
                   isProSeller(seller)
-                    ? `/boutique/${seller.storeSlug || seller.slug || seller.id}`
-                    : `/profil/${seller.slug || seller.id}`
+                    ? routes.seller.storefront(
+                        seller.storeSlug || seller.slug || seller.id,
+                      )
+                    : routes.seller.profile(seller.slug || seller.id)
                 }
                 className="group flex items-start gap-3 p-4 rounded-2xl border border-stone-200/60 bg-stone-50/60 hover:bg-stone-50 hover:border-stone-300 transition-colors"
               >
@@ -917,7 +943,17 @@ export const ListingDetailPage: React.FC = () => {
                       variant="outline"
                       size="md"
                       fullWidth
-                      onClick={() => setIsOfferModalOpen(true)}
+                      onClick={() => {
+                        if (!currentUser) {
+                          navigate(
+                            routes.auth.login(
+                              `${routes.listing.detail(listing.id)}?offer=1`,
+                            ),
+                          );
+                          return;
+                        }
+                        setIsOfferModalOpen(true);
+                      }}
                       leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
                     >
                       {/* Two buttons share this row on a phone, and the full
@@ -943,7 +979,17 @@ export const ListingDetailPage: React.FC = () => {
                       }
                       size="md"
                       fullWidth
-                      onClick={() => setIsContactModalOpen(true)}
+                      onClick={() => {
+                        if (!currentUser) {
+                          navigate(
+                            routes.auth.login(
+                              `${routes.listing.detail(listing.id)}?contact=1`,
+                            ),
+                          );
+                          return;
+                        }
+                        setIsContactModalOpen(true);
+                      }}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
                     >
                       {contactActionLabel}
@@ -1212,7 +1258,7 @@ export const ListingDetailPage: React.FC = () => {
         >
           {actions.isOwner ? (
             <Button
-              to={`/deposer?edit=${listing.id}`}
+              to={routes.listing.publish({ edit: listing.id })}
               variant="primary"
               size="md"
               className="w-full sm:w-auto"
@@ -1231,7 +1277,17 @@ export const ListingDetailPage: React.FC = () => {
                   variant="outline"
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("offer")}`}
-                  onClick={() => setIsOfferModalOpen(true)}
+                  onClick={() => {
+                    if (!currentUser) {
+                      navigate(
+                        routes.auth.login(
+                          `${routes.listing.detail(listing.id)}?offer=1`,
+                        ),
+                      );
+                      return;
+                    }
+                    setIsOfferModalOpen(true);
+                  }}
                   leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
                 >
                   Offre
@@ -1261,7 +1317,17 @@ export const ListingDetailPage: React.FC = () => {
                   }
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("contact")}`}
-                  onClick={() => setIsContactModalOpen(true)}
+                  onClick={() => {
+                    if (!currentUser) {
+                      navigate(
+                        routes.auth.login(
+                          `${routes.listing.detail(listing.id)}?contact=1`,
+                        ),
+                      );
+                      return;
+                    }
+                    setIsContactModalOpen(true);
+                  }}
                   leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
                 >
                   {contactActionLabel}

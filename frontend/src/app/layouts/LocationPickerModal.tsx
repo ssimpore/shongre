@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Check, Navigation } from "lucide-react";
+import {
+  MapPin,
+  Check,
+  Navigation,
+  LocateFixed,
+  LoaderCircle,
+} from "lucide-react";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
 import { Input } from "../../design-system/primitives/FormField";
+import { IconButton } from "../../design-system/primitives/IconButton";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { LocationSelection } from "../../types";
 import { useTranslation } from "../../i18n/I18nProvider";
+import {
+  CurrentLocationError,
+  GeolocationFailureCode,
+  locateCurrentCity,
+} from "../../domains/market/geolocation.service";
+
+type GeolocationState =
+  | { status: "idle" }
+  | { status: "locating" }
+  | { status: "success"; city: string }
+  | { status: "error"; code: GeolocationFailureCode };
 
 export const LocationPickerModal: React.FC = () => {
   const { t } = useTranslation();
@@ -25,14 +43,19 @@ export const LocationPickerModal: React.FC = () => {
     isWholeCountry ? "" : location.city,
   );
   const [radius, setRadius] = useState<number>(location.radiusKm || 0);
+  const [geolocationState, setGeolocationState] =
+    useState<GeolocationState>({ status: "idle" });
 
   useEffect(() => {
+    if (!isLocationModalOpen) return;
     if (isWholeCountry) {
       setCityInput("");
     } else {
       setCityInput(location.city);
     }
-  }, [location, isWholeCountry]);
+    setRadius(location.radiusKm || 0);
+    setGeolocationState({ status: "idle" });
+  }, [isLocationModalOpen, location, isWholeCountry]);
 
   const radiusOptions = [0, 10, 20, 30, 50, 100];
   const wholeCountryLabel = `Toute la ${activeMarket.name}`;
@@ -60,7 +83,54 @@ export const LocationPickerModal: React.FC = () => {
 
   const handleSelectCity = (c: (typeof popularCities)[0]) => {
     setCityInput(c.name);
+    setGeolocationState({ status: "idle" });
   };
+
+  const handleUseCurrentLocation = async () => {
+    if (geolocationState.status === "locating") return;
+    setGeolocationState({ status: "locating" });
+
+    try {
+      const result = await locateCurrentCity(
+        activeMarket.code,
+        popularCities,
+      );
+      setCityInput(result.city.name);
+      setGeolocationState({ status: "success", city: result.city.name });
+    } catch (error) {
+      setGeolocationState({
+        status: "error",
+        code:
+          error instanceof CurrentLocationError
+            ? error.code
+            : "position_unavailable",
+      });
+    }
+  };
+
+  const geolocationMessage = (() => {
+    if (geolocationState.status === "locating") {
+      return t("shell.locationPickerModal.locationInProgress");
+    }
+    if (geolocationState.status === "success") {
+      return t("shell.locationPickerModal.locationDetected", {
+        city: geolocationState.city,
+      });
+    }
+    if (geolocationState.status !== "error") return "";
+
+    const keyByCode = {
+      unsupported: "shell.locationPickerModal.locationUnsupported",
+      permission_denied: "shell.locationPickerModal.locationPermissionDenied",
+      position_unavailable: "shell.locationPickerModal.locationUnavailable",
+      timeout: "shell.locationPickerModal.locationTimeout",
+      outside_market: "shell.locationPickerModal.locationOutsideMarket",
+      unresolved: "shell.locationPickerModal.locationUnresolved",
+    } as const;
+    return t(keyByCode[geolocationState.code], {
+      market: activeMarket.name,
+    });
+  })();
 
   const examplePlaceholder =
     popularCities.length >= 2
@@ -100,15 +170,67 @@ export const LocationPickerModal: React.FC = () => {
 
         {/* City input */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+          <label
+            htmlFor="location-city-input"
+            className="text-xs font-bold text-stone-700 uppercase tracking-wider"
+          >
             Ville ou Code Postal ({activeMarket.name})
           </label>
           <Input
+            id="location-city-input"
             placeholder={examplePlaceholder}
             value={cityInput}
-            onChange={(e) => setCityInput(e.target.value)}
+            onChange={(e) => {
+              setCityInput(e.target.value);
+              setGeolocationState({ status: "idle" });
+            }}
             leftIcon={<MapPin className="w-4 h-4" />}
+            aria-describedby={
+              geolocationMessage ? "location-geolocation-status" : undefined
+            }
+            rightIcon={
+              <IconButton
+                size="sm"
+                variant="ghost"
+                ariaLabel={
+                  geolocationState.status === "locating"
+                    ? t("shell.locationPickerModal.locationInProgress")
+                    : t("shell.locationPickerModal.useCurrentLocation")
+                }
+                onClick={handleUseCurrentLocation}
+                disabled={geolocationState.status === "locating"}
+                aria-busy={geolocationState.status === "locating"}
+                className="text-primary hover:text-primary-hover"
+              >
+                {geolocationState.status === "locating" ? (
+                  <LoaderCircle
+                    className="h-icon-sm w-icon-sm motion-safe:animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <LocateFixed
+                    className="h-icon-sm w-icon-sm"
+                    aria-hidden="true"
+                  />
+                )}
+              </IconButton>
+            }
           />
+          {geolocationMessage ? (
+            <p
+              id="location-geolocation-status"
+              role={geolocationState.status === "error" ? "alert" : "status"}
+              className={`text-xs ${
+                geolocationState.status === "error"
+                  ? "text-danger"
+                  : geolocationState.status === "success"
+                    ? "text-success"
+                    : "text-text-secondary"
+              }`}
+            >
+              {geolocationMessage}
+            </p>
+          ) : null}
         </div>
 
         {/* Radius selector */}

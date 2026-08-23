@@ -96,7 +96,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
   };
 
   return (
-    <div className="relative min-w-0">
+    <div className="scroll-rail-shell relative w-full max-w-full min-w-0">
       {/* The track is focusable only while it actually overflows. A scroll
           region that fits its content is not a region a keyboard user needs to
           enter, and giving it a permanent tab stop adds a dead stop to every

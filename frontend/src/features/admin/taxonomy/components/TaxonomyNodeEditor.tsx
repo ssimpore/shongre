@@ -1483,7 +1483,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               <div className="text-micro text-stone-500 font-bold uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.apercuGoogleSearch")}
               </div>
-              <div className="text-xs text-info font-medium hover:underline cursor-pointer">
+              <div className="text-xs text-info font-medium">
                 {metaTitleTemplate.replace("{category}", node.name) ||
                   `${node.name} d'occasion - Shongre`}
               </div>

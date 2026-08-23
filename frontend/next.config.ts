@@ -14,6 +14,22 @@ try {
   throw new Error('[Web Config] NEXT_PUBLIC_API_URL must be an absolute URL when provided.');
 }
 const isProduction = process.env.NODE_ENV === 'production';
+const allowedDevOrigins = Array.from(
+  new Set([
+    'dev.shongre.com',
+    ...(process.env.SHONGRE_ALLOWED_DEV_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  ]),
+);
+// Turbopack development chunks keep path-stable URLs while their contents
+// change. A tunnel/CDN or browser must not reuse one across module graphs.
+const developmentAssetHeaders = [
+  { key: 'Cache-Control', value: 'no-store, max-age=0, must-revalidate' },
+  { key: 'Cloudflare-CDN-Cache-Control', value: 'no-store' },
+  { key: 'CDN-Cache-Control', value: 'no-store' },
+];
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"}`,
@@ -30,6 +46,7 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  allowedDevOrigins,
   output: 'standalone',
   poweredByHeader: false,
   reactStrictMode: true,
@@ -47,6 +64,14 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      ...(!isProduction
+        ? [
+            {
+              source: '/_next/:path*',
+              headers: developmentAssetHeaders,
+            },
+          ]
+        : []),
       {
         source: '/:path*',
         headers: [

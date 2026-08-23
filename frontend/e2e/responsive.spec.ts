@@ -13,7 +13,7 @@ import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
  * full matrix.
  */
 const CRITICAL_WIDTHS = VIEWPORTS.filter((v) =>
-  ["320-small-phone", "787-awkward-gap", "1024-tablet-landscape"].includes(
+  ["320-small-phone", "787-awkward-gap", "1024-lg-breakpoint"].includes(
     v.name,
   ),
 );

@@ -157,6 +157,14 @@ export type Permission =
   | "immo.lead.manage.own"
   | "immo.inventory.import.own"
   | "immo.admin.manage"
+  // Shongre Emploi
+  | "employment.read"
+  | "employment.candidate.manage.own"
+  | "employment.job.manage.own"
+  | "employment.recruiter.manage.own"
+  | "employment.application.manage.own"
+  | "employment.import.own"
+  | "employment.admin.manage"
   // Providers & External Integrations
   | "provider.read"
   | "provider.manage"

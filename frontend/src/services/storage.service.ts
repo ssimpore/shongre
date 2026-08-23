@@ -20,6 +20,7 @@ import {
 import { Market } from "../domains/market/market.types";
 import { INITIAL_MARKETS } from "../domains/market/market.defaults";
 import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
+import { routes } from "../configuration/routes";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -478,7 +479,7 @@ class StorageService {
         title: "Antiquités",
         locationLabel: "Toute la France",
         categorySlug: "antiquites",
-        to: "/recherche?category=antiquites",
+        to: routes.search({ category: "antiquites" }),
         createdAt: new Date(Date.now() - 3600000).toISOString(),
       },
       {
@@ -486,7 +487,7 @@ class StorageService {
         title: "Accessoires & bagagerie",
         locationLabel: "Toute la France",
         categorySlug: "accessoires-bagagerie",
-        to: "/recherche?category=accessoires-bagagerie",
+        to: routes.search({ category: "accessoires-bagagerie" }),
         createdAt: new Date(Date.now() - 7200000).toISOString(),
       },
       {
@@ -494,7 +495,7 @@ class StorageService {
         title: "Photo, audio & vidéo",
         locationLabel: "Bray-Dunes (59123)",
         categorySlug: "multimedia",
-        to: "/recherche?category=multimedia&location=Bray-Dunes",
+        to: routes.search({ category: "multimedia", city: "Bray-Dunes" }),
         createdAt: new Date(Date.now() - 10800000).toISOString(),
       },
     ]);
@@ -663,7 +664,20 @@ class StorageService {
 
   // Users store
   getUsers(): Record<string, UserProfile> {
-    return this.get<Record<string, UserProfile>>(KEYS.USERS, DEMO_USERS);
+    const stored = this.get<Record<string, UserProfile>>(KEYS.USERS, {});
+    const merged = { ...DEMO_USERS, ...stored };
+
+    // Persisted demo data predates newly introduced personas on long-lived
+    // browsers. Always layer the canonical fixtures underneath it so a product
+    // update adds new accounts without forcing a localStorage reset. Updates
+    // saved under a user's id still win for the stable, human-readable fixture
+    // key used by the demo switcher.
+    Object.entries(DEMO_USERS).forEach(([fixtureKey, fixtureUser]) => {
+      const savedById = stored[fixtureUser.id];
+      if (savedById) merged[fixtureKey] = savedById;
+    });
+
+    return merged;
   }
 
   getUser(idOrKey: string): UserProfile | null {

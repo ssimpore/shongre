@@ -22,7 +22,13 @@ import type {
 } from "@shongre/contracts/real-estate";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Skeleton, StatePanel } from "../../design-system";
+import {
+  Badge,
+  Button,
+  ScrollableRegion,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatImmoMoney } from "./immo-format";
 
@@ -336,7 +342,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   </dd>
                 </div>
               </dl>
-              <p className="mt-5 rounded-control bg-bg-subtle p-3 text-micro text-text-muted">
+              <p className="mt-5 rounded-control bg-bg-subtle p-3 text-micro text-text-secondary">
                 Métriques agrégées et minimisées. Aucun score de fraude n’est
                 exposé ici.
               </p>
@@ -359,7 +365,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 Ajouter
               </Button>
             </div>
-            <div className="overflow-x-auto">
+            <ScrollableRegion aria-label="Tableau du portefeuille immobilier">
               <table className="w-full min-w-[42rem] text-left text-xs">
                 <thead className="bg-bg-subtle text-text-muted">
                   <tr>
@@ -411,7 +417,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableRegion>
           </section>
           <section className="rounded-card border border-border-base bg-bg-surface p-4">
             <h2 className="text-sm font-black">Brouillons de l’agence</h2>

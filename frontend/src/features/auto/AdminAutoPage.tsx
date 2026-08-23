@@ -22,6 +22,7 @@ import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Badge, Button, Skeleton, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { routes } from "../../configuration/routes";
 import { formatAutoMoney } from "./auto-format";
 
 const TABS = [
@@ -267,7 +268,13 @@ export const AdminAutoPage: React.FC = () => {
               </div>
             ))}
           </div>
-          <Button className="mt-4" fullWidth variant="outline" size="compact">
+          <Button
+            to={routes.admin.taxonomy({ tab: "attributes", node: "vehicles" })}
+            className="mt-4"
+            fullWidth
+            variant="outline"
+            size="compact"
+          >
             Gérer les attributs
           </Button>
         </section>

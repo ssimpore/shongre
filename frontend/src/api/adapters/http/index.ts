@@ -18,4 +18,5 @@ export * from "./http-search.service";
 export * from "./http-courses.service";
 export * from "./http-auto.service";
 export * from "./http-real-estate.service";
+export * from "./http-employment.service";
 export * from "./http-business-rules.service";

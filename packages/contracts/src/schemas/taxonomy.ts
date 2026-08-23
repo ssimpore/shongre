@@ -186,7 +186,7 @@ export const taxonomyNodeSchema: z.ZodTypeAny = z.lazy(() =>
     publishable: z.boolean().optional(),
     listingFamily: z.string().optional(),
     verticalType: z
-      .enum(["tutoring", "automotive", "real_estate"])
+      .enum(["tutoring", "automotive", "real_estate", "employment"])
       .optional(),
     verticalSchemaVersion: z.number().int().positive().optional(),
     supportedIntents: z.array(z.string()).optional(),

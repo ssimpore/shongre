@@ -38,6 +38,13 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     ),
     "utf8",
   );
+  const employmentMigration = readFileSync(
+    new URL(
+      "../../supabase/migrations/00017_employment_vertical.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
 
   it("allows buyers to read listings and create orders", () => {
     expect(hasPermission("individual_buyer", "listing.read")).toBe(true);
@@ -312,5 +319,46 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     expect(hasPermission("finance", "commercial_rules.publish")).toBe(false);
     expect(hasPermission("admin", "commercial_rules.publish")).toBe(true);
     expect(hasPermission("individual_seller", "commercial_rules.read")).toBe(false);
+  });
+
+  it("keeps every Employment candidate, pipeline, import, report, and audit table behind RLS", () => {
+    for (const table of [
+      "employment_candidate_profiles",
+      "employment_candidate_documents",
+      "employment_applications",
+      "employment_screening_answers",
+      "employment_recruiter_notes",
+      "employment_interviews",
+      "employment_saved_jobs",
+      "employment_job_alerts",
+      "employment_consent_records",
+      "employment_import_sources",
+      "employment_sync_logs",
+      "employment_job_reports",
+      "employment_audit_logs",
+      "employment_analytics_events",
+    ])
+      expect(employmentMigration).toContain(
+        `ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`,
+      );
+  });
+
+  it("keeps Employment documents private and recruiter notes inaccessible to candidates", () => {
+    expect(employmentMigration).toContain('CREATE POLICY "Candidate documents stay private"');
+    expect(employmentMigration).toContain('CREATE POLICY "Authorized recruiters read submitted CVs"');
+    expect(employmentMigration).toContain('CREATE POLICY "Recruiter notes never reach candidates"');
+    expect(employmentMigration).not.toContain("Candidate reads recruiter notes");
+    expect(employmentMigration).toContain("secret_reference TEXT");
+    expect(employmentMigration).toContain(
+      "Opaque secret-manager reference only; never store provider credentials here.",
+    );
+  });
+
+  it("grants Employment operations by role while resource membership remains service-enforced", () => {
+    expect(hasPermission("individual_buyer", "employment.candidate.manage.own")).toBe(true);
+    expect(hasPermission("individual_buyer", "employment.recruiter.manage.own")).toBe(false);
+    expect(hasPermission("individual_seller", "employment.recruiter.manage.own")).toBe(true);
+    expect(hasPermission("pro_seller", "employment.import.own")).toBe(true);
+    expect(hasPermission("market_manager", "employment.admin.manage")).toBe(true);
   });
 });

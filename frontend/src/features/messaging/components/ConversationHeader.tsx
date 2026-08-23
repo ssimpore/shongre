@@ -18,6 +18,7 @@ import {
 import { Avatar, Badge } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { routes } from "../../../configuration/routes";
 
 interface ConversationHeaderProps {
   counterpart: ConversationParticipant;
@@ -144,7 +145,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-lg border border-border-base p-1 z-dropdown space-y-0.5 text-xs font-semibold">
                 {publicProfileSlug && (
                   <Link
-                    to={`/profil/${publicProfileSlug}`}
+                    to={routes.seller.profile(publicProfileSlug)}
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-100 transition-colors"
                   >

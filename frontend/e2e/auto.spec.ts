@@ -135,7 +135,7 @@ test.describe("Shongre Auto", () => {
   test("dealer and admin workspaces expose gated operational surfaces", async ({
     page,
   }) => {
-    await usePersona(page, "pro_seller");
+    await usePersona(page, "pro_auto");
     await page.goto("/compte/auto", { waitUntil: "networkidle" });
     await expect(
       page.getByRole("heading", { level: 1, name: "Espace Auto" }),

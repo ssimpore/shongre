@@ -228,6 +228,7 @@ describe("Publication System & Schema Resolvers", () => {
     expect(schema?.mediaGuidance?.minimumPhotoCount).toBe(0);
     expect(schema?.publication.primaryCta).toBe("apply");
     expect(schema?.publication.standardPolicy.eligibleSellerTypes).toEqual([
+      "individual",
       "professional",
     ]);
 

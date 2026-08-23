@@ -107,10 +107,25 @@ export const SavedSearchesPage: React.FC = () => {
                   size="sm"
                   variant="primary"
                   onClick={() => {
-                    const q = search.filters.query
-                      ? `query=${encodeURIComponent(search.filters.query)}`
-                      : "";
-                    navigate(`/recherche?${q}`);
+                    navigate(
+                      routes.search({
+                        query: search.filters.query,
+                        category: search.filters.categorySlug,
+                        subCategory: search.filters.subCategorySlug,
+                        city: search.filters.city,
+                        radius: search.filters.radiusKm,
+                        minPrice: search.filters.minPrice,
+                        maxPrice: search.filters.maxPrice,
+                        sellerType: search.filters.sellerType,
+                        delivery: search.filters.deliveryAvailable,
+                        onlinePayment: search.filters.onlinePaymentAvailable,
+                        onlyDeals: search.filters.onlyDeals,
+                        condition: search.filters.conditions,
+                        sortBy: search.filters.sortBy,
+                        market: search.filters.marketCode,
+                        attributes: search.filters.attributes,
+                      }),
+                    );
                   }}
                   rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                 >

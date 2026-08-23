@@ -6,6 +6,7 @@ export const verticalTypeSchema = z.enum([
   "tutoring",
   "automotive",
   "real_estate",
+  "employment",
 ]);
 export type VerticalType = z.infer<typeof verticalTypeSchema>;
 
@@ -81,6 +82,11 @@ export const verticalAddOnSchema = z.object({
     "local_spotlight",
     "qualified_lead",
     "sponsored_professional",
+    "additional_listing_credit",
+    "additional_team_seat",
+    "extended_analytics",
+    "distribution_integration",
+    "employer_brand_campaign",
   ]),
   name: z.string().min(1),
   description: z.string(),

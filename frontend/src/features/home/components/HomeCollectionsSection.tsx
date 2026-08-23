@@ -6,6 +6,7 @@ import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import type { MessageKey } from "../../../i18n/messages.fr";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { routes } from "../../../configuration/routes";
 
 interface TrendingCollectionItem {
   id: string;
@@ -20,35 +21,35 @@ const TRENDING_COLLECTIONS: TrendingCollectionItem[] = [
     titleKey: "home.homeCollectionsSection.laPieceManquante",
     imageUrl:
       "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80",
-    to: "/recherche?q=jante+roue+piece+auto",
+    to: routes.search({ query: "jante roue pièce auto" }),
   },
   {
     id: "velo-famille",
     titleKey: "home.homeCollectionsSection.aVeloEnFamille",
     imageUrl:
       "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80",
-    to: "/recherche?category=velos",
+    to: routes.search({ category: "velos" }),
   },
   {
     id: "amenagez-exterieur",
     titleKey: "home.homeCollectionsSection.amenagezVotreExterieur",
     imageUrl:
       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
-    to: "/recherche?category=maison-deco",
+    to: routes.search({ category: "maison-deco" }),
   },
   {
     id: "petit-plongeon",
     titleKey: "home.homeCollectionsSection.unPetitPlongeon",
     imageUrl:
       "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80",
-    to: "/recherche?q=piscine+bouee+ete",
+    to: routes.search({ query: "piscine bouée été" }),
   },
   {
     id: "de-l-air",
     titleKey: "home.homeCollectionsSection.deLAir",
     imageUrl:
       "https://images.unsplash.com/photo-1565151443833-29bf2b583c19?auto=format&fit=crop&w=800&q=80",
-    to: "/recherche?q=ventilateur+climatiseur",
+    to: routes.search({ query: "ventilateur climatiseur" }),
   },
 ];
 

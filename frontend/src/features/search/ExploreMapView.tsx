@@ -337,7 +337,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                 const isHovered = hoveredListingId === item.id;
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={item.id}
                     onMouseEnter={() => setHoveredListingId(item.id)}
                     onMouseLeave={() => setHoveredListingId(null)}
@@ -352,7 +353,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                         },
                       );
                     }}
-                    className={`pt-2.5 first:pt-0 cursor-pointer rounded-xl p-2 transition-colors ${
+                    aria-pressed={isSelected}
+                    className={`w-full pt-2.5 first:pt-0 cursor-pointer rounded-xl p-2 text-left transition-colors ${
                       isSelected
                         ? "bg-primary-light border border-primary-border"
                         : isHovered
@@ -388,7 +390,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

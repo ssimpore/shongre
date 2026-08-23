@@ -11,6 +11,8 @@ import { Avatar } from "../../design-system/primitives/Badge";
 import { Check, Building2, MapPin, Globe, Phone } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { Link } from "react-router-dom";
+import { routes } from "../../configuration/routes";
 
 export const ProStorefrontEditorPage: React.FC = () => {
   const { t } = useTranslation();
@@ -182,8 +184,10 @@ export const ProStorefrontEditorPage: React.FC = () => {
       </div>
 
       <div className="pt-4 border-t border-border-subtle flex items-center justify-between gap-3 flex-wrap">
-        <a
-          href={`/boutique/${currentUser?.storeSlug || "atelier-nordique"}`}
+        <Link
+          to={routes.seller.storefront(
+            currentUser?.storeSlug || "atelier-nordique",
+          )}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs font-bold text-primary hover:underline flex items-center gap-1.5"
@@ -192,7 +196,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           <span>
             {t("sellerworkspace.proStorefrontEditorPage.voirMaVitrineEnDirect")}
           </span>
-        </a>
+        </Link>
 
         {/* `size="lg"` + a nowrap label is 286px wide, which alone overflows a
             320px viewport. Full-width below `sm` is the platform idiom for a

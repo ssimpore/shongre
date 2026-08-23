@@ -23,17 +23,41 @@ const PERSONA_STORAGE = {
     role: 'pro_seller',
     label: '4. Vendeur Pro',
   },
-  moderator: {
+  immo: {
     index: 4,
+    key: 'pro_immo_clara',
+    role: 'pro_seller',
+    label: '5. Pro Immobilier',
+  },
+  auto: {
+    index: 5,
+    key: 'pro_auto_michel',
+    role: 'pro_seller',
+    label: '6. Pro Automobile',
+  },
+  courses: {
+    index: 6,
+    key: 'pro_courses_sophie',
+    role: 'pro_seller',
+    label: '7. Pro Cours',
+  },
+  employment: {
+    index: 7,
+    key: 'pro_employment_clara',
+    role: 'pro_seller',
+    label: '8. Pro Emploi',
+  },
+  moderator: {
+    index: 8,
     key: 'moderator_claire',
     role: 'moderator',
-    label: '5. Modérateur Shongre',
+    label: '9. Modérateur Shongre',
   },
   admin: {
-    index: 5,
+    index: 9,
     key: 'admin_antoine',
     role: 'admin',
-    label: '6. Administrateur Système',
+    label: '10. Administrateur Système',
   },
 } as const;
 
@@ -63,8 +87,8 @@ async function selectPersona(page: Page, persona: Persona): Promise<void> {
     .toEqual({ key: persona.key, role: persona.role });
 }
 
-test('switches all six demo personas as real account sessions', async ({ page }) => {
-  test.setTimeout(90_000);
+test('switches all ten demo personas as real account sessions', async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto(VEHICLE_DETAIL_URL, { waitUntil: 'networkidle' });
   // Enter the requested starting state through the control itself. Unlike the
   // general `usePersona` test helper, this does not re-seed localStorage after
@@ -95,10 +119,26 @@ test('switches all six demo personas as real account sessions', async ({ page })
     'Atelier',
   );
 
+  await selectPersona(page, PERSONA_STORAGE.immo);
+  await expect(page.getByRole('heading', { name: 'Agence Canopée' })).toBeVisible();
+  await expect(page).toHaveURL(/\/compte\/immo$/);
+
+  await selectPersona(page, PERSONA_STORAGE.auto);
+  await expect(page.getByRole('heading', { name: 'Espace Auto' })).toBeVisible();
+  await expect(page).toHaveURL(/\/compte\/auto$/);
+
+  await selectPersona(page, PERSONA_STORAGE.courses);
+  await expect(page.getByRole('heading', { name: 'Collège Lumière' })).toBeVisible();
+  await expect(page).toHaveURL(/\/compte\/cours\/organisation$/);
+
+  await selectPersona(page, PERSONA_STORAGE.employment);
+  await expect(page.getByRole('heading', { name: 'TechNova' })).toBeVisible();
+  await expect(page).toHaveURL(/\/compte\/emploi\/recruteur$/);
+
   await page.reload({ waitUntil: 'networkidle' });
   await expect(
     page.locator('button[aria-controls="demo-persona-menu"]'),
-  ).toContainText(PERSONA_STORAGE.pro.label);
+  ).toContainText(PERSONA_STORAGE.employment.label);
 
   await selectPersona(page, PERSONA_STORAGE.moderator);
   await expect(page.locator('button[aria-label^="Menu du compte"]')).toContainText(

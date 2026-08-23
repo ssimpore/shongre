@@ -11,5 +11,8 @@ export * from "./schemas/courses";
 export * from "./schemas/auto";
 export * from "./schemas/vertical";
 export * from "./schemas/real-estate";
+export * from "./schemas/employment";
+export * from "./fixtures/employment-catalog";
+export * from "./fixtures/employment-demo";
 export * from "./schemas/monetization";
 export * from "./types/pagination";

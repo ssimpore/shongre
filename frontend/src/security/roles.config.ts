@@ -21,6 +21,7 @@ const GUEST_PERMISSIONS: Permission[] = [
   "course.read",
   "auto.read",
   "immo.read",
+  "employment.read",
 ];
 
 // 2. Individual Buyer Permissions
@@ -44,6 +45,8 @@ const BUYER_PERMISSIONS: Permission[] = [
   "course.offer.manage.own",
   "course.lead.read.own",
   "course.lead.respond.own",
+  "employment.candidate.manage.own",
+  "employment.job.manage.own",
 ];
 
 // 3. Individual Seller Permissions
@@ -64,6 +67,8 @@ const SELLER_PERMISSIONS: Permission[] = [
   "course.lead.respond.own",
   "auto.vehicle.manage.own",
   "immo.property.manage.own",
+  "employment.recruiter.manage.own",
+  "employment.application.manage.own",
 ];
 
 // 4. Professional Seller Permissions
@@ -82,6 +87,9 @@ const PRO_SELLER_PERMISSIONS: Permission[] = [
   "immo.agency.manage.own",
   "immo.lead.manage.own",
   "immo.inventory.import.own",
+  "employment.recruiter.manage.own",
+  "employment.application.manage.own",
+  "employment.import.own",
 ];
 
 // 5. Support Specialist
@@ -195,6 +203,7 @@ const MARKET_MANAGER_PERMISSIONS: Permission[] = [
   "course.admin.manage",
   "auto.admin.manage",
   "immo.admin.manage",
+  "employment.admin.manage",
 ];
 
 // 12. Administrator
@@ -245,6 +254,7 @@ const ADMIN_PERMISSIONS: Permission[] = [
   "course.admin.manage",
   "auto.admin.manage",
   "immo.admin.manage",
+  "employment.admin.manage",
 ];
 
 // 13. Super Administrator (Unrestricted platform access)

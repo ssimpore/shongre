@@ -107,7 +107,7 @@ export const LoginPage: React.FC = () => {
       footerLink={{
         text: "Pas encore de compte ?",
         linkText: "Créer un compte",
-        to: "/inscription",
+        to: routes.auth.register(redirectUrl),
       }}
     >
       {errorMessage && (

@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import type { AutoLead, VehiclePublic } from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
+import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
+import { routes } from "../../configuration/routes";
 import {
   Badge,
   Button,
@@ -54,6 +56,7 @@ type LeadFormState = {
 
 export const AutoVehicleDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
+  const { currentUser } = useAuth();
   const toast = useToast();
   const [vehicle, setVehicle] = useState<VehiclePublic | null>(null);
   const [similar, setSimilar] = useState<VehiclePublic[]>([]);
@@ -145,6 +148,24 @@ export const AutoVehicleDetailPage: React.FC = () => {
     }
   };
 
+  const toggleFavorite = async () => {
+    if (!vehicle) return;
+    try {
+      const isFavorite = await services.auto.toggleFavoriteVehicle(
+        currentUser?.id || "guest",
+        vehicle.id,
+      );
+      setVehicle({ ...vehicle, isFavorite });
+      toast.success(
+        isFavorite
+          ? "Véhicule ajouté aux favoris."
+          : "Véhicule retiré des favoris.",
+      );
+    } catch {
+      toast.error("Les favoris sont temporairement indisponibles.");
+    }
+  };
+
   if (loading)
     return (
       <Container className="py-7">
@@ -161,7 +182,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
           variant="notFound"
           title="Véhicule introuvable"
           description="Cette annonce a peut-être été vendue, suspendue ou retirée."
-          action={<Button to="/auto">Voir les véhicules</Button>}
+          action={<Button to={routes.auto.search()}>Voir les véhicules</Button>}
         />
       </Container>
     );
@@ -212,7 +233,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
     <>
       <Container className="py-5 sm:py-7">
         <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-text-muted">
-          <Link to="/auto" className="hover:text-primary">
+          <Link to={routes.auto.search()} className="hover:text-primary">
             Shongre Auto
           </Link>{" "}
           <span aria-hidden="true">/</span> {vehicle.makeLabel}{" "}
@@ -232,13 +253,24 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 <div className="absolute right-3 top-3 flex gap-2">
                   <button
                     type="button"
+                    onClick={toggleFavorite}
+                    aria-pressed={vehicle.isFavorite}
                     className="rounded-control bg-bg-surface p-2 shadow-xs"
-                    aria-label="Ajouter aux favoris"
+                    aria-label={
+                      vehicle.isFavorite
+                        ? "Retirer des favoris"
+                        : "Ajouter aux favoris"
+                    }
                   >
-                    <Heart className="h-icon-md w-icon-md" />
+                    <Heart
+                      className={`h-icon-md w-icon-md ${vehicle.isFavorite ? "fill-primary text-primary" : ""}`}
+                    />
                   </button>
                   <Link
-                    to={`/auto/comparer?ids=${vehicle.id},vehicle_3008_petrol`}
+                    to={routes.auto.compare([
+                      vehicle.id,
+                      "vehicle_3008_petrol",
+                    ])}
                     className="rounded-control bg-bg-surface p-2 shadow-xs"
                     aria-label="Comparer ce véhicule"
                   >

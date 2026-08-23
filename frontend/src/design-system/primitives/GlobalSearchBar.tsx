@@ -406,9 +406,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         prev > 0 ? prev - 1 : totalSelectableCount - 1,
       );
     } else if (e.key === "Enter") {
+      e.preventDefault();
       if (selectedIndex >= 0) {
-        e.preventDefault();
-        const trimmed = query.trim();
+        const trimmed = e.currentTarget.value.trim();
         if (trimmed) {
           const numCats = suggestions.categories.length;
           const numKws = suggestions.keywords.length;
@@ -447,6 +447,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             });
           }
         }
+      } else {
+        executeSearch({
+          query: e.currentTarget.value.trim(),
+          categorySlug: selectedCategorySlug,
+          subCategorySlug: selectedSubCategorySlug,
+        });
       }
     } else if (e.key === "Escape") {
       setIsAutocompleteOpen(false);

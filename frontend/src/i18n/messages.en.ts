@@ -95,7 +95,7 @@ export const messagesEn: MessageCatalogue = {
   // --- Language selector ----------------------------------------------------
   "language.choose": "Choose language",
   "language.current": "Language: {language}. Click to change.",
-  "language.preferences": "Preferences…",
+  "language.preferences": "Preferences",
 
   // --- Cookie consent -------------------------------------------------------
   "consent.title": "Your privacy preferences",
@@ -147,6 +147,22 @@ export const messagesEn: MessageCatalogue = {
   "shell.header.verifie": "Verified",
   "shell.locationPickerModal.zoneGeographique": "Area",
   "shell.locationPickerModal.rayonDeRecherche": "Search radius",
+  "shell.locationPickerModal.useCurrentLocation": "Use my current location",
+  "shell.locationPickerModal.locationInProgress": "Locating…",
+  "shell.locationPickerModal.locationDetected":
+    "Location detected near {city}.",
+  "shell.locationPickerModal.locationUnsupported":
+    "Geolocation is not available on this device.",
+  "shell.locationPickerModal.locationPermissionDenied":
+    "Allow location access in your browser, then try again.",
+  "shell.locationPickerModal.locationUnavailable":
+    "Your location is temporarily unavailable. Try again or enter a city.",
+  "shell.locationPickerModal.locationTimeout":
+    "Locating took too long. Try again or enter a city.",
+  "shell.locationPickerModal.locationOutsideMarket":
+    "Your location is outside the {market} market. Change country or enter a city.",
+  "shell.locationPickerModal.locationUnresolved":
+    "No supported city was found near your location.",
   "shell.preferencesModal.preferencesRegionales": "Regional preferences",
   "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
     "Set your browsing country, display currency and language",
@@ -226,7 +242,8 @@ export const messagesEn: MessageCatalogue = {
   "auth.callback.emailRequired":
     "This provider did not confirm your email address. Verify one to finish creating your account.",
   "auth.callback.title": "Secure sign-in",
-  "auth.callback.subtitle": "Shongre is validating the sign-in provider’s response",
+  "auth.callback.subtitle":
+    "Shongre is validating the sign-in provider’s response",
   "auth.callback.emailLabel": "Email address to verify",
   "auth.callback.verifyEmail": "Verify this address",
   "auth.callback.backToLogin": "Back to sign-in",
@@ -236,7 +253,8 @@ export const messagesEn: MessageCatalogue = {
     "Manage your sign-in methods and the devices that can access your account.",
   "auth.security.loading": "Loading security settings…",
   "auth.security.confirmIdentity": "Confirm your identity",
-  "auth.security.confirmDescription": "This confirmation protects changes to your sign-in methods.",
+  "auth.security.confirmDescription":
+    "This confirmation protects changes to your sign-in methods.",
   "auth.security.currentPassword": "Current password",
   "auth.security.confirm": "Confirm",
   "auth.security.methods": "Sign-in methods",
@@ -254,7 +272,8 @@ export const messagesEn: MessageCatalogue = {
   "auth.security.newPassword": "New password",
   "auth.security.savePassword": "Save password",
   "auth.security.devices": "Signed-in devices",
-  "auth.security.devicesDescription": "Immediately revoke any device you do not recognize.",
+  "auth.security.devicesDescription":
+    "Immediately revoke any device you do not recognize.",
   "auth.security.refresh": "Refresh",
   "auth.security.lastActivity": "Last activity",
   "auth.security.thisDevice": "This device",
@@ -262,9 +281,11 @@ export const messagesEn: MessageCatalogue = {
   "auth.security.revoke": "Revoke",
   "auth.security.noSessions": "No active sessions.",
   "auth.security.signOutOthers": "Sign out other devices",
-  "auth.security.secretsNotice": "Provider tokens and OAuth secrets are never displayed on this page.",
+  "auth.security.secretsNotice":
+    "Provider tokens and OAuth secrets are never displayed on this page.",
   "auth.onboarding.title": "How will you use Shongre?",
-  "auth.onboarding.description": "Your sign-in method is ready. This choice now adapts your journey without changing your identity.",
+  "auth.onboarding.description":
+    "Your sign-in method is ready. This choice now adapts your journey without changing your identity.",
   "auth.onboarding.continue": "Continue",
   "auth.registerPages.creezVotreCompteGratuitEn":
     "Create your free account in a minute and buy and sell with confidence",
@@ -1363,8 +1384,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.taxonomyNodeEditor.moderationReviewMode": "Moderation level",
   "admin.taxonomyNodeEditor.standardDurationDays": "Standard duration (days)",
   "admin.taxonomyNodeEditor.standardMediaAllowance": "Included photos",
-  "admin.taxonomyNodeEditor.savePublicationConfiguration":
-    "Save configuration",
+  "admin.taxonomyNodeEditor.savePublicationConfiguration": "Save configuration",
   "admin.taxonomyNodeEditor.cta.contactSeller": "Contact seller",
   "admin.taxonomyNodeEditor.cta.apply": "Apply",
   "admin.taxonomyNodeEditor.cta.requestQuote": "Request a quote",
@@ -1507,8 +1527,8 @@ export const messagesEn: MessageCatalogue = {
 
   // --- migrated surfaces ---
   "shell.demoRoleSwitcher.modeDemo": "Demo mode",
-  "shell.demoRoleSwitcher.testerLes6ProfilsEt":
-    "Try the 6 profiles and journeys without a password:",
+  "shell.demoRoleSwitcher.testerLes10ProfilsEt":
+    "Try the 10 profiles and journeys without a password:",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
     "Switch user profile to test",
   "shell.demoRoleSwitcher.sessionUpdated": "Demo session updated",
@@ -2261,8 +2281,7 @@ export const messagesEn: MessageCatalogue = {
   "publishing.publishWizard.standardIncludes":
     "Includes {photos} photos, messaging and listing management for {days} days.",
   "publishing.publishWizard.free": "Free",
-  "publishing.publishWizard.loadingOptionalOffers":
-    "Loading optional offers…",
+  "publishing.publishWizard.loadingOptionalOffers": "Loading optional offers…",
   "publishing.publishWizard.recapitulatifDeVotreAnnonce":
     "Summary of your listing",
   "publishing.publishWizard.relisezVotreAnnonceVousPourrez":
@@ -2738,4 +2757,60 @@ export const messagesEn: MessageCatalogue = {
     "Total: {count} unique views",
   "errors.notFoundPage.explorerLesCategories": "Browse categories",
   "errors.notFoundPage.toutesLesCategories": "All categories",
+  // --- Shongre Jobs -------------------------------------------------------
+  "employment.nav.candidate": "Candidate area",
+  "employment.nav.recruiter": "Recruiter area",
+  "employment.search.eyebrow": "Shongre Jobs",
+  "employment.search.title": "A job that fits your plans",
+  "employment.search.subtitle":
+    "Applications, standard alerts and eligible conversations remain free for candidates.",
+  "employment.search.queryPlaceholder": "Job, skill or company",
+  "employment.search.locationPlaceholder": "City or remote work",
+  "employment.search.queryLabel": "Job or skill",
+  "employment.search.locationLabel": "City or area",
+  "employment.action.publish": "Post a job",
+  "employment.action.apply": "Apply for free",
+  "employment.trust.noCandidateFee": "No payment is required to apply.",
+  "employment.trust.verifiedEmployer": "Verified employer",
+  "employment.trust.sponsoredTransparency":
+    "Paid placements are labelled and never block access to free job posts.",
+  "employment.search.filters": "Filter jobs",
+  "employment.search.results": "Job results",
+  "employment.search.createAlert": "Create a free alert",
+  "employment.search.empty": "No jobs match these filters",
+  "employment.workspace.candidateTitle": "My candidate area",
+  "employment.workspace.recruiterTitle": "Recruiter workspace",
+  "employment.workspace.applications": "Applications",
+  "employment.workspace.interviews": "Interviews",
+  "employment.workspace.messages": "Messages",
+  "employment.workspace.privacy": "Privacy and consent",
+  "employment.workspace.jobs": "Job posts",
+  "employment.workspace.pipeline": "Recruitment pipeline",
+  "employment.workspace.imports": "Imports",
+  "employment.workspace.team": "Team",
+  "employment.application.received": "Received",
+  "employment.application.review": "Under review",
+  "employment.application.shortlisted": "Shortlisted",
+  "employment.application.interview": "Interview",
+  "employment.application.offer": "Offer",
+  "employment.application.hired": "Hired",
+  "employment.application.rejected": "Not selected",
+  "employment.application.withdrawn": "Withdrawn",
+  "employment.interview.proposed": "Proposed",
+  "employment.interview.confirmed": "Confirmed",
+  "employment.interview.rescheduled": "Rescheduled",
+  "employment.interview.cancelled": "Cancelled",
+  "employment.publish.title": "Post a job",
+  "employment.publish.freeOption": "Standard free post",
+  "employment.publish.paidOptional": "Optional paid visibility",
+  "employment.publish.noForcedPlan":
+    "No subscription is required for an eligible standard post.",
+  "employment.privacy.applicationConsent":
+    "I agree to share this application with the employer for recruitment purposes.",
+  "employment.privacy.talentPoolConsent":
+    "Allow verified recruiters to find my profile",
+  "employment.import.preview": "Preview import",
+  "employment.import.confirm": "Confirm import",
+  "employment.import.idempotent":
+    "Repeated synchronization updates the source job and does not create a duplicate.",
 };

@@ -1,11 +1,12 @@
 import React from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { ArrowLeft, X } from "lucide-react";
 import { routes } from "../../configuration/routes";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Container, SkipLink } from "../../design-system";
+import { useSafeBack } from "../router/useSafeBack";
 
 /**
  * Shell for task-completion flows: publication, checkout, verification.
@@ -19,7 +20,7 @@ import { Container, SkipLink } from "../../design-system";
  */
 export const FocusedLayout: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const goBack = useSafeBack(routes.home());
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-base text-stone-900">
@@ -39,7 +40,7 @@ export const FocusedLayout: React.FC = () => {
               accessibility tree at every width and only hides it visually. */}
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={goBack}
             className="inline-flex items-center justify-center gap-1.5 h-control-touch min-w-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-0"
           >
             <ArrowLeft className="w-4 h-4" />

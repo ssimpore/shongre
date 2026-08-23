@@ -331,8 +331,9 @@
    allowing recent-search cards to paint over the header and stretching a
    listing rail into three viewport-wide columns. These declarations are
    intentionally unlayered so they remain present in the stylesheet even while
-   the generated utility graph is being refreshed. The fallback values also
-   preserve usable geometry if a custom property is temporarily unavailable. */
+   the generated utility graph is being refreshed. The fallback values mirror
+   the canonical card token and preserve usable geometry if a custom property
+   is temporarily unavailable. */
 .z-base { z-index: var(--z-base, 0); }
 .z-raised { z-index: var(--z-raised, 10); }
 .z-sticky { z-index: var(--z-sticky, 20); }
@@ -343,7 +344,18 @@
 .z-modal { z-index: var(--z-modal, 50); }
 .z-toast { z-index: var(--z-toast, 60); }
 .z-tooltip { z-index: var(--z-tooltip, 70); }
-.w-listing-card { width: var(--spacing-listing-card, 13.5rem); }
+.w-listing-card { width: var(--spacing-listing-card, 15rem); }
+
+/* Safari can otherwise let a wide flex track contribute its max-content width
+   to the document at a breakpoint boundary, even though the track itself sits
+   inside an overflow-x scroller. From `sm` upward the rail has no negative
+   margin bleed, so its shared shell can safely clip that off-screen paint. The
+   phone treatment stays edge-to-edge. */
+@media (min-width: 40rem) {
+  .scroll-rail-shell {
+    overflow-x: clip;
+  }
+}
 
 /* Standard listing cards own their vertical footprint. The rules are kept
    outside Tailwind's layers so page-level utility classes cannot make one
@@ -399,9 +411,9 @@
 
 @media (min-width: 40rem) {
   .listing-card-standard {
-    width: var(--spacing-listing-card, 13.5rem);
-    min-width: var(--spacing-listing-card, 13.5rem);
-    max-width: var(--spacing-listing-card, 13.5rem);
+    width: var(--spacing-listing-card, 15rem);
+    min-width: var(--spacing-listing-card, 15rem);
+    max-width: var(--spacing-listing-card, 15rem);
   }
 }
 
@@ -411,8 +423,8 @@
 .listing-rail-cell {
   display: flex;
   flex-direction: column;
-  flex: 0 0 var(--spacing-listing-card, 13.5rem);
-  min-width: var(--spacing-listing-card, 13.5rem);
+  flex: 0 0 var(--spacing-listing-card, 15rem);
+  min-width: var(--spacing-listing-card, 15rem);
 }
 
 .listing-rail-cell > * {

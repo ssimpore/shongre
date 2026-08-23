@@ -45,7 +45,7 @@ describe("NotificationCatalogService", () => {
     expect(notif.body).toContain("Vélo de course Vintage");
 
     const dest = notificationCatalogService.resolveDestination(notif);
-    expect(dest).toBe("/compte/achats");
+    expect(dest).toBe("/compte/achats?transactionId=tx_456");
   });
 
   it("creates a payment.failed critical notification with mandatory status", () => {
@@ -74,5 +74,20 @@ describe("NotificationCatalogService", () => {
     expect(notif.title).toContain("Baisse de prix");
     expect(notif.body).toContain("250");
     expect(notif.actions![0].destination).toBe("/annonce/list_789");
+  });
+
+  it("rejects an external saved-search destination", () => {
+    const notif = notificationCatalogService.createNotificationFromEvent({
+      type: "saved_search.match",
+      recipientId: "user_thomas",
+      context: {
+        type: "saved_search",
+        queryUrl: "https://malicious.example/collect",
+      },
+    });
+
+    expect(notificationCatalogService.resolveDestination(notif)).toBe(
+      "/compte/recherches",
+    );
   });
 });

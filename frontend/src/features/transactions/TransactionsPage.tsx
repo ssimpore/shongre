@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   ShoppingBag,
   Truck,
@@ -40,6 +41,8 @@ export const TransactionsPage: React.FC = () => {
   });
 
   const { currentUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTransactionId = searchParams.get("transactionId");
   const currentUserId = currentUser?.id ?? "";
   const [activeTab, setActiveTab] = useState<TabMode>("purchases");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -60,7 +63,19 @@ export const TransactionsPage: React.FC = () => {
       ]);
       setPurchasesCount(purchases.length);
       setSalesCount(sales.length);
-      setUserTransactions(activeTab === "purchases" ? purchases : sales);
+      const requestedTransaction = requestedTransactionId
+        ? [...purchases, ...sales].find(
+            (transaction) => transaction.id === requestedTransactionId,
+          )
+        : undefined;
+      const requestedTab = requestedTransaction
+        ? requestedTransaction.buyerId === currentUser.id
+          ? "purchases"
+          : "sales"
+        : activeTab;
+      if (requestedTab !== activeTab) setActiveTab(requestedTab);
+      setUserTransactions(requestedTab === "purchases" ? purchases : sales);
+      if (requestedTransaction) setSelectedTx(requestedTransaction);
     } finally {
       setLoading(false);
     }
@@ -68,7 +83,21 @@ export const TransactionsPage: React.FC = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [activeTab, currentUser?.id]);
+  }, [activeTab, currentUser?.id, requestedTransactionId]);
+
+  const openTransaction = (transaction: Transaction) => {
+    setSelectedTx(transaction);
+    const next = new URLSearchParams(searchParams);
+    next.set("transactionId", transaction.id);
+    setSearchParams(next, { replace: true });
+  };
+
+  const closeTransaction = () => {
+    setSelectedTx(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete("transactionId");
+    setSearchParams(next, { replace: true });
+  };
 
   // Sub-filter by status
   const filteredTransactions = userTransactions.filter((tx) => {
@@ -342,10 +371,9 @@ export const TransactionsPage: React.FC = () => {
             const isSeller = tx.sellerId === currentUserId;
 
             return (
-              <div
+              <article
                 key={tx.id}
-                className="bg-white rounded-3xl border border-stone-200/60 p-6 shadow-sm space-y-5 hover:border-primary/40 transition-all cursor-pointer"
-                onClick={() => setSelectedTx(tx)}
+                className="bg-white rounded-3xl border border-stone-200/60 p-6 shadow-sm space-y-5 hover:border-primary/40 transition-all"
               >
                 {/* Card Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100">
@@ -432,7 +460,7 @@ export const TransactionsPage: React.FC = () => {
                       className="w-full sm:w-auto"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedTx(tx);
+                        openTransaction(tx);
                       }}
                     >
                       {t("transactions.transactionsPage.gererLeDossier")}
@@ -493,7 +521,7 @@ export const TransactionsPage: React.FC = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </section>
@@ -531,7 +559,7 @@ export const TransactionsPage: React.FC = () => {
       {selectedTx && currentUser && (
         <TransactionDetailModal
           isOpen={!!selectedTx}
-          onClose={() => setSelectedTx(null)}
+          onClose={closeTransaction}
           transaction={selectedTx}
           currentUser={currentUser}
           onUpdate={handleTransactionUpdated}

@@ -15,6 +15,7 @@ import { ITrendingRepository, DemoTrendingRepository, PostgresTrendingRepository
 import { ICoursesRepository, DemoCoursesRepository, PostgresCoursesRepository } from './courses.repository.js';
 import { IAutoRepository, DemoAutoRepository, PostgresAutoRepository } from './auto.repository.js';
 import { IRealEstateRepository, DemoRealEstateRepository, PostgresRealEstateRepository } from './real-estate.repository.js';
+import { EmploymentRepository, DemoEmploymentRepository, PostgresEmploymentRepository } from './employment.repository.js';
 import { logger } from '../../logging/logger.js';
 
 export interface RepositoryContainer {
@@ -34,6 +35,7 @@ export interface RepositoryContainer {
   courses: ICoursesRepository;
   auto: IAutoRepository;
   realEstate: IRealEstateRepository;
+  employment: EmploymentRepository;
 }
 
 export function createRepositoryContainer(mode: BackendDataMode = config.dataMode): RepositoryContainer {
@@ -57,6 +59,7 @@ export function createRepositoryContainer(mode: BackendDataMode = config.dataMod
       courses: new PostgresCoursesRepository(),
       auto: new PostgresAutoRepository(),
       realEstate: new PostgresRealEstateRepository(),
+      employment: new PostgresEmploymentRepository(),
     };
   }
 
@@ -77,6 +80,7 @@ export function createRepositoryContainer(mode: BackendDataMode = config.dataMod
     courses: new DemoCoursesRepository(),
     auto: new DemoAutoRepository(),
     realEstate: new DemoRealEstateRepository(),
+    employment: new DemoEmploymentRepository(),
   };
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { roleLabel } from "../../security/roles.config";
@@ -7,27 +7,42 @@ import {
   Sparkles,
   User,
   Briefcase,
+  BriefcaseBusiness,
+  Building2,
+  CarFront,
   ChevronDown,
   Check,
+  GraduationCap,
   LoaderCircle,
 } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useToast } from "../providers/ToastProvider";
+import { Link, useNavigate } from "react-router-dom";
+import { routes } from "../../configuration/routes";
 
 interface DemoPersona {
   userKey: string;
   userId?: string;
   label: string;
   desc: string;
+  group: "marketplace" | "verticals" | "staff";
+  destination?: string;
   Icon: LucideIcon;
   iconClassName: string;
 }
+
+const PERSONA_GROUP_LABELS: Record<DemoPersona["group"], string> = {
+  marketplace: "Parcours marketplace",
+  verticals: "Offres Pro par métier",
+  staff: "Équipe Shongre",
+};
 
 const DEMO_PERSONAS: readonly DemoPersona[] = [
   {
     userKey: "guest",
     label: "1. Visiteur non connecté",
     desc: "Navigation publique, recherche, découverte sans compte",
+    group: "marketplace",
     Icon: User,
     iconClassName: "text-stone-400",
   },
@@ -36,6 +51,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     userId: "user_thomas",
     label: "2. Acheteur Particulier (Thomas)",
     desc: "Favoris, offres, achats, messagerie acheteur",
+    group: "marketplace",
     Icon: User,
     iconClassName: "text-info",
   },
@@ -44,6 +60,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     userId: "user_camille",
     label: "3. Vendeur Particulier (Camille)",
     desc: "Publication, gestion d'annonces, offres reçues",
+    group: "marketplace",
     Icon: Sparkles,
     iconClassName: "text-warning",
   },
@@ -52,22 +69,65 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     userId: "user_pro_atelier",
     label: "4. Vendeur Pro (Atelier Nordique SAS)",
     desc: "Boutique Pro, SIRET, catalogue, statistiques avancées",
+    group: "marketplace",
     Icon: Briefcase,
     iconClassName: "text-primary",
   },
   {
+    userKey: "pro_immo_clara",
+    userId: "user_immo_clara",
+    label: "5. Pro Immobilier (Clara · Agence Canopée)",
+    desc: "Agency Growth · biens, leads, visites et imports",
+    group: "verticals",
+    destination: routes.immo.workspace(),
+    Icon: Building2,
+    iconClassName: "text-category-real-estate",
+  },
+  {
+    userKey: "pro_auto_michel",
+    userId: "user_dealer_owner",
+    label: "6. Pro Automobile (Michel · Auto Select Lyon)",
+    desc: "Dealer Growth · stock, leads, essais et imports",
+    group: "verticals",
+    destination: routes.auto.workspace(),
+    Icon: CarFront,
+    iconClassName: "text-category-vehicles",
+  },
+  {
+    userKey: "pro_courses_sophie",
+    userId: "user_tutor_sophie",
+    label: "7. Pro Cours (Sophie · Collège Lumière)",
+    desc: "Organisme · équipe, lieux, demandes et formule",
+    group: "verticals",
+    destination: routes.courses.organization(),
+    Icon: GraduationCap,
+    iconClassName: "text-category-services",
+  },
+  {
+    userKey: "pro_employment_clara",
+    userId: "user_employment_clara",
+    label: "8. Pro Emploi (Clara · TechNova)",
+    desc: "Employer Growth · offres, candidatures et imports ATS",
+    group: "verticals",
+    destination: routes.employment.recruiterWorkspace(),
+    Icon: BriefcaseBusiness,
+    iconClassName: "text-category-jobs",
+  },
+  {
     userKey: "moderator_claire",
     userId: "user_mod_claire",
-    label: "5. Modérateur Shongre (Claire)",
+    label: "9. Modérateur Shongre (Claire)",
     desc: "Validation annonces, signalements, sécurité",
+    group: "staff",
     Icon: Shield,
     iconClassName: "text-indigo-600",
   },
   {
     userKey: "admin_antoine",
     userId: "user_admin_antoine",
-    label: "6. Administrateur Système (Antoine)",
+    label: "10. Administrateur Système (Antoine)",
     desc: "Accès intégral plateforme, plans, configuration",
+    group: "staff",
     Icon: Shield,
     iconClassName: "text-success",
   },
@@ -77,8 +137,38 @@ export const DemoRoleSwitcher: React.FC = () => {
   const { t } = useTranslation();
   const { platformRole, currentUser, switchDemoUser } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [switchingUserKey, setSwitchingUserKey] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const activeItem = menuRef.current?.querySelector<HTMLElement>(
+      '[role="menuitemradio"][aria-checked="true"]',
+    );
+    activeItem?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isOpen]);
 
   /**
    * Match the exact account rather than the role: several demo accounts can
@@ -103,6 +193,7 @@ export const DemoRoleSwitcher: React.FC = () => {
       : !currentUser;
     if (isActive) {
       setIsOpen(false);
+      if (persona.destination) navigate(persona.destination);
       return;
     }
 
@@ -110,6 +201,7 @@ export const DemoRoleSwitcher: React.FC = () => {
     try {
       await switchDemoUser(persona.userKey);
       setIsOpen(false);
+      if (persona.destination) navigate(persona.destination);
       toast.success(
         persona.userKey === "guest"
           ? t("shell.demoRoleSwitcher.guestActivated")
@@ -128,6 +220,29 @@ export const DemoRoleSwitcher: React.FC = () => {
     }
   };
 
+  const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLButtonElement>(
+        '[role="menuitemradio"]:not(:disabled)',
+      ) ?? [],
+    );
+    if (!items.length) return;
+    event.preventDefault();
+    const currentIndex = items.indexOf(
+      document.activeElement as HTMLButtonElement,
+    );
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? items.length - 1
+          : event.key === "ArrowUp"
+            ? (currentIndex - 1 + items.length) % items.length
+            : (currentIndex + 1) % items.length;
+    items[nextIndex]?.focus();
+  };
+
   return (
     /* `z-drawer` follows the same tier as the mobile drawer: above page chrome
        (the sticky header is `z-header`), below modals and toasts (`z-modal`).
@@ -144,25 +259,26 @@ export const DemoRoleSwitcher: React.FC = () => {
             {t("shell.demoRoleSwitcher.modeDemo")}
           </span>
           <span className="hidden sm:inline text-stone-400">
-            {t("shell.demoRoleSwitcher.testerLes6ProfilsEt")}
+            {t("shell.demoRoleSwitcher.testerLes10ProfilsEt")}
           </span>
         </div>
 
-        <div className="relative">
+        <div ref={containerRef} className="relative flex min-w-0 flex-1 justify-end">
           <button
+            ref={triggerRef}
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             aria-haspopup="menu"
             aria-expanded={isOpen}
             aria-controls="demo-persona-menu"
             aria-busy={Boolean(switchingUserKey)}
-            className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-white px-2.5 py-1 rounded-md transition-colors cursor-pointer border border-stone-700"
+            className="flex min-w-0 max-w-full items-center gap-2 rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-white transition-colors hover:bg-stone-700 cursor-pointer"
           >
             <currentRoleObj.Icon
               className={`w-4 h-4 shrink-0 ${currentRoleObj.iconClassName}`}
               aria-hidden="true"
             />
-            <span className="font-semibold">
+            <span className="truncate font-semibold">
               {currentRoleObj.label.split("(")[0]}
             </span>
             {currentUser && (
@@ -175,55 +291,67 @@ export const DemoRoleSwitcher: React.FC = () => {
 
           {isOpen && (
             <div
+              ref={menuRef}
               id="demo-persona-menu"
               role="menu"
               aria-label={t("shell.demoRoleSwitcher.changerDeRolePourTester")}
-              className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs sm:w-80 bg-white text-stone-900 rounded-xl shadow-dropdown border border-stone-200 py-1.5 z-popover animate-in fade-in zoom-in-95 duration-fast"
+              onKeyDown={handleMenuKeyDown}
+              className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
             >
-              <div className="px-3 py-1.5 border-b border-stone-100 text-xs font-bold text-stone-400 uppercase tracking-wider">
+              <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-stone-400">
                 {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
               </div>
-              {DEMO_PERSONAS.map((persona) => {
+              {DEMO_PERSONAS.map((persona, index) => {
                 const isActive = persona.userId
                   ? persona.userId === currentUser?.id
                   : !currentUser;
                 const isSwitching = switchingUserKey === persona.userKey;
                 return (
-                  <button
-                    key={persona.userKey}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={isActive}
-                    aria-busy={isSwitching}
-                    disabled={Boolean(switchingUserKey)}
-                    onClick={() => void handlePersonaSwitch(persona)}
-                    className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-stone-50 transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-primary-light text-primary"
-                        : "text-stone-800"
-                    } disabled:cursor-wait disabled:opacity-70`}
-                  >
-                    <persona.Icon
-                      className={`w-4 h-4 mt-0.5 shrink-0 ${persona.iconClassName}`}
-                      aria-hidden="true"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-xs flex items-center justify-between">
-                        <span>{persona.label}</span>
-                        {isSwitching ? (
-                          <LoaderCircle
-                            className="w-3.5 h-3.5 text-primary animate-spin"
-                            aria-hidden="true"
-                          />
-                        ) : isActive ? (
-                          <Check className="w-3.5 h-3.5 text-primary" />
-                        ) : null}
+                  <React.Fragment key={persona.userKey}>
+                    {(index === 0 ||
+                      DEMO_PERSONAS[index - 1].group !== persona.group) && (
+                      <div
+                        role="presentation"
+                        className="border-b border-border-subtle bg-bg-subtle px-3 py-1 text-micro font-bold uppercase tracking-wider text-text-muted"
+                      >
+                        {PERSONA_GROUP_LABELS[persona.group]}
                       </div>
-                      <div className="text-xs text-stone-400 font-normal leading-tight mt-0.5">
-                        {persona.desc}
+                    )}
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={isActive}
+                      aria-busy={isSwitching}
+                      disabled={Boolean(switchingUserKey)}
+                      onClick={() => void handlePersonaSwitch(persona)}
+                      className={`touch-row w-full items-start gap-2.5 px-3 py-2 text-left transition-colors hover:bg-stone-50 cursor-pointer ${
+                        isActive
+                          ? "bg-primary-light text-primary"
+                          : "text-stone-800"
+                      } disabled:cursor-wait disabled:opacity-70`}
+                    >
+                      <persona.Icon
+                        className={`mt-0.5 h-icon-md w-icon-md shrink-0 ${persona.iconClassName}`}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2 text-xs font-bold">
+                          <span>{persona.label}</span>
+                          {isSwitching ? (
+                            <LoaderCircle
+                              className="h-icon-sm w-icon-sm shrink-0 animate-spin text-primary"
+                              aria-hidden="true"
+                            />
+                          ) : isActive ? (
+                            <Check className="h-icon-sm w-icon-sm shrink-0 text-primary" />
+                          ) : null}
+                        </div>
+                        <div className="mt-0.5 text-xs font-normal leading-tight text-stone-400">
+                          {persona.desc}
+                        </div>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                  </React.Fragment>
                 );
               })}
 
@@ -232,48 +360,48 @@ export const DemoRoleSwitcher: React.FC = () => {
                   {t("shell.demoRoleSwitcher.accesDirectAuxProfilsPublics")}
                 </div>
                 <div className="grid grid-cols-2 gap-1 px-2 pb-1 text-xs">
-                  <a
-                    href="/profil/camille-martin"
+                  <Link
+                    to={routes.seller.profile("camille-martin")}
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 font-semibold text-stone-700 truncate"
                   >
                     👤 Camille (Particulier)
-                  </a>
-                  <a
-                    href="/boutique/atelier-nordique"
+                  </Link>
+                  <Link
+                    to={routes.seller.storefront("atelier-nordique")}
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 font-semibold text-primary truncate"
                   >
                     🏬 Atelier Nordique (Pro)
-                  </a>
-                  <a
-                    href="/profil/marion-dupuis"
+                  </Link>
+                  <Link
+                    to={routes.seller.profile("marion-dupuis")}
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
                   >
                     {t("shell.demoRoleSwitcher.0AnnonceParticulier")}
-                  </a>
-                  <a
-                    href="/boutique/optique-des-arts"
+                  </Link>
+                  <Link
+                    to={routes.seller.storefront("optique-des-arts")}
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
                   >
                     {t("shell.demoRoleSwitcher.0AnnoncePro")}
-                  </a>
-                  <a
-                    href="/profil/lucas-bernard"
+                  </Link>
+                  <Link
+                    to={routes.seller.profile("lucas-bernard")}
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
                   >
                     ⭐ 0 avis (Nouveau)
-                  </a>
-                  <a
-                    href="/profil/vendeur-suspendu"
+                  </Link>
+                  <Link
+                    to={routes.seller.profile("vendeur-suspendu")}
                     onClick={() => setIsOpen(false)}
                     className="p-1 rounded hover:bg-danger-surface text-danger truncate"
                   >
                     {t("shell.demoRoleSwitcher.profilSuspenduSecurite")}
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

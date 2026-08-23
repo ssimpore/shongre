@@ -30,6 +30,15 @@ export type LearnerRequestDraft = Omit<
   "id" | "requesterUserId" | "status" | "createdAt" | "expiresAt"
 >;
 
+export type CourseOrganizationInviteInput = {
+  displayName: string;
+  role: CourseOrganizationWorkspace["members"][number]["role"];
+};
+
+export type CourseOrganizationLocationInput = {
+  label: string;
+};
+
 export interface CoursesServiceContract {
   getCatalog(marketCode: string): Promise<CourseCatalog>;
   getAdminCatalog(marketCode: string): Promise<CourseCatalog>;
@@ -42,6 +51,14 @@ export interface CoursesServiceContract {
   submitLearnerRequest(request: LearnerRequestDraft): Promise<LearnerRequest>;
   getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace>;
   getOrganizationWorkspace(organizationId: string): Promise<CourseOrganizationWorkspace>;
+  inviteOrganizationMember(
+    organizationId: string,
+    input: CourseOrganizationInviteInput,
+  ): Promise<CourseOrganizationWorkspace>;
+  addOrganizationLocation(
+    organizationId: string,
+    input: CourseOrganizationLocationInput,
+  ): Promise<CourseOrganizationWorkspace>;
   respondToLead(
     tutorProfileId: string,
     leadId: string,

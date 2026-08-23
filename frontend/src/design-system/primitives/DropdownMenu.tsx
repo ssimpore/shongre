@@ -64,7 +64,7 @@ export interface DropdownMenuProps<T = string> {
  * Shared standard Dropdown panel classes harmonized with the Header Category Selector
  */
 export const DROPDOWN_PANEL_CLASSES =
-  "bg-bg-surface rounded-card shadow-dropdown border border-border-base py-2 z-popover animate-in fade-in zoom-in-95 max-h-[380px] overflow-y-auto overscroll-contain";
+  "bg-bg-surface rounded-card shadow-dropdown border border-border-base py-2 z-popover animate-in fade-in zoom-in-95 max-h-menu-max overflow-y-auto overscroll-contain";
 
 export const DROPDOWN_ITEM_CLASSES = {
   base: "w-full min-h-control-sm flex items-center justify-between px-3.5 py-2 text-xs motion-interactive cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",

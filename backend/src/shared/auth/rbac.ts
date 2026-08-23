@@ -56,6 +56,13 @@ export type Permission =
   | 'immo.lead.manage.own'
   | 'immo.inventory.import.own'
   | 'immo.admin.manage'
+  | 'employment.read'
+  | 'employment.candidate.manage.own'
+  | 'employment.job.manage.own'
+  | 'employment.recruiter.manage.own'
+  | 'employment.application.manage.own'
+  | 'employment.import.own'
+  | 'employment.admin.manage'
   | 'store.manage.own'
   | 'subscription.manage.own'
   | 'user.read'
@@ -73,8 +80,11 @@ export type Permission =
   | 'admin.access';
 
 const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
-  guest: ['listing.read', 'profile.read', 'course.read', 'auto.read', 'immo.read'],
+  guest: ['listing.read', 'profile.read', 'course.read', 'auto.read', 'immo.read', 'employment.read'],
   individual_buyer: [
+    'employment.read',
+    'employment.candidate.manage.own',
+    'employment.job.manage.own',
     'auto.read',
     'immo.read',
     'listing.read',
@@ -97,6 +107,11 @@ const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
     'course.lead.respond.own',
   ],
   individual_seller: [
+    'employment.read',
+    'employment.candidate.manage.own',
+    'employment.job.manage.own',
+    'employment.recruiter.manage.own',
+    'employment.application.manage.own',
     'auto.read',
     'auto.vehicle.manage.own',
     'immo.read',
@@ -129,6 +144,12 @@ const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
     'course.booking.create',
   ],
   pro_seller: [
+    'employment.read',
+    'employment.candidate.manage.own',
+    'employment.job.manage.own',
+    'employment.recruiter.manage.own',
+    'employment.application.manage.own',
+    'employment.import.own',
     'auto.read',
     'auto.vehicle.manage.own',
     'auto.dealer.manage.own',
@@ -170,6 +191,7 @@ const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
     'course.booking.create',
   ],
   support: [
+    'employment.read',
     'listing.read',
     'profile.read',
     'order.read.own',
@@ -179,6 +201,7 @@ const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
     'course.read',
   ],
   moderator: [
+    'employment.read',
     'listing.read',
     'profile.read',
     'listing.moderate',
@@ -188,12 +211,19 @@ const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
     'moderation.review',
     'course.read',
   ],
-  operations: ['listing.read', 'profile.read', 'user.read', 'order.read.own', 'course.read'],
-  finance: ['listing.read', 'profile.read', 'order.read.own', 'payment.refund', 'course.read', 'commercial_rules.read', 'commercial_rules.approve', 'monetization.orders.read'],
-  commercial: ['listing.read', 'profile.read', 'user.read', 'course.read', 'commercial_rules.read', 'commercial_rules.edit'],
-  content_manager: ['listing.read', 'listing.moderate', 'course.read'],
-  market_manager: ['listing.read', 'market.manage', 'course.read', 'course.admin.manage', 'auto.read', 'auto.admin.manage', 'immo.read', 'immo.admin.manage'],
+  operations: ['listing.read', 'profile.read', 'user.read', 'order.read.own', 'course.read', 'employment.read'],
+  finance: ['listing.read', 'profile.read', 'order.read.own', 'payment.refund', 'course.read', 'employment.read', 'commercial_rules.read', 'commercial_rules.approve', 'monetization.orders.read'],
+  commercial: ['listing.read', 'profile.read', 'user.read', 'course.read', 'employment.read', 'commercial_rules.read', 'commercial_rules.edit'],
+  content_manager: ['listing.read', 'listing.moderate', 'course.read', 'employment.read'],
+  market_manager: ['listing.read', 'market.manage', 'course.read', 'course.admin.manage', 'auto.read', 'auto.admin.manage', 'immo.read', 'immo.admin.manage', 'employment.read', 'employment.admin.manage'],
   admin: [
+    'employment.read',
+    'employment.candidate.manage.own',
+    'employment.job.manage.own',
+    'employment.recruiter.manage.own',
+    'employment.application.manage.own',
+    'employment.import.own',
+    'employment.admin.manage',
     'auto.read',
     'auto.vehicle.manage.own',
     'auto.dealer.manage.own',
@@ -253,6 +283,13 @@ const ROLE_PERMISSIONS: Record<PlatformRole, Permission[]> = {
     'course.admin.manage',
   ],
   super_admin: [
+    'employment.read',
+    'employment.candidate.manage.own',
+    'employment.job.manage.own',
+    'employment.recruiter.manage.own',
+    'employment.application.manage.own',
+    'employment.import.own',
+    'employment.admin.manage',
     'auto.read',
     'auto.vehicle.manage.own',
     'auto.dealer.manage.own',

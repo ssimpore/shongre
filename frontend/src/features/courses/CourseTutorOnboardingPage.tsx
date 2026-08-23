@@ -15,7 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 import type { CourseCatalog, DeliveryMode } from "@shongre/contracts/courses";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -97,9 +97,12 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const draftKey = `shongre_courses_onboarding_v1:${currentUser?.id || "guest"}`;
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(() =>
+    searchParams.get("step") === "availability" ? 4 : 0,
+  );
   const [draft, setDraft] = useState<OnboardingDraft>(() =>
     storageService.get(draftKey, {
       ...DEFAULT_DRAFT,

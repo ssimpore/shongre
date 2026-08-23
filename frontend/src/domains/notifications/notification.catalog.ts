@@ -13,6 +13,14 @@ import {
   NotificationAction,
 } from "./notification.types";
 import { formatPrice } from "../../utilities/formatters";
+import { routes } from "../../configuration/routes";
+import { resolveSafeReturn } from "../../security/safe-return";
+
+const transactionDestination = (ctx?: any) =>
+  routes.workspace.purchases(ctx?.transactionId);
+
+const listingEditDestination = (ctx?: any) =>
+  routes.listing.publish({ edit: ctx?.listingId });
 
 export interface NotificationTemplateDefinition {
   type: NotificationType;
@@ -40,15 +48,15 @@ export const NOTIFICATION_TEMPLATES: Record<
       ctx?.previewText || "Nouveau message reçu concernant votre annonce.",
     getDestination: (ctx) =>
       ctx?.conversationId
-        ? `/compte/messages?convId=${ctx.conversationId}`
-        : "/compte/messages",
+        ? routes.workspace.messages(ctx.conversationId)
+        : routes.workspace.messages(),
     getActions: (ctx) => [
       {
         id: "reply",
         label: "Voir la conversation",
         destination: ctx?.conversationId
-          ? `/compte/messages?convId=${ctx.conversationId}`
-          : "/compte/messages",
+          ? routes.workspace.messages(ctx.conversationId)
+          : routes.workspace.messages(),
         variant: "primary",
       },
     ],
@@ -63,14 +71,16 @@ export const NOTIFICATION_TEMPLATES: Record<
     getBody: (ctx) =>
       `Votre annonce "${ctx?.listingTitle || "Annonce"}" a été validée et est visible par les acheteurs.`,
     getDestination: (ctx) =>
-      ctx?.listingId ? `/annonce/${ctx.listingId}` : "/compte/annonces",
+      ctx?.listingId
+        ? routes.listing.detail(ctx.listingId)
+        : routes.workspace.listings(),
     getActions: (ctx) => [
       {
         id: "view_listing",
         label: "Voir mon annonce",
         destination: ctx?.listingId
-          ? `/annonce/${ctx.listingId}`
-          : "/compte/annonces",
+          ? routes.listing.detail(ctx.listingId)
+          : routes.workspace.listings(),
         variant: "primary",
       },
     ],
@@ -84,13 +94,12 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Modification requise sur votre annonce",
     getBody: (ctx) =>
       `Votre annonce "${ctx?.listingTitle || "Annonce"}" nécessite quelques ajustements pour être validée.`,
-    getDestination: (ctx) =>
-      ctx?.listingId ? `/compte/annonces` : "/compte/annonces",
+    getDestination: listingEditDestination,
     getActions: (ctx) => [
       {
         id: "edit_listing",
         label: "Modifier l'annonce",
-        destination: "/compte/annonces",
+        destination: listingEditDestination(ctx),
         variant: "primary",
       },
     ],
@@ -142,7 +151,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Félicitations pour votre vente !",
     getBody: (ctx) =>
       `Votre article "${ctx?.listingTitle || "Annonce"}" a été vendu avec succès.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "favorite.price_dropped": {
@@ -153,14 +162,16 @@ export const NOTIFICATION_TEMPLATES: Record<
     getBody: (ctx) =>
       `Le prix de "${ctx?.listingTitle || "Article"}" a baissé${ctx?.price ? ` à ${formatPrice(ctx.price)}` : ""}.`,
     getDestination: (ctx) =>
-      ctx?.listingId ? `/annonce/${ctx.listingId}` : "/compte/favoris",
+      ctx?.listingId
+        ? routes.listing.detail(ctx.listingId)
+        : routes.workspace.favorites(),
     getActions: (ctx) => [
       {
         id: "view_deal",
         label: "Voir l'offre",
         destination: ctx?.listingId
-          ? `/annonce/${ctx.listingId}`
-          : "/compte/favoris",
+          ? routes.listing.detail(ctx.listingId)
+          : routes.workspace.favorites(),
         variant: "primary",
       },
     ],
@@ -173,7 +184,8 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Nouvelle annonce pour votre recherche",
     getBody: (ctx) =>
       `Une nouvelle annonce correspond à votre recherche "${ctx?.searchTitle || "enregistrée"}".`,
-    getDestination: (ctx) => ctx?.queryUrl || "/compte/recherches",
+    getDestination: (ctx) =>
+      resolveSafeReturn(ctx?.queryUrl, routes.workspace.savedSearches()),
   },
 
   // 3. Reservation Lifecycle
@@ -185,8 +197,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Nouvelle demande de réservation !",
     getBody: (ctx) =>
       `Un acheteur a demandé à réserver "${ctx?.listingTitle || "votre article"}" avec acompte sécurisé.`,
-    getDestination: (ctx) =>
-      ctx?.transactionId ? `/compte/achats` : "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "view_res",
@@ -205,7 +216,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Votre réservation est acceptée !",
     getBody: (ctx) =>
       `Le vendeur a accepté votre réservation pour "${ctx?.listingTitle || "l'article"}". Les fonds sont sécurisés.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "view_res_buyer",
@@ -224,7 +235,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Demande de réservation refusée",
     getBody: (ctx) =>
       `Le vendeur n'a pas pu donner suite à votre réservation pour "${ctx?.listingTitle || "l'article"}". L'acompte a été libéré.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "reservation.expiring": {
@@ -235,7 +246,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Rendez-vous de réservation imminent",
     getBody: (ctx) =>
       `N'oubliez pas votre rendez-vous pour "${ctx?.listingTitle || "votre réservation"}".`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "reservation.cancelled": {
@@ -246,7 +257,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Réservation annulée",
     getBody: (ctx) =>
       `La réservation pour "${ctx?.listingTitle || "l'article"}" a été annulée.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   // 4. Direct Purchase & Orders
@@ -258,7 +269,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Nouvelle commande reçue !",
     getBody: (ctx) =>
       `Vous avez reçu une commande pour "${ctx?.listingTitle || "votre article"}". Paiement total sécurisé par Shongre.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "prepare_order",
@@ -277,7 +288,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Votre commande est confirmée !",
     getBody: (ctx) =>
       `Votre paiement pour "${ctx?.listingTitle || "votre commande"}" a été placé sous séquestre sécurisé.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "track_order",
@@ -296,7 +307,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Commande annulée",
     getBody: (ctx) =>
       `La commande pour "${ctx?.listingTitle || "votre article"}" a été annulée.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "order.completed": {
@@ -306,7 +317,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Transaction terminée avec succès",
     getBody: (ctx) =>
       `La transaction pour "${ctx?.listingTitle || "votre article"}" est finalisée. Merci pour votre confiance !`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   // 5. Escrow & Payments
@@ -318,7 +329,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Paiement sous séquestre validé",
     getBody: (ctx) =>
       `Les fonds (${ctx?.amount ? `${formatPrice(ctx.amount)}` : "sécurisés"}) sont protégés sur le compte de séquestre Shongre.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "payment.failed": {
@@ -329,7 +340,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Échec du paiement",
     getBody: () =>
       "Une tentative de paiement a échoué. Veuillez vérifier votre carte ou moyen de paiement.",
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "retry_payment",
@@ -348,7 +359,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Fonds débloqués vers votre compte !",
     getBody: (ctx) =>
       `Le virement de ${ctx?.amount ? formatPrice(ctx.amount) : "votre vente"} a été ordonné vers votre compte bancaire.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "payment.refunded": {
@@ -359,7 +370,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Remboursement effectué",
     getBody: (ctx) =>
       `Le remboursement de ${ctx?.amount ? formatPrice(ctx.amount) : "votre achat"} a été crédité sur votre moyen de paiement initial.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   // 6. Fulfillment
@@ -370,7 +381,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Rendez-vous de remise fixé",
     getBody: (ctx) =>
       `Un créneau de remise en main propre a été convenu pour "${ctx?.listingTitle || "l'article"}".`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   "fulfillment.shipped": {
@@ -380,7 +391,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Votre colis a été expédié !",
     getBody: (ctx) =>
       `Le vendeur a expédié votre colis pour "${ctx?.listingTitle || "votre commande"}".`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "track_pkg",
@@ -398,7 +409,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Colis livré !",
     getBody: (ctx) =>
       `Votre colis pour "${ctx?.listingTitle || "votre commande"}" a été livré. Veuillez confirmer la réception.`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "confirm_rcpt",
@@ -417,7 +428,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Confirmation requise pour libérer les fonds",
     getBody: () =>
       "Veuillez confirmer que vous avez bien reçu votre article ou déclarer un problème sous 48h.",
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
   },
 
   // 7. Reviews
@@ -428,7 +439,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Donnez votre avis sur votre expérience",
     getBody: (ctx) =>
       `Votre avis sur la transaction "${ctx?.listingTitle || ""}" aide toute la communauté Shongre !`,
-    getDestination: () => "/compte/achats",
+    getDestination: transactionDestination,
     getActions: () => [
       {
         id: "leave_review",
@@ -446,7 +457,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Vous avez reçu une nouvelle évaluation !",
     getBody: (ctx) =>
       `${ctx?.reviewerName || "Un membre"} vous a attribué une note de ${ctx?.rating || 5}/5 étoiles.`,
-    getDestination: () => "/compte/profil",
+    getDestination: () => routes.workspace.profile(),
   },
 
   // 8. Seller Verification & Pro Plans
@@ -458,12 +469,12 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Vérification d'identité requise",
     getBody: () =>
       "Pour débloquer vos plafonds de vente et sécuriser vos virements, vérifiez votre profil.",
-    getDestination: () => "/compte/profil",
+    getDestination: () => routes.workspace.verification(),
     getActions: () => [
       {
         id: "verify_id",
         label: "Vérifier mon identité",
-        destination: "/compte/profil",
+        destination: routes.workspace.verification(),
         variant: "primary",
       },
     ],
@@ -476,7 +487,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Votre profil est vérifié !",
     getBody: () =>
       "Félicitations, votre badge vérifié est maintenant visible sur toutes vos annonces.",
-    getDestination: () => "/compte/profil",
+    getDestination: () => routes.workspace.profile(),
   },
 
   "subscription.started": {
@@ -568,7 +579,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Mot de passe modifié",
     getBody: () =>
       "Le mot de passe de votre compte Shongre a été modifié avec succès. Si vous n'êtes pas à l'origine de cette action, contactez le support.",
-    getDestination: () => "/compte/profil",
+    getDestination: () => routes.workspace.security(),
   },
 
   "security.new_login": {
@@ -579,7 +590,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Nouvelle connexion détectée",
     getBody: () =>
       "Une connexion à votre compte a été effectuée depuis un nouvel appareil.",
-    getDestination: () => "/compte/profil",
+    getDestination: () => routes.workspace.security(),
   },
 
   // 11. Moderation
@@ -621,7 +632,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     getTitle: () => "Action de modération requise",
     getBody: () =>
       "Une action est requise concernant votre compte ou une de vos annonces.",
-    getDestination: () => "/compte/profil",
+    getDestination: () => routes.workspace.profile(),
   },
 };
 
@@ -683,20 +694,23 @@ export class NotificationCatalogService {
    * Resolves the deep-link destination for a given notification.
    */
   resolveDestination(notification: Notification): string {
-    if (
-      notification.actions &&
-      notification.actions.length > 0 &&
-      notification.actions[0].destination
-    ) {
-      return notification.actions[0].destination;
-    }
-
     const template = NOTIFICATION_TEMPLATES[notification.type];
     if (template) {
       return template.getDestination(notification.context);
     }
 
-    return "/compte/notifications";
+    if (
+      notification.actions &&
+      notification.actions.length > 0 &&
+      notification.actions[0].destination
+    ) {
+      return resolveSafeReturn(
+        notification.actions[0].destination,
+        routes.workspace.notifications(),
+      );
+    }
+
+    return routes.workspace.notifications();
   }
 }
 

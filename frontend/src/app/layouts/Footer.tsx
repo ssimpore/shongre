@@ -26,6 +26,7 @@ import { NewsletterSignup } from "../../features/newsletter/components/Newslette
 import { useConsent } from "../providers/ConsentProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Container } from "../../design-system";
+import { routes } from "../../configuration/routes";
 
 /* -----------------------------------------------------------------------------
    Shared surface recipes.
@@ -319,7 +320,7 @@ export const Footer: React.FC = () => {
                   {TAXONOMY.slice(0, 7).map((cat) => (
                     <FooterLink
                       key={cat.id}
-                      to={`/categorie/${cat.slug}`}
+                  to={routes.category(cat.slug)}
                       title={getTaxonomyLabel(cat, "compact")}
                     >
                       {getTaxonomyLabel(cat, "compact")}
@@ -337,7 +338,7 @@ export const Footer: React.FC = () => {
                   {MARKET_CONFIG.popularCities.slice(0, 7).map((city) => (
                     <FooterLink
                       key={city.name}
-                      to={`/recherche?city=${encodeURIComponent(city.name)}`}
+                  to={routes.search({ city: city.name })}
                     >
                       Annonces à {city.name}
                     </FooterLink>

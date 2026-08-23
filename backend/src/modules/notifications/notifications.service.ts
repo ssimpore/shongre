@@ -1,4 +1,5 @@
 import { NotificationItem } from '../../shared/types/index.js';
+import { randomUUID } from 'node:crypto';
 import { INotificationRepository, repositories } from '../../infrastructure/database/repositories/index.js';
 import { realtimeBroadcaster } from '../../infrastructure/realtime/realtime-broadcaster.js';
 import { AppError } from '../../shared/errors/app-error.js';
@@ -52,7 +53,7 @@ export class NotificationsService {
 
   async dispatchNotification(userId: string, type: string, title: string, body: string, linkUrl?: string): Promise<NotificationItem> {
     const notif: NotificationItem = {
-      id: `notif_${Math.random().toString(36).substring(2, 10)}`,
+      id: randomUUID(),
       userId,
       type,
       title,

@@ -109,6 +109,12 @@ export const AdminLayout: React.FC = () => {
       show: can("immo.admin.manage"),
     },
     {
+      to: "/admin/emploi",
+      label: "Shongre Emploi",
+      icon: Briefcase,
+      show: can("employment.admin.manage"),
+    },
+    {
       to: "/admin/crm/prospection",
       label: "Prospection IA",
       icon: Sparkles,

@@ -19,6 +19,7 @@ import {
   demoCoursesService,
   demoAutoService,
   demoRealEstateService,
+  demoEmploymentService,
   demoBusinessRulesService,
 } from "../adapters/demo";
 
@@ -42,6 +43,7 @@ import {
   httpCoursesService,
   httpAutoService,
   httpRealEstateService,
+  httpEmploymentService,
   httpBusinessRulesService,
 } from "../adapters/http";
 
@@ -65,6 +67,7 @@ import {
   CoursesServiceContract,
   AutoServiceContract,
   RealEstateServiceContract,
+  EmploymentServiceContract,
   BusinessRulesServiceContract,
 } from "../contracts";
 
@@ -88,6 +91,7 @@ export interface ServiceRegistry {
   courses: CoursesServiceContract;
   auto: AutoServiceContract;
   realEstate: RealEstateServiceContract;
+  employment: EmploymentServiceContract;
   businessRules: BusinessRulesServiceContract;
 }
 
@@ -118,6 +122,7 @@ export function createServiceRegistry(
     courses: useDemo ? demoCoursesService : httpCoursesService,
     auto: useDemo ? demoAutoService : httpAutoService,
     realEstate: useDemo ? demoRealEstateService : httpRealEstateService,
+    employment: useDemo ? demoEmploymentService : httpEmploymentService,
     businessRules: useDemo ? demoBusinessRulesService : httpBusinessRulesService,
   };
 }

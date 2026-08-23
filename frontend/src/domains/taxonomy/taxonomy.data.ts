@@ -521,6 +521,8 @@ const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
     sortOrder: 3,
     status: "active",
     conditionScheme: "job",
+    verticalType: "employment",
+    verticalSchemaVersion: 1,
     capabilities: {
       canSell: false,
       canGive: false,
@@ -532,9 +534,9 @@ const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
       fulfillmentModes: ["none"],
     },
     sellerEligibility: {
-      individualAllowed: false,
+      individualAllowed: true,
       proAllowed: true,
-      proVerificationRequired: true,
+      proVerificationRequired: false,
     },
     attributeIds: [
       "job.contract_type",
@@ -565,6 +567,8 @@ const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
         shortLabel: "Offres d'emploi",
         sortOrder: 1,
         status: "active",
+        verticalType: "employment",
+        verticalSchemaVersion: 1,
         attributeIds: [
           "job.contract_type",
           "job.sector",
@@ -2072,10 +2076,10 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
         enabled: true,
         label: "Publication standard gratuite",
         eligibleSellerTypes:
-          listingFamily === "job"
+          listingFamily === "job" && node.sellerEligibility?.individualAllowed === false
             ? ["professional"]
             : ["individual", "professional"],
-        durationDays: 60,
+        durationDays: listingFamily === "job" ? 30 : 60,
         mediaAllowance: mediaGuidance.maxPhotoCount || 12,
         includesMessaging: true,
         includesListingManagement: true,

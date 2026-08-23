@@ -14,7 +14,19 @@ import {
 } from "lucide-react";
 import type { CourseOrganizationWorkspace } from "@shongre/contracts/courses";
 import { services } from "../../api/client/service-registry";
-import { Badge, Button, Skeleton, StatePanel } from "../../design-system";
+import { useToast } from "../../app/providers/ToastProvider";
+import { routes } from "../../configuration/routes";
+import {
+  Badge,
+  Button,
+  FormField,
+  Input,
+  Modal,
+  ScrollableRegion,
+  Select,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
 const ROLE_LABELS = {
@@ -27,8 +39,15 @@ const ROLE_LABELS = {
 } as const;
 
 export const CourseOrganizationWorkspacePage: React.FC = () => {
+  const toast = useToast();
   const [workspace, setWorkspace] = useState<CourseOrganizationWorkspace | null>(null);
   const [error, setError] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [memberName, setMemberName] = useState("");
+  const [memberRole, setMemberRole] = useState<"tutor" | "manager" | "lead_coordinator">("tutor");
+  const [locationLabel, setLocationLabel] = useState("");
+  const [saving, setSaving] = useState(false);
 
   usePageMeta({
     title: "Organisme — Shongre Cours",
@@ -57,6 +76,44 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
 
   const { organization, analytics, plan } = workspace;
 
+  const inviteMember = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const next = await services.courses.inviteOrganizationMember(
+        organization.id,
+        { displayName: memberName, role: memberRole },
+      );
+      setWorkspace(next);
+      setMemberName("");
+      setInviteOpen(false);
+      toast.success("Invitation ajoutée à l’espace organisme.");
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Invitation impossible.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addLocation = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const next = await services.courses.addOrganizationLocation(
+        organization.id,
+        { label: locationLabel },
+      );
+      setWorkspace(next);
+      setLocationLabel("");
+      setLocationOpen(false);
+      toast.success("Lieu ajouté à l’espace organisme.");
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Ajout impossible.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -71,8 +128,8 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           <p className="mt-1 max-w-2xl text-xs text-text-secondary">{organization.description}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="compact" leftIcon={<UserPlus className="h-icon-sm w-icon-sm" />}>Inviter un membre</Button>
-          <Button to="/deposer/cours" size="compact" leftIcon={<Plus className="h-icon-sm w-icon-sm" />}>Ajouter un cours</Button>
+          <Button onClick={() => setInviteOpen(true)} variant="outline" size="compact" leftIcon={<UserPlus className="h-icon-sm w-icon-sm" />}>Inviter un membre</Button>
+          <Button to={routes.courses.publish()} size="compact" leftIcon={<Plus className="h-icon-sm w-icon-sm" />}>Ajouter un cours</Button>
         </div>
       </header>
 
@@ -102,9 +159,9 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
               <div><h2 className="text-sm font-black text-text-main">Équipe et permissions</h2><p className="mt-0.5 text-micro text-text-muted">Les accès sont accordés par rôle, jamais par simple appartenance.</p></div>
               <Badge variant="neutral">{organization.memberCount} membres</Badge>
             </div>
-            <div className="overflow-x-auto">
+            <ScrollableRegion aria-label="Tableau des membres de l’organisme">
               <table className="w-full min-w-[42rem] text-left text-xs">
-                <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-muted"><tr><th className="px-4 py-2.5">Membre</th><th className="px-4 py-2.5">Rôle</th><th className="px-4 py-2.5">Permissions</th><th className="px-4 py-2.5">Statut</th></tr></thead>
+                <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-secondary"><tr><th className="px-4 py-2.5">Membre</th><th className="px-4 py-2.5">Rôle</th><th className="px-4 py-2.5">Permissions</th><th className="px-4 py-2.5">Statut</th></tr></thead>
                 <tbody className="divide-y divide-border-subtle">
                   {workspace.members.map((member) => (
                     <tr key={member.id}>
@@ -116,11 +173,11 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableRegion>
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-black text-text-main">Lieux d’enseignement</h2><Button variant="ghost" size="sm" leftIcon={<Plus className="h-icon-xs w-icon-xs" />}>Ajouter un lieu</Button></div>
+            <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-black text-text-main">Lieux d’enseignement</h2><Button onClick={() => setLocationOpen(true)} variant="ghost" size="sm" leftIcon={<Plus className="h-icon-xs w-icon-xs" />}>Ajouter un lieu</Button></div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {workspace.locations.map((location) => (
                 <article key={location.id} className="rounded-card border border-border-subtle p-4">
@@ -143,7 +200,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             <h2 className="flex items-center gap-2 text-sm font-black text-text-main"><Building2 className="h-icon-sm w-icon-sm text-primary" />Formule</h2>
             <p className="mt-3 text-lg font-black text-text-main">{plan.name}</p>
             <dl className="mt-3 space-y-2 text-xs"><div className="flex justify-between"><dt className="text-text-muted">Membres</dt><dd className="font-bold">{organization.memberCount} / {plan.entitlements.teamMembers}</dd></div><div className="flex justify-between"><dt className="text-text-muted">Lieux</dt><dd className="font-bold">{workspace.locations.length} / {plan.entitlements.locations}</dd></div><div className="flex justify-between"><dt className="text-text-muted">Cours</dt><dd className="font-bold">{organization.activeOfferCount} / {plan.entitlements.maxActiveOffers}</dd></div></dl>
-            <Button variant="ghost" size="sm" className="mt-3">Gérer la formule</Button>
+            <Button to={routes.workspace.pro.subscriptions()} variant="ghost" size="sm" className="mt-3">Gérer la formule</Button>
           </section>
           <section className="rounded-card border border-success-border bg-success-surface p-4">
             <h2 className="flex items-center gap-2 text-sm font-black text-text-main"><ShieldCheck className="h-icon-sm w-icon-sm text-success" />Organisme vérifié</h2>
@@ -155,6 +212,61 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           </section>
         </aside>
       </div>
+      <Modal
+        isOpen={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        title="Inviter un membre"
+        description="L’invitation reste en attente jusqu’à l’acceptation du membre."
+      >
+        <form onSubmit={inviteMember} className="space-y-4">
+          <FormField label="Nom du membre" required>
+            <Input
+              value={memberName}
+              onChange={(event) => setMemberName(event.target.value)}
+              autoFocus
+              required
+            />
+          </FormField>
+          <FormField label="Rôle" required>
+            <Select
+              aria-label="Rôle du membre"
+              value={memberRole}
+              onChange={(event) => setMemberRole(event.target.value as typeof memberRole)}
+            >
+              <option value="tutor">Professeur</option>
+              <option value="manager">Responsable</option>
+              <option value="lead_coordinator">Coordination des demandes</option>
+            </Select>
+          </FormField>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setInviteOpen(false)}>Annuler</Button>
+            <Button type="submit" isLoading={saving}>Envoyer l’invitation</Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={locationOpen}
+        onClose={() => setLocationOpen(false)}
+        title="Ajouter un lieu"
+        description="Ce lieu sera disponible pour l’affectation des professeurs et des cours."
+      >
+        <form onSubmit={addLocation} className="space-y-4">
+          <FormField label="Nom ou zone du lieu" required>
+            <Input
+              value={locationLabel}
+              onChange={(event) => setLocationLabel(event.target.value)}
+              placeholder="Ex. Lyon 6e"
+              autoFocus
+              required
+            />
+          </FormField>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setLocationOpen(false)}>Annuler</Button>
+            <Button type="submit" isLoading={saving}>Ajouter le lieu</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

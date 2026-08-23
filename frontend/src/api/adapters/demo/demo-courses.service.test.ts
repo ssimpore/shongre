@@ -83,4 +83,30 @@ describe("DemoCoursesService", () => {
     expect(accepted.contactReleaseStatus).toBe("released");
     expect(accepted.state).toBe("accepted");
   });
+
+  it("persists organization invitations and locations in the demo adapter", async () => {
+    const service = new DemoCoursesService();
+    const initial = await service.getOrganizationWorkspace(
+      "org_college_lumiere",
+    );
+    const invited = await service.inviteOrganizationMember(
+      initial.organization.id,
+      { displayName: "Nora Benali", role: "tutor" },
+    );
+    expect(invited.members).toContainEqual(
+      expect.objectContaining({
+        displayName: "Nora Benali",
+        role: "tutor",
+        status: "invited",
+      }),
+    );
+
+    const withLocation = await service.addOrganizationLocation(
+      initial.organization.id,
+      { label: "Lyon 6e" },
+    );
+    expect(withLocation.locations).toContainEqual(
+      expect.objectContaining({ label: "Lyon 6e", isActive: true }),
+    );
+  });
 });

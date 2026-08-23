@@ -159,23 +159,22 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     >
                       {/* Photo Attachment */}
                       {msg.attachment?.url && (
-                        <div className="mb-2 relative group/img cursor-pointer overflow-hidden rounded-xl">
+                        <button
+                          type="button"
+                          onClick={() => onOpenImage(msg.attachment!.url)}
+                          className="mb-2 relative block w-full group/img cursor-pointer overflow-hidden rounded-xl text-left"
+                          aria-label="Agrandir l’image partagée"
+                        >
                           <Image
                             src={msg.attachment.url}
                             alt={t("messaging.messageTimeline.photoPartagee")}
                             sizes="(max-width: 640px) 75vw, 320px"
                             className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
-                            onClick={() => onOpenImage(msg.attachment!.url)}
                           />
-                          <button
-                            type="button"
-                            onClick={() => onOpenImage(msg.attachment!.url)}
-                            className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover/img:opacity-100 transition-opacity"
-                            aria-label="Agrandir l'image"
-                          >
+                          <span className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover/img:opacity-100 group-focus-visible/img:opacity-100 transition-opacity">
                             <Maximize2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                          </span>
+                        </button>
                       )}
 
                       {/* Offer Card */}

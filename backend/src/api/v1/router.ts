@@ -19,6 +19,7 @@ import {
   coursesService,
   autoService,
   realEstateService,
+  employmentService,
   socialAuthService,
   facebookDataDeletionService,
 } from "../../modules/index.js";
@@ -893,7 +894,198 @@ export class ApiV1Router {
           params.marketCode,
           params.ruleId,
           body,
+      ),
+    );
+
+    // --------------------------------------------------------------------------
+    // SHONGRE EMPLOI (specialized employment vertical on canonical jobs branch)
+    // --------------------------------------------------------------------------
+    this.addRoute("GET", "/employment/catalog", PUBLIC, async ({ query }) =>
+      employmentService.getCatalog(query.get("market") || "FR"),
+    );
+    this.addRoute("POST", "/employment/search", PUBLIC, async ({ body }) =>
+      employmentService.search(body || { marketCode: "FR" }),
+    );
+    this.addRoute("GET", "/employment/jobs/:id", PUBLIC, async ({ params }) =>
+      employmentService.getPublicJob(params.id),
+    );
+    this.addRoute("GET", "/employment/jobs/:id/similar", PUBLIC, async ({ params }) =>
+      employmentService.getSimilarJobs(params.id),
+    );
+    this.addRoute(
+      "GET",
+      "/employment/drafts/:id",
+      permission("employment.job.manage.own"),
+      async ({ principal, params }) => employmentService.getOwnDraft(principal.userId, params.id),
+    );
+    this.addRoute(
+      "PUT",
+      "/employment/drafts/:id",
+      permission("employment.job.manage.own"),
+      async ({ principal, params, body }) => employmentService.saveOwnDraft(principal.userId, params.id, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/drafts/:id/duplicate-check",
+      permission("employment.job.manage.own"),
+      async ({ principal, params }) => employmentService.checkDuplicateDraft(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/drafts/:id/submit",
+      permission("employment.job.manage.own"),
+      async ({ principal, params }) => employmentService.submitOwnDraft(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/compliance/prohibited-language",
+      permission("employment.job.manage.own"),
+      async ({ body }) => ({ flags: await employmentService.flagProhibitedLanguage(body?.content, body?.marketCode || "FR") }),
+    );
+    this.addRoute(
+      "GET",
+      "/employment/candidate/workspace",
+      permission("employment.candidate.manage.own"),
+      async ({ principal }) => employmentService.getOwnCandidateWorkspace(principal.userId),
+    );
+    this.addRoute(
+      "PUT",
+      "/employment/candidate/profile",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, body }) => employmentService.saveOwnCandidateProfile(principal.userId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/jobs/:id/applications",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, params, body }) => employmentService.apply(principal.userId, params.id, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/applications/:id/withdraw",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, params }) => employmentService.withdrawOwnApplication(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/jobs/:id/save",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, params }) => employmentService.toggleSavedJob(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/jobs/:id/report",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, params, body }) => employmentService.reportJob(principal.userId, params.id, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/candidate/alerts",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, body }) => employmentService.saveOwnJobAlert(principal.userId, body),
+    );
+    this.addRoute(
+      "DELETE",
+      "/employment/candidate/alerts/:id",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, params }) => employmentService.deleteOwnJobAlert(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/candidate/data-export",
+      permission("employment.candidate.manage.own"),
+      async ({ principal }) => employmentService.exportOwnCandidateData(principal.userId),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/candidate/deletion-request",
+      permission("employment.candidate.manage.own"),
+      async ({ principal }) => employmentService.requestOwnCandidateDeletion(principal.userId),
+    );
+    this.addRoute(
+      "PATCH",
+      "/employment/candidate/interviews/:id",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, params, body }) =>
+        employmentService.respondToOwnInterview(principal.userId, params.id, body),
+    );
+    this.addRoute(
+      "GET",
+      "/employment/recruiter/employers",
+      permission("employment.recruiter.manage.own"),
+      async ({ principal }) => employmentService.listOwnRecruiterEmployers(principal.userId),
+    );
+    this.addRoute(
+      "GET",
+      "/employment/employers/:employerId/workspace",
+      permission("employment.recruiter.manage.own"),
+      async ({ principal, params }) => employmentService.getOwnRecruiterWorkspace(principal.userId, params.employerId),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/employers/:employerId/jobs/:jobId/duplicate",
+      permission("employment.recruiter.manage.own"),
+      async ({ principal, params }) =>
+        employmentService.duplicateOwnJob(
+          principal.userId,
+          params.employerId,
+          params.jobId,
         ),
+    );
+    this.addRoute(
+      "PATCH",
+      "/employment/employers/:employerId/applications/:applicationId/stage",
+      permission("employment.application.manage.own"),
+      async ({ principal, params, body }) => employmentService.moveApplication(principal.userId, params.employerId, params.applicationId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/employers/:employerId/applications/:applicationId/notes",
+      permission("employment.application.manage.own"),
+      async ({ principal, params, body }) => employmentService.addRecruiterNote(principal.userId, params.employerId, params.applicationId, body?.body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/employers/:employerId/applications/:applicationId/interviews",
+      permission("employment.application.manage.own"),
+      async ({ principal, params, body }) => employmentService.scheduleInterview(principal.userId, params.employerId, params.applicationId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/employers/:employerId/imports/preview",
+      permission("employment.import.own"),
+      async ({ principal, params, body }) =>
+        employmentService.previewImport(principal.userId, params.employerId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/employers/:employerId/imports",
+      permission("employment.import.own"),
+      async ({ principal, params, body }) => employmentService.requestImport(principal.userId, params.employerId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/employment/checkouts",
+      permission("payment.initiate"),
+      async ({ principal, body }) => employmentService.createCheckout(principal.userId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/employment/admin/overview",
+      permission("employment.admin.manage"),
+      async ({ query }) => employmentService.getAdminOverview(query.get("market") || "FR"),
+    );
+    this.addRoute(
+      "PUT",
+      "/employment/admin/markets/:marketCode",
+      permission("employment.admin.manage"),
+      async ({ principal, params, body }) => employmentService.updateMarketConfig(principal.userId, params.marketCode, body),
+    );
+    this.addRoute(
+      "PATCH",
+      "/employment/admin/offers/:offerId",
+      permission("employment.admin.manage"),
+      async ({ principal, params, body }) => employmentService.updateOffer(principal.userId, params.offerId, body),
     );
 
     // --------------------------------------------------------------------------

@@ -4,6 +4,7 @@ import { Lock, ArrowRight, UserPlus } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { routes } from "../../configuration/routes";
 
 export interface RequireAuthProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   const { t } = useTranslation();
   const { isAuthenticated, isRestoring, currentUser } = useAuth();
   const location = useLocation();
+  const returnTo = `${location.pathname}${location.search}${location.hash}`;
 
   if (isRestoring) {
     return (
@@ -42,7 +44,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button
-            to={`/connexion?redirect=${encodeURIComponent(location.pathname)}`}
+            to={routes.auth.login(returnTo)}
             variant="primary"
             size="md"
             rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -51,7 +53,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
             Se connecter
           </Button>
           <Button
-            to="/inscription"
+            to={routes.auth.register(returnTo)}
             variant="outline"
             size="md"
             leftIcon={<UserPlus className="w-4 h-4" />}

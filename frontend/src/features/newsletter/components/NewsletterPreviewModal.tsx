@@ -165,6 +165,8 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
               <div className="text-center pt-4">
                 <button
                   type="button"
+                  disabled
+                  title="Bouton non interactif dans l’aperçu de l’e-mail"
                   className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-xs"
                 >
                   <span>
@@ -182,11 +184,11 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                 Shongre ({campaign.marketCode}).
               </p>
               <div className="flex items-center justify-center gap-3 text-stone-700 font-bold">
-                <span className="hover:underline cursor-pointer">
+                <span>
                   {t("newsletter.newsletterPreviewModal.gererMesPreferences")}
                 </span>
                 <span>•</span>
-                <span className="hover:underline cursor-pointer">
+                <span>
                   {t("newsletter.newsletterPreviewModal.seDesabonnerEn1Clic")}
                 </span>
               </div>

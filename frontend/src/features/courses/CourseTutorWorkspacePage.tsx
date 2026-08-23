@@ -25,6 +25,7 @@ import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Badge, Button, Image, Skeleton, StatePanel } from "../../design-system";
+import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
 function requestForLead(
@@ -264,12 +265,24 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          <button type="button" aria-label={`Modifier ${offer.title}`} className="touch-square h-control-sm w-control-sm rounded-control border border-border-base text-text-muted hover:bg-bg-subtle">
+                          <Button
+                            to={routes.courses.publish({ mode: "profile", step: "expertise" })}
+                            variant="outline"
+                            size="sm"
+                            aria-label={`Modifier ${offer.title}`}
+                            className="touch-square h-control-sm w-control-sm p-0"
+                          >
                             <Pencil className="h-icon-xs w-icon-xs" aria-hidden="true" />
-                          </button>
-                          <button type="button" aria-label={`Plus d’actions pour ${offer.title}`} className="touch-square h-control-sm w-control-sm rounded-control border border-border-base text-text-muted hover:bg-bg-subtle">
+                          </Button>
+                          <Button
+                            to={routes.courses.publish({ mode: "profile", step: "offer" })}
+                            variant="outline"
+                            size="sm"
+                            aria-label={`Plus d’actions pour ${offer.title}`}
+                            className="touch-square h-control-sm w-control-sm p-0"
+                          >
                             <MoreHorizontal className="h-icon-xs w-icon-xs" aria-hidden="true" />
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -285,7 +298,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 <h2 className="text-sm font-black text-text-main">Disponibilités</h2>
                 <p className="text-micro text-text-muted">Cette semaine · Europe/Paris</p>
               </div>
-              <Button to="/compte/cours/disponibilites" variant="ghost" size="sm">
+              <Button to={routes.courses.availability()} variant="ghost" size="sm">
                 Modifier
               </Button>
             </div>
@@ -423,7 +436,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 <span className="ml-1 text-xs font-medium text-text-muted">restants</span>
               </p>
             </div>
-            <Button to="/compte/cours/abonnement" variant="ghost" size="sm" className="mt-3">
+            <Button to={routes.workspace.pro.subscriptions()} variant="ghost" size="sm" className="mt-3">
               Gérer mon abonnement
             </Button>
           </section>

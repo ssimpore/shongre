@@ -18,6 +18,8 @@ import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-c
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type {
   CourseOfferDraft,
+  CourseOrganizationInviteInput,
+  CourseOrganizationLocationInput,
   CoursesServiceContract,
   LearnerRequestDraft,
   TutorProfileDraft,
@@ -68,6 +70,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   private savedTutors = new Map<string, Set<string>>([
     ["user_thomas", new Set(["tutor_ines"])],
   ]);
+  private organizationWorkspace = clone(DEMO_COURSE_ORGANIZATION_WORKSPACE);
   private sequence = 1;
 
   async getCatalog(marketCode: string): Promise<CourseCatalog> {
@@ -282,7 +285,54 @@ export class DemoCoursesService implements CoursesServiceContract {
     if (organizationId !== DEMO_COURSE_ORGANIZATION_WORKSPACE.organization.id) {
       throw new Error("Espace organisme introuvable");
     }
-    return clone(DEMO_COURSE_ORGANIZATION_WORKSPACE);
+    return clone(this.organizationWorkspace);
+  }
+
+  async inviteOrganizationMember(
+    organizationId: string,
+    input: CourseOrganizationInviteInput,
+  ): Promise<CourseOrganizationWorkspace> {
+    await simulateNetworkDelay();
+    if (organizationId !== this.organizationWorkspace.organization.id) {
+      throw new Error("Espace organisme introuvable");
+    }
+    const displayName = input.displayName.trim();
+    if (!displayName) throw new Error("Indiquez le nom du membre à inviter.");
+    this.organizationWorkspace.members.push({
+      id: `course_member_${this.sequence++}`,
+      organizationId,
+      userId: `invited_user_${this.sequence++}`,
+      displayName,
+      role: input.role,
+      permissions: input.role === "tutor" ? ["offers:read", "leads:respond"] : ["workspace:read"],
+      status: "invited",
+    });
+    this.organizationWorkspace.organization.memberCount =
+      this.organizationWorkspace.members.length;
+    return clone(this.organizationWorkspace);
+  }
+
+  async addOrganizationLocation(
+    organizationId: string,
+    input: CourseOrganizationLocationInput,
+  ): Promise<CourseOrganizationWorkspace> {
+    await simulateNetworkDelay();
+    if (organizationId !== this.organizationWorkspace.organization.id) {
+      throw new Error("Espace organisme introuvable");
+    }
+    const label = input.label.trim();
+    if (!label) throw new Error("Indiquez un lieu d’enseignement.");
+    const locationLimit = this.organizationWorkspace.plan.entitlements.locations;
+    if (this.organizationWorkspace.locations.length >= locationLimit) {
+      throw new Error("Le quota de lieux de cette formule est atteint.");
+    }
+    this.organizationWorkspace.locations.push({
+      id: `course_location_${this.sequence++}`,
+      label,
+      isActive: true,
+      activeTutorCount: 0,
+    });
+    return clone(this.organizationWorkspace);
   }
 
   async respondToLead(

@@ -71,9 +71,11 @@ const CourseTutorWorkspacePage = lazy(() =>
   })),
 );
 const CourseOrganizationWorkspacePage = lazy(() =>
-  import("../../features/courses/CourseOrganizationWorkspacePage").then((m) => ({
-    default: m.CourseOrganizationWorkspacePage,
-  })),
+  import("../../features/courses/CourseOrganizationWorkspacePage").then(
+    (m) => ({
+      default: m.CourseOrganizationWorkspacePage,
+    }),
+  ),
 );
 const AutoSearchPage = lazy(() =>
   import("../../features/auto/AutoSearchPage").then((m) => ({
@@ -119,6 +121,40 @@ const ImmoAgencyWorkspacePage = lazy(() =>
   import("../../features/real-estate/ImmoAgencyWorkspacePage").then((m) => ({
     default: m.ImmoAgencyWorkspacePage,
   })),
+);
+const EmploymentSearchPage = lazy(() =>
+  import("../../features/employment/EmploymentSearchPage").then((m) => ({
+    default: m.EmploymentSearchPage,
+  })),
+);
+const EmploymentJobDetailPage = lazy(() =>
+  import("../../features/employment/EmploymentJobDetailPage").then((m) => ({
+    default: m.EmploymentJobDetailPage,
+  })),
+);
+const EmploymentApplyPage = lazy(() =>
+  import("../../features/employment/EmploymentApplyPage").then((m) => ({
+    default: m.EmploymentApplyPage,
+  })),
+);
+const EmploymentPublishWizardPage = lazy(() =>
+  import("../../features/employment/EmploymentPublishWizardPage").then((m) => ({
+    default: m.EmploymentPublishWizardPage,
+  })),
+);
+const EmploymentCandidateWorkspacePage = lazy(() =>
+  import("../../features/employment/EmploymentCandidateWorkspacePage").then(
+    (m) => ({
+      default: m.EmploymentCandidateWorkspacePage,
+    }),
+  ),
+);
+const EmploymentRecruiterWorkspacePage = lazy(() =>
+  import("../../features/employment/EmploymentRecruiterWorkspacePage").then(
+    (m) => ({
+      default: m.EmploymentRecruiterWorkspacePage,
+    }),
+  ),
 );
 const MessagingPage = lazy(() =>
   import("../../features/messaging/MessagingPage").then((m) => ({
@@ -439,6 +475,11 @@ const CrmTasksPage = lazy(() =>
     default: m.CrmTasksPage,
   })),
 );
+const EmploymentAdminPage = lazy(() =>
+  import("../../features/admin/EmploymentAdminPage").then((m) => ({
+    default: m.EmploymentAdminPage,
+  })),
+);
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<PageSuspense />}>
@@ -484,6 +525,14 @@ export const router = createBrowserRouter([
           </RequirePermission>
         ),
       },
+      {
+        path: "deposer/emploi",
+        element: (
+          <RequirePermission permission="employment.job.manage.own">
+            {withSuspense(EmploymentPublishWizardPage)}
+          </RequirePermission>
+        ),
+      },
 
       // Signing in and signing up are task-completion flows too: the full
       // marketplace shell around a login form offers a dozen ways to wander off
@@ -495,15 +544,23 @@ export const router = createBrowserRouter([
       },
       {
         path: "inscription",
-        element: <GuestOnlyRoute>{withSuspense(RegisterChoicePage)}</GuestOnlyRoute>,
+        element: (
+          <GuestOnlyRoute>{withSuspense(RegisterChoicePage)}</GuestOnlyRoute>
+        ),
       },
       {
         path: "inscription/particulier",
-        element: <GuestOnlyRoute>{withSuspense(RegisterIndividualPage)}</GuestOnlyRoute>,
+        element: (
+          <GuestOnlyRoute>
+            {withSuspense(RegisterIndividualPage)}
+          </GuestOnlyRoute>
+        ),
       },
       {
         path: "inscription/professionnel",
-        element: <GuestOnlyRoute>{withSuspense(RegisterProPage)}</GuestOnlyRoute>,
+        element: (
+          <GuestOnlyRoute>{withSuspense(RegisterProPage)}</GuestOnlyRoute>
+        ),
       },
       {
         path: "mot-de-passe-oublie",
@@ -538,6 +595,31 @@ export const router = createBrowserRouter([
       {
         path: "immo/bien/:slug",
         element: withSuspense(ImmoPropertyDetailPage),
+      },
+      { path: "emploi", element: withSuspense(EmploymentSearchPage) },
+      {
+        path: "emploi/metier/:professionSlug",
+        element: withSuspense(EmploymentSearchPage),
+      },
+      {
+        path: "emploi/secteur/:sectorSlug",
+        element: withSuspense(EmploymentSearchPage),
+      },
+      {
+        path: "emploi/lieu/:locationSlug",
+        element: withSuspense(EmploymentSearchPage),
+      },
+      {
+        path: "emploi/offre/:slug",
+        element: withSuspense(EmploymentJobDetailPage),
+      },
+      {
+        path: "emploi/offre/:slug/postuler",
+        element: (
+          <RequirePermission permission="employment.candidate.manage.own">
+            {withSuspense(EmploymentApplyPage)}
+          </RequirePermission>
+        ),
       },
       { path: "cours", element: withSuspense(CoursesSearchPage) },
       {
@@ -667,6 +749,22 @@ export const router = createBrowserRouter([
             element: (
               <RequirePermission permission="immo.agency.manage.own">
                 {withSuspense(ImmoAgencyWorkspacePage)}
+              </RequirePermission>
+            ),
+          },
+          {
+            path: "emploi",
+            element: (
+              <RequirePermission permission="employment.candidate.manage.own">
+                {withSuspense(EmploymentCandidateWorkspacePage)}
+              </RequirePermission>
+            ),
+          },
+          {
+            path: "emploi/recruteur",
+            element: (
+              <RequirePermission permission="employment.recruiter.manage.own">
+                {withSuspense(EmploymentRecruiterWorkspacePage)}
               </RequirePermission>
             ),
           },
@@ -840,6 +938,14 @@ export const router = createBrowserRouter([
         element: (
           <RequirePermission permission="immo.admin.manage">
             {withSuspense(AdminImmoPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "emploi",
+        element: (
+          <RequirePermission permission="employment.admin.manage">
+            {withSuspense(EmploymentAdminPage)}
           </RequirePermission>
         ),
       },

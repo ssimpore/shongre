@@ -230,7 +230,7 @@ export const Header: React.FC = () => {
       });
     } else {
       if (slug) {
-        navigate(`/recherche?category=${slug}`);
+        navigate(routes.search({ category: slug }));
       } else {
         navigate("/recherche");
       }

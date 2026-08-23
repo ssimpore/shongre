@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User,
   Briefcase,
@@ -27,6 +27,16 @@ import {
 } from "../../configuration/market.config";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { routes } from "../../configuration/routes";
+import { resolveSafeReturn } from "../../security/safe-return";
+
+const useRegistrationReturn = (fallback: string) => {
+  const [searchParams] = useSearchParams();
+  return resolveSafeReturn(
+    searchParams.get("redirect") || searchParams.get("returnTo"),
+    fallback,
+  );
+};
 
 export const RegisterChoicePage: React.FC = () => {
   const { t } = useTranslation();
@@ -38,15 +48,16 @@ export const RegisterChoicePage: React.FC = () => {
   });
 
   const navigate = useNavigate();
+  const returnTo = useRegistrationReturn(routes.workspace.overview());
   const [selectedType, setSelectedType] = useState<
     "individual" | "professional"
   >("individual");
 
   const handleContinue = () => {
     if (selectedType === "individual") {
-      navigate("/inscription/particulier");
+      navigate(routes.auth.registerIndividual(returnTo));
     } else {
-      navigate("/inscription/professionnel");
+      navigate(routes.auth.registerProfessional(returnTo));
     }
   };
 
@@ -84,7 +95,7 @@ export const RegisterChoicePage: React.FC = () => {
             <div className="text-xs text-stone-500 text-center sm:text-left">
               Vous avez déjà un compte ?{" "}
               <Link
-                to="/connexion"
+                to={routes.auth.login(returnTo)}
                 className="font-bold text-primary hover:underline"
               >
                 Se connecter
@@ -134,6 +145,7 @@ export const RegisterIndividualPage: React.FC = () => {
   });
 
   const navigate = useNavigate();
+  const returnTo = useRegistrationReturn(routes.workspace.overview());
   const { registerIndividual } = useAuth();
   const toast = useToast();
 
@@ -181,7 +193,7 @@ export const RegisterIndividualPage: React.FC = () => {
         toast.success(
           "Compte Particulier créé avec succès ! Bienvenue sur Shongre.",
         );
-        navigate("/compte");
+        navigate(returnTo, { replace: true });
       } else {
         setErrorMessage(
           result.errorMessage || "Échec de la création de compte.",
@@ -204,7 +216,7 @@ export const RegisterIndividualPage: React.FC = () => {
       footerLink={{
         text: "Vous êtes un professionnel ?",
         linkText: "Créer un compte Pro",
-        to: "/inscription/professionnel",
+        to: routes.auth.registerProfessional(returnTo),
       }}
     >
       {errorMessage && (
@@ -384,7 +396,7 @@ export const RegisterIndividualPage: React.FC = () => {
         </Button>
       </form>
       <div className="mt-6">
-        <SocialLoginButtons accountType="individual" />
+        <SocialLoginButtons accountType="individual" returnTo={returnTo} />
       </div>
     </AuthLayout>
   );
@@ -400,6 +412,7 @@ export const RegisterProPage: React.FC = () => {
   });
 
   const navigate = useNavigate();
+  const returnTo = useRegistrationReturn(routes.workspace.pro.dashboard());
   const { registerProfessional } = useAuth();
   const toast = useToast();
 
@@ -491,7 +504,7 @@ export const RegisterProPage: React.FC = () => {
         toast.success(
           "Compte Professionnel créé ! Bienvenue dans votre espace Pro.",
         );
-        navigate("/compte/pro/tableau-de-bord");
+        navigate(returnTo, { replace: true });
       } else {
         setErrorMessage(
           result.errorMessage || "Échec de la création de compte Pro.",
@@ -647,7 +660,10 @@ export const RegisterProPage: React.FC = () => {
               </div>
             </form>
             <div className="mt-6">
-              <SocialLoginButtons accountType="professional" />
+              <SocialLoginButtons
+                accountType="professional"
+                returnTo={returnTo}
+              />
             </div>
             </>
           ) : (
@@ -873,7 +889,7 @@ export const RegisterProPage: React.FC = () => {
           <div className="mt-6 pt-6 border-t border-stone-100 text-center text-xs text-stone-500">
             Vous avez déjà un compte ?{" "}
             <Link
-              to="/connexion"
+              to={routes.auth.login(returnTo)}
               className="font-bold text-primary hover:underline"
             >
               Se connecter

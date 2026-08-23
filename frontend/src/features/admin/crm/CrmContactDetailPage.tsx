@@ -33,6 +33,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { formatDate } from "../../../utilities/formatters";
 import { Skeleton } from "../../../design-system";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { routes } from "../../../configuration/routes";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 
 export const CrmContactDetailPage: React.FC = () => {
@@ -290,13 +291,15 @@ export const CrmContactDetailPage: React.FC = () => {
             <Link
               to={
                 linkedUser.sellerType === "pro"
-                  ? `/vendeur/${linkedUser.slug || linkedUser.id}`
-                  : "#"
+                  ? routes.seller.storefront(linkedUser.slug || linkedUser.id)
+                  : routes.seller.profile(linkedUser.slug || linkedUser.id)
               }
               className="text-xs font-bold text-success hover:underline flex items-center gap-1"
             >
               <span>
-                {t("admin.crmContactDetailPage.voirLaVitrinePublique")}
+                {linkedUser.sellerType === "pro"
+                  ? t("admin.crmContactDetailPage.voirLaVitrinePublique")
+                  : "Voir le profil public"}
               </span>
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>

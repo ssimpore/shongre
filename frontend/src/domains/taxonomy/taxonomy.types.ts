@@ -260,6 +260,9 @@ export interface TaxonomyNode extends TaxonomyNodeBase {
   level: TaxonomyLevel;
   publishable?: boolean; // false for navigation-only categories; true for publishable leaves
   listingFamily?: ListingFamily;
+  /** Specialized vertical handler; absent for generic classifieds branches. */
+  verticalType?: "tutoring" | "automotive" | "real_estate" | "employment";
+  verticalSchemaVersion?: number;
   supportedIntents?: string[]; // e.g. ['SELL', 'GIVE', 'EXCHANGE', 'RENT', 'OFFER_SERVICE', 'JOB_OFFER']
   labels: Record<string, string>; // e.g. { 'fr-FR': 'Voitures d\'occasion', 'en-US': 'Used Cars' }
   shortLabels?: Record<string, string>; // e.g. { 'fr-FR': 'Voitures', 'en-US': 'Cars' }

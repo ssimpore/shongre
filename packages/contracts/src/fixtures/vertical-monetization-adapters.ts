@@ -2,6 +2,7 @@ import type { AutoCatalog } from "../schemas/auto";
 import type { CourseCatalog } from "../schemas/courses";
 import type { MonetizationCatalog, MonetizationProduct } from "../schemas/monetization";
 import type { RealEstateCatalog } from "../schemas/real-estate";
+import type { EmploymentCatalog } from "../schemas/employment";
 
 const AUTO_PRODUCTS: Record<string, string> = {
   auto_private_free: "auto.private.free",
@@ -157,6 +158,50 @@ export function applyMonetizationToRealEstateCatalog(
           ...offer.entitlements,
           ...entitlementObject(product),
         },
+        isActive: active(product),
+        isRecommended: product.recommended,
+      };
+    }),
+    addOns: source.addOns.map((addOn) => {
+      const product = commercial.products.find((candidate) => candidate.id === addOn.id);
+      if (!product) return addOn;
+      const activePrice = product.prices[0];
+      return {
+        ...addOn,
+        name: product.name,
+        description: product.description,
+        price: activePrice.amount,
+        taxRateBps: activePrice.taxRateBps,
+        validityDays: activePrice.durationDays,
+        isActive: active(product),
+      };
+    }),
+  };
+}
+
+export function applyMonetizationToEmploymentCatalog(
+  source: EmploymentCatalog,
+  commercial: MonetizationCatalog,
+): EmploymentCatalog {
+  return {
+    ...source,
+    offers: source.offers.map((offer) => {
+      const product = commercial.products.find((candidate) => candidate.id === offer.id);
+      if (!product) return offer;
+      return {
+        ...offer,
+        name: product.name,
+        description: product.description,
+        prices: product.prices.map((entry) => ({
+          id: entry.id,
+          amount: entry.amount,
+          billingPeriod: entry.billingPeriod,
+          durationDays: entry.durationDays,
+          trialDays: entry.trialDays,
+          taxRateBps: entry.taxRateBps,
+          isActive: active(product),
+        })),
+        entitlements: { ...offer.entitlements, ...entitlementObject(product) },
         isActive: active(product),
         isRecommended: product.recommended,
       };

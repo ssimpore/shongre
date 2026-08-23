@@ -63,19 +63,12 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
   const isUnread = !notification.isRead;
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onSelect(notification)}
-      className={`flex items-start gap-3 transition-colors cursor-pointer group ${
+      className={`flex w-full items-start gap-3 text-left transition-colors cursor-pointer group ${
         isCompact ? "p-3 hover:bg-stone-50" : "p-4 hover:bg-stone-50/80"
       } ${isUnread ? "bg-primary/5" : "bg-white"}`}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect(notification);
-        }
-      }}
     >
       {/* Category Icon Badge */}
       <div
@@ -124,6 +117,6 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       {isUnread && (
         <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2 ring-4 ring-primary/10" />
       )}
-    </div>
+    </button>
   );
 };

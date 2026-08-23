@@ -15,12 +15,58 @@ export interface PermissionDefinition {
     | "Cours & Formation"
     | "Auto & Véhicules"
     | "Immobilier"
+    | "Emploi & Recrutement"
     | "Administration Système";
   description: string;
   isSensitive?: boolean;
 }
 
 export const ALL_PERMISSIONS: PermissionDefinition[] = [
+  // Shongre Emploi
+  {
+    id: "employment.read",
+    name: "Consulter Shongre Emploi",
+    category: "Emploi & Recrutement",
+    description: "Rechercher et consulter les offres d’emploi publiques.",
+  },
+  {
+    id: "employment.candidate.manage.own",
+    name: "Gérer son espace candidat",
+    category: "Emploi & Recrutement",
+    description: "Gérer profil professionnel, CV, candidatures, alertes et consentements.",
+  },
+  {
+    id: "employment.job.manage.own",
+    name: "Publier ses offres d’emploi",
+    category: "Emploi & Recrutement",
+    description: "Créer, reprendre et soumettre ses propres offres éligibles.",
+  },
+  {
+    id: "employment.recruiter.manage.own",
+    name: "Gérer son espace recruteur",
+    category: "Emploi & Recrutement",
+    description: "Administrer les offres, équipes, branches et paramètres employeur autorisés.",
+  },
+  {
+    id: "employment.application.manage.own",
+    name: "Gérer les candidatures autorisées",
+    category: "Emploi & Recrutement",
+    description: "Affecter, faire progresser et planifier les candidatures de son périmètre.",
+  },
+  {
+    id: "employment.import.own",
+    name: "Importer ses offres d’emploi",
+    category: "Emploi & Recrutement",
+    description: "Prévisualiser et synchroniser les sources autorisées par la formule.",
+  },
+  {
+    id: "employment.admin.manage",
+    name: "Administrer Shongre Emploi",
+    category: "Emploi & Recrutement",
+    description: "Configurer taxonomie, offres, conformité, modération et rétention Emploi.",
+    isSensitive: true,
+  },
+
   // Shongre Immo
   {
     id: "immo.read",

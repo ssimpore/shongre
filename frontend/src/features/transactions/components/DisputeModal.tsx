@@ -25,6 +25,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
   const { t } = useTranslation();
   const [reason, setReason] = useState(TRANSACTION_CONFIG.disputeReasons[0].id);
   const [description, setDescription] = useState("");
+  const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +51,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         {
           reason: selectedReason,
           description: description.trim(),
+          evidenceUrls: evidenceFiles.map((file) => URL.createObjectURL(file)),
         },
       );
       onSuccess(updated);
@@ -121,15 +123,32 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
           />
         </div>
 
-        <div className="p-5 border-2 border-dashed border-stone-200/60 rounded-2xl bg-stone-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-stone-100 hover:border-stone-300 transition-colors shadow-2xs">
+        <label className="p-5 border-2 border-dashed border-stone-200/60 rounded-2xl bg-stone-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-stone-100 hover:border-stone-300 transition-colors shadow-2xs focus-within:ring-2 focus-within:ring-primary/30">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,application/pdf"
+            multiple
+            className="sr-only"
+            onChange={(event) => {
+              const selected = Array.from(event.target.files || []).filter(
+                (file) => file.size <= 10 * 1024 * 1024,
+              );
+              setEvidenceFiles(selected);
+              if (selected.length !== (event.target.files?.length || 0)) {
+                setError("Chaque justificatif doit peser 10 Mo maximum.");
+              }
+            }}
+          />
           <UploadCloud className="w-8 h-8 text-stone-400 mb-2" />
           <span className="font-bold text-stone-700">
             {t("transactions.disputeModal.ajouterDesPhotosOuJustificatifs")}
           </span>
           <span className="text-xs text-stone-500 mt-1 font-medium">
-            {t("transactions.disputeModal.jpgPngOuPdfMax")}
+            {evidenceFiles.length
+              ? `${evidenceFiles.length} justificatif${evidenceFiles.length > 1 ? "s" : ""} sélectionné${evidenceFiles.length > 1 ? "s" : ""}`
+              : t("transactions.disputeModal.jpgPngOuPdfMax")}
           </span>
-        </div>
+        </label>
 
         <div className="flex gap-3 pt-4">
           <Button

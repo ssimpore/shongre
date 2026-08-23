@@ -117,6 +117,8 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                 ? currentPath.startsWith("/auto") || item.slug === activeCategorySlug
                 : item.slug === "immobilier"
                   ? currentPath.startsWith("/immo") || item.slug === activeCategorySlug
+                : item.slug === "emploi"
+                  ? currentPath.startsWith("/emploi") || item.slug === activeCategorySlug
                 : item.slug === activeCategorySlug
               : currentPath === item.to;
           const destination =
@@ -125,6 +127,8 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                 ? routes.auto.search()
                 : item.slug === "immobilier"
                   ? routes.immo.search()
+                : item.slug === "emploi"
+                  ? routes.employment.search()
                 : routes.search({ category: item.slug })
               : item.to;
 
@@ -145,6 +149,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                     if (item.kind !== "category") return;
                     if (item.slug === "vehicules") return;
                     if (item.slug === "immobilier") return;
+                    if (item.slug === "emploi") return;
                     if (
                       event.button !== 0 ||
                       event.metaKey ||

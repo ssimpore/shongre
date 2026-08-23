@@ -20,7 +20,8 @@ export function GuestOnlyRoute({ children }: { children: ReactNode }) {
   }
 
   if (isAuthenticated) {
-    const target = new URLSearchParams(location.search).get("returnTo");
+    const params = new URLSearchParams(location.search);
+    const target = params.get("redirect") || params.get("returnTo");
     const safeTarget = resolveSafeReturn(target, "/compte");
     return <Navigate replace to={safeTarget} />;
   }

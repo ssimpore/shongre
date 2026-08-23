@@ -116,7 +116,7 @@ test.describe("Shongre Immo", () => {
   test("agency and admin workspaces expose operational controls", async ({
     page,
   }) => {
-    await usePersona(page, "pro_seller");
+    await usePersona(page, "pro_immo");
     await page.goto("/compte/immo", { waitUntil: "networkidle" });
     await expect(
       page.getByRole("heading", { level: 1, name: "Agence Canopée" }),

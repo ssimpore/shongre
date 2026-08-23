@@ -15,5 +15,6 @@ export * from './trending.repository.js';
 export * from './courses.repository.js';
 export * from './auto.repository.js';
 export * from './real-estate.repository.js';
+export * from './employment.repository.js';
 export * from './auth.repository.js';
 export * from './repository-container.js';

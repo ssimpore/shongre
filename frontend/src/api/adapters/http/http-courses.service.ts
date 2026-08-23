@@ -16,6 +16,8 @@ import type {
 } from "@shongre/contracts/courses";
 import type {
   CourseOfferDraft,
+  CourseOrganizationInviteInput,
+  CourseOrganizationLocationInput,
   CoursesServiceContract,
   LearnerRequestDraft,
   TutorProfileDraft,
@@ -65,6 +67,26 @@ export class HttpCoursesService implements CoursesServiceContract {
   ): Promise<CourseOrganizationWorkspace> {
     return httpClient.get(
       `/courses/organizations/${encodeURIComponent(organizationId)}/workspace`,
+    );
+  }
+
+  inviteOrganizationMember(
+    organizationId: string,
+    input: CourseOrganizationInviteInput,
+  ): Promise<CourseOrganizationWorkspace> {
+    return httpClient.post(
+      `/courses/organizations/${encodeURIComponent(organizationId)}/members`,
+      input,
+    );
+  }
+
+  addOrganizationLocation(
+    organizationId: string,
+    input: CourseOrganizationLocationInput,
+  ): Promise<CourseOrganizationWorkspace> {
+    return httpClient.post(
+      `/courses/organizations/${encodeURIComponent(organizationId)}/locations`,
+      input,
     );
   }
 

@@ -98,7 +98,7 @@ export const messagesFr = {
   // --- Language selector ----------------------------------------------------
   "language.choose": "Choisir la langue",
   "language.current": "Langue : {language}. Cliquez pour changer.",
-  "language.preferences": "Préférences…",
+  "language.preferences": "Préférences",
 
   // --- Cookie consent -------------------------------------------------------
   "consent.title": "Vos préférences de confidentialité",
@@ -161,6 +161,23 @@ export const messagesFr = {
   // --- shell.locationPickerModal ---
   "shell.locationPickerModal.zoneGeographique": "Zone géographique",
   "shell.locationPickerModal.rayonDeRecherche": "Rayon de recherche",
+  "shell.locationPickerModal.useCurrentLocation":
+    "Utiliser ma position actuelle",
+  "shell.locationPickerModal.locationInProgress": "Localisation en cours…",
+  "shell.locationPickerModal.locationDetected":
+    "Position détectée près de {city}.",
+  "shell.locationPickerModal.locationUnsupported":
+    "La géolocalisation n’est pas disponible sur cet appareil.",
+  "shell.locationPickerModal.locationPermissionDenied":
+    "Autorisez l’accès à votre position dans le navigateur, puis réessayez.",
+  "shell.locationPickerModal.locationUnavailable":
+    "Votre position est momentanément indisponible. Réessayez ou saisissez une ville.",
+  "shell.locationPickerModal.locationTimeout":
+    "La localisation a pris trop de temps. Réessayez ou saisissez une ville.",
+  "shell.locationPickerModal.locationOutsideMarket":
+    "Votre position ne se trouve pas dans le marché {market}. Changez de pays ou saisissez une ville.",
+  "shell.locationPickerModal.locationUnresolved":
+    "Aucune ville prise en charge n’a été trouvée près de votre position.",
 
   // --- shell.preferencesModal ---
   "shell.preferencesModal.preferencesRegionales": "Préférences régionales",
@@ -252,19 +269,22 @@ export const messagesFr = {
   "auth.social.google": "Continuer avec Google",
   "auth.social.apple": "Continuer avec Apple",
   "auth.social.facebook": "Continuer avec Facebook",
-  "auth.social.failed": "Cette méthode de connexion est temporairement indisponible.",
+  "auth.social.failed":
+    "Cette méthode de connexion est temporairement indisponible.",
   "auth.social.privacy":
     "En continuant, vous acceptez les Conditions d’utilisation et reconnaissez la Politique de confidentialité.",
   "auth.callback.loading": "Validation sécurisée de votre connexion…",
   "auth.callback.success": "Connexion confirmée. Redirection…",
   "auth.callback.linked": "Compte connecté avec succès.",
-  "auth.callback.cancelled": "La connexion a été annulée. Aucun changement n’a été effectué.",
+  "auth.callback.cancelled":
+    "La connexion a été annulée. Aucun changement n’a été effectué.",
   "auth.callback.linkRequired":
     "Un compte Shongre existe déjà. Connectez-vous à ce compte puis associez ce fournisseur depuis Connexion & sécurité.",
   "auth.callback.emailRequired":
     "Ce fournisseur n’a pas confirmé votre adresse email. Vérifiez-en une pour terminer votre inscription.",
   "auth.callback.title": "Connexion sécurisée",
-  "auth.callback.subtitle": "Shongre vérifie la réponse du fournisseur de connexion",
+  "auth.callback.subtitle":
+    "Shongre vérifie la réponse du fournisseur de connexion",
   "auth.callback.emailLabel": "Adresse email à vérifier",
   "auth.callback.verifyEmail": "Vérifier cette adresse",
   "auth.callback.backToLogin": "Retour à la connexion",
@@ -274,7 +294,8 @@ export const messagesFr = {
     "Gérez vos méthodes de connexion et les appareils ayant accès à votre compte.",
   "auth.security.loading": "Chargement des réglages de sécurité…",
   "auth.security.confirmIdentity": "Confirmer votre identité",
-  "auth.security.confirmDescription": "Cette confirmation protège l’association et la suppression de méthodes de connexion.",
+  "auth.security.confirmDescription":
+    "Cette confirmation protège l’association et la suppression de méthodes de connexion.",
   "auth.security.currentPassword": "Mot de passe actuel",
   "auth.security.confirm": "Confirmer",
   "auth.security.methods": "Méthodes de connexion",
@@ -292,7 +313,8 @@ export const messagesFr = {
   "auth.security.newPassword": "Nouveau mot de passe",
   "auth.security.savePassword": "Enregistrer le mot de passe",
   "auth.security.devices": "Appareils connectés",
-  "auth.security.devicesDescription": "Révoquez immédiatement un appareil que vous ne reconnaissez pas.",
+  "auth.security.devicesDescription":
+    "Révoquez immédiatement un appareil que vous ne reconnaissez pas.",
   "auth.security.refresh": "Actualiser",
   "auth.security.lastActivity": "Dernière activité",
   "auth.security.thisDevice": "Cet appareil",
@@ -300,9 +322,11 @@ export const messagesFr = {
   "auth.security.revoke": "Révoquer",
   "auth.security.noSessions": "Aucune session active.",
   "auth.security.signOutOthers": "Déconnecter les autres appareils",
-  "auth.security.secretsNotice": "Les jetons de fournisseur et les secrets OAuth ne sont jamais affichés dans cette page.",
+  "auth.security.secretsNotice":
+    "Les jetons de fournisseur et les secrets OAuth ne sont jamais affichés dans cette page.",
   "auth.onboarding.title": "Comment utiliserez-vous Shongre ?",
-  "auth.onboarding.description": "Votre méthode de connexion est prête. Ce choix adapte maintenant votre parcours sans modifier votre identité.",
+  "auth.onboarding.description":
+    "Votre méthode de connexion est prête. Ce choix adapte maintenant votre parcours sans modifier votre identité.",
   "auth.onboarding.continue": "Continuer",
 
   // --- auth.registerPages ---
@@ -1681,8 +1705,7 @@ export const messagesFr = {
   "admin.taxonomyNodeEditor.cta.requestVisit": "Demander une visite",
   "admin.taxonomyNodeEditor.cta.requestTestDrive": "Demander un essai",
   "admin.taxonomyNodeEditor.cta.requestLesson": "Demander un cours",
-  "admin.taxonomyNodeEditor.cta.checkAvailability":
-    "Vérifier la disponibilité",
+  "admin.taxonomyNodeEditor.cta.checkAvailability": "Vérifier la disponibilité",
   "admin.taxonomyNodeEditor.cta.proposeExchange": "Proposer un échange",
   "admin.taxonomyNodeEditor.review.standard": "Standard",
   "admin.taxonomyNodeEditor.review.enhanced": "Renforcée",
@@ -1840,11 +1863,12 @@ export const messagesFr = {
 
   // --- shell.demoRoleSwitcher ---
   "shell.demoRoleSwitcher.modeDemo": "Mode Démo",
-  "shell.demoRoleSwitcher.testerLes6ProfilsEt":
-    "Tester les 6 profils et parcours sans mot de passe :",
+  "shell.demoRoleSwitcher.testerLes10ProfilsEt":
+    "Tester les 10 profils et parcours sans mot de passe :",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
     "Changer de profil utilisateur pour tester",
-  "shell.demoRoleSwitcher.sessionUpdated": "Session de démonstration actualisée",
+  "shell.demoRoleSwitcher.sessionUpdated":
+    "Session de démonstration actualisée",
   "shell.demoRoleSwitcher.sessionUnchanged": "Session inchangée",
   "shell.demoRoleSwitcher.guestActivated":
     "Vous naviguez maintenant comme visiteur non connecté.",
@@ -2375,8 +2399,7 @@ export const messagesFr = {
   "auth.registerPages.nomEtPrenomDuResponsable":
     "Nom et prénom du responsable / contact",
   "auth.registerPages.telephoneCommercial": "Téléphone commercial",
-  "auth.registerPages.continuerVersLesInformationsEntreprise":
-    "Continuer",
+  "auth.registerPages.continuerVersLesInformationsEntreprise": "Continuer",
   "auth.registerPages.adresseDuSiegeSocialMagasin":
     "Adresse du siège social / magasin",
   "auth.registerPages.conditionsGeneralesDeVenteProfessionnelles":
@@ -3388,6 +3411,63 @@ export const messagesFr = {
     "Total : {count} vues uniques",
   "errors.notFoundPage.explorerLesCategories": "Explorer les catégories",
   "errors.notFoundPage.toutesLesCategories": "Toutes les catégories",
+  // --- Shongre Emploi -----------------------------------------------------
+  "employment.nav.candidate": "Espace candidat",
+  "employment.nav.recruiter": "Espace recruteur",
+  "employment.search.eyebrow": "Shongre Emploi",
+  "employment.search.title": "Un emploi qui correspond à votre projet",
+  "employment.search.subtitle":
+    "Les candidatures, alertes standards et échanges éligibles restent gratuits pour les candidats.",
+  "employment.search.queryPlaceholder": "Métier, compétence, entreprise",
+  "employment.search.locationPlaceholder": "Ville ou télétravail",
+  "employment.search.queryLabel": "Métier ou compétence",
+  "employment.search.locationLabel": "Ville ou zone",
+  "employment.action.publish": "Publier une offre",
+  "employment.action.apply": "Postuler gratuitement",
+  "employment.trust.noCandidateFee":
+    "Aucun paiement n’est requis pour postuler.",
+  "employment.trust.verifiedEmployer": "Employeur vérifié",
+  "employment.trust.sponsoredTransparency":
+    "Les placements payants sont identifiés et n’empêchent jamais l’accès aux offres gratuites.",
+  "employment.search.filters": "Affiner les offres",
+  "employment.search.results": "Résultats d’emploi",
+  "employment.search.createAlert": "Créer une alerte gratuite",
+  "employment.search.empty": "Aucune offre ne correspond à ces filtres",
+  "employment.workspace.candidateTitle": "Mon espace candidat",
+  "employment.workspace.recruiterTitle": "Espace recruteur",
+  "employment.workspace.applications": "Candidatures",
+  "employment.workspace.interviews": "Entretiens",
+  "employment.workspace.messages": "Messages",
+  "employment.workspace.privacy": "Confidentialité et consentements",
+  "employment.workspace.jobs": "Offres d’emploi",
+  "employment.workspace.pipeline": "Pipeline de recrutement",
+  "employment.workspace.imports": "Imports",
+  "employment.workspace.team": "Équipe",
+  "employment.application.received": "Reçue",
+  "employment.application.review": "En cours d’examen",
+  "employment.application.shortlisted": "Présélectionnée",
+  "employment.application.interview": "Entretien",
+  "employment.application.offer": "Proposition",
+  "employment.application.hired": "Recrutée",
+  "employment.application.rejected": "Non retenue",
+  "employment.application.withdrawn": "Retirée",
+  "employment.interview.proposed": "Proposé",
+  "employment.interview.confirmed": "Confirmé",
+  "employment.interview.rescheduled": "Replanifié",
+  "employment.interview.cancelled": "Annulé",
+  "employment.publish.title": "Publier une offre d’emploi",
+  "employment.publish.freeOption": "Publication standard gratuite",
+  "employment.publish.paidOptional": "Visibilité payante facultative",
+  "employment.publish.noForcedPlan":
+    "Aucun abonnement n’est requis pour une publication standard éligible.",
+  "employment.privacy.applicationConsent":
+    "J’accepte de transmettre cette candidature à l’employeur pour les besoins du recrutement.",
+  "employment.privacy.talentPoolConsent":
+    "Autoriser les recruteurs vérifiés à trouver mon profil",
+  "employment.import.preview": "Prévisualiser l’import",
+  "employment.import.confirm": "Confirmer l’import",
+  "employment.import.idempotent":
+    "Une synchronisation répétée met à jour l’offre source sans créer de doublon.",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

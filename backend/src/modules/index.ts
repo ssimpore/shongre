@@ -21,3 +21,4 @@ export * from './trending/trending.service.js';
 export * from './courses/courses.service.js';
 export * from './auto/auto.service.js';
 export * from './real-estate/real-estate.service.js';
+export * from './employment/employment.service.js';

@@ -86,6 +86,12 @@ export interface ListingNotificationContext {
   currency?: string;
 }
 
+export interface SavedSearchNotificationContext {
+  type: "saved_search";
+  searchTitle?: string;
+  queryUrl?: string;
+}
+
 export interface ConversationNotificationContext {
   type: "conversation";
   conversationId: string;
@@ -132,6 +138,7 @@ export interface ModerationNotificationContext {
 
 export type NotificationContext =
   | ListingNotificationContext
+  | SavedSearchNotificationContext
   | ConversationNotificationContext
   | TransactionNotificationContext
   | SubscriptionNotificationContext

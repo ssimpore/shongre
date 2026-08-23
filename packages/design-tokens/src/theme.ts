@@ -213,7 +213,7 @@ export const themeSpacing = {
   /* Shared width for standard listing cards in rails and desktop grids. This
      leaves room for titles and attributes while keeping the next card visible
      as an affordance that the rail continues horizontally. */
-  "listing-card": "13.5rem",
+  "listing-card": "15rem",
   /* Standard vertical footprint for grid and rail cards. It includes the
      wrapping delivery/publication metadata row, so long labels remain fully
      readable without changing the rhythm between listing sections. */
@@ -230,6 +230,10 @@ export const themeSpacing = {
   "recent-search-card": "17rem",
   "recent-search-card-wide": "19rem",
   "recent-search-card-min": "6.5rem",
+  /* Shared vertical ceiling for menus and popovers. The viewport expression
+     keeps long option sets operable on short mobile screens; the fixed ceiling
+     preserves the compact desktop composition. */
+  "menu-max": "min(23.75rem, calc(100dvh - 4rem))",
   "icon-xs": "0.75rem",
   "icon-sm": "0.875rem",
   "icon-md": "1rem",

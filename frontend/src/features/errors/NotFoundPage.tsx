@@ -11,6 +11,7 @@ import {
 import { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { Link } from "react-router-dom";
 
 /**
  * A 404 that offers a way forward.
@@ -85,27 +86,27 @@ export const NotFoundPage: React.FC = () => {
             >
               {t("errors.notFoundPage.explorerLesCategories")}
             </h2>
-            <a
-              href={routes.categories()}
+            <Link
+              to={routes.categories()}
               className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
             >
               {t("errors.notFoundPage.toutesLesCategories")}
               <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-            </a>
+            </Link>
           </div>
 
           <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
             {categories.map((cat) => (
               <li key={cat.id}>
-                <a
-                  href={`/categorie/${cat.slug}`}
+                <Link
+                  to={routes.category(cat.slug)}
                   className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-border-base hover:border-primary-border hover:bg-primary-light transition-colors min-h-control-touch"
                 >
                   <CategoryIcon category={cat} size="xs" />
                   <span className="text-xs font-semibold text-stone-800 truncate">
                     {getTaxonomyLabel(cat, "compact")}
                   </span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

@@ -10,6 +10,7 @@ describe("API v1 Endpoints Integration", () => {
   let server: Server;
   let baseUrl: string;
   let buyerToken: string;
+  let proToken: string;
   let adminToken: string;
 
   async function login(email: string): Promise<string> {
@@ -48,6 +49,7 @@ describe("API v1 Endpoints Integration", () => {
     });
 
     buyerToken = await login("thomas.laurent@example.fr");
+    proToken = await login("contact@atelier-nordique.fr");
     adminToken = await login("admin@shongre.com");
   });
 
@@ -153,6 +155,87 @@ describe("API v1 Endpoints Integration", () => {
     expect(property.address).not.toHaveProperty("exactAddress");
     expect(property).not.toHaveProperty("documents");
     expect(property).not.toHaveProperty("riskSignals");
+  });
+
+  it("serves the public employment catalog, filters and product-free job projection", async () => {
+    const catalogResponse = await fetch(
+      `${baseUrl}/api/v1/employment/catalog?market=FR`,
+    );
+    expect(catalogResponse.status).toBe(200);
+    const catalog = await catalogResponse.json();
+    expect(catalog.activation.verticalType).toBe("employment");
+    expect(
+      catalog.offers.find(
+        (offer: any) => offer.id === "employment.employer.free",
+      ).prices[0].amount.amountMinor,
+    ).toBe(0);
+
+    const searchResponse = await fetch(`${baseUrl}/api/v1/employment/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        marketCode: "FR",
+        contractTypeIds: ["employment.fr.contract_type.seasonal"],
+        workingArrangementIds: ["employment.fr.working_arrangement.onsite"],
+        sort: "relevance",
+      }),
+    });
+    expect(searchResponse.status).toBe(200);
+    const search = await searchResponse.json();
+    expect(search.items.length).toBeGreaterThan(0);
+    expect(
+      search.items.every((job: any) =>
+        job.contractTypeId.endsWith(".seasonal"),
+      ),
+    ).toBe(true);
+
+    const jobResponse = await fetch(
+      `${baseUrl}/api/v1/employment/jobs/job-seasonal-nice`,
+    );
+    expect(jobResponse.status).toBe(200);
+    const job = await jobResponse.json();
+    expect(job.candidateFeeRequired).toBe(false);
+    expect(job).not.toHaveProperty("condition");
+    expect(job).not.toHaveProperty("delivery");
+    expect(job).not.toHaveProperty("stock");
+  });
+
+  it("keeps employment candidate and recruiter workspaces permission-scoped", async () => {
+    const candidateResponse = await fetch(
+      `${baseUrl}/api/v1/employment/candidate/workspace`,
+      { headers: auth(buyerToken) },
+    );
+    expect(candidateResponse.status).toBe(200);
+    const candidate = await candidateResponse.json();
+    expect(candidate.profile.userId).toBe("user_thomas");
+    expect(candidate).not.toHaveProperty("recruiterNotes");
+
+    const deniedRecruiterResponse = await fetch(
+      `${baseUrl}/api/v1/employment/recruiter/employers`,
+      { headers: auth(buyerToken) },
+    );
+    expect(deniedRecruiterResponse.status).toBe(403);
+
+    const recruiterResponse = await fetch(
+      `${baseUrl}/api/v1/employment/recruiter/employers`,
+      { headers: auth(proToken) },
+    );
+    expect(recruiterResponse.status).toBe(200);
+    const employers = await recruiterResponse.json();
+    expect(employers.map((employer: any) => employer.id)).toEqual([
+      "employer-technova",
+    ]);
+
+    const deniedAdminResponse = await fetch(
+      `${baseUrl}/api/v1/employment/admin/overview?market=FR`,
+      { headers: auth(proToken) },
+    );
+    expect(deniedAdminResponse.status).toBe(403);
+    const adminResponse = await fetch(
+      `${baseUrl}/api/v1/employment/admin/overview?market=FR`,
+      { headers: auth(adminToken) },
+    );
+    expect(adminResponse.status).toBe(200);
   });
 
   // ---------------------------------------------------------------------------
@@ -290,6 +373,9 @@ describe("API v1 Endpoints Integration", () => {
       ["/api/v1/payments/balance/user_camille", {}],
       ["/api/v1/workspace/summary/user_thomas", {}],
       ["/api/v1/real-estate/drafts/draft-private", {}],
+      ["/api/v1/employment/candidate/workspace", {}],
+      ["/api/v1/employment/recruiter/employers", {}],
+      ["/api/v1/employment/admin/overview", {}],
       [
         "/api/v1/payments/intent",
         {

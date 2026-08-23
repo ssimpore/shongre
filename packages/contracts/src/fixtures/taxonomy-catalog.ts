@@ -21,6 +21,8 @@ export const CANONICAL_TAXONOMY_IDS = {
   realEstate: "real_estate",
   realEstateSales: "real_estate.sales",
   realEstateRentals: "real_estate.rentals",
+  jobs: "jobs",
+  jobOffers: "jobs.offers",
   courses: "services.tutoring",
   electronics: "electronics",
 } as const;

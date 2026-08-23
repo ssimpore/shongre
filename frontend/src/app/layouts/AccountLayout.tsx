@@ -26,12 +26,14 @@ import {
   CarFront,
   Building2,
   KeyRound,
+  Users,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
 import { Avatar, Badge, Container } from "../../design-system";
 import { storageService } from "../../services/storage.service";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useAuthorization } from "../../security/useAuthorization";
 
 function AdminRoleIcon({ label }: { label: string }): React.ReactElement {
   return (
@@ -64,6 +66,7 @@ export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, platformRole, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
+  const { can } = useAuthorization();
   const navigate = useNavigate();
 
   const isPro = isProSeller(currentUser);
@@ -108,6 +111,11 @@ export const AccountLayout: React.FC = () => {
       to: "/compte/cours",
       label: "Espace Cours",
       icon: <GraduationCap className="w-4 h-4 text-primary" />,
+    },
+    {
+      to: "/compte/emploi",
+      label: t("employment.nav.candidate"),
+      icon: <Briefcase className="w-4 h-4 text-primary" />,
     },
     {
       to: "/compte/favoris",
@@ -167,31 +175,48 @@ export const AccountLayout: React.FC = () => {
 
   const proNavItems = [
     {
-      to: "/compte/immo",
+      to: routes.immo.workspace(),
       label: "Espace Immo",
       icon: <Building2 className="w-4 h-4 text-primary" />,
+      visible: can("immo.agency.manage.own"),
     },
     {
-      to: "/compte/auto",
+      to: routes.auto.workspace(),
       label: "Espace Auto",
       icon: <CarFront className="w-4 h-4 text-primary" />,
+      visible: can("auto.dealer.manage.own"),
     },
     {
-      to: "/compte/pro/tableau-de-bord",
+      to: routes.courses.organization(),
+      label: "Organisme Cours",
+      icon: <GraduationCap className="w-4 h-4 text-primary" />,
+      visible: can("course.organization.manage.own"),
+    },
+    {
+      to: routes.employment.recruiterWorkspace(),
+      label: t("employment.nav.recruiter"),
+      icon: <Users className="w-4 h-4 text-primary" />,
+      visible: can("employment.recruiter.manage.own"),
+    },
+    {
+      to: routes.workspace.pro.dashboard(),
       label: "Dashboard Pro",
       icon: <BarChart3 className="w-4 h-4 text-primary" />,
+      visible: true,
     },
     {
-      to: "/compte/pro/vitrine",
+      to: routes.workspace.pro.storefront(),
       label: "Personnaliser ma vitrine",
       icon: <Briefcase className="w-4 h-4 text-primary" />,
+      visible: true,
     },
     {
-      to: "/compte/pro/abonnements",
+      to: routes.workspace.pro.subscriptions(),
       label: "Mon forfait & Facturation",
       icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+      visible: true,
     },
-  ];
+  ].filter((item) => item.visible);
 
   return (
     <Container className="py-5 sm:py-7">
