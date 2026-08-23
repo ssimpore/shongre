@@ -85,6 +85,23 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
     const changed = await service.applySubscriptionChange(request);
     expect(changed.productId).toBe("plan.pro.enterprise");
+    const changedBilling = await service.getBillingOverview();
+    expect(
+      changedBilling.effectiveEntitlements.find(
+        (entitlement) =>
+          entitlement.key === "maxActiveListings" && !entitlement.verticalId,
+      ),
+    ).toMatchObject({
+      value: 2000,
+      sourceProductIds: ["plan.pro.enterprise"],
+    });
+    expect(
+      changedBilling.entitlements.some(
+        (entitlement) =>
+          entitlement.productId === "plan.pro.business" &&
+          entitlement.status === "active",
+      ),
+    ).toBe(false);
 
     const cancellation = await service.updateSubscriptionCancellation({
       subscriptionId: changed.id,
@@ -107,5 +124,94 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     const buyerBilling = await service.getBillingOverview();
     expect(buyerBilling.currentSubscription).toBeUndefined();
     expect(buyerBilling.invoices).toEqual([]);
+  });
+
+  it("quotes a vertical trial once and exposes scoped effective entitlements", async () => {
+    const service = new DemoBusinessRulesService();
+    const quote = await service.createQuote({
+      productIds: ["auto.dealer.starter"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      idempotencyKey: "frontend-auto-trial-quote-01",
+    });
+    expect(quote).toMatchObject({
+      amountDueTodayMinor: 0,
+      reasonCode: "TRIAL_ELIGIBLE",
+      trial: { productId: "auto.dealer.starter", durationDays: 14 },
+    });
+    await service.createCheckout(quote.id, "frontend-auto-trial-checkout-01");
+    const overview = await service.getBillingOverview();
+    expect(
+      overview.subscriptions.find(
+        (entry) => entry.productId === "auto.dealer.starter",
+      ),
+    ).toMatchObject({ status: "trialing", verticalId: "auto" });
+    expect(
+      overview.effectiveEntitlements.some(
+        (entry) =>
+          entry.verticalId === "auto" && entry.key === "maxActiveVehicles",
+      ),
+    ).toBe(true);
+    expect(
+      overview.effectiveEntitlements.some(
+        (entry) =>
+          entry.verticalId === "immo" && entry.key === "maxActiveVehicles",
+      ),
+    ).toBe(false);
+    expect(
+      overview.creditBalances.find(
+        (balance) => balance.creditType === "auto_visibility",
+      ),
+    ).toMatchObject({
+      available: 5,
+      transactions: [
+        expect.objectContaining({
+          quantity: 5,
+          sourceType: "subscription",
+        }),
+      ],
+    });
+  });
+
+  it("requires a second actor for an audited complimentary plan grant", async () => {
+    storageService.setCurrentUserKey("admin_antoine");
+    const service = new DemoBusinessRulesService();
+    const catalog = await service.getCatalog("FR");
+    const product = catalog.products.find(
+      (candidate) => candidate.id === "course.training.business",
+    )!;
+    const request = await service.requestComplimentaryGrant({
+      accountId: "organization_partner_demo",
+      productVersionId: product.versionId,
+      campaignId: "partner-launch-2026",
+      reason: "Partenaire stratégique de lancement Cours",
+      startsAt: "2026-08-01T00:00:00.000Z",
+      endsAt: "2026-11-01T00:00:00.000Z",
+      idempotencyKey: "complimentary-request-course-001",
+    });
+    await expect(
+      service.decideComplimentaryGrant(request.id, {
+        decision: "approved",
+        reason: "Validation direction",
+        idempotencyKey: "complimentary-decision-course-self-001",
+      }),
+    ).rejects.toThrow("deuxième personne");
+
+    storageService.setCurrentUserKey("super_admin_alex");
+    const decision = await service.decideComplimentaryGrant(request.id, {
+      decision: "approved",
+      reason: "Validation direction",
+      idempotencyKey: "complimentary-decision-course-001",
+    });
+    expect(decision.grantId).toMatch(/^complimentary_grant_/);
+    const overview = await service.getAdminOverview("FR");
+    expect(overview.entitlements).toContainEqual(
+      expect.objectContaining({
+        accountId: "organization_partner_demo",
+        productId: product.id,
+        key: "maxActiveOffers",
+        status: "active",
+      }),
+    );
   });
 });

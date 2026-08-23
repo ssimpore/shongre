@@ -1480,6 +1480,15 @@ export class ApiV1Router {
       businessRulesService.getCatalog(query.get("marketCode") || "FR"),
     );
     this.addRoute(
+      "GET",
+      "/monetization/professional-plans",
+      PUBLIC,
+      async ({ query }) =>
+        businessRulesService.getProfessionalPlanCatalog(
+          query.get("marketCode") || "FR",
+        ),
+    );
+    this.addRoute(
       "POST",
       "/business-rules/eligibility",
       AUTHENTICATED,
@@ -1492,6 +1501,13 @@ export class ApiV1Router {
       AUTHENTICATED,
       async ({ principal, body }) =>
         businessRulesService.createQuote(principal.userId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/monetization/trials",
+      permission("subscription.manage.own"),
+      async ({ principal, body }) =>
+        businessRulesService.createTrialQuote(principal.userId, body),
     );
     this.addRoute(
       "POST",
@@ -1710,6 +1726,24 @@ export class ApiV1Router {
       permission("commercial_rules.edit"),
       async ({ principal, body }) =>
         businessRulesService.createDraft(principal.userId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/monetization/complimentary-grants/requests",
+      permission("monetization.complimentary_grants.request"),
+      async ({ principal, body }) =>
+        businessRulesService.requestComplimentaryGrant(principal.userId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/monetization/complimentary-grants/requests/:id/decision",
+      permission("monetization.complimentary_grants.create"),
+      async ({ principal, params, body }) =>
+        businessRulesService.decideComplimentaryGrant(
+          principal.userId,
+          params.id,
+          body,
+        ),
     );
     this.addRoute(
       "POST",

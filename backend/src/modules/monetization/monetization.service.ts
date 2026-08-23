@@ -41,11 +41,13 @@ const BOOST_TYPE: Record<string, ListingBoostOption["type"]> = {
   "premium.featured_month": "featured",
 };
 const LEGACY_PLAN_IDS: Record<string, string> = {
+  "plan.pro.free": "free",
   "plan.pro.starter": "starter",
   "plan.pro.business": "pro",
   "plan.pro.enterprise": "enterprise",
 };
 const CENTRAL_PRODUCT_IDS: Record<string, string> = {
+  free: "plan.pro.free",
   starter: "plan.pro.starter",
   pro: "plan.pro.business",
   enterprise: "plan.pro.enterprise",

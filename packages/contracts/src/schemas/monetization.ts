@@ -38,6 +38,81 @@ export const commercialAudienceSchema = z.enum([
   "all",
 ]);
 
+export const businessVerticalCodeSchema = z.enum([
+  "general",
+  "auto",
+  "immo",
+  "emploi",
+  "cours",
+  "services",
+]);
+export type BusinessVerticalCode = z.infer<typeof businessVerticalCodeSchema>;
+
+export const businessVerticalSchema = z.object({
+  id: businessVerticalCodeSchema,
+  name: z.string().min(1),
+  description: z.string(),
+  categoryIds: z.array(z.string().min(1)),
+  capabilityKeys: z.array(z.string().min(1)),
+  status: z.enum(["active", "disabled", "archived"]),
+  sortOrder: z.number().int().nonnegative(),
+});
+export type BusinessVertical = z.infer<typeof businessVerticalSchema>;
+
+export const entitlementMergePolicySchema = z.enum([
+  "boolean_or",
+  "max",
+  "additive",
+  "override",
+]);
+export type EntitlementMergePolicy = z.infer<
+  typeof entitlementMergePolicySchema
+>;
+
+export const trialPolicySchema = z.object({
+  enabled: z.boolean(),
+  durationDays: z.number().int().positive().optional(),
+  requiresPaymentMethod: z.boolean(),
+  firstTimeCustomersOnly: z.boolean(),
+  autoConverts: z.boolean(),
+  eligibleAudiences: z.array(commercialAudienceSchema),
+  eligibleMarketCodes: z.array(marketCodeSchema),
+  campaignStartsAt: z.string().datetime().optional(),
+  campaignEndsAt: z.string().datetime().optional(),
+});
+export type TrialPolicy = z.infer<typeof trialPolicySchema>;
+
+export const commercialPlanProfileSchema = z.object({
+  planType: z.enum(["free", "generic", "vertical", "addon", "bundle"]),
+  familyId: z.string().regex(/^[a-z0-9_.-]+$/),
+  verticalId: businessVerticalCodeSchema.optional(),
+  tier: z
+    .enum(["free", "essential", "business", "premium", "enterprise", "custom"])
+    .optional(),
+  professionalOnly: z.boolean(),
+  targetCategoryIds: z.array(z.string().min(1)),
+  countryAvailability: z.array(marketCodeSchema),
+  trialPolicy: trialPolicySchema,
+  upgradeProductIds: z.array(z.string().min(1)),
+  downgradeProductIds: z.array(z.string().min(1)),
+  compatibleAddonIds: z.array(z.string().min(1)),
+  requiresBusinessVerification: z.boolean(),
+  financeCategory: z.enum([
+    "generic_subscription",
+    "auto_subscription",
+    "immo_subscription",
+    "employment_subscription",
+    "courses_subscription",
+    "addon",
+    "promotion",
+    "marketplace_service",
+  ]),
+  displayOrder: z.number().int().nonnegative(),
+});
+export type CommercialPlanProfile = z.infer<
+  typeof commercialPlanProfileSchema
+>;
+
 export const commercialRuleFieldSchema = z.enum([
   "marketCode",
   "countryCode",
@@ -101,6 +176,7 @@ export const commercialScopeSchema = z
     planIds: z.array(z.string().min(1)).default([]),
     customerSegments: z.array(z.string().min(1)).default([]),
     publicationChannels: z.array(z.string().min(1)).default([]),
+    verticalIds: z.array(businessVerticalCodeSchema).default([]),
   })
   .strict();
 export type CommercialScope = z.infer<typeof commercialScopeSchema>;
@@ -172,6 +248,16 @@ export const monetizationEntitlementSchema = z.object({
   label: z.string().min(1),
   value: z.union([commercialScalarSchema, z.array(z.string())]),
   unit: z.string().optional(),
+  mergePolicy: entitlementMergePolicySchema,
+  verticalId: businessVerticalCodeSchema.optional(),
+  categoryIds: z.array(z.string().min(1)),
+  recurringGrant: z
+    .object({
+      creditType: z.string().min(1),
+      quantity: z.number().int().positive(),
+      resetPeriod: z.enum(["month", "year", "billing_period"]),
+    })
+    .optional(),
 });
 export type MonetizationEntitlement = z.infer<
   typeof monetizationEntitlementSchema
@@ -198,6 +284,7 @@ export const monetizationProductSchema = z.object({
   effectiveFrom: z.string().datetime().optional(),
   effectiveUntil: z.string().datetime().optional(),
   sourceConsumers: z.array(z.string()).default([]),
+  commercialProfile: commercialPlanProfileSchema,
 });
 export type MonetizationProduct = z.infer<typeof monetizationProductSchema>;
 
@@ -212,11 +299,23 @@ export const promotionSchema = z.object({
   status: commercialConfigurationStatusSchema,
   scope: commercialScopeSchema,
   productIds: z.array(z.string()).min(1),
-  discountType: z.enum(["fixed", "percentage"]),
+  discountType: z.enum([
+    "fixed",
+    "percentage",
+    "introductory_price",
+    "free_period",
+  ]),
   discountValue: z.number().int().nonnegative(),
   stackingPolicy: z.enum(["exclusive", "best_only", "stackable"]),
   maximumRedemptions: z.number().int().positive().optional(),
   maximumRedemptionsPerAccount: z.number().int().positive().default(1),
+  activationMode: z.enum(["coupon", "automatic", "admin_grant"]),
+  eligibleCustomerType: z.enum(["new", "existing", "all"]),
+  durationBillingPeriods: z.number().int().positive().optional(),
+  minimumCommitmentPeriods: z.number().int().nonnegative().default(0),
+  campaignId: z.string().min(1).optional(),
+  providerCouponId: z.string().min(1).optional(),
+  verticalIds: z.array(businessVerticalCodeSchema),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
 });
@@ -275,6 +374,7 @@ export const monetizationCatalogSchema = z.object({
   marketCode: marketCodeSchema,
   currency: z.string().length(3),
   generatedAt: z.string().datetime(),
+  verticals: z.array(businessVerticalSchema),
   products: z.array(monetizationProductSchema),
   promotions: z.array(promotionSchema),
   rules: z.array(commercialRuleSchema),
@@ -308,6 +408,8 @@ export const quoteLineSchema = z.object({
   totalMinor: z.number().int().nonnegative(),
   taxRateBps: z.number().int().min(0).max(10_000),
   entitlementSnapshot: z.array(monetizationEntitlementSchema),
+  verticalId: businessVerticalCodeSchema.optional(),
+  trialDays: z.number().int().positive().optional(),
 });
 export type QuoteLine = z.infer<typeof quoteLineSchema>;
 
@@ -323,7 +425,28 @@ export const monetizationQuoteSchema = z.object({
   discountMinor: z.number().int().nonnegative(),
   taxMinor: z.number().int().nonnegative(),
   totalMinor: z.number().int().nonnegative(),
+  amountDueTodayMinor: z.number().int().nonnegative(),
+  nextChargeMinor: z.number().int().nonnegative(),
+  nextChargeAt: z.string().datetime().optional(),
+  trial: z
+    .object({
+      productId: z.string(),
+      durationDays: z.number().int().positive(),
+      endsAt: z.string().datetime(),
+      requiresPaymentMethod: z.boolean(),
+      autoConverts: z.boolean(),
+    })
+    .optional(),
   promotionCode: z.string().optional(),
+  promotion: z
+    .object({
+      id: z.string(),
+      code: z.string(),
+      name: z.string(),
+      durationBillingPeriods: z.number().int().positive().optional(),
+      endsAt: z.string().datetime(),
+    })
+    .optional(),
   snapshotHash: z.string().length(64),
   reasonCode: z.string(),
   status: z.enum(["active", "consumed", "expired", "cancelled"]),
@@ -368,6 +491,8 @@ export const activeEntitlementSchema = z.object({
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime().optional(),
   status: z.enum(["scheduled", "active", "consumed", "expired", "revoked"]),
+  verticalId: businessVerticalCodeSchema.optional(),
+  mergePolicy: entitlementMergePolicySchema.optional(),
 });
 export type ActiveEntitlement = z.infer<typeof activeEntitlementSchema>;
 
@@ -401,6 +526,8 @@ export const monetizationSubscriptionSchema = z
     gracePeriodEndsAt: z.string().datetime().optional(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
+    verticalId: businessVerticalCodeSchema.optional(),
+    familyId: z.string().optional(),
   })
   .superRefine((subscription, context) => {
     if (
@@ -684,6 +811,7 @@ export const billingUsageSchema = z.object({
   limit: z.number().int().nonnegative().nullable(),
   unit: z.string(),
   resetsAt: z.string().datetime().optional(),
+  verticalId: businessVerticalCodeSchema.optional(),
 });
 export type BillingUsage = z.infer<typeof billingUsageSchema>;
 
@@ -699,6 +827,18 @@ export const billingOverviewSchema = z.object({
   refunds: z.array(monetizationRefundSchema),
   creditBalances: z.array(creditBalanceSchema),
   subscriptionEvents: z.array(subscriptionEventSchema),
+  effectiveEntitlements: z
+    .array(
+      z.object({
+        key: z.string(),
+        label: z.string(),
+        value: z.union([commercialScalarSchema, z.array(z.string())]),
+        verticalId: businessVerticalCodeSchema.optional(),
+        mergePolicy: entitlementMergePolicySchema,
+        sourceProductIds: z.array(z.string()),
+      }),
+    )
+    .default([]),
 });
 export type BillingOverview = z.infer<typeof billingOverviewSchema>;
 
@@ -722,7 +862,9 @@ export const promotionValidationResultSchema = z.object({
   code: z.string(),
   reasonCode: z.string(),
   promotionId: z.string().optional(),
-  discountType: z.enum(["fixed", "percentage"]).optional(),
+  discountType: z
+    .enum(["fixed", "percentage", "introductory_price", "free_period"])
+    .optional(),
   discountValue: z.number().int().nonnegative().optional(),
   applicableProductIds: z.array(z.string()),
   endsAt: z.string().datetime().optional(),

@@ -325,6 +325,8 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
               startsAt,
               endsAt,
               status: "active",
+              verticalId: entitlement.verticalId || line.verticalId,
+              mergePolicy: entitlement.mergePolicy,
             });
           }
           if (product?.kind === "subscription") {
@@ -338,14 +340,22 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
               productVersionId: line.productVersionId,
               priceId: line.priceId,
               sourceOrderId: order.id,
-              status: "active",
+              status:
+                quote.trial?.productId === line.productId
+                  ? "trialing"
+                  : "active",
               providerSubscriptionId: order.providerCheckoutId,
               billingPeriod: line.billingPeriod,
               currentPeriodStart: startsAt,
-              currentPeriodEnd: periodEnd.toISOString(),
+              currentPeriodEnd:
+                quote.trial?.productId === line.productId
+                  ? quote.trial.endsAt
+                  : periodEnd.toISOString(),
               cancelAtPeriodEnd: false,
               createdAt: startsAt,
               updatedAt: startsAt,
+              verticalId: product.commercialProfile.verticalId,
+              familyId: product.commercialProfile.familyId,
             });
           }
         }
@@ -442,6 +452,7 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       refunds: [],
       creditBalances: [],
       subscriptionEvents: [],
+      effectiveEntitlements: [],
     };
   }
 
@@ -458,8 +469,61 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       subscription.scheduledPriceId = request.targetPriceId;
       subscription.scheduledChangeAt = subscription.currentPeriodEnd;
     } else {
+      const catalog = [...memory.catalogs.values()].find((candidate) =>
+        candidate.products.some(
+          (product) => product.id === request.targetProductId,
+        ),
+      );
+      const targetProduct = catalog?.products.find(
+        (product) => product.id === request.targetProductId,
+      );
+      const targetPrice = targetProduct?.prices.find(
+        (price) => price.id === request.targetPriceId,
+      );
+      if (!targetProduct || !targetPrice)
+        throw new Error("target subscription offer not found");
+      const previousProductId = subscription.productId;
+      const changedAt = now();
+      for (const entitlement of memory.entitlements.values()) {
+        if (
+          entitlement.sourceOrderId === subscription.sourceOrderId &&
+          entitlement.productId === previousProductId &&
+          ["active", "scheduled"].includes(entitlement.status)
+        ) {
+          entitlement.status = "revoked";
+          entitlement.endsAt = new Date(
+            Math.max(
+              new Date(changedAt).getTime(),
+              new Date(entitlement.startsAt).getTime() + 1,
+            ),
+          ).toISOString();
+        }
+      }
+      for (const definition of targetProduct.entitlements) {
+        const entitlementId = deterministicMemoryId(
+          `${subscription.sourceOrderId}:${targetProduct.id}:${definition.key}`,
+        );
+        memory.entitlements.set(entitlementId, {
+          id: entitlementId,
+          accountId: subscription.accountId,
+          productId: targetProduct.id,
+          key: definition.key,
+          value: definition.value,
+          sourceOrderId: subscription.sourceOrderId,
+          startsAt: changedAt,
+          endsAt: subscription.currentPeriodEnd,
+          status: "active",
+          verticalId:
+            definition.verticalId || targetProduct.commercialProfile.verticalId,
+          mergePolicy: definition.mergePolicy,
+        });
+      }
       subscription.productId = request.targetProductId;
+      subscription.productVersionId = targetProduct.versionId;
       subscription.priceId = request.targetPriceId;
+      subscription.billingPeriod = targetPrice.billingPeriod;
+      subscription.familyId = targetProduct.commercialProfile.familyId;
+      subscription.verticalId = targetProduct.commercialProfile.verticalId;
       subscription.scheduledProductId = undefined;
       subscription.scheduledPriceId = undefined;
       subscription.scheduledChangeAt = undefined;
@@ -786,6 +850,8 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       startsAt: String(row.starts_at),
       endsAt: row.ends_at || undefined,
       status: row.status,
+      verticalId: row.vertical_id || undefined,
+      mergePolicy: row.merge_policy || undefined,
     }));
   }
 
@@ -1040,6 +1106,7 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         idempotencyKey: String(row.idempotency_key),
         occurredAt: String(row.occurred_at),
       })),
+      effectiveEntitlements: [],
     };
   }
 

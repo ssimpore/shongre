@@ -13,6 +13,11 @@ export class MonetizationLifecycleWorker {
       { p_batch_size: 500 },
     );
     if (error) throw error;
+    const { data: recurringCreditsGranted, error: recurringCreditError } =
+      await client.rpc("grant_due_subscription_recurring_credits", {
+        p_batch_size: 500,
+      });
+    if (recurringCreditError) throw recurringCreditError;
     const { data: mismatches, error: reconciliationError } = await client
       .from("monetization_reconciliation")
       .select("order_id,reconciliation_status")
@@ -27,11 +32,13 @@ export class MonetizationLifecycleWorker {
     }
     logger.info("monetization_maintenance_completed", {
       maintenance,
+      recurringCreditsGranted,
       reconciliationMismatchCount: mismatches?.length || 0,
     });
     return {
       skipped: false,
       maintenance,
+      recurringCreditsGranted: Number(recurringCreditsGranted || 0),
       reconciliationMismatchCount: mismatches?.length || 0,
     } as const;
   }

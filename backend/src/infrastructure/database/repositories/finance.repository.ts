@@ -149,13 +149,36 @@ export class PostgresFinanceRepository implements FinanceRepository {
   private readonly client = getSupabaseAdminClient() as any;
 
   async getPlatformDashboard(scope: FinanceScope, periodStart: string, periodEnd: string) {
-    const { data, error } = await this.client.rpc("finance_platform_overview", {
-      p_period_start: periodStart.slice(0, 10),
-      p_period_end: periodEnd.slice(0, 10),
-      p_market_code: scope.marketCode === "ALL" ? null : scope.marketCode,
-      p_currency: scope.currency,
-    });
+    let verticalRevenueQuery = this.client
+      .from("finance_vertical_revenue_attribution")
+      .select("vertical_id,currency,market_code,net_revenue_minor,revenue_month")
+      .eq("currency", scope.currency)
+      .gte("revenue_month", periodStart)
+      .lte("revenue_month", periodEnd);
+    if (scope.marketCode !== "ALL") {
+      verticalRevenueQuery = verticalRevenueQuery.eq("market_code", scope.marketCode);
+    }
+    let verticalMetricsQuery = this.client
+      .from("monetization_vertical_subscription_metrics")
+      .select("vertical_id,currency,market_code,active_trials,paying_subscriptions,cancelled_subscriptions,trials_started,converted_accounts,mrr_minor")
+      .eq("currency", scope.currency);
+    if (scope.marketCode !== "ALL") {
+      verticalMetricsQuery = verticalMetricsQuery.eq("market_code", scope.marketCode);
+    }
+    const [overviewResult, verticalRevenueResult, verticalMetricsResult] = await Promise.all([
+      this.client.rpc("finance_platform_overview", {
+        p_period_start: periodStart.slice(0, 10),
+        p_period_end: periodEnd.slice(0, 10),
+        p_market_code: scope.marketCode === "ALL" ? null : scope.marketCode,
+        p_currency: scope.currency,
+      }),
+      verticalRevenueQuery,
+      verticalMetricsQuery,
+    ]);
+    const { data, error } = overviewResult;
     if (error) throw error;
+    if (verticalRevenueResult.error) throw verticalRevenueResult.error;
+    if (verticalMetricsResult.error) throw verticalMetricsResult.error;
     const raw = data as FinanceRow;
     const revenue = Number(raw.platformRevenueMinor ?? 0);
     const source = raw.revenueSources ?? {};
@@ -169,6 +192,49 @@ export class PostgresFinanceRepository implements FinanceRepository {
     const paidAccounts = Number(subscriptionHealth.paidAccounts ?? 0);
     const cancelled = Number(subscriptionHealth.cancelledSubscriptions ?? 0);
     const mrr = Number(raw.mrrMinor ?? 0);
+    const verticalLabels: Record<string, string> = {
+      general: "Shongre Pro",
+      auto: "Shongre Auto",
+      immo: "Shongre Immo",
+      emploi: "Shongre Emploi",
+      cours: "Shongre Cours",
+      services: "Shongre Services",
+    };
+    const verticalOrder = ["general", "auto", "immo", "emploi", "cours", "services"] as const;
+    const verticals = new Map<string, {
+      revenue: number;
+      mrr: number;
+      activeTrials: number;
+      payingSubscriptions: number;
+      cancelledSubscriptions: number;
+      trialsStarted: number;
+      convertedAccounts: number;
+    }>();
+    const verticalMetric = (verticalId: string) => {
+      const current = verticals.get(verticalId) ?? {
+        revenue: 0,
+        mrr: 0,
+        activeTrials: 0,
+        payingSubscriptions: 0,
+        cancelledSubscriptions: 0,
+        trialsStarted: 0,
+        convertedAccounts: 0,
+      };
+      verticals.set(verticalId, current);
+      return current;
+    };
+    (verticalRevenueResult.data ?? []).forEach((row: FinanceRow) => {
+      verticalMetric(row.vertical_id ?? "general").revenue += Number(row.net_revenue_minor ?? 0);
+    });
+    (verticalMetricsResult.data ?? []).forEach((row: FinanceRow) => {
+      const current = verticalMetric(row.vertical_id ?? "general");
+      current.mrr += Number(row.mrr_minor ?? 0);
+      current.activeTrials += Number(row.active_trials ?? 0);
+      current.payingSubscriptions += Number(row.paying_subscriptions ?? 0);
+      current.cancelledSubscriptions += Number(row.cancelled_subscriptions ?? 0);
+      current.trialsStarted += Number(row.trials_started ?? 0);
+      current.convertedAccounts += Number(row.converted_accounts ?? 0);
+    });
     const timeByDate = new Map<string, { platformRevenue: number; netRevenue: number }>();
     (raw.timeSeries ?? []).forEach((point: FinanceRow) => {
       const date = point.report_date;
@@ -227,6 +293,25 @@ export class PostgresFinanceRepository implements FinanceRepository {
         netRevenue: money(Number(market.netRevenueMinor ?? 0), scope.currency),
         gmv: money(Number(market.gmvMinor ?? 0), scope.currency),
       })),
+      verticals: verticalOrder
+        .filter((verticalId) => verticals.has(verticalId))
+        .map((verticalId) => {
+          const values = verticals.get(verticalId)!;
+          return {
+            verticalId,
+            label: verticalLabels[verticalId],
+            revenue: money(values.revenue, scope.currency),
+            mrr: money(values.mrr, scope.currency),
+            activeTrials: values.activeTrials,
+            payingSubscriptions: values.payingSubscriptions,
+            cancelledSubscriptions: values.cancelledSubscriptions,
+            trialsStarted: values.trialsStarted,
+            convertedAccounts: values.convertedAccounts,
+            conversionBps: values.trialsStarted > 0
+              ? Math.min(10_000, Math.round((values.convertedAccounts / values.trialsStarted) * 10_000))
+              : 0,
+          };
+        }),
     });
     assertPlatformFinanceInvariants(dashboard);
     return dashboard;

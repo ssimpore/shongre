@@ -64,6 +64,11 @@ function scaledDashboard(scope: FinanceScope): PlatformFinanceDashboard {
     ...source,
     amount: { ...source.amount, amountMinor: scale(source.amount.amountMinor) },
   }));
+  dashboard.verticals = dashboard.verticals.map((vertical) => ({
+    ...vertical,
+    revenue: { ...vertical.revenue, amountMinor: scale(vertical.revenue.amountMinor) },
+    mrr: { ...vertical.mrr, amountMinor: scale(vertical.mrr.amountMinor) },
+  }));
   const sourceDifference =
     market.platformRevenue.amountMinor -
     dashboard.revenueSources.reduce((sum, source) => sum + source.amount.amountMinor, 0);

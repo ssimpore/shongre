@@ -1,4 +1,7 @@
 import type {
+  BusinessVertical,
+  BusinessVerticalCode,
+  CommercialPlanProfile,
   CommercialRule,
   MonetizationCatalog,
   MonetizationEntitlement,
@@ -10,9 +13,103 @@ import { monetizationCatalogSchema } from "../schemas/monetization";
 const VERSION_ID = "commercial-fr-v1";
 const PUBLISHED_AT = "2026-08-22T00:00:00.000Z";
 
+export const BASELINE_BUSINESS_VERTICALS: BusinessVertical[] = [
+  {
+    id: "general",
+    name: "Général",
+    description: "Outils professionnels transverses Shongre.",
+    categoryIds: [],
+    capabilityKeys: ["listing.publish", "store.manage.own"],
+    status: "active",
+    sortOrder: 0,
+  },
+  {
+    id: "auto",
+    name: "Auto",
+    description: "Stock, leads et opérations de concession.",
+    categoryIds: [CANONICAL_TAXONOMY_IDS.vehicles],
+    capabilityKeys: ["auto.dealer.manage.own", "auto.inventory.import.own"],
+    status: "active",
+    sortOrder: 10,
+  },
+  {
+    id: "immo",
+    name: "Immo",
+    description: "Portefeuille, agents et opérations d’agence.",
+    categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
+    capabilityKeys: ["immo.agency.manage.own", "immo.inventory.import.own"],
+    status: "active",
+    sortOrder: 20,
+  },
+  {
+    id: "emploi",
+    name: "Emploi",
+    description: "Offres, recruteurs et gestion des candidatures.",
+    categoryIds: [CANONICAL_TAXONOMY_IDS.jobs],
+    capabilityKeys: [
+      "employment.recruiter.manage.own",
+      "employment.application.manage.own",
+    ],
+    status: "active",
+    sortOrder: 30,
+  },
+  {
+    id: "cours",
+    name: "Cours",
+    description: "Catalogue de formations, instructeurs et demandes.",
+    categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
+    capabilityKeys: [
+      "course.offer.manage.own",
+      "course.organization.manage.own",
+    ],
+    status: "active",
+    sortOrder: 40,
+  },
+  {
+    id: "services",
+    name: "Services",
+    description: "Future offre professionnelle pour les prestataires.",
+    categoryIds: [],
+    capabilityKeys: [],
+    status: "disabled",
+    sortOrder: 50,
+  },
+];
+
+const PLAN_PROFILE_CONFIG: Record<
+  string,
+  Pick<
+    CommercialPlanProfile,
+    | "familyId"
+    | "tier"
+    | "upgradeProductIds"
+    | "downgradeProductIds"
+    | "displayOrder"
+  >
+> = {
+  "plan.pro.free": { familyId: "generic.pro", tier: "free", upgradeProductIds: ["plan.pro.starter"], downgradeProductIds: [], displayOrder: 0 },
+  "plan.pro.starter": { familyId: "generic.pro", tier: "essential", upgradeProductIds: ["plan.pro.business", "auto.dealer.starter", "immo.agency.starter", "employment.employer.starter", "course.training.essential"], downgradeProductIds: ["plan.pro.free"], displayOrder: 10 },
+  "plan.pro.business": { familyId: "generic.pro", tier: "business", upgradeProductIds: ["plan.pro.enterprise", "auto.dealer.growth", "immo.agency.growth", "employment.employer.growth", "course.training.business"], downgradeProductIds: ["plan.pro.starter", "plan.pro.free"], displayOrder: 20 },
+  "plan.pro.enterprise": { familyId: "generic.pro", tier: "premium", upgradeProductIds: ["auto.dealer.network", "immo.agency.network", "employment.agency", "course.training.premium"], downgradeProductIds: ["plan.pro.business", "plan.pro.starter"], displayOrder: 30 },
+  "auto.dealer.starter": { familyId: "vertical.auto", tier: "essential", upgradeProductIds: ["auto.dealer.growth"], downgradeProductIds: ["plan.pro.starter"], displayOrder: 10 },
+  "auto.dealer.growth": { familyId: "vertical.auto", tier: "business", upgradeProductIds: ["auto.dealer.network"], downgradeProductIds: ["auto.dealer.starter", "plan.pro.business"], displayOrder: 20 },
+  "auto.dealer.network": { familyId: "vertical.auto", tier: "premium", upgradeProductIds: [], downgradeProductIds: ["auto.dealer.growth", "auto.dealer.starter", "plan.pro.enterprise"], displayOrder: 30 },
+  "immo.agency.starter": { familyId: "vertical.immo", tier: "essential", upgradeProductIds: ["immo.agency.growth"], downgradeProductIds: ["plan.pro.starter"], displayOrder: 10 },
+  "immo.agency.growth": { familyId: "vertical.immo", tier: "business", upgradeProductIds: ["immo.agency.network"], downgradeProductIds: ["immo.agency.starter", "plan.pro.business"], displayOrder: 20 },
+  "immo.agency.network": { familyId: "vertical.immo", tier: "premium", upgradeProductIds: [], downgradeProductIds: ["immo.agency.growth", "immo.agency.starter", "plan.pro.enterprise"], displayOrder: 30 },
+  "employment.employer.starter": { familyId: "vertical.emploi", tier: "essential", upgradeProductIds: ["employment.employer.growth"], downgradeProductIds: ["plan.pro.starter"], displayOrder: 10 },
+  "employment.employer.growth": { familyId: "vertical.emploi", tier: "business", upgradeProductIds: ["employment.agency"], downgradeProductIds: ["employment.employer.starter", "plan.pro.business"], displayOrder: 20 },
+  "employment.agency": { familyId: "vertical.emploi", tier: "premium", upgradeProductIds: ["employment.network"], downgradeProductIds: ["employment.employer.growth", "plan.pro.enterprise"], displayOrder: 30 },
+  "employment.network": { familyId: "vertical.emploi", tier: "enterprise", upgradeProductIds: [], downgradeProductIds: ["employment.agency", "plan.pro.enterprise"], displayOrder: 40 },
+  "course.training.essential": { familyId: "vertical.cours", tier: "essential", upgradeProductIds: ["course.training.business"], downgradeProductIds: ["plan.pro.starter"], displayOrder: 10 },
+  "course.training.business": { familyId: "vertical.cours", tier: "business", upgradeProductIds: ["course.training.premium"], downgradeProductIds: ["course.training.essential", "plan.pro.business"], displayOrder: 20 },
+  "course.training.premium": { familyId: "vertical.cours", tier: "premium", upgradeProductIds: [], downgradeProductIds: ["course.training.business", "plan.pro.enterprise"], displayOrder: 30 },
+};
+
 const scope = (
   audience: MonetizationProduct["audience"] = "all",
   categoryIds: string[] = [],
+  verticalId?: BusinessVerticalCode,
 ) => ({
   marketCodes: ["FR"],
   currencies: ["EUR"],
@@ -24,6 +121,7 @@ const scope = (
   planIds: [],
   customerSegments: [],
   publicationChannels: ["web", "mobile"],
+  verticalIds: verticalId ? [verticalId] : [],
 });
 
 const entitlement = (
@@ -31,7 +129,29 @@ const entitlement = (
   label: string,
   value: MonetizationEntitlement["value"],
   unit?: string,
-): MonetizationEntitlement => ({ key, label, value, unit });
+  recurringGrant?: MonetizationEntitlement["recurringGrant"],
+): MonetizationEntitlement => ({
+  key,
+  label,
+  value,
+  unit,
+  mergePolicy:
+    typeof value === "boolean"
+      ? "boolean_or"
+      : typeof value === "number"
+        ? "max"
+        : "override",
+  categoryIds: [],
+  recurringGrant,
+});
+
+function verticalForCategories(categoryIds: string[] = []): BusinessVerticalCode | undefined {
+  if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.vehicles)) return "auto";
+  if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.realEstate)) return "immo";
+  if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.jobs)) return "emploi";
+  if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.courses)) return "cours";
+  return undefined;
+}
 
 const product = (input: {
   id: string;
@@ -57,7 +177,11 @@ const product = (input: {
   name: input.name,
   description: input.description,
   audience: input.audience || "all",
-  scope: scope(input.audience, input.categoryIds),
+  scope: scope(
+    input.audience,
+    input.categoryIds,
+    verticalForCategories(input.categoryIds),
+  ),
   prices: [
     {
       id: `${VERSION_ID}:${input.id}:month-or-once`,
@@ -83,7 +207,15 @@ const product = (input: {
           },
         ]),
   ],
-  entitlements: input.entitlements || [],
+  entitlements: (input.entitlements || []).map((entry) => ({
+    ...entry,
+    mergePolicy:
+      input.kind === "credit_pack" && typeof entry.value === "number"
+        ? "additive"
+        : entry.mergePolicy,
+    verticalId: verticalForCategories(input.categoryIds),
+    categoryIds: input.categoryIds || [],
+  })),
   compatibility: {
     requiresProductIds: [],
     excludesProductIds: [],
@@ -93,6 +225,61 @@ const product = (input: {
   recommended: input.recommended || false,
   effectiveFrom: PUBLISHED_AT,
   sourceConsumers: input.consumers || [],
+  commercialProfile: (() => {
+    const verticalId = verticalForCategories(input.categoryIds);
+    const configured = PLAN_PROFILE_CONFIG[input.id];
+    const isSubscription = input.kind === "subscription";
+    const planType = isSubscription
+      ? verticalId
+        ? "vertical"
+        : input.amountMinor === 0
+          ? "free"
+          : "generic"
+      : input.kind === "standard_listing"
+        ? "free"
+        : verticalId
+          ? "addon"
+          : "bundle";
+    const financeCategory = isSubscription
+      ? verticalId === "auto"
+        ? "auto_subscription"
+        : verticalId === "immo"
+          ? "immo_subscription"
+          : verticalId === "emploi"
+            ? "employment_subscription"
+            : verticalId === "cours"
+              ? "courses_subscription"
+              : "generic_subscription"
+      : ["premium_option", "sponsored_placement"].includes(input.kind)
+        ? "promotion"
+        : verticalId
+          ? "addon"
+          : "marketplace_service";
+    return {
+      planType,
+      familyId: configured?.familyId || (verticalId ? `addon.${verticalId}` : `product.${input.kind}`),
+      verticalId,
+      tier: configured?.tier,
+      professionalOnly: ["professional", "organization"].includes(input.audience || "all"),
+      targetCategoryIds: input.categoryIds || [],
+      countryAvailability: ["FR"],
+      trialPolicy: {
+        enabled: Boolean(input.trialDays),
+        durationDays: input.trialDays,
+        requiresPaymentMethod: true,
+        firstTimeCustomersOnly: true,
+        autoConverts: true,
+        eligibleAudiences: [input.audience || "all"],
+        eligibleMarketCodes: ["FR"],
+      },
+      upgradeProductIds: configured?.upgradeProductIds || [],
+      downgradeProductIds: configured?.downgradeProductIds || [],
+      compatibleAddonIds: [],
+      requiresBusinessVerification: isSubscription && Boolean(verticalId),
+      financeCategory,
+      displayOrder: configured?.displayOrder || 100,
+    } satisfies CommercialPlanProfile;
+  })(),
 });
 
 export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
@@ -111,14 +298,29 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     consumers: ["generic-publication", "transactions", "solutions-pro"],
   }),
   product({
+    id: "plan.pro.free",
+    kind: "subscription",
+    name: "Shongre Pro Gratuit",
+    description: "Présence professionnelle essentielle, sans engagement.",
+    audience: "professional",
+    amountMinor: 0,
+    entitlements: [
+      entitlement("maxActiveListings", "Annonces actives", 5),
+      entitlement("maxPhotosPerListing", "Photos par annonce", 8),
+      entitlement("teamMembers", "Membres d’équipe", 1),
+    ],
+    consumers: ["solutions-pro", "seller-workspace", "generic-publication"],
+  }),
+  product({
     id: "plan.pro.starter",
     kind: "subscription",
-    name: "Pro Découverte",
+    name: "Shongre Pro Essential",
     description: "Vitrine et outils essentiels pour démarrer.",
     audience: "professional",
     amountMinor: 2900,
     annualAmountMinor: 28800,
     taxRateBps: 2000,
+    trialDays: 14,
     entitlements: [
       entitlement("maxActiveListings", "Annonces actives", 50),
       entitlement("maxPhotosPerListing", "Photos par annonce", 15),
@@ -130,18 +332,23 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "plan.pro.business",
     kind: "subscription",
-    name: "Pro Performance",
+    name: "Shongre Pro Business",
     description: "Catalogue, équipe, leads et statistiques avancées.",
     audience: "professional",
     amountMinor: 7900,
     annualAmountMinor: 78000,
     taxRateBps: 2000,
+    trialDays: 14,
     recommended: true,
     entitlements: [
       entitlement("maxActiveListings", "Annonces actives", 250),
       entitlement("maxPhotosPerListing", "Photos par annonce", 20),
       entitlement("teamMembers", "Membres d’équipe", 5),
-      entitlement("monthlyBumpCredits", "Remontées mensuelles", 3),
+      entitlement("monthlyBumpCredits", "Remontées mensuelles", 3, undefined, {
+        creditType: "search_bump",
+        quantity: 3,
+        resetPeriod: "billing_period",
+      }),
       entitlement("bulkImportExport", "Import/export", true),
       entitlement("analyticsLevel", "Niveau analytique", "advanced"),
     ],
@@ -150,12 +357,13 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "plan.pro.enterprise",
     kind: "subscription",
-    name: "Pro Envergure",
+    name: "Shongre Pro Premium",
     description: "Réseaux multi-boutiques et catalogue à grande échelle.",
     audience: "professional",
     amountMinor: 19900,
     annualAmountMinor: 202800,
     taxRateBps: 2000,
+    trialDays: 14,
     entitlements: [
       entitlement("maxActiveListings", "Annonces actives", 2000),
       entitlement("maxPhotosPerListing", "Photos par annonce", 25),
@@ -335,7 +543,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "auto.dealer.starter",
     kind: "subscription",
-    name: "Dealer Starter",
+    name: "Auto Essential",
     description: "Stock, leads et vitrine pour une petite concession.",
     audience: "professional",
     categoryIds: [CANONICAL_TAXONOMY_IDS.vehicles],
@@ -346,14 +554,18 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     entitlements: [
       entitlement("maxActiveVehicles", "Véhicules actifs", 25),
       entitlement("maxTeamMembers", "Membres", 3),
-      entitlement("monthlyPromotionCredits", "Crédits visibilité", 5),
+      entitlement("monthlyPromotionCredits", "Crédits visibilité", 5, undefined, {
+        creditType: "auto_visibility",
+        quantity: 5,
+        resetPeriod: "billing_period",
+      }),
     ],
     consumers: ["auto-publish", "auto-dealer-workspace"],
   }),
   product({
     id: "auto.dealer.growth",
     kind: "subscription",
-    name: "Dealer Growth",
+    name: "Auto Business",
     description: "Imports, équipe et analyse détaillée.",
     audience: "professional",
     categoryIds: [CANONICAL_TAXONOMY_IDS.vehicles],
@@ -365,7 +577,11 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     entitlements: [
       entitlement("maxActiveVehicles", "Véhicules actifs", 120),
       entitlement("maxTeamMembers", "Membres", 12),
-      entitlement("monthlyPromotionCredits", "Crédits visibilité", 50),
+      entitlement("monthlyPromotionCredits", "Crédits visibilité", 50, undefined, {
+        creditType: "auto_visibility",
+        quantity: 50,
+        resetPeriod: "billing_period",
+      }),
       entitlement("inventoryXmlImport", "Import XML", true),
     ],
     consumers: ["auto-publish", "auto-dealer-workspace"],
@@ -373,7 +589,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "auto.dealer.network",
     kind: "subscription",
-    name: "Dealer Network",
+    name: "Auto Premium",
     description: "Pilotage multi-sites et synchronisation API.",
     audience: "organization",
     categoryIds: [CANONICAL_TAXONOMY_IDS.vehicles],
@@ -383,6 +599,11 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     entitlements: [
       entitlement("maxActiveVehicles", "Véhicules actifs", 1000),
       entitlement("maxTeamMembers", "Membres", 75),
+      entitlement("monthlyPromotionCredits", "Crédits visibilité", 250, undefined, {
+        creditType: "auto_visibility",
+        quantity: 250,
+        resetPeriod: "billing_period",
+      }),
       entitlement("apiAccess", "Accès API", true),
     ],
     consumers: ["auto-publish", "auto-dealer-workspace"],
@@ -668,11 +889,12 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "immo.agency.starter",
     kind: "subscription",
-    name: "Agency Starter",
+    name: "Immo Essential",
     description: "Profil agence, équipe et leads essentiels.",
     audience: "professional",
     categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     amountMinor: 7900,
+    annualAmountMinor: 79000,
     taxRateBps: 2000,
     trialDays: 14,
     entitlements: [
@@ -684,11 +906,12 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "immo.agency.growth",
     kind: "subscription",
-    name: "Agency Growth",
+    name: "Immo Business",
     description: "Imports, synchronisation et rapports avancés.",
     audience: "professional",
     categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     amountMinor: 16900,
+    annualAmountMinor: 169000,
     taxRateBps: 2000,
     trialDays: 14,
     recommended: true,
@@ -702,11 +925,12 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "immo.agency.network",
     kind: "subscription",
-    name: "Agency Network",
+    name: "Immo Premium",
     description: "Agences multiples, API et quotas sur mesure.",
     audience: "organization",
     categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     amountMinor: 39900,
+    annualAmountMinor: 399000,
     taxRateBps: 2000,
     entitlements: [
       entitlement("maxActiveListings", "Biens actifs", 1000),
@@ -831,12 +1055,12 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     ],
   }),
   ...[
-    ["employment.employer.starter", "Employeur Starter", 6900, 5, 3, false],
-    ["employment.employer.growth", "Employeur Growth", 16900, 25, 12, true],
-    ["employment.agency", "Agence de recrutement", 29900, 100, 30, false],
-    ["employment.network", "Réseau Employeur", 0, 1000, 500, false],
+    ["employment.employer.starter", "Emploi Essential", 6900, 69000, 5, 3, false],
+    ["employment.employer.growth", "Emploi Business", 16900, 169000, 25, 12, true],
+    ["employment.agency", "Emploi Premium", 29900, 299000, 100, 30, false],
+    ["employment.network", "Emploi Enterprise", 0, 0, 1000, 500, false],
   ].map(
-    ([id, name, amountMinor, maxActiveJobs, maxRecruiterSeats, recommended]) =>
+    ([id, name, amountMinor, annualAmountMinor, maxActiveJobs, maxRecruiterSeats, recommended]) =>
       product({
         id: String(id),
         kind: "subscription",
@@ -846,9 +1070,11 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
         audience: "organization",
         categoryIds: [CANONICAL_TAXONOMY_IDS.jobs],
         amountMinor: Number(amountMinor),
+        annualAmountMinor: Number(annualAmountMinor),
         taxRateBps: Number(amountMinor) > 0 ? 2000 : 0,
         trialDays: String(id) === "employment.network" ? undefined : 14,
         recommended: Boolean(recommended),
+        status: String(id) === "employment.network" ? "disabled" : "active",
         entitlements: [
           entitlement("maxActiveJobs", "Offres actives", Number(maxActiveJobs)),
           entitlement(
@@ -969,6 +1195,37 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
       ],
     }),
   ),
+  ...[
+    ["course.training.essential", "Cours Essential", 4900, 49000, 10, 2, false],
+    ["course.training.business", "Cours Business", 11900, 119000, 75, 10, true],
+    ["course.training.premium", "Cours Premium", 24900, 249000, 500, 50, false],
+  ].map(
+    ([id, name, amountMinor, annualAmountMinor, maxActiveOffers, teamMembers, recommended]) =>
+      product({
+        id: String(id),
+        kind: "subscription",
+        name: String(name),
+        description:
+          "Offre pour organismes, écoles et équipes de formation professionnelles.",
+        audience: "organization",
+        categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
+        amountMinor: Number(amountMinor),
+        annualAmountMinor: Number(annualAmountMinor),
+        taxRateBps: 2000,
+        trialDays: 14,
+        recommended: Boolean(recommended),
+        entitlements: [
+          entitlement("maxActiveOffers", "Cours actifs", Number(maxActiveOffers)),
+          entitlement("teamMembers", "Membres", Number(teamMembers)),
+          entitlement(
+            "advancedAnalytics",
+            "Statistiques avancées",
+            String(id) !== "course.training.essential",
+          ),
+        ],
+        consumers: ["course-onboarding", "course-workspace", "solutions-pro"],
+      }),
+  ),
 ];
 
 const ruleScope = (
@@ -986,6 +1243,7 @@ const ruleScope = (
   planIds: [],
   customerSegments: [],
   publicationChannels: [],
+  verticalIds: [],
 });
 
 const rule = (
@@ -1191,6 +1449,7 @@ export const BASELINE_MONETIZATION_CATALOG: MonetizationCatalog =
     marketCode: "FR",
     currency: "EUR",
     generatedAt: PUBLISHED_AT,
+    verticals: BASELINE_BUSINESS_VERTICALS,
     products: BASELINE_MONETIZATION_PRODUCTS,
     promotions: [
       {
@@ -1204,8 +1463,39 @@ export const BASELINE_MONETIZATION_CATALOG: MonetizationCatalog =
         discountValue: 1000,
         stackingPolicy: "exclusive",
         maximumRedemptionsPerAccount: 1,
+        activationMode: "coupon",
+        eligibleCustomerType: "new",
+        durationBillingPeriods: 1,
+        minimumCommitmentPeriods: 0,
+        campaignId: "campaign-welcome-2026",
+        verticalIds: [],
         startsAt: "2026-09-01T00:00:00.000Z",
         endsAt: "2026-09-30T23:59:59.000Z",
+      },
+      {
+        id: "promotion-auto-launch-2026",
+        code: "AUTO2026",
+        name: "Lancement Auto 2026",
+        status: "active",
+        scope: scope(
+          "professional",
+          [CANONICAL_TAXONOMY_IDS.vehicles],
+          "auto",
+        ),
+        productIds: ["auto.dealer.starter", "auto.dealer.growth"],
+        discountType: "percentage",
+        discountValue: 5000,
+        stackingPolicy: "exclusive",
+        maximumRedemptions: 500,
+        maximumRedemptionsPerAccount: 1,
+        activationMode: "coupon",
+        eligibleCustomerType: "new",
+        durationBillingPeriods: 3,
+        minimumCommitmentPeriods: 0,
+        campaignId: "campaign-auto-launch-2026",
+        verticalIds: ["auto"],
+        startsAt: "2026-08-01T00:00:00.000Z",
+        endsAt: "2026-12-31T23:59:59.000Z",
       },
     ],
     rules: BASELINE_COMMERCIAL_RULES,

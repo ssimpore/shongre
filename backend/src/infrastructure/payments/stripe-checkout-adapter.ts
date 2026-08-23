@@ -21,6 +21,11 @@ export interface StripeCheckoutSessionInput {
   snapshotHash?: string;
   lines: StripeCheckoutLine[];
   mode: "payment" | "subscription";
+  trial?: {
+    durationDays: number;
+    requiresPaymentMethod: boolean;
+  };
+  providerCouponId?: string;
 }
 
 const stripeError = (status: number, payload: unknown) =>
@@ -86,6 +91,19 @@ export class StripeCheckoutAdapter {
       allow_promotion_codes: "false",
     });
     if (input.mode === "payment") body.set("invoice_creation[enabled]", "true");
+    if (input.mode === "subscription" && input.trial) {
+      body.set(
+        "subscription_data[trial_period_days]",
+        String(input.trial.durationDays),
+      );
+      body.set(
+        "payment_method_collection",
+        input.trial.requiresPaymentMethod ? "always" : "if_required",
+      );
+    }
+    if (input.providerCouponId) {
+      body.set("discounts[0][coupon]", input.providerCouponId);
+    }
     input.lines.forEach((line, index) => {
       body.set(`line_items[${index}][quantity]`, String(line.quantity));
       body.set(

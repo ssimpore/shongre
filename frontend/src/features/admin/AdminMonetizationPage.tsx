@@ -18,8 +18,10 @@ import {
   Download,
   FileClock,
   Filter,
+  Gift,
   GitCompareArrows,
   History,
+  Layers3,
   ListFilter,
   LoaderCircle,
   Plus,
@@ -41,6 +43,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { AdminDiscoveryConfigurationPanel } from "./AdminDiscoveryConfigurationPanel";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useAuthorization } from "../../security/useAuthorization";
 
 type TabId =
   | "catalog"
@@ -50,6 +53,7 @@ type TabId =
   | "discovery"
   | "fees"
   | "operations"
+  | "complimentary"
   | "history";
 
 const TABS: Array<{ id: TabId; label: string }> = [
@@ -60,6 +64,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "discovery", label: "" },
   { id: "fees", label: "Taxes & frais" },
   { id: "operations", label: "Opérations" },
+  { id: "complimentary", label: "Accès offert" },
   { id: "history", label: "Historique" },
 ];
 
@@ -115,6 +120,7 @@ function formatRuleOutcomeValue(
 
 export const AdminMonetizationPage: React.FC = () => {
   const { t } = useTranslation();
+  const { can } = useAuthorization();
   usePageMeta({
     title: "Règles business et monétisation",
     description: "Administration versionnée du catalogue commercial Shongre.",
@@ -131,6 +137,7 @@ export const AdminMonetizationPage: React.FC = () => {
   const [tab, setTab] = useState<TabId>("catalog");
   const [query, setQuery] = useState("");
   const [audience, setAudience] = useState("all");
+  const [verticalFilter, setVerticalFilter] = useState("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null,
   );
@@ -148,6 +155,31 @@ export const AdminMonetizationPage: React.FC = () => {
   const [draftAmountMinor, setDraftAmountMinor] = useState(0);
   const [draftEffectiveFrom, setDraftEffectiveFrom] = useState("");
   const [saving, setSaving] = useState(false);
+  const [campaignOpen, setCampaignOpen] = useState(false);
+  const [campaign, setCampaign] = useState({
+    name: "",
+    code: "",
+    verticalId: "auto",
+    percentage: 20,
+    durationBillingPeriods: 1,
+    providerCouponId: "",
+    startsAt: "",
+    endsAt: "",
+    reason: "",
+  });
+  const [complimentaryGrant, setComplimentaryGrant] = useState({
+    accountId: "",
+    productVersionId: "",
+    campaignId: "",
+    startsAt: "",
+    endsAt: "",
+    reason: "",
+  });
+  const [complimentaryDecision, setComplimentaryDecision] = useState({
+    requestId: "",
+    decision: "approved" as "approved" | "rejected",
+    reason: "",
+  });
 
   const loadOverview = useCallback(async () => {
     setLoading(true);
@@ -176,7 +208,15 @@ export const AdminMonetizationPage: React.FC = () => {
     return overview.catalog.products.filter((product) => {
       const tabMatches =
         tab === "catalog" ||
-        (tab === "plans" && ["subscription", "pack"].includes(product.kind));
+        (tab === "plans" &&
+          product.kind === "subscription" &&
+          product.commercialProfile.professionalOnly &&
+          Boolean(product.commercialProfile.tier));
+      const verticalMatches =
+        verticalFilter === "all" ||
+        (verticalFilter === "general"
+          ? !product.commercialProfile.verticalId
+          : product.commercialProfile.verticalId === verticalFilter);
       const audienceMatches =
         audience === "all" ||
         product.audience === audience ||
@@ -185,9 +225,9 @@ export const AdminMonetizationPage: React.FC = () => {
         `${product.name} ${product.code} ${product.description}`
           .toLowerCase()
           .includes(query.toLowerCase());
-      return tabMatches && audienceMatches && queryMatches;
+      return tabMatches && verticalMatches && audienceMatches && queryMatches;
     });
-  }, [audience, overview, query, tab]);
+  }, [audience, overview, query, tab, verticalFilter]);
 
   const selectedProduct =
     overview?.catalog.products.find(
@@ -266,6 +306,151 @@ export const AdminMonetizationPage: React.FC = () => {
         caught instanceof Error
           ? caught.message
           : "Création du brouillon impossible.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const createCampaignDraft = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const currentOverview = overview;
+    if (
+      !currentOverview ||
+      campaign.reason.trim().length < 8 ||
+      !campaign.name.trim() ||
+      campaign.code.trim().length < 3 ||
+      !campaign.startsAt ||
+      !campaign.endsAt
+    )
+      return;
+    const targetProducts = currentOverview.catalog.products
+      .filter(
+        (product) =>
+          product.status === "active" &&
+          product.kind === "subscription" &&
+          Boolean(product.commercialProfile.tier) &&
+          product.commercialProfile.verticalId === campaign.verticalId,
+      )
+      .map((product) => product.id);
+    if (targetProducts.length === 0) {
+      setError("Aucun forfait actif pour cette verticale.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const code = campaign.code.trim().toUpperCase();
+      const version = await services.businessRules.createDraft({
+        reason: campaign.reason.trim(),
+        promotions: [
+          ...currentOverview.catalog.promotions,
+          {
+            id: `promotion-${code.toLowerCase()}-${Date.now()}`,
+            code,
+            name: campaign.name.trim(),
+            status: "draft",
+            scope: {
+              marketCodes: ["FR"],
+              currencies: ["EUR"],
+              categoryIds:
+                currentOverview.catalog.verticals.find(
+                  (vertical) => vertical.id === campaign.verticalId,
+                )?.categoryIds || [],
+              subcategoryIds: [],
+              typeIds: [],
+              subtypeIds: [],
+              audiences: ["professional", "organization"],
+              planIds: [],
+              customerSegments: [],
+              publicationChannels: ["web", "mobile"],
+              verticalIds: [
+                campaign.verticalId as "auto" | "immo" | "emploi" | "cours",
+              ],
+            },
+            productIds: targetProducts,
+            discountType: "percentage",
+            discountValue: Math.round(campaign.percentage * 100),
+            stackingPolicy: "exclusive",
+            maximumRedemptionsPerAccount: 1,
+            activationMode: "coupon",
+            eligibleCustomerType: "new",
+            durationBillingPeriods: campaign.durationBillingPeriods,
+            minimumCommitmentPeriods: 0,
+            campaignId: `campaign-${code.toLowerCase()}`,
+            providerCouponId: campaign.providerCouponId.trim() || undefined,
+            verticalIds: [
+              campaign.verticalId as "auto" | "immo" | "emploi" | "cours",
+            ],
+            startsAt: new Date(campaign.startsAt).toISOString(),
+            endsAt: new Date(campaign.endsAt).toISOString(),
+          },
+        ],
+      });
+      setNotice(`Campagne ajoutée au brouillon v${version.versionNumber}.`);
+      setCampaignOpen(false);
+      await loadOverview();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Création de la campagne impossible.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const requestComplimentaryGrant = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const request = await services.businessRules.requestComplimentaryGrant({
+        ...complimentaryGrant,
+        campaignId: complimentaryGrant.campaignId.trim() || undefined,
+        startsAt: new Date(complimentaryGrant.startsAt).toISOString(),
+        endsAt: new Date(complimentaryGrant.endsAt).toISOString(),
+        reason: complimentaryGrant.reason.trim(),
+        idempotencyKey: `admin-complimentary-request-${Date.now()}`,
+      });
+      setComplimentaryDecision((current) => ({
+        ...current,
+        requestId: request.id,
+      }));
+      setNotice(
+        `Demande ${request.id} enregistrée. Une seconde personne autorisée doit la décider.`,
+      );
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Demande impossible.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const decideComplimentaryGrant = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const result = await services.businessRules.decideComplimentaryGrant(
+        complimentaryDecision.requestId.trim(),
+        {
+          decision: complimentaryDecision.decision,
+          reason: complimentaryDecision.reason.trim(),
+          idempotencyKey: `admin-complimentary-decision-${Date.now()}`,
+        },
+      );
+      setNotice(
+        result.decision === "approved"
+          ? `Accès offert approuvé · ${result.grantId}`
+          : `Demande ${result.requestId} rejetée.`,
+      );
+      await loadOverview();
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Décision impossible.",
       );
     } finally {
       setSaving(false);
@@ -468,6 +653,7 @@ export const AdminMonetizationPage: React.FC = () => {
           "discovery",
           "fees",
           "operations",
+          "complimentary",
         ].includes(tab) && (
           <div className="p-3 border-b border-border-subtle flex flex-col sm:flex-row gap-2">
             <label className="relative flex-1 min-w-0">
@@ -494,6 +680,26 @@ export const AdminMonetizationPage: React.FC = () => {
                 <option value="organization">Organisations</option>
               </select>
             </label>
+            {tab === "plans" && (
+              <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-stone-700">
+                <Layers3 className="w-4 h-4" />
+                <span className="sr-only">Verticale</span>
+                <select
+                  value={verticalFilter}
+                  onChange={(event) => setVerticalFilter(event.target.value)}
+                  className="bg-transparent focus:outline-none h-control-touch"
+                >
+                  <option value="all">Toutes les verticales</option>
+                  {overview.catalog.verticals
+                    .filter((vertical) => vertical.status !== "archived")
+                    .map((vertical) => (
+                      <option key={vertical.id} value={vertical.id}>
+                        {vertical.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            )}
           </div>
         )}
 
@@ -507,7 +713,7 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="divide-y divide-border-subtle">
                 <div className="hidden md:grid grid-cols-[minmax(220px,1fr)_130px_110px_110px_32px] gap-3 px-4 py-2 bg-bg-subtle text-micro font-black uppercase tracking-wide text-stone-500">
                   <span>Produit</span>
-                  <span>Audience</span>
+                  <span>{tab === "plans" ? "Verticale · niveau" : "Audience"}</span>
                   <span>Prix actif</span>
                   <span>État</span>
                   <span />
@@ -531,9 +737,15 @@ export const AdminMonetizationPage: React.FC = () => {
                         </span>
                       </span>
                       <span className="mt-2 md:mt-0 inline-flex text-xs font-semibold text-stone-700 capitalize">
-                        {product.audience === "all"
-                          ? "Toutes"
-                          : product.audience}
+                        {tab === "plans"
+                          ? `${overview.catalog.verticals.find(
+                              (vertical) =>
+                                vertical.id ===
+                                (product.commercialProfile.verticalId || "general"),
+                            )?.name || "Général"} · ${product.commercialProfile.tier || "—"}`
+                          : product.audience === "all"
+                            ? "Toutes"
+                            : product.audience}
                       </span>
                       <span className="ml-3 md:ml-0 text-xs font-black text-stone-950">
                         {formatMinor(
@@ -607,8 +819,22 @@ export const AdminMonetizationPage: React.FC = () => {
             )}
 
             {tab === "promotions" && (
-              <div className="p-4 grid sm:grid-cols-2 gap-3">
-                {overview.catalog.promotions.map((promotion) => (
+              <div className="p-4">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-black text-stone-950">
+                      Campagnes et coupons
+                    </h2>
+                    <p className="mt-1 text-micro text-stone-500">
+                      Les changements sont ajoutés à un brouillon soumis au workflow d’approbation.
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={() => setCampaignOpen(true)}>
+                    <Plus className="h-4 w-4" /> Nouvelle campagne
+                  </Button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {overview.catalog.promotions.map((promotion) => (
                   <article
                     key={promotion.id}
                     className="rounded-lg border border-border-base p-4"
@@ -625,11 +851,50 @@ export const AdminMonetizationPage: React.FC = () => {
                     <p className="mt-2 text-xs text-stone-600">
                       {promotion.discountType === "percentage"
                         ? `${promotion.discountValue / 100} %`
-                        : formatMinor(promotion.discountValue)}{" "}
-                      · {labelIdentifier(promotion.stackingPolicy)}
+                        : promotion.discountType === "free_period"
+                          ? "Période offerte"
+                          : formatMinor(promotion.discountValue)}{" "}
+                      · {labelIdentifier(promotion.stackingPolicy)} ·{" "}
+                      {labelIdentifier(promotion.activationMode)}
                     </p>
+                    <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
+                      <div>
+                        <dt className="text-stone-500">Cible</dt>
+                        <dd className="font-bold text-stone-800">
+                          {labelIdentifier(promotion.eligibleCustomerType)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Durée</dt>
+                        <dd className="font-bold text-stone-800">
+                          {promotion.durationBillingPeriods
+                            ? `${promotion.durationBillingPeriods} période(s)`
+                            : "Ponctuelle"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Verticales</dt>
+                        <dd className="font-bold text-stone-800">
+                          {promotion.verticalIds
+                            .map(
+                              (id) =>
+                                overview.catalog.verticals.find(
+                                  (vertical) => vertical.id === id,
+                                )?.name || id,
+                            )
+                            .join(", ") || "Toutes"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Fin</dt>
+                        <dd className="font-bold text-stone-800">
+                          {new Date(promotion.endsAt).toLocaleDateString("fr-FR")}
+                        </dd>
+                      </div>
+                    </dl>
                   </article>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
@@ -668,6 +933,208 @@ export const AdminMonetizationPage: React.FC = () => {
                       </div>
                     </article>
                   ))}
+              </div>
+            )}
+
+            {tab === "complimentary" && (
+              <div className="p-4 grid gap-4 lg:grid-cols-2">
+                <form
+                  className="rounded-lg border border-border-base p-4 space-y-3"
+                  onSubmit={(event) => void requestComplimentaryGrant(event)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-control bg-primary-light text-primary flex items-center justify-center shrink-0">
+                      <Gift className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-black text-stone-950">
+                        Demander un accès offert
+                      </h2>
+                      <p className="mt-1 text-micro text-stone-500">
+                        La demande ne crée aucun faux paiement et attend une
+                        approbation distincte.
+                      </p>
+                    </div>
+                  </div>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Compte bénéficiaire
+                    <Input
+                      required
+                      value={complimentaryGrant.accountId}
+                      onChange={(event) =>
+                        setComplimentaryGrant((current) => ({
+                          ...current,
+                          accountId: event.target.value,
+                        }))
+                      }
+                      placeholder="Identifiant utilisateur ou organisation"
+                    />
+                  </label>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Forfait
+                    <select
+                      required
+                      value={complimentaryGrant.productVersionId}
+                      onChange={(event) =>
+                        setComplimentaryGrant((current) => ({
+                          ...current,
+                          productVersionId: event.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
+                    >
+                      <option value="">Sélectionner un forfait</option>
+                      {overview.catalog.products
+                        .filter(
+                          (product) =>
+                            product.kind === "subscription" &&
+                            Boolean(product.commercialProfile.tier),
+                        )
+                        .map((product) => (
+                          <option key={product.versionId} value={product.versionId}>
+                            {product.name} · {statusLabel(product.status)}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="text-micro font-bold text-stone-600">
+                      Début
+                      <Input
+                        required
+                        type="datetime-local"
+                        value={complimentaryGrant.startsAt}
+                        onChange={(event) =>
+                          setComplimentaryGrant((current) => ({
+                            ...current,
+                            startsAt: event.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                    <label className="text-micro font-bold text-stone-600">
+                      Fin
+                      <Input
+                        required
+                        type="datetime-local"
+                        value={complimentaryGrant.endsAt}
+                        onChange={(event) =>
+                          setComplimentaryGrant((current) => ({
+                            ...current,
+                            endsAt: event.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Campagne ou référence
+                    <Input
+                      value={complimentaryGrant.campaignId}
+                      onChange={(event) =>
+                        setComplimentaryGrant((current) => ({
+                          ...current,
+                          campaignId: event.target.value,
+                        }))
+                      }
+                      placeholder="Ex. partenaire-lancement-2026"
+                    />
+                  </label>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Motif auditable
+                    <Textarea
+                      required
+                      minLength={12}
+                      value={complimentaryGrant.reason}
+                      onChange={(event) =>
+                        setComplimentaryGrant((current) => ({
+                          ...current,
+                          reason: event.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                  <Button
+                    size="sm"
+                    type="submit"
+                    disabled={
+                      saving ||
+                      !can("monetization.complimentary_grants.request")
+                    }
+                  >
+                    Soumettre à approbation
+                  </Button>
+                </form>
+
+                <form
+                  className="rounded-lg border border-border-base p-4 space-y-3"
+                  onSubmit={(event) => void decideComplimentaryGrant(event)}
+                >
+                  <div>
+                    <h2 className="text-sm font-black text-stone-950">
+                      Décision finale
+                    </h2>
+                    <p className="mt-1 text-micro text-stone-500">
+                      Réservée au rôle propriétaire. Le demandeur ne peut pas
+                      approuver sa propre demande.
+                    </p>
+                  </div>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Identifiant de demande
+                    <Input
+                      required
+                      value={complimentaryDecision.requestId}
+                      onChange={(event) =>
+                        setComplimentaryDecision((current) => ({
+                          ...current,
+                          requestId: event.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Décision
+                    <select
+                      value={complimentaryDecision.decision}
+                      onChange={(event) =>
+                        setComplimentaryDecision((current) => ({
+                          ...current,
+                          decision: event.target.value as
+                            | "approved"
+                            | "rejected",
+                        }))
+                      }
+                      className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
+                    >
+                      <option value="approved">Approuver</option>
+                      <option value="rejected">Rejeter</option>
+                    </select>
+                  </label>
+                  <label className="block text-micro font-bold text-stone-600">
+                    Motif de décision
+                    <Textarea
+                      required
+                      minLength={8}
+                      value={complimentaryDecision.reason}
+                      onChange={(event) =>
+                        setComplimentaryDecision((current) => ({
+                          ...current,
+                          reason: event.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                  <Button
+                    size="sm"
+                    type="submit"
+                    disabled={
+                      saving ||
+                      !can("monetization.complimentary_grants.create")
+                    }
+                  >
+                    Enregistrer la décision
+                  </Button>
+                </form>
               </div>
             )}
 
@@ -723,6 +1190,88 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="mt-1 text-lg font-black text-stone-950">
                       {overview.refunds.length}
                     </div>
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xs font-black text-stone-950">
+                    Abonnements par compte
+                  </h2>
+                  <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
+                    <table className="w-full min-w-[760px] text-xs">
+                      <thead className="bg-bg-subtle text-left text-stone-600">
+                        <tr>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Compte
+                          </th>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Forfait
+                          </th>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Verticale · niveau
+                          </th>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Statut
+                          </th>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Renouvellement / changement
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border-subtle">
+                        {overview.subscriptions.map((subscription) => {
+                          const product = overview.catalog.products.find(
+                            (candidate) => candidate.id === subscription.productId,
+                          );
+                          return (
+                            <tr key={subscription.id}>
+                              <td className="px-3 py-2 font-mono text-stone-700">
+                                {subscription.accountId}
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="font-bold text-stone-900">
+                                  {product?.name || subscription.productId}
+                                </div>
+                                <div className="text-micro text-stone-500">
+                                  {subscription.productVersionId || "Version héritée"}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 text-stone-700">
+                                {labelIdentifier(subscription.verticalId || "general")} ·{" "}
+                                {labelIdentifier(
+                                  product?.commercialProfile.tier || "legacy",
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                <Badge>{labelIdentifier(subscription.status)}</Badge>
+                              </td>
+                              <td className="px-3 py-2 text-stone-700">
+                                {new Date(
+                                  subscription.scheduledChangeAt ||
+                                    subscription.currentPeriodEnd,
+                                ).toLocaleDateString("fr-FR")}
+                                {subscription.scheduledProductId
+                                  ? ` · ${overview.catalog.products.find(
+                                      (candidate) =>
+                                        candidate.id ===
+                                        subscription.scheduledProductId,
+                                    )?.name || subscription.scheduledProductId}`
+                                  : ""}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {overview.subscriptions.length === 0 && (
+                          <tr>
+                            <td
+                              colSpan={5}
+                              className="px-3 py-5 text-center text-stone-500"
+                            >
+                              Aucun abonnement à afficher.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
                 <div>
@@ -1086,6 +1635,38 @@ export const AdminMonetizationPage: React.FC = () => {
                   <p className="mt-1 text-micro leading-relaxed text-stone-500">
                     {selectedProduct.description}
                   </p>
+                  {selectedProduct.kind === "subscription" && (
+                    <dl className="mt-3 grid grid-cols-2 gap-2 rounded-control bg-bg-subtle p-2 text-micro">
+                      <div>
+                        <dt className="text-stone-500">Famille</dt>
+                        <dd className="font-bold text-stone-900">
+                          {selectedProduct.commercialProfile.familyId}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Niveau</dt>
+                        <dd className="font-bold capitalize text-stone-900">
+                          {selectedProduct.commercialProfile.tier || "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Essai</dt>
+                        <dd className="font-bold text-stone-900">
+                          {selectedProduct.commercialProfile.trialPolicy.enabled
+                            ? `${selectedProduct.commercialProfile.trialPolicy.durationDays} jours · paiement ${selectedProduct.commercialProfile.trialPolicy.requiresPaymentMethod ? "requis" : "facultatif"}`
+                            : "Désactivé"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-stone-500">Finance</dt>
+                        <dd className="font-bold text-stone-900">
+                          {labelIdentifier(
+                            selectedProduct.commercialProfile.financeCategory,
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                  )}
                   <dl className="mt-3 space-y-2 border-t border-border-subtle pt-3">
                     {selectedProduct.entitlements.slice(0, 5).map((entry) => (
                       <div
@@ -1099,6 +1680,19 @@ export const AdminMonetizationPage: React.FC = () => {
                       </div>
                     ))}
                   </dl>
+                  {selectedProduct.kind === "subscription" && (
+                    <div className="mt-3 border-t border-border-subtle pt-3 text-micro">
+                      <div className="font-black uppercase tracking-wide text-stone-500">
+                        Transitions configurées
+                      </div>
+                      <p className="mt-1 text-stone-700">
+                        Montée : {selectedProduct.commercialProfile.upgradeProductIds.join(", ") || "aucune"}
+                      </p>
+                      <p className="mt-1 text-stone-700">
+                        Baisse : {selectedProduct.commercialProfile.downgradeProductIds.join(", ") || "aucune"}
+                      </p>
+                    </div>
+                  )}
                   <div className="mt-3 border-t border-border-subtle pt-3">
                     <div className="text-micro font-black uppercase tracking-wide text-stone-500">
                       Consommateurs affectés
@@ -1235,6 +1829,145 @@ export const AdminMonetizationPage: React.FC = () => {
                 <Plus className="w-4 h-4" />
               )}{" "}
               Créer le brouillon
+            </Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        isOpen={campaignOpen}
+        onClose={() => setCampaignOpen(false)}
+        title="Créer une campagne promotionnelle"
+        description="La campagne est enregistrée dans un brouillon versionné ; elle n’est jamais activée directement."
+        maxWidth="lg"
+      >
+        <form onSubmit={createCampaignDraft} className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormField label="Nom de campagne" required>
+              <Input
+                value={campaign.name}
+                onChange={(event) =>
+                  setCampaign((current) => ({ ...current, name: event.target.value }))
+                }
+                placeholder="Lancement Auto"
+              />
+            </FormField>
+            <FormField label="Code coupon" required>
+              <Input
+                value={campaign.code}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    code: event.target.value.toUpperCase(),
+                  }))
+                }
+                placeholder="AUTO2026"
+              />
+            </FormField>
+            <FormField label="Verticale" required>
+              <select
+                value={campaign.verticalId}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    verticalId: event.target.value,
+                  }))
+                }
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+              >
+                <option value="auto">Auto</option>
+                <option value="immo">Immo</option>
+                <option value="emploi">Emploi</option>
+                <option value="cours">Cours</option>
+              </select>
+            </FormField>
+            <FormField label="Remise (%)" required>
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={campaign.percentage}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    percentage: Math.min(100, Math.max(1, Number(event.target.value))),
+                  }))
+                }
+              />
+            </FormField>
+            <FormField label="Début" required>
+              <Input
+                type="datetime-local"
+                value={campaign.startsAt}
+                onChange={(event) =>
+                  setCampaign((current) => ({ ...current, startsAt: event.target.value }))
+                }
+              />
+            </FormField>
+            <FormField label="Fin" required>
+              <Input
+                type="datetime-local"
+                value={campaign.endsAt}
+                onChange={(event) =>
+                  setCampaign((current) => ({ ...current, endsAt: event.target.value }))
+                }
+              />
+            </FormField>
+            <FormField label="Périodes remisées" required>
+              <Input
+                type="number"
+                min={1}
+                max={24}
+                value={campaign.durationBillingPeriods}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    durationBillingPeriods: Math.min(
+                      24,
+                      Math.max(1, Number(event.target.value)),
+                    ),
+                  }))
+                }
+              />
+            </FormField>
+            <FormField
+              label="Coupon du prestataire"
+              hint="Identifiant Stripe requis avant une activation en production."
+            >
+              <Input
+                value={campaign.providerCouponId}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    providerCouponId: event.target.value,
+                  }))
+                }
+                placeholder="coupon_…"
+              />
+            </FormField>
+          </div>
+          <FormField
+            label="Motif du changement"
+            required
+            hint="Visible dans l’audit et par l’approbateur."
+          >
+            <Textarea
+              rows={3}
+              value={campaign.reason}
+              onChange={(event) =>
+                setCampaign((current) => ({ ...current, reason: event.target.value }))
+              }
+            />
+          </FormField>
+          <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-stone-700">
+            Le coupon cible les nouveaux clients de la verticale, ne se cumule pas et reste inactif jusqu’à publication du brouillon.
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setCampaignOpen(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={saving || campaign.reason.trim().length < 8}>
+              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              Ajouter au brouillon
             </Button>
           </div>
         </form>

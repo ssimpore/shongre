@@ -19,6 +19,10 @@ import type {
 } from "@shongre/contracts/monetization";
 import type {
   BusinessRulesServiceContract,
+  ComplimentaryGrantDecisionInput,
+  ComplimentaryGrantDecisionResult,
+  ComplimentaryGrantRequestInput,
+  ComplimentaryGrantRequestResult,
   InvoiceDocument,
 } from "../../contracts/business-rules.contract";
 import { httpClient } from "./http-client";
@@ -117,6 +121,23 @@ export class HttpBusinessRulesService implements BusinessRulesServiceContract {
     return httpClient.post<CommercialConfigurationVersion>(
       `/admin/business-rules/versions/${encodeURIComponent(versionId)}/${action}`,
       { reason },
+    );
+  }
+
+  requestComplimentaryGrant(input: ComplimentaryGrantRequestInput) {
+    return httpClient.post<ComplimentaryGrantRequestResult>(
+      "/admin/monetization/complimentary-grants/requests",
+      input,
+    );
+  }
+
+  decideComplimentaryGrant(
+    requestId: string,
+    input: ComplimentaryGrantDecisionInput,
+  ) {
+    return httpClient.post<ComplimentaryGrantDecisionResult>(
+      `/admin/monetization/complimentary-grants/requests/${encodeURIComponent(requestId)}/decision`,
+      input,
     );
   }
 }

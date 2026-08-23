@@ -3,6 +3,28 @@ import { DemoBusinessRulesRepository } from "../../../src/infrastructure/databas
 import { BusinessRulesService } from "../../../src/modules/business-rules/business-rules.service.js";
 
 describe("BusinessRulesService quotes", () => {
+  it("publishes the five active professional verticals from one catalog", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const catalog = await service.getProfessionalPlanCatalog("FR");
+    expect(catalog.verticals.map((vertical) => vertical.id)).toEqual([
+      "general",
+      "auto",
+      "immo",
+      "emploi",
+      "cours",
+    ]);
+    expect(
+      catalog.plans.some(
+        (plan) => plan.commercialProfile.familyId === "vertical.cours",
+      ),
+    ).toBe(true);
+    expect(
+      catalog.plans.every(
+        (plan) => plan.commercialProfile.professionalOnly,
+      ),
+    ).toBe(true);
+  });
+
   it("creates an authoritative minor-unit quote from the active catalog", async () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
     const quote = await service.createQuote("individual_quote_test", {
@@ -96,8 +118,14 @@ describe("BusinessRulesService quotes", () => {
     const entitlements = await service.getActiveEntitlements(
       "professional_subscription_test",
     );
+    expect(quote).toMatchObject({
+      amountDueTodayMinor: 0,
+      nextChargeMinor: quote.totalMinor,
+      reasonCode: "TRIAL_ELIGIBLE",
+      trial: { productId: plan.id, durationDays: 14 },
+    });
     expect(subscriptions).toContainEqual(
-      expect.objectContaining({ productId: plan.id, status: "active" }),
+      expect.objectContaining({ productId: plan.id, status: "trialing" }),
     );
     expect(entitlements.some((entry) => entry.productId === plan.id)).toBe(
       true,
@@ -110,6 +138,149 @@ describe("BusinessRulesService quotes", () => {
       },
     );
     expect(cancellation.cancelAtPeriodEnd).toBe(true);
+  });
+
+  it("does not grant a second trial in the same vertical plan family", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_auto_trial_history";
+    const first = await service.createQuote(accountId, {
+      productIds: ["auto.dealer.starter"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      idempotencyKey: "quote-auto-trial-first-0001",
+    });
+    expect(first.amountDueTodayMinor).toBe(0);
+    expect(first.trial?.durationDays).toBe(14);
+    await service.createCheckout(
+      accountId,
+      first.id,
+      "checkout-auto-trial-first-0001",
+    );
+
+    const second = await service.createQuote(accountId, {
+      productIds: ["auto.dealer.growth"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      idempotencyKey: "quote-auto-trial-second-0002",
+    });
+    expect(second.trial).toBeUndefined();
+    expect(second.amountDueTodayMinor).toBe(second.totalMinor);
+  });
+
+  it("applies a vertical new-customer campaign and rejects it after activation", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_auto_campaign";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["auto.dealer.starter"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      promotionCode: "AUTO2026",
+      idempotencyKey: "quote-auto-campaign-0001",
+    });
+    expect(quote.discountMinor).toBeGreaterThan(0);
+    expect(quote.promotionCode).toBe("AUTO2026");
+    await service.createCheckout(
+      accountId,
+      quote.id,
+      "checkout-auto-campaign-0001",
+    );
+    await expect(
+      service.createQuote(accountId, {
+        productIds: ["auto.dealer.growth"],
+        marketCode: "FR",
+        categoryId: "vehicles",
+        promotionCode: "AUTO2026",
+        idempotencyKey: "quote-auto-campaign-0002",
+      }),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      details: { reasonCode: "PROMOTION_NEW_CUSTOMERS_ONLY" },
+    });
+  });
+
+  it("rejects a plan change outside the configured transition matrix", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_transition_matrix";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["auto.dealer.starter"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      idempotencyKey: "quote-transition-matrix-0001",
+    });
+    await service.createCheckout(
+      accountId,
+      quote.id,
+      "checkout-transition-matrix-0001",
+    );
+    const subscription = (await service.getSubscriptions(accountId))[0];
+    const catalog = await service.getCatalog("FR");
+    const immoPrice = catalog.products
+      .find((product) => product.id === "immo.agency.growth")!
+      .prices.find((price) => price.billingPeriod === "month")!;
+
+    await expect(
+      service.previewSubscriptionChange(accountId, {
+        subscriptionId: subscription.id,
+        targetProductId: "immo.agency.growth",
+        targetPriceId: immoPrice.id,
+        idempotencyKey: "transition-auto-to-immo-0001",
+      }),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      details: { reasonCode: "PLAN_TRANSITION_NOT_ALLOWED" },
+    });
+  });
+
+  it("replaces generic plan rights when a configured cross-plan upgrade is applied", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_generic_to_auto";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["plan.pro.business"],
+      marketCode: "FR",
+      idempotencyKey: "quote-generic-to-auto-0001",
+    });
+    await service.createCheckout(
+      accountId,
+      quote.id,
+      "checkout-generic-to-auto-0001",
+    );
+    const subscription = (await service.getSubscriptions(accountId))[0];
+    const catalog = await service.getCatalog("FR");
+    const target = catalog.products.find(
+      (product) => product.id === "auto.dealer.growth",
+    )!;
+    const targetPrice = target.prices.find(
+      (price) => price.billingPeriod === "month",
+    )!;
+
+    const changed = await service.applySubscriptionChange(accountId, {
+      subscriptionId: subscription.id,
+      targetProductId: target.id,
+      targetPriceId: targetPrice.id,
+      idempotencyKey: "change-generic-to-auto-0001",
+    });
+    expect(changed).toMatchObject({
+      productId: target.id,
+      productVersionId: target.versionId,
+      verticalId: "auto",
+      familyId: "vertical.auto",
+    });
+    const activeEntitlements = await service.getActiveEntitlements(accountId);
+    expect(
+      activeEntitlements.some(
+        (entitlement) =>
+          entitlement.productId === "plan.pro.business" &&
+          entitlement.status === "active",
+      ),
+    ).toBe(false);
+    expect(activeEntitlements).toContainEqual(
+      expect.objectContaining({
+        productId: target.id,
+        key: "maxActiveVehicles",
+        status: "active",
+        verticalId: "auto",
+      }),
+    );
   });
 
   it("returns a stable reason when a promotion is unpublished", async () => {

@@ -199,6 +199,13 @@ export const DEMO_PLATFORM_FINANCE_DASHBOARD: PlatformFinanceDashboard = {
     { marketCode: "FR", label: "France", platformRevenue: eur(3_214_000), netRevenue: eur(2_971_000), gmv: eur(9_830_000) },
     { marketCode: "BE", label: "Belgique", platformRevenue: eur(1_072_000), netRevenue: eur(1_003_200), gmv: eur(2_810_000) },
   ],
+  verticals: [
+    { verticalId: "general", label: "Shongre Pro", revenue: eur(400_000), mrr: eur(310_000), activeTrials: 8, payingSubscriptions: 44, cancelledSubscriptions: 3, trialsStarted: 31, convertedAccounts: 23, conversionBps: 7419 },
+    { verticalId: "auto", label: "Shongre Auto", revenue: eur(520_000), mrr: eur(470_000), activeTrials: 12, payingSubscriptions: 57, cancelledSubscriptions: 4, trialsStarted: 46, convertedAccounts: 34, conversionBps: 7391 },
+    { verticalId: "immo", label: "Shongre Immo", revenue: eur(440_000), mrr: eur(410_000), activeTrials: 7, payingSubscriptions: 49, cancelledSubscriptions: 2, trialsStarted: 28, convertedAccounts: 22, conversionBps: 7857 },
+    { verticalId: "emploi", label: "Shongre Emploi", revenue: eur(300_000), mrr: eur(270_000), activeTrials: 5, payingSubscriptions: 38, cancelledSubscriptions: 2, trialsStarted: 19, convertedAccounts: 14, conversionBps: 7368 },
+    { verticalId: "cours", label: "Shongre Cours", revenue: eur(180_000), mrr: eur(382_000), activeTrials: 3, payingSubscriptions: 26, cancelledSubscriptions: 1, trialsStarted: 13, convertedAccounts: 10, conversionBps: 7692 },
+  ],
 };
 
 export const DEMO_RECONCILIATION_CASES: readonly ReconciliationCase[] = [

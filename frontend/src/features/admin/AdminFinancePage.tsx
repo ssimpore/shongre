@@ -328,7 +328,46 @@ function ReconciliationTab({ cases, transactions, onOpen }: { cases: Reconciliat
 }
 
 function SubscriptionsTab({ dashboard }: { dashboard: PlatformFinanceDashboard }) {
-  return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"><MetricCard label="MRR" metric={dashboard.metrics.mrr} icon={RefreshCw} /><MetricCard label="ARR" metric={dashboard.metrics.arr} icon={BarChart3} /><MetricCard label="Revenus d’abonnement" metric={{ amount: dashboard.revenueSources[0]?.amount ?? { amountMinor: 0, currency: "EUR" }, definition: "Abonnements reconnus sur la période." }} icon={CreditCard} /><section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"><ReceiptText className="h-5 w-5 text-primary" /><h2 className="mt-3 text-sm font-black">Portefeuille actif</h2><p className="mt-1 text-2xl font-black">{dashboard.subscriptionHealth.paidAccounts}</p><p className="mt-2 text-xs text-text-secondary">{dashboard.subscriptionHealth.newSubscriptions} nouveaux · attrition {formatPercentBps(dashboard.subscriptionHealth.churnBps)}</p></section></div>;
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="MRR" metric={dashboard.metrics.mrr} icon={RefreshCw} />
+        <MetricCard label="ARR" metric={dashboard.metrics.arr} icon={BarChart3} />
+        <MetricCard label="Revenus d’abonnement" metric={{ amount: dashboard.revenueSources[0]?.amount ?? { amountMinor: 0, currency: "EUR" }, definition: "Abonnements reconnus sur la période." }} icon={CreditCard} />
+        <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
+          <ReceiptText className="h-5 w-5 text-primary" />
+          <h2 className="mt-3 text-sm font-black">Portefeuille actif</h2>
+          <p className="mt-1 text-2xl font-black">{dashboard.subscriptionHealth.paidAccounts}</p>
+          <p className="mt-2 text-xs text-text-secondary">{dashboard.subscriptionHealth.newSubscriptions} nouveaux · attrition {formatPercentBps(dashboard.subscriptionHealth.churnBps)}</p>
+        </section>
+      </div>
+      <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
+        <div className="border-b border-border-subtle px-4 py-3">
+          <h2 className="text-sm font-black text-text-main">Performance par verticale</h2>
+          <p className="mt-1 text-micro text-text-muted">Revenus attribués, MRR et conversion après essai par famille commerciale.</p>
+        </div>
+        <ScrollableRegion aria-label="Performance financière des abonnements par verticale">
+          <table className="w-full min-w-[760px] text-left text-xs">
+            <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
+              <tr><th className="px-4 py-2">Verticale</th><th className="px-3 py-2 text-right">Revenus</th><th className="px-3 py-2 text-right">MRR</th><th className="px-3 py-2 text-right">Payants</th><th className="px-3 py-2 text-right">Essais actifs</th><th className="px-3 py-2 text-right">Conversion</th></tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {dashboard.verticals.map((vertical) => (
+                <tr key={vertical.verticalId}>
+                  <th className="px-4 py-3 font-bold text-text-main"><span className="mr-2 rounded-full bg-primary-light px-2 py-1 text-micro uppercase text-primary">{vertical.verticalId}</span>{vertical.label}</th>
+                  <td className="px-3 py-3 text-right font-semibold">{formatMoney(vertical.revenue)}</td>
+                  <td className="px-3 py-3 text-right font-semibold">{formatMoney(vertical.mrr)}</td>
+                  <td className="px-3 py-3 text-right">{vertical.payingSubscriptions}</td>
+                  <td className="px-3 py-3 text-right">{vertical.activeTrials}</td>
+                  <td className="px-3 py-3 text-right font-bold text-success">{formatPercentBps(vertical.conversionBps)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollableRegion>
+      </section>
+    </div>
+  );
 }
 
 export const AdminFinancePage: React.FC = () => {

@@ -13,6 +13,9 @@ describe("identifier labels", () => {
     ["potential_scam", "Arnaque potentielle"],
     ["team.manage", "Gérer l’équipe"],
     ["leads:respond", "Répondre aux demandes"],
+    ["new", "Nouveau client"],
+    ["admin_grant", "Attribution administrative"],
+    ["auto_subscription", "Abonnement Auto"],
   ])("maps %s to readable product copy", (identifier, expected) => {
     expect(labelIdentifier(identifier)).toBe(expected);
   });

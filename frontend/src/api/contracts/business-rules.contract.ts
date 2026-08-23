@@ -24,6 +24,36 @@ export interface InvoiceDocument {
   content: string;
 }
 
+export interface ComplimentaryGrantRequestInput {
+  accountId: string;
+  productVersionId: string;
+  campaignId?: string;
+  reason: string;
+  startsAt: string;
+  endsAt: string;
+  idempotencyKey: string;
+}
+
+export interface ComplimentaryGrantRequestResult
+  extends ComplimentaryGrantRequestInput {
+  id: string;
+  status: "pending_approval";
+  requestedBy: string;
+}
+
+export interface ComplimentaryGrantDecisionInput {
+  decision: "approved" | "rejected";
+  reason: string;
+  idempotencyKey: string;
+}
+
+export interface ComplimentaryGrantDecisionResult {
+  requestId: string;
+  decision: "approved" | "rejected";
+  decidedBy?: string;
+  grantId?: string;
+}
+
 export interface BusinessRulesServiceContract {
   getCatalog(marketCode?: string): Promise<MonetizationCatalog>;
   evaluate(context: RuleEvaluationContext): Promise<RuleEvaluationResult>;
@@ -57,4 +87,11 @@ export interface BusinessRulesServiceContract {
     action: "submit" | "approve" | "publish" | "rollback",
     reason: string,
   ): Promise<CommercialConfigurationVersion>;
+  requestComplimentaryGrant(
+    input: ComplimentaryGrantRequestInput,
+  ): Promise<ComplimentaryGrantRequestResult>;
+  decideComplimentaryGrant(
+    requestId: string,
+    input: ComplimentaryGrantDecisionInput,
+  ): Promise<ComplimentaryGrantDecisionResult>;
 }

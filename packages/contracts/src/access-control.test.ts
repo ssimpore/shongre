@@ -77,6 +77,22 @@ describe("canonical access-control policy", () => {
     expect(finance.has("admin.configuration.manage")).toBe(false);
   });
 
+  it("reserves complimentary commercial grants for the platform owner", () => {
+    const commercial = capabilities({ accountType: "staff", staffRole: "commercial" });
+    const admin = capabilities({ accountType: "staff", staffRole: "admin" });
+    const owner = capabilities({ accountType: "staff", staffRole: "owner" });
+    const finance = capabilities({ accountType: "staff", staffRole: "finance" });
+
+    expect(commercial.has("monetization.plans.manage")).toBe(true);
+    expect(commercial.has("monetization.complimentary_grants.request")).toBe(true);
+    expect(admin.has("monetization.trials.manage")).toBe(true);
+    expect(admin.has("monetization.complimentary_grants.request")).toBe(true);
+    expect(admin.has("monetization.complimentary_grants.create")).toBe(false);
+    expect(owner.has("monetization.complimentary_grants.create")).toBe(true);
+    expect(finance.has("monetization.subscriptions.read")).toBe(true);
+    expect(finance.has("monetization.plans.manage")).toBe(false);
+  });
+
   it("applies lifecycle restrictions after grants and direct overrides", () => {
     const suspended = capabilities({
       accountType: "individual",

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
+import { businessVerticalCodeSchema } from "./monetization";
 
 export const financePeriodSchema = z.enum(["7d", "30d", "quarter", "year"]);
 export type FinancePeriod = z.infer<typeof financePeriodSchema>;
@@ -119,6 +120,20 @@ export const financeMarketSummarySchema = z.object({
   gmv: moneySchema,
 });
 
+export const financeVerticalSummarySchema = z.object({
+  verticalId: businessVerticalCodeSchema,
+  label: z.string().min(1),
+  revenue: moneySchema,
+  mrr: moneySchema,
+  activeTrials: z.number().int().nonnegative(),
+  payingSubscriptions: z.number().int().nonnegative(),
+  cancelledSubscriptions: z.number().int().nonnegative(),
+  trialsStarted: z.number().int().nonnegative(),
+  convertedAccounts: z.number().int().nonnegative(),
+  conversionBps: z.number().int().min(0).max(10_000),
+});
+export type FinanceVerticalSummary = z.infer<typeof financeVerticalSummarySchema>;
+
 export const platformFinanceDashboardSchema = z.object({
   scope: financeScopeSchema,
   asOf: z.string().datetime(),
@@ -147,6 +162,7 @@ export const platformFinanceDashboardSchema = z.object({
   }),
   exceptions: z.array(financeExceptionSchema),
   markets: z.array(financeMarketSummarySchema),
+  verticals: z.array(financeVerticalSummarySchema),
 });
 export type PlatformFinanceDashboard = z.infer<typeof platformFinanceDashboardSchema>;
 

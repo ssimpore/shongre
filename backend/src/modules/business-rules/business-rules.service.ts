@@ -34,6 +34,7 @@ import {
   subscriptionChangePreviewSchema,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { resolveAllEffectiveEntitlements } from "@shongre/shared";
 import { config } from "../../app/config/index.js";
 import {
   BusinessRulesRepository,
@@ -81,7 +82,16 @@ function quoteHashPayload(
     | "currency"
     | "listingId"
     | "promotionCode"
+    | "promotion"
     | "lines"
+    | "subtotalMinor"
+    | "discountMinor"
+    | "taxMinor"
+    | "totalMinor"
+    | "amountDueTodayMinor"
+    | "nextChargeMinor"
+    | "nextChargeAt"
+    | "trial"
   >,
 ) {
   return {
@@ -91,7 +101,16 @@ function quoteHashPayload(
     currency: quote.currency,
     listingId: quote.listingId,
     promotionCode: quote.promotionCode,
+    promotion: quote.promotion,
     lines: quote.lines,
+    subtotalMinor: quote.subtotalMinor,
+    discountMinor: quote.discountMinor,
+    taxMinor: quote.taxMinor,
+    totalMinor: quote.totalMinor,
+    amountDueTodayMinor: quote.amountDueTodayMinor,
+    nextChargeMinor: quote.nextChargeMinor,
+    nextChargeAt: quote.nextChargeAt,
+    trial: quote.trial,
   };
 }
 
@@ -176,6 +195,46 @@ export class BusinessRulesService {
     }
   }
 
+  async getProfessionalPlanCatalog(marketCode = "FR") {
+    const catalog = await this.getCatalog(marketCode);
+    return {
+      configurationVersionId: catalog.configurationVersionId,
+      versionNumber: catalog.versionNumber,
+      marketCode: catalog.marketCode,
+      currency: catalog.currency,
+      generatedAt: catalog.generatedAt,
+      stale: catalog.stale,
+      verticals: catalog.verticals
+        .filter((vertical) => vertical.status === "active")
+        .sort((left, right) => left.sortOrder - right.sortOrder),
+      plans: catalog.products
+        .filter(
+          (product) =>
+            product.status === "active" &&
+            product.kind === "subscription" &&
+            product.commercialProfile.professionalOnly &&
+            Boolean(product.commercialProfile.tier),
+        )
+        .sort(
+          (left, right) =>
+            left.commercialProfile.displayOrder -
+            right.commercialProfile.displayOrder,
+        ),
+    };
+  }
+
+  async createTrialQuote(accountId: string, rawRequest: QuoteRequest) {
+    const quote = await this.createQuote(accountId, rawRequest);
+    if (!quote.trial) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Ce compte n’est pas éligible à un nouvel essai.",
+        details: { reasonCode: "TRIAL_NOT_ELIGIBLE" },
+      });
+    }
+    return quote;
+  }
+
   private async resolvePromotion(
     accountId: string,
     request: PromotionValidationRequest,
@@ -215,6 +274,46 @@ export class BusinessRulesService {
     );
     if (applicableProductIds.length === 0)
       return invalid("PROMOTION_PRODUCT_MISMATCH");
+    const applicableProducts = catalog.products.filter((product) =>
+      applicableProductIds.includes(product.id),
+    );
+    if (
+      promotion.verticalIds.length > 0 &&
+      applicableProducts.some(
+        (product) =>
+          !product.commercialProfile.verticalId ||
+          !promotion.verticalIds.includes(product.commercialProfile.verticalId),
+      )
+    ) {
+      return invalid("PROMOTION_VERTICAL_MISMATCH");
+    }
+    const targetFamilies = new Set(
+      applicableProducts.map((product) => product.commercialProfile.familyId),
+    );
+    const subscriptionHistory = await this.repository.listSubscriptions(
+      accountId,
+      200,
+    );
+    const hasTargetFamilyHistory = subscriptionHistory.some((subscription) => {
+      const product = catalog.products.find(
+        (candidate) => candidate.id === subscription.productId,
+      );
+      return Boolean(
+        product && targetFamilies.has(product.commercialProfile.familyId),
+      );
+    });
+    if (
+      promotion.eligibleCustomerType === "new" &&
+      hasTargetFamilyHistory
+    ) {
+      return invalid("PROMOTION_NEW_CUSTOMERS_ONLY");
+    }
+    if (
+      promotion.eligibleCustomerType === "existing" &&
+      !hasTargetFamilyHistory
+    ) {
+      return invalid("PROMOTION_EXISTING_CUSTOMERS_ONLY");
+    }
     const [totalRedemptions, accountRedemptions] = await Promise.all([
       this.repository.countPromotionRedemptions(promotion.id),
       this.repository.countPromotionRedemptions(promotion.id, accountId),
@@ -410,6 +509,15 @@ export class BusinessRulesService {
       });
     }
     const selected = products as MonetizationProduct[];
+    const selectedSubscriptions = selected.filter(
+      (product) => product.kind === "subscription",
+    );
+    if (selectedSubscriptions.length > 1) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un seul abonnement peut être activé par devis.",
+      });
+    }
     const accountAudience = await this.repository.getAccountAudience(accountId);
     const incompatibleAudience = selected.find(
       (product) =>
@@ -488,6 +596,32 @@ export class BusinessRulesService {
         )
       : undefined;
 
+    const priorSubscriptions = await this.repository.listSubscriptions(
+      accountId,
+      200,
+    );
+    const trialProduct = selectedSubscriptions.find((product) => {
+      const policy = product.commercialProfile.trialPolicy;
+      if (!policy.enabled || !policy.durationDays) return false;
+      if (!policy.eligibleAudiences.includes(accountAudience)) return false;
+      if (!policy.eligibleMarketCodes.includes(request.marketCode)) return false;
+      if (policy.campaignStartsAt && new Date(policy.campaignStartsAt) > effectiveAt)
+        return false;
+      if (policy.campaignEndsAt && new Date(policy.campaignEndsAt) <= effectiveAt)
+        return false;
+      if (!policy.firstTimeCustomersOnly) return true;
+      return !priorSubscriptions.some((subscription) => {
+        const priorProduct = catalog.products.find(
+          (candidate) => candidate.id === subscription.productId,
+        );
+        return priorProduct?.commercialProfile.familyId === product.commercialProfile.familyId;
+      });
+    });
+    const trialDays = trialProduct?.commercialProfile.trialPolicy.durationDays;
+    const trialEndsAt = trialDays
+      ? new Date(effectiveAt.getTime() + trialDays * 86_400_000).toISOString()
+      : undefined;
+
     const lines: QuoteLine[] = selected.map((product) => {
       const requestedPriceId = request.priceIds?.[product.id];
       const price = product.prices.find(
@@ -510,10 +644,14 @@ export class BusinessRulesService {
         ? 0
         : promotion!.discountType === "fixed"
           ? Math.min(subtotalMinor, promotion!.discountValue)
-          : Math.min(
-              subtotalMinor,
-              Math.round((subtotalMinor * promotion!.discountValue) / 10_000),
-            );
+          : promotion!.discountType === "introductory_price"
+            ? Math.max(0, subtotalMinor - promotion!.discountValue)
+            : promotion!.discountType === "free_period"
+              ? subtotalMinor
+              : Math.min(
+                  subtotalMinor,
+                  Math.round((subtotalMinor * promotion!.discountValue) / 10_000),
+                );
       const taxableMinor = subtotalMinor - discountMinor;
       const taxMinor =
         price.priceIncludesTax || price.taxRateBps === 0
@@ -533,33 +671,60 @@ export class BusinessRulesService {
         totalMinor: taxableMinor + taxMinor,
         taxRateBps: price.taxRateBps,
         entitlementSnapshot: structuredClone(product.entitlements),
+        verticalId: product.commercialProfile.verticalId,
+        trialDays: product.id === trialProduct?.id ? trialDays : undefined,
       };
     });
     const createdAt = new Date().toISOString();
-    const snapshot = {
+    const subtotalMinor = lines.reduce((sum, line) => sum + line.subtotalMinor, 0);
+    const discountMinor = lines.reduce((sum, line) => sum + line.discountMinor, 0);
+    const taxMinor = lines.reduce((sum, line) => sum + line.taxMinor, 0);
+    const totalMinor = lines.reduce((sum, line) => sum + line.totalMinor, 0);
+    const quotePayload = {
       accountId,
       configurationVersionId: catalog.configurationVersionId,
       marketCode: request.marketCode,
       currency: catalog.currency,
       listingId: request.listingId,
       promotionCode: promotion?.code,
+      promotion: promotion
+        ? {
+            id: promotion.id,
+            code: promotion.code,
+            name: promotion.name,
+            durationBillingPeriods: promotion.durationBillingPeriods,
+            endsAt: promotion.endsAt,
+          }
+        : undefined,
       lines,
+      subtotalMinor,
+      discountMinor,
+      taxMinor,
+      totalMinor,
+      amountDueTodayMinor: trialDays ? 0 : totalMinor,
+      nextChargeMinor: totalMinor,
+      nextChargeAt: trialEndsAt,
+      trial:
+        trialProduct && trialDays && trialEndsAt
+          ? {
+              productId: trialProduct.id,
+              durationDays: trialDays,
+              endsAt: trialEndsAt,
+              requiresPaymentMethod:
+                trialProduct.commercialProfile.trialPolicy.requiresPaymentMethod,
+              autoConverts: trialProduct.commercialProfile.trialPolicy.autoConverts,
+            }
+          : undefined,
     };
     const quote = monetizationQuoteSchema.parse({
       id: deterministicId("quote", `${accountId}:${request.idempotencyKey}`),
-      accountId,
-      configurationVersionId: catalog.configurationVersionId,
-      marketCode: request.marketCode,
-      currency: catalog.currency,
-      listingId: request.listingId,
-      lines,
-      subtotalMinor: lines.reduce((sum, line) => sum + line.subtotalMinor, 0),
-      discountMinor: lines.reduce((sum, line) => sum + line.discountMinor, 0),
-      taxMinor: lines.reduce((sum, line) => sum + line.taxMinor, 0),
-      totalMinor: lines.reduce((sum, line) => sum + line.totalMinor, 0),
-      promotionCode: promotion?.code,
-      snapshotHash: hashSnapshot(snapshot),
-      reasonCode: promotion ? "PROMOTION_APPLIED" : "CATALOG_PRICE",
+      ...quotePayload,
+      snapshotHash: hashSnapshot(quoteHashPayload(quotePayload)),
+      reasonCode: trialDays
+        ? "TRIAL_ELIGIBLE"
+        : promotion
+          ? "PROMOTION_APPLIED"
+          : "CATALOG_PRICE",
       status: "active",
       createdAt,
       expiresAt: new Date(Date.now() + QUOTE_TTL_MS).toISOString(),
@@ -627,7 +792,24 @@ export class BusinessRulesService {
           (candidate) => candidate.id === line.productId,
         )?.kind === "subscription",
     );
+    const appliedPromotion = quote.promotionCode
+      ? quoteCatalog.promotions.find(
+          (promotion) => promotion.code === quote.promotionCode,
+        )
+      : undefined;
     const provider = config.dataMode === "database" ? "stripe" : "demo";
+    if (
+      provider === "stripe" &&
+      appliedPromotion &&
+      !appliedPromotion.providerCouponId
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Cette campagne n’est pas encore synchronisée avec le prestataire de paiement.",
+        details: { reasonCode: "PROVIDER_CAMPAIGN_NOT_CONFIGURED" },
+      });
+    }
     let checkout: { id: string; url?: string } = {
       id: deterministicId("checkout", idempotencyKey),
     };
@@ -644,10 +826,16 @@ export class BusinessRulesService {
             (candidate) => candidate.id === line.productId,
           );
           const period = line.billingPeriod;
+          const price = product?.prices.find(
+            (candidate) => candidate.id === line.priceId,
+          );
+          const undiscountedTaxMinor = price?.priceIncludesTax
+            ? 0
+            : Math.round((line.unitAmountMinor * line.taxRateBps) / 10_000);
           return {
             name: line.label,
             description: `Shongre — ${line.productId}`,
-            amountMinor: line.totalMinor,
+            amountMinor: line.unitAmountMinor + undiscountedTaxMinor,
             currency: quote.currency,
             quantity: line.quantity,
             recurring:
@@ -658,6 +846,13 @@ export class BusinessRulesService {
           };
         }),
         mode: recurring ? "subscription" : "payment",
+        trial: quote.trial
+          ? {
+              durationDays: quote.trial.durationDays,
+              requiresPaymentMethod: quote.trial.requiresPaymentMethod,
+            }
+          : undefined,
+        providerCouponId: appliedPromotion?.providerCouponId,
       });
     }
     const createdAt = new Date().toISOString();
@@ -667,7 +862,10 @@ export class BusinessRulesService {
         quoteId: quote.id,
         accountId,
         snapshotHash: quote.snapshotHash,
-        total: { amountMinor: quote.totalMinor, currency: quote.currency },
+        total: {
+          amountMinor: quote.amountDueTodayMinor,
+          currency: quote.currency,
+        },
         status: provider === "demo" ? "paid" : "pending",
         provider,
         providerCheckoutId: checkout.id,
@@ -757,9 +955,17 @@ export class BusinessRulesService {
   }
 
   async getBillingOverview(accountId: string): Promise<BillingOverview> {
-    return billingOverviewSchema.parse(
-      await this.repository.getBillingOverview(accountId),
-    );
+    const [overview, catalog] = await Promise.all([
+      this.repository.getBillingOverview(accountId),
+      this.getCatalog("FR"),
+    ]);
+    return billingOverviewSchema.parse({
+      ...overview,
+      effectiveEntitlements: resolveAllEffectiveEntitlements({
+        catalog,
+        entitlements: overview.entitlements,
+      }),
+    });
   }
 
   async getInvoiceDocument(accountId: string, invoiceId: string) {
@@ -824,17 +1030,36 @@ export class BusinessRulesService {
       (entry) => entry.id === request.targetPriceId,
     );
     if (
+      !currentProduct ||
       !targetProduct ||
       targetProduct.kind !== "subscription" ||
-      !targetPrice
+      targetProduct.status !== "active" ||
+      !targetPrice ||
+      targetPrice.amount.currency !== currentPrice?.amount.currency
     ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Le forfait cible n’est pas disponible.",
       });
     }
+    const sameProduct = targetProduct.id === currentProduct.id;
+    const isConfiguredUpgrade =
+      currentProduct.commercialProfile.upgradeProductIds.includes(
+        targetProduct.id,
+      );
+    const isConfiguredDowngrade =
+      currentProduct.commercialProfile.downgradeProductIds.includes(
+        targetProduct.id,
+      );
+    if (!sameProduct && !isConfiguredUpgrade && !isConfiguredDowngrade) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Cette transition de forfait n’est pas autorisée.",
+        details: { reasonCode: "PLAN_TRANSITION_NOT_ALLOWED" },
+      });
+    }
     const currentMinor = currentPrice?.amount.amountMinor || 0;
-    const isUpgrade = targetPrice.amount.amountMinor > currentMinor;
+    const isUpgrade = isConfiguredUpgrade;
     const periodStart = new Date(subscription.currentPeriodStart).getTime();
     const periodEnd = new Date(subscription.currentPeriodEnd).getTime();
     const remainingRatio = Math.max(
@@ -965,6 +1190,106 @@ export class BusinessRulesService {
       logger.info("commercial_schedules_activated", { activated });
     }
     return activated;
+  }
+
+  async requestComplimentaryGrant(
+    actorId: string,
+    input: {
+      accountId: string;
+      productVersionId: string;
+      campaignId?: string;
+      reason: string;
+      startsAt: string;
+      endsAt: string;
+      idempotencyKey: string;
+    },
+  ) {
+    if (
+      !input?.accountId ||
+      !input.productVersionId ||
+      input.reason?.trim().length < 12 ||
+      !input.idempotencyKey ||
+      new Date(input.endsAt) <= new Date(input.startsAt)
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Demande de forfait offert incomplète.",
+      });
+    }
+    if (config.dataMode !== "database") {
+      return {
+        id: deterministicId(
+          "complimentary-request",
+          `${actorId}:${input.idempotencyKey}`,
+        ),
+        status: "pending_approval" as const,
+        requestedBy: actorId,
+        ...input,
+      };
+    }
+    const client = getSupabaseAdminClient() as any;
+    const { data, error } = await client.rpc("request_complimentary_plan", {
+      p_account_id: input.accountId,
+      p_product_version_id: input.productVersionId,
+      p_campaign_id: input.campaignId || null,
+      p_reason: input.reason.trim(),
+      p_starts_at: input.startsAt,
+      p_ends_at: input.endsAt,
+      p_requested_by: actorId,
+      p_idempotency_key: input.idempotencyKey,
+    });
+    if (error) throw error;
+    return { id: String(data), status: "pending_approval" as const };
+  }
+
+  async decideComplimentaryGrant(
+    actorId: string,
+    requestId: string,
+    input: {
+      decision: "approved" | "rejected";
+      reason: string;
+      idempotencyKey: string;
+    },
+  ) {
+    if (
+      !requestId ||
+      !["approved", "rejected"].includes(input?.decision) ||
+      input.reason?.trim().length < 8 ||
+      !input.idempotencyKey
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Décision de forfait offert incomplète.",
+      });
+    }
+    if (config.dataMode !== "database") {
+      return {
+        requestId,
+        decision: input.decision,
+        decidedBy: actorId,
+        grantId:
+          input.decision === "approved"
+            ? deterministicId("complimentary-grant", requestId)
+            : undefined,
+      };
+    }
+    const client = getSupabaseAdminClient() as any;
+    const { data, error } = await client.rpc(
+      "decide_complimentary_plan_request",
+      {
+        p_request_id: requestId,
+        p_decision: input.decision,
+        p_reason: input.reason.trim(),
+        p_decided_by: actorId,
+        p_idempotency_key: input.idempotencyKey,
+      },
+    );
+    if (error) throw error;
+    return {
+      requestId,
+      decision: input.decision,
+      grantId: data ? String(data) : undefined,
+    };
   }
 
   async handleStripeWebhook(event: any, rawBody: string) {

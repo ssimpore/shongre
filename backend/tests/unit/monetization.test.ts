@@ -14,10 +14,11 @@ describe("Monetization & Subscriptions", () => {
     expect(boosts.some((b) => b.type === "featured")).toBe(true);
   });
 
-  it("provides the 3 pro plans (Starter, Pro, Enterprise)", async () => {
+  it("provides the free and three paid generic Pro tiers", async () => {
     const plans = await monetizationService.getProSubscriptionPlans();
-    expect(plans.length).toBe(3);
+    expect(plans.length).toBe(4);
     const planIds = plans.map((p) => p.id);
+    expect(planIds).toContain("free");
     expect(planIds).toContain("starter");
     expect(planIds).toContain("pro");
     expect(planIds).toContain("enterprise");

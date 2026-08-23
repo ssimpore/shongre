@@ -7,10 +7,12 @@ import React, {
 } from "react";
 import type {
   BillingOverview,
+  BusinessVerticalCode,
   MonetizationCatalog,
   MonetizationPrice,
   MonetizationProduct,
   MonetizationQuote,
+  MonetizationSubscription,
   SubscriptionChangePreview,
 } from "@shongre/contracts/monetization";
 import {
@@ -34,15 +36,9 @@ import { Button } from "../../design-system/primitives/Button";
 import { Modal } from "../../design-system/primitives/Modal";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { BillingHistoryModal } from "./components/BillingHistoryModal";
+import { FormField, Input } from "../../design-system/primitives/FormField";
 
 type BillingInterval = "month" | "year";
-
-const PLAN_IDS = new Set([
-  "listing.standard.individual",
-  "plan.pro.starter",
-  "plan.pro.business",
-  "plan.pro.enterprise",
-]);
 
 const STATUS_LABELS: Record<string, string> = {
   trialing: "Période d’essai",
@@ -127,13 +123,15 @@ function PriceDisplay({
 }
 
 export const ProPlansPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   const toast = useToast();
   const operationSequence = useRef(0);
   const [catalog, setCatalog] = useState<MonetizationCatalog | null>(null);
   const [billing, setBilling] = useState<BillingOverview | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [interval, setInterval] = useState<BillingInterval>("month");
+  const [selectedVertical, setSelectedVertical] =
+    useState<BusinessVerticalCode>("general");
   const [selectedProduct, setSelectedProduct] =
     useState<MonetizationProduct | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<MonetizationPrice | null>(
@@ -142,10 +140,13 @@ export const ProPlansPage: React.FC = () => {
   const [quote, setQuote] = useState<MonetizationQuote | null>(null);
   const [changePreview, setChangePreview] =
     useState<SubscriptionChangePreview | null>(null);
+  const [changeSourceSubscription, setChangeSourceSubscription] =
+    useState<MonetizationSubscription | null>(null);
   const [isPreparing, setIsPreparing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [completedMessage, setCompletedMessage] = useState<string | null>(null);
   const [billingHistoryOpen, setBillingHistoryOpen] = useState(false);
+  const [promotionCode, setPromotionCode] = useState("");
 
   usePageMeta({
     title: "Offres et forfaits professionnels",
@@ -177,12 +178,42 @@ export const ProPlansPage: React.FC = () => {
     };
   }, [loadCommercialState]);
 
+  useEffect(() => {
+    const verticalByProfile = {
+      generic: "general",
+      automotive: "auto",
+      real_estate: "immo",
+      employment: "emploi",
+      education: "cours",
+    } as const;
+    if (currentUser?.professionalVertical) {
+      setSelectedVertical(verticalByProfile[currentUser.professionalVertical]);
+    }
+  }, [currentUser?.professionalVertical]);
+
+  const verticals = useMemo(
+    () =>
+      (catalog?.verticals || [])
+        .filter((vertical) => vertical.status === "active")
+        .sort((left, right) => left.sortOrder - right.sortOrder),
+    [catalog],
+  );
+
   const plans = useMemo(
     () =>
       catalog?.products.filter(
-        (product) => product.status === "active" && PLAN_IDS.has(product.id),
+        (product) =>
+          product.status === "active" &&
+          product.kind === "subscription" &&
+          product.commercialProfile.professionalOnly &&
+          Boolean(product.commercialProfile.tier) &&
+          (selectedVertical === "general"
+            ? ["free", "generic"].includes(
+                product.commercialProfile.planType,
+              )
+            : product.commercialProfile.verticalId === selectedVertical),
       ) || [],
-    [catalog],
+    [catalog, selectedVertical],
   );
   const boosts = useMemo(
     () =>
@@ -192,20 +223,15 @@ export const ProPlansPage: React.FC = () => {
           ["premium_option", "pack", "sponsored_placement"].includes(
             product.kind,
           ) &&
-          product.sourceConsumers.includes("solutions-pro"),
+          (product.commercialProfile.verticalId === selectedVertical ||
+            (!product.commercialProfile.verticalId &&
+              product.sourceConsumers.includes("solutions-pro"))),
       ) || [],
-    [catalog],
+    [catalog, selectedVertical],
   );
   const comparisonRows = useMemo(() => {
     const keys = [
-      "maxActiveListings",
-      "maxPhotosPerListing",
-      "teamMembers",
-      "storefrontCustomization",
-      "monthlyBumpCredits",
-      "bulkImportExport",
-      "analyticsLevel",
-      "apiAccess",
+      ...new Set(plans.flatMap((plan) => plan.entitlements.map((entry) => entry.key))),
     ];
     return keys
       .map((key) => {
@@ -219,10 +245,27 @@ export const ProPlansPage: React.FC = () => {
       );
   }, [plans]);
 
-  const currentSubscription = billing?.currentSubscription;
+  const selectedFamilyId = plans[0]?.commercialProfile.familyId;
+  const currentSubscription = billing?.subscriptions.find((subscription) => {
+    const product = catalog?.products.find(
+      (candidate) => candidate.id === subscription.productId,
+    );
+    return (
+      product?.commercialProfile.familyId === selectedFamilyId &&
+      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
+        subscription.status,
+      )
+    );
+  });
   const currentProduct = plans.find(
     (plan) => plan.id === currentSubscription?.productId,
   );
+  const activeSubscriptions =
+    billing?.subscriptions.filter((subscription) =>
+      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
+        subscription.status,
+      ),
+    ) || [];
 
   const closeCheckout = () => {
     if (isConfirming) return;
@@ -230,27 +273,32 @@ export const ProPlansPage: React.FC = () => {
     setSelectedPrice(null);
     setQuote(null);
     setChangePreview(null);
+    setChangeSourceSubscription(null);
     setCompletedMessage(null);
+    setPromotionCode("");
   };
 
   const prepareOffer = async (
     product: MonetizationProduct,
     price: MonetizationPrice,
+    replacementSource?: MonetizationSubscription,
   ) => {
     if (product.id === currentSubscription?.productId) return;
+    const sourceSubscription = replacementSource || currentSubscription;
     setSelectedProduct(product);
     setSelectedPrice(price);
     setQuote(null);
     setChangePreview(null);
+    setChangeSourceSubscription(sourceSubscription || null);
     setCompletedMessage(null);
     setIsPreparing(true);
     operationSequence.current += 1;
     const operationKey = `solutions-pro:${product.id}:${price.id}:${operationSequence.current}`;
     try {
-      if (currentSubscription) {
+      if (sourceSubscription) {
         setChangePreview(
           await services.businessRules.previewSubscriptionChange({
-            subscriptionId: currentSubscription.id,
+            subscriptionId: sourceSubscription.id,
             targetProductId: product.id,
             targetPriceId: price.id,
             idempotencyKey: operationKey,
@@ -262,6 +310,9 @@ export const ProPlansPage: React.FC = () => {
             productIds: [product.id],
             priceIds: { [product.id]: price.id },
             marketCode: "FR",
+            categoryId: catalog?.verticals.find(
+              (vertical) => vertical.id === selectedVertical,
+            )?.categoryIds[0],
             idempotencyKey: operationKey,
           }),
         );
@@ -278,15 +329,40 @@ export const ProPlansPage: React.FC = () => {
     }
   };
 
+  const applyPromotion = async () => {
+    if (!selectedProduct || !selectedPrice || !promotionCode.trim()) return;
+    setIsPreparing(true);
+    operationSequence.current += 1;
+    try {
+      setQuote(
+        await services.businessRules.createQuote({
+          productIds: [selectedProduct.id],
+          priceIds: { [selectedProduct.id]: selectedPrice.id },
+          marketCode: "FR",
+          categoryId: catalog?.verticals.find(
+            (vertical) => vertical.id === selectedVertical,
+          )?.categoryIds[0],
+          promotionCode: promotionCode.trim(),
+          idempotencyKey: `promotion:${selectedProduct.id}:${operationSequence.current}`,
+        }),
+      );
+      toast.success("La campagne a été vérifiée et appliquée au devis.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Code indisponible.");
+    } finally {
+      setIsPreparing(false);
+    }
+  };
+
   const confirmOffer = async () => {
     if (!selectedProduct || !selectedPrice) return;
     setIsConfirming(true);
     operationSequence.current += 1;
     const operationKey = `confirm:${selectedProduct.id}:${selectedPrice.id}:${operationSequence.current}`;
     try {
-      if (changePreview && currentSubscription) {
+      if (changePreview && changeSourceSubscription) {
         await services.businessRules.applySubscriptionChange({
-          subscriptionId: currentSubscription.id,
+          subscriptionId: changeSourceSubscription.id,
           targetProductId: selectedProduct.id,
           targetPriceId: selectedPrice.id,
           idempotencyKey: operationKey,
@@ -302,7 +378,9 @@ export const ProPlansPage: React.FC = () => {
           operationKey,
         );
         setCompletedMessage(
-          order.status === "paid"
+          quote.trial
+            ? `Votre essai de ${quote.trial.durationDays} jours est actif. Prochain débit le ${formatDate(quote.trial.endsAt)}.`
+            : order.status === "paid"
             ? "Paiement confirmé : votre forfait et vos droits sont actifs."
             : "Votre paiement est en cours de traitement.",
         );
@@ -354,7 +432,29 @@ export const ProPlansPage: React.FC = () => {
             quotas et dates d’effet sont confirmés avant chaque paiement.
           </p>
           <div
-            className="mx-auto mt-7 grid max-w-md grid-cols-2 rounded-control border border-border-base bg-bg-base p-1"
+            className="mx-auto mt-7 flex max-w-3xl flex-wrap justify-center gap-2"
+            role="tablist"
+            aria-label="Activité professionnelle"
+          >
+            {verticals.map((vertical) => (
+              <button
+                key={vertical.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedVertical === vertical.id}
+                onClick={() => setSelectedVertical(vertical.id)}
+                className={`rounded-full border px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  selectedVertical === vertical.id
+                    ? "border-primary bg-primary text-white"
+                    : "border-border-base bg-bg-surface text-text-secondary hover:border-primary-border hover:text-text-main"
+                }`}
+              >
+                {vertical.name}
+              </button>
+            ))}
+          </div>
+          <div
+            className="mx-auto mt-5 grid max-w-md grid-cols-2 rounded-control border border-border-base bg-bg-base p-1"
             role="group"
             aria-label="Période de facturation"
           >
@@ -420,8 +520,10 @@ export const ProPlansPage: React.FC = () => {
                     Un forfait pour chaque étape
                   </h2>
                   <p className="mt-1 text-sm text-text-secondary">
-                    Quatre niveaux lisibles, issus du catalogue commercial
-                    actif.
+                    {catalog.verticals.find(
+                      (vertical) => vertical.id === selectedVertical,
+                    )?.description ||
+                      "Niveaux issus du catalogue commercial actif."}
                   </p>
                 </div>
                 <span className="text-xs text-text-muted">
@@ -430,10 +532,50 @@ export const ProPlansPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${plans.length <= 3 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
                 {plans.map((plan) => {
                   const price = priceFor(plan, interval);
                   const isCurrent = currentSubscription?.productId === plan.id;
+                  const canTransition =
+                    !currentSubscription ||
+                    isCurrent ||
+                    Boolean(
+                      currentProduct?.commercialProfile.upgradeProductIds.includes(
+                        plan.id,
+                      ) ||
+                        currentProduct?.commercialProfile.downgradeProductIds.includes(
+                          plan.id,
+                        ),
+                    );
+                  const trialDays =
+                    plan.commercialProfile.trialPolicy.enabled
+                      ? plan.commercialProfile.trialPolicy.durationDays
+                      : undefined;
+                  const replacementCandidates = !currentSubscription
+                    ? activeSubscriptions.filter((subscription) => {
+                        const sourceProduct = catalog.products.find(
+                          (candidate) => candidate.id === subscription.productId,
+                        );
+                        return Boolean(
+                          sourceProduct &&
+                            sourceProduct.commercialProfile.familyId !==
+                              plan.commercialProfile.familyId &&
+                            (sourceProduct.commercialProfile.upgradeProductIds.includes(
+                              plan.id,
+                            ) ||
+                              sourceProduct.commercialProfile.downgradeProductIds.includes(
+                                plan.id,
+                              )),
+                        );
+                      })
+                    : [];
+                  const replacementSource =
+                    replacementCandidates.length === 1
+                      ? replacementCandidates[0]
+                      : undefined;
+                  const replacementSourceProduct = catalog.products.find(
+                    (candidate) => candidate.id === replacementSource?.productId,
+                  );
                   const monthly = plan.prices.find(
                     (entry) => entry.billingPeriod === "month",
                   );
@@ -457,6 +599,11 @@ export const ProPlansPage: React.FC = () => {
                       {plan.recommended && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-black uppercase tracking-wide text-white shadow-xs">
                           Recommandé
+                        </span>
+                      )}
+                      {trialDays && !isCurrent && (
+                        <span className="mb-3 inline-flex w-fit rounded-full bg-success-surface px-2.5 py-1 text-micro font-black uppercase tracking-wide text-success">
+                          {trialDays} jours d’essai
                         </span>
                       )}
                       <div className="flex min-h-14 items-start justify-between gap-3">
@@ -506,7 +653,7 @@ export const ProPlansPage: React.FC = () => {
                           </li>
                         ))}
                       </ul>
-                      <div className="mt-6">
+                      <div className="mt-6 space-y-2">
                         {plan.audience === "individual" ? (
                           <Button
                             to="/inscription/particulier"
@@ -527,16 +674,41 @@ export const ProPlansPage: React.FC = () => {
                           <Button
                             variant={plan.recommended ? "primary" : "outline"}
                             fullWidth
-                            disabled={isCurrent}
+                            disabled={isCurrent || !canTransition}
                             onClick={() => void prepareOffer(plan, price)}
                           >
                             {isCurrent
                               ? "Forfait actuel"
-                              : currentSubscription
+                              : !canTransition
+                                ? "Transition indisponible"
+                                : currentSubscription
                                 ? "Changer de forfait"
-                                : "Choisir ce forfait"}
+                                : trialDays
+                                  ? `Essayer ${trialDays} jours`
+                                  : activeSubscriptions.length > 0
+                                    ? "Ajouter ce forfait"
+                                    : "Choisir ce forfait"}
                           </Button>
                         )}
+                        {isAuthenticated &&
+                          !currentSubscription &&
+                          replacementSource &&
+                          replacementSourceProduct && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              fullWidth
+                              onClick={() =>
+                                void prepareOffer(
+                                  plan,
+                                  price,
+                                  replacementSource,
+                                )
+                              }
+                            >
+                              Remplacer {replacementSourceProduct.name}
+                            </Button>
+                          )}
                       </div>
                     </article>
                   );
@@ -713,6 +885,52 @@ export const ProPlansPage: React.FC = () => {
                   </Badge>
                 )}
               </div>
+              {billing?.subscriptions.some((subscription) =>
+                ["trialing", "active", "past_due", "cancellation_pending"].includes(
+                  subscription.status,
+                ),
+              ) && (
+                <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {billing.subscriptions
+                    .filter((subscription) =>
+                      ["trialing", "active", "past_due", "cancellation_pending"].includes(
+                        subscription.status,
+                      ),
+                    )
+                    .map((subscription) => {
+                      const product = catalog.products.find(
+                        (candidate) => candidate.id === subscription.productId,
+                      );
+                      const vertical = catalog.verticals.find(
+                        (candidate) =>
+                          candidate.id ===
+                          (product?.commercialProfile.verticalId || "general"),
+                      );
+                      return (
+                        <button
+                          key={subscription.id}
+                          type="button"
+                          onClick={() =>
+                            setSelectedVertical(
+                              product?.commercialProfile.verticalId || "general",
+                            )
+                          }
+                          className="rounded-card border border-border-base bg-bg-subtle p-3 text-left focus-visible:outline-2 focus-visible:outline-primary"
+                        >
+                          <span className="text-micro font-black uppercase tracking-wide text-primary">
+                            {vertical?.name || "Général"}
+                          </span>
+                          <span className="mt-1 block text-sm font-black text-text-main">
+                            {product?.name || subscription.productId}
+                          </span>
+                          <span className="mt-1 block text-xs text-text-muted">
+                            {STATUS_LABELS[subscription.status] || subscription.status} · au {formatDate(subscription.currentPeriodEnd)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                </div>
+              )}
               <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr_1fr] lg:divide-x lg:divide-border-subtle">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
@@ -947,7 +1165,32 @@ export const ProPlansPage: React.FC = () => {
               </div>
             </div>
             {quote && (
-              <dl className="space-y-3 text-sm">
+              <>
+                {quote.trial && (
+                  <div className="rounded-card border border-success-border bg-success-surface p-3 text-sm text-success">
+                    <strong>Essai de {quote.trial.durationDays} jours</strong>
+                    <p className="mt-1 text-xs leading-relaxed">
+                      Aucun débit aujourd’hui. Conversion automatique le {formatDate(quote.trial.endsAt)} selon le moyen de paiement confirmé.
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-end gap-2">
+                  <FormField label="Code promotionnel" className="min-w-0 flex-1">
+                    <Input
+                      value={promotionCode}
+                      onChange={(event) => setPromotionCode(event.target.value.toUpperCase())}
+                      placeholder="Ex. AUTO2026"
+                    />
+                  </FormField>
+                  <Button
+                    variant="outline"
+                    onClick={() => void applyPromotion()}
+                    disabled={!promotionCode.trim() || isPreparing}
+                  >
+                    Appliquer
+                  </Button>
+                </div>
+                <dl className="space-y-3 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-text-secondary">Sous-total HT</dt>
                   <dd className="font-bold text-text-main">
@@ -955,12 +1198,25 @@ export const ProPlansPage: React.FC = () => {
                   </dd>
                 </div>
                 {quote.discountMinor > 0 && (
-                  <div className="flex justify-between gap-4 text-success">
-                    <dt>Remise</dt>
-                    <dd className="font-bold">
-                      − {formatMoney(quote.discountMinor, quote.currency)}
-                    </dd>
-                  </div>
+                  <>
+                    <div className="flex justify-between gap-4 text-success">
+                      <dt>Remise</dt>
+                      <dd className="font-bold">
+                        − {formatMoney(quote.discountMinor, quote.currency)}
+                      </dd>
+                    </div>
+                    {quote.promotion && (
+                      <div className="rounded-control border border-success-border bg-success-surface px-3 py-2 text-xs text-success">
+                        <strong>{quote.promotion.name} · {quote.promotion.code}</strong>
+                        <p className="mt-1">
+                          {quote.promotion.durationBillingPeriods
+                            ? `Tarif appliqué pendant ${quote.promotion.durationBillingPeriods} période${quote.promotion.durationBillingPeriods > 1 ? "s" : ""} de facturation.`
+                            : "Remise appliquée à cette échéance."}{" "}
+                          Campagne valable jusqu’au {formatDate(quote.promotion.endsAt)}.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="flex justify-between gap-4">
                   <dt className="text-text-secondary">TVA</dt>
@@ -969,12 +1225,21 @@ export const ProPlansPage: React.FC = () => {
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4 border-t border-border-base pt-3 text-base">
-                  <dt className="font-black text-text-main">Total TTC</dt>
+                  <dt className="font-black text-text-main">Dû aujourd’hui</dt>
                   <dd className="font-black text-text-main">
-                    {formatMoney(quote.totalMinor, quote.currency)}
+                    {formatMoney(quote.amountDueTodayMinor, quote.currency)}
                   </dd>
                 </div>
-              </dl>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-text-secondary">
+                    Prochaine échéance{quote.nextChargeAt ? ` · ${formatDate(quote.nextChargeAt)}` : ""}
+                  </dt>
+                  <dd className="font-bold text-text-main">
+                    {formatMoney(quote.nextChargeMinor, quote.currency)}
+                  </dd>
+                </div>
+                </dl>
+              </>
             )}
             {changePreview && (
               <dl className="space-y-3 text-sm">
