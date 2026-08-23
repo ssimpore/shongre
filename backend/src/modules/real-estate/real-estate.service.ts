@@ -405,9 +405,47 @@ export class RealEstateService {
         code: "CONFLICT",
         message: "Le quota de biens actifs de cette offre est atteint.",
       });
-    const mediaUrls = Array.isArray(data.media?.photos)
-      ? data.media.photos
-      : [];
+    const media = data.media || {};
+    const mediaUrls = Array.isArray(media.photos) ? media.photos : [];
+    const floorPlans = Array.isArray(media.floorPlans) ? media.floorPlans : [];
+    const mediaCount = mediaUrls.length + floorPlans.length;
+    const maxMedia = Number(offer.entitlements.maxMedia || 0);
+    const videoCount = media.videoUrl ? 1 : 0;
+    const maxVideos = Number(offer.entitlements.maxVideosPerListing || 0);
+    const virtualTourCount = media.virtualTourUrl ? 1 : 0;
+    const maxVirtualTours = Number(
+      offer.entitlements.maxVirtualToursPerListing || 0,
+    );
+    if (mediaCount > maxMedia)
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: `Cette offre autorise ${maxMedia} photo(s) ou plan(s) par bien.`,
+        details: {
+          entitlement: "maxMedia",
+          limit: maxMedia,
+          requested: mediaCount,
+        },
+      });
+    if (videoCount > maxVideos)
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "La vidéo n’est pas incluse dans cette offre.",
+        details: {
+          entitlement: "maxVideosPerListing",
+          limit: maxVideos,
+          requested: videoCount,
+        },
+      });
+    if (virtualTourCount > maxVirtualTours)
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "La visite virtuelle n’est pas incluse dans cette offre.",
+        details: {
+          entitlement: "maxVirtualToursPerListing",
+          limit: maxVirtualTours,
+          requested: virtualTourCount,
+        },
+      });
     const riskSignals = await this.repo.assessRisk({
       title: data.title,
       description: data.description,

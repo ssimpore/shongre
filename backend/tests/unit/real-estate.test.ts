@@ -149,6 +149,34 @@ describe("RealEstateService", () => {
     ).toBe("pending");
   });
 
+  it("enforces configured photo, video and virtual-tour entitlements", async () => {
+    const { service } = setup();
+    await service.saveOwnDraft("owner_media_limit", "draft-media-limit", {
+      currentStep: 10,
+      completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      data: {
+        ...completeData,
+        offerId: "immo_owner_free",
+        media: {
+          photos: Array.from(
+            { length: 13 },
+            (_value, index) => `https://images.example.com/house-${index}.webp`,
+          ),
+          floorPlans: [],
+          videoUrl: "https://video.example.com/property.mp4",
+          virtualTourUrl: "https://tour.example.com/property",
+        },
+      },
+    });
+
+    await expect(
+      service.submitOwnDraft("owner_media_limit", "draft-media-limit"),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      details: { entitlement: "maxMedia", limit: 12, requested: 13 },
+    });
+  });
+
   it("requires consent and deduplicates structured leads", async () => {
     const { service } = setup();
     const input = {

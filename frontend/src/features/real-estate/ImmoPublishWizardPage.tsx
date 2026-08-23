@@ -370,6 +370,19 @@ export const ImmoPublishWizardPage: React.FC = () => {
     visibility: "public" | "private",
   ) => {
     if (!files?.length) return;
+    const selectedOffer =
+      catalog?.offers.find((item) => item.id === data.offerId) ||
+      catalog?.offers[0];
+    const mediaLimit = Number(selectedOffer?.entitlements.maxMedia || 0);
+    if (
+      visibility === "public" &&
+      data.mediaUrls.length + files.length > mediaLimit
+    ) {
+      toast.warning(
+        `Cette offre autorise ${mediaLimit} photo(s). Vous en avez déjà ${data.mediaUrls.length}.`,
+      );
+      return;
+    }
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
@@ -378,12 +391,19 @@ export const ImmoPublishWizardPage: React.FC = () => {
           { name: file.name, type: file.type, size: file.size },
           visibility,
         );
-        if (result.url) update("mediaUrls", [...data.mediaUrls, result.url]);
+        if (result.url)
+          setData((current) => ({
+            ...current,
+            mediaUrls: [...current.mediaUrls, result.url!],
+          }));
         if (result.privateStorageKey)
-          update("privateDocumentKeys", [
-            ...data.privateDocumentKeys,
-            result.privateStorageKey,
-          ]);
+          setData((current) => ({
+            ...current,
+            privateDocumentKeys: [
+              ...current.privateDocumentKeys,
+              result.privateStorageKey!,
+            ],
+          }));
       }
       toast.success(
         visibility === "public"
@@ -961,7 +981,8 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   {uploading ? "Téléversement…" : "Ajouter des photos"}
                 </label>
                 <p className="mt-3 text-xs font-bold">
-                  {data.mediaUrls.length} photo(s)
+                  {data.mediaUrls.length} /{" "}
+                  {Number(offer.entitlements.maxMedia || 0)} photos
                 </p>
               </div>
               <div className="rounded-card border border-border-base bg-bg-subtle p-5">

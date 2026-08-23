@@ -406,16 +406,22 @@ export class AutoService {
         code: "VALIDATION_ERROR",
         message: "La formule sélectionnée ne correspond pas au vendeur.",
       });
+    const currentMediaCount = current?.mediaUrls.length || 0;
+    const requestedMediaCount = body.mediaUrls?.length;
     if (
-      body.mediaUrls &&
-      body.mediaUrls.length > plan.entitlements.maxPhotosPerVehicle
+      requestedMediaCount !== undefined &&
+      requestedMediaCount > plan.entitlements.maxPhotosPerVehicle &&
+      requestedMediaCount > currentMediaCount
     ) {
       throw new AppError({
         code: "FORBIDDEN",
-        message: "Le nombre de photos dépasse le quota de la formule.",
+        message:
+          "Le véhicule conserve ses médias existants, mais aucune photo supplémentaire ne peut être ajoutée au-delà du quota actuel.",
         details: {
           entitlement: "maxPhotosPerVehicle",
           limit: plan.entitlements.maxPhotosPerVehicle,
+          existing: currentMediaCount,
+          requested: requestedMediaCount,
         },
       });
     }

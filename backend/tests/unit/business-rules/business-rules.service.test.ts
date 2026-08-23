@@ -46,6 +46,75 @@ describe("BusinessRulesService quotes", () => {
     );
   });
 
+  it("versions price, media quota, feature and trial changes as one plan snapshot", async () => {
+    const repository = new DemoBusinessRulesRepository();
+    const service = new BusinessRulesService(repository);
+    const current = await service.getCatalog("FR");
+    const original = current.products.find(
+      (product) => product.id === "auto.dealer.growth",
+    )!;
+    const products = current.products.map((product) =>
+      product.id !== original.id
+        ? product
+        : {
+            ...product,
+            prices: product.prices.map((price) =>
+              price.billingPeriod === "month"
+                ? {
+                    ...price,
+                    amount: { ...price.amount, amountMinor: 6_490 },
+                  }
+                : price,
+            ),
+            entitlements: product.entitlements.map((entitlement) =>
+              entitlement.key === "maxPhotosPerVehicle"
+                ? { ...entitlement, value: 30 }
+                : entitlement.key === "inventoryXmlImport"
+                  ? { ...entitlement, value: false }
+                  : entitlement,
+            ),
+            commercialProfile: {
+              ...product.commercialProfile,
+              trialPolicy: {
+                ...product.commercialProfile.trialPolicy,
+                durationDays: 14,
+              },
+            },
+          },
+    );
+
+    const version = await service.createDraft("plan-admin", {
+      reason: "Validation coordonnée du prix, quota et essai Auto",
+      products,
+    });
+    const snapshot = await repository.getCatalogVersion(version.id);
+    const changed = snapshot?.products.find(
+      (product) => product.id === original.id,
+    );
+
+    expect(changed?.versionId).toBe(`${version.id}:${original.id}`);
+    expect(
+      changed?.prices.find((price) => price.billingPeriod === "month")?.amount
+        .amountMinor,
+    ).toBe(6_490);
+    expect(
+      changed?.entitlements.find(
+        (entitlement) => entitlement.key === "maxPhotosPerVehicle",
+      )?.value,
+    ).toBe(30);
+    expect(
+      changed?.entitlements.find(
+        (entitlement) => entitlement.key === "inventoryXmlImport",
+      )?.value,
+    ).toBe(false);
+    expect(changed?.commercialProfile.trialPolicy.durationDays).toBe(14);
+    expect(
+      (await service.getCatalog("FR")).products.find(
+        (product) => product.id === original.id,
+      )?.versionId,
+    ).toBe(original.versionId);
+  });
+
   it("creates an authoritative minor-unit quote from the active catalog", async () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
     const quote = await service.createQuote("individual_quote_test", {

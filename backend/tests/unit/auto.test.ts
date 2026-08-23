@@ -217,6 +217,57 @@ describe("Shongre Auto domain service", () => {
     expect(retry.id).toBe(first.id);
   });
 
+  it("preserves media after a downgrade while blocking only additional photos", async () => {
+    const { repository, service } = createService();
+    const existing = DEMO_AUTO_VEHICLES[0];
+    const mediaUrls = Array.from(
+      { length: 18 },
+      (_value, index) => `https://images.example.com/downgraded-${index}.webp`,
+    );
+    await repository.saveVehicle({
+      ...existing,
+      ownerUserId: "user_downgraded_seller",
+      dealerOrganizationId: undefined,
+      dealerLocationId: undefined,
+      planId: "auto_private_free",
+      mediaUrls,
+    });
+
+    await expect(
+      service.saveOwnVehicle("user_downgraded_seller", {
+        ...existing,
+        ownerUserId: "user_downgraded_seller",
+        dealerOrganizationId: undefined,
+        dealerLocationId: undefined,
+        planId: "auto_private_free",
+        title: "Titre modifié sans suppression de médias",
+        mediaUrls,
+      }),
+    ).resolves.toMatchObject({ mediaUrls });
+
+    await expect(
+      service.saveOwnVehicle("user_downgraded_seller", {
+        ...existing,
+        ownerUserId: "user_downgraded_seller",
+        dealerOrganizationId: undefined,
+        dealerLocationId: undefined,
+        planId: "auto_private_free",
+        mediaUrls: [
+          ...mediaUrls,
+          "https://images.example.com/downgraded-extra.webp",
+        ],
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      details: {
+        entitlement: "maxPhotosPerVehicle",
+        limit: 12,
+        existing: 18,
+        requested: 19,
+      },
+    });
+  });
+
   it("flags duplicate identity, photos, descriptions and inconsistent mileage", async () => {
     const { repository } = createService();
     const existing = DEMO_AUTO_VEHICLES[0];

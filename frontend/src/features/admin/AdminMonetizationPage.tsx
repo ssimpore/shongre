@@ -4,13 +4,13 @@ import type {
   CommercialConfigurationVersion,
   MonetizationAdminOverview,
   MonetizationProduct,
+  Promotion,
   CommercialRuleOutcome,
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import {
   AlertTriangle,
-  ArrowRight,
   BadgeEuro,
   CalendarClock,
   Check,
@@ -42,6 +42,7 @@ import {
 import { Modal } from "../../design-system/primitives/Modal";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AdminDiscoveryConfigurationPanel } from "./AdminDiscoveryConfigurationPanel";
+import { AdminPlanDraftModal } from "./AdminPlanDraftModal";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useAuthorization } from "../../security/useAuthorization";
@@ -153,10 +154,8 @@ export const AdminMonetizationPage: React.FC = () => {
     null,
   );
   const [simulating, setSimulating] = useState(false);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [draftReason, setDraftReason] = useState("");
-  const [draftAmountMinor, setDraftAmountMinor] = useState(0);
-  const [draftEffectiveFrom, setDraftEffectiveFrom] = useState("");
+  const [planDraftProduct, setPlanDraftProduct] =
+    useState<MonetizationProduct | null>(null);
   const [saving, setSaving] = useState(false);
   const [campaignOpen, setCampaignOpen] = useState(false);
   const [verticalEditor, setVerticalEditor] = useState<
@@ -172,9 +171,16 @@ export const AdminMonetizationPage: React.FC = () => {
     name: "",
     code: "",
     verticalId: "auto",
-    percentage: 20,
+    discountType: "percentage" as Promotion["discountType"],
+    discountValue: 20,
+    activationMode: "coupon" as Promotion["activationMode"],
+    eligibleCustomerType: "new" as Promotion["eligibleCustomerType"],
+    stackingPolicy: "exclusive" as Promotion["stackingPolicy"],
+    maximumRedemptions: 0,
+    maximumRedemptionsPerAccount: 1,
     freePeriodDays: 0,
     durationBillingPeriods: 1,
+    minimumCommitmentPeriods: 0,
     providerCouponId: "",
     startsAt: "",
     endsAt: "",
@@ -246,7 +252,6 @@ export const AdminMonetizationPage: React.FC = () => {
     overview?.catalog.products.find(
       (product) => product.id === selectedProductId,
     ) || null;
-  const selectedPrice = selectedProduct?.prices[0];
 
   const runSimulation = async () => {
     setSimulating(true);
@@ -273,46 +278,31 @@ export const AdminMonetizationPage: React.FC = () => {
   };
 
   const openEditor = () => {
-    setDraftAmountMinor(selectedPrice?.amount.amountMinor || 0);
-    setDraftReason("");
-    setDraftEffectiveFrom("");
-    setEditorOpen(true);
+    if (selectedProduct) {
+      setPlanDraftProduct(structuredClone(selectedProduct));
+    }
   };
 
-  const createDraft = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!overview || !selectedProduct || draftReason.trim().length < 8) return;
+  const createPlanDraft = async (input: {
+    product: MonetizationProduct;
+    reason: string;
+    effectiveFrom?: string;
+  }) => {
+    if (!overview) return;
     setSaving(true);
     try {
       const updatedProducts = overview.catalog.products.map((product) =>
-        product.id !== selectedProduct.id
-          ? product
-          : {
-              ...product,
-              prices: product.prices.map((price, index) =>
-                index === 0
-                  ? {
-                      ...price,
-                      amount: {
-                        ...price.amount,
-                        amountMinor: draftAmountMinor,
-                      },
-                    }
-                  : price,
-              ),
-            },
+        product.id === input.product.id ? input.product : product,
       );
       const version = await services.businessRules.createDraft({
-        reason: draftReason.trim(),
-        effectiveFrom: draftEffectiveFrom
-          ? new Date(draftEffectiveFrom).toISOString()
-          : undefined,
+        reason: input.reason,
+        effectiveFrom: input.effectiveFrom,
         products: updatedProducts,
       });
       setNotice(
-        `Brouillon v${version.versionNumber} créé. Aucun prix publié n’a changé.`,
+        `Brouillon v${version.versionNumber} créé. L’offre publiée reste inchangée.`,
       );
-      setEditorOpen(false);
+      setPlanDraftProduct(null);
       await loadOverview();
     } catch (caught) {
       setError(
@@ -353,6 +343,12 @@ export const AdminMonetizationPage: React.FC = () => {
     setSaving(true);
     try {
       const code = campaign.code.trim().toUpperCase();
+      const discountValue =
+        campaign.discountType === "percentage"
+          ? Math.round(campaign.discountValue * 100)
+          : campaign.discountType === "free_period"
+            ? 0
+            : Math.round(campaign.discountValue * 100);
       const version = await services.businessRules.createDraft({
         reason: campaign.reason.trim(),
         promotions: [
@@ -379,15 +375,16 @@ export const AdminMonetizationPage: React.FC = () => {
               verticalIds: [campaign.verticalId],
             },
             productIds: targetProducts,
-            discountType: "percentage",
-            discountValue: Math.round(campaign.percentage * 100),
-            stackingPolicy: "exclusive",
-            maximumRedemptionsPerAccount: 1,
-            activationMode: "coupon",
-            eligibleCustomerType: "new",
+            discountType: campaign.discountType,
+            discountValue,
+            stackingPolicy: campaign.stackingPolicy,
+            maximumRedemptions: campaign.maximumRedemptions || undefined,
+            maximumRedemptionsPerAccount: campaign.maximumRedemptionsPerAccount,
+            activationMode: campaign.activationMode,
+            eligibleCustomerType: campaign.eligibleCustomerType,
             freePeriodDays: campaign.freePeriodDays || undefined,
             durationBillingPeriods: campaign.durationBillingPeriods,
-            minimumCommitmentPeriods: 0,
+            minimumCommitmentPeriods: campaign.minimumCommitmentPeriods,
             campaignId: `campaign-${code.toLowerCase()}`,
             providerCouponId: campaign.providerCouponId.trim() || undefined,
             verticalIds: [campaign.verticalId],
@@ -1940,105 +1937,20 @@ export const AdminMonetizationPage: React.FC = () => {
         </div>
       </section>
 
-      <Modal
-        isOpen={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        title="Créer un brouillon commercial"
-        description="La version publiée reste inchangée jusqu’à l’approbation et la publication."
-        maxWidth="lg"
-      >
-        <form onSubmit={createDraft} className="space-y-4">
-          <div className="rounded-lg border border-border-base bg-bg-subtle p-3 flex items-center justify-between gap-3">
-            <div>
-              <div className="text-micro text-stone-500">
-                Produit sélectionné
-              </div>
-              <div className="text-xs font-black text-stone-950">
-                {selectedProduct?.name}
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-stone-400" />
-            <div className="text-right">
-              <div className="text-micro text-stone-500">Version cible</div>
-              <div className="text-xs font-black text-primary">
-                v
-                {Math.max(
-                  ...overview.versions.map((version) => version.versionNumber),
-                ) + 1}
-              </div>
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <FormField
-              label="Montant HT (centimes)"
-              required
-              hint="Entier en unité mineure : 299 = 2,99 €."
-            >
-              <Input
-                type="number"
-                min={0}
-                value={draftAmountMinor}
-                onChange={(event) =>
-                  setDraftAmountMinor(Math.max(0, Number(event.target.value)))
-                }
-              />
-            </FormField>
-            <FormField label="Aperçu">
-              <div className="h-control-touch rounded-control border border-border-base bg-bg-subtle px-3 flex items-center text-sm font-black text-stone-900">
-                {formatMinor(draftAmountMinor)}
-              </div>
-            </FormField>
-          </div>
-          <FormField
-            label="Motif du changement"
-            required
-            hint="Visible dans l’audit et par l’approbateur."
-          >
-            <Textarea
-              rows={3}
-              value={draftReason}
-              onChange={(event) => setDraftReason(event.target.value)}
-              placeholder="Ex. Alignement tarifaire France après validation Finance…"
-            />
-          </FormField>
-          <FormField
-            label="Activation planifiée"
-            hint="Laissez vide pour publier dès la dernière approbation."
-          >
-            <Input
-              type="datetime-local"
-              value={draftEffectiveFrom}
-              onChange={(event) => setDraftEffectiveFrom(event.target.value)}
-            />
-          </FormField>
-          <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-stone-700">
-            <strong>Contrôle des quatre yeux.</strong> Le créateur du brouillon
-            ne pourra pas l’approuver lui-même.
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setEditorOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={saving || draftReason.trim().length < 8}
-            >
-              {saving ? (
-                <LoaderCircle className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}{" "}
-              Créer le brouillon
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {planDraftProduct ? (
+        <AdminPlanDraftModal
+          key={planDraftProduct.id}
+          product={planDraftProduct}
+          targetVersion={
+            Math.max(
+              ...overview.versions.map((version) => version.versionNumber),
+            ) + 1
+          }
+          saving={saving}
+          onClose={() => setPlanDraftProduct(null)}
+          onCreate={createPlanDraft}
+        />
+      ) : null}
       <Modal
         isOpen={Boolean(verticalEditor)}
         onClose={() => setVerticalEditor(null)}
@@ -2225,7 +2137,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 placeholder="Lancement Auto"
               />
             </FormField>
-            <FormField label="Code coupon" required>
+            <FormField label="Code campagne / coupon" required>
               <Input
                 value={campaign.code}
                 onChange={(event) =>
@@ -2257,18 +2169,138 @@ export const AdminMonetizationPage: React.FC = () => {
                   ))}
               </select>
             </FormField>
-            <FormField label="Remise (%)" required>
-              <Input
-                type="number"
-                min={1}
-                max={100}
-                value={campaign.percentage}
+            <FormField label="Type de remise" required>
+              <select
+                value={campaign.discountType}
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
-                    percentage: Math.min(
-                      100,
-                      Math.max(1, Number(event.target.value)),
+                    discountType: event.target
+                      .value as Promotion["discountType"],
+                  }))
+                }
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+              >
+                <option value="percentage">Pourcentage</option>
+                <option value="fixed">Montant fixe</option>
+                <option value="introductory_price">Prix d’introduction</option>
+                <option value="free_period">Période gratuite</option>
+              </select>
+            </FormField>
+            {campaign.discountType !== "free_period" ? (
+              <FormField
+                label={
+                  campaign.discountType === "percentage"
+                    ? "Remise (%)"
+                    : campaign.discountType === "fixed"
+                      ? "Montant de remise (€)"
+                      : "Prix d’introduction (€)"
+                }
+                required
+              >
+                <Input
+                  type="number"
+                  min={campaign.discountType === "percentage" ? 1 : 0}
+                  max={campaign.discountType === "percentage" ? 100 : undefined}
+                  step={campaign.discountType === "percentage" ? 1 : 0.01}
+                  value={campaign.discountValue}
+                  onChange={(event) =>
+                    setCampaign((current) => ({
+                      ...current,
+                      discountValue:
+                        current.discountType === "percentage"
+                          ? Math.min(
+                              100,
+                              Math.max(1, Number(event.target.value)),
+                            )
+                          : Math.max(0, Number(event.target.value)),
+                    }))
+                  }
+                />
+              </FormField>
+            ) : (
+              <FormField label="Remise">
+                <Input value="100 % pendant la période" disabled />
+              </FormField>
+            )}
+            <FormField label="Activation" required>
+              <select
+                value={campaign.activationMode}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    activationMode: event.target
+                      .value as Promotion["activationMode"],
+                  }))
+                }
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+              >
+                <option value="coupon">Code coupon</option>
+                <option value="automatic">Automatique</option>
+                <option value="admin_grant">Attribution Admin</option>
+              </select>
+            </FormField>
+            <FormField label="Clients éligibles" required>
+              <select
+                value={campaign.eligibleCustomerType}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    eligibleCustomerType: event.target
+                      .value as Promotion["eligibleCustomerType"],
+                  }))
+                }
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+              >
+                <option value="new">Nouveaux clients</option>
+                <option value="existing">Clients existants</option>
+                <option value="all">Tous les clients</option>
+              </select>
+            </FormField>
+            <FormField label="Cumul" required>
+              <select
+                value={campaign.stackingPolicy}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    stackingPolicy: event.target
+                      .value as Promotion["stackingPolicy"],
+                  }))
+                }
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+              >
+                <option value="exclusive">Exclusif</option>
+                <option value="best_only">Meilleure remise seulement</option>
+                <option value="stackable">Cumulable</option>
+              </select>
+            </FormField>
+            <FormField
+              label="Utilisations totales"
+              hint="0 signifie sans plafond global."
+            >
+              <Input
+                type="number"
+                min={0}
+                value={campaign.maximumRedemptions}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    maximumRedemptions: Math.max(0, Number(event.target.value)),
+                  }))
+                }
+              />
+            </FormField>
+            <FormField label="Utilisations par compte" required>
+              <Input
+                type="number"
+                min={1}
+                value={campaign.maximumRedemptionsPerAccount}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    maximumRedemptionsPerAccount: Math.max(
+                      1,
+                      Number(event.target.value),
                     ),
                   }))
                 }
@@ -2335,6 +2367,23 @@ export const AdminMonetizationPage: React.FC = () => {
                 }
               />
             </FormField>
+            <FormField label="Engagement minimal (périodes)">
+              <Input
+                type="number"
+                min={0}
+                max={24}
+                value={campaign.minimumCommitmentPeriods}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    minimumCommitmentPeriods: Math.min(
+                      24,
+                      Math.max(0, Number(event.target.value)),
+                    ),
+                  }))
+                }
+              />
+            </FormField>
             <FormField
               label="Coupon du prestataire"
               hint="Identifiant Stripe requis avant une activation en production."
@@ -2368,8 +2417,9 @@ export const AdminMonetizationPage: React.FC = () => {
             />
           </FormField>
           <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-stone-700">
-            Le coupon cible les nouveaux clients de la verticale, ne se cumule
-            pas et reste inactif jusqu’à publication du brouillon.
+            La campagne reste inactive jusqu’à publication du brouillon. Son
+            type, son éligibilité, son cumul et ses plafonds sont appliqués par
+            le même moteur lors du devis et du checkout.
           </div>
           <div className="flex justify-end gap-2">
             <Button

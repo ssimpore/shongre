@@ -118,4 +118,27 @@ describe("DemoCoursesService", () => {
       expect.objectContaining({ label: "Lyon 6e", isActive: true }),
     );
   });
+
+  it("enforces the canonical organization seat limit", async () => {
+    const service = new DemoCoursesService();
+    const initial = await service.getOrganizationWorkspace(
+      "org_college_lumiere",
+    );
+    const remaining =
+      initial.plan.entitlements.teamMembers - initial.members.length;
+
+    for (let index = 0; index < remaining; index += 1) {
+      await service.inviteOrganizationMember(initial.organization.id, {
+        displayName: `Membre quota ${index + 1}`,
+        role: "tutor",
+      });
+    }
+
+    await expect(
+      service.inviteOrganizationMember(initial.organization.id, {
+        displayName: "Membre au-delà du quota",
+        role: "tutor",
+      }),
+    ).rejects.toThrow(/quota/i);
+  });
 });

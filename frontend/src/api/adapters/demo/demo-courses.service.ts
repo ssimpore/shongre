@@ -95,6 +95,18 @@ export class DemoCoursesService implements CoursesServiceContract {
   private organizationWorkspace = clone(DEMO_COURSE_ORGANIZATION_WORKSPACE);
   private sequence = 1;
 
+  private resolvedOrganizationPlan() {
+    const catalog = applyMonetizationToCourseCatalog(
+      this.catalog,
+      BASELINE_MONETIZATION_CATALOG,
+    );
+    return (
+      catalog.plans.find(
+        (plan) => plan.id === this.organizationWorkspace.organization.planId,
+      ) || this.organizationWorkspace.plan
+    );
+  }
+
   async getCatalog(marketCode: string): Promise<CourseCatalog> {
     await simulateNetworkDelay();
     const catalog = clone(
@@ -386,7 +398,10 @@ export class DemoCoursesService implements CoursesServiceContract {
     if (organizationId !== DEMO_COURSE_ORGANIZATION_WORKSPACE.organization.id) {
       throw new Error("Espace organisme introuvable");
     }
-    return clone(this.organizationWorkspace);
+    return clone({
+      ...this.organizationWorkspace,
+      plan: this.resolvedOrganizationPlan(),
+    });
   }
 
   async inviteOrganizationMember(
@@ -399,6 +414,14 @@ export class DemoCoursesService implements CoursesServiceContract {
     }
     const displayName = input.displayName.trim();
     if (!displayName) throw new Error("Indiquez le nom du membre à inviter.");
+    const plan = this.resolvedOrganizationPlan();
+    if (
+      this.organizationWorkspace.members.length >= plan.entitlements.teamMembers
+    ) {
+      throw new Error(
+        `Le quota de ${plan.entitlements.teamMembers} membre(s) de cette formule est atteint.`,
+      );
+    }
     this.organizationWorkspace.members.push({
       id: `course_member_${this.sequence++}`,
       organizationId,
@@ -413,7 +436,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     });
     this.organizationWorkspace.organization.memberCount =
       this.organizationWorkspace.members.length;
-    return clone(this.organizationWorkspace);
+    return clone({ ...this.organizationWorkspace, plan });
   }
 
   async addOrganizationLocation(
@@ -426,8 +449,8 @@ export class DemoCoursesService implements CoursesServiceContract {
     }
     const label = input.label.trim();
     if (!label) throw new Error("Indiquez un lieu d’enseignement.");
-    const locationLimit =
-      this.organizationWorkspace.plan.entitlements.locations;
+    const plan = this.resolvedOrganizationPlan();
+    const locationLimit = plan.entitlements.locations;
     if (this.organizationWorkspace.locations.length >= locationLimit) {
       throw new Error("Le quota de lieux de cette formule est atteint.");
     }
@@ -437,7 +460,7 @@ export class DemoCoursesService implements CoursesServiceContract {
       isActive: true,
       activeTutorCount: 0,
     });
-    return clone(this.organizationWorkspace);
+    return clone({ ...this.organizationWorkspace, plan });
   }
 
   async respondToLead(
