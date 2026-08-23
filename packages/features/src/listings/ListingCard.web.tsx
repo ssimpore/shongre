@@ -95,15 +95,20 @@ export function ListingCard({
         ) : null}
         {listing.categoryLabel || listing.seller ? (
           <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted">
-            <span className="min-w-0 truncate">
-              {[
-                listing.categoryLabel,
-                listing.seller?.sellerType === "pro"
-                  ? "Pro"
-                  : listing.seller?.name,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="min-w-0 truncate">
+                {[
+                  listing.categoryLabel,
+                  listing.seller?.organizationName || listing.seller?.name,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+              {listing.seller?.sellerType === "pro" ? (
+                <Badge variant="pro">Pro</Badge>
+              ) : listing.seller?.isIdentityVerified ? (
+                <Badge variant="verified">Vérifié</Badge>
+              ) : null}
             </span>
             {(listing.seller?.rating ?? 0) > 0 ? (
               <span
@@ -169,22 +174,30 @@ export function ListingCard({
           </ul>
         ) : null}
         <div className="mt-auto grid min-w-0 gap-1 border-t border-border-subtle pt-2 text-micro text-text-muted">
-          <span className="inline-flex min-w-0 items-center gap-1">
-            <SemanticIcon name="map-pin" size="xs" />
-            <span className="min-w-0 break-words">{listing.city}</span>
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="inline-flex min-w-0 flex-1 items-center gap-1">
+              <SemanticIcon name="map-pin" size="xs" />
+              <span className="min-w-0 truncate">{listing.city}</span>
+            </span>
+            {!listing.deliveryAvailable ? (
+              <span className="inline-flex shrink-0 items-center gap-1">
+                <SemanticIcon name="calendar" size="xs" />
+                <span>{published}</span>
+              </span>
+            ) : null}
           </span>
-          <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
-            {listing.deliveryAvailable ? (
+          {listing.deliveryAvailable ? (
+            <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
               <span className="inline-flex shrink-0 items-center gap-1">
                 <SemanticIcon name="truck" size="xs" />
                 Livraison
               </span>
-            ) : null}
-            <span className="inline-flex min-w-0 items-center gap-1">
-              <SemanticIcon name="calendar" size="xs" />
-              <span className="min-w-0 break-words">{published}</span>
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <SemanticIcon name="calendar" size="xs" />
+                <span className="min-w-0 break-words">{published}</span>
+              </span>
             </span>
-          </span>
+          ) : null}
         </div>
       </div>
     </>

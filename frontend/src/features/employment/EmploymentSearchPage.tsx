@@ -5,7 +5,6 @@ import {
   Filter,
   Search,
   ShieldCheck,
-  X,
 } from "lucide-react";
 import type {
   EmploymentCatalog,
@@ -17,7 +16,15 @@ import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Button, Container, Skeleton, StatePanel } from "../../design-system";
+import {
+  Button,
+  Container,
+  Drawer,
+  FilterPanel,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
+import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { storageService } from "../../services/storage.service";
@@ -27,51 +34,62 @@ const fieldClass =
   "h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary-border";
 const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 
+const EMPLOYMENT_FILTER_KEYS = [
+  "profession",
+  "jobFamily",
+  "industry",
+  "arrangement",
+  "contract",
+  "workingTime",
+  "experience",
+  "education",
+  "language",
+  "schedule",
+  "employerType",
+  "published",
+  "salary",
+  "salaryFrequency",
+  "verified",
+  "accessible",
+  "radius",
+] as const;
+
 const EmploymentFilters: React.FC<{
   catalog: EmploymentCatalog;
   params: URLSearchParams;
   setParam: (key: string, value?: string) => void;
-}> = ({ catalog, params, setParam }) => {
+  onReset: () => void;
+  presentation?: FilterPanelPresentation;
+  onApply?: () => void;
+  resultCount?: number;
+}> = ({
+  catalog,
+  params,
+  setParam,
+  onReset,
+  presentation = "surface",
+  onApply,
+  resultCount = 0,
+}) => {
   const dictionaries = (
     kind: EmploymentCatalog["dictionaries"][number]["kind"],
   ) =>
     catalog.dictionaries.filter(
       (entry) => entry.kind === kind && entry.isActive,
-    );
+  );
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-black text-text-main">
-          Affiner les offres
-        </h2>
-        <button
-          type="button"
-          onClick={() =>
-            [
-              "profession",
-              "jobFamily",
-              "industry",
-              "arrangement",
-              "contract",
-              "workingTime",
-              "experience",
-              "education",
-              "language",
-              "schedule",
-              "employerType",
-              "published",
-              "salary",
-              "salaryFrequency",
-              "verified",
-              "accessible",
-              "radius",
-            ].forEach((key) => setParam(key))
-          }
-          className="text-xs font-bold text-primary hover:underline"
-        >
-          Réinitialiser
-        </button>
-      </div>
+    <FilterPanel
+      title="Filtres"
+      presentation={presentation}
+      onReset={onReset}
+      footer={
+        onApply ? (
+          <Button fullWidth onClick={onApply}>
+            Voir {resultCount} offre{resultCount > 1 ? "s" : ""}
+          </Button>
+        ) : undefined
+      }
+    >
       {[
         ["profession", "Métier", "profession"],
         ["jobFamily", "Famille de métiers", "job_family"],
@@ -203,7 +221,7 @@ const EmploymentFilters: React.FC<{
         />
         Information d’accessibilité renseignée
       </label>
-    </div>
+    </FilterPanel>
   );
 };
 
@@ -350,6 +368,12 @@ export const EmploymentSearchPage: React.FC = () => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
     else next.delete(key);
+    setParams(next, { replace: true });
+  };
+
+  const resetFilters = () => {
+    const next = new URLSearchParams(params);
+    EMPLOYMENT_FILTER_KEYS.forEach((key) => next.delete(key));
     setParams(next, { replace: true });
   };
 
@@ -526,13 +550,17 @@ export const EmploymentSearchPage: React.FC = () => {
           </p>
         )}
 
-        <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[17rem_minmax(0,1fr)]">
-          <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface p-5 lg:sticky lg:top-24 lg:block">
+        <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+          <aside
+            className="hidden self-start lg:sticky lg:top-24 lg:block"
+            aria-label="Filtres emploi"
+          >
             {catalog ? (
               <EmploymentFilters
                 catalog={catalog}
                 params={params}
                 setParam={setParam}
+                onReset={resetFilters}
               />
             ) : (
               <Skeleton className="h-96" />
@@ -581,39 +609,22 @@ export const EmploymentSearchPage: React.FC = () => {
         </div>
       </Container>
 
-      {mobileFilters && catalog ? (
-        <div
-          className="fixed inset-0 z-modal bg-overlay-scrim lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Filtres emploi"
+      {catalog ? (
+        <Drawer
+          isOpen={mobileFilters}
+          onClose={() => setMobileFilters(false)}
+          title="Filtres emploi"
         >
-          <div className="ml-auto h-full w-[min(92vw,23rem)] overflow-y-auto bg-bg-surface p-5 shadow-modal">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-black">Filtres emploi</h2>
-              <button
-                type="button"
-                onClick={() => setMobileFilters(false)}
-                aria-label="Fermer les filtres"
-                className="grid h-control-md w-10 place-items-center"
-              >
-                <X className="h-icon-sm w-icon-sm" />
-              </button>
-            </div>
             <EmploymentFilters
               catalog={catalog}
               params={params}
               setParam={setParam}
+              onReset={resetFilters}
+              presentation="drawer"
+              resultCount={total}
+              onApply={() => setMobileFilters(false)}
             />
-            <Button
-              variant="primary"
-              className="mt-6 w-full"
-              onClick={() => setMobileFilters(false)}
-            >
-              Voir {total} offres
-            </Button>
-          </div>
-        </div>
+        </Drawer>
       ) : null}
     </main>
   );

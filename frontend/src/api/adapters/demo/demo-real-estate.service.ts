@@ -190,7 +190,9 @@ export class DemoRealEstateService implements RealEstateServiceContract {
         ...this.catalog.config,
         marketCode: marketCode.toUpperCase(),
       },
-      propertyTypes: commercialCatalog.propertyTypes.filter((row) => row.isActive),
+      propertyTypes: commercialCatalog.propertyTypes.filter(
+        (row) => row.isActive,
+      ),
       attributes: commercialCatalog.attributes.filter((row) => row.isActive),
       fieldRules: commercialCatalog.fieldRules.filter((row) => row.isActive),
       offers: commercialCatalog.offers.filter((row) => row.isActive),
@@ -203,7 +205,10 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     return clone({
       ...IMMO_DEMO_ADMIN,
       catalog: {
-        ...applyMonetizationToRealEstateCatalog(this.catalog, BASELINE_MONETIZATION_CATALOG),
+        ...applyMonetizationToRealEstateCatalog(
+          this.catalog,
+          BASELINE_MONETIZATION_CATALOG,
+        ),
         activation: {
           ...this.catalog.activation,
           marketCode: marketCode.toUpperCase(),
@@ -243,7 +248,10 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     const offset = Number(query.cursor || 0);
     const limit = Math.min(50, query.limit || 20);
     return {
-      items: rows.slice(offset, offset + limit).map(toPublicProperty).map(clone),
+      items: rows
+        .slice(offset, offset + limit)
+        .map(toPublicProperty)
+        .map(clone),
       total: rows.length,
       pageInfo: {
         hasNextPage: offset + limit < rows.length,
@@ -331,7 +339,8 @@ export class DemoRealEstateService implements RealEstateServiceContract {
       throw new Error("Complétez les étapes obligatoires avant l’envoi.");
     const offerId = String(draft.data.offerId || "immo_owner_free");
     const offer = this.catalog.offers.find((row) => row.id === offerId);
-    if (!offer || !offer.isActive) throw new Error("Cette offre n’est plus disponible.");
+    if (!offer || !offer.isActive)
+      throw new Error("Cette offre n’est plus disponible.");
     const maxActive = Number(offer.entitlements.maxActiveListings || 0);
     const currentActive = Array.from(this.properties.values()).filter(
       (property) =>
@@ -374,11 +383,14 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   async submitLead(input: PropertyLeadDraft) {
     await simulateNetworkDelay();
     if (!input.consentGiven)
-      throw new Error("Votre accord est nécessaire pour transmettre la demande.");
+      throw new Error(
+        "Votre accord est nécessaire pour transmettre la demande.",
+      );
     const duplicate = Array.from(this.leads.values()).find(
       (lead) =>
         lead.propertyId === input.propertyId &&
-        lead.requesterEmail.toLowerCase() === input.requesterEmail.toLowerCase() &&
+        lead.requesterEmail.toLowerCase() ===
+          input.requesterEmail.toLowerCase() &&
         lead.type === input.type,
     );
     if (duplicate) return clone(duplicate);
@@ -429,8 +441,9 @@ export class DemoRealEstateService implements RealEstateServiceContract {
       leads: Array.from(this.leads.values()).filter(
         (lead) => lead.organizationId === organizationId,
       ),
-      leadNotes: Array.from(this.leadNotes.values()).filter((note) =>
-        this.leads.get(note.leadId)?.organizationId === organizationId,
+      leadNotes: Array.from(this.leadNotes.values()).filter(
+        (note) =>
+          this.leads.get(note.leadId)?.organizationId === organizationId,
       ),
       appointments: Array.from(this.appointments.values()).filter(
         (visit) => visit.organizationId === organizationId,

@@ -11,7 +11,7 @@ export interface CompanyInfo {
 }
 
 export function validateSiretLuhn(siret: string): boolean {
-  const cleaned = siret.replace(/\s+/g, '');
+  const cleaned = siret.replace(/\s+/g, "");
   if (!/^\d{14}$/.test(cleaned)) {
     return false;
   }
@@ -31,7 +31,7 @@ export function validateSiretLuhn(siret: string): boolean {
 
 export class BusinessRegistryResolver {
   async lookupBySiret(siretOrSiren: string): Promise<CompanyInfo | null> {
-    const cleaned = siretOrSiren.replace(/\s+/g, '');
+    const cleaned = siretOrSiren.replace(/\s+/g, "");
 
     if (!/^\d{9}$/.test(cleaned) && !/^\d{14}$/.test(cleaned)) {
       return null;
@@ -42,12 +42,12 @@ export class BusinessRegistryResolver {
     return {
       siren,
       siret,
-      name: 'SHONGRE TECHNOLOGIES SAS',
-      legalForm: 'Société par actions simplifiée (SAS)',
-      address: '10 Rue de la Paix',
-      city: 'Paris',
-      postalCode: '75002',
-      country: 'FR',
+      name: "SHONGRE TECHNOLOGIES SAS",
+      legalForm: "Société par actions simplifiée (SAS)",
+      address: "10 Rue de la Paix",
+      city: "Paris",
+      postalCode: "75002",
+      country: "FR",
       isActive: true,
     };
   }

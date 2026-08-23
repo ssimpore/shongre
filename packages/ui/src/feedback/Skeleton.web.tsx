@@ -35,7 +35,10 @@ export const ListingCardSkeleton: React.FC<{ className?: string }> = ({
 }) => (
   <div
     aria-hidden="true"
-    className={cn("listing-card-skeleton h-listing-card-height space-y-2", className)}
+    className={cn(
+      "listing-card-skeleton h-listing-card-height space-y-2",
+      className,
+    )}
   >
     <Skeleton shape="media" className="w-full" />
     <Skeleton shape="line" className="w-3/4" />

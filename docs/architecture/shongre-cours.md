@@ -52,7 +52,7 @@ Money is always `{ amountMinor, currency }`. Time fields use explicit timestamp 
 
 Tutor search supports market, free text, subject, level, objective, location/radius, delivery mode, price, availability, language, tutor type, verification, statistically meaningful rating, sort, and cursor pagination.
 
-Default ranking is relevance-first. Subject, level, delivery compatibility, location, availability/capacity, and verified trust signals dominate. Paid featured status contributes at most `0.03` to the demo ranking baseline; it cannot rescue an irrelevant tutor because filters run before ranking. The future database view supplies the same public shape while the backend remains authoritative.
+Default ranking is relevance-first. Subject, level, delivery compatibility, location, availability/capacity, and verified trust signals determine organic order. Paid placement is inserted later as an explicitly labeled sponsored result and never contributes to the organic score. The future database view supplies the same public shape while the backend remains authoritative.
 
 Learner requests route to at most five suitable tutors. The service prevents duplicate leads, respects monthly lead entitlements, withholds contact details before acceptance, expires leads, and records invalid-lead disputes.
 

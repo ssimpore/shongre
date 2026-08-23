@@ -1,6 +1,6 @@
 # End-to-end suite
 
-Runs entirely against `VITE_DATA_MODE=demo`. No backend, Supabase, Stripe or KYC
+Runs entirely against `NEXT_PUBLIC_DATA_MODE=demo`. No backend, Supabase, Stripe or KYC
 provider is involved, so `npm install && npm run test:e2e` works from a clean
 checkout.
 

@@ -288,16 +288,11 @@ export const ReservationCheckoutModal: React.FC<
                       <MapPin className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-bold text-stone-900 text-sm">
-                          {t(
-                            "transactions.reservationCheckoutModal.remiseEnMainPropreSecurisee2",
-                          )}
-                        </p>
-                        <span className="text-xs font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
-                          Gratuit
-                        </span>
-                      </div>
+                      <p className="font-bold text-stone-900 text-sm">
+                        {t(
+                          "transactions.reservationCheckoutModal.remiseEnMainPropreSecurisee2",
+                        )}
+                      </p>
                       <p className="text-xs font-medium text-stone-500 mt-0.5">
                         {t(
                           "transactions.reservationCheckoutModal.rendezVousDirectAvecValidation",

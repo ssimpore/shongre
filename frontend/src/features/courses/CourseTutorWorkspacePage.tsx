@@ -24,7 +24,13 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Image, Skeleton, StatePanel } from "../../design-system";
+import {
+  Badge,
+  Button,
+  Image,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
@@ -52,7 +58,8 @@ export const CourseTutorWorkspacePage: React.FC = () => {
 
   usePageMeta({
     title: "Espace Cours",
-    description: "Gérez votre profil professeur, vos cours, disponibilités et demandes d’élèves.",
+    description:
+      "Gérez votre profil professeur, vos cours, disponibilités et demandes d’élèves.",
     canonicalPath: "/compte/cours",
     noIndex: true,
   });
@@ -95,7 +102,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
       );
       setWorkspace({
         ...workspace,
-        leads: workspace.leads.map((item) => (item.id === updated.id ? updated : item)),
+        leads: workspace.leads.map((item) =>
+          item.id === updated.id ? updated : item,
+        ),
       });
       toast.success(
         decision === "accept"
@@ -105,7 +114,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
             : "Demande refusée.",
       );
     } catch (reason) {
-      toast.error(reason instanceof Error ? reason.message : "Action impossible.");
+      toast.error(
+        reason instanceof Error ? reason.message : "Action impossible.",
+      );
     }
   };
 
@@ -118,7 +129,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
       <StatePanel
         title="Espace Cours indisponible"
         description="Ce compte n’a pas de profil professeur accessible ou le service est momentanément indisponible."
-        action={<Button to="/deposer/cours">Créer mon profil professeur</Button>}
+        action={
+          <Button to="/deposer/cours">Créer mon profil professeur</Button>
+        }
       />
     );
   }
@@ -133,7 +146,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-black text-text-main sm:text-2xl">Espace Cours</h1>
+            <h1 className="text-xl font-black text-text-main sm:text-2xl">
+              Espace Cours
+            </h1>
             {tutor.organizationId && (
               <Badge variant="pro" icon>
                 Collège Lumière
@@ -141,11 +156,17 @@ export const CourseTutorWorkspacePage: React.FC = () => {
             )}
           </div>
           <p className="mt-1 text-xs text-text-secondary">
-            Profil, cours, disponibilités et demandes réunis dans votre espace Shongre.
+            Profil, cours, disponibilités et demandes réunis dans votre espace
+            Shongre.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button to="/deposer/cours" variant="outline" size="compact" leftIcon={<Plus className="h-icon-sm w-icon-sm" />}>
+          <Button
+            to="/deposer/cours"
+            variant="outline"
+            size="compact"
+            leftIcon={<Plus className="h-icon-sm w-icon-sm" />}
+          >
             Créer un cours
           </Button>
           <Button to={`/cours/professeur/${tutor.slug}`} size="compact">
@@ -164,8 +185,12 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               sizes="80px"
             />
             <div className="min-w-0">
-              <h2 className="text-base font-black text-text-main">{tutor.displayName}</h2>
-              <p className="mt-0.5 text-xs font-semibold leading-relaxed text-text-secondary">{tutor.headline}</p>
+              <h2 className="text-base font-black text-text-main">
+                {tutor.displayName}
+              </h2>
+              <p className="mt-0.5 text-xs font-semibold leading-relaxed text-text-secondary">
+                {tutor.headline}
+              </p>
               <p className="mt-2 text-micro text-text-muted">
                 {tutor.serviceArea?.publicLocationLabel}
               </p>
@@ -188,29 +213,71 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 Statut de modération
               </p>
               <p className="mt-2 flex items-center gap-2 text-xs font-bold text-success">
-                <CheckCircle2 className="h-icon-md w-icon-md" aria-hidden="true" />
+                <CheckCircle2
+                  className="h-icon-md w-icon-md"
+                  aria-hidden="true"
+                />
                 Profil approuvé
               </p>
-              <p className="mt-1 text-micro text-text-muted">Visible dans la recherche</p>
+              <p className="mt-1 text-micro text-text-muted">
+                Visible dans la recherche
+              </p>
             </div>
           </section>
 
           <section className="grid grid-cols-2 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs sm:grid-cols-5">
             {[
-              [Eye, "Vues du profil", analytics.profileViews.toLocaleString("fr-FR")],
+              [
+                Eye,
+                "Vues du profil",
+                analytics.profileViews.toLocaleString("fr-FR"),
+              ],
               [Inbox, "Demandes reçues", String(analytics.requestsReceived)],
-              [MessageSquare, "Réponse médiane", analytics.medianResponseMinutes ? `${Math.round(analytics.medianResponseMinutes / 60)} h` : "—"],
-              [BarChart3, "Conversion contact", analytics.contactConversionRate !== undefined ? `${Math.round(analytics.contactConversionRate * 100)} %` : "—"],
-              [BookOpen, "Cours actifs", String(workspace.offers.filter((offer) => offer.status === "published").length)],
+              [
+                MessageSquare,
+                "Réponse médiane",
+                analytics.medianResponseMinutes
+                  ? `${Math.round(analytics.medianResponseMinutes / 60)} h`
+                  : "—",
+              ],
+              [
+                BarChart3,
+                "Conversion contact",
+                analytics.contactConversionRate !== undefined
+                  ? `${Math.round(analytics.contactConversionRate * 100)} %`
+                  : "—",
+              ],
+              [
+                BookOpen,
+                "Cours actifs",
+                String(
+                  workspace.offers.filter(
+                    (offer) => offer.status === "published",
+                  ).length,
+                ),
+              ],
             ].map(([Icon, label, value], index) => {
-              const MetricIcon = Icon as React.ComponentType<{ className?: string }>;
+              const MetricIcon = Icon as React.ComponentType<{
+                className?: string;
+              }>;
               return (
-                <div key={String(label)} className={`p-4 ${index > 0 ? "border-l border-border-subtle" : ""} ${index === 4 ? "col-span-2 border-t sm:col-span-1 sm:border-t-0" : ""}`}>
+                <div
+                  key={String(label)}
+                  className={`p-4 ${index > 0 ? "border-l border-border-subtle" : ""} ${index === 4 ? "col-span-2 border-t sm:col-span-1 sm:border-t-0" : ""}`}
+                >
                   <p className="flex items-center gap-1.5 text-micro font-semibold text-text-muted">
-                    <MetricIcon className="h-icon-xs w-icon-xs" aria-hidden="true" /> {String(label)}
+                    <MetricIcon
+                      className="h-icon-xs w-icon-xs"
+                      aria-hidden="true"
+                    />{" "}
+                    {String(label)}
                   </p>
-                  <p className="mt-1 text-lg font-black text-text-main">{String(value)}</p>
-                  <p className="text-micro text-text-muted">30 derniers jours</p>
+                  <p className="mt-1 text-lg font-black text-text-main">
+                    {String(value)}
+                  </p>
+                  <p className="text-micro text-text-muted">
+                    30 derniers jours
+                  </p>
                 </div>
               );
             })}
@@ -220,7 +287,10 @@ export const CourseTutorWorkspacePage: React.FC = () => {
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
               <div>
                 <h2 className="text-sm font-black text-text-main">Mes cours</h2>
-                <p className="text-micro text-text-muted">{workspace.offers.length} offre{workspace.offers.length > 1 ? "s" : ""}</p>
+                <p className="text-micro text-text-muted">
+                  {workspace.offers.length} offre
+                  {workspace.offers.length > 1 ? "s" : ""}
+                </p>
               </div>
               <Button to="/deposer/cours" variant="ghost" size="sm">
                 Voir tous mes cours
@@ -242,46 +312,72 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   {workspace.offers.map((offer) => (
                     <tr key={offer.id}>
                       <td className="px-4 py-3">
-                        <p className="font-bold text-text-main">{offer.title}</p>
-                        <p className="mt-0.5 text-micro text-text-muted">{offer.availabilitySummary}</p>
+                        <p className="font-bold text-text-main">
+                          {offer.title}
+                        </p>
+                        <p className="mt-0.5 text-micro text-text-muted">
+                          {offer.availabilitySummary}
+                        </p>
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {offer.deliveryModes.includes("online") && offer.deliveryModes.includes("in_person")
+                        {offer.deliveryModes.includes("online") &&
+                        offer.deliveryModes.includes("in_person")
                           ? "Présentiel & visio"
                           : offer.deliveryModes.includes("online")
                             ? "Visio"
                             : "Présentiel"}
                       </td>
                       <td className="px-4 py-3 font-semibold text-text-main">
-                        {euro(offer.pricingOptions[0]?.price.amountMinor || 0)} / h
+                        {euro(offer.pricingOptions[0]?.price.amountMinor || 0)}{" "}
+                        / h
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {offer.capacityStatus === "available" ? "Disponible" : "Limitée"}
+                        {offer.capacityStatus === "available"
+                          ? "Disponible"
+                          : "Limitée"}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge variant={offer.status === "published" ? "success" : "warning"}>
-                          {offer.status === "published" ? "En ligne" : "En revue"}
+                        <Badge
+                          variant={
+                            offer.status === "published" ? "success" : "warning"
+                          }
+                        >
+                          {offer.status === "published"
+                            ? "En ligne"
+                            : "En revue"}
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
                           <Button
-                            to={routes.courses.publish({ mode: "profile", step: "expertise" })}
+                            to={routes.courses.publish({
+                              mode: "profile",
+                              step: "expertise",
+                            })}
                             variant="outline"
                             size="sm"
                             aria-label={`Modifier ${offer.title}`}
                             className="touch-square h-control-sm w-control-sm p-0"
                           >
-                            <Pencil className="h-icon-xs w-icon-xs" aria-hidden="true" />
+                            <Pencil
+                              className="h-icon-xs w-icon-xs"
+                              aria-hidden="true"
+                            />
                           </Button>
                           <Button
-                            to={routes.courses.publish({ mode: "profile", step: "offer" })}
+                            to={routes.courses.publish({
+                              mode: "profile",
+                              step: "offer",
+                            })}
                             variant="outline"
                             size="sm"
                             aria-label={`Plus d’actions pour ${offer.title}`}
                             className="touch-square h-control-sm w-control-sm p-0"
                           >
-                            <MoreHorizontal className="h-icon-xs w-icon-xs" aria-hidden="true" />
+                            <MoreHorizontal
+                              className="h-icon-xs w-icon-xs"
+                              aria-hidden="true"
+                            />
                           </Button>
                         </div>
                       </td>
@@ -295,10 +391,18 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
               <div>
-                <h2 className="text-sm font-black text-text-main">Disponibilités</h2>
-                <p className="text-micro text-text-muted">Cette semaine · Europe/Paris</p>
+                <h2 className="text-sm font-black text-text-main">
+                  Disponibilités
+                </h2>
+                <p className="text-micro text-text-muted">
+                  Cette semaine · Europe/Paris
+                </p>
               </div>
-              <Button to={routes.courses.availability()} variant="ghost" size="sm">
+              <Button
+                to={routes.courses.availability()}
+                variant="ghost"
+                size="sm"
+              >
                 Modifier
               </Button>
             </div>
@@ -307,21 +411,54 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 <thead className="bg-bg-subtle text-micro font-bold text-text-muted">
                   <tr>
                     <th className="px-3 py-2 text-left">Créneau</th>
-                    {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-                      <th key={day} className="px-3 py-2">{day}</th>
-                    ))}
+                    {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(
+                      (day) => (
+                        <th key={day} className="px-3 py-2">
+                          {day}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle text-text-secondary">
                   {[
-                    ["Matin", ["—", "9h–12h", "—", "9h–12h", "—", "9h–12h", "—"]],
-                    ["Après-midi", ["14h–18h", "14h–18h", "14h–18h", "14h–18h", "14h–17h", "14h–17h", "—"]],
-                    ["Soirée", ["18h–21h", "18h–21h", "18h–21h", "—", "18h–21h", "—", "—"]],
+                    [
+                      "Matin",
+                      ["—", "9h–12h", "—", "9h–12h", "—", "9h–12h", "—"],
+                    ],
+                    [
+                      "Après-midi",
+                      [
+                        "14h–18h",
+                        "14h–18h",
+                        "14h–18h",
+                        "14h–18h",
+                        "14h–17h",
+                        "14h–17h",
+                        "—",
+                      ],
+                    ],
+                    [
+                      "Soirée",
+                      [
+                        "18h–21h",
+                        "18h–21h",
+                        "18h–21h",
+                        "—",
+                        "18h–21h",
+                        "—",
+                        "—",
+                      ],
+                    ],
                   ].map(([label, values]) => (
                     <tr key={String(label)}>
-                      <th className="px-3 py-3 text-left font-bold text-text-main">{String(label)}</th>
+                      <th className="px-3 py-3 text-left font-bold text-text-main">
+                        {String(label)}
+                      </th>
                       {(values as string[]).map((value, index) => (
-                        <td key={`${label}-${index}`} className="px-3 py-3">{value}</td>
+                        <td key={`${label}-${index}`} className="px-3 py-3">
+                          {value}
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -333,10 +470,16 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
               <div>
-                <h2 className="text-sm font-black text-text-main">Demandes d’élèves</h2>
-                <p className="text-micro text-text-muted">Les coordonnées restent masquées avant acceptation.</p>
+                <h2 className="text-sm font-black text-text-main">
+                  Demandes d’élèves
+                </h2>
+                <p className="text-micro text-text-muted">
+                  Les coordonnées restent masquées avant acceptation.
+                </p>
               </div>
-              <Badge variant={openLeads ? "primary" : "neutral"}>{openLeads} nouvelle{openLeads > 1 ? "s" : ""}</Badge>
+              <Badge variant={openLeads ? "primary" : "neutral"}>
+                {openLeads} nouvelle{openLeads > 1 ? "s" : ""}
+              </Badge>
             </div>
             <div className="flex gap-5 border-b border-border-subtle px-4">
               {[
@@ -355,26 +498,46 @@ export const CourseTutorWorkspacePage: React.FC = () => {
             </div>
             {visibleLeads.length === 0 ? (
               <div className="p-8 text-center">
-                <Inbox className="mx-auto h-7 w-7 text-text-disabled" aria-hidden="true" />
-                <p className="mt-2 text-xs font-semibold text-text-secondary">Aucune demande dans cette vue.</p>
+                <Inbox
+                  className="mx-auto h-7 w-7 text-text-disabled"
+                  aria-hidden="true"
+                />
+                <p className="mt-2 text-xs font-semibold text-text-secondary">
+                  Aucune demande dans cette vue.
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-border-subtle">
                 {visibleLeads.map((lead) => {
-                  const request = requestForLead(lead, workspace.learnerRequests);
+                  const request = requestForLead(
+                    lead,
+                    workspace.learnerRequests,
+                  );
                   return (
-                    <article key={lead.id} className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <article
+                      key={lead.id}
+                      className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                    >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="text-xs font-black text-text-main">
-                            {request?.objective || "Demande de cours de mathématiques"}
+                            {request?.objective ||
+                              "Demande de cours de mathématiques"}
                           </h3>
-                          <Badge variant={lead.relevanceScore >= 0.9 ? "success" : "neutral"}>
+                          <Badge
+                            variant={
+                              lead.relevanceScore >= 0.9 ? "success" : "neutral"
+                            }
+                          >
                             {Math.round(lead.relevanceScore * 100)} % pertinent
                           </Badge>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-micro text-text-muted">
-                          <span>{request?.levelId === "middle_school" ? "Collège" : "Lycée"}</span>
+                          <span>
+                            {request?.levelId === "middle_school"
+                              ? "Collège"
+                              : "Lycée"}
+                          </span>
                           <span>{request?.city || "En ligne"}</span>
                           <span>
                             {request?.budgetMin && request?.budgetMax
@@ -382,7 +545,10 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                               : "Budget non précisé"}
                           </span>
                           <span className="text-warning">
-                            Expire le {new Date(lead.expiresAt).toLocaleDateString("fr-FR")}
+                            Expire le{" "}
+                            {new Date(lead.expiresAt).toLocaleDateString(
+                              "fr-FR",
+                            )}
                           </span>
                         </div>
                         <p className="mt-2 text-micro text-text-secondary">
@@ -391,13 +557,38 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                       </div>
                       {["offered", "viewed"].includes(lead.state) ? (
                         <div className="flex flex-wrap gap-2 sm:justify-end">
-                          <Button size="sm" onClick={() => respondToLead(lead, "accept")}>Accepter</Button>
-                          <Button size="sm" variant="outline" onClick={() => respondToLead(lead, "decline")}>Refuser</Button>
-                          <Button size="sm" variant="ghost" onClick={() => respondToLead(lead, "invalid")}>Signaler invalide</Button>
+                          <Button
+                            size="sm"
+                            onClick={() => respondToLead(lead, "accept")}
+                          >
+                            Accepter
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => respondToLead(lead, "decline")}
+                          >
+                            Refuser
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => respondToLead(lead, "invalid")}
+                          >
+                            Signaler invalide
+                          </Button>
                         </div>
                       ) : (
-                        <Badge variant={lead.state === "accepted" ? "success" : "neutral"}>
-                          {lead.state === "accepted" ? "Acceptée" : lead.state === "declined" ? "Refusée" : "En examen"}
+                        <Badge
+                          variant={
+                            lead.state === "accepted" ? "success" : "neutral"
+                          }
+                        >
+                          {lead.state === "accepted"
+                            ? "Acceptée"
+                            : lead.state === "declined"
+                              ? "Refusée"
+                              : "En examen"}
                         </Badge>
                       )}
                     </article>
@@ -417,33 +608,49 @@ export const CourseTutorWorkspacePage: React.FC = () => {
             <dl className="mt-4 space-y-3 text-xs">
               <div className="flex justify-between gap-3">
                 <dt className="text-text-muted">Formule</dt>
-                <dd className="text-right font-bold text-text-main">{plan.name}</dd>
+                <dd className="text-right font-bold text-text-main">
+                  {plan.name}
+                </dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-text-muted">Cours actifs</dt>
                 <dd className="font-bold text-text-main">
-                  {workspace.offers.length} / {plan.entitlements.maxActiveOffers}
+                  {workspace.offers.length} /{" "}
+                  {plan.entitlements.maxActiveOffers}
                 </dd>
               </div>
             </dl>
             <div className="mt-4 border-t border-border-subtle pt-4">
               <p className="flex items-center gap-2 text-xs font-bold text-text-main">
-                <Coins className="h-icon-sm w-icon-sm text-primary" aria-hidden="true" />
+                <Coins
+                  className="h-icon-sm w-icon-sm text-primary"
+                  aria-hidden="true"
+                />
                 Crédits de visibilité
               </p>
               <p className="mt-2 text-lg font-black text-text-main">
                 {workspace.creditsRemaining}
-                <span className="ml-1 text-xs font-medium text-text-muted">restants</span>
+                <span className="ml-1 text-xs font-medium text-text-muted">
+                  restants
+                </span>
               </p>
             </div>
-            <Button to={routes.workspace.pro.subscriptions()} variant="ghost" size="sm" className="mt-3">
+            <Button
+              to={routes.workspace.pro.subscriptions()}
+              variant="ghost"
+              size="sm"
+              className="mt-3"
+            >
               Gérer mon abonnement
             </Button>
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
-              <ShieldCheck className="h-icon-sm w-icon-sm text-success" aria-hidden="true" />
+              <ShieldCheck
+                className="h-icon-sm w-icon-sm text-success"
+                aria-hidden="true"
+              />
               Vérifications
             </h2>
             <ul className="mt-3 divide-y divide-border-subtle text-xs">
@@ -453,15 +660,29 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 ["Identité", tutor.verifications.identity],
                 ["Qualifications", tutor.verifications.qualifications],
               ].map(([label, status]) => (
-                <li key={label} className="flex items-center justify-between gap-3 py-2">
+                <li
+                  key={label}
+                  className="flex items-center justify-between gap-3 py-2"
+                >
                   <span className="text-text-secondary">{label}</span>
-                  <span className={status === "verified" ? "font-bold text-success" : "font-semibold text-warning"}>
+                  <span
+                    className={
+                      status === "verified"
+                        ? "font-bold text-success"
+                        : "font-semibold text-warning"
+                    }
+                  >
                     {status === "verified" ? "Vérifié" : "À compléter"}
                   </span>
                 </li>
               ))}
             </ul>
-            <Button to="/compte/verification" variant="ghost" size="sm" className="mt-2">
+            <Button
+              to="/compte/verification"
+              variant="ghost"
+              size="sm"
+              className="mt-2"
+            >
               Voir toutes les vérifications
             </Button>
           </section>
@@ -474,9 +695,15 @@ export const CourseTutorWorkspacePage: React.FC = () => {
             <div className="mt-3 space-y-3">
               {tutor.qualifications.map((qualification) => (
                 <div key={qualification.id}>
-                  <p className="text-xs font-bold text-text-main">{qualification.label}</p>
-                  <p className="mt-0.5 text-micro text-text-muted">{qualification.publicLabel}</p>
-                  <p className={`mt-1 text-micro font-semibold ${qualification.verificationStatus === "verified" ? "text-success" : "text-info"}`}>
+                  <p className="text-xs font-bold text-text-main">
+                    {qualification.label}
+                  </p>
+                  <p className="mt-0.5 text-micro text-text-muted">
+                    {qualification.publicLabel}
+                  </p>
+                  <p
+                    className={`mt-1 text-micro font-semibold ${qualification.verificationStatus === "verified" ? "text-success" : "text-info"}`}
+                  >
                     {qualification.evidenceStatus === "self_declared"
                       ? "Déclaré par vous"
                       : qualification.verificationStatus === "verified"
@@ -487,15 +714,22 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               ))}
             </div>
             <div className="mt-4 border-t border-border-subtle pt-3">
-              <p className="text-xs font-bold text-text-main">Éligibilité services fiscaux</p>
-              <p className="mt-1 text-micro font-semibold text-warning">Non vérifiée / conditionnelle</p>
+              <p className="text-xs font-bold text-text-main">
+                Éligibilité services fiscaux
+              </p>
+              <p className="mt-1 text-micro font-semibold text-warning">
+                Non vérifiée / conditionnelle
+              </p>
             </div>
           </section>
 
           {tutor.organizationId && (
             <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
               <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
-                <Building2 className="h-icon-sm w-icon-sm text-primary" aria-hidden="true" />
+                <Building2
+                  className="h-icon-sm w-icon-sm text-primary"
+                  aria-hidden="true"
+                />
                 Collège Lumière
               </h2>
               <dl className="mt-3 grid grid-cols-2 gap-3 text-xs">
@@ -508,7 +742,12 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   <dd className="mt-1 font-black text-text-main">2</dd>
                 </div>
               </dl>
-              <Button to="/compte/cours/organisation" variant="ghost" size="sm" className="mt-3">
+              <Button
+                to="/compte/cours/organisation"
+                variant="ghost"
+                size="sm"
+                className="mt-3"
+              >
                 Ouvrir l’espace organisme
               </Button>
             </section>
@@ -516,14 +755,19 @@ export const CourseTutorWorkspacePage: React.FC = () => {
 
           <section className="rounded-card border border-warning-border bg-warning-surface p-4">
             <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
-              <Lock className="h-icon-sm w-icon-sm text-warning" aria-hidden="true" />
+              <Lock
+                className="h-icon-sm w-icon-sm text-warning"
+                aria-hidden="true"
+              />
               Réservations et paiements
             </h2>
             <p className="mt-3 text-xs font-bold text-text-main">
               Fonctionnalité non activée sur ce marché
             </p>
             <p className="mt-1 text-micro leading-relaxed text-text-secondary">
-              Les cours, paiements et versements ne sont pas disponibles tant que l’onboarding prestataire, la fiscalité, la facturation et les obligations réglementaires ne sont pas validés.
+              Les cours, paiements et versements ne sont pas disponibles tant
+              que l’onboarding prestataire, la fiscalité, la facturation et les
+              obligations réglementaires ne sont pas validés.
             </p>
           </section>
         </aside>

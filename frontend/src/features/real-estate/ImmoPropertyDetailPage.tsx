@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   BadgeCheck,
   BedDouble,
-  Building2,
   CalendarDays,
   CheckCircle2,
   Heart,

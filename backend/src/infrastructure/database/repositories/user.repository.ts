@@ -1,6 +1,6 @@
 import { UserProfile, UserRole } from "../../../shared/types/index.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
-import { logger } from "../../logging/logger.js";
+import { databaseFailure } from "./repository-error.js";
 
 /**
  * Credentials are stored separately from UserProfile on purpose.
@@ -267,12 +267,12 @@ export class PostgresUserRepository implements IUserRepository {
         .from("profiles")
         .select("*")
         .eq("id", id)
-        .single();
-      if (error || !data) return null;
+        .maybeSingle();
+      if (error) databaseFailure("users.findById", error);
+      if (!data) return null;
       return this.mapRowToUserProfile(data);
-    } catch (err: any) {
-      logger.error(`PostgresUserRepository.findById error: ${err.message}`);
-      return null;
+    } catch (error) {
+      databaseFailure("users.findById", error);
     }
   }
 
@@ -283,12 +283,12 @@ export class PostgresUserRepository implements IUserRepository {
         .from("profiles")
         .select("*")
         .eq("email", email.toLowerCase().trim())
-        .single();
-      if (error || !data) return null;
+        .maybeSingle();
+      if (error) databaseFailure("users.findByEmail", error);
+      if (!data) return null;
       return this.mapRowToUserProfile(data);
-    } catch (err: any) {
-      logger.error(`PostgresUserRepository.findByEmail error: ${err.message}`);
-      return null;
+    } catch (error) {
+      databaseFailure("users.findByEmail", error);
     }
   }
 
@@ -328,7 +328,7 @@ export class PostgresUserRepository implements IUserRepository {
       .select()
       .single() as any);
     if (error || !data) {
-      throw new Error(`Failed to save user to PostgreSQL: ${error?.message}`);
+      databaseFailure("users.save", error);
     }
     return this.mapRowToUserProfile(data);
   }
@@ -370,7 +370,7 @@ export class PostgresUserRepository implements IUserRepository {
       .select()
       .single() as any);
     if (error || !data) {
-      throw new Error(`Failed to update user in PostgreSQL: ${error?.message}`);
+      databaseFailure("users.update", error);
     }
     return this.mapRowToUserProfile(data);
   }
@@ -382,11 +382,10 @@ export class PostgresUserRepository implements IUserRepository {
         .from("profiles")
         .select("*")
         .order("created_at", { ascending: false });
-      if (error || !data) return [];
+      if (error || !data) databaseFailure("users.getAll", error);
       return data.map((r) => this.mapRowToUserProfile(r));
-    } catch (err: any) {
-      logger.error(`PostgresUserRepository.getAll error: ${err.message}`);
-      return [];
+    } catch (error) {
+      databaseFailure("users.getAll", error);
     }
   }
 
@@ -398,16 +397,12 @@ export class PostgresUserRepository implements IUserRepository {
       )
         .select("user_id, password_hash")
         .eq("user_id", userId)
-        .single() as any);
-      if (error || !data) return null;
+        .maybeSingle() as any);
+      if (error) databaseFailure("users.findCredentialByUserId", error);
+      if (!data) return null;
       return { userId: data.user_id, passwordHash: data.password_hash };
-    } catch (err: any) {
-      // Logged without the identifier: credential lookups are a login path and
-      // the log should not accumulate a list of probed accounts.
-      logger.error(
-        `PostgresUserRepository.findCredentialByUserId error: ${err.message}`,
-      );
-      return null;
+    } catch (error) {
+      databaseFailure("users.findCredentialByUserId", error);
     }
   }
 
@@ -421,7 +416,7 @@ export class PostgresUserRepository implements IUserRepository {
       updated_at: new Date().toISOString(),
     }) as any);
     if (error) {
-      throw new Error(`Failed to save credential: ${error.message}`);
+      databaseFailure("users.saveCredential", error);
     }
   }
 
@@ -430,7 +425,7 @@ export class PostgresUserRepository implements IUserRepository {
     const { error } = await ((supabase.from("user_credentials" as any) as any)
       .delete()
       .eq("user_id", userId) as any);
-    if (error) throw new Error(`Failed to delete credential: ${error.message}`);
+    if (error) databaseFailure("users.deleteCredential", error);
   }
 
   async anonymize(userId: string, reason?: string): Promise<UserProfile> {
@@ -440,10 +435,7 @@ export class PostgresUserRepository implements IUserRepository {
       p_reason: reason || null,
     });
     const profile = data?.[0];
-    if (error || !profile)
-      throw new Error(
-        `Failed to anonymize account: ${error?.message || "account not found"}`,
-      );
+    if (error || !profile) databaseFailure("users.anonymize", error);
     return this.mapRowToUserProfile(profile);
   }
 }

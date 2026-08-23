@@ -601,7 +601,9 @@ export const AutoVehicleDetailPage: React.FC = () => {
               <option value="callback">Être rappelé</option>
               <option value="viewing">Organiser une visite</option>
               <option value="test_drive">Essai</option>
-              <option value="price_proposal">Proposition de prix non engageante</option>
+              <option value="price_proposal">
+                Proposition de prix non engageante
+              </option>
               <option value="purchase">Achat</option>
               <option value="trade_in">Reprise</option>
               <option value="financing">Informations de financement</option>

@@ -1,6 +1,7 @@
 export * from "./schemas/primitives";
 export * from "./schemas/users";
 export * from "./schemas/listings";
+export * from "./schemas/discovery";
 export * from "./schemas/auth";
 export * from "./schemas/publication";
 export * from "./schemas/taxonomy";

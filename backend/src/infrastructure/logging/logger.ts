@@ -1,4 +1,4 @@
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface LogContext {
   traceId?: string;
@@ -11,11 +11,15 @@ export interface LogContext {
 export class Logger {
   private scope: string;
 
-  constructor(scope = 'App') {
+  constructor(scope = "App") {
     this.scope = scope;
   }
 
-  private formatMessage(level: LogLevel, message: string, context?: LogContext): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+  ): string {
     const timestamp = new Date().toISOString();
     const payload = {
       timestamp,
@@ -28,24 +32,24 @@ export class Logger {
   }
 
   debug(message: string, context?: LogContext): void {
-    if (process.env.NODE_ENV !== 'test') {
-      console.debug(this.formatMessage('debug', message, context));
+    if (process.env.NODE_ENV !== "test") {
+      console.debug(this.formatMessage("debug", message, context));
     }
   }
 
   info(message: string, context?: LogContext): void {
-    if (process.env.NODE_ENV !== 'test') {
-      console.log(this.formatMessage('info', message, context));
+    if (process.env.NODE_ENV !== "test") {
+      console.log(this.formatMessage("info", message, context));
     }
   }
 
   warn(message: string, context?: LogContext): void {
-    console.warn(this.formatMessage('warn', message, context));
+    console.warn(this.formatMessage("warn", message, context));
   }
 
   error(message: string, context?: LogContext): void {
-    console.error(this.formatMessage('error', message, context));
+    console.error(this.formatMessage("error", message, context));
   }
 }
 
-export const logger = new Logger('Server');
+export const logger = new Logger("Server");

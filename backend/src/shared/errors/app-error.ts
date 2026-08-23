@@ -1,17 +1,17 @@
 export type ErrorCode =
-  | 'UNAUTHENTICATED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'VALIDATION_ERROR'
-  | 'CONFLICT'
-  | 'BAD_REQUEST'
-  | 'INSUFFICIENT_FUNDS'
-  | 'ESCROW_ERROR'
-  | 'PAYMENT_FAILED'
-  | 'INVALID_PIN'
-  | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR'
-  | 'NETWORK_ERROR';
+  | "UNAUTHENTICATED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "VALIDATION_ERROR"
+  | "CONFLICT"
+  | "BAD_REQUEST"
+  | "INSUFFICIENT_FUNDS"
+  | "ESCROW_ERROR"
+  | "PAYMENT_FAILED"
+  | "INVALID_PIN"
+  | "RATE_LIMITED"
+  | "INTERNAL_ERROR"
+  | "NETWORK_ERROR";
 
 export interface AppErrorParams {
   code: ErrorCode;
@@ -29,7 +29,7 @@ export class AppError extends Error {
 
   constructor(params: AppErrorParams) {
     super(params.message);
-    this.name = 'AppError';
+    this.name = "AppError";
     this.code = params.code;
     this.details = params.details;
     this.originalError = params.originalError;
@@ -38,28 +38,28 @@ export class AppError extends Error {
       this.statusCode = params.statusCode;
     } else {
       switch (params.code) {
-        case 'UNAUTHENTICATED':
+        case "UNAUTHENTICATED":
           this.statusCode = 401;
           break;
-        case 'FORBIDDEN':
+        case "FORBIDDEN":
           this.statusCode = 403;
           break;
-        case 'NOT_FOUND':
+        case "NOT_FOUND":
           this.statusCode = 404;
           break;
-        case 'VALIDATION_ERROR':
-        case 'BAD_REQUEST':
-        case 'INVALID_PIN':
+        case "VALIDATION_ERROR":
+        case "BAD_REQUEST":
+        case "INVALID_PIN":
           this.statusCode = 400;
           break;
-        case 'CONFLICT':
+        case "CONFLICT":
           this.statusCode = 409;
           break;
-        case 'RATE_LIMITED':
+        case "RATE_LIMITED":
           this.statusCode = 429;
           break;
-        case 'PAYMENT_FAILED':
-        case 'ESCROW_ERROR':
+        case "PAYMENT_FAILED":
+        case "ESCROW_ERROR":
           this.statusCode = 402;
           break;
         default:

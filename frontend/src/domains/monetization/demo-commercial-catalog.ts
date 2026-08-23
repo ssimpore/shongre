@@ -18,7 +18,8 @@ function rule(key: string, marketCode = "FR") {
   return BASELINE_MONETIZATION_CATALOG.rules.find(
     (candidate) =>
       candidate.key === key &&
-      (candidate.scope.marketCodes.length === 0 || candidate.scope.marketCodes.includes(marketCode)),
+      (candidate.scope.marketCodes.length === 0 ||
+        candidate.scope.marketCodes.includes(marketCode)),
   );
 }
 
@@ -26,9 +27,14 @@ export function getDemoTransactionCommercials(
   marketCode: string,
   sellerType: "individual" | "pro",
 ) {
-  const protection = rule(`fees.buyer_protection.${marketCode.toLowerCase()}`, marketCode);
+  const protection = rule(
+    `fees.buyer_protection.${marketCode.toLowerCase()}`,
+    marketCode,
+  );
   const commission = rule(
-    sellerType === "pro" ? "commission.seller.professional" : "commission.seller.individual",
+    sellerType === "pro"
+      ? "commission.seller.professional"
+      : "commission.seller.individual",
     marketCode,
   );
   const range = rule("transaction.range.fr", marketCode);
@@ -45,7 +51,13 @@ export function getDemoTransactionCommercials(
 }
 
 export function getDemoDeliveryAmountMinor(
-  delivery: "hand_delivery" | "relay_point" | "home" | "express" | "bulky" | "seller_direct",
+  delivery:
+    | "hand_delivery"
+    | "relay_point"
+    | "home"
+    | "express"
+    | "bulky"
+    | "seller_direct",
   tier: "small" | "medium" | "large" | "xlarge" = "medium",
 ) {
   const product = BASELINE_MONETIZATION_CATALOG.products.find(
@@ -118,10 +130,13 @@ export function getDemoPublicationPolicy(input: {
       }
       const { scope } = candidate;
       return (
-        (scope.marketCodes.length === 0 || scope.marketCodes.includes(marketCode)) &&
-        (scope.audiences.length === 0 || scope.audiences.includes(input.audience)) &&
+        (scope.marketCodes.length === 0 ||
+          scope.marketCodes.includes(marketCode)) &&
+        (scope.audiences.length === 0 ||
+          scope.audiences.includes(input.audience)) &&
         (scope.categoryIds.length === 0 ||
-          (!!input.categoryId && scope.categoryIds.includes(input.categoryId))) &&
+          (!!input.categoryId &&
+            scope.categoryIds.includes(input.categoryId))) &&
         (scope.planIds.length === 0 ||
           (!!input.planId && scope.planIds.includes(input.planId)))
       );
@@ -141,7 +156,9 @@ export function getDemoPublicationPolicy(input: {
   const resolvedRule = candidates[0];
   const planProductId =
     PLAN_PRODUCT_IDS[input.planId || ""] ||
-    (input.audience === "individual" ? "listing.standard.individual" : "plan.pro.starter");
+    (input.audience === "individual"
+      ? "listing.standard.individual"
+      : "plan.pro.starter");
   const planProduct = BASELINE_MONETIZATION_CATALOG.products.find(
     (candidate) => candidate.id === planProductId,
   );
@@ -155,7 +172,7 @@ export function getDemoPublicationPolicy(input: {
     eligible: resolvedRule?.outcome.eligible ?? true,
     quotaLimit:
       categorySpecific || typeof productQuota !== "number"
-        ? ruleQuota ?? 0
+        ? (ruleQuota ?? 0)
         : productQuota,
     durationDays:
       resolvedRule?.outcome.durationDays ||

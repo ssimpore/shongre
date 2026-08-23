@@ -17,7 +17,10 @@ export interface AuthService {
   getSocialProviders(): Promise<Record<SocialProvider, boolean>>;
   startSocialLogin(provider: SocialProvider): Promise<string>;
   completeSocialLogin(exchangeCode: string): Promise<AuthUser>;
-  completePendingSocialRegistration(completionHandle: string, email: string): Promise<void>;
+  completePendingSocialRegistration(
+    completionHandle: string,
+    email: string,
+  ): Promise<void>;
   logout(): Promise<void>;
   deleteAccount(input: AccountDeletionRequest): Promise<void>;
 }
@@ -65,7 +68,8 @@ export class DemoAuthService implements AuthService {
 
   async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
     const provider = exchangeCode.replace(/^demo-/, "");
-    if (!['google', 'apple', 'facebook'].includes(provider)) throw new Error("Réponse de connexion invalide.");
+    if (!["google", "apple", "facebook"].includes(provider))
+      throw new Error("Réponse de connexion invalide.");
     const session = {
       ...demoSession,
       token: `demo-mobile-${provider}-session`,
@@ -75,7 +79,10 @@ export class DemoAuthService implements AuthService {
     return session.user;
   }
 
-  async completePendingSocialRegistration(_completionHandle: string, _email: string): Promise<void> {
+  async completePendingSocialRegistration(
+    _completionHandle: string,
+    _email: string,
+  ): Promise<void> {
     // Demo providers always assert a verified deterministic email. The method
     // remains asynchronous so demo and API adapters keep the same contract.
   }
@@ -116,16 +123,29 @@ export class HttpAuthService implements AuthService {
   }
 
   async startSocialLogin(provider: SocialProvider): Promise<string> {
-    const response = await apiRequest<{ authorizationUrl: string }>(`/auth/oauth/${provider}/start`, {
-      method: "POST",
-      body: JSON.stringify({ provider, clientKind: "native", returnTo: "/compte" }),
-    });
+    const response = await apiRequest<{ authorizationUrl: string }>(
+      `/auth/oauth/${provider}/start`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          provider,
+          clientKind: "native",
+          returnTo: "/compte",
+        }),
+      },
+    );
     return response.authorizationUrl;
   }
 
   async getSocialProviders(): Promise<Record<SocialProvider, boolean>> {
-    const response = await apiRequest<Record<SocialProvider, boolean> & { linking: boolean }>("/auth/oauth/providers");
-    return { google: response.google, apple: response.apple, facebook: response.facebook };
+    const response = await apiRequest<
+      Record<SocialProvider, boolean> & { linking: boolean }
+    >("/auth/oauth/providers");
+    return {
+      google: response.google,
+      apple: response.apple,
+      facebook: response.facebook,
+    };
   }
 
   async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
@@ -139,10 +159,17 @@ export class HttpAuthService implements AuthService {
     return session.user;
   }
 
-  async completePendingSocialRegistration(completionHandle: string, email: string): Promise<void> {
+  async completePendingSocialRegistration(
+    completionHandle: string,
+    email: string,
+  ): Promise<void> {
     await apiRequest("/auth/oauth/complete-profile", {
       method: "POST",
-      body: JSON.stringify({ completionHandle, email, accountType: "individual" }),
+      body: JSON.stringify({
+        completionHandle,
+        email,
+        accountType: "individual",
+      }),
     });
   }
 

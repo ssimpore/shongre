@@ -30,9 +30,7 @@ export function resolveCanonicalTaxonomyIdentity(
   );
   if (bySlug) return bySlug;
   const mappedId = CANONICAL_TAXONOMY_ALIASES[lookup];
-  return mappedId
-    ? CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(mappedId)
-    : undefined;
+  return mappedId ? CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(mappedId) : undefined;
 }
 
 export function normalizeListingTaxonomyIdentity(listing: {

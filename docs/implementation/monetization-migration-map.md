@@ -2,21 +2,21 @@
 
 ## Audited sources
 
-| Previous source | Risk found | Central replacement |
-|---|---|---|
-| `backend/.../monetization.repository.ts` | Independent boost/plan floats, unverified grant, active subscription on insert | Catalog-derived compatibility reads; unsafe mutation methods disabled; quote/checkout service |
-| `frontend/src/configuration/plans.config.ts` | Conflicting plan prices, quotas, boost prices, unsupported uplift claims | Compatibility presentation derived from the shared baseline catalog |
-| `AdminMonetizationPage.tsx` | Local fake state and success toast; no persistence | Adapter-backed versioned command center, simulation, explanation, draft and workflow actions |
-| `market.defaults.ts` / `market.config.ts` | Fee, limit, delivery, commission, payout, premium and plan duplicates | Values derived from catalog rules/products in demo mode |
-| `transaction.config.ts` / `transaction.service.ts` | Client-side fee and commission constants | Commercial fields removed; demo resolver uses catalog; API checkout uses server quote |
-| `fulfillment.resolver.ts` | Different buyer fee/commission and delivery prices | Catalog delivery tiers and fee/commission rules |
-| `backend/src/shared/money/escrow.ts` | Market fee table duplicated in floats | Compatibility calculation derives rules and calculates in minor units |
-| `OrdersService` | Unconfigured shipping fallback | Catalog delivery price fallback |
-| `/payments/intent` and fake Stripe adapter | Client amount trusted; random fake production intent | Quote id only; Checkout Sessions; fake production calls disabled |
-| Auto tables/adapters | Separate plan/add-on catalog and paid flags | Existing Auto response shape is projected from the published catalog by `applyMonetizationToAutoCatalog`; publication/workspace reads use that projection |
-| Cours tables/adapters | Separate plans/add-ons and commission | Existing Cours response shape is projected from the published catalog; tutor quotas and add-ons consume it |
-| Immo vertical offers/checkouts | Reusable model but no full immutable line/entitlement snapshot | Immo catalog projection plus central quote/checkout/order for paid offers and add-ons |
-| Mobile billing | Classification only | Shared catalog, quote, checkout contracts with deterministic demo adapter |
+| Previous source                                    | Risk found                                                                     | Central replacement                                                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend/.../monetization.repository.ts`           | Independent boost/plan floats, unverified grant, active subscription on insert | Catalog-derived compatibility reads; unsafe mutation methods disabled; quote/checkout service                                                             |
+| `frontend/src/configuration/plans.config.ts`       | Conflicting plan prices, quotas, boost prices, unsupported uplift claims       | Compatibility presentation derived from the shared baseline catalog                                                                                       |
+| `AdminMonetizationPage.tsx`                        | Local fake state and success toast; no persistence                             | Adapter-backed versioned command center, simulation, explanation, draft and workflow actions                                                              |
+| `market.defaults.ts` / `market.config.ts`          | Fee, limit, delivery, commission, payout, premium and plan duplicates          | Values derived from catalog rules/products in demo mode                                                                                                   |
+| `transaction.config.ts` / `transaction.service.ts` | Client-side fee and commission constants                                       | Commercial fields removed; demo resolver uses catalog; API checkout uses server quote                                                                     |
+| `fulfillment.resolver.ts`                          | Different buyer fee/commission and delivery prices                             | Catalog delivery tiers and fee/commission rules                                                                                                           |
+| `backend/src/shared/money/escrow.ts`               | Market fee table duplicated in floats                                          | Compatibility calculation derives rules and calculates in minor units                                                                                     |
+| `OrdersService`                                    | Unconfigured shipping fallback                                                 | Catalog delivery price fallback                                                                                                                           |
+| `/payments/intent` and fake Stripe adapter         | Client amount trusted; random fake production intent                           | Quote id only; Checkout Sessions; fake production calls disabled                                                                                          |
+| Auto tables/adapters                               | Separate plan/add-on catalog and paid flags                                    | Existing Auto response shape is projected from the published catalog by `applyMonetizationToAutoCatalog`; publication/workspace reads use that projection |
+| Cours tables/adapters                              | Separate plans/add-ons and commission                                          | Existing Cours response shape is projected from the published catalog; tutor quotas and add-ons consume it                                                |
+| Immo vertical offers/checkouts                     | Reusable model but no full immutable line/entitlement snapshot                 | Immo catalog projection plus central quote/checkout/order for paid offers and add-ons                                                                     |
+| Mobile billing                                     | Classification only                                                            | Shared catalog, quote, checkout contracts with deterministic demo adapter                                                                                 |
 
 ## Current audited baseline
 
@@ -50,15 +50,15 @@ Legacy tables are not dropped by migration 00015. This preserves rollback and hi
 
 ## Consumer evidence
 
-| Consumer | Authoritative read |
-|---|---|
-| Generic web publication | `getDemoPublicationPolicy` in demo; authenticated `BusinessRulesService.authorizePublication` on backend publish |
-| Auto backend and web demo | Shared `applyMonetizationToAutoCatalog` projection |
-| Cours backend and web demo | Shared `applyMonetizationToCourseCatalog` projection |
-| Immo backend and web demo | Shared projection; paid backend checkout delegates to central quote/order |
-| Generic promotions and Pro plans | Compatibility service reads active central products |
-| Transactions, escrow, delivery, payout | Shared rule/product lookup in compatibility resolvers |
-| Admin | `BusinessRulesServiceContract` demo/HTTP adapters; no local commercial state |
-| Mobile billing | Shared catalog/quote/checkout contracts; active entitlements restored from the backend endpoint |
+| Consumer                               | Authoritative read                                                                                               |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Generic web publication                | `getDemoPublicationPolicy` in demo; authenticated `BusinessRulesService.authorizePublication` on backend publish |
+| Auto backend and web demo              | Shared `applyMonetizationToAutoCatalog` projection                                                               |
+| Cours backend and web demo             | Shared `applyMonetizationToCourseCatalog` projection                                                             |
+| Immo backend and web demo              | Shared projection; paid backend checkout delegates to central quote/order                                        |
+| Generic promotions and Pro plans       | Compatibility service reads active central products                                                              |
+| Transactions, escrow, delivery, payout | Shared rule/product lookup in compatibility resolvers                                                            |
+| Admin                                  | `BusinessRulesServiceContract` demo/HTTP adapters; no local commercial state                                     |
+| Mobile billing                         | Shared catalog/quote/checkout contracts; active entitlements restored from the backend endpoint                  |
 
 The old vertical seed values remain only as expand-phase rollback and non-commercial shape fixtures. Runtime projections replace their price, duration, status, recommendation, label, and monetized entitlement fields before a consumer receives them.

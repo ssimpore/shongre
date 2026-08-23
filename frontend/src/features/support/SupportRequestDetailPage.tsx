@@ -21,6 +21,7 @@ import { SupportContextCard } from "./components/SupportContextCard";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { telemetryService } from "../../services/telemetry.service";
 
 export const SupportRequestDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -97,8 +98,9 @@ export const SupportRequestDetailPage: React.FC = () => {
         "Une réponse du conseiller Hugo a été simulée.",
         "Simulation Support",
       );
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      telemetryService.captureException(err, "support-simulated-reply");
+      toast.error("La réponse simulée n'a pas pu être ajoutée.");
     }
   };
 
@@ -111,8 +113,9 @@ export const SupportRequestDetailPage: React.FC = () => {
         "Le dossier est désormais marqué comme résolu.",
         "Demande résolue",
       );
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      telemetryService.captureException(err, "support-resolution");
+      toast.error("La demande n'a pas pu être marquée comme résolue.");
     }
   };
 

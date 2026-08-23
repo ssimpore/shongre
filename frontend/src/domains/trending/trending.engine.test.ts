@@ -168,4 +168,31 @@ describe("trending engine", () => {
     expect(assignments.get("one")).toContain("shared");
     expect(assignments.get("two")).not.toContain("shared");
   });
+
+  it("uses freshness and a stable identifier when quality scores tie", () => {
+    const older = {
+      ...listing("listing-z", "services"),
+      organicFreshnessAt: "2026-08-18T00:00:00.000Z",
+    };
+    const newerB = {
+      ...listing("listing-b", "services"),
+      organicFreshnessAt: "2026-08-20T00:00:00.000Z",
+    };
+    const newerA = {
+      ...listing("listing-a", "services"),
+      organicFreshnessAt: "2026-08-20T00:00:00.000Z",
+    };
+    const topic = {
+      ...candidate("services", "services", []),
+      listings: [older, newerB, newerA],
+      score: 0.8,
+      direction: "up" as const,
+    };
+
+    expect(deduplicateListings([topic], 3).get("services")).toEqual([
+      "listing-a",
+      "listing-b",
+      "listing-z",
+    ]);
+  });
 });

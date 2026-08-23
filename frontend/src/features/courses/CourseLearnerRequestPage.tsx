@@ -100,11 +100,21 @@ export const CourseLearnerRequestPage: React.FC = () => {
   useEffect(() => {
     // Persist only non-contact learning criteria. Guardian names and consent
     // remain memory-only and are sent directly to the service on submission.
-    const { guardianName: _name, guardianRelationship: _relationship, guardianConsent: _consent, ...safeDraft } = form;
+    const {
+      guardianName: _name,
+      guardianRelationship: _relationship,
+      guardianConsent: _consent,
+      ...safeDraft
+    } = form;
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(safeDraft));
   }, [form]);
 
-  const steps = ["Besoin", "Modalités", "Budget et date", "Responsable et sécurité"];
+  const steps = [
+    "Besoin",
+    "Modalités",
+    "Budget et date",
+    "Responsable et sécurité",
+  ];
   const isMinor = form.learnerAgeBand !== "adult";
 
   const update = <K extends keyof RequestFormState>(
@@ -119,19 +129,30 @@ export const CourseLearnerRequestPage: React.FC = () => {
 
   const stepIsValid = useMemo(() => {
     if (step === 0)
-      return Boolean(form.subjectId && form.levelId && form.objective.trim().length >= 10);
+      return Boolean(
+        form.subjectId && form.levelId && form.objective.trim().length >= 10,
+      );
     if (step === 1)
       return Boolean(
         form.preferredSchedule.length &&
-          form.deliveryModes.length &&
-          (form.deliveryModes.includes("online") || form.city.trim()),
+        form.deliveryModes.length &&
+        (form.deliveryModes.includes("online") || form.city.trim()),
       );
     if (step === 2)
       return Boolean(
         form.desiredStartDate &&
-          (!form.budgetMinEuros || !form.budgetMaxEuros || Number(form.budgetMinEuros) <= Number(form.budgetMaxEuros)),
+        (!form.budgetMinEuros ||
+          !form.budgetMaxEuros ||
+          Number(form.budgetMinEuros) <= Number(form.budgetMaxEuros)),
       );
-    return !isMinor || Boolean(form.guardianName.trim() && form.guardianRelationship.trim() && form.guardianConsent);
+    return (
+      !isMinor ||
+      Boolean(
+        form.guardianName.trim() &&
+        form.guardianRelationship.trim() &&
+        form.guardianConsent,
+      )
+    );
   }, [form, isMinor, step]);
 
   const submit = async () => {
@@ -144,12 +165,20 @@ export const CourseLearnerRequestPage: React.FC = () => {
       preferredSchedule: form.preferredSchedule,
       deliveryModes: form.deliveryModes,
       city: form.city.trim() || undefined,
-      radiusKm: form.deliveryModes.includes("in_person") ? form.radiusKm : undefined,
+      radiusKm: form.deliveryModes.includes("in_person")
+        ? form.radiusKm
+        : undefined,
       budgetMin: form.budgetMinEuros
-        ? { amountMinor: Math.round(Number(form.budgetMinEuros) * 100), currency: "EUR" }
+        ? {
+            amountMinor: Math.round(Number(form.budgetMinEuros) * 100),
+            currency: "EUR",
+          }
         : undefined,
       budgetMax: form.budgetMaxEuros
-        ? { amountMinor: Math.round(Number(form.budgetMaxEuros) * 100), currency: "EUR" }
+        ? {
+            amountMinor: Math.round(Number(form.budgetMaxEuros) * 100),
+            currency: "EUR",
+          }
         : undefined,
       desiredStartDate: form.desiredStartDate,
       context: form.context.trim(),
@@ -185,7 +214,9 @@ export const CourseLearnerRequestPage: React.FC = () => {
         <StatePanel
           title="Formulaire indisponible"
           description="Le catalogue de matières n’a pas pu être chargé. Votre brouillon local est conservé."
-          action={<Button onClick={() => window.location.reload()}>Réessayer</Button>}
+          action={
+            <Button onClick={() => window.location.reload()}>Réessayer</Button>
+          }
         />
       </Container>
     );
@@ -210,7 +241,9 @@ export const CourseLearnerRequestPage: React.FC = () => {
             Votre demande est enregistrée
           </h1>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-text-secondary">
-            Les profils sont rapprochés selon la matière, le niveau, les modalités, la disponibilité et la sécurité. Vos coordonnées restent masquées jusqu’à une acceptation conforme aux règles de contact.
+            Les profils sont rapprochés selon la matière, le niveau, les
+            modalités, la disponibilité et la sécurité. Vos coordonnées restent
+            masquées jusqu’à une acceptation conforme aux règles de contact.
           </p>
           <p className="mt-4 text-xs text-text-muted">
             Référence : {submitted.id}
@@ -238,15 +271,20 @@ export const CourseLearnerRequestPage: React.FC = () => {
             Décrire mon besoin
           </h1>
           <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-            Une demande précise aide les professeurs disponibles à répondre utilement.
+            Une demande précise aide les professeurs disponibles à répondre
+            utilement.
           </p>
         </div>
 
         <ol className="mb-5 grid grid-cols-4 gap-2" aria-label="Progression">
           {steps.map((label, index) => (
             <li key={label} aria-current={index === step ? "step" : undefined}>
-              <div className={`h-1 rounded-pill ${index <= step ? "bg-primary" : "bg-bg-muted"}`} />
-              <span className={`mt-2 hidden text-micro font-semibold sm:block ${index === step ? "text-text-main" : "text-text-muted"}`}>
+              <div
+                className={`h-1 rounded-pill ${index <= step ? "bg-primary" : "bg-bg-muted"}`}
+              />
+              <span
+                className={`mt-2 hidden text-micro font-semibold sm:block ${index === step ? "text-text-main" : "text-text-muted"}`}
+              >
                 {index + 1}. {label}
               </span>
             </li>
@@ -257,11 +295,15 @@ export const CourseLearnerRequestPage: React.FC = () => {
           {step === 0 && (
             <section aria-labelledby="request-step-need" className="space-y-5">
               <div>
-                <h2 id="request-step-need" className="text-base font-black text-text-main">
+                <h2
+                  id="request-step-need"
+                  className="text-base font-black text-text-main"
+                >
                   Quel accompagnement recherchez-vous ?
                 </h2>
                 <p className="mt-1 text-xs text-text-secondary">
-                  La matière et le niveau sont les premiers critères de pertinence.
+                  La matière et le niveau sont les premiers critères de
+                  pertinence.
                 </p>
               </div>
               <label className="block text-xs font-bold text-text-main">
@@ -312,31 +354,61 @@ export const CourseLearnerRequestPage: React.FC = () => {
           )}
 
           {step === 1 && (
-            <section aria-labelledby="request-step-format" className="space-y-5">
+            <section
+              aria-labelledby="request-step-format"
+              className="space-y-5"
+            >
               <div>
-                <h2 id="request-step-format" className="text-base font-black text-text-main">
+                <h2
+                  id="request-step-format"
+                  className="text-base font-black text-text-main"
+                >
                   Où et quand souhaitez-vous apprendre ?
                 </h2>
                 <p className="mt-1 text-xs text-text-secondary">
-                  Choisissez plusieurs options si votre emploi du temps est flexible.
+                  Choisissez plusieurs options si votre emploi du temps est
+                  flexible.
                 </p>
               </div>
               <fieldset>
-                <legend className="text-xs font-bold text-text-main">Format du cours</legend>
+                <legend className="text-xs font-bold text-text-main">
+                  Format du cours
+                </legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {[
                     ["online", "En ligne", "Visioconférence"],
-                    ["in_person", "En présentiel", "À domicile ou dans un lieu convenu"],
+                    [
+                      "in_person",
+                      "En présentiel",
+                      "À domicile ou dans un lieu convenu",
+                    ],
                   ].map(([value, label, description]) => (
-                    <label key={value} className="flex cursor-pointer items-start gap-3 rounded-control border border-border-base p-3 hover:border-primary-border">
+                    <label
+                      key={value}
+                      className="flex cursor-pointer items-start gap-3 rounded-control border border-border-base p-3 hover:border-primary-border"
+                    >
                       <input
                         type="checkbox"
-                        checked={form.deliveryModes.includes(value as DeliveryMode)}
-                        onChange={() => update("deliveryModes", toggleArray(form.deliveryModes, value as DeliveryMode))}
+                        checked={form.deliveryModes.includes(
+                          value as DeliveryMode,
+                        )}
+                        onChange={() =>
+                          update(
+                            "deliveryModes",
+                            toggleArray(
+                              form.deliveryModes,
+                              value as DeliveryMode,
+                            ),
+                          )
+                        }
                       />
                       <span>
-                        <span className="block text-xs font-bold text-text-main">{label}</span>
-                        <span className="mt-0.5 block text-micro text-text-muted">{description}</span>
+                        <span className="block text-xs font-bold text-text-main">
+                          {label}
+                        </span>
+                        <span className="mt-0.5 block text-micro text-text-muted">
+                          {description}
+                        </span>
                       </span>
                     </label>
                   ))}
@@ -347,7 +419,10 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   <label className="block text-xs font-bold text-text-main">
                     Ville
                     <div className="relative mt-2">
-                      <MapPin className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted" aria-hidden="true" />
+                      <MapPin
+                        className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
+                        aria-hidden="true"
+                      />
                       <input
                         value={form.city}
                         onChange={(event) => update("city", event.target.value)}
@@ -360,18 +435,24 @@ export const CourseLearnerRequestPage: React.FC = () => {
                     Rayon
                     <select
                       value={form.radiusKm}
-                      onChange={(event) => update("radiusKm", Number(event.target.value))}
+                      onChange={(event) =>
+                        update("radiusKm", Number(event.target.value))
+                      }
                       className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 text-sm font-normal"
                     >
                       {[5, 10, 15, 25, 40].map((radius) => (
-                        <option key={radius} value={radius}>{radius} km</option>
+                        <option key={radius} value={radius}>
+                          {radius} km
+                        </option>
                       ))}
                     </select>
                   </label>
                 </div>
               )}
               <fieldset>
-                <legend className="text-xs font-bold text-text-main">Créneaux préférés</legend>
+                <legend className="text-xs font-bold text-text-main">
+                  Créneaux préférés
+                </legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {[
                     ["weekday_morning", "Matin en semaine"],
@@ -379,11 +460,19 @@ export const CourseLearnerRequestPage: React.FC = () => {
                     ["weekday_evening", "Soir en semaine"],
                     ["weekend", "Week-end"],
                   ].map(([value, label]) => (
-                    <label key={value} className="flex min-h-control-touch cursor-pointer items-center gap-2 rounded-control border border-border-base px-3 text-xs text-text-secondary">
+                    <label
+                      key={value}
+                      className="flex min-h-control-touch cursor-pointer items-center gap-2 rounded-control border border-border-base px-3 text-xs text-text-secondary"
+                    >
                       <input
                         type="checkbox"
                         checked={form.preferredSchedule.includes(value)}
-                        onChange={() => update("preferredSchedule", toggleArray(form.preferredSchedule, value))}
+                        onChange={() =>
+                          update(
+                            "preferredSchedule",
+                            toggleArray(form.preferredSchedule, value),
+                          )
+                        }
                       />
                       {label}
                     </label>
@@ -394,13 +483,20 @@ export const CourseLearnerRequestPage: React.FC = () => {
           )}
 
           {step === 2 && (
-            <section aria-labelledby="request-step-budget" className="space-y-5">
+            <section
+              aria-labelledby="request-step-budget"
+              className="space-y-5"
+            >
               <div>
-                <h2 id="request-step-budget" className="text-base font-black text-text-main">
+                <h2
+                  id="request-step-budget"
+                  className="text-base font-black text-text-main"
+                >
                   Budget et date de début
                 </h2>
                 <p className="mt-1 text-xs text-text-secondary">
-                  Le budget aide à éviter les propositions incompatibles. Il ne modifie pas la priorité de sécurité.
+                  Le budget aide à éviter les propositions incompatibles. Il ne
+                  modifie pas la priorité de sécurité.
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -411,10 +507,14 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       type="number"
                       min="0"
                       value={form.budgetMinEuros}
-                      onChange={(event) => update("budgetMinEuros", event.target.value)}
+                      onChange={(event) =>
+                        update("budgetMinEuros", event.target.value)
+                      }
                       className="h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 pr-9 text-sm font-normal"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">€</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">
+                      €
+                    </span>
                   </div>
                 </label>
                 <label className="block text-xs font-bold text-text-main">
@@ -424,21 +524,30 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       type="number"
                       min="0"
                       value={form.budgetMaxEuros}
-                      onChange={(event) => update("budgetMaxEuros", event.target.value)}
+                      onChange={(event) =>
+                        update("budgetMaxEuros", event.target.value)
+                      }
                       className="h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 pr-9 text-sm font-normal"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">€</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">
+                      €
+                    </span>
                   </div>
                 </label>
               </div>
               <label className="block text-xs font-bold text-text-main">
                 Date de début souhaitée
                 <div className="relative mt-2">
-                  <CalendarDays className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted" aria-hidden="true" />
+                  <CalendarDays
+                    className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
+                    aria-hidden="true"
+                  />
                   <input
                     type="date"
                     value={form.desiredStartDate}
-                    onChange={(event) => update("desiredStartDate", event.target.value)}
+                    onChange={(event) =>
+                      update("desiredStartDate", event.target.value)
+                    }
                     className="h-control-touch w-full rounded-control border border-border-base bg-bg-base pl-9 pr-3 text-sm font-normal"
                   />
                 </div>
@@ -458,20 +567,32 @@ export const CourseLearnerRequestPage: React.FC = () => {
           )}
 
           {step === 3 && (
-            <section aria-labelledby="request-step-safety" className="space-y-5">
+            <section
+              aria-labelledby="request-step-safety"
+              className="space-y-5"
+            >
               <div>
-                <h2 id="request-step-safety" className="text-base font-black text-text-main">
+                <h2
+                  id="request-step-safety"
+                  className="text-base font-black text-text-main"
+                >
                   Élève, responsable et sécurité
                 </h2>
                 <p className="mt-1 text-xs text-text-secondary">
-                  Les coordonnées d’un mineur ne sont jamais publiées dans la demande.
+                  Les coordonnées d’un mineur ne sont jamais publiées dans la
+                  demande.
                 </p>
               </div>
               <label className="block text-xs font-bold text-text-main">
                 Tranche d’âge de l’élève
                 <select
                   value={form.learnerAgeBand}
-                  onChange={(event) => update("learnerAgeBand", event.target.value as RequestFormState["learnerAgeBand"])}
+                  onChange={(event) =>
+                    update(
+                      "learnerAgeBand",
+                      event.target.value as RequestFormState["learnerAgeBand"],
+                    )
+                  }
                   className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 text-sm font-normal"
                 >
                   <option value="adult">Adulte</option>
@@ -483,11 +604,17 @@ export const CourseLearnerRequestPage: React.FC = () => {
               {isMinor && (
                 <div className="space-y-4 rounded-card border border-warning-border bg-warning-surface p-4">
                   <div className="flex items-start gap-3">
-                    <Users className="h-icon-md w-icon-md shrink-0 text-warning" aria-hidden="true" />
+                    <Users
+                      className="h-icon-md w-icon-md shrink-0 text-warning"
+                      aria-hidden="true"
+                    />
                     <div>
-                      <h3 className="text-xs font-black text-text-main">Responsable légal requis</h3>
+                      <h3 className="text-xs font-black text-text-main">
+                        Responsable légal requis
+                      </h3>
                       <p className="mt-1 text-micro leading-relaxed text-text-secondary">
-                        Le responsable légal reste le contact du professeur et organise les rencontres.
+                        Le responsable légal reste le contact du professeur et
+                        organise les rencontres.
                       </p>
                     </div>
                   </div>
@@ -496,7 +623,9 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       Nom du responsable
                       <input
                         value={form.guardianName}
-                        onChange={(event) => update("guardianName", event.target.value)}
+                        onChange={(event) =>
+                          update("guardianName", event.target.value)
+                        }
                         className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm font-normal"
                       />
                     </label>
@@ -504,7 +633,9 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       Lien avec l’élève
                       <input
                         value={form.guardianRelationship}
-                        onChange={(event) => update("guardianRelationship", event.target.value)}
+                        onChange={(event) =>
+                          update("guardianRelationship", event.target.value)
+                        }
                         placeholder="Parent, tuteur…"
                         className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm font-normal"
                       />
@@ -514,21 +645,37 @@ export const CourseLearnerRequestPage: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={form.guardianConsent}
-                      onChange={(event) => update("guardianConsent", event.target.checked)}
+                      onChange={(event) =>
+                        update("guardianConsent", event.target.checked)
+                      }
                     />
-                    <span>Je confirme être habilité à organiser ces cours et consens à être le contact du professeur pour cet élève mineur.</span>
+                    <span>
+                      Je confirme être habilité à organiser ces cours et consens
+                      à être le contact du professeur pour cet élève mineur.
+                    </span>
                   </label>
                 </div>
               )}
               <div className="rounded-card border border-success-border bg-success-surface p-4">
                 <h3 className="flex items-center gap-2 text-xs font-black text-text-main">
-                  <ShieldCheck className="h-icon-sm w-icon-sm text-success" aria-hidden="true" />
+                  <ShieldCheck
+                    className="h-icon-sm w-icon-sm text-success"
+                    aria-hidden="true"
+                  />
                   Ce qui se passe après l’envoi
                 </h3>
                 <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-text-secondary">
-                  <li>• La pertinence, la disponibilité et la sécurité restent prioritaires.</li>
-                  <li>• Vos coordonnées sont masquées avant une acceptation valide.</li>
-                  <li>• Vous pouvez signaler et bloquer un profil à tout moment.</li>
+                  <li>
+                    • La pertinence, la disponibilité et la sécurité restent
+                    prioritaires.
+                  </li>
+                  <li>
+                    • Vos coordonnées sont masquées avant une acceptation
+                    valide.
+                  </li>
+                  <li>
+                    • Vous pouvez signaler et bloquer un profil à tout moment.
+                  </li>
                 </ul>
               </div>
             </section>
@@ -544,7 +691,11 @@ export const CourseLearnerRequestPage: React.FC = () => {
                 Retour
               </Button>
             ) : (
-              <Button to="/cours" variant="ghost" leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}>
+              <Button
+                to="/cours"
+                variant="ghost"
+                leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
+              >
                 Annuler
               </Button>
             )}
@@ -557,7 +708,11 @@ export const CourseLearnerRequestPage: React.FC = () => {
                 Continuer
               </Button>
             ) : (
-              <Button onClick={submit} disabled={!stepIsValid} isLoading={isSubmitting}>
+              <Button
+                onClick={submit}
+                disabled={!stepIsValid}
+                isLoading={isSubmitting}
+              >
                 Envoyer ma demande
               </Button>
             )}
@@ -565,7 +720,8 @@ export const CourseLearnerRequestPage: React.FC = () => {
         </div>
 
         <p className="mt-4 text-center text-micro leading-relaxed text-text-muted">
-          Votre brouillon non sensible est conservé sur cet appareil. Les coordonnées du responsable ne sont enregistrées qu’à l’envoi.
+          Votre brouillon non sensible est conservé sur cet appareil. Les
+          coordonnées du responsable ne sont enregistrées qu’à l’envoi.
         </p>
       </div>
     </Container>

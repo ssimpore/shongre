@@ -545,32 +545,43 @@ export class TaxonomyService {
       // Card, comparison and filter metadata must never point at an unknown
       // registry field. These checks catch incomplete admin edits before they
       // reach publication or search.
-      [...(node.summaryAttributeIds || []), ...(node.filterFacetIds || [])].forEach(
-        (attrId) => {
-          if (!ATTRIBUTE_REGISTRY[attrId]) {
-            errors.push(`Node ${node.id} references unknown presentation attribute ${attrId}`);
-          }
-        },
-      );
+      [
+        ...(node.summaryAttributeIds || []),
+        ...(node.filterFacetIds || []),
+      ].forEach((attrId) => {
+        if (!ATTRIBUTE_REGISTRY[attrId]) {
+          errors.push(
+            `Node ${node.id} references unknown presentation attribute ${attrId}`,
+          );
+        }
+      });
       (node.filterFacetIds || []).forEach((attrId) => {
-        if (ATTRIBUTE_REGISTRY[attrId] && !ATTRIBUTE_REGISTRY[attrId].filterable) {
-          errors.push(`Node ${node.id} exposes non-filterable attribute ${attrId} as a facet`);
+        if (
+          ATTRIBUTE_REGISTRY[attrId] &&
+          !ATTRIBUTE_REGISTRY[attrId].filterable
+        ) {
+          errors.push(
+            `Node ${node.id} exposes non-filterable attribute ${attrId} as a facet`,
+          );
         }
       });
 
       if (node.presentation?.cardAttributeIds) {
         node.presentation.cardAttributeIds.forEach((attrId) => {
           if (!ATTRIBUTE_REGISTRY[attrId]) {
-            errors.push(`Node ${node.id} references unknown card attribute ${attrId}`);
+            errors.push(
+              `Node ${node.id} references unknown card attribute ${attrId}`,
+            );
           }
         });
       }
 
-
       if (this.isPublishable(node.id)) {
         const schema = this.resolvePublicationSchema(node.id);
         if (!schema?.attributes.length) {
-          errors.push(`Publishable node ${node.id} has no publication attributes`);
+          errors.push(
+            `Publishable node ${node.id} has no publication attributes`,
+          );
         }
         if (!node.supportedIntents?.length) {
           errors.push(`Publishable node ${node.id} has no publication intent`);
@@ -582,13 +593,17 @@ export class TaxonomyService {
           errors.push(`Publishable node ${node.id} has no primary CTA`);
         }
         if (!node.publication?.standardPolicy.enabled) {
-          errors.push(`Publishable node ${node.id} has no standard publication policy`);
+          errors.push(
+            `Publishable node ${node.id} has no standard publication policy`,
+          );
         }
         if (!node.moderation?.policyId) {
           errors.push(`Publishable node ${node.id} has no moderation policy`);
         }
         if (!node.labels["fr-FR"] || !node.labels["en-US"]) {
-          errors.push(`Publishable node ${node.id} has incomplete translations`);
+          errors.push(
+            `Publishable node ${node.id} has incomplete translations`,
+          );
         }
       }
 

@@ -1,22 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import fs from 'fs';
-import path from 'path';
+import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
 
-describe('Architecture & Boundary Integrity', () => {
-  const rootDir = path.resolve(__dirname, '../../../');
-  const frontendDir = path.resolve(rootDir, 'frontend');
+describe("Architecture & Boundary Integrity", () => {
+  const rootDir = path.resolve(__dirname, "../../../");
+  const frontendDir = path.resolve(rootDir, "frontend");
   const generatedDirectories = new Set([
-    'node_modules',
-    'dist',
-    '.git',
-    '.next',
-    'coverage',
-    'test-results',
-    'playwright-report',
+    "node_modules",
+    "dist",
+    ".git",
+    ".next",
+    "coverage",
+    "test-results",
+    "playwright-report",
   ]);
 
-  it('verifies that frontend contains NO server secrets or service-role keywords', () => {
-    const forbidden = ['SUPABASE_SERVICE_ROLE_KEY', 'STRIPE_SECRET_KEY', 'DATABASE_URL'];
+  it("verifies that frontend contains NO server secrets or service-role keywords", () => {
+    const forbidden = [
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "STRIPE_SECRET_KEY",
+      "DATABASE_URL",
+    ];
     let leakFound = false;
 
     function checkDir(dir: string) {
@@ -28,8 +32,12 @@ describe('Architecture & Boundary Integrity', () => {
           if (generatedDirectories.has(entry.name)) continue;
           checkDir(full);
         } else if (entry.isFile()) {
-          if (['.ts', '.tsx', '.js', '.jsx', '.html'].includes(path.extname(entry.name))) {
-            const content = fs.readFileSync(full, 'utf8');
+          if (
+            [".ts", ".tsx", ".js", ".jsx", ".html"].includes(
+              path.extname(entry.name),
+            )
+          ) {
+            const content = fs.readFileSync(full, "utf8");
             for (const key of forbidden) {
               if (content.includes(key)) {
                 leakFound = true;

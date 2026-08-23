@@ -8,7 +8,6 @@ import {
   ReviewItem,
   Permission,
 } from "../types";
-import { IMMO_GENERIC_LISTINGS } from "./realEstateDemoData";
 
 const VERTICAL_PRO_PERMISSIONS = {
   courses: ["course.organization.manage.own"],
@@ -1898,7 +1897,6 @@ export const INITIAL_LISTINGS: Listing[] = [
     favoritesCount: 35,
     contactCount: 15,
   },
-  ...IMMO_GENERIC_LISTINGS,
 ];
 
 export const INITIAL_CONVERSATIONS: Conversation[] = [

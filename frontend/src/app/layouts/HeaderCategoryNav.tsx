@@ -114,12 +114,15 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
           const isActive =
             item.kind === "category"
               ? item.slug === "vehicules"
-                ? currentPath.startsWith("/auto") || item.slug === activeCategorySlug
+                ? currentPath.startsWith("/auto") ||
+                  item.slug === activeCategorySlug
                 : item.slug === "immobilier"
-                  ? currentPath.startsWith("/immo") || item.slug === activeCategorySlug
-                : item.slug === "emploi"
-                  ? currentPath.startsWith("/emploi") || item.slug === activeCategorySlug
-                : item.slug === activeCategorySlug
+                  ? currentPath.startsWith("/immo") ||
+                    item.slug === activeCategorySlug
+                  : item.slug === "emploi"
+                    ? currentPath.startsWith("/emploi") ||
+                      item.slug === activeCategorySlug
+                    : item.slug === activeCategorySlug
               : currentPath === item.to;
           const destination =
             item.kind === "category"
@@ -127,9 +130,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                 ? routes.auto.search()
                 : item.slug === "immobilier"
                   ? routes.immo.search()
-                : item.slug === "emploi"
-                  ? routes.employment.search()
-                : routes.search({ category: item.slug })
+                  : item.slug === "emploi"
+                    ? routes.employment.search()
+                    : routes.search({ category: item.slug })
               : item.to;
 
           return (

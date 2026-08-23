@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ListingGrid } from "./ListingGrid";
@@ -24,6 +23,20 @@ describe("listing layout primitives", () => {
     );
 
     expect(html).toContain(
+      "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))]",
+    );
+  });
+
+  it("can fill a result row with responsive columns", () => {
+    const html = renderToStaticMarkup(
+      <ListingGrid fluid>
+        <div>card</div>
+      </ListingGrid>,
+    );
+
+    expect(html).toContain("listing-grid-fluid");
+    expect(html).toContain("sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5");
+    expect(html).not.toContain(
       "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))]",
     );
   });

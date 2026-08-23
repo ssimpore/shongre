@@ -3,6 +3,10 @@ import type {
   TrendingAdminConfig,
   TrendingTopicOverride,
 } from "../../domains/trending/trending.types";
+import type {
+  DiscoveryConfiguration,
+  DiscoveryMetrics,
+} from "@shongre/contracts/discovery";
 
 export interface AdminStatsSummary {
   totalUsers: number;
@@ -50,4 +54,13 @@ export interface AdminServiceContract {
   upsertTrendingOverride(
     override: TrendingTopicOverride,
   ): Promise<TrendingAdminConfig>;
+  getDiscoveryConfiguration(
+    marketCode?: string,
+  ): Promise<DiscoveryConfiguration>;
+  getDiscoveryMetrics(marketCode?: string): Promise<DiscoveryMetrics>;
+  saveDiscoveryConfiguration(
+    configuration: DiscoveryConfiguration,
+    changeReason: string,
+    activate: boolean,
+  ): Promise<DiscoveryConfiguration>;
 }

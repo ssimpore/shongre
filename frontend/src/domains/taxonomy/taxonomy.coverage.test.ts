@@ -10,9 +10,7 @@ describe("canonical taxonomy coverage gate", () => {
 
     expect(report.totals.roots).toBe(16);
     expect(report.totals.publishableLeaves).toBeGreaterThanOrEqual(44);
-    expect(report.totals.completeLeaves).toBe(
-      report.totals.publishableLeaves,
-    );
+    expect(report.totals.completeLeaves).toBe(report.totals.publishableLeaves);
     expect(report.blockingIssues).toEqual([]);
   });
 
@@ -30,7 +28,9 @@ describe("canonical taxonomy coverage gate", () => {
           "individual",
         );
       }
-      expect(taxonomyService.getComparisonAttributes(node.id).length).toBeGreaterThan(0);
+      expect(
+        taxonomyService.getComparisonAttributes(node.id).length,
+      ).toBeGreaterThan(0);
     });
   });
 

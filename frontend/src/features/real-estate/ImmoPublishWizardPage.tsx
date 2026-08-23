@@ -16,12 +16,8 @@ import {
   Save,
   ShieldCheck,
   Sparkles,
-  UserRoundCheck,
 } from "lucide-react";
-import type {
-  PropertyDraft,
-  RealEstateCatalog,
-} from "@shongre/contracts/real-estate";
+import type { RealEstateCatalog } from "@shongre/contracts/real-estate";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";

@@ -16,8 +16,18 @@ import type {
   TrendingAdminConfig,
   TrendingTopicOverride,
 } from "../../../domains/trending/trending.types";
+import {
+  discoveryConfigurationSchema,
+  type DiscoveryConfiguration,
+  type DiscoveryMetrics,
+} from "@shongre/contracts/discovery";
+import { DEFAULT_DISCOVERY_CONFIGURATION } from "@shongre/shared";
 
 export class DemoAdminService implements AdminServiceContract {
+  private discoveryConfiguration = structuredClone(
+    DEFAULT_DISCOVERY_CONFIGURATION,
+  );
+  private discoveryVersion = 1;
   async getPlatformStats(): Promise<AdminStatsSummary> {
     await simulateNetworkDelay();
     const users = await userRepository.getAllUsers();
@@ -136,6 +146,46 @@ export class DemoAdminService implements AdminServiceContract {
   ): Promise<TrendingAdminConfig> {
     await simulateNetworkDelay();
     return upsertTrendingOverride(override);
+  }
+
+  async getDiscoveryConfiguration(marketCode = "FR") {
+    await simulateNetworkDelay();
+    return { ...structuredClone(this.discoveryConfiguration), marketCode };
+  }
+
+  async getDiscoveryMetrics(marketCode = "FR"): Promise<DiscoveryMetrics> {
+    await simulateNetworkDelay();
+    return {
+      marketCode,
+      searchRequests: 1842,
+      noResultRequests: 51,
+      organicCandidates: 38210,
+      sponsoredCandidates: 314,
+      organicResults: 29268,
+      sponsoredResults: 206,
+      duplicateSuppressions: 423,
+      diversityReranks: 781,
+      privateResultCount: 14674,
+      professionalResultCount: 14800,
+      averageLatencyMs: 47.6,
+    };
+  }
+
+  async saveDiscoveryConfiguration(
+    configuration: DiscoveryConfiguration,
+    changeReason: string,
+    activate: boolean,
+  ) {
+    await simulateNetworkDelay();
+    if (changeReason.trim().length < 8)
+      throw new Error("Un motif détaillé est requis.");
+    const parsed = discoveryConfigurationSchema.parse(configuration);
+    const version = {
+      ...structuredClone(parsed),
+      version: `demo-discovery-v${++this.discoveryVersion}`,
+    };
+    if (activate) this.discoveryConfiguration = version;
+    return version;
   }
 }
 

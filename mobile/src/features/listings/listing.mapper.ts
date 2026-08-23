@@ -21,6 +21,10 @@ export interface BackendListing {
     sellerType?: "individual" | "pro";
     city?: string;
     isIdentityVerified?: boolean;
+    isBusinessVerified?: boolean;
+    organizationName?: string;
+    organizationLogoUrl?: string;
+    branchName?: string;
     rating?: number;
     reviewCount?: number;
   };
@@ -50,6 +54,10 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
           sellerType: item.seller.sellerType || "individual",
           city: item.seller.city,
           isIdentityVerified: Boolean(item.seller.isIdentityVerified),
+          isBusinessVerified: Boolean(item.seller.isBusinessVerified),
+          organizationName: item.seller.organizationName,
+          organizationLogoUrl: item.seller.organizationLogoUrl,
+          branchName: item.seller.branchName,
           rating: item.seller.rating,
           reviewCount: item.seller.reviewCount,
         }

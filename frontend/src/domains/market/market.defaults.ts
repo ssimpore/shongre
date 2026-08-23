@@ -9,12 +9,17 @@ import {
 
 const commercialProduct = (id: string) =>
   BASELINE_MONETIZATION_CATALOG.products.find((product) => product.id === id)!;
-const productPrice = (id: string, period: "once" | "month" | "year" = "once") => {
+const productPrice = (
+  id: string,
+  period: "once" | "month" | "year" = "once",
+) => {
   const product = commercialProduct(id);
   return (
-    product.prices.find((price) => price.billingPeriod === period) ||
-    product.prices[0]
-  ).amount.amountMinor / 100;
+    (
+      product.prices.find((price) => price.billingPeriod === period) ||
+      product.prices[0]
+    ).amount.amountMinor / 100
+  );
 };
 const productEntitlement = (id: string, key: string) =>
   commercialProduct(id).entitlements.find((entry) => entry.key === key)?.value;
@@ -24,7 +29,10 @@ const planNumber = (id: string, key: string) => {
 };
 const planBoolean = (id: string, key: string) =>
   Boolean(productEntitlement(id, key));
-const FR_INDIVIDUAL_COMMERCIALS = getDemoTransactionCommercials("FR", "individual");
+const FR_INDIVIDUAL_COMMERCIALS = getDemoTransactionCommercials(
+  "FR",
+  "individual",
+);
 const FR_PRO_COMMERCIALS = getDemoTransactionCommercials("FR", "pro");
 
 /**
@@ -53,11 +61,22 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     postalCodeRegex: "^[0-9]{5}$",
   },
   listings: {
-    maxActiveListingsIndividual: planNumber("listing.standard.individual", "maxActiveListings"),
-    maxActiveListingsProFree: planNumber("listing.standard.individual", "maxActiveListings"),
-    maxPhotosIndividual: planNumber("listing.standard.individual", "maxPhotosPerListing"),
+    maxActiveListingsIndividual: planNumber(
+      "listing.standard.individual",
+      "maxActiveListings",
+    ),
+    maxActiveListingsProFree: planNumber(
+      "listing.standard.individual",
+      "maxActiveListings",
+    ),
+    maxPhotosIndividual: planNumber(
+      "listing.standard.individual",
+      "maxPhotosPerListing",
+    ),
     maxPhotosPro: planNumber("plan.pro.business", "maxPhotosPerListing"),
-    expirationDays: commercialProduct("listing.standard.individual").prices[0].durationDays || 0,
+    expirationDays:
+      commercialProduct("listing.standard.individual").prices[0].durationDays ||
+      0,
     allowFreeDonations: true,
     allowPriceNegotiation: true,
     allowInstantBuy: true,
@@ -71,10 +90,13 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
       googlePay: true,
       sepa: true,
     },
-    buyerProtectionFeePercent: FR_INDIVIDUAL_COMMERCIALS.protectionRateBps / 10_000,
-    buyerProtectionFixedFee: FR_INDIVIDUAL_COMMERCIALS.protectionFixedMinor / 100,
+    buyerProtectionFeePercent:
+      FR_INDIVIDUAL_COMMERCIALS.protectionRateBps / 10_000,
+    buyerProtectionFixedFee:
+      FR_INDIVIDUAL_COMMERCIALS.protectionFixedMinor / 100,
     minTransactionAmount: FR_INDIVIDUAL_COMMERCIALS.minimumAmountMinor / 100,
-    maxTransactionAmount: (FR_INDIVIDUAL_COMMERCIALS.maximumAmountMinor || 0) / 100,
+    maxTransactionAmount:
+      (FR_INDIVIDUAL_COMMERCIALS.maximumAmountMinor || 0) / 100,
   },
   reservation: {
     enabled: true,
@@ -115,7 +137,8 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
   },
   monetization: {
     proCommissionRate: FR_PRO_COMMERCIALS.commissionRateBps / 10_000,
-    individualCommissionRate: FR_INDIVIDUAL_COMMERCIALS.commissionRateBps / 10_000,
+    individualCommissionRate:
+      FR_INDIVIDUAL_COMMERCIALS.commissionRateBps / 10_000,
     payoutInstantFeePercent: FR_PRO_COMMERCIALS.instantPayoutRateBps / 10_000,
     payoutInstantFixedFee: FR_PRO_COMMERCIALS.instantPayoutFixedMinor / 100,
     boostPricing: {
@@ -128,39 +151,84 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     plans: {
       free: {
         priceMonthly: productPrice("listing.standard.individual"),
-        maxActiveListings: planNumber("listing.standard.individual", "maxActiveListings"),
-        photosPerListing: planNumber("listing.standard.individual", "maxPhotosPerListing"),
-        storefrontCustomization: planBoolean("listing.standard.individual", "storeEnabled"),
-        prioritySupport: planBoolean("listing.standard.individual", "prioritySupport"),
-        bulkImportExport: planBoolean("listing.standard.individual", "bulkPublish"),
-        automaticRelisting: planBoolean("listing.standard.individual", "automaticRelisting"),
+        maxActiveListings: planNumber(
+          "listing.standard.individual",
+          "maxActiveListings",
+        ),
+        photosPerListing: planNumber(
+          "listing.standard.individual",
+          "maxPhotosPerListing",
+        ),
+        storefrontCustomization: planBoolean(
+          "listing.standard.individual",
+          "storeEnabled",
+        ),
+        prioritySupport: planBoolean(
+          "listing.standard.individual",
+          "prioritySupport",
+        ),
+        bulkImportExport: planBoolean(
+          "listing.standard.individual",
+          "bulkPublish",
+        ),
+        automaticRelisting: planBoolean(
+          "listing.standard.individual",
+          "automaticRelisting",
+        ),
       },
       starter: {
         priceMonthly: productPrice("plan.pro.starter", "month"),
         maxActiveListings: planNumber("plan.pro.starter", "maxActiveListings"),
         photosPerListing: planNumber("plan.pro.starter", "maxPhotosPerListing"),
-        storefrontCustomization: planBoolean("plan.pro.starter", "storeEnabled"),
+        storefrontCustomization: planBoolean(
+          "plan.pro.starter",
+          "storeEnabled",
+        ),
         prioritySupport: planBoolean("plan.pro.starter", "prioritySupport"),
         bulkImportExport: planBoolean("plan.pro.starter", "bulkPublish"),
-        automaticRelisting: planBoolean("plan.pro.starter", "automaticRelisting"),
+        automaticRelisting: planBoolean(
+          "plan.pro.starter",
+          "automaticRelisting",
+        ),
       },
       business: {
         priceMonthly: productPrice("plan.pro.business", "month"),
         maxActiveListings: planNumber("plan.pro.business", "maxActiveListings"),
-        photosPerListing: planNumber("plan.pro.business", "maxPhotosPerListing"),
-        storefrontCustomization: planBoolean("plan.pro.business", "storeEnabled"),
+        photosPerListing: planNumber(
+          "plan.pro.business",
+          "maxPhotosPerListing",
+        ),
+        storefrontCustomization: planBoolean(
+          "plan.pro.business",
+          "storeEnabled",
+        ),
         prioritySupport: planBoolean("plan.pro.business", "prioritySupport"),
         bulkImportExport: planBoolean("plan.pro.business", "bulkPublish"),
-        automaticRelisting: planBoolean("plan.pro.business", "automaticRelisting"),
+        automaticRelisting: planBoolean(
+          "plan.pro.business",
+          "automaticRelisting",
+        ),
       },
       enterprise: {
         priceMonthly: productPrice("plan.pro.enterprise", "month"),
-        maxActiveListings: planNumber("plan.pro.enterprise", "maxActiveListings"),
-        photosPerListing: planNumber("plan.pro.enterprise", "maxPhotosPerListing"),
-        storefrontCustomization: planBoolean("plan.pro.enterprise", "storeEnabled"),
+        maxActiveListings: planNumber(
+          "plan.pro.enterprise",
+          "maxActiveListings",
+        ),
+        photosPerListing: planNumber(
+          "plan.pro.enterprise",
+          "maxPhotosPerListing",
+        ),
+        storefrontCustomization: planBoolean(
+          "plan.pro.enterprise",
+          "storeEnabled",
+        ),
         prioritySupport: planBoolean("plan.pro.enterprise", "prioritySupport"),
         bulkImportExport: planBoolean("plan.pro.enterprise", "bulkPublish"),
-        automaticRelisting: planBoolean("plan.pro.enterprise", "automaticRelisting"),
+        automaticRelisting: planBoolean(
+          "plan.pro.enterprise",
+          "automaticRelisting",
+        ),
       },
     },
   },
@@ -577,8 +645,12 @@ export const INITIAL_MARKETS: Market[] = [
         vatRateStandard: getDemoTaxRateBps("BE") / 10_000,
       },
       payments: {
-        buyerProtectionFixedFee: getDemoTransactionCommercials("BE", "individual").protectionFixedMinor / 100,
-        buyerProtectionFeePercent: getDemoTransactionCommercials("BE", "individual").protectionRateBps / 10_000,
+        buyerProtectionFixedFee:
+          getDemoTransactionCommercials("BE", "individual")
+            .protectionFixedMinor / 100,
+        buyerProtectionFeePercent:
+          getDemoTransactionCommercials("BE", "individual").protectionRateBps /
+          10_000,
       },
       pro: {
         businessIdentifierLabel: "Numéro d'entreprise (BCE / KBO)",
@@ -821,8 +893,12 @@ export const INITIAL_MARKETS: Market[] = [
         postalCodeRegex: "^[1-9][0-9]{3}$",
       },
       payments: {
-        buyerProtectionFixedFee: getDemoTransactionCommercials("CH", "individual").protectionFixedMinor / 100,
-        buyerProtectionFeePercent: getDemoTransactionCommercials("CH", "individual").protectionRateBps / 10_000,
+        buyerProtectionFixedFee:
+          getDemoTransactionCommercials("CH", "individual")
+            .protectionFixedMinor / 100,
+        buyerProtectionFeePercent:
+          getDemoTransactionCommercials("CH", "individual").protectionRateBps /
+          10_000,
       },
       taxes: {
         vatRateStandard: getDemoTaxRateBps("CH") / 10_000,

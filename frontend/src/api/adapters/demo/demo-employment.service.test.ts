@@ -11,7 +11,9 @@ describe("DemoEmploymentService", () => {
     expect(catalog.activation.verticalType).toBe("employment");
     expect(catalog.activation.categoryIds).toContain("jobs");
     expect(catalog.config.marketCode).toBe("FR");
-    expect(catalog.dictionaries.some((entry) => entry.kind === "profession")).toBe(true);
+    expect(
+      catalog.dictionaries.some((entry) => entry.kind === "profession"),
+    ).toBe(true);
   });
 
   it("filters jobs deterministically without sensitive candidate attributes", async () => {
@@ -57,7 +59,8 @@ describe("DemoEmploymentService", () => {
       data: {
         title: "Jeune auxiliaire de vie",
         city: "Lyon",
-        responsibilities: "Accompagner les gestes du quotidien avec bienveillance.",
+        responsibilities:
+          "Accompagner les gestes du quotidien avec bienveillance.",
       },
       screeningQuestions: [],
       selectedOfferId: "employment.employer.free",
@@ -122,13 +125,13 @@ describe("DemoEmploymentService", () => {
     const camille = await service.getCandidateWorkspace();
     expect(camille.profile.userId).toBe("user_camille");
     expect(camille.applications).toEqual([]);
-    expect((await service.listRecruiterEmployers()).map((employer) => employer.id)).toEqual([
-      "employer-private-martin",
-    ]);
+    expect(
+      (await service.listRecruiterEmployers()).map((employer) => employer.id),
+    ).toEqual(["employer-private-martin"]);
 
     storageService.setCurrentUserKey("pro_employment_clara");
-    expect((await service.listRecruiterEmployers()).map((employer) => employer.id)).toEqual([
-      "employer-technova",
-    ]);
+    expect(
+      (await service.listRecruiterEmployers()).map((employer) => employer.id),
+    ).toEqual(["employer-technova"]);
   });
 });

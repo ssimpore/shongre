@@ -71,7 +71,11 @@ export const DEMO_COURSE_CATALOG: CourseCatalog = {
     ["arts", "arts", "Arts"],
     ["exam_preparation", "exam-preparation", "Préparation aux examens"],
     ["higher_education", "higher-education", "Études supérieures"],
-    ["professional_skills", "professional-skills", "Compétences professionnelles"],
+    [
+      "professional_skills",
+      "professional-skills",
+      "Compétences professionnelles",
+    ],
     ["sports_coaching", "sports-coaching", "Sport et coaching"],
     ["other", "other", "Autres matières"],
   ].map(([id, slug, label], index) => ({
@@ -79,7 +83,13 @@ export const DEMO_COURSE_CATALOG: CourseCatalog = {
     slug,
     label,
     marketCode: "FR",
-    levelIds: ["primary", "middle_school", "high_school", "higher_education", "adult"],
+    levelIds: [
+      "primary",
+      "middle_school",
+      "high_school",
+      "higher_education",
+      "adult",
+    ],
     sortOrder: (index + 1) * 10,
     isActive: true,
   })),
@@ -117,7 +127,8 @@ export const DEMO_COURSE_CATALOG: CourseCatalog = {
       marketCode: "FR",
       name: "Professeur Pro",
       audience: "individual",
-      description: "Calendrier avancé, médias, statistiques et suivi des demandes.",
+      description:
+        "Calendrier avancé, médias, statistiques et suivi des demandes.",
       monthlyPrice: { amountMinor: 1990, currency: "EUR" },
       annualPrice: { amountMinor: 19900, currency: "EUR" },
       taxRateBps: 2000,
@@ -258,13 +269,18 @@ const verifiedQualification = {
 
 const makeTutor = (
   input: Partial<TutorProfile> &
-    Pick<TutorProfile, "id" | "userId" | "slug" | "displayName" | "avatarUrl" | "headline">,
+    Pick<
+      TutorProfile,
+      "id" | "userId" | "slug" | "displayName" | "avatarUrl" | "headline"
+    >,
 ): TutorProfile => ({
   schemaVersion: 1,
   vertical: "tutoring",
   profileType: "individual",
-  biography: "Un accompagnement structuré, bienveillant et adapté au rythme de chaque élève.",
-  teachingApproach: "Diagnostic, explication, pratique guidée puis bilan partagé.",
+  biography:
+    "Un accompagnement structuré, bienveillant et adapté au rythme de chaque élève.",
+  teachingApproach:
+    "Diagnostic, explication, pratique guidée puis bilan partagé.",
   experienceYears: 5,
   subjectIds: ["subject_mathematics"],
   levelIds: ["middle_school", "high_school"],
@@ -469,7 +485,8 @@ export const DEMO_LEARNER_REQUESTS: LearnerRequest[] = [
     marketCode: "FR",
     subjectId: "subject_mathematics",
     levelId: "middle_school",
-    objective: "Reprendre les bases et préparer le brevet avec une méthode régulière.",
+    objective:
+      "Reprendre les bases et préparer le brevet avec une méthode régulière.",
     preferredSchedule: ["mercredi_apres_midi", "samedi_matin"],
     deliveryModes: ["in_person"],
     city: "Lyon",
@@ -533,13 +550,9 @@ export const DEMO_COURSE_LEADS: CourseLead[] = DEMO_LEARNER_REQUESTS.map(
     contactReleaseStatus: "withheld",
     creditCost: 1,
     expiresAt:
-      index === 0
-        ? "2026-08-23T10:00:00.000Z"
-        : "2026-08-24T10:00:00.000Z",
+      index === 0 ? "2026-08-23T10:00:00.000Z" : "2026-08-24T10:00:00.000Z",
     createdAt:
-      index === 0
-        ? "2026-08-20T08:25:00.000Z"
-        : "2026-08-19T13:12:00.000Z",
+      index === 0 ? "2026-08-20T08:25:00.000Z" : "2026-08-19T13:12:00.000Z",
   }),
 );
 
@@ -567,7 +580,12 @@ export const DEMO_COURSE_ORGANIZATION_WORKSPACE: CourseOrganizationWorkspace = {
       tutorProfileId: "tutor_sophie",
       displayName: "Sophie Martin",
       role: "owner",
-      permissions: ["team.manage", "courses.manage", "leads.manage", "billing.manage"],
+      permissions: [
+        "team.manage",
+        "courses.manage",
+        "leads.manage",
+        "billing.manage",
+      ],
       status: "active",
     },
     {
@@ -589,11 +607,23 @@ export const DEMO_COURSE_ORGANIZATION_WORKSPACE: CourseOrganizationWorkspace = {
       status: "active",
     },
   ],
-  plan: DEMO_COURSE_CATALOG.plans.find((plan) => plan.id === "school_organization")!,
+  plan: DEMO_COURSE_CATALOG.plans.find(
+    (plan) => plan.id === "school_organization",
+  )!,
   featureFlags: DEMO_COURSE_CATALOG.config.featureFlags,
   locations: [
-    { id: "location_lyon_3", label: "Lyon 3e", isActive: true, activeTutorCount: 6 },
-    { id: "location_villeurbanne", label: "Villeurbanne", isActive: true, activeTutorCount: 4 },
+    {
+      id: "location_lyon_3",
+      label: "Lyon 3e",
+      isActive: true,
+      activeTutorCount: 6,
+    },
+    {
+      id: "location_villeurbanne",
+      label: "Villeurbanne",
+      isActive: true,
+      activeTutorCount: 4,
+    },
   ],
   analytics: {
     period: "last_30_days",

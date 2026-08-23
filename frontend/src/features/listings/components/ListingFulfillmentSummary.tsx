@@ -18,7 +18,9 @@ export const ListingFulfillmentSummary: React.FC<
     taxonomyNodeId:
       TaxonomyMigration.resolveCanonicalNode(
         listing.subCategorySlug || listing.categorySlug,
-      )?.id || listing.subCategorySlug || listing.categorySlug,
+      )?.id ||
+      listing.subCategorySlug ||
+      listing.categorySlug,
     sellerType: listing.sellerType,
     price: listing.price,
   });

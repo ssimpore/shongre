@@ -9,7 +9,6 @@ import {
   GraduationCap,
   MapPin,
   Search,
-  ShieldCheck,
   X,
 } from "lucide-react";
 import type {
@@ -26,27 +25,46 @@ import {
   Button,
   Container,
   Drawer,
+  FilterPanel,
   Skeleton,
   StatePanel,
 } from "../../design-system";
+import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { CourseTutorCard } from "./components/CourseTutorCard";
 
-interface FilterPanelProps {
+interface CourseFiltersProps {
   catalog: CourseCatalog;
   params: URLSearchParams;
   updateParam: (key: string, value?: string) => void;
+  onReset: () => void;
   onApplyMobile?: () => void;
+  presentation?: FilterPanelPresentation;
 }
+
+const COURSE_FILTER_KEYS = [
+  "subject",
+  "levels",
+  "city",
+  "delivery",
+  "availability",
+  "maxPrice",
+  "language",
+  "tutorType",
+  "verified",
+  "rating",
+] as const;
 
 const splitParam = (value: string | null) =>
   (value || "").split(",").filter(Boolean);
 
-const FilterPanel: React.FC<FilterPanelProps> = ({
+const CourseFilters: React.FC<CourseFiltersProps> = ({
   catalog,
   params,
   updateParam,
+  onReset,
   onApplyMobile,
+  presentation = "surface",
 }) => {
   const levels = splitParam(params.get("levels"));
   const deliveryModes = splitParam(params.get("delivery"));
@@ -59,37 +77,29 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-black text-text-main">Filtres</h2>
-        <button
-          type="button"
-          onClick={() => {
-            [
-              "subject",
-              "levels",
-              "city",
-              "delivery",
-              "availability",
-              "maxPrice",
-              "language",
-              "tutorType",
-              "verified",
-              "rating",
-            ].forEach((key) => updateParam(key));
-          }}
-          className="text-xs font-semibold text-primary hover:underline"
-        >
-          Réinitialiser
-        </button>
-      </div>
+    <FilterPanel
+      title="Filtres"
+      presentation={presentation}
+      onReset={onReset}
+      footer={
+        onApplyMobile ? (
+          <Button fullWidth onClick={onApplyMobile}>
+            Voir les résultats
+          </Button>
+        ) : undefined
+      }
+    >
 
       <fieldset>
-        <legend className="mb-2 text-xs font-bold text-text-main">Matière</legend>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Matière
+        </legend>
         <select
           aria-label="Matière"
           value={params.get("subject") || ""}
-          onChange={(event) => updateParam("subject", event.target.value || undefined)}
+          onChange={(event) =>
+            updateParam("subject", event.target.value || undefined)
+          }
           className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main focus:border-primary"
         >
           <option value="">Toutes les matières</option>
@@ -102,7 +112,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-bold text-text-main">Niveau</legend>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Niveau
+        </legend>
         <div className="space-y-1.5">
           {catalog.levels.map((level) => (
             <label
@@ -130,7 +142,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           />
           <input
             value={params.get("city") || ""}
-            onChange={(event) => updateParam("city", event.target.value || undefined)}
+            onChange={(event) =>
+              updateParam("city", event.target.value || undefined)
+            }
             placeholder="Ville ou code postal"
             className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs text-text-main"
           />
@@ -162,7 +176,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-bold text-text-main">Disponibilités</legend>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Disponibilités
+        </legend>
         <div className="space-y-1.5">
           {[
             ["weekday", "En semaine"],
@@ -185,11 +201,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-bold text-text-main">Prix par heure</legend>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Prix par heure
+        </legend>
         <select
           aria-label="Prix maximum par heure"
           value={params.get("maxPrice") || ""}
-          onChange={(event) => updateParam("maxPrice", event.target.value || undefined)}
+          onChange={(event) =>
+            updateParam("maxPrice", event.target.value || undefined)
+          }
           className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="">Sans maximum</option>
@@ -201,11 +221,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-bold text-text-main">Langue</legend>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Langue
+        </legend>
         <select
           aria-label="Langue"
           value={params.get("language") || ""}
-          onChange={(event) => updateParam("language", event.target.value || undefined)}
+          onChange={(event) =>
+            updateParam("language", event.target.value || undefined)
+          }
           className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="">Toutes les langues</option>
@@ -216,11 +240,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-xs font-bold text-text-main">Type de professeur</legend>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Type de professeur
+        </legend>
         <select
           aria-label="Type de professeur"
           value={params.get("tutorType") || "all"}
-          onChange={(event) => updateParam("tutorType", event.target.value === "all" ? undefined : event.target.value)}
+          onChange={(event) =>
+            updateParam(
+              "tutorType",
+              event.target.value === "all" ? undefined : event.target.value,
+            )
+          }
           className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="all">Tous les profils</option>
@@ -236,14 +267,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           <input
             type="checkbox"
             checked={params.get("verified") === "true"}
-            onChange={(event) => updateParam("verified", event.target.checked ? "true" : undefined)}
+            onChange={(event) =>
+              updateParam("verified", event.target.checked ? "true" : undefined)
+            }
           />
         </label>
         <label className="block text-xs font-bold text-text-main">
           Note moyenne
           <select
             value={params.get("rating") || ""}
-            onChange={(event) => updateParam("rating", event.target.value || undefined)}
+            onChange={(event) =>
+              updateParam("rating", event.target.value || undefined)
+            }
             className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal text-text-main"
           >
             <option value="">Toutes les notes</option>
@@ -253,12 +288,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         </label>
       </fieldset>
 
-      {onApplyMobile && (
-        <Button fullWidth onClick={onApplyMobile}>
-          Voir les résultats
-        </Button>
-      )}
-    </div>
+    </FilterPanel>
   );
 };
 
@@ -289,7 +319,9 @@ export const CoursesSearchPage: React.FC = () => {
     services.courses
       .getCatalog(activeMarket.code)
       .then(setCatalog)
-      .catch(() => setError("Le catalogue de cours est momentanément indisponible."));
+      .catch(() =>
+        setError("Le catalogue de cours est momentanément indisponible."),
+      );
   }, [activeMarket.code]);
 
   useEffect(() => {
@@ -310,11 +342,16 @@ export const CoursesSearchPage: React.FC = () => {
       maxPriceMinor: params.get("maxPrice")
         ? Number(params.get("maxPrice"))
         : undefined,
-      availability: splitParam(params.get("availability")) as TutorSearchQuery["availability"],
+      availability: splitParam(
+        params.get("availability"),
+      ) as TutorSearchQuery["availability"],
       languages: params.get("language") ? [params.get("language")!] : undefined,
-      tutorType: (params.get("tutorType") as TutorSearchQuery["tutorType"]) || "all",
+      tutorType:
+        (params.get("tutorType") as TutorSearchQuery["tutorType"]) || "all",
       verifiedOnly: params.get("verified") === "true" || undefined,
-      minRating: params.get("rating") ? Number(params.get("rating")) : undefined,
+      minRating: params.get("rating")
+        ? Number(params.get("rating"))
+        : undefined,
       sort: (params.get("sort") as TutorSearchQuery["sort"]) || "relevance",
       limit: 20,
     }),
@@ -344,6 +381,15 @@ export const CoursesSearchPage: React.FC = () => {
     });
   };
 
+  const resetFilters = () => {
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      COURSE_FILTER_KEYS.forEach((key) => next.delete(key));
+      next.delete("cursor");
+      return next;
+    });
+  };
+
   const toggleCompare = (id: string) => {
     setComparedIds((current) => {
       if (current.includes(id)) return current.filter((item) => item !== id);
@@ -362,11 +408,19 @@ export const CoursesSearchPage: React.FC = () => {
         id,
       );
       setSavedIds((current) =>
-        isSaved ? Array.from(new Set([...current, id])) : current.filter((item) => item !== id),
+        isSaved
+          ? Array.from(new Set([...current, id]))
+          : current.filter((item) => item !== id),
       );
-      toast.success(isSaved ? "Professeur sauvegardé." : "Professeur retiré des favoris.");
+      toast.success(
+        isSaved ? "Professeur sauvegardé." : "Professeur retiré des favoris.",
+      );
     } catch (reason) {
-      toast.error(reason instanceof Error ? reason.message : "Impossible de modifier les favoris.");
+      toast.error(
+        reason instanceof Error
+          ? reason.message
+          : "Impossible de modifier les favoris.",
+      );
     }
   };
 
@@ -378,7 +432,9 @@ export const CoursesSearchPage: React.FC = () => {
         <StatePanel
           title="Shongre Cours est indisponible"
           description={error}
-          action={<Button onClick={() => window.location.reload()}>Réessayer</Button>}
+          action={
+            <Button onClick={() => window.location.reload()}>Réessayer</Button>
+          }
         />
       </Container>
     );
@@ -390,14 +446,18 @@ export const CoursesSearchPage: React.FC = () => {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="flex items-center gap-2 text-xs font-bold text-primary">
-              <GraduationCap className="h-icon-sm w-icon-sm" aria-hidden="true" />
+              <GraduationCap
+                className="h-icon-sm w-icon-sm"
+                aria-hidden="true"
+              />
               Shongre Cours
             </p>
             <h1 className="mt-1 text-xl font-black tracking-tight text-text-main sm:text-2xl">
               Trouver un professeur
             </h1>
             <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-              Comparez l’expérience, les modalités et les informations réellement vérifiées.
+              Comparez l’expérience, les modalités et les informations
+              réellement vérifiées.
             </p>
           </div>
           <Button
@@ -419,7 +479,9 @@ export const CoursesSearchPage: React.FC = () => {
           className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_auto]"
         >
           <label className="relative min-w-0">
-            <span className="sr-only">Rechercher une matière ou un professeur</span>
+            <span className="sr-only">
+              Rechercher une matière ou un professeur
+            </span>
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
               aria-hidden="true"
@@ -439,11 +501,19 @@ export const CoursesSearchPage: React.FC = () => {
       </div>
 
       <div
-        className={`grid min-w-0 gap-5 ${compared.length > 0 ? "lg:grid-cols-[14rem_minmax(0,1fr)] xl:grid-cols-[14rem_minmax(0,1fr)_16rem]" : "lg:grid-cols-[14rem_minmax(0,1fr)]"}`}
+        className={`grid min-w-0 gap-6 ${compared.length > 0 ? "lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(0,1fr)_16rem]" : "lg:grid-cols-[16rem_minmax(0,1fr)]"}`}
       >
-        <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface p-4 shadow-xs lg:block lg:sticky lg:top-24">
+        <aside
+          className="hidden self-start lg:sticky lg:top-24 lg:block"
+          aria-label="Filtres Cours"
+        >
           {catalog && (
-            <FilterPanel catalog={catalog} params={params} updateParam={updateParam} />
+            <CourseFilters
+              catalog={catalog}
+              params={params}
+              updateParam={updateParam}
+              onReset={resetFilters}
+            />
           )}
         </aside>
 
@@ -459,8 +529,13 @@ export const CoursesSearchPage: React.FC = () => {
               >
                 Filtres
               </Button>
-              <p className="text-xs font-semibold text-text-secondary" aria-live="polite">
-                {isLoading ? "Recherche en cours…" : `${total} professeur${total > 1 ? "s" : ""}`}
+              <p
+                className="text-xs font-semibold text-text-secondary"
+                aria-live="polite"
+              >
+                {isLoading
+                  ? "Recherche en cours…"
+                  : `${total} professeur${total > 1 ? "s" : ""}`}
               </p>
             </div>
             <label className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
@@ -490,7 +565,9 @@ export const CoursesSearchPage: React.FC = () => {
             <StatePanel
               title="Recherche indisponible"
               description={error}
-              action={<Button onClick={() => setParams(params)}>Réessayer</Button>}
+              action={
+                <Button onClick={() => setParams(params)}>Réessayer</Button>
+              }
             />
           ) : items.length === 0 ? (
             <StatePanel
@@ -522,7 +599,9 @@ export const CoursesSearchPage: React.FC = () => {
                     Vous ne trouvez pas le professeur idéal ?
                   </h2>
                   <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-secondary">
-                    Décrivez votre besoin. La mise en relation privilégie la matière, le niveau, les disponibilités et la sécurité — pas seulement le forfait du professeur.
+                    Décrivez votre besoin. La mise en relation privilégie la
+                    matière, le niveau, les disponibilités et la sécurité — pas
+                    seulement le forfait du professeur.
                   </p>
                 </div>
                 <Button to="/cours/demande" size="compact">
@@ -537,7 +616,10 @@ export const CoursesSearchPage: React.FC = () => {
           <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface shadow-xs xl:block xl:sticky xl:top-24">
             <div className="flex items-center justify-between border-b border-border-subtle p-4">
               <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
-                <GitCompareArrows className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                <GitCompareArrows
+                  className="h-icon-sm w-icon-sm"
+                  aria-hidden="true"
+                />
                 Comparer ({compared.length}/4)
               </h2>
               <button
@@ -554,8 +636,12 @@ export const CoursesSearchPage: React.FC = () => {
                 <div key={item.tutor.id} className="p-4 text-xs">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-text-main">{item.tutor.displayName}</p>
-                      <p className="mt-0.5 text-text-muted">{item.subjectLabel}</p>
+                      <p className="font-bold text-text-main">
+                        {item.tutor.displayName}
+                      </p>
+                      <p className="mt-0.5 text-text-muted">
+                        {item.subjectLabel}
+                      </p>
                     </div>
                     <button
                       type="button"
@@ -569,18 +655,28 @@ export const CoursesSearchPage: React.FC = () => {
                   <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-text-secondary">
                     <dt>Prix</dt>
                     <dd className="text-right font-semibold text-text-main">
-                      {(item.fromPrice.amountMinor / 100).toLocaleString("fr-FR")} € / h
+                      {(item.fromPrice.amountMinor / 100).toLocaleString(
+                        "fr-FR",
+                      )}{" "}
+                      € / h
                     </dd>
                     <dt>Format</dt>
                     <dd className="text-right">
-                      {item.offer.deliveryModes.includes("online") ? "En ligne" : "Présentiel"}
+                      {item.offer.deliveryModes.includes("online")
+                        ? "En ligne"
+                        : "Présentiel"}
                     </dd>
                     <dt>Identité</dt>
                     <dd className="flex items-center justify-end gap-1 text-right">
                       {item.tutor.verifications.identity === "verified" && (
-                        <Check className="h-icon-xs w-icon-xs text-success" aria-hidden="true" />
+                        <Check
+                          className="h-icon-xs w-icon-xs text-success"
+                          aria-hidden="true"
+                        />
                       )}
-                      {item.tutor.verifications.identity === "verified" ? "Vérifiée" : "Non vérifiée"}
+                      {item.tutor.verifications.identity === "verified"
+                        ? "Vérifiée"
+                        : "Non vérifiée"}
                     </dd>
                   </dl>
                 </div>
@@ -605,11 +701,13 @@ export const CoursesSearchPage: React.FC = () => {
           onClose={() => setIsFilterOpen(false)}
           title="Filtrer les professeurs"
         >
-          <FilterPanel
+          <CourseFilters
             catalog={catalog}
             params={params}
             updateParam={updateParam}
+            onReset={resetFilters}
             onApplyMobile={() => setIsFilterOpen(false)}
+            presentation="drawer"
           />
         </Drawer>
       )}
@@ -619,7 +717,8 @@ export const CoursesSearchPage: React.FC = () => {
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-black text-text-main">
-                {compared.length} professeur{compared.length > 1 ? "s" : ""} à comparer
+                {compared.length} professeur{compared.length > 1 ? "s" : ""} à
+                comparer
               </p>
               <p className="truncate text-micro text-text-muted">
                 {compared.map((item) => item.tutor.displayName).join(", ")}

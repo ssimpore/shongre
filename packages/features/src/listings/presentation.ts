@@ -7,8 +7,35 @@ export interface ListingPromotionBadge {
 }
 
 export function getListingPromotionBadges(
-  listing: Pick<ListingCardView, "isUrgent" | "isFeatured">,
+  listing: Pick<ListingCardView, "isUrgent" | "isFeatured"> &
+    Partial<Pick<ListingCardView, "promotion" | "discovery">>,
 ): ListingPromotionBadge[] {
+  if (listing.discovery?.isSponsored) {
+    return [
+      {
+        label: listing.discovery.promotionLabel || "Sponsorisé",
+        tone: "featured",
+        sponsored: true,
+      },
+    ];
+  }
+  if (listing.promotion?.state === "active" && listing.promotion.type) {
+    if (listing.promotion.type === "urgent_badge") {
+      return [
+        {
+          label: listing.promotion.label || "Urgent",
+          tone: "urgent",
+          sponsored: false,
+        },
+      ];
+    }
+    const label =
+      listing.promotion.label ||
+      (listing.promotion.type === "search_bump" ? "Remonté" : "À la une");
+    return [
+      { label: `${label} · sponsorisé`, tone: "featured", sponsored: true },
+    ];
+  }
   return [
     ...(listing.isUrgent
       ? [{ label: "Urgent", tone: "urgent" as const, sponsored: false }]

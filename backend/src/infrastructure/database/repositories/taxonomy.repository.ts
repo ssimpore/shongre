@@ -1,18 +1,18 @@
-import { Category } from '../../../shared/types/index.js';
-import type { TaxonomyAttribute as ContractTaxonomyAttribute } from '@shongre/contracts/taxonomy';
+import { Category } from "../../../shared/types/index.js";
+import type { TaxonomyAttribute as ContractTaxonomyAttribute } from "@shongre/contracts/taxonomy";
 import {
   CANONICAL_TAXONOMY_IDENTITIES,
   CANONICAL_TAXONOMY_IDENTITY_BY_ID,
   CANONICAL_TAXONOMY_ALIASES,
-} from '@shongre/contracts/taxonomy-catalog';
-import type { CanonicalTaxonomyIdentity } from '@shongre/contracts/taxonomy-catalog';
-import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
-import { logger } from '../../logging/logger.js';
+} from "@shongre/contracts/taxonomy-catalog";
+import type { CanonicalTaxonomyIdentity } from "@shongre/contracts/taxonomy-catalog";
+import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { databaseFailure } from "./repository-error.js";
 
 /** Shared taxonomy field shape with legacy aliases retained for old adapters. */
 export type TaxonomyAttribute = ContractTaxonomyAttribute & {
   name?: string;
-  type?: ContractTaxonomyAttribute['dataType'];
+  type?: ContractTaxonomyAttribute["dataType"];
 };
 
 export interface TaxonomyNode {
@@ -26,7 +26,7 @@ export interface TaxonomyNode {
   iconName: string;
   sortOrder: number;
   isActive: boolean;
-  level: CanonicalTaxonomyIdentity['level'];
+  level: CanonicalTaxonomyIdentity["level"];
   publishable: boolean;
   listingFamily: string;
   supportedIntents: string[];
@@ -34,14 +34,16 @@ export interface TaxonomyNode {
   children?: TaxonomyNode[];
 }
 
-function identityToTaxonomyNode(identity: CanonicalTaxonomyIdentity): TaxonomyNode {
+function identityToTaxonomyNode(
+  identity: CanonicalTaxonomyIdentity,
+): TaxonomyNode {
   return {
     id: identity.id,
     code: identity.code,
     slug: identity.slug,
-    name: identity.labels['fr-FR'],
+    name: identity.labels["fr-FR"],
     labels: identity.labels,
-    shortLabel: identity.shortLabels?.['fr-FR'],
+    shortLabel: identity.shortLabels?.["fr-FR"],
     parentId: identity.parentId,
     iconName: identity.iconName,
     sortOrder: identity.sortOrder,
@@ -60,8 +62,8 @@ function identityToCategory(identity: CanonicalTaxonomyIdentity): Category {
   return {
     id: identity.id,
     slug: identity.slug,
-    name: identity.labels['fr-FR'],
-    shortLabel: identity.shortLabels?.['fr-FR'],
+    name: identity.labels["fr-FR"],
+    shortLabel: identity.shortLabels?.["fr-FR"],
     parentId: identity.parentId,
     iconName: identity.iconName,
     sortOrder: identity.sortOrder,
@@ -76,16 +78,19 @@ function databaseRowToTaxonomyNode(row: any): TaxonomyNode {
     code: String(row.code || row.id).toUpperCase(),
     slug: String(row.slug),
     name: String(row.name),
-    labels: (row.labels || { 'fr-FR': row.name }) as Record<string, string>,
+    labels: (row.labels || { "fr-FR": row.name }) as Record<string, string>,
     shortLabel: row.short_label || undefined,
     parentId: row.parent_id || undefined,
-    iconName: row.icon_name || 'Package',
+    iconName: row.icon_name || "Package",
     sortOrder: row.sort_order || 0,
     isActive: Boolean(row.is_active),
-    level: (row.level || (row.parent_id ? 'subcategory' : 'category')) as TaxonomyNode['level'],
+    level: (row.level ||
+      (row.parent_id ? "subcategory" : "category")) as TaxonomyNode["level"],
     publishable: Boolean(row.publishable),
-    listingFamily: row.listing_family || 'physical_product',
-    supportedIntents: Array.isArray(row.supported_intents) ? row.supported_intents : [],
+    listingFamily: row.listing_family || "physical_product",
+    supportedIntents: Array.isArray(row.supported_intents)
+      ? row.supported_intents
+      : [],
   };
 }
 
@@ -125,7 +130,9 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
     const node = CANONICAL_TAXONOMY_IDENTITIES.find(
       (candidate) => candidate.slug === slug,
     );
-    return this.getNodeById(node?.id || CANONICAL_TAXONOMY_ALIASES[slug] || slug);
+    return this.getNodeById(
+      node?.id || CANONICAL_TAXONOMY_ALIASES[slug] || slug,
+    );
   }
 
   async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
@@ -134,31 +141,111 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
     ).map(identityToTaxonomyNode);
   }
 
-  async getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]> {
+  async getAttributesForCategory(
+    categoryId: string,
+  ): Promise<TaxonomyAttribute[]> {
     const identity = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(
       CANONICAL_TAXONOMY_ALIASES[categoryId] || categoryId,
     );
     const commonAttributes: TaxonomyAttribute[] = [
-      { id: 'condition', code: 'condition', name: 'condition', label: 'État général', dataType: 'select', type: 'select', required: true },
-      { id: 'brand', code: 'brand', name: 'brand', label: 'Marque', dataType: 'text', type: 'text' },
-      { id: 'color', code: 'color', name: 'color', label: 'Couleur', dataType: 'text', type: 'text' },
+      {
+        id: "condition",
+        code: "condition",
+        name: "condition",
+        label: "État général",
+        dataType: "select",
+        type: "select",
+        required: true,
+      },
+      {
+        id: "brand",
+        code: "brand",
+        name: "brand",
+        label: "Marque",
+        dataType: "text",
+        type: "text",
+      },
+      {
+        id: "color",
+        code: "color",
+        name: "color",
+        label: "Couleur",
+        dataType: "text",
+        type: "text",
+      },
     ];
 
-    if (identity?.listingFamily === 'vehicle') {
+    if (identity?.listingFamily === "vehicle") {
       return [
         ...commonAttributes,
-        { id: 'mileage', code: 'mileage', name: 'mileage', label: 'Kilométrage', dataType: 'number', type: 'number', unit: 'km', required: true },
-        { id: 'fuel', code: 'fuel', name: 'fuel', label: 'Carburant', dataType: 'select', type: 'select', required: true },
-        { id: 'year', code: 'year', name: 'year', label: 'Année modèle', dataType: 'year', type: 'year', required: true },
-        { id: 'transmission', code: 'transmission', name: 'transmission', label: 'Boîte de vitesse', dataType: 'select', type: 'select' },
+        {
+          id: "mileage",
+          code: "mileage",
+          name: "mileage",
+          label: "Kilométrage",
+          dataType: "number",
+          type: "number",
+          unit: "km",
+          required: true,
+        },
+        {
+          id: "fuel",
+          code: "fuel",
+          name: "fuel",
+          label: "Carburant",
+          dataType: "select",
+          type: "select",
+          required: true,
+        },
+        {
+          id: "year",
+          code: "year",
+          name: "year",
+          label: "Année modèle",
+          dataType: "year",
+          type: "year",
+          required: true,
+        },
+        {
+          id: "transmission",
+          code: "transmission",
+          name: "transmission",
+          label: "Boîte de vitesse",
+          dataType: "select",
+          type: "select",
+        },
       ];
     }
 
-    if (identity?.listingFamily === 'real_estate') {
+    if (identity?.listingFamily === "real_estate") {
       return [
-        { id: 'surface', code: 'surface', name: 'surface', label: 'Surface habitable', dataType: 'number', type: 'number', unit: 'm²', required: true },
-        { id: 'rooms', code: 'rooms', name: 'rooms', label: 'Nombre de pièces', dataType: 'number', type: 'number', required: true },
-        { id: 'dpe', code: 'energy_class', name: 'energy_class', label: 'Classe énergétique (DPE)', dataType: 'select', type: 'select' },
+        {
+          id: "surface",
+          code: "surface",
+          name: "surface",
+          label: "Surface habitable",
+          dataType: "number",
+          type: "number",
+          unit: "m²",
+          required: true,
+        },
+        {
+          id: "rooms",
+          code: "rooms",
+          name: "rooms",
+          label: "Nombre de pièces",
+          dataType: "number",
+          type: "number",
+          required: true,
+        },
+        {
+          id: "dpe",
+          code: "energy_class",
+          name: "energy_class",
+          label: "Classe énergétique (DPE)",
+          dataType: "select",
+          type: "select",
+        },
       ];
     }
 
@@ -171,13 +258,11 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
+        .from("categories")
+        .select("*")
+        .order("sort_order", { ascending: true });
 
-      if (error || !data || data.length === 0) {
-        return CANONICAL_DEMO_CATEGORIES;
-      }
+      if (error || !data) databaseFailure("taxonomy.getRootCategories", error);
 
       const roots = data.filter((c: any) => !c.parent_id);
       return roots.map((root: any) => {
@@ -189,7 +274,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
             name: sub.name,
             shortLabel: sub.short_label || undefined,
             parentId: sub.parent_id,
-            iconName: sub.icon_name || 'Package',
+            iconName: sub.icon_name || "Package",
             sortOrder: sub.sort_order || 0,
             isActive: Boolean(sub.is_active),
           }));
@@ -199,15 +284,14 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
           slug: root.slug,
           name: root.name,
           shortLabel: root.short_label || undefined,
-          iconName: root.icon_name || 'Package',
+          iconName: root.icon_name || "Package",
           sortOrder: root.sort_order || 0,
           isActive: Boolean(root.is_active),
           subcategories: children.length > 0 ? children : undefined,
         };
       });
-    } catch (err: any) {
-      logger.error(`PostgresTaxonomyRepository.getRootCategories error: ${err.message}`);
-      return CANONICAL_DEMO_CATEGORIES;
+    } catch (error) {
+      databaseFailure("taxonomy.getRootCategories", error);
     }
   }
 
@@ -215,11 +299,18 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const canonicalId = CANONICAL_TAXONOMY_ALIASES[id] || id;
-      const { data, error } = await (supabase.from('categories' as any) as any).select('*').eq('id', canonicalId).single();
-      if (error || !data) return null;
+      const { data, error } = await (supabase.from("categories" as any) as any)
+        .select("*")
+        .eq("id", canonicalId)
+        .single();
+      if (error) {
+        if (error.code === "PGRST116") return null;
+        databaseFailure("taxonomy.getNodeById", error);
+      }
+      if (!data) return null;
       return databaseRowToTaxonomyNode(data);
-    } catch {
-      return null;
+    } catch (error) {
+      databaseFailure("taxonomy.getNodeById", error);
     }
   }
 
@@ -228,11 +319,18 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
       const mappedId = CANONICAL_TAXONOMY_ALIASES[slug];
       if (mappedId) return this.getNodeById(mappedId);
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await (supabase.from('categories' as any) as any).select('*').eq('slug', slug).single();
-      if (error || !data) return null;
+      const { data, error } = await (supabase.from("categories" as any) as any)
+        .select("*")
+        .eq("slug", slug)
+        .single();
+      if (error) {
+        if (error.code === "PGRST116") return null;
+        databaseFailure("taxonomy.getNodeBySlug", error);
+      }
+      if (!data) return null;
       return databaseRowToTaxonomyNode(data);
-    } catch {
-      return null;
+    } catch (error) {
+      databaseFailure("taxonomy.getNodeBySlug", error);
     }
   }
 
@@ -240,38 +338,38 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('parent_id', nodeId)
-        .order('sort_order', { ascending: true });
-      if (error || !data) return [];
+        .from("categories")
+        .select("*")
+        .eq("parent_id", nodeId)
+        .order("sort_order", { ascending: true });
+      if (error || !data) databaseFailure("taxonomy.getChildren", error);
       return data.map(databaseRowToTaxonomyNode);
-    } catch {
-      return [];
+    } catch (error) {
+      databaseFailure("taxonomy.getChildren", error);
     }
   }
 
-  async getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]> {
+  async getAttributesForCategory(
+    categoryId: string,
+  ): Promise<TaxonomyAttribute[]> {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('category_attributes')
-        .select('*')
-        .eq('category_id', categoryId)
-        .order('sort_order', { ascending: true });
+        .from("category_attributes")
+        .select("*")
+        .eq("category_id", categoryId)
+        .order("sort_order", { ascending: true });
 
-      if (error || !data || data.length === 0) {
-        const demoRepo = new DemoTaxonomyRepository();
-        return demoRepo.getAttributesForCategory(categoryId);
-      }
+      if (error || !data)
+        databaseFailure("taxonomy.getAttributesForCategory", error);
 
       return data.map((a: any) => ({
         id: a.attribute_id || a.name,
         code: a.code || a.name,
         name: a.name,
         label: a.label,
-        dataType: a.data_type || a.type || 'text',
-        type: a.data_type || a.type || 'text',
+        dataType: a.data_type || a.type || "text",
+        type: a.data_type || a.type || "text",
         options: a.options || undefined,
         unit: a.unit || undefined,
         required: Boolean(a.is_required),
@@ -282,9 +380,8 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
         publicationGroup: a.publication_group || undefined,
         displayOrder: a.display_order || a.sort_order || undefined,
       }));
-    } catch {
-      const demoRepo = new DemoTaxonomyRepository();
-      return demoRepo.getAttributesForCategory(categoryId);
+    } catch (error) {
+      databaseFailure("taxonomy.getAttributesForCategory", error);
     }
   }
 }

@@ -3,6 +3,7 @@ import {
   PaymentIntentResult,
 } from "../../contracts/payments.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { deterministicDemoId } from "./demo-identifiers";
 
 export class DemoPaymentsService implements PaymentsServiceContract {
   async createPaymentIntent(
@@ -11,8 +12,13 @@ export class DemoPaymentsService implements PaymentsServiceContract {
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResult> {
     await simulateNetworkDelay();
+    const intentId = deterministicDemoId("pi_demo", [
+      amount,
+      currency,
+      metadata || {},
+    ]);
     return {
-      clientSecret: `pi_demo_${Date.now()}_secret_${Math.random().toString(36).substring(2, 9)}`,
+      clientSecret: `${intentId}_secret_demo`,
       status: "succeeded",
       amount,
       currency,
@@ -22,11 +28,15 @@ export class DemoPaymentsService implements PaymentsServiceContract {
   async requestSellerPayout(
     sellerId: string,
     amount: number,
-    _iban: string,
+    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
     await simulateNetworkDelay();
     return {
-      payoutId: `po_demo_${Date.now()}`,
+      payoutId: deterministicDemoId("po_demo", [
+        sellerId,
+        amount,
+        iban.slice(-4),
+      ]),
       status: "completed",
     };
   }

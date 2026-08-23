@@ -1,6 +1,6 @@
-import { NotificationItem } from '../../../shared/types/index.js';
-import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
-import { logger } from '../../logging/logger.js';
+import { NotificationItem } from "../../../shared/types/index.js";
+import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { databaseFailure } from "./repository-error.js";
 
 export interface INotificationRepository {
   getUserNotifications(userId: string): Promise<NotificationItem[]>;
@@ -10,17 +10,22 @@ export interface INotificationRepository {
   markAsRead(notificationId: string): Promise<void>;
   markAllAsRead(userId: string): Promise<void>;
   delete(notificationId: string): Promise<void>;
-  registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void>;
+  registerDevice(
+    userId: string,
+    token: string,
+    platform: "ios" | "android",
+    appVersion?: string,
+  ): Promise<void>;
   unregisterDevice(userId: string, token: string): Promise<void>;
 }
 
 export const CANONICAL_DEMO_NOTIFICATIONS: NotificationItem[] = [
   {
-    id: 'notif_1',
-    userId: 'user_camille',
-    type: 'escrow',
-    title: 'Séquestre sécurisé',
-    body: 'Le paiement de 250 € pour votre annonce a été sécurisé par Shongre Escrow.',
+    id: "notif_1",
+    userId: "user_camille",
+    type: "escrow",
+    title: "Séquestre sécurisé",
+    body: "Le paiement de 250 € pour votre annonce a été sécurisé par Shongre Escrow.",
     isRead: false,
     createdAt: new Date().toISOString(),
   },
@@ -28,9 +33,14 @@ export const CANONICAL_DEMO_NOTIFICATIONS: NotificationItem[] = [
 
 export class DemoNotificationRepository implements INotificationRepository {
   private notifications: Map<string, NotificationItem> = new Map();
-  private devices = new Map<string, { userId: string; platform: 'ios' | 'android'; appVersion?: string }>();
+  private devices = new Map<
+    string,
+    { userId: string; platform: "ios" | "android"; appVersion?: string }
+  >();
 
-  constructor(initialNotifs: NotificationItem[] = CANONICAL_DEMO_NOTIFICATIONS) {
+  constructor(
+    initialNotifs: NotificationItem[] = CANONICAL_DEMO_NOTIFICATIONS,
+  ) {
     this.reset(initialNotifs);
   }
 
@@ -40,15 +50,17 @@ export class DemoNotificationRepository implements INotificationRepository {
   }
 
   async getUserNotifications(userId: string): Promise<NotificationItem[]> {
-    const list = Array.from(this.notifications.values()).filter((n) => n.userId === userId);
+    const list = Array.from(this.notifications.values()).filter(
+      (n) => n.userId === userId,
+    );
     if (list.length === 0) {
       return [
         {
           id: `notif_${userId}`,
           userId,
-          type: 'system',
-          title: 'Bienvenue sur Shongre',
-          body: 'Votre espace membre est configuré et sécurisé.',
+          type: "system",
+          title: "Bienvenue sur Shongre",
+          body: "Votre espace membre est configuré et sécurisé.",
           isRead: false,
           createdAt: new Date().toISOString(),
         },
@@ -87,7 +99,12 @@ export class DemoNotificationRepository implements INotificationRepository {
     this.notifications.delete(notificationId);
   }
 
-  async registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void> {
+  async registerDevice(
+    userId: string,
+    token: string,
+    platform: "ios" | "android",
+    appVersion?: string,
+  ): Promise<void> {
     this.devices.set(token, { userId, platform, appVersion });
   }
 
@@ -115,15 +132,15 @@ export class PostgresNotificationRepository implements INotificationRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('id', notificationId)
-        .single();
-      if (error || !data) return null;
+        .from("notifications")
+        .select("*")
+        .eq("id", notificationId)
+        .maybeSingle();
+      if (error) databaseFailure("notifications.findById", error);
+      if (!data) return null;
       return this.mapRowToNotification(data);
-    } catch (err: any) {
-      logger.error(`PostgresNotificationRepository.findById error: ${err.message}`);
-      return null;
+    } catch (error) {
+      databaseFailure("notifications.findById", error);
     }
   }
 
@@ -131,19 +148,16 @@ export class PostgresNotificationRepository implements INotificationRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
-      if (error || !data || data.length === 0) {
-        const demo = new DemoNotificationRepository();
-        return demo.getUserNotifications(userId);
-      }
+      if (error || !data)
+        databaseFailure("notifications.getUserNotifications", error);
       return data.map((r: any) => this.mapRowToNotification(r));
-    } catch {
-      const demo = new DemoNotificationRepository();
-      return demo.getUserNotifications(userId);
+    } catch (error) {
+      databaseFailure("notifications.getUserNotifications", error);
     }
   }
 
@@ -151,21 +165,22 @@ export class PostgresNotificationRepository implements INotificationRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('is_read', false);
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_read", false);
 
-      return error ? 0 : count || 0;
-    } catch {
-      return 0;
+      if (error) databaseFailure("notifications.getUnreadCount", error);
+      return count || 0;
+    } catch (error) {
+      databaseFailure("notifications.getUnreadCount", error);
     }
   }
 
   async save(notification: NotificationItem): Promise<NotificationItem> {
     const supabase = getSupabaseAdminClient();
     const payload = {
-      id: notification.id.includes('-') ? notification.id : undefined,
+      id: notification.id.includes("-") ? notification.id : undefined,
       user_id: notification.userId,
       type: notification.type,
       title: notification.title,
@@ -175,7 +190,11 @@ export class PostgresNotificationRepository implements INotificationRepository {
       created_at: notification.createdAt,
     };
 
-    const { data, error } = await (supabase.from('notifications').insert(payload as any).select().single() as any);
+    const { data, error } = await (supabase
+      .from("notifications")
+      .insert(payload as any)
+      .select()
+      .single() as any);
     if (error || !data) {
       throw new Error(`Failed to save notification: ${error?.message}`);
     }
@@ -185,48 +204,68 @@ export class PostgresNotificationRepository implements INotificationRepository {
   async markAsRead(notificationId: string): Promise<void> {
     try {
       const supabase = getSupabaseAdminClient();
-      await (supabase.from('notifications' as any) as any).update({ is_read: true, read_at: new Date().toISOString() }).eq('id', notificationId);
-    } catch (err: any) {
-      logger.warn(`PostgresNotificationRepository.markAsRead skipped: ${err.message}`);
+      const { error } = await (supabase.from("notifications" as any) as any)
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq("id", notificationId);
+      if (error) databaseFailure("notifications.markAsRead", error);
+    } catch (error) {
+      databaseFailure("notifications.markAsRead", error);
     }
   }
 
   async markAllAsRead(userId: string): Promise<void> {
     try {
       const supabase = getSupabaseAdminClient();
-      await (supabase.from('notifications' as any) as any).update({ is_read: true, read_at: new Date().toISOString() }).eq('user_id', userId);
-    } catch (err: any) {
-      logger.warn(`PostgresNotificationRepository.markAllAsRead skipped: ${err.message}`);
+      const { error } = await (supabase.from("notifications" as any) as any)
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq("user_id", userId);
+      if (error) databaseFailure("notifications.markAllAsRead", error);
+    } catch (error) {
+      databaseFailure("notifications.markAllAsRead", error);
     }
   }
 
   async delete(notificationId: string): Promise<void> {
     try {
       const supabase = getSupabaseAdminClient();
-      await (supabase.from('notifications' as any) as any).delete().eq('id', notificationId);
-    } catch (err: any) {
-      logger.warn(`PostgresNotificationRepository.delete skipped: ${err.message}`);
+      const { error } = await (supabase.from("notifications" as any) as any)
+        .delete()
+        .eq("id", notificationId);
+      if (error) databaseFailure("notifications.delete", error);
+    } catch (error) {
+      databaseFailure("notifications.delete", error);
     }
   }
 
-  async registerDevice(userId: string, token: string, platform: 'ios' | 'android', appVersion?: string): Promise<void> {
+  async registerDevice(
+    userId: string,
+    token: string,
+    platform: "ios" | "android",
+    appVersion?: string,
+  ): Promise<void> {
     const supabase = getSupabaseAdminClient();
-    const { error } = await supabase.from('push_device_tokens').upsert({
-      user_id: userId,
-      token,
-      platform,
-      app_version: appVersion || null,
-      last_seen_at: new Date().toISOString(),
-    }, { onConflict: 'token' });
-    if (error) throw new Error(`Failed to register push device: ${error.message}`);
+    const { error } = await supabase.from("push_device_tokens").upsert(
+      {
+        user_id: userId,
+        token,
+        platform,
+        app_version: appVersion || null,
+        last_seen_at: new Date().toISOString(),
+      },
+      { onConflict: "token" },
+    );
+    if (error)
+      throw new Error(`Failed to register push device: ${error.message}`);
   }
 
   async unregisterDevice(userId: string, token: string): Promise<void> {
     const supabase = getSupabaseAdminClient();
-    const { error } = await supabase.from('push_device_tokens')
+    const { error } = await supabase
+      .from("push_device_tokens")
       .delete()
-      .eq('user_id', userId)
-      .eq('token', token);
-    if (error) throw new Error(`Failed to unregister push device: ${error.message}`);
+      .eq("user_id", userId)
+      .eq("token", token);
+    if (error)
+      throw new Error(`Failed to unregister push device: ${error.message}`);
   }
 }

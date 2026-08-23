@@ -9,7 +9,9 @@ import { useTranslation } from "../../i18n/I18nProvider";
 export function AccountTypeOnboardingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [accountType, setAccountType] = useState<"individual" | "professional">("individual");
+  const [accountType, setAccountType] = useState<"individual" | "professional">(
+    "individual",
+  );
 
   usePageMeta({
     title: "Choisir votre type de compte",
@@ -20,8 +22,12 @@ export function AccountTypeOnboardingPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <header>
-        <h1 className="text-xl font-black text-stone-950 sm:text-2xl">{t("auth.onboarding.title")}</h1>
-        <p className="mt-1 text-sm text-stone-600">{t("auth.onboarding.description")}</p>
+        <h1 className="text-xl font-black text-stone-950 sm:text-2xl">
+          {t("auth.onboarding.title")}
+        </h1>
+        <p className="mt-1 text-sm text-stone-600">
+          {t("auth.onboarding.description")}
+        </p>
       </header>
       <AccountTypeSelector
         selectedType={accountType}
@@ -33,7 +39,14 @@ export function AccountTypeOnboardingPage() {
         variant="primary"
         className="w-full sm:w-auto"
         rightIcon={<ArrowRight className="h-4 w-4" />}
-        onClick={() => navigate(accountType === "professional" ? "/compte?onboarding=professional" : "/compte", { replace: true })}
+        onClick={() =>
+          navigate(
+            accountType === "professional"
+              ? "/compte?onboarding=professional"
+              : "/compte",
+            { replace: true },
+          )
+        }
       >
         {t("auth.onboarding.continue")}
       </Button>

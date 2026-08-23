@@ -545,6 +545,9 @@ const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
       "job.telework",
       "job.salary_annual_keur",
     ],
+    presentation: {
+      cardAttributeIds: ["job.contract_type", "job.telework"],
+    },
     summaryAttributeIds: ["job.contract_type", "job.sector", "job.telework"],
     filterFacetIds: [
       "job.contract_type",
@@ -576,6 +579,9 @@ const BASE_CANONICAL_TAXONOMY: TaxonomyNode[] = [
           "job.telework",
           "job.salary_annual_keur",
         ],
+        presentation: {
+          cardAttributeIds: ["job.contract_type", "job.telework"],
+        },
         summaryAttributeIds: [
           "job.contract_type",
           "job.sector",
@@ -1789,8 +1795,15 @@ const TAXONOMY_DOMAIN_ATTRIBUTES: Record<string, string[]> = {
     "service.session_duration_minutes",
     "service.languages",
   ],
-  "services.home_repairs": ["service.travel_radius_km", "service.delivery_mode"],
-  "services.tutoring": ["service.subject", "service.audience_level", "service.languages"],
+  "services.home_repairs": [
+    "service.travel_radius_km",
+    "service.delivery_mode",
+  ],
+  "services.tutoring": [
+    "service.subject",
+    "service.audience_level",
+    "service.languages",
+  ],
   "services.events": ["service.delivery_mode", "service.travel_radius_km"],
   home_garden: [
     "product.brand",
@@ -1837,9 +1850,15 @@ const TAXONOMY_DOMAIN_ATTRIBUTES: Record<string, string[]> = {
     "product.dimensions",
     "product.included_accessories",
   ],
-  leisure_culture: ["product.condition_cosmetic", "product.condition_functional"],
+  leisure_culture: [
+    "product.condition_cosmetic",
+    "product.condition_functional",
+  ],
   "leisure_culture.instruments": ["leisure.instrument_type", "leisure.level"],
-  "leisure_culture.books": ["product.purchase_date", "product.condition_cosmetic"],
+  "leisure_culture.books": [
+    "product.purchase_date",
+    "product.condition_cosmetic",
+  ],
   sports_outdoors: ["product.condition_cosmetic", "product.dimensions"],
   "sports_outdoors.fitness": ["sport.activity", "sport.size"],
   "sports_outdoors.outdoor": ["sport.activity", "sport.size"],
@@ -1857,7 +1876,11 @@ const TAXONOMY_DOMAIN_ATTRIBUTES: Record<string, string[]> = {
     "product.purchase_date",
     "product.invoice_available",
   ],
-  "professional_btp.machinery": ["pro.operating_hours", "pro.tonnage_t", "pro.ce_certified"],
+  "professional_btp.machinery": [
+    "pro.operating_hours",
+    "pro.tonnage_t",
+    "pro.ce_certified",
+  ],
   agriculture: [
     "product.brand",
     "product.condition_functional",
@@ -1870,8 +1893,14 @@ const TAXONOMY_DOMAIN_ATTRIBUTES: Record<string, string[]> = {
     "energy.compatibility",
     "product.condition_functional",
   ],
-  "energy_transition.solar": ["energy.power_watts", "energy.battery_capacity_kwh"],
-  "energy_transition.ev_charging": ["energy.power_watts", "energy.compatibility"],
+  "energy_transition.solar": [
+    "energy.power_watts",
+    "energy.battery_capacity_kwh",
+  ],
+  "energy_transition.ev_charging": [
+    "energy.power_watts",
+    "energy.compatibility",
+  ],
   pro_it_telecom: [
     "tech.generation",
     "tech.connectivity",
@@ -1975,7 +2004,9 @@ function resolveModerationPolicy(
 }
 
 function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
-  const children = node.children?.map((child) => enrichTaxonomyNode(child, rootId));
+  const children = node.children?.map((child) =>
+    enrichTaxonomyNode(child, rootId),
+  );
   const attributeIds = Array.from(
     new Set([
       ...(node.attributeIds || []),
@@ -1988,23 +2019,27 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
       ? node.summaryAttributeIds
       : attributeIds
           .map((id) => ATTRIBUTE_REGISTRY[id])
-          .filter((attribute) => attribute && attribute.dataType !== "long_text")
+          .filter(
+            (attribute) => attribute && attribute.dataType !== "long_text",
+          )
           .slice(0, 3)
           .map((attribute) => attribute!.id);
   const filterFacetIds =
     node.filterFacetIds && node.filterFacetIds.length > 0
       ? node.filterFacetIds
       : attributeIds.filter((id) => ATTRIBUTE_REGISTRY[id]?.filterable);
-  const cardAttributeIds = Array.from(
-    new Set([
-      ...(node.presentation?.cardAttributeIds || []),
-      ...summaryAttributeIds,
-      ...filterFacetIds,
-      ...attributeIds,
-    ]),
-  );
+  const cardAttributeIds = node.presentation?.cardAttributeIds?.length
+    ? Array.from(new Set(node.presentation.cardAttributeIds))
+    : Array.from(
+        new Set([
+          ...summaryAttributeIds,
+          ...filterFacetIds,
+          ...attributeIds,
+        ]),
+      );
   const isLeaf = !children || children.length === 0;
-  const listingFamily = node.listingFamily || TAXONOMY_FAMILIES[rootId] || "physical_product";
+  const listingFamily =
+    node.listingFamily || TAXONOMY_FAMILIES[rootId] || "physical_product";
   const mediaGuidance = node.mediaGuidance || {
     minimumPhotoCount:
       listingFamily === "real_estate"
@@ -2076,7 +2111,8 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
         enabled: true,
         label: "Publication standard gratuite",
         eligibleSellerTypes:
-          listingFamily === "job" && node.sellerEligibility?.individualAllowed === false
+          listingFamily === "job" &&
+          node.sellerEligibility?.individualAllowed === false
             ? ["professional"]
             : ["individual", "professional"],
         durationDays: listingFamily === "job" ? 30 : 60,
@@ -2087,12 +2123,13 @@ function enrichTaxonomyNode(node: TaxonomyNode, rootId: string): TaxonomyNode {
         paidUpgradesOptional: true,
       },
     },
-    moderation: node.moderation || resolveModerationPolicy(rootId, listingFamily),
+    moderation:
+      node.moderation || resolveModerationPolicy(rootId, listingFamily),
   };
 }
 
-export const CANONICAL_TAXONOMY: TaxonomyNode[] = BASE_CANONICAL_TAXONOMY.map((root) =>
-  enrichTaxonomyNode(root, root.id),
+export const CANONICAL_TAXONOMY: TaxonomyNode[] = BASE_CANONICAL_TAXONOMY.map(
+  (root) => enrichTaxonomyNode(root, root.id),
 );
 
 /**
@@ -2118,11 +2155,13 @@ const buildLegacyAttributes = (
       if (attr.dataType === "select") type = "select";
       else if (attr.dataType === "multi_select") type = "multi_select";
       else if (attr.dataType === "number") type = "number";
-      else if (attr.dataType === "range" || attr.dataType === "money") type = "number";
+      else if (attr.dataType === "range" || attr.dataType === "money")
+        type = "number";
       else if (attr.dataType === "long_text") type = "textarea";
       else if (attr.dataType === "boolean") type = "boolean";
       else if (attr.dataType === "year") type = "year";
-      else if (attr.dataType === "date" || attr.dataType === "date_time") type = "date";
+      else if (attr.dataType === "date" || attr.dataType === "date_time")
+        type = "date";
 
       return {
         key: attr.code,

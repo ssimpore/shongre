@@ -1,6 +1,9 @@
-import { getSupabaseAdminClient, getSupabaseAnonClient } from '../supabase/supabase-client.js';
-import { isBackendDemoMode } from '../../app/config/index.js';
-import { logger } from '../logging/logger.js';
+import {
+  getSupabaseAdminClient,
+  getSupabaseAnonClient,
+} from "../supabase/supabase-client.js";
+import { isBackendDemoMode } from "../../app/config/index.js";
+import { logger } from "../logging/logger.js";
 
 export class DatabaseClient {
   public get admin() {
@@ -17,9 +20,14 @@ export class DatabaseClient {
     }
 
     try {
-      const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2000));
+      const timeoutPromise = new Promise<boolean>((resolve) =>
+        setTimeout(() => resolve(false), 2000),
+      );
       const queryPromise = (async () => {
-        const { data, error } = await this.admin.from('markets').select('code').limit(1);
+        const { data, error } = await this.admin
+          .from("markets")
+          .select("code")
+          .limit(1);
         return !error && Boolean(data);
       })();
       return await Promise.race([queryPromise, timeoutPromise]);

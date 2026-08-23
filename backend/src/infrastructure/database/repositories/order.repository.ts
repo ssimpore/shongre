@@ -1,6 +1,7 @@
-import { Transaction, DeliveryType } from '../../../shared/types/index.js';
-import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
-import { logger } from '../../logging/logger.js';
+import { Transaction, DeliveryType } from "../../../shared/types/index.js";
+import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { AppError } from "../../../shared/errors/app-error.js";
+import { databaseFailure } from "./repository-error.js";
 
 export interface IOrderRepository {
   findById(id: string): Promise<Transaction | null>;
@@ -12,20 +13,20 @@ export interface IOrderRepository {
 
 export const CANONICAL_DEMO_ORDERS: Record<string, Transaction> = {
   ord_sample_1: {
-    id: 'ord_sample_1',
-    orderNumber: 'CMD-849201',
-    transactionType: 'DIRECT_PURCHASE',
-    listingId: 'list_1',
-    buyerId: 'user_thomas',
-    sellerId: 'user_camille',
-    status: 'escrow_funded',
+    id: "ord_sample_1",
+    orderNumber: "CMD-849201",
+    transactionType: "DIRECT_PURCHASE",
+    listingId: "list_1",
+    buyerId: "user_thomas",
+    sellerId: "user_camille",
+    status: "escrow_funded",
     itemAmount: 250,
     protectionFee: 10.7,
     shippingFee: 8.5,
     totalCharged: 269.2,
     escrowSecuredAmount: 258.5,
-    deliveryMethod: 'relay_point',
-    paymentMethod: 'card',
+    deliveryMethod: "relay_point",
+    paymentMethod: "card",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -34,37 +35,22 @@ export const CANONICAL_DEMO_ORDERS: Record<string, Transaction> = {
 export class DemoOrderRepository implements IOrderRepository {
   private orders: Map<string, Transaction> = new Map();
 
-  constructor(initialOrders: Record<string, Transaction> = CANONICAL_DEMO_ORDERS) {
+  constructor(
+    initialOrders: Record<string, Transaction> = CANONICAL_DEMO_ORDERS,
+  ) {
     this.reset(initialOrders);
   }
 
   reset(initialOrders: Record<string, Transaction> = CANONICAL_DEMO_ORDERS) {
     this.orders.clear();
-    Object.values(initialOrders).forEach((o) => this.orders.set(o.id, { ...o }));
+    Object.values(initialOrders).forEach((o) =>
+      this.orders.set(o.id, { ...o }),
+    );
   }
 
   async findById(id: string): Promise<Transaction | null> {
     const order = this.orders.get(id);
-    if (order) return { ...order };
-    // Demo fallback for synthetic IDs
-    return {
-      id,
-      orderNumber: `CMD-${id.substring(0, 8).toUpperCase()}`,
-      transactionType: 'DIRECT_PURCHASE',
-      listingId: 'list_1',
-      buyerId: 'user_thomas',
-      sellerId: 'user_camille',
-      status: 'escrow_funded',
-      itemAmount: 250,
-      protectionFee: 10.7,
-      shippingFee: 8.5,
-      totalCharged: 269.2,
-      escrowSecuredAmount: 258.5,
-      deliveryMethod: 'relay_point',
-      paymentMethod: 'card',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    return order ? { ...order } : null;
   }
 
   async getPurchases(userId: string): Promise<Transaction[]> {
@@ -84,25 +70,16 @@ export class DemoOrderRepository implements IOrderRepository {
     return { ...order };
   }
 
-  async update(id: string, updates: Partial<Transaction>): Promise<Transaction> {
-    const existing = (await this.findById(id)) || {
-      id,
-      orderNumber: `CMD-${id.substring(0, 8).toUpperCase()}`,
-      transactionType: 'DIRECT_PURCHASE',
-      listingId: 'list_1',
-      buyerId: 'user_thomas',
-      sellerId: 'user_camille',
-      status: 'escrow_funded',
-      itemAmount: 250,
-      protectionFee: 10.7,
-      shippingFee: 8.5,
-      totalCharged: 269.2,
-      escrowSecuredAmount: 258.5,
-      deliveryMethod: 'relay_point',
-      paymentMethod: 'card',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  async update(
+    id: string,
+    updates: Partial<Transaction>,
+  ): Promise<Transaction> {
+    const existing = await this.findById(id);
+    if (!existing)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Commande introuvable.",
+      });
 
     const updated = {
       ...existing,
@@ -129,13 +106,17 @@ export class PostgresOrderRepository implements IOrderRepository {
       shippingFee: Number(row.shipping_fee || 0),
       totalCharged: Number(row.total_charged),
       escrowSecuredAmount: Number(row.escrow_secured_amount),
-      depositAmount: row.deposit_amount ? Number(row.deposit_amount) : undefined,
-      remainingBalance: row.remaining_balance ? Number(row.remaining_balance) : undefined,
-      deliveryMethod: (row.delivery_method as DeliveryType) || 'hand_delivery',
+      depositAmount: row.deposit_amount
+        ? Number(row.deposit_amount)
+        : undefined,
+      remainingBalance: row.remaining_balance
+        ? Number(row.remaining_balance)
+        : undefined,
+      deliveryMethod: (row.delivery_method as DeliveryType) || "hand_delivery",
       shippingAddress: row.shipping_address || undefined,
       handoverPin: row.handover_pin || undefined,
       isPinVerified: Boolean(row.is_pin_verified),
-      paymentMethod: row.payment_method || 'card',
+      paymentMethod: row.payment_method || "card",
       paymentIntentId: row.payment_intent_id || undefined,
       disputeReason: row.dispute_reason || undefined,
       disputeDetails: row.dispute_details || undefined,
@@ -148,15 +129,18 @@ export class PostgresOrderRepository implements IOrderRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('orders')
-        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
-        .eq('id', id)
+        .from("orders")
+        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
+        .eq("id", id)
         .single();
-      if (error || !data) return null;
+      if (error) {
+        if (error.code === "PGRST116") return null;
+        databaseFailure("orders.findById", error);
+      }
+      if (!data) return null;
       return this.mapRowToOrder(data);
-    } catch (err: any) {
-      logger.error(`PostgresOrderRepository.findById error: ${err.message}`);
-      return null;
+    } catch (error) {
+      databaseFailure("orders.findById", error);
     }
   }
 
@@ -164,14 +148,14 @@ export class PostgresOrderRepository implements IOrderRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('orders')
-        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
-        .eq('buyer_id', userId)
-        .order('created_at', { ascending: false });
-      if (error || !data) return [];
+        .from("orders")
+        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
+        .eq("buyer_id", userId)
+        .order("created_at", { ascending: false });
+      if (error || !data) databaseFailure("orders.getPurchases", error);
       return data.map((r: any) => this.mapRowToOrder(r));
-    } catch {
-      return [];
+    } catch (error) {
+      databaseFailure("orders.getPurchases", error);
     }
   }
 
@@ -179,21 +163,21 @@ export class PostgresOrderRepository implements IOrderRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('orders')
-        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
-        .eq('seller_id', userId)
-        .order('created_at', { ascending: false });
-      if (error || !data) return [];
+        .from("orders")
+        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
+        .eq("seller_id", userId)
+        .order("created_at", { ascending: false });
+      if (error || !data) databaseFailure("orders.getSales", error);
       return data.map((r: any) => this.mapRowToOrder(r));
-    } catch {
-      return [];
+    } catch (error) {
+      databaseFailure("orders.getSales", error);
     }
   }
 
   async create(order: Transaction): Promise<Transaction> {
     const supabase = getSupabaseAdminClient();
     const payload = {
-      id: order.id.includes('-') ? order.id : undefined,
+      id: order.id.includes("-") ? order.id : undefined,
       order_number: order.orderNumber,
       transaction_type: order.transactionType,
       listing_id: order.listingId,
@@ -217,24 +201,51 @@ export class PostgresOrderRepository implements IOrderRepository {
       updated_at: order.updatedAt,
     };
 
-    const { data, error } = await (supabase.from('orders').insert(payload as any).select().single() as any);
+    const { data, error } = await (supabase
+      .from("orders")
+      .insert(payload as any)
+      .select()
+      .single() as any);
     if (error || !data) {
-      throw new Error(`Failed to create order in PostgreSQL: ${error?.message}`);
+      if (error?.code === "23505" || error?.code === "23514") {
+        throw new AppError({
+          code: "CONFLICT",
+          message: "L'annonce n'est plus disponible à l'achat.",
+          originalError: error,
+        });
+      }
+      databaseFailure("orders.create", error);
     }
     return this.mapRowToOrder(data);
   }
 
-  async update(id: string, updates: Partial<Transaction>): Promise<Transaction> {
+  async update(
+    id: string,
+    updates: Partial<Transaction>,
+  ): Promise<Transaction> {
     const supabase = getSupabaseAdminClient();
     const payload: any = { updated_at: new Date().toISOString() };
     if (updates.status !== undefined) payload.status = updates.status;
-    if (updates.isPinVerified !== undefined) payload.is_pin_verified = updates.isPinVerified;
-    if (updates.disputeReason !== undefined) payload.dispute_reason = updates.disputeReason;
-    if (updates.disputeDetails !== undefined) payload.dispute_details = updates.disputeDetails;
+    if (updates.isPinVerified !== undefined)
+      payload.is_pin_verified = updates.isPinVerified;
+    if (updates.disputeReason !== undefined)
+      payload.dispute_reason = updates.disputeReason;
+    if (updates.disputeDetails !== undefined)
+      payload.dispute_details = updates.disputeDetails;
 
-    const { data, error } = await ((supabase.from('orders' as any) as any).update(payload).eq('id', id).select().single() as any);
+    const { data, error } = await ((supabase.from("orders" as any) as any)
+      .update(payload)
+      .eq("id", id)
+      .select()
+      .single() as any);
     if (error || !data) {
-      throw new Error(`Failed to update order in PostgreSQL: ${error?.message}`);
+      if (error?.code === "PGRST116") {
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Commande introuvable.",
+        });
+      }
+      databaseFailure("orders.update", error);
     }
     return this.mapRowToOrder(data);
   }

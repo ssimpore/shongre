@@ -176,9 +176,8 @@ export const DemoRoleSwitcher: React.FC = () => {
    * personas fall back to their real platform label instead of appearing as a
    * signed-out visitor.
    */
-  const matchedRole = DEMO_PERSONAS.find(
-    (persona) =>
-      persona.userId ? persona.userId === currentUser?.id : !currentUser,
+  const matchedRole = DEMO_PERSONAS.find((persona) =>
+    persona.userId ? persona.userId === currentUser?.id : !currentUser,
   );
   const currentRoleObj = matchedRole ?? {
     label: roleLabel(platformRole),
@@ -263,7 +262,10 @@ export const DemoRoleSwitcher: React.FC = () => {
           </span>
         </div>
 
-        <div ref={containerRef} className="relative flex min-w-0 flex-1 justify-end">
+        <div
+          ref={containerRef}
+          className="relative flex min-w-0 flex-1 justify-end"
+        >
           <button
             ref={triggerRef}
             type="button"

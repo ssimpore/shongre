@@ -94,17 +94,31 @@ export interface AuthServiceContract {
   switchDemoUser(userKey: string): Promise<UserProfile | null>;
   verifyPhone(phone: string, code: string): Promise<boolean>;
   verifyEmail(token: string): Promise<boolean>;
-  resendEmailVerification(email: string): Promise<{ success: boolean; message: string }>;
-  requestPasswordReset(email: string): Promise<{ success: boolean; message: string; demoToken?: string }>;
-  resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }>;
-  getSocialAuthAvailability(): Promise<Record<SocialAuthProvider, boolean> & { linking: boolean }>;
-  startSocialAuth(input: SocialAuthStartInput): Promise<{ authorizationUrl: string }>;
+  resendEmailVerification(
+    email: string,
+  ): Promise<{ success: boolean; message: string }>;
+  requestPasswordReset(
+    email: string,
+  ): Promise<{ success: boolean; message: string; demoToken?: string }>;
+  resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }>;
+  getSocialAuthAvailability(): Promise<
+    Record<SocialAuthProvider, boolean> & { linking: boolean }
+  >;
+  startSocialAuth(
+    input: SocialAuthStartInput,
+  ): Promise<{ authorizationUrl: string }>;
   /** Deterministic callback hook exposed only by the demo adapter. */
   completeDemoSocialAuth?(input: {
     provider: SocialAuthProvider;
     intent?: "sign_in" | "link";
   }): Promise<UserProfile>;
-  completeOAuthProfile(input: { email: string; accountType?: "individual" | "professional" }): Promise<void>;
+  completeOAuthProfile(input: {
+    email: string;
+    accountType?: "individual" | "professional";
+  }): Promise<void>;
   getSecurityOverview(): Promise<AuthSecurityOverview>;
   reauthenticate(password: string): Promise<void>;
   unlinkProvider(provider: SocialAuthProvider): Promise<void>;

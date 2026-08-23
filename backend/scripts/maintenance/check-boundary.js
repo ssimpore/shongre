@@ -5,32 +5,32 @@
  * Validates that no privileged server secrets or private backend implementations leak into frontend/.
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '../../..');
-const frontendDir = path.resolve(rootDir, 'frontend');
+const rootDir = path.resolve(__dirname, "../../..");
+const frontendDir = path.resolve(rootDir, "frontend");
 const GENERATED_DIRECTORIES = new Set([
-  'node_modules',
-  'dist',
-  '.git',
-  '.vscode',
-  '.antigravity',
-  '.next',
-  'coverage',
-  'test-results',
-  'playwright-report',
+  "node_modules",
+  "dist",
+  ".git",
+  ".vscode",
+  ".antigravity",
+  ".next",
+  "coverage",
+  "test-results",
+  "playwright-report",
 ]);
 
 const FORBIDDEN_PATTERNS = [
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'STRIPE_SECRET_KEY',
-  'DATABASE_URL',
-  'service_role',
-  'createAdminClient',
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "STRIPE_SECRET_KEY",
+  "DATABASE_URL",
+  "service_role",
+  "createAdminClient",
 ];
 
 const FORBIDDEN_IMPORT_PATTERNS = [
@@ -55,13 +55,17 @@ function scanDirectory(dir) {
       scanDirectory(fullPath);
     } else if (entry.isFile()) {
       const ext = path.extname(entry.name);
-      if (['.ts', '.tsx', '.js', '.jsx', '.json', '.html', '.env'].includes(ext)) {
-        const content = fs.readFileSync(fullPath, 'utf8');
+      if (
+        [".ts", ".tsx", ".js", ".jsx", ".json", ".html", ".env"].includes(ext)
+      ) {
+        const content = fs.readFileSync(fullPath, "utf8");
 
         // Check for forbidden secret patterns
         for (const pattern of FORBIDDEN_PATTERNS) {
           if (content.includes(pattern)) {
-            console.error(`❌ [BOUNDARY VIOLATION] Secret pattern "${pattern}" found in frontend file: ${path.relative(rootDir, fullPath)}`);
+            console.error(
+              `❌ [BOUNDARY VIOLATION] Secret pattern "${pattern}" found in frontend file: ${path.relative(rootDir, fullPath)}`,
+            );
             violationsCount++;
           }
         }
@@ -69,7 +73,9 @@ function scanDirectory(dir) {
         // Check for forbidden backend implementation imports
         for (const importPattern of FORBIDDEN_IMPORT_PATTERNS) {
           if (importPattern.test(content)) {
-            console.error(`❌ [BOUNDARY VIOLATION] Direct backend implementation import found in frontend file: ${path.relative(rootDir, fullPath)}`);
+            console.error(
+              `❌ [BOUNDARY VIOLATION] Direct backend implementation import found in frontend file: ${path.relative(rootDir, fullPath)}`,
+            );
             violationsCount++;
           }
         }
@@ -78,13 +84,19 @@ function scanDirectory(dir) {
   }
 }
 
-console.log('\n🔍 Scanning repository boundaries for server secret leaks & cross-layer imports...');
+console.log(
+  "\n🔍 Scanning repository boundaries for server secret leaks & cross-layer imports...",
+);
 scanDirectory(frontendDir);
 
 if (violationsCount > 0) {
-  console.error(`\n❌ Boundary Check FAILED: ${violationsCount} violation(s) detected.`);
+  console.error(
+    `\n❌ Boundary Check FAILED: ${violationsCount} violation(s) detected.`,
+  );
   process.exit(1);
 } else {
-  console.log('✔ Boundary Check PASSED: 0 leaks or invalid imports in frontend/. Architecture is strictly clean.\n');
+  console.log(
+    "✔ Boundary Check PASSED: 0 leaks or invalid imports in frontend/. Architecture is strictly clean.\n",
+  );
   process.exit(0);
 }

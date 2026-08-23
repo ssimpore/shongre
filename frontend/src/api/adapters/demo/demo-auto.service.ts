@@ -123,8 +123,7 @@ function matches(query: VehicleSearchQuery, vehicle: VehiclePrivate) {
   )
     return false;
   if (query.warrantyOnly && !vehicle.history.warrantyMonths) return false;
-  if (query.financingAvailable && !vehicle.financingAvailable)
-    return false;
+  if (query.financingAvailable && !vehicle.financingAvailable) return false;
   if (
     query.query &&
     !`${vehicle.title} ${vehicle.description} ${vehicle.makeLabel} ${vehicle.modelLabel}`
@@ -149,10 +148,18 @@ export class DemoAutoService implements AutoServiceContract {
 
   async getCatalog(marketCode: string) {
     await simulateNetworkDelay();
-    const catalog = clone(applyMonetizationToAutoCatalog({
-      ...this.catalog,
-      config: { ...this.catalog.config, marketCode: marketCode.toUpperCase() },
-    }, BASELINE_MONETIZATION_CATALOG));
+    const catalog = clone(
+      applyMonetizationToAutoCatalog(
+        {
+          ...this.catalog,
+          config: {
+            ...this.catalog.config,
+            marketCode: marketCode.toUpperCase(),
+          },
+        },
+        BASELINE_MONETIZATION_CATALOG,
+      ),
+    );
     return {
       ...catalog,
       vehicleTypes: catalog.vehicleTypes.filter((row) => row.isActive),
@@ -168,7 +175,10 @@ export class DemoAutoService implements AutoServiceContract {
     return clone({
       ...AUTO_DEMO_ADMIN,
       catalog: {
-        ...applyMonetizationToAutoCatalog(this.catalog, BASELINE_MONETIZATION_CATALOG),
+        ...applyMonetizationToAutoCatalog(
+          this.catalog,
+          BASELINE_MONETIZATION_CATALOG,
+        ),
         config: {
           ...this.catalog.config,
           marketCode: marketCode.toUpperCase(),
@@ -470,10 +480,7 @@ export class DemoAutoService implements AutoServiceContract {
       (row) => row.id === addOnId && row.marketCode === marketCode,
     );
     if (index < 0) throw new Error("Option Auto introuvable");
-    if (
-      patch.isActive &&
-      this.catalog.addOns[index].type.endsWith("_referral")
-    )
+    if (patch.isActive && this.catalog.addOns[index].type.endsWith("_referral"))
       throw new Error(
         "Cette option partenaire nécessite une intégration et une validation légale.",
       );

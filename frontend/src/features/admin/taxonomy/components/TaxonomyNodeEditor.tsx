@@ -335,11 +335,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             standardPolicy: {
               enabled: true,
               label: "Publication standard gratuite",
-              eligibleSellerTypes:
-                node.publication?.standardPolicy.eligibleSellerTypes || [
-                  "individual",
-                  "professional",
-                ],
+              eligibleSellerTypes: node.publication?.standardPolicy
+                .eligibleSellerTypes || ["individual", "professional"],
               durationDays: standardDurationDays,
               mediaAllowance: standardMediaAllowance,
               includesMessaging: true,
@@ -351,12 +348,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           moderation: {
             policyId: node.moderation?.policyId || `moderation.${node.id}.v1`,
             reviewMode: moderationReviewMode,
-            prohibitedItemRuleIds:
-              node.moderation?.prohibitedItemRuleIds || ["prohibited.illegal"],
-            safetyNoticeKeys:
-              node.moderation?.safetyNoticeKeys || ["safety.general"],
-            sensitiveAttributeIds:
-              node.moderation?.sensitiveAttributeIds || [],
+            prohibitedItemRuleIds: node.moderation?.prohibitedItemRuleIds || [
+              "prohibited.illegal",
+            ],
+            safetyNoticeKeys: node.moderation?.safetyNoticeKeys || [
+              "safety.general",
+            ],
+            sensitiveAttributeIds: node.moderation?.sensitiveAttributeIds || [],
           },
         },
         actor,
@@ -1023,17 +1021,35 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   }
                   className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 text-xs font-semibold"
                 >
-                  <option value="contact_seller">{t("admin.taxonomyNodeEditor.cta.contactSeller")}</option>
-                  <option value="apply">{t("admin.taxonomyNodeEditor.cta.apply")}</option>
-                  <option value="request_quote">{t("admin.taxonomyNodeEditor.cta.requestQuote")}</option>
-                  <option value="request_visit">{t("admin.taxonomyNodeEditor.cta.requestVisit")}</option>
-                  <option value="request_test_drive">{t("admin.taxonomyNodeEditor.cta.requestTestDrive")}</option>
-                  <option value="request_lesson">{t("admin.taxonomyNodeEditor.cta.requestLesson")}</option>
-                  <option value="check_availability">{t("admin.taxonomyNodeEditor.cta.checkAvailability")}</option>
-                  <option value="propose_exchange">{t("admin.taxonomyNodeEditor.cta.proposeExchange")}</option>
+                  <option value="contact_seller">
+                    {t("admin.taxonomyNodeEditor.cta.contactSeller")}
+                  </option>
+                  <option value="apply">
+                    {t("admin.taxonomyNodeEditor.cta.apply")}
+                  </option>
+                  <option value="request_quote">
+                    {t("admin.taxonomyNodeEditor.cta.requestQuote")}
+                  </option>
+                  <option value="request_visit">
+                    {t("admin.taxonomyNodeEditor.cta.requestVisit")}
+                  </option>
+                  <option value="request_test_drive">
+                    {t("admin.taxonomyNodeEditor.cta.requestTestDrive")}
+                  </option>
+                  <option value="request_lesson">
+                    {t("admin.taxonomyNodeEditor.cta.requestLesson")}
+                  </option>
+                  <option value="check_availability">
+                    {t("admin.taxonomyNodeEditor.cta.checkAvailability")}
+                  </option>
+                  <option value="propose_exchange">
+                    {t("admin.taxonomyNodeEditor.cta.proposeExchange")}
+                  </option>
                 </select>
               </FormField>
-              <FormField label={t("admin.taxonomyNodeEditor.moderationReviewMode")}>
+              <FormField
+                label={t("admin.taxonomyNodeEditor.moderationReviewMode")}
+              >
                 <select
                   value={moderationReviewMode}
                   onChange={(event) =>
@@ -1043,12 +1059,20 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   }
                   className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 text-xs font-semibold"
                 >
-                  <option value="standard">{t("admin.taxonomyNodeEditor.review.standard")}</option>
-                  <option value="enhanced">{t("admin.taxonomyNodeEditor.review.enhanced")}</option>
-                  <option value="manual">{t("admin.taxonomyNodeEditor.review.manual")}</option>
+                  <option value="standard">
+                    {t("admin.taxonomyNodeEditor.review.standard")}
+                  </option>
+                  <option value="enhanced">
+                    {t("admin.taxonomyNodeEditor.review.enhanced")}
+                  </option>
+                  <option value="manual">
+                    {t("admin.taxonomyNodeEditor.review.manual")}
+                  </option>
                 </select>
               </FormField>
-              <FormField label={t("admin.taxonomyNodeEditor.standardDurationDays")}>
+              <FormField
+                label={t("admin.taxonomyNodeEditor.standardDurationDays")}
+              >
                 <Input
                   type="number"
                   min={1}
@@ -1059,7 +1083,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   }
                 />
               </FormField>
-              <FormField label={t("admin.taxonomyNodeEditor.standardMediaAllowance")}>
+              <FormField
+                label={t("admin.taxonomyNodeEditor.standardMediaAllowance")}
+              >
                 <Input
                   type="number"
                   min={1}

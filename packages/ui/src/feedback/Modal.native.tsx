@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  Modal as RNModal,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Modal as RNModal, SafeAreaView, StyleSheet, View } from "react-native";
 import {
   nativeColors,
   nativeRadius,

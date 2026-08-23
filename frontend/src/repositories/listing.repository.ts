@@ -1,4 +1,3 @@
-import { isProSeller } from "../domains/user/user.domain";
 import { Listing, SearchFilters, ListingStatus } from "../types";
 import { storageService } from "../services/storage.service";
 import {
@@ -12,6 +11,7 @@ import {
   normalizeSearchText,
   searchTextIncludes,
 } from "../utilities/search-text";
+import { demoVerticalDiscoveryStore } from "../domains/discovery/demo-vertical-discovery.store";
 
 export interface IListingRepository {
   getListings(filters?: SearchFilters): Promise<{
@@ -64,16 +64,52 @@ export interface IListingRepository {
   decrementStock(listingId: string, quantity: number): Promise<Listing>;
 }
 
+function searchableAttributeText(listing: Listing): string {
+  return Object.values(listing.attributes || {})
+    .flatMap((value) => (Array.isArray(value) ? value : [value]))
+    .filter(
+      (value) =>
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean",
+    )
+    .join(" ");
+}
+
+function matchesFacetValue(actual: unknown, criterion: unknown): boolean {
+  const requested = String(criterion);
+  const threshold = requested.match(/^(\d+)_plus$/)?.[1];
+  if (threshold) {
+    const numericActual = Number(actual);
+    return Number.isFinite(numericActual) && numericActual >= Number(threshold);
+  }
+  return String(actual) === requested;
+}
+
 export class MockListingRepository implements IListingRepository {
+  private getCanonicalInventory(): Listing[] {
+    const listingsById = new Map(
+      storageService.getListings().map((listing) => [listing.id, listing]),
+    );
+
+    // Specialized verticals are authoritative when a stale browser-local
+    // generic snapshot happens to use the same listing id.
+    demoVerticalDiscoveryStore
+      .getListings()
+      .forEach((listing) => listingsById.set(listing.id, listing));
+
+    return Array.from(listingsById.values());
+  }
+
   async getListings(filters: SearchFilters = {}): Promise<{
     listings: Listing[];
     total: number;
     page: number;
     totalPages: number;
   }> {
-    let list = storageService
-      .getListings()
-      .filter((l) => l.status === "active");
+    let list = this.getCanonicalInventory().filter(
+      (listing) => listing.status === "active",
+    );
 
     // Query text
     if (filters.query && filters.query.trim()) {
@@ -86,7 +122,10 @@ export class MockListingRepository implements IListingRepository {
           searchTextIncludes(item.description, q) ||
           searchTextIncludes(item.categoryLabel, q) ||
           searchTextIncludes(item.subCategoryLabel, q) ||
-          searchTextIncludes(item.city, q),
+          searchTextIncludes(item.city, q) ||
+          searchTextIncludes(item.sellerName, q) ||
+          searchTextIncludes(item.publisherOrganizationName || "", q) ||
+          searchTextIncludes(searchableAttributeText(item), q),
       );
     }
 
@@ -120,7 +159,12 @@ export class MockListingRepository implements IListingRepository {
       const catNode = TaxonomyMigration.resolveCanonicalNode(catSlugOrId);
       const matchedNodeIds = new Set(
         catNode
-          ? [catNode.id, ...taxonomyService.getDescendants(catNode.id).map((node) => node.id)]
+          ? [
+              catNode.id,
+              ...taxonomyService
+                .getDescendants(catNode.id)
+                .map((node) => node.id),
+            ]
           : [],
       );
 
@@ -130,7 +174,8 @@ export class MockListingRepository implements IListingRepository {
         const itemNode =
           TaxonomyMigration.resolveCanonicalNode(itemSubCat) ||
           TaxonomyMigration.resolveCanonicalNode(itemCat);
-        if (itemNode && matchedNodeIds.size > 0) return matchedNodeIds.has(itemNode.id);
+        if (itemNode && matchedNodeIds.size > 0)
+          return matchedNodeIds.has(itemNode.id);
         return itemCat === catSlugOrId || itemSubCat === catSlugOrId;
       });
     }
@@ -141,14 +186,20 @@ export class MockListingRepository implements IListingRepository {
       const subNode = TaxonomyMigration.resolveCanonicalNode(subSlugOrId);
       const matchedNodeIds = new Set(
         subNode
-          ? [subNode.id, ...taxonomyService.getDescendants(subNode.id).map((node) => node.id)]
+          ? [
+              subNode.id,
+              ...taxonomyService
+                .getDescendants(subNode.id)
+                .map((node) => node.id),
+            ]
           : [],
       );
 
       list = list.filter((item) => {
         const itemSubCat = (item.subCategorySlug || "").toLowerCase();
         const itemNode = TaxonomyMigration.resolveCanonicalNode(itemSubCat);
-        if (itemNode && matchedNodeIds.size > 0) return matchedNodeIds.has(itemNode.id);
+        if (itemNode && matchedNodeIds.size > 0)
+          return matchedNodeIds.has(itemNode.id);
         return itemSubCat === subSlugOrId;
       });
     }
@@ -256,7 +307,11 @@ export class MockListingRepository implements IListingRepository {
           if (actual === undefined || actual === null) return false;
           if (Array.isArray(criterion)) {
             const actualValues = Array.isArray(actual) ? actual : [actual];
-            return criterion.some((value) => actualValues.includes(value));
+            return criterion.some((value) =>
+              actualValues.some((actualValue) =>
+                matchesFacetValue(actualValue, value),
+              ),
+            );
           }
           if (
             typeof criterion === "object" &&
@@ -271,7 +326,7 @@ export class MockListingRepository implements IListingRepository {
               (range.max === undefined || numericActual <= range.max)
             );
           }
-          return String(actual) === String(criterion);
+          return matchesFacetValue(actual, criterion);
         });
       });
     }
@@ -297,7 +352,16 @@ export class MockListingRepository implements IListingRepository {
         return bExact - aExact;
       }
       if (sort === "relevance") {
-        return (b.isBoosted ? 1 : 0) - (a.isBoosted ? 1 : 0);
+        // The repository only retrieves candidates. The shared discovery
+        // engine owns organic relevance and sponsored insertion.
+        return (
+          new Date(
+            b.organicFreshnessAt || b.publishedAt || b.createdAt,
+          ).getTime() -
+          new Date(
+            a.organicFreshnessAt || a.publishedAt || a.createdAt,
+          ).getTime()
+        );
       }
       return 0;
     });
@@ -313,7 +377,7 @@ export class MockListingRepository implements IListingRepository {
   }
 
   async getListingById(id: string): Promise<Listing | null> {
-    const list = storageService.getListings();
+    const list = this.getCanonicalInventory();
     return list.find((l) => l.id === id) || null;
   }
 
@@ -482,31 +546,40 @@ export class MockListingRepository implements IListingRepository {
   }
 
   async getFeaturedListings(): Promise<Listing[]> {
-    const list = storageService
-      .getListings()
-      .filter((l) => l.status === "active");
-    return list.filter((l) => l.isBoosted || isProSeller(l)).slice(0, 6);
+    const list = this.getCanonicalInventory().filter(
+      (listing) => listing.status === "active",
+    );
+    return list
+      .filter(
+        (listing) =>
+          listing.promotionState === "active" ||
+          (listing.isBoosted &&
+            (!listing.boostExpiresAt ||
+              new Date(listing.boostExpiresAt).getTime() > Date.now())),
+      )
+      .slice(0, 6);
   }
 
   async getDealsListings(): Promise<Listing[]> {
-    const list = storageService
-      .getListings()
-      .filter((l) => l.status === "active");
+    const list = this.getCanonicalInventory().filter(
+      (listing) => listing.status === "active",
+    );
     return list
       .filter((l) => l.originalPrice && l.originalPrice > l.price)
       .slice(0, 6);
   }
 
   async getListingsBySeller(sellerId: string): Promise<Listing[]> {
-    return storageService.getListings().filter((l) => l.sellerId === sellerId);
+    return this.getCanonicalInventory().filter(
+      (listing) => listing.sellerId === sellerId,
+    );
   }
 
   async getSimilarListings(
     listingId: string,
     categorySlug: string,
   ): Promise<Listing[]> {
-    return storageService
-      .getListings()
+    return this.getCanonicalInventory()
       .filter(
         (l) =>
           l.id !== listingId &&
@@ -520,7 +593,9 @@ export class MockListingRepository implements IListingRepository {
     const listing = await this.getListingById(listingId);
     if (listing) {
       listing.viewsCount += 1;
-      storageService.saveListing(listing);
+      if (!demoVerticalDiscoveryStore.hasListing(listingId)) {
+        storageService.saveListing(listing);
+      }
     }
   }
 
@@ -534,14 +609,16 @@ export class MockListingRepository implements IListingRepository {
         0,
         listing.favoritesCount + (isFav ? 1 : -1),
       );
-      storageService.saveListing(listing);
+      if (!demoVerticalDiscoveryStore.hasListing(listingId)) {
+        storageService.saveListing(listing);
+      }
     }
     return isFav;
   }
 
   async getFavorites(): Promise<Listing[]> {
     const favIds = storageService.getFavorites();
-    const all = storageService.getListings();
+    const all = this.getCanonicalInventory();
     return all.filter((l) => favIds.includes(l.id));
   }
 

@@ -371,7 +371,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       conditionScheme:
         input.conditionScheme ||
         (parent?.conditionScheme ?? "consumer_product"),
-      listingFamily: input.listingFamily || parent?.listingFamily || "physical_product",
+      listingFamily:
+        input.listingFamily || parent?.listingFamily || "physical_product",
       supportedIntents: input.supportedIntents,
       attributeIds: input.attributeIds || [],
       sellerEligibility: input.sellerEligibility || parent?.sellerEligibility,
@@ -1084,7 +1085,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
             code: "UNKNOWN_PRESENTATION_ATTRIBUTE",
             message: `La présentation référence l'attribut inconnu "${attrId}".`,
             field: "presentation",
-            remediation: "Ajoutez l'attribut au registre ou retirez sa référence.",
+            remediation:
+              "Ajoutez l'attribut au registre ou retirez sa référence.",
           });
         }
       });
@@ -1098,7 +1100,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
             code: "NON_FILTERABLE_FACET",
             message: `L'attribut "${attrId}" n'est pas déclaré filtrable.`,
             field: "filterFacetIds",
-            remediation: "Activez le filtrage sur l'attribut ou retirez-le des facettes.",
+            remediation:
+              "Activez le filtrage sur l'attribut ou retirez-le des facettes.",
           });
         }
       });
@@ -1142,7 +1145,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           {
             valid: resolvedAttributes.size > 0,
             code: "MISSING_PUBLICATION_SCHEMA",
-            message: "Le nœud publiable ne possède aucun champ de publication résolu.",
+            message:
+              "Le nœud publiable ne possède aucun champ de publication résolu.",
             field: "attributeIds",
           },
           {
@@ -1154,7 +1158,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           {
             valid: Boolean(node.presentation?.cardAttributeIds?.length),
             code: "MISSING_CARD_CONFIGURATION",
-            message: "La carte d'annonce ne possède aucun attribut prioritaire.",
+            message:
+              "La carte d'annonce ne possède aucun attribut prioritaire.",
             field: "presentation.cardAttributeIds",
           },
           {
@@ -1184,16 +1189,18 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           {
             valid: Boolean(node.labels?.["fr-FR"] && node.labels?.["en-US"]),
             code: "MISSING_TRANSLATION",
-            message: "Les libellés français et anglais doivent être renseignés.",
+            message:
+              "Les libellés français et anglais doivent être renseignés.",
             field: "labels",
           },
           {
             valid: Boolean(
               node.publication?.standardPolicy.enabled &&
-                node.publication.standardPolicy.paidUpgradesOptional,
+              node.publication.standardPolicy.paidUpgradesOptional,
             ),
             code: "MISSING_STANDARD_PUBLICATION",
-            message: "La publication standard gratuite et les options facultatives ne sont pas garanties.",
+            message:
+              "La publication standard gratuite et les options facultatives ne sont pas garanties.",
             field: "publication.standardPolicy",
           },
         ];
@@ -1285,7 +1292,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           code: "DUPLICATE_ATTRIBUTE_CODE",
           message: `Le code d'attribut "${attribute.code}" est dupliqué.`,
           field: "code",
-          remediation: "Conservez un code unique et stable pour chaque attribut.",
+          remediation:
+            "Conservez un code unique et stable pour chaque attribut.",
         });
       }
       seenAttributeCodes.add(attribute.code);
@@ -1300,7 +1308,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           code: "MISSING_ATTRIBUTE_OPTIONS",
           message: `L'attribut "${attribute.label}" n'a pas d'options déclarées.`,
           field: "options",
-          remediation: "Ajoutez les options localisées ou utilisez un type texte.",
+          remediation:
+            "Ajoutez les options localisées ou utilisez un type texte.",
         });
       }
     });

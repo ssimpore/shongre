@@ -5,10 +5,7 @@
  */
 
 import { Listing, UserProfile } from "../../types";
-import {
-  TaxonomyNode,
-  TaxonomyAttribute,
-} from "../taxonomy/taxonomy.types";
+import { TaxonomyNode, TaxonomyAttribute } from "../taxonomy/taxonomy.types";
 import { taxonomyService } from "../taxonomy/taxonomy.service";
 import { TaxonomyMigration } from "../taxonomy/taxonomy.migration";
 import { ATTRIBUTE_REGISTRY } from "../taxonomy/attribute.registry";
@@ -61,29 +58,62 @@ export class ListingDisplayResolver {
 
     // Card priorities are taxonomy metadata. New branches therefore work
     // without another domain-specific conditional in the UI.
-    const summaryIds = Array.from(
-      new Set([
-        ...(effectiveNode?.presentation?.cardAttributeIds || []),
-        ...(effectiveNode?.summaryAttributeIds || []),
-        ...(effectiveNode?.filterFacetIds || []),
-        ...(effectiveNode?.attributeIds || []),
-      ]),
-    );
+    const configuredCardAttributeIds =
+      effectiveNode?.presentation?.cardAttributeIds;
+    const summaryIds = configuredCardAttributeIds?.length
+      ? configuredCardAttributeIds
+      : Array.from(
+          new Set([
+            ...(effectiveNode?.summaryAttributeIds || []),
+            ...(effectiveNode?.filterFacetIds || []),
+            ...(effectiveNode?.attributeIds || []),
+          ]),
+        );
     summaryIds.forEach((attrId) => {
       const attrDef = ATTRIBUTE_REGISTRY[attrId];
       const code = attrDef?.code || attrId.split(".").pop() || attrId;
       const val = attrs[code] ?? attrs[attrId];
       if (val !== undefined && val !== null && val !== "") {
-        summary.push(this.formatAttributeValue(attrDef, val));
+        const formattedValue = this.formatAttributeValue(attrDef, val);
+        summary.push(
+          this.compactEmploymentCardValue(
+            effectiveNode,
+            code,
+            formattedValue,
+          ),
+        );
       }
     });
 
     if (listing.condition && summary.length < 3) {
-      const conditionLabel = this.resolveConditionLabel(listing.condition, effectiveNode);
-      if (conditionLabel && !summary.includes(conditionLabel)) summary.push(conditionLabel);
+      const conditionLabel = this.resolveConditionLabel(
+        listing.condition,
+        effectiveNode,
+      );
+      if (conditionLabel && !summary.includes(conditionLabel))
+        summary.push(conditionLabel);
     }
 
     return summary.slice(0, 5);
+  }
+
+  /**
+   * Employment taxonomy labels remain descriptive in forms, filters and detail
+   * views. Cards compact the work-arrangement label so the essential chips stay
+   * readable without depending on CSS truncation.
+   */
+  private compactEmploymentCardValue(
+    node: TaxonomyNode | null | undefined,
+    attributeCode: string,
+    formattedValue: string,
+  ): string {
+    if (node?.verticalType !== "employment") return formattedValue;
+
+    if (attributeCode === "telework") {
+      return formattedValue.replace(/\s*\([^)]*\)\s*$/u, "").trim();
+    }
+
+    return formattedValue;
   }
 
   /**
@@ -171,7 +201,8 @@ export class ListingDisplayResolver {
     };
 
     const result: GroupedCharacteristics[] = [];
-    const configuredGroupOrder = effectiveNode?.presentation?.detailGroupOrder || [
+    const configuredGroupOrder = effectiveNode?.presentation
+      ?.detailGroupOrder || [
       "general",
       "specifications",
       "dimensions",
@@ -277,12 +308,14 @@ export class ListingDisplayResolver {
 
     if (Array.isArray(val) && attrDef?.options) {
       return val
-        .map((entry) =>
-          attrDef.options?.find(
-            (option) =>
-              option.value === entry ||
-              String(option.value).toLowerCase() === String(entry).toLowerCase(),
-          )?.label || String(entry),
+        .map(
+          (entry) =>
+            attrDef.options?.find(
+              (option) =>
+                option.value === entry ||
+                String(option.value).toLowerCase() ===
+                  String(entry).toLowerCase(),
+            )?.label || String(entry),
         )
         .join(", ");
     }
@@ -290,9 +323,7 @@ export class ListingDisplayResolver {
     if (attrDef?.options) {
       const displayOptionLabel = Object.entries(
         attrDef.displayOptionLabels || {},
-      ).find(
-        ([key]) => key.toLowerCase() === String(val).toLowerCase(),
-      )?.[1];
+      ).find(([key]) => key.toLowerCase() === String(val).toLowerCase())?.[1];
       if (displayOptionLabel) {
         return `${attrDef.displayPrefix || ""}${displayOptionLabel}`;
       }
@@ -323,7 +354,9 @@ export class ListingDisplayResolver {
     }
 
     const formatted = this.formatOptionLabel(attrDef?.id || "", val);
-    return attrDef?.displayPrefix ? `${attrDef.displayPrefix}${formatted}` : formatted;
+    return attrDef?.displayPrefix
+      ? `${attrDef.displayPrefix}${formatted}`
+      : formatted;
   }
 
   private formatOptionLabel(attributeId: string, value: any): string {

@@ -70,7 +70,9 @@ describe("Shongre Immo commercial projection", () => {
       override async getActiveCatalog(marketCode: string) {
         const catalog = await super.getActiveCatalog(marketCode);
         const changed = structuredClone(catalog!);
-        changed.products.find((product) => product.id === "immo.agency.starter")!.prices[0].amount.amountMinor = 8456;
+        changed.products.find(
+          (product) => product.id === "immo.agency.starter",
+        )!.prices[0].amount.amountMinor = 8456;
         return changed;
       }
     }
@@ -79,7 +81,10 @@ describe("Shongre Immo commercial projection", () => {
       new BusinessRulesService(new CommercialRepository()),
     );
     const catalog = await service.getCatalog("FR");
-    expect(catalog.offers.find((offer) => offer.id === "immo_agency_starter")?.prices[0].amount.amountMinor).toBe(8456);
+    expect(
+      catalog.offers.find((offer) => offer.id === "immo_agency_starter")
+        ?.prices[0].amount.amountMinor,
+    ).toBe(8456);
   });
 });
 

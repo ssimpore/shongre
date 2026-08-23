@@ -113,7 +113,9 @@ export const employmentMarketConfigSchema = z.object({
   ),
   riskRules: z.object({
     blockedExternalHostPatterns: z.array(z.string().min(1)).default([]),
-    salaryReviewMaximumMinorByFrequency: z.record(z.string(), z.number().int().positive()).default({}),
+    salaryReviewMaximumMinorByFrequency: z
+      .record(z.string(), z.number().int().positive())
+      .default({}),
   }),
   requiredFieldIds: z.array(z.string()).default([]),
   featureFlags: employmentFeatureFlagsSchema,
@@ -173,7 +175,10 @@ export const salaryRangeSchema = z
       !value.minimum ||
       !value.maximum ||
       value.minimum.currency === value.maximum.currency,
-    { message: "La rémunération minimale et maximale doivent utiliser la même devise." },
+    {
+      message:
+        "La rémunération minimale et maximale doivent utiliser la même devise.",
+    },
   )
   .refine(
     (value) =>
@@ -240,7 +245,11 @@ export const jobPostingDetailSchema = jobPostingCardSchema.extend({
   qualificationSummary: z.string().optional(),
   certifications: z.array(z.string()).default([]),
   languages: z.array(
-    z.object({ languageId: z.string(), levelId: z.string(), label: z.string() }),
+    z.object({
+      languageId: z.string(),
+      levelId: z.string(),
+      label: z.string(),
+    }),
   ),
   weeklyHours: z.number().positive().optional(),
   workScheduleIds: z.array(z.string()).default([]),
@@ -282,14 +291,9 @@ export const employmentSearchQuerySchema = z.object({
   employerTypeIds: z.array(z.string()).default([]),
   verifiedEmployerOnly: z.boolean().default(false),
   accessibilityOnly: z.boolean().default(false),
-  sort: z.enum([
-    "relevance",
-    "newest",
-    "salary",
-    "distance",
-    "deadline",
-    "promoted",
-  ]).default("relevance"),
+  sort: z
+    .enum(["relevance", "newest", "salary", "distance", "deadline", "promoted"])
+    .default("relevance"),
   cursor: z.string().optional(),
   limit: z.number().int().positive().max(100).default(24),
 });
@@ -501,7 +505,14 @@ export const employmentJobReportSchema = z.object({
   id: z.string().min(1),
   jobId: z.string().min(1),
   reporterUserId: z.string().min(1),
-  reason: z.enum(["fraud", "discrimination", "candidate_fee", "misleading", "malicious_link", "other"]),
+  reason: z.enum([
+    "fraud",
+    "discrimination",
+    "candidate_fee",
+    "misleading",
+    "malicious_link",
+    "other",
+  ]),
   details: z.string().max(2000).optional(),
   status: z.enum(["submitted", "reviewing", "resolved", "dismissed"]),
   createdAt: z.string(),
@@ -522,7 +533,14 @@ export const employmentImportSchema = z.object({
   sourceType: z.enum(["csv", "xml", "json_api", "ats", "career_site"]),
   sourceIdentifier: z.string().min(1),
   idempotencyKey: z.string().min(8),
-  status: z.enum(["preview", "queued", "processing", "completed", "partial", "failed"]),
+  status: z.enum([
+    "preview",
+    "queued",
+    "processing",
+    "completed",
+    "partial",
+    "failed",
+  ]),
   createdCount: z.number().int().nonnegative(),
   updatedCount: z.number().int().nonnegative(),
   expiredCount: z.number().int().nonnegative(),
@@ -579,9 +597,7 @@ export const candidateWorkspaceSchema = z.object({
   applications: z.array(applicationSchema.omit({ screeningAnswers: true })),
   interviews: z.array(interviewSchema),
   consentHistory: z.array(consentRecordSchema),
-  alerts: z.array(
-    jobAlertSchema,
-  ),
+  alerts: z.array(jobAlertSchema),
 });
 export type CandidateWorkspace = z.infer<typeof candidateWorkspaceSchema>;
 

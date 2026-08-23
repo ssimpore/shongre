@@ -86,5 +86,11 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
     expect(getFriendlyErrorMessage(kycErr)).toBe(
       "Une vérification d’identité est requise pour finaliser cette transaction.",
     );
+
+    expect(
+      getFriendlyErrorMessage(
+        new Error("database.internal_table does not exist"),
+      ),
+    ).toBe("Une erreur inattendue est survenue.");
   });
 });

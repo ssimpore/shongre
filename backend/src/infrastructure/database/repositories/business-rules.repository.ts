@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 import type {
   ActiveEntitlement,
   CommercialAuditEvent,
@@ -7,40 +7,85 @@ import type {
   MonetizationOrder,
   MonetizationQuote,
   MonetizationSubscription,
-} from '@shongre/contracts/monetization';
-import { BASELINE_MONETIZATION_CATALOG } from '@shongre/contracts/monetization-catalog';
-import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
+} from "@shongre/contracts/monetization";
+import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 
 export interface BusinessRulesRepository {
-  getAccountAudience(accountId: string): Promise<'individual' | 'professional' | 'organization'>;
+  getAccountAudience(
+    accountId: string,
+  ): Promise<"individual" | "professional" | "organization">;
   getActiveCatalog(marketCode: string): Promise<MonetizationCatalog | null>;
   getCatalogVersion(versionId: string): Promise<MonetizationCatalog | null>;
   listVersions(marketCode: string): Promise<CommercialConfigurationVersion[]>;
-  saveVersion(version: CommercialConfigurationVersion, catalog: MonetizationCatalog): Promise<void>;
-  publishVersion(versionId: string, actorId: string, reason: string): Promise<void>;
+  saveVersion(
+    version: CommercialConfigurationVersion,
+    catalog: MonetizationCatalog,
+  ): Promise<void>;
+  publishVersion(
+    versionId: string,
+    actorId: string,
+    reason: string,
+  ): Promise<void>;
   activateDueVersions(): Promise<number>;
-  saveQuote(quote: MonetizationQuote, idempotencyKey: string): Promise<MonetizationQuote>;
+  saveQuote(
+    quote: MonetizationQuote,
+    idempotencyKey: string,
+  ): Promise<MonetizationQuote>;
   getQuote(quoteId: string): Promise<MonetizationQuote | null>;
-  getQuoteByIdempotency(accountId: string, idempotencyKey: string): Promise<MonetizationQuote | null>;
-  saveOrder(order: MonetizationOrder, idempotencyKey: string): Promise<MonetizationOrder>;
+  getQuoteByIdempotency(
+    accountId: string,
+    idempotencyKey: string,
+  ): Promise<MonetizationQuote | null>;
+  saveOrder(
+    order: MonetizationOrder,
+    idempotencyKey: string,
+  ): Promise<MonetizationOrder>;
   getOrderByQuote(quoteId: string): Promise<MonetizationOrder | null>;
   listOrders(limit?: number): Promise<MonetizationOrder[]>;
-  listEntitlements(accountId?: string, limit?: number): Promise<ActiveEntitlement[]>;
-  listSubscriptions(accountId?: string, limit?: number): Promise<MonetizationSubscription[]>;
-  updateSubscriptionCancellation(subscriptionId: string, accountId: string, cancelAtPeriodEnd: boolean): Promise<MonetizationSubscription>;
+  listEntitlements(
+    accountId?: string,
+    limit?: number,
+  ): Promise<ActiveEntitlement[]>;
+  listSubscriptions(
+    accountId?: string,
+    limit?: number,
+  ): Promise<MonetizationSubscription[]>;
+  updateSubscriptionCancellation(
+    subscriptionId: string,
+    accountId: string,
+    cancelAtPeriodEnd: boolean,
+  ): Promise<MonetizationSubscription>;
   countQuotesSince(since: string): Promise<number>;
-  countPromotionRedemptions(promotionId: string, accountId?: string): Promise<number>;
+  countPromotionRedemptions(
+    promotionId: string,
+    accountId?: string,
+  ): Promise<number>;
   listAuditEvents(limit?: number): Promise<CommercialAuditEvent[]>;
   appendAudit(event: CommercialAuditEvent): Promise<void>;
-  getQuotaUsage(accountId: string, ruleKey: string, marketCode: string, periodStart: string): Promise<number>;
-  consumeQuota(input: { accountId: string; ruleKey: string; marketCode: string; periodStart: string; periodEnd: string; limit: number; observedMinimum: number; amount?: number }): Promise<number>;
+  getQuotaUsage(
+    accountId: string,
+    ruleKey: string,
+    marketCode: string,
+    periodStart: string,
+  ): Promise<number>;
+  consumeQuota(input: {
+    accountId: string;
+    ruleKey: string;
+    marketCode: string;
+    periodStart: string;
+    periodEnd: string;
+    limit: number;
+    observedMinimum: number;
+    amount?: number;
+  }): Promise<number>;
 }
 
 const now = () => new Date().toISOString();
 
 function stableValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stableValue);
-  if (value && typeof value === 'object') {
+  if (value && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value as Record<string, unknown>)
         .sort(([left], [right]) => left.localeCompare(right))
@@ -51,23 +96,25 @@ function stableValue(value: unknown): unknown {
 }
 
 const snapshotHash = (value: unknown) =>
-  createHash('sha256').update(JSON.stringify(stableValue(value))).digest('hex');
+  createHash("sha256")
+    .update(JSON.stringify(stableValue(value)))
+    .digest("hex");
 
 const deterministicMemoryId = (value: string) =>
-  createHash('sha256').update(value).digest('hex').slice(0, 32);
+  createHash("sha256").update(value).digest("hex").slice(0, 32);
 
 const initialVersion = (): CommercialConfigurationVersion => ({
   id: BASELINE_MONETIZATION_CATALOG.configurationVersionId,
-  setId: 'commercial-core',
+  setId: "commercial-core",
   versionNumber: BASELINE_MONETIZATION_CATALOG.versionNumber,
   marketCode: BASELINE_MONETIZATION_CATALOG.marketCode,
-  status: 'active',
-  reason: 'Backfill initial du catalogue commercial audité',
-  effectiveFrom: '2026-08-22T00:00:00.000Z',
-  createdBy: 'system:migration',
-  approvedBy: 'system:migration',
-  createdAt: '2026-08-22T00:00:00.000Z',
-  publishedAt: '2026-08-22T00:00:00.000Z',
+  status: "active",
+  reason: "Backfill initial du catalogue commercial audité",
+  effectiveFrom: "2026-08-22T00:00:00.000Z",
+  createdBy: "system:migration",
+  approvedBy: "system:migration",
+  createdAt: "2026-08-22T00:00:00.000Z",
+  publishedAt: "2026-08-22T00:00:00.000Z",
   productCount: BASELINE_MONETIZATION_CATALOG.products.length,
   ruleCount: BASELINE_MONETIZATION_CATALOG.rules.length,
   conflicts: [],
@@ -84,12 +131,23 @@ type MemoryState = {
   usage: Map<string, number>;
   entitlements: Map<string, ActiveEntitlement>;
   subscriptions: Map<string, MonetizationSubscription>;
-  promotionRedemptions: Array<{ promotionId: string; accountId: string; orderId: string }>;
+  promotionRedemptions: Array<{
+    promotionId: string;
+    accountId: string;
+    orderId: string;
+  }>;
 };
 
 const memory: MemoryState = {
-  catalogs: new Map([[BASELINE_MONETIZATION_CATALOG.configurationVersionId, BASELINE_MONETIZATION_CATALOG]]),
-  versions: new Map([[BASELINE_MONETIZATION_CATALOG.configurationVersionId, initialVersion()]]),
+  catalogs: new Map([
+    [
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+      BASELINE_MONETIZATION_CATALOG,
+    ],
+  ]),
+  versions: new Map([
+    [BASELINE_MONETIZATION_CATALOG.configurationVersionId, initialVersion()],
+  ]),
   quotes: new Map(),
   quoteKeys: new Map(),
   orders: new Map(),
@@ -103,14 +161,17 @@ const memory: MemoryState = {
 
 export class DemoBusinessRulesRepository implements BusinessRulesRepository {
   async getAccountAudience(accountId: string) {
-    if (/org|organization|dealer|agency|school/i.test(accountId)) return 'organization' as const;
-    if (/pro|professional/i.test(accountId)) return 'professional' as const;
-    return 'individual' as const;
+    if (/org|organization|dealer|agency|school/i.test(accountId))
+      return "organization" as const;
+    if (/pro|professional/i.test(accountId)) return "professional" as const;
+    return "individual" as const;
   }
 
   async getActiveCatalog(marketCode: string) {
     const version = [...memory.versions.values()]
-      .filter((entry) => entry.marketCode === marketCode && entry.status === 'active')
+      .filter(
+        (entry) => entry.marketCode === marketCode && entry.status === "active",
+      )
       .sort((a, b) => b.versionNumber - a.versionNumber)[0];
     return version ? memory.catalogs.get(version.id) || null : null;
   }
@@ -125,28 +186,37 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       .sort((a, b) => b.versionNumber - a.versionNumber);
   }
 
-  async saveVersion(version: CommercialConfigurationVersion, catalog: MonetizationCatalog) {
+  async saveVersion(
+    version: CommercialConfigurationVersion,
+    catalog: MonetizationCatalog,
+  ) {
     memory.versions.set(version.id, structuredClone(version));
     memory.catalogs.set(version.id, structuredClone(catalog));
   }
 
   async publishVersion(versionId: string, actorId: string, reason: string) {
     const target = memory.versions.get(versionId);
-    if (!target || target.status !== 'approved') throw new Error('version is not approved');
-    if (!target.approvedBy || target.createdBy === actorId) throw new Error('four-eyes approval required');
+    if (!target || target.status !== "approved")
+      throw new Error("version is not approved");
+    if (!target.approvedBy || target.createdBy === actorId)
+      throw new Error("four-eyes approval required");
     const publishedAt = now();
     if (target.effectiveFrom && target.effectiveFrom > publishedAt) {
-      target.status = 'scheduled';
+      target.status = "scheduled";
       target.reason = reason;
       return;
     }
     for (const version of memory.versions.values()) {
-      if (version.setId === target.setId && version.marketCode === target.marketCode && version.status === 'active') {
-        version.status = 'archived';
+      if (
+        version.setId === target.setId &&
+        version.marketCode === target.marketCode &&
+        version.status === "active"
+      ) {
+        version.status = "archived";
         version.effectiveUntil = publishedAt;
       }
     }
-    target.status = 'active';
+    target.status = "active";
     target.reason = reason;
     target.effectiveFrom = target.effectiveFrom || publishedAt;
     target.publishedAt = publishedAt;
@@ -154,16 +224,27 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
 
   async activateDueVersions() {
     const due = [...memory.versions.values()]
-      .filter((entry) => entry.status === 'scheduled' && entry.effectiveFrom && entry.effectiveFrom <= now())
-      .sort((left, right) => String(left.effectiveFrom).localeCompare(String(right.effectiveFrom)));
+      .filter(
+        (entry) =>
+          entry.status === "scheduled" &&
+          entry.effectiveFrom &&
+          entry.effectiveFrom <= now(),
+      )
+      .sort((left, right) =>
+        String(left.effectiveFrom).localeCompare(String(right.effectiveFrom)),
+      );
     for (const target of due) {
       for (const version of memory.versions.values()) {
-        if (version.setId === target.setId && version.marketCode === target.marketCode && version.status === 'active') {
-          version.status = 'archived';
+        if (
+          version.setId === target.setId &&
+          version.marketCode === target.marketCode &&
+          version.status === "active"
+        ) {
+          version.status = "archived";
           version.effectiveUntil = target.effectiveFrom;
         }
       }
-      target.status = 'active';
+      target.status = "active";
       target.publishedAt = now();
     }
     return due.length;
@@ -193,25 +274,37 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     if (existingId) return structuredClone(memory.orders.get(existingId)!);
     memory.orders.set(order.id, structuredClone(order));
     memory.orderKeys.set(key, order.id);
-    if (order.status === 'paid') {
+    if (order.status === "paid") {
       const quote = memory.quotes.get(order.quoteId);
-      if (quote) quote.status = 'consumed';
-      const catalog = quote ? memory.catalogs.get(quote.configurationVersionId) : undefined;
+      if (quote) quote.status = "consumed";
+      const catalog = quote
+        ? memory.catalogs.get(quote.configurationVersionId)
+        : undefined;
       if (quote && catalog) {
         for (const line of quote.lines) {
-          const product = catalog.products.find((candidate) => candidate.id === line.productId);
-          const price = product?.prices.find((candidate) => candidate.id === line.priceId);
+          const product = catalog.products.find(
+            (candidate) => candidate.id === line.productId,
+          );
+          const price = product?.prices.find(
+            (candidate) => candidate.id === line.priceId,
+          );
           const startsAt = order.updatedAt;
           const periodEnd = new Date(startsAt);
-          if (line.billingPeriod === 'year') periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 1);
-          else if (line.billingPeriod === 'month') periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
+          if (line.billingPeriod === "year")
+            periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 1);
+          else if (line.billingPeriod === "month")
+            periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
           const endsAt = price?.durationDays
-            ? new Date(new Date(startsAt).getTime() + price.durationDays * 86_400_000).toISOString()
-            : line.billingPeriod === 'once'
+            ? new Date(
+                new Date(startsAt).getTime() + price.durationDays * 86_400_000,
+              ).toISOString()
+            : line.billingPeriod === "once"
               ? undefined
               : periodEnd.toISOString();
           for (const entitlement of line.entitlementSnapshot) {
-            const entitlementId = deterministicMemoryId(`${order.id}:${line.productId}:${entitlement.key}`);
+            const entitlementId = deterministicMemoryId(
+              `${order.id}:${line.productId}:${entitlement.key}`,
+            );
             memory.entitlements.set(entitlementId, {
               id: entitlementId,
               accountId: order.accountId,
@@ -221,17 +314,19 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
               sourceOrderId: order.id,
               startsAt,
               endsAt,
-              status: 'active',
+              status: "active",
             });
           }
-          if (product?.kind === 'subscription') {
-            const subscriptionId = deterministicMemoryId(`subscription:${order.id}:${line.productId}`);
+          if (product?.kind === "subscription") {
+            const subscriptionId = deterministicMemoryId(
+              `subscription:${order.id}:${line.productId}`,
+            );
             memory.subscriptions.set(subscriptionId, {
               id: subscriptionId,
               accountId: order.accountId,
               productId: line.productId,
               sourceOrderId: order.id,
-              status: 'active',
+              status: "active",
               providerSubscriptionId: order.providerCheckoutId,
               currentPeriodStart: startsAt,
               currentPeriodEnd: periodEnd.toISOString(),
@@ -242,10 +337,22 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
           }
         }
         const promotion = quote.promotionCode
-          ? catalog.promotions.find((candidate) => candidate.code === quote.promotionCode)
+          ? catalog.promotions.find(
+              (candidate) => candidate.code === quote.promotionCode,
+            )
           : undefined;
-        if (promotion && !memory.promotionRedemptions.some((entry) => entry.promotionId === promotion.id && entry.orderId === order.id)) {
-          memory.promotionRedemptions.push({ promotionId: promotion.id, accountId: order.accountId, orderId: order.id });
+        if (
+          promotion &&
+          !memory.promotionRedemptions.some(
+            (entry) =>
+              entry.promotionId === promotion.id && entry.orderId === order.id,
+          )
+        ) {
+          memory.promotionRedemptions.push({
+            promotionId: promotion.id,
+            accountId: order.accountId,
+            orderId: order.id,
+          });
         }
       }
     }
@@ -253,7 +360,9 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
   }
 
   async getOrderByQuote(quoteId: string) {
-    const order = [...memory.orders.values()].find((entry) => entry.quoteId === quoteId);
+    const order = [...memory.orders.values()].find(
+      (entry) => entry.quoteId === quoteId,
+    );
     return order ? structuredClone(order) : null;
   }
 
@@ -279,9 +388,14 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       .map((entry) => structuredClone(entry));
   }
 
-  async updateSubscriptionCancellation(subscriptionId: string, accountId: string, cancelAtPeriodEnd: boolean) {
+  async updateSubscriptionCancellation(
+    subscriptionId: string,
+    accountId: string,
+    cancelAtPeriodEnd: boolean,
+  ) {
     const subscription = memory.subscriptions.get(subscriptionId);
-    if (!subscription || subscription.accountId !== accountId) throw new Error('subscription not found');
+    if (!subscription || subscription.accountId !== accountId)
+      throw new Error("subscription not found");
     subscription.cancelAtPeriodEnd = cancelAtPeriodEnd;
     subscription.updatedAt = now();
     return structuredClone(subscription);
@@ -289,13 +403,17 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
 
   async countQuotesSince(since: string) {
     return [...memory.quotes.values()].filter(
-      (entry, index, all) => entry.createdAt >= since && all.findIndex((candidate) => candidate.id === entry.id) === index,
+      (entry, index, all) =>
+        entry.createdAt >= since &&
+        all.findIndex((candidate) => candidate.id === entry.id) === index,
     ).length;
   }
 
   async countPromotionRedemptions(promotionId: string, accountId?: string) {
     return memory.promotionRedemptions.filter(
-      (entry) => entry.promotionId === promotionId && (!accountId || entry.accountId === accountId),
+      (entry) =>
+        entry.promotionId === promotionId &&
+        (!accountId || entry.accountId === accountId),
     ).length;
   }
 
@@ -307,14 +425,34 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     memory.audit.unshift(structuredClone(event));
   }
 
-  async getQuotaUsage(accountId: string, ruleKey: string, marketCode: string, periodStart: string) {
-    return memory.usage.get(`${accountId}:${ruleKey}:${marketCode}:${periodStart}`) || 0;
+  async getQuotaUsage(
+    accountId: string,
+    ruleKey: string,
+    marketCode: string,
+    periodStart: string,
+  ) {
+    return (
+      memory.usage.get(
+        `${accountId}:${ruleKey}:${marketCode}:${periodStart}`,
+      ) || 0
+    );
   }
 
-  async consumeQuota(input: { accountId: string; ruleKey: string; marketCode: string; periodStart: string; periodEnd: string; limit: number; observedMinimum: number; amount?: number }) {
+  async consumeQuota(input: {
+    accountId: string;
+    ruleKey: string;
+    marketCode: string;
+    periodStart: string;
+    periodEnd: string;
+    limit: number;
+    observedMinimum: number;
+    amount?: number;
+  }) {
     const key = `${input.accountId}:${input.ruleKey}:${input.marketCode}:${input.periodStart}`;
-    const next = Math.max(memory.usage.get(key) || 0, input.observedMinimum) + (input.amount || 1);
-    if (next > input.limit) throw new Error('quota exhausted');
+    const next =
+      Math.max(memory.usage.get(key) || 0, input.observedMinimum) +
+      (input.amount || 1);
+    if (next > input.limit) throw new Error("quota exhausted");
     memory.usage.set(key, next);
     return next;
   }
@@ -331,7 +469,7 @@ function versionFromRow(row: any): CommercialConfigurationVersion {
     reason: String(row.change_reason),
     effectiveFrom: row.effective_from || undefined,
     effectiveUntil: row.effective_until || undefined,
-    createdBy: row.created_by ? String(row.created_by) : 'system:migration',
+    createdBy: row.created_by ? String(row.created_by) : "system:migration",
     approvedBy: row.approved_by || undefined,
     createdAt: String(row.created_at),
     publishedAt: row.published_at || undefined,
@@ -348,30 +486,32 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async getAccountAudience(accountId: string) {
     const { data: organization } = await this.client
-      .from('organizations')
-      .select('id')
-      .eq('owner_id', accountId)
+      .from("organizations")
+      .select("id")
+      .eq("owner_id", accountId)
       .limit(1)
       .maybeSingle();
-    if (organization) return 'organization' as const;
+    if (organization) return "organization" as const;
     const { data, error } = await this.client
-      .from('profiles')
-      .select('account_type')
-      .eq('id', accountId)
+      .from("profiles")
+      .select("account_type")
+      .eq("id", accountId)
       .maybeSingle();
     if (error) throw error;
-    return data?.account_type === 'professional' ? 'professional' as const : 'individual' as const;
+    return data?.account_type === "professional"
+      ? ("professional" as const)
+      : ("individual" as const);
   }
 
   async getActiveCatalog(marketCode: string) {
     const { data, error } = await this.client
-      .from('commercial_configuration_versions')
-      .select('snapshot')
-      .eq('market_code', marketCode)
-      .eq('status', 'active')
-      .lte('effective_from', now())
+      .from("commercial_configuration_versions")
+      .select("snapshot")
+      .eq("market_code", marketCode)
+      .eq("status", "active")
+      .lte("effective_from", now())
       .or(`effective_until.is.null,effective_until.gt.${now()}`)
-      .order('version_number', { ascending: false })
+      .order("version_number", { ascending: false })
       .limit(1)
       .maybeSingle();
     if (error) throw error;
@@ -380,9 +520,9 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async getCatalogVersion(versionId: string) {
     const { data, error } = await this.client
-      .from('commercial_configuration_versions')
-      .select('snapshot')
-      .eq('id', versionId)
+      .from("commercial_configuration_versions")
+      .select("snapshot")
+      .eq("id", versionId)
       .maybeSingle();
     if (error) throw error;
     return (data?.snapshot as MonetizationCatalog | undefined) || null;
@@ -390,40 +530,51 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async listVersions(marketCode: string) {
     const { data, error } = await this.client
-      .from('commercial_configuration_versions')
-      .select('*')
-      .eq('market_code', marketCode)
-      .order('version_number', { ascending: false });
+      .from("commercial_configuration_versions")
+      .select("*")
+      .eq("market_code", marketCode)
+      .order("version_number", { ascending: false });
     if (error) throw error;
     return (data || []).map(versionFromRow);
   }
 
-  async saveVersion(version: CommercialConfigurationVersion, catalog: MonetizationCatalog) {
-    const { error } = await this.client.rpc('save_commercial_configuration_version', {
-      p_version: version,
-      p_catalog: catalog,
-      p_snapshot_hash: snapshotHash(catalog),
-    });
+  async saveVersion(
+    version: CommercialConfigurationVersion,
+    catalog: MonetizationCatalog,
+  ) {
+    const { error } = await this.client.rpc(
+      "save_commercial_configuration_version",
+      {
+        p_version: version,
+        p_catalog: catalog,
+        p_snapshot_hash: snapshotHash(catalog),
+      },
+    );
     if (error) throw error;
   }
 
   async publishVersion(versionId: string, actorId: string, reason: string) {
-    const { error } = await this.client.rpc('publish_commercial_configuration', {
-      p_version_id: versionId,
-      p_actor_id: actorId,
-      p_reason: reason,
-    });
+    const { error } = await this.client.rpc(
+      "publish_commercial_configuration",
+      {
+        p_version_id: versionId,
+        p_actor_id: actorId,
+        p_reason: reason,
+      },
+    );
     if (error) throw error;
   }
 
   async activateDueVersions() {
-    const { data, error } = await this.client.rpc('activate_due_commercial_configurations');
+    const { data, error } = await this.client.rpc(
+      "activate_due_commercial_configurations",
+    );
     if (error) throw error;
     return Number(data || 0);
   }
 
   async saveQuote(quote: MonetizationQuote, idempotencyKey: string) {
-    const { data, error } = await this.client.rpc('save_monetization_quote', {
+    const { data, error } = await this.client.rpc("save_monetization_quote", {
       p_quote: quote,
       p_idempotency_key: idempotencyKey,
     });
@@ -433,9 +584,9 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async getQuote(quoteId: string) {
     const { data, error } = await this.client
-      .from('monetization_quotes')
-      .select('quote_snapshot')
-      .eq('id', quoteId)
+      .from("monetization_quotes")
+      .select("quote_snapshot")
+      .eq("id", quoteId)
       .maybeSingle();
     if (error) throw error;
     return (data?.quote_snapshot as MonetizationQuote | undefined) || null;
@@ -443,10 +594,10 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async getQuoteByIdempotency(accountId: string, idempotencyKey: string) {
     const { data, error } = await this.client
-      .from('monetization_quotes')
-      .select('quote_snapshot')
-      .eq('account_id', accountId)
-      .eq('idempotency_key', idempotencyKey)
+      .from("monetization_quotes")
+      .select("quote_snapshot")
+      .eq("account_id", accountId)
+      .eq("idempotency_key", idempotencyKey)
       .maybeSingle();
     if (error) throw error;
     return (data?.quote_snapshot as MonetizationQuote | undefined) || null;
@@ -454,14 +605,15 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async saveOrder(order: MonetizationOrder, idempotencyKey: string) {
     const { data: existing } = await this.client
-      .from('monetization_orders')
-      .select('order_snapshot')
-      .eq('account_id', order.accountId)
-      .eq('idempotency_key', idempotencyKey)
+      .from("monetization_orders")
+      .select("order_snapshot")
+      .eq("account_id", order.accountId)
+      .eq("idempotency_key", idempotencyKey)
       .maybeSingle();
-    if (existing?.order_snapshot) return existing.order_snapshot as MonetizationOrder;
+    if (existing?.order_snapshot)
+      return existing.order_snapshot as MonetizationOrder;
     const { data, error } = await this.client
-      .from('monetization_orders')
+      .from("monetization_orders")
       .insert({
         id: order.id,
         quote_id: order.quoteId,
@@ -477,10 +629,10 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         idempotency_key: idempotencyKey,
         order_snapshot: order,
       })
-      .select('order_snapshot')
+      .select("order_snapshot")
       .single();
     if (error) {
-      if (error.code === '23505') {
+      if (error.code === "23505") {
         const existingByQuote = await this.getOrderByQuote(order.quoteId);
         if (existingByQuote) return existingByQuote;
       }
@@ -491,9 +643,9 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async getOrderByQuote(quoteId: string) {
     const { data, error } = await this.client
-      .from('monetization_orders')
-      .select('order_snapshot')
-      .eq('quote_id', quoteId)
+      .from("monetization_orders")
+      .select("order_snapshot")
+      .eq("quote_id", quoteId)
       .maybeSingle();
     if (error) throw error;
     return (data?.order_snapshot as MonetizationOrder | undefined) || null;
@@ -501,21 +653,23 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async listOrders(limit = 25) {
     const { data, error } = await this.client
-      .from('monetization_orders')
-      .select('order_snapshot')
-      .order('created_at', { ascending: false })
+      .from("monetization_orders")
+      .select("order_snapshot")
+      .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return (data || []).map((row: any) => row.order_snapshot as MonetizationOrder);
+    return (data || []).map(
+      (row: any) => row.order_snapshot as MonetizationOrder,
+    );
   }
 
   async listEntitlements(accountId?: string, limit = 100) {
     let query = this.client
-      .from('monetization_entitlements')
-      .select('*')
-      .order('starts_at', { ascending: false })
+      .from("monetization_entitlements")
+      .select("*")
+      .order("starts_at", { ascending: false })
       .limit(limit);
-    if (accountId) query = query.eq('account_id', accountId);
+    if (accountId) query = query.eq("account_id", accountId);
     const { data, error } = await query;
     if (error) throw error;
     return (data || []).map((row: any): ActiveEntitlement => ({
@@ -533,11 +687,11 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async listSubscriptions(accountId?: string, limit = 100) {
     let query = this.client
-      .from('monetization_subscriptions')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("monetization_subscriptions")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit);
-    if (accountId) query = query.eq('account_id', accountId);
+    if (accountId) query = query.eq("account_id", accountId);
     const { data, error } = await query;
     if (error) throw error;
     return (data || []).map((row: any): MonetizationSubscription => ({
@@ -555,13 +709,17 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     }));
   }
 
-  async updateSubscriptionCancellation(subscriptionId: string, accountId: string, cancelAtPeriodEnd: boolean) {
+  async updateSubscriptionCancellation(
+    subscriptionId: string,
+    accountId: string,
+    cancelAtPeriodEnd: boolean,
+  ) {
     const { data, error } = await this.client
-      .from('monetization_subscriptions')
+      .from("monetization_subscriptions")
       .update({ cancel_at_period_end: cancelAtPeriodEnd, updated_at: now() })
-      .eq('id', subscriptionId)
-      .eq('account_id', accountId)
-      .select('*')
+      .eq("id", subscriptionId)
+      .eq("account_id", accountId)
+      .select("*")
       .single();
     if (error) throw error;
     return {
@@ -581,19 +739,19 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async countQuotesSince(since: string) {
     const { count, error } = await this.client
-      .from('monetization_quotes')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', since);
+      .from("monetization_quotes")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since);
     if (error) throw error;
     return Number(count || 0);
   }
 
   async countPromotionRedemptions(promotionId: string, accountId?: string) {
     let query = this.client
-      .from('monetization_promotion_redemptions')
-      .select('order_id', { count: 'exact', head: true })
-      .eq('promotion_id', promotionId);
-    if (accountId) query = query.eq('account_id', accountId);
+      .from("monetization_promotion_redemptions")
+      .select("order_id", { count: "exact", head: true })
+      .eq("promotion_id", promotionId);
+    if (accountId) query = query.eq("account_id", accountId);
     const { count, error } = await query;
     if (error) throw error;
     return Number(count || 0);
@@ -601,9 +759,9 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
 
   async listAuditEvents(limit = 50) {
     const { data, error } = await this.client
-      .from('commercial_configuration_audit')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("commercial_configuration_audit")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
     return (data || []).map((row: any) => ({
@@ -624,48 +782,67 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
   }
 
   async appendAudit(event: CommercialAuditEvent) {
-    const { error } = await this.client.from('commercial_configuration_audit').insert({
-      id: event.id,
-      actor_id: event.actorId,
-      actor_name: event.actorName,
-      action: event.action,
-      entity_type: event.entityType,
-      entity_id: event.entityId,
-      reason: event.reason,
-      before_snapshot: event.before,
-      after_snapshot: event.after,
-      approval_actor_id: event.approvalActorId,
-      request_id: event.requestId,
-      ip_prefix: event.ipPrefix,
-      created_at: event.createdAt,
-    });
+    const { error } = await this.client
+      .from("commercial_configuration_audit")
+      .insert({
+        id: event.id,
+        actor_id: event.actorId,
+        actor_name: event.actorName,
+        action: event.action,
+        entity_type: event.entityType,
+        entity_id: event.entityId,
+        reason: event.reason,
+        before_snapshot: event.before,
+        after_snapshot: event.after,
+        approval_actor_id: event.approvalActorId,
+        request_id: event.requestId,
+        ip_prefix: event.ipPrefix,
+        created_at: event.createdAt,
+      });
     if (error) throw error;
   }
 
-  async getQuotaUsage(accountId: string, ruleKey: string, marketCode: string, periodStart: string) {
+  async getQuotaUsage(
+    accountId: string,
+    ruleKey: string,
+    marketCode: string,
+    periodStart: string,
+  ) {
     const { data, error } = await this.client
-      .from('monetization_usage_counters')
-      .select('used_count')
-      .eq('account_id', accountId)
-      .eq('rule_key', ruleKey)
-      .eq('market_code', marketCode)
-      .eq('period_start', periodStart)
+      .from("monetization_usage_counters")
+      .select("used_count")
+      .eq("account_id", accountId)
+      .eq("rule_key", ruleKey)
+      .eq("market_code", marketCode)
+      .eq("period_start", periodStart)
       .maybeSingle();
     if (error) throw error;
     return Number(data?.used_count || 0);
   }
 
-  async consumeQuota(input: { accountId: string; ruleKey: string; marketCode: string; periodStart: string; periodEnd: string; limit: number; observedMinimum: number; amount?: number }) {
-    const { data, error } = await this.client.rpc('consume_monetization_quota', {
-      p_account_id: input.accountId,
-      p_rule_key: input.ruleKey,
-      p_market_code: input.marketCode,
-      p_period_start: input.periodStart,
-      p_period_end: input.periodEnd,
-      p_limit: input.limit,
-      p_observed_min: input.observedMinimum,
-      p_amount: input.amount || 1,
-    });
+  async consumeQuota(input: {
+    accountId: string;
+    ruleKey: string;
+    marketCode: string;
+    periodStart: string;
+    periodEnd: string;
+    limit: number;
+    observedMinimum: number;
+    amount?: number;
+  }) {
+    const { data, error } = await this.client.rpc(
+      "consume_monetization_quota",
+      {
+        p_account_id: input.accountId,
+        p_rule_key: input.ruleKey,
+        p_market_code: input.marketCode,
+        p_period_start: input.periodStart,
+        p_period_end: input.periodEnd,
+        p_limit: input.limit,
+        p_observed_min: input.observedMinimum,
+        p_amount: input.amount || 1,
+      },
+    );
     if (error) throw error;
     return Number(data);
   }

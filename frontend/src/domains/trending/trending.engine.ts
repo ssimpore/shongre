@@ -233,7 +233,22 @@ export function deduplicateListings(
           Number(Boolean(b.coverImageUrl)) * 2 +
           b.viewsCount * 0.002 +
           b.favoritesCount * 0.01;
-        return qualityB - qualityA;
+        const qualityDelta = qualityB - qualityA;
+        if (qualityDelta !== 0) return qualityDelta;
+
+        const freshnessA = new Date(
+          a.organicFreshnessAt || a.publishedAt || a.createdAt,
+        ).getTime();
+        const freshnessB = new Date(
+          b.organicFreshnessAt || b.publishedAt || b.createdAt,
+        ).getTime();
+        const freshnessDelta = freshnessB - freshnessA;
+        if (freshnessDelta !== 0) return freshnessDelta;
+
+        // A final stable key keeps equal-quality inventory independent from
+        // repository insertion order. This matters once several vertical
+        // projections feed the same discovery topic.
+        return a.id.localeCompare(b.id);
       })
       .filter((listing) => !claimed.has(listing.id))
       .slice(0, listingsPerTopic);

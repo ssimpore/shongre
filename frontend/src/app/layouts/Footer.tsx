@@ -320,7 +320,7 @@ export const Footer: React.FC = () => {
                   {TAXONOMY.slice(0, 7).map((cat) => (
                     <FooterLink
                       key={cat.id}
-                  to={routes.category(cat.slug)}
+                      to={routes.category(cat.slug)}
                       title={getTaxonomyLabel(cat, "compact")}
                     >
                       {getTaxonomyLabel(cat, "compact")}
@@ -338,7 +338,7 @@ export const Footer: React.FC = () => {
                   {MARKET_CONFIG.popularCities.slice(0, 7).map((city) => (
                     <FooterLink
                       key={city.name}
-                  to={routes.search({ city: city.name })}
+                      to={routes.search({ city: city.name })}
                     >
                       Annonces à {city.name}
                     </FooterLink>
@@ -362,7 +362,9 @@ export const Footer: React.FC = () => {
                     {t("footer.storeDirectory")}
                   </FooterLink>
                   <FooterLink to="/cours">{t("footer.findTutor")}</FooterLink>
-                  <FooterLink to="/deposer/cours">{t("footer.offerCourses")}</FooterLink>
+                  <FooterLink to="/deposer/cours">
+                    {t("footer.offerCourses")}
+                  </FooterLink>
                   <FooterLink to="/tarifs">{t("footer.boostGrid")}</FooterLink>
                 </FooterColumn>
 

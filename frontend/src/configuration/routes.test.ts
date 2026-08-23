@@ -47,7 +47,10 @@ describe("route builders", () => {
 
   it("keeps guarded destinations and entity deep links exact", () => {
     const returnTo = "/compte/messages?convId=conv_123#latest";
-    const login = new URL(routes.auth.login(returnTo), "https://shongre.invalid");
+    const login = new URL(
+      routes.auth.login(returnTo),
+      "https://shongre.invalid",
+    );
 
     expect(login.searchParams.get("redirect")).toBe(returnTo);
     expect(routes.workspace.messages("conv 123")).toBe(

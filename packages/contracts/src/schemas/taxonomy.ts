@@ -110,11 +110,21 @@ const taxonomyCapabilitiesSchema = z.object({
 const taxonomyPresentationSchema = z.object({
   cardAttributeIds: z.array(z.string()).optional(),
   detailGroupOrder: z
-    .array(z.enum(["general", "specifications", "dimensions", "performance", "legal"]))
+    .array(
+      z.enum([
+        "general",
+        "specifications",
+        "dimensions",
+        "performance",
+        "legal",
+      ]),
+    )
     .optional(),
   comparisonAttributeIds: z.array(z.string()).optional(),
   sortOptions: z
-    .array(z.enum(["relevance", "recent", "price_asc", "price_desc", "distance"]))
+    .array(
+      z.enum(["relevance", "recent", "price_asc", "price_desc", "distance"]),
+    )
     .optional(),
 });
 
@@ -211,7 +221,9 @@ export const taxonomyNodeSchema: z.ZodTypeAny = z.lazy(() =>
       })
       .optional(),
     attributeIds: z.array(z.string()).optional(),
-    attributeOverrides: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
+    attributeOverrides: z
+      .record(z.string(), z.record(z.string(), z.unknown()))
+      .optional(),
     summaryAttributeIds: z.array(z.string()).optional(),
     filterFacetIds: z.array(z.string()).optional(),
     synonyms: z.array(z.string()).optional(),

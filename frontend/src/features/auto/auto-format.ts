@@ -13,7 +13,10 @@ export function formatAutoMileage(vehicle: VehiclePublic) {
   return `${new Intl.NumberFormat("fr-FR").format(vehicle.technical.mileage)} ${vehicle.technical.mileageUnit}`;
 }
 
-export const fuelLabels: Record<VehiclePublic["technical"]["fuelType"], string> = {
+export const fuelLabels: Record<
+  VehiclePublic["technical"]["fuelType"],
+  string
+> = {
   petrol: "Essence",
   diesel: "Diesel",
   electric: "Électrique",
@@ -24,7 +27,10 @@ export const fuelLabels: Record<VehiclePublic["technical"]["fuelType"], string> 
   other: "Autre",
 };
 
-export const transmissionLabels: Record<VehiclePublic["technical"]["transmission"], string> = {
+export const transmissionLabels: Record<
+  VehiclePublic["technical"]["transmission"],
+  string
+> = {
   manual: "Manuelle",
   automatic: "Automatique",
   semi_automatic: "Semi-automatique",

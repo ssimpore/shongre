@@ -1,10 +1,14 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { config } from '../config/index.js';
-import { bootstrapApp } from '../bootstrap/index.js';
-import { apiV1Router } from '../../api/v1/router.js';
-import { logger } from '../../infrastructure/logging/logger.js';
+import { createServer, IncomingMessage, ServerResponse } from "http";
+import { config } from "../config/index.js";
+import { bootstrapApp } from "../bootstrap/index.js";
+import { apiV1Router } from "../../api/v1/router.js";
+import { logger } from "../../infrastructure/logging/logger.js";
 
-function renderBackendHomePage(port: number, prefix: string, frontendUrl: string): string {
+function renderBackendHomePage(
+  port: number,
+  prefix: string,
+  frontendUrl: string,
+): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -178,7 +182,7 @@ function renderBackendHomePage(port: number, prefix: string, frontendUrl: string
         <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">Frontend Web Application</div>
         <div style="color: var(--muted); font-size: 0.875rem;">Access the marketplace UI, search, publication wizard & workspaces.</div>
       </div>
-      <a href="${frontendUrl || '#'}" class="cta-btn" target="_blank" rel="noreferrer">
+      <a href="${frontendUrl || "#"}" class="cta-btn" target="_blank" rel="noreferrer">
         Open Frontend ➜
       </a>
     </div>
@@ -216,67 +220,93 @@ function renderBackendHomePage(port: number, prefix: string, frontendUrl: string
 }
 
 export function createHttpServer() {
-  const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-    // Set CORS headers
-    const requestOrigin = String(req.headers.origin || '');
-    const configuredOrigins = new Set([
-      ...config.corsOrigin.split(',').map((value) => value.trim()).filter(Boolean),
-      ...config.oauthAllowedReturnOrigins,
-    ]);
-    const allowWildcard = configuredOrigins.has('*') && config.nodeEnv !== 'production';
-    if (requestOrigin && configuredOrigins.has(requestOrigin)) {
-      res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Vary', 'Origin');
-    } else if (allowWildcard) {
-      // Credentialed wildcard CORS is invalid in browsers; development's
-      // wildcard stays explicitly non-credentialed.
-      res.setHeader('Access-Control-Allow-Origin', '*');
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Request-Id');
-    res.setHeader('Referrer-Policy', 'no-referrer');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Cache-Control', 'no-store');
+  const server = createServer(
+    async (req: IncomingMessage, res: ServerResponse) => {
+      // Set CORS headers
+      const requestOrigin = String(req.headers.origin || "");
+      const configuredOrigins = new Set([
+        ...config.corsOrigin
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+        ...config.oauthAllowedReturnOrigins,
+      ]);
+      const allowWildcard =
+        configuredOrigins.has("*") && config.nodeEnv !== "production";
+      if (requestOrigin && configuredOrigins.has(requestOrigin)) {
+        res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Vary", "Origin");
+      } else if (allowWildcard) {
+        // Credentialed wildcard CORS is invalid in browsers; development's
+        // wildcard stays explicitly non-credentialed.
+        res.setHeader("Access-Control-Allow-Origin", "*");
+      }
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Request-Id",
+      );
+      res.setHeader("Referrer-Policy", "no-referrer");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cache-Control", "no-store");
 
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204);
-      res.end();
-      return;
-    }
-
-    const acceptHeader = req.headers.accept || '';
-
-    // Backend Home Page (HTML in browser, JSON otherwise)
-    if (req.url === '/') {
-      if (acceptHeader.includes('text/html')) {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(renderBackendHomePage(config.port, config.apiPrefix, config.frontendUrl));
+      if (req.method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        status: 'ok',
-        service: 'shongre-backend',
-        version: '1.0.0',
-        port: config.port,
-        home: `http://${config.host}:${config.port}/`,
-        api: `http://${config.host}:${config.port}${config.apiPrefix}`,
-        health: `http://${config.host}:${config.port}/health`
-      }));
-      return;
-    }
 
-    // Health check endpoint
-    if (req.url === '/health') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'shongre-backend', version: '1.0.0' }));
-      return;
-    }
+      const acceptHeader = req.headers.accept || "";
 
-    // Delegate to API v1 Router
-    await apiV1Router.handleRequest(req, res);
-  });
+      // Backend Home Page (HTML in browser, JSON otherwise)
+      if (req.url === "/") {
+        if (acceptHeader.includes("text/html")) {
+          res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+          res.end(
+            renderBackendHomePage(
+              config.port,
+              config.apiPrefix,
+              config.frontendUrl,
+            ),
+          );
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            status: "ok",
+            service: "shongre-backend",
+            version: "1.0.0",
+            port: config.port,
+            home: `http://${config.host}:${config.port}/`,
+            api: `http://${config.host}:${config.port}${config.apiPrefix}`,
+            health: `http://${config.host}:${config.port}/health`,
+          }),
+        );
+        return;
+      }
+
+      // Health check endpoint
+      if (req.url === "/health") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            status: "ok",
+            service: "shongre-backend",
+            version: "1.0.0",
+          }),
+        );
+        return;
+      }
+
+      // Delegate to API v1 Router
+      await apiV1Router.handleRequest(req, res);
+    },
+  );
 
   return server;
 }
@@ -286,19 +316,30 @@ export async function startServer() {
   const server = createHttpServer();
 
   server.listen(config.port, config.host, () => {
-    console.log(`\n  \x1b[32m\x1b[1mSHONGRE BACKEND v1.0.0\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`);
-    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36mhttp://${config.host}:${config.port}/\x1b[0m`);
-    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mAPI:\x1b[0m     \x1b[36mhttp://${config.host}:${config.port}${config.apiPrefix}\x1b[0m`);
-    console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mHealth:\x1b[0m  \x1b[36mhttp://${config.host}:${config.port}/health\x1b[0m\n`);
+    console.log(
+      `\n  \x1b[32m\x1b[1mSHONGRE BACKEND v1.0.0\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`,
+    );
+    console.log(
+      `  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36mhttp://${config.host}:${config.port}/\x1b[0m`,
+    );
+    console.log(
+      `  \x1b[32m➜\x1b[0m  \x1b[1mAPI:\x1b[0m     \x1b[36mhttp://${config.host}:${config.port}${config.apiPrefix}\x1b[0m`,
+    );
+    console.log(
+      `  \x1b[32m➜\x1b[0m  \x1b[1mHealth:\x1b[0m  \x1b[36mhttp://${config.host}:${config.port}/health\x1b[0m\n`,
+    );
   });
 
   return server;
 }
 
 // Start immediately if executed directly
-if (process.env.NODE_ENV !== 'test' && import.meta.url === `file://${process.argv[1]}`) {
+if (
+  process.env.NODE_ENV !== "test" &&
+  import.meta.url === `file://${process.argv[1]}`
+) {
   startServer().catch((err) => {
-    logger.error('Fatal server startup error', { error: err.message });
+    logger.error("Fatal server startup error", { error: err.message });
     process.exit(1);
   });
 }

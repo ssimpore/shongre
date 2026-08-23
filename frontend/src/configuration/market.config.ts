@@ -118,8 +118,8 @@ export const MARKET_CONFIG = {
     getDemoTransactionCommercials("FR", "individual").protectionRateBps /
     10_000,
   buyerProtectionFixedFee:
-    getDemoTransactionCommercials("FR", "individual")
-      .protectionFixedMinor / 100,
+    getDemoTransactionCommercials("FR", "individual").protectionFixedMinor /
+    100,
   maxPhotosPerListing: {
     individual: 8,
     pro: 20,

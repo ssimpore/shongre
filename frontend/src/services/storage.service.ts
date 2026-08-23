@@ -21,6 +21,7 @@ import { Market } from "../domains/market/market.types";
 import { INITIAL_MARKETS } from "../domains/market/market.defaults";
 import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import { routes } from "../configuration/routes";
+import { telemetryService } from "./telemetry.service";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -87,7 +88,7 @@ class StorageService {
       }
       this.memoryStore.set(key, serialized);
     } catch (e) {
-      console.warn("Storage write failed", e);
+      telemetryService.captureException(e, "storage-write");
     }
   }
 
@@ -98,7 +99,7 @@ class StorageService {
       }
       this.memoryStore.delete(key);
     } catch (e) {
-      console.warn("Storage remove failed", e);
+      telemetryService.captureException(e, "storage-remove");
     }
   }
 

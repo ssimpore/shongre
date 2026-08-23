@@ -1,14 +1,14 @@
-import type { Listing } from '../../shared/types/index.js';
+import type { Listing } from "../../shared/types/index.js";
 
 export type TrendingTopicType =
-  | 'category'
-  | 'subcategory'
-  | 'collection'
-  | 'search_term'
-  | 'brand'
-  | 'location'
-  | 'seasonal'
-  | 'editorial';
+  | "category"
+  | "subcategory"
+  | "collection"
+  | "search_term"
+  | "brand"
+  | "location"
+  | "seasonal"
+  | "editorial";
 
 export interface TrendWeights {
   searchGrowth: number;
@@ -77,7 +77,7 @@ export interface TrendingTopic {
   image?: { src: string; alt: string };
   listings: Listing[];
   badge?: string;
-  trend: { score: number; direction: 'up' | 'stable' };
+  trend: { score: number; direction: "up" | "stable" };
 }
 
 export interface TrendingSectionResponse {

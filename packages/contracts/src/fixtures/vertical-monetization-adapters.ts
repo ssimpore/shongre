@@ -1,6 +1,9 @@
 import type { AutoCatalog } from "../schemas/auto";
 import type { CourseCatalog } from "../schemas/courses";
-import type { MonetizationCatalog, MonetizationProduct } from "../schemas/monetization";
+import type {
+  MonetizationCatalog,
+  MonetizationProduct,
+} from "../schemas/monetization";
 import type { RealEstateCatalog } from "../schemas/real-estate";
 import type { EmploymentCatalog } from "../schemas/employment";
 
@@ -29,9 +32,13 @@ const IMMO_PRODUCTS: Record<string, string> = {
 
 const active = (product: MonetizationProduct) => product.status === "active";
 const entitlementObject = (product: MonetizationProduct) =>
-  Object.fromEntries(product.entitlements.map((entry) => [entry.key, entry.value]));
-const price = (product: MonetizationProduct, period: "once" | "month" | "year") =>
-  product.prices.find((entry) => entry.billingPeriod === period);
+  Object.fromEntries(
+    product.entitlements.map((entry) => [entry.key, entry.value]),
+  );
+const price = (
+  product: MonetizationProduct,
+  period: "once" | "month" | "year",
+) => product.prices.find((entry) => entry.billingPeriod === period);
 
 /**
  * Keeps the established vertical response contracts while making every price,
@@ -56,7 +63,9 @@ export function applyMonetizationToAutoCatalog(
         name: product.name,
         description: product.description,
         monthlyPrice:
-          monthly && monthly.amount.amountMinor > 0 ? monthly.amount : undefined,
+          monthly && monthly.amount.amountMinor > 0
+            ? monthly.amount
+            : undefined,
         annualPrice: annual?.amount,
         durationDays: monthly?.durationDays,
         trialDays: monthly?.trialDays,
@@ -70,7 +79,9 @@ export function applyMonetizationToAutoCatalog(
       };
     }),
     addOns: source.addOns.map((addOn) => {
-      const product = commercial.products.find((candidate) => candidate.id === addOn.id);
+      const product = commercial.products.find(
+        (candidate) => candidate.id === addOn.id,
+      );
       if (!product) return addOn;
       const activePrice = product.prices[0];
       return {
@@ -104,7 +115,9 @@ export function applyMonetizationToCourseCatalog(
         name: product.name,
         description: product.description,
         monthlyPrice:
-          monthly && monthly.amount.amountMinor > 0 ? monthly.amount : undefined,
+          monthly && monthly.amount.amountMinor > 0
+            ? monthly.amount
+            : undefined,
         annualPrice: annual?.amount,
         taxRateBps: monthly?.taxRateBps || 0,
         isActive: active(product),
@@ -116,7 +129,9 @@ export function applyMonetizationToCourseCatalog(
       };
     }),
     addOns: source.addOns.map((addOn) => {
-      const product = commercial.products.find((candidate) => candidate.id === addOn.id);
+      const product = commercial.products.find(
+        (candidate) => candidate.id === addOn.id,
+      );
       if (!product) return addOn;
       const activePrice = product.prices[0];
       return {
@@ -163,7 +178,9 @@ export function applyMonetizationToRealEstateCatalog(
       };
     }),
     addOns: source.addOns.map((addOn) => {
-      const product = commercial.products.find((candidate) => candidate.id === addOn.id);
+      const product = commercial.products.find(
+        (candidate) => candidate.id === addOn.id,
+      );
       if (!product) return addOn;
       const activePrice = product.prices[0];
       return {
@@ -186,7 +203,9 @@ export function applyMonetizationToEmploymentCatalog(
   return {
     ...source,
     offers: source.offers.map((offer) => {
-      const product = commercial.products.find((candidate) => candidate.id === offer.id);
+      const product = commercial.products.find(
+        (candidate) => candidate.id === offer.id,
+      );
       if (!product) return offer;
       return {
         ...offer,
@@ -207,7 +226,9 @@ export function applyMonetizationToEmploymentCatalog(
       };
     }),
     addOns: source.addOns.map((addOn) => {
-      const product = commercial.products.find((candidate) => candidate.id === addOn.id);
+      const product = commercial.products.find(
+        (candidate) => candidate.id === addOn.id,
+      );
       if (!product) return addOn;
       const activePrice = product.prices[0];
       return {

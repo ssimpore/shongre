@@ -24,6 +24,7 @@ import {
   AutocompleteSelection,
 } from "./SearchAutocomplete";
 import { storageService } from "../../services/storage.service";
+import { telemetryService } from "../../services/telemetry.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   DropdownMenu,
@@ -208,9 +209,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
          already do this — the popovers never did. */
       if (isCategoryMenuOpen) {
         setIsCategoryMenuOpen(false);
-        document
-          .getElementById(`${idPrefix}-header-category-button`)
-          ?.focus();
+        document.getElementById(`${idPrefix}-header-category-button`)?.focus();
       }
       if (isAutocompleteOpen) {
         setIsAutocompleteOpen(false);
@@ -301,7 +300,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         storageService.addRecentSearch(finalQuery);
         setRecentSearches(storageService.getRecentSearches());
       } catch (e) {
-        console.error(e);
+        telemetryService.captureException(e, "recent-search-write");
       }
     }
 
@@ -373,7 +372,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       storageService.setByKey("shongre_recent_searches_v1", updated);
       setRecentSearches(updated);
     } catch (err) {
-      console.error(err);
+      telemetryService.captureException(err, "recent-search-remove");
     }
   };
 
@@ -383,7 +382,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       storageService.setByKey("shongre_recent_searches_v1", []);
       setRecentSearches([]);
     } catch (err) {
-      console.error(err);
+      telemetryService.captureException(err, "recent-search-clear");
     }
   };
 

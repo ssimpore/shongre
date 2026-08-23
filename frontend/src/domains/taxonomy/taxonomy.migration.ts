@@ -75,9 +75,9 @@ export class TaxonomyMigration {
     return undefined;
   }
 
-  static resolveCanonicalRedirect(slugOrId?: string):
-    | { node: TaxonomyNode; redirectPath?: string }
-    | undefined {
+  static resolveCanonicalRedirect(
+    slugOrId?: string,
+  ): { node: TaxonomyNode; redirectPath?: string } | undefined {
     const node = this.resolveCanonicalNode(slugOrId);
     if (!node) return undefined;
     const clean = slugOrId ? normalizeLookup(slugOrId) : "";
@@ -101,7 +101,9 @@ export class TaxonomyMigration {
       const node = this.resolveCanonicalNode(source);
       const directCanonical =
         node &&
-        [node.id, node.slug].map(normalizeLookup).includes(normalizeLookup(source));
+        [node.id, node.slug]
+          .map(normalizeLookup)
+          .includes(normalizeLookup(source));
       const key = `${source}:${node?.id || "ambiguous"}`;
       const current = entries.get(key) || {
         source,
@@ -150,8 +152,7 @@ export class TaxonomyMigration {
     return {
       categoryId: node.id,
       categorySlug: rootAncestor?.slug || node.slug,
-      categoryLabel:
-        getTaxonomyLabel(rootAncestor, "compact") || node.name,
+      categoryLabel: getTaxonomyLabel(rootAncestor, "compact") || node.name,
       subCategorySlug: node.slug,
       subCategoryLabel: getTaxonomyLabel(node, "compact") || node.name,
     };

@@ -1,11 +1,16 @@
-import type { EmploymentCatalog, SalaryRange } from "@shongre/contracts/employment";
+import type {
+  EmploymentCatalog,
+  SalaryRange,
+} from "@shongre/contracts/employment";
 
 export function dictionaryLabel(
   catalog: EmploymentCatalog | null | undefined,
   id: string | undefined,
   fallback = "",
 ) {
-  return catalog?.dictionaries.find((entry) => entry.id === id)?.label || fallback;
+  return (
+    catalog?.dictionaries.find((entry) => entry.id === id)?.label || fallback
+  );
 }
 
 export function formatEmploymentMoney(
@@ -40,7 +45,8 @@ export function formatSalary(
       )
     : undefined;
   const frequency = dictionaryLabel(catalog, salary.frequencyId);
-  const range = minimum && maximum ? `${minimum} – ${maximum}` : minimum || maximum;
+  const range =
+    minimum && maximum ? `${minimum} – ${maximum}` : minimum || maximum;
   return `${range || "Rémunération communiquée"}${frequency ? ` · ${frequency.toLocaleLowerCase(catalog?.config.locale || "fr-FR")}` : ""}`;
 }
 

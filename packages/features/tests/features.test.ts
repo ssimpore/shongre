@@ -20,12 +20,7 @@ describe("shared feature presentation", () => {
     expect(
       getListingCardCharacteristics({
         conditionLabel: "Très bon état",
-        characteristics: [
-          "Sézane",
-          "Très bon état",
-          "  SÉZANE ",
-          "Laine",
-        ],
+        characteristics: ["Sézane", "Très bon état", "  SÉZANE ", "Laine"],
       }),
     ).toEqual(["Sézane", "Laine"]);
   });

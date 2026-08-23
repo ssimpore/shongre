@@ -1,10 +1,10 @@
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'crypto';
-import { promisify } from 'util';
+import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
 const scrypt = promisify(scryptCallback) as (
   password: string | Buffer,
   salt: string | Buffer,
-  keylen: number
+  keylen: number,
 ) => Promise<Buffer>;
 
 /**
@@ -22,7 +22,7 @@ const scrypt = promisify(scryptCallback) as (
  */
 const KEY_LENGTH = 64;
 const SALT_LENGTH = 16;
-const PREFIX = 'scrypt';
+const PREFIX = "scrypt";
 
 /**
  * Minimum length accepted at registration. Enforced server-side, never only in
@@ -38,7 +38,7 @@ export const MIN_PASSWORD_LENGTH = 8;
 export class WeakPasswordError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'WeakPasswordError';
+    this.name = "WeakPasswordError";
   }
 }
 
@@ -48,13 +48,15 @@ export class WeakPasswordError extends Error {
  * resistance, and a large blocklist belongs in a dedicated service.
  */
 export function assertPasswordAcceptable(password: string): void {
-  if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+  if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
     throw new WeakPasswordError(
-      `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères.`
+      `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères.`,
     );
   }
   if (/^\d+$/.test(password)) {
-    throw new WeakPasswordError('Le mot de passe ne peut pas être uniquement numérique.');
+    throw new WeakPasswordError(
+      "Le mot de passe ne peut pas être uniquement numérique.",
+    );
   }
 }
 
@@ -62,7 +64,7 @@ export async function hashPassword(password: string): Promise<string> {
   assertPasswordAcceptable(password);
   const salt = randomBytes(SALT_LENGTH);
   const derived = await scrypt(password, salt, KEY_LENGTH);
-  return `${PREFIX}$${KEY_LENGTH}$${salt.toString('hex')}$${derived.toString('hex')}`;
+  return `${PREFIX}$${KEY_LENGTH}$${salt.toString("hex")}$${derived.toString("hex")}`;
 }
 
 /**
@@ -73,10 +75,14 @@ export async function hashPassword(password: string): Promise<string> {
  * catching an exception — that distinction is what turns a login form into a
  * user enumeration oracle.
  */
-export async function verifyPassword(password: string, storedHash: string | null | undefined): Promise<boolean> {
-  if (!storedHash || typeof password !== 'string' || password.length === 0) return false;
+export async function verifyPassword(
+  password: string,
+  storedHash: string | null | undefined,
+): Promise<boolean> {
+  if (!storedHash || typeof password !== "string" || password.length === 0)
+    return false;
 
-  const parts = storedHash.split('$');
+  const parts = storedHash.split("$");
   if (parts.length !== 4 || parts[0] !== PREFIX) return false;
 
   const keylen = Number.parseInt(parts[1], 10);
@@ -85,15 +91,17 @@ export async function verifyPassword(password: string, storedHash: string | null
   let salt: Buffer;
   let expected: Buffer;
   try {
-    salt = Buffer.from(parts[2], 'hex');
-    expected = Buffer.from(parts[3], 'hex');
+    salt = Buffer.from(parts[2], "hex");
+    expected = Buffer.from(parts[3], "hex");
   } catch {
     return false;
   }
   if (salt.length === 0 || expected.length !== keylen) return false;
 
   const derived = await scrypt(password, salt, keylen);
-  return derived.length === expected.length && timingSafeEqual(derived, expected);
+  return (
+    derived.length === expected.length && timingSafeEqual(derived, expected)
+  );
 }
 
 /**
@@ -104,5 +112,5 @@ export async function verifyPassword(password: string, storedHash: string | null
  * latency alone reveals which email addresses are registered.
  */
 export async function simulatePasswordVerification(): Promise<void> {
-  await scrypt('timing-equalizer', randomBytes(SALT_LENGTH), KEY_LENGTH);
+  await scrypt("timing-equalizer", randomBytes(SALT_LENGTH), KEY_LENGTH);
 }

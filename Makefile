@@ -265,9 +265,9 @@ lint: ui-lint frontend-lint backend-lint mobile-lint contracts-typecheck
 lint-fix:
 	@echo 'No unsafe global autofix is configured; use package-local focused fixes.'
 format:
-	@npm exec -- prettier --write 'frontend/{app,src,scripts}/**/*.{ts,tsx,js,mjs,json,md}' 'mobile/{app,src,scripts,tests,store}/**/*.{ts,tsx,js,mjs,json,md}' 'mobile/app.config.ts' 'mobile/eas.json' 'mobile/eslint.config.js' 'mobile/metro.config.js' 'mobile/package.json' 'mobile/tsconfig.json' 'mobile/vitest.config.ts' 'packages/**/*.{ts,tsx,js,mjs,json,md}' 'scripts/**/*.{js,mjs,md}' 'docs/**/*.md' 'README.md'
+	@npm exec -- prettier --write 'frontend/{app,src,scripts}/**/*.{ts,tsx,js,mjs,json,md}' 'backend/{src,scripts,tests,docs}/**/*.{ts,tsx,js,mjs,json,md}' 'backend/package.json' 'backend/tsconfig.json' 'mobile/{app,src,scripts,tests,store}/**/*.{ts,tsx,js,mjs,json,md}' 'mobile/app.config.ts' 'mobile/eas.json' 'mobile/eslint.config.js' 'mobile/metro.config.js' 'mobile/package.json' 'mobile/tsconfig.json' 'mobile/vitest.config.ts' 'packages/**/*.{ts,tsx,js,mjs,json,md}' 'scripts/**/*.{js,mjs,md}' 'docs/**/*.md' '.github/**/*.{yml,yaml,md}' 'package.json' 'README.md'
 format-check:
-	@npm exec -- prettier --check 'frontend/{app,src,scripts}/**/*.{ts,tsx,js,mjs,json,md}' 'mobile/{app,src,scripts,tests,store}/**/*.{ts,tsx,js,mjs,json,md}' 'mobile/app.config.ts' 'mobile/eas.json' 'mobile/eslint.config.js' 'mobile/metro.config.js' 'mobile/package.json' 'mobile/tsconfig.json' 'mobile/vitest.config.ts' 'packages/**/*.{ts,tsx,js,mjs,json,md}' 'scripts/**/*.{js,mjs,md}' 'docs/**/*.md' 'README.md'
+	@npm exec -- prettier --check 'frontend/{app,src,scripts}/**/*.{ts,tsx,js,mjs,json,md}' 'backend/{src,scripts,tests,docs}/**/*.{ts,tsx,js,mjs,json,md}' 'backend/package.json' 'backend/tsconfig.json' 'mobile/{app,src,scripts,tests,store}/**/*.{ts,tsx,js,mjs,json,md}' 'mobile/app.config.ts' 'mobile/eas.json' 'mobile/eslint.config.js' 'mobile/metro.config.js' 'mobile/package.json' 'mobile/tsconfig.json' 'mobile/vitest.config.ts' 'packages/**/*.{ts,tsx,js,mjs,json,md}' 'scripts/**/*.{js,mjs,md}' 'docs/**/*.md' '.github/**/*.{yml,yaml,md}' 'package.json' 'README.md'
 typecheck: ui-typecheck frontend-typecheck backend-typecheck mobile-typecheck contracts-typecheck
 test: ui-test frontend-test backend-test mobile-test contracts-test
 test-unit: test

@@ -36,12 +36,16 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [socialProviders, setSocialProviders] = useState<Record<SocialProvider, boolean>>({
+  const [socialProviders, setSocialProviders] = useState<
+    Record<SocialProvider, boolean>
+  >({
     google: false,
     apple: false,
     facebook: false,
   });
-  const [pendingCompletionHandle, setPendingCompletionHandle] = useState<string | null>(null);
+  const [pendingCompletionHandle, setPendingCompletionHandle] = useState<
+    string | null
+  >(null);
   const [socialNotice, setSocialNotice] = useState("");
 
   useEffect(() => {
@@ -69,20 +73,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (callback.kind === "email_required") {
         if (active) {
           setPendingCompletionHandle(callback.completionHandle);
-          setSocialNotice("Votre fournisseur n’a pas transmis d’adresse email. Ajoutez-en une pour continuer.");
+          setSocialNotice(
+            "Votre fournisseur n’a pas transmis d’adresse email. Ajoutez-en une pour continuer.",
+          );
         }
         return;
       }
       if (callback.kind === "cancelled") {
-        if (active) setSocialNotice("Connexion annulée. Aucun compte n’a été créé.");
+        if (active)
+          setSocialNotice("Connexion annulée. Aucun compte n’a été créé.");
         return;
       }
       if (callback.kind !== "exchange") {
-        if (active) setSocialNotice("La connexion n’a pas pu être vérifiée. Réessayez.");
+        if (active)
+          setSocialNotice("La connexion n’a pas pu être vérifiée. Réessayez.");
         return;
       }
       try {
-        const authenticated = await authService.completeSocialLogin(callback.code);
+        const authenticated = await authService.completeSocialLogin(
+          callback.code,
+        );
         if (active) {
           setUser(authenticated);
           setPendingCompletionHandle(null);
@@ -91,11 +101,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       } catch {
         // Provider and exchange failures remain generic; no provider response
         // or credential is written to logs or surfaced to analytics.
-        if (active) setSocialNotice("La connexion n’a pas pu être vérifiée. Réessayez.");
+        if (active)
+          setSocialNotice("La connexion n’a pas pu être vérifiée. Réessayez.");
       }
     };
     void Linking.getInitialURL().then(handleUrl);
-    const subscription = Linking.addEventListener("url", ({ url }) => void handleUrl(url));
+    const subscription = Linking.addEventListener(
+      "url",
+      ({ url }) => void handleUrl(url),
+    );
     return () => {
       active = false;
       subscription.remove();
@@ -106,19 +120,30 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(await authService.login(input));
   }, []);
 
-  const loginWithProvider = useCallback(async (provider: SocialProvider) => {
-    if (!socialProviders[provider]) throw new Error("Cette méthode de connexion est indisponible.");
-    setSocialNotice("");
-    const authorizationUrl = await authService.startSocialLogin(provider);
-    await Linking.openURL(authorizationUrl);
-  }, [socialProviders]);
+  const loginWithProvider = useCallback(
+    async (provider: SocialProvider) => {
+      if (!socialProviders[provider])
+        throw new Error("Cette méthode de connexion est indisponible.");
+      setSocialNotice("");
+      const authorizationUrl = await authService.startSocialLogin(provider);
+      await Linking.openURL(authorizationUrl);
+    },
+    [socialProviders],
+  );
 
-  const completePendingSocialRegistration = useCallback(async (email: string) => {
-    if (!pendingCompletionHandle) throw new Error("Cette tentative de connexion a expiré.");
-    await authService.completePendingSocialRegistration(pendingCompletionHandle, email);
-    setPendingCompletionHandle(null);
-    setSocialNotice("Vérifiez votre boîte mail pour activer votre compte.");
-  }, [pendingCompletionHandle]);
+  const completePendingSocialRegistration = useCallback(
+    async (email: string) => {
+      if (!pendingCompletionHandle)
+        throw new Error("Cette tentative de connexion a expiré.");
+      await authService.completePendingSocialRegistration(
+        pendingCompletionHandle,
+        email,
+      );
+      setPendingCompletionHandle(null);
+      setSocialNotice("Vérifiez votre boîte mail pour activer votre compte.");
+    },
+    [pendingCompletionHandle],
+  );
 
   const logout = useCallback(async () => {
     await notificationsService.unregisterCurrentDevice();
@@ -145,7 +170,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
       logout,
       deleteAccount,
     }),
-    [user, loading, socialProviders, pendingCompletionHandle, socialNotice, login, loginWithProvider, completePendingSocialRegistration, logout, deleteAccount],
+    [
+      user,
+      loading,
+      socialProviders,
+      pendingCompletionHandle,
+      socialNotice,
+      login,
+      loginWithProvider,
+      completePendingSocialRegistration,
+      logout,
+      deleteAccount,
+    ],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

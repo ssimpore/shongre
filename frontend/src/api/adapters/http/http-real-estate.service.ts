@@ -156,10 +156,7 @@ export class HttpRealEstateService implements RealEstateServiceContract {
     idempotencyKey: string;
     scenario?: "success" | "pending" | "failed" | "requires_action";
   }) {
-    return httpClient.post<VerticalCheckout>(
-      "/real-estate/checkouts",
-      input,
-    );
+    return httpClient.post<VerticalCheckout>("/real-estate/checkouts", input);
   }
   refundCheckout(
     checkoutId: string,

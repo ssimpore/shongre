@@ -14,18 +14,24 @@
  * the returned outcome — it never re-implements the rules.
  */
 
-import { AppError } from '../errors/app-error.js';
+import { AppError } from "../errors/app-error.js";
 
-export type AuthProvider = 'password' | 'google' | 'apple' | 'facebook';
+export type AuthProvider = "password" | "google" | "apple" | "facebook";
 
-export const SOCIAL_PROVIDERS: readonly AuthProvider[] = ['google', 'apple', 'facebook'] as const;
+export const SOCIAL_PROVIDERS: readonly AuthProvider[] = [
+  "google",
+  "apple",
+  "facebook",
+] as const;
 
-export function isSocialProvider(value: string): value is Exclude<AuthProvider, 'password'> {
+export function isSocialProvider(
+  value: string,
+): value is Exclude<AuthProvider, "password"> {
   return (SOCIAL_PROVIDERS as readonly string[]).includes(value);
 }
 
 /** Apple issues these when a user chooses to hide their real address. */
-const APPLE_PRIVATE_RELAY_DOMAIN = '@privaterelay.appleid.com';
+const APPLE_PRIVATE_RELAY_DOMAIN = "@privaterelay.appleid.com";
 
 /**
  * What a provider told us about the person who just authenticated.
@@ -35,7 +41,7 @@ const APPLE_PRIVATE_RELAY_DOMAIN = '@privaterelay.appleid.com';
  * authorization, and Google omits `email_verified` for some workspace domains.
  */
 export interface ProviderProfile {
-  provider: Exclude<AuthProvider, 'password'>;
+  provider: Exclude<AuthProvider, "password">;
   /** Provider-stable subject id. Never an email address. */
   subject: string;
   email?: string | null;
@@ -56,7 +62,13 @@ export interface LinkedIdentity {
 export interface AccountSnapshot {
   userId: string;
   email: string;
-  status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived' | 'deleted';
+  status:
+    | "active"
+    | "suspended"
+    | "pending_verification"
+    | "banned"
+    | "archived"
+    | "deleted";
   isEmailVerified: boolean;
   /** True when public.user_credentials holds a hash for this account. */
   hasPassword: boolean;
@@ -65,28 +77,40 @@ export interface AccountSnapshot {
 
 export type IdentityResolution =
   /** Rule 1: the (provider, subject) pair is already linked. Sign them in. */
-  | { outcome: 'authenticate'; userId: string; identityMatched: true }
+  | { outcome: "authenticate"; userId: string; identityMatched: true }
   /** No identity and no colliding account. Provision a fresh profile. */
-  | { outcome: 'create_account'; email: string | null; emailVerified: boolean }
+  | { outcome: "create_account"; email: string | null; emailVerified: boolean }
   /**
    * Rules 2–4: a verified provider email matches an existing account, but this
    * provider was never linked to it. We will not merge on an email alone; the
    * user must prove control of the Shongre account first.
    */
-  | { outcome: 'require_account_linking'; userId: string; maskedEmail: string; reason: LinkChallengeReason }
+  | {
+      outcome: "require_account_linking";
+      userId: string;
+      maskedEmail: string;
+      reason: LinkChallengeReason;
+    }
   /** The matched account cannot sign in at all. */
-  | { outcome: 'blocked'; userId: string; status: AccountSnapshot['status'] };
+  | { outcome: "blocked"; userId: string; status: AccountSnapshot["status"] };
 
 export type LinkChallengeReason =
-  | 'verified_email_matches_existing_account'
-  | 'account_has_password_login'
-  | 'account_has_other_providers';
+  | "verified_email_matches_existing_account"
+  | "account_has_password_login"
+  | "account_has_other_providers";
 
 /** Normalizes an email for comparison. Returns null for anything unusable. */
-export function normalizeEmail(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') return null;
+export function normalizeEmail(
+  value: string | null | undefined,
+): string | null {
+  if (typeof value !== "string") return null;
   const trimmed = value.trim().toLowerCase();
-  if (!trimmed || !trimmed.includes('@') || trimmed.startsWith('@') || trimmed.endsWith('@')) {
+  if (
+    !trimmed ||
+    !trimmed.includes("@") ||
+    trimmed.startsWith("@") ||
+    trimmed.endsWith("@")
+  ) {
     return null;
   }
   return trimmed;
@@ -105,19 +129,15 @@ export function isApplePrivateRelay(email: string | null | undefined): boolean {
  * OAuth callback into an email-enumeration oracle.
  */
 export function maskEmail(email: string): string {
-  const [local, domain] = email.split('@');
-  if (!domain) return '•••';
+  const [local, domain] = email.split("@");
+  if (!domain) return "•••";
   const head = local.slice(0, 1);
-  const tail = local.length > 2 ? local.slice(-1) : '';
-  return `${head}${'•'.repeat(Math.max(1, Math.min(6, local.length - 2)))}${tail}@${domain}`;
+  const tail = local.length > 2 ? local.slice(-1) : "";
+  return `${head}${"•".repeat(Math.max(1, Math.min(6, local.length - 2)))}${tail}@${domain}`;
 }
 
-const SIGN_IN_BLOCKING_STATUSES: ReadonlySet<AccountSnapshot['status']> = new Set([
-  'suspended',
-  'banned',
-  'deleted',
-  'archived',
-]);
+const SIGN_IN_BLOCKING_STATUSES: ReadonlySet<AccountSnapshot["status"]> =
+  new Set(["suspended", "banned", "deleted", "archived"]);
 
 /**
  * The core decision.
@@ -133,7 +153,7 @@ const SIGN_IN_BLOCKING_STATUSES: ReadonlySet<AccountSnapshot['status']> = new Se
 export function resolveIdentity(
   profile: ProviderProfile,
   linkedIdentity: LinkedIdentity | null,
-  accountByEmail: AccountSnapshot | null
+  accountByEmail: AccountSnapshot | null,
 ): IdentityResolution {
   assertUsableProfile(profile);
 
@@ -142,13 +162,20 @@ export function resolveIdentity(
   // must still land on their own account, and an attacker who acquires an old
   // address must not.
   if (linkedIdentity) {
-    if (linkedIdentity.provider !== profile.provider || linkedIdentity.subject !== profile.subject) {
+    if (
+      linkedIdentity.provider !== profile.provider ||
+      linkedIdentity.subject !== profile.subject
+    ) {
       throw new AppError({
-        code: 'VALIDATION_ERROR',
-        message: 'Identité fournisseur incohérente.',
+        code: "VALIDATION_ERROR",
+        message: "Identité fournisseur incohérente.",
       });
     }
-    return { outcome: 'authenticate', userId: linkedIdentity.userId, identityMatched: true };
+    return {
+      outcome: "authenticate",
+      userId: linkedIdentity.userId,
+      identityMatched: true,
+    };
   }
 
   const email = normalizeEmail(profile.email);
@@ -160,7 +187,7 @@ export function resolveIdentity(
   // ---- No colliding account, or a collision we are not allowed to act on. ---
   if (!accountByEmail || !emailIsTrustworthy) {
     return {
-      outcome: 'create_account',
+      outcome: "create_account",
       email: emailIsTrustworthy ? email : null,
       emailVerified: emailIsTrustworthy,
     };
@@ -170,33 +197,46 @@ export function resolveIdentity(
   if (SIGN_IN_BLOCKING_STATUSES.has(accountByEmail.status)) {
     // Rule: a suspended or banned account must not become reachable again by
     // arriving through a new provider.
-    return { outcome: 'blocked', userId: accountByEmail.userId, status: accountByEmail.status };
+    return {
+      outcome: "blocked",
+      userId: accountByEmail.userId,
+      status: accountByEmail.status,
+    };
   }
 
   // Rule 4: never merge silently, even when both sides verified the address.
   // Controlling the mailbox is not the same as controlling the Shongre account,
   // and the account may hold payout details the mailbox owner never had.
   return {
-    outcome: 'require_account_linking',
+    outcome: "require_account_linking",
     userId: accountByEmail.userId,
     maskedEmail: maskEmail(accountByEmail.email),
     reason: accountByEmail.hasPassword
-      ? 'account_has_password_login'
+      ? "account_has_password_login"
       : accountByEmail.linkedProviders.length > 0
-        ? 'account_has_other_providers'
-        : 'verified_email_matches_existing_account',
+        ? "account_has_other_providers"
+        : "verified_email_matches_existing_account",
   };
 }
 
 function assertUsableProfile(profile: ProviderProfile): void {
   if (!profile || !isSocialProvider(profile.provider)) {
-    throw new AppError({ code: 'VALIDATION_ERROR', message: 'Fournisseur non pris en charge.' });
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Fournisseur non pris en charge.",
+    });
   }
   // Rule 5 in its strictest form: without a subject there is nothing to match
   // on, and falling back to name or email here is exactly the bug this module
   // exists to prevent.
-  if (typeof profile.subject !== 'string' || profile.subject.trim().length === 0) {
-    throw new AppError({ code: 'VALIDATION_ERROR', message: 'Réponse du fournisseur incomplète.' });
+  if (
+    typeof profile.subject !== "string" ||
+    profile.subject.trim().length === 0
+  ) {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Réponse du fournisseur incomplète.",
+    });
   }
 }
 
@@ -217,14 +257,14 @@ export interface LinkRequest {
 }
 
 export type LinkDecision =
-  | { decision: 'link' }
-  | { decision: 'already_linked_to_caller' }
-  | { decision: 'rejected'; reason: LinkRejectionReason };
+  | { decision: "link" }
+  | { decision: "already_linked_to_caller" }
+  | { decision: "rejected"; reason: LinkRejectionReason };
 
 export type LinkRejectionReason =
-  | 'identity_belongs_to_another_account'
-  | 'provider_already_linked'
-  | 'recent_authentication_required';
+  | "identity_belongs_to_another_account"
+  | "provider_already_linked"
+  | "recent_authentication_required";
 
 export function evaluateLinkRequest(request: LinkRequest): LinkDecision {
   assertUsableProfile(request.profile);
@@ -232,24 +272,27 @@ export function evaluateLinkRequest(request: LinkRequest): LinkDecision {
   // Rule 7: linking is a security-sensitive change to how an account can be
   // accessed, so it requires proof the session is fresh — not merely valid.
   if (!request.hasRecentAuthentication) {
-    return { decision: 'rejected', reason: 'recent_authentication_required' };
+    return { decision: "rejected", reason: "recent_authentication_required" };
   }
 
   if (request.existingIdentity) {
     if (request.existingIdentity.userId === request.actingUserId) {
-      return { decision: 'already_linked_to_caller' };
+      return { decision: "already_linked_to_caller" };
     }
     // Rule 6: never move an identity between accounts. Doing so would let
     // whoever currently controls the provider account silently detach it from
     // its original owner.
-    return { decision: 'rejected', reason: 'identity_belongs_to_another_account' };
+    return {
+      decision: "rejected",
+      reason: "identity_belongs_to_another_account",
+    };
   }
 
   if (request.actingAccountProviders.includes(request.profile.provider)) {
-    return { decision: 'rejected', reason: 'provider_already_linked' };
+    return { decision: "rejected", reason: "provider_already_linked" };
   }
 
-  return { decision: 'link' };
+  return { decision: "link" };
 }
 
 // ==============================================================================
@@ -264,13 +307,13 @@ export interface UnlinkRequest {
 }
 
 export type UnlinkDecision =
-  | { decision: 'unlink' }
-  | { decision: 'rejected'; reason: UnlinkRejectionReason };
+  | { decision: "unlink" }
+  | { decision: "rejected"; reason: UnlinkRejectionReason };
 
 export type UnlinkRejectionReason =
-  | 'not_linked'
-  | 'would_remove_last_login_method'
-  | 'recent_authentication_required';
+  | "not_linked"
+  | "would_remove_last_login_method"
+  | "recent_authentication_required";
 
 /**
  * Mirrors the database trigger in 00012. Both exist deliberately: this one
@@ -280,19 +323,23 @@ export type UnlinkRejectionReason =
  */
 export function evaluateUnlinkRequest(request: UnlinkRequest): UnlinkDecision {
   if (!request.linkedProviders.includes(request.provider)) {
-    return { decision: 'rejected', reason: 'not_linked' };
+    return { decision: "rejected", reason: "not_linked" };
   }
   if (!request.hasRecentAuthentication) {
-    return { decision: 'rejected', reason: 'recent_authentication_required' };
+    return { decision: "rejected", reason: "recent_authentication_required" };
   }
 
-  const remaining = request.linkedProviders.filter((p) => p !== request.provider);
-  const remainingUsable = request.hasPassword ? remaining.length + 1 : remaining.length;
+  const remaining = request.linkedProviders.filter(
+    (p) => p !== request.provider,
+  );
+  const remainingUsable = request.hasPassword
+    ? remaining.length + 1
+    : remaining.length;
   if (remainingUsable === 0) {
-    return { decision: 'rejected', reason: 'would_remove_last_login_method' };
+    return { decision: "rejected", reason: "would_remove_last_login_method" };
   }
 
-  return { decision: 'unlink' };
+  return { decision: "unlink" };
 }
 
 // ==============================================================================
@@ -314,8 +361,13 @@ export interface ProfileFieldUpdate {
  * second sign-in.
  */
 export function reconcileProfileFields(
-  current: { name: string | null; avatarUrl: string | null; isEmailVerified: boolean; hasUserEditedProfile: boolean },
-  profile: ProviderProfile
+  current: {
+    name: string | null;
+    avatarUrl: string | null;
+    isEmailVerified: boolean;
+    hasUserEditedProfile: boolean;
+  },
+  profile: ProviderProfile,
 ): ProfileFieldUpdate {
   const update: ProfileFieldUpdate = {};
 

@@ -25,8 +25,7 @@
     "@shongre/contracts": "1.0.0",
     "@shongre/design-tokens": "1.0.0",
     "@shongre/shared": "1.0.0",
-    "@shongre/ui": "1.0.0",
-    "zod": "^3.24.2"
+    "@shongre/ui": "1.0.0"
   },
   "peerDependencies": {
     "react": "^19.2.0",

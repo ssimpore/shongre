@@ -33,7 +33,8 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "employment.candidate.manage.own",
     name: "Gérer son espace candidat",
     category: "Emploi & Recrutement",
-    description: "Gérer profil professionnel, CV, candidatures, alertes et consentements.",
+    description:
+      "Gérer profil professionnel, CV, candidatures, alertes et consentements.",
   },
   {
     id: "employment.job.manage.own",
@@ -45,25 +46,29 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "employment.recruiter.manage.own",
     name: "Gérer son espace recruteur",
     category: "Emploi & Recrutement",
-    description: "Administrer les offres, équipes, branches et paramètres employeur autorisés.",
+    description:
+      "Administrer les offres, équipes, branches et paramètres employeur autorisés.",
   },
   {
     id: "employment.application.manage.own",
     name: "Gérer les candidatures autorisées",
     category: "Emploi & Recrutement",
-    description: "Affecter, faire progresser et planifier les candidatures de son périmètre.",
+    description:
+      "Affecter, faire progresser et planifier les candidatures de son périmètre.",
   },
   {
     id: "employment.import.own",
     name: "Importer ses offres d’emploi",
     category: "Emploi & Recrutement",
-    description: "Prévisualiser et synchroniser les sources autorisées par la formule.",
+    description:
+      "Prévisualiser et synchroniser les sources autorisées par la formule.",
   },
   {
     id: "employment.admin.manage",
     name: "Administrer Shongre Emploi",
     category: "Emploi & Recrutement",
-    description: "Configurer taxonomie, offres, conformité, modération et rétention Emploi.",
+    description:
+      "Configurer taxonomie, offres, conformité, modération et rétention Emploi.",
     isSensitive: true,
   },
 
@@ -84,7 +89,8 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "immo.agency.manage.own",
     name: "Gérer son agence",
     category: "Immobilier",
-    description: "Administrer biens, agences, équipe, abonnement et visibilité.",
+    description:
+      "Administrer biens, agences, équipe, abonnement et visibilité.",
   },
   {
     id: "immo.lead.manage.own",
@@ -102,7 +108,8 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "immo.admin.manage",
     name: "Administrer Shongre Immo",
     category: "Immobilier",
-    description: "Configurer marchés, champs, offres, conformité et modération Immo.",
+    description:
+      "Configurer marchés, champs, offres, conformité et modération Immo.",
     isSensitive: true,
   },
 
@@ -117,31 +124,36 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "auto.vehicle.manage.own",
     name: "Gérer ses véhicules",
     category: "Auto & Véhicules",
-    description: "Créer, reprendre et publier ses propres annonces automobiles.",
+    description:
+      "Créer, reprendre et publier ses propres annonces automobiles.",
   },
   {
     id: "auto.dealer.manage.own",
     name: "Gérer sa concession",
     category: "Auto & Véhicules",
-    description: "Administrer stock, sites, équipe, abonnement et vitrine automobile.",
+    description:
+      "Administrer stock, sites, équipe, abonnement et vitrine automobile.",
   },
   {
     id: "auto.lead.manage.own",
     name: "Gérer ses demandes Auto",
     category: "Auto & Véhicules",
-    description: "Qualifier, affecter et suivre les demandes adressées à sa concession.",
+    description:
+      "Qualifier, affecter et suivre les demandes adressées à sa concession.",
   },
   {
     id: "auto.inventory.import.own",
     name: "Importer son stock Auto",
     category: "Auto & Véhicules",
-    description: "Créer des travaux d’import de stock autorisés par la formule.",
+    description:
+      "Créer des travaux d’import de stock autorisés par la formule.",
   },
   {
     id: "auto.admin.manage",
     name: "Administrer Shongre Auto",
     category: "Auto & Véhicules",
-    description: "Configurer marchés, schémas, types, formules, sécurité et modération Auto.",
+    description:
+      "Configurer marchés, schémas, types, formules, sécurité et modération Auto.",
     isSensitive: true,
   },
 
@@ -150,19 +162,22 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "course.read",
     name: "Consulter Shongre Cours",
     category: "Cours & Formation",
-    description: "Rechercher les professeurs et consulter leurs offres publiques.",
+    description:
+      "Rechercher les professeurs et consulter leurs offres publiques.",
   },
   {
     id: "course.request.create",
     name: "Créer une demande de cours",
     category: "Cours & Formation",
-    description: "Décrire un besoin élève et recevoir des propositions pertinentes.",
+    description:
+      "Décrire un besoin élève et recevoir des propositions pertinentes.",
   },
   {
     id: "course.profile.manage.own",
     name: "Gérer son profil professeur",
     category: "Cours & Formation",
-    description: "Créer et mettre à jour son profil professeur et ses disponibilités.",
+    description:
+      "Créer et mettre à jour son profil professeur et ses disponibilités.",
   },
   {
     id: "course.offer.manage.own",
@@ -186,19 +201,22 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     id: "course.organization.manage.own",
     name: "Gérer son organisme de cours",
     category: "Cours & Formation",
-    description: "Administrer équipe, rôles, lieux et boîte de réception de son organisme.",
+    description:
+      "Administrer équipe, rôles, lieux et boîte de réception de son organisme.",
   },
   {
     id: "course.booking.create",
     name: "Réserver un cours",
     category: "Cours & Formation",
-    description: "Créer une réservation lorsque la Phase 2 est activée sur le marché.",
+    description:
+      "Créer une réservation lorsque la Phase 2 est activée sur le marché.",
   },
   {
     id: "course.admin.manage",
     name: "Administrer Shongre Cours",
     category: "Cours & Formation",
-    description: "Configurer taxonomie, formules, routage, sécurité et activation par marché.",
+    description:
+      "Configurer taxonomie, formules, routage, sécurité et activation par marché.",
     isSensitive: true,
   },
 

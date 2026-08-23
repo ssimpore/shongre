@@ -141,7 +141,9 @@ export const courseAvailabilityRuleSchema = z.object({
   effectiveFrom: z.string().optional(),
   effectiveUntil: z.string().optional(),
 });
-export type CourseAvailabilityRule = z.infer<typeof courseAvailabilityRuleSchema>;
+export type CourseAvailabilityRule = z.infer<
+  typeof courseAvailabilityRuleSchema
+>;
 
 export const courseAvailabilityExceptionSchema = z.object({
   id: z.string().min(1),
@@ -150,7 +152,9 @@ export const courseAvailabilityExceptionSchema = z.object({
   isAvailable: z.boolean(),
   reason: z.string().optional(),
 });
-export type CourseAvailabilityException = z.infer<typeof courseAvailabilityExceptionSchema>;
+export type CourseAvailabilityException = z.infer<
+  typeof courseAvailabilityExceptionSchema
+>;
 
 export const coursePricingOptionSchema = z.object({
   id: z.string().min(1),
@@ -320,7 +324,9 @@ export const tutorSearchQuerySchema = z.object({
   tutorType: z.enum(["all", "individual", "organization"]).optional(),
   verifiedOnly: z.boolean().optional(),
   minRating: z.number().min(0).max(5).optional(),
-  sort: z.enum(["relevance", "price_asc", "price_desc", "rating", "response_time"]).optional(),
+  sort: z
+    .enum(["relevance", "price_asc", "price_desc", "rating", "response_time"])
+    .optional(),
   cursor: z.string().optional(),
   limit: z.number().int().positive().max(50).optional(),
 });
@@ -438,7 +444,14 @@ export const courseBookingSchema = z.object({
   price: moneySchema,
   platformCommission: moneySchema,
   providerPaymentReference: z.string().optional(),
-  payoutStatus: z.enum(["not_applicable", "pending", "eligible", "paid", "held", "failed"]),
+  payoutStatus: z.enum([
+    "not_applicable",
+    "pending",
+    "eligible",
+    "paid",
+    "held",
+    "failed",
+  ]),
   providerPayoutReference: z.string().optional(),
   cancellationPolicyVersion: z.string(),
   createdAt: z.string(),
@@ -453,7 +466,13 @@ export const lessonSessionSchema = z.object({
   sequence: z.number().int().positive(),
   startsAt: z.string(),
   endsAt: z.string(),
-  status: z.enum(["scheduled", "completed", "cancelled", "no_show", "disputed"]),
+  status: z.enum([
+    "scheduled",
+    "completed",
+    "cancelled",
+    "no_show",
+    "disputed",
+  ]),
   attendanceVerifiedAt: z.string().optional(),
 });
 export type LessonSession = z.infer<typeof lessonSessionSchema>;
@@ -479,11 +498,20 @@ export const courseOrganizationMemberSchema = z.object({
   userId: z.string().min(1),
   tutorProfileId: z.string().optional(),
   displayName: z.string(),
-  role: z.enum(["owner", "admin", "manager", "tutor", "lead_coordinator", "billing"]),
+  role: z.enum([
+    "owner",
+    "admin",
+    "manager",
+    "tutor",
+    "lead_coordinator",
+    "billing",
+  ]),
   permissions: z.array(z.string()),
   status: z.enum(["invited", "active", "suspended", "removed"]),
 });
-export type CourseOrganizationMember = z.infer<typeof courseOrganizationMemberSchema>;
+export type CourseOrganizationMember = z.infer<
+  typeof courseOrganizationMemberSchema
+>;
 
 export const courseOrganizationSchema = z.object({
   id: z.string().min(1),

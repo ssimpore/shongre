@@ -1,7 +1,10 @@
-import { repositories, CANONICAL_DEMO_USERS } from '../../infrastructure/database/repositories/index.js';
-import { hashPassword } from '../../shared/auth/password.js';
-import { logger } from '../../infrastructure/logging/logger.js';
-import { config } from '../config/index.js';
+import {
+  repositories,
+  CANONICAL_DEMO_USERS,
+} from "../../infrastructure/database/repositories/index.js";
+import { hashPassword } from "../../shared/auth/password.js";
+import { logger } from "../../infrastructure/logging/logger.js";
+import { config } from "../config/index.js";
 
 /**
  * The shared password for the seeded demo personas.
@@ -9,7 +12,8 @@ import { config } from '../config/index.js';
  * Overridable so a shared staging environment does not run on a password
  * documented in the repository.
  */
-export const DEMO_ACCOUNT_PASSWORD = process.env.DEMO_ACCOUNT_PASSWORD || 'ShongreDemo2024!';
+export const DEMO_ACCOUNT_PASSWORD =
+  process.env.DEMO_ACCOUNT_PASSWORD || "ShongreDemo2024!";
 
 /**
  * Gives the canonical demo personas a real password hash.
@@ -20,8 +24,8 @@ export const DEMO_ACCOUNT_PASSWORD = process.env.DEMO_ACCOUNT_PASSWORD || 'Shong
  * hand out working logins, including the admin persona.
  */
 export async function seedDemoCredentials(): Promise<void> {
-  if (config.nodeEnv === 'production') {
-    logger.info('Skipping demo credential seeding in production');
+  if (config.nodeEnv === "production") {
+    logger.info("Skipping demo credential seeding in production");
     return;
   }
 
@@ -32,7 +36,10 @@ export async function seedDemoCredentials(): Promise<void> {
     try {
       const existing = await repositories.users.findCredentialByUserId(user.id);
       if (existing) continue;
-      await repositories.users.saveCredential({ userId: user.id, passwordHash: hash });
+      await repositories.users.saveCredential({
+        userId: user.id,
+        passwordHash: hash,
+      });
       seeded += 1;
     } catch (err: any) {
       // Non-fatal: in database mode the profiles may not be provisioned yet.

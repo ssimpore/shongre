@@ -56,7 +56,11 @@ export default function LoginScreen() {
     try {
       await loginWithProvider(provider);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Connexion temporairement indisponible.");
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Connexion temporairement indisponible.",
+      );
     } finally {
       setLoading(false);
     }
@@ -72,7 +76,9 @@ export default function LoginScreen() {
     try {
       await completePendingSocialRegistration(email.trim().toLowerCase());
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Activation impossible.");
+      setError(
+        reason instanceof Error ? reason.message : "Activation impossible.",
+      );
     } finally {
       setLoading(false);
     }
@@ -112,18 +118,49 @@ export default function LoginScreen() {
           {error}
         </Text>
       ) : null}
-      {socialNotice ? <Text accessibilityRole="alert" style={styles.notice}>{socialNotice}</Text> : null}
+      {socialNotice ? (
+        <Text accessibilityRole="alert" style={styles.notice}>
+          {socialNotice}
+        </Text>
+      ) : null}
       {pendingSocialCompletion ? (
-        <Button label="Vérifier cette adresse" onPress={completeSocialProfile} loading={loading} />
+        <Button
+          label="Vérifier cette adresse"
+          onPress={completeSocialProfile}
+          loading={loading}
+        />
       ) : (
         <>
           <Button label="Se connecter" onPress={submit} loading={loading} />
-          {(socialProviders.google || socialProviders.apple || socialProviders.facebook) ? (
+          {socialProviders.google ||
+          socialProviders.apple ||
+          socialProviders.facebook ? (
             <Text style={styles.divider}>ou continuer avec</Text>
           ) : null}
-          {socialProviders.google ? <Button label="Continuer avec Google" variant="secondary" onPress={() => socialLogin("google")} disabled={loading} /> : null}
-          {socialProviders.apple ? <Button label="Continuer avec Apple" variant="secondary" onPress={() => socialLogin("apple")} disabled={loading} /> : null}
-          {socialProviders.facebook ? <Button label="Continuer avec Facebook" variant="secondary" onPress={() => socialLogin("facebook")} disabled={loading} /> : null}
+          {socialProviders.google ? (
+            <Button
+              label="Continuer avec Google"
+              variant="secondary"
+              onPress={() => socialLogin("google")}
+              disabled={loading}
+            />
+          ) : null}
+          {socialProviders.apple ? (
+            <Button
+              label="Continuer avec Apple"
+              variant="secondary"
+              onPress={() => socialLogin("apple")}
+              disabled={loading}
+            />
+          ) : null}
+          {socialProviders.facebook ? (
+            <Button
+              label="Continuer avec Facebook"
+              variant="secondary"
+              onPress={() => socialLogin("facebook")}
+              disabled={loading}
+            />
+          ) : null}
         </>
       )}
     </Screen>

@@ -75,11 +75,7 @@ export type CommercialRuleOperator = z.infer<
   typeof commercialRuleOperatorSchema
 >;
 
-const commercialScalarSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-]);
+const commercialScalarSchema = z.union([z.string(), z.number(), z.boolean()]);
 
 export const commercialConditionSchema = z
   .object({
@@ -112,7 +108,10 @@ export type CommercialScope = z.infer<typeof commercialScopeSchema>;
 export const commercialRuleOutcomeSchema = z
   .object({
     eligible: z.boolean().optional(),
-    reasonCode: z.string().regex(/^[A-Z0-9_]+$/).optional(),
+    reasonCode: z
+      .string()
+      .regex(/^[A-Z0-9_]+$/)
+      .optional(),
     quotaLimit: z.number().int().nonnegative().optional(),
     quotaPeriodDays: z.number().int().positive().optional(),
     durationDays: z.number().int().positive().optional(),
@@ -120,7 +119,12 @@ export const commercialRuleOutcomeSchema = z
     minimumAmountMinor: z.number().int().nonnegative().optional(),
     maximumAmountMinor: z.number().int().nonnegative().optional(),
     fixedAdjustmentMinor: z.number().int().optional(),
-    percentageAdjustmentBps: z.number().int().min(-10_000).max(10_000).optional(),
+    percentageAdjustmentBps: z
+      .number()
+      .int()
+      .min(-10_000)
+      .max(10_000)
+      .optional(),
     feeRateBps: z.number().int().min(0).max(10_000).optional(),
     commissionRateBps: z.number().int().min(0).max(10_000).optional(),
     fixedFeeMinor: z.number().int().nonnegative().optional(),
@@ -129,9 +133,7 @@ export const commercialRuleOutcomeSchema = z
     entitlementValue: commercialScalarSchema.optional(),
   })
   .strict();
-export type CommercialRuleOutcome = z.infer<
-  typeof commercialRuleOutcomeSchema
->;
+export type CommercialRuleOutcome = z.infer<typeof commercialRuleOutcomeSchema>;
 
 export const commercialRuleSchema = z.object({
   id: z.string().min(1),
@@ -200,7 +202,11 @@ export type MonetizationProduct = z.infer<typeof monetizationProductSchema>;
 
 export const promotionSchema = z.object({
   id: z.string().min(1),
-  code: z.string().min(3).max(40).transform((value) => value.toUpperCase()),
+  code: z
+    .string()
+    .min(3)
+    .max(40)
+    .transform((value) => value.toUpperCase()),
   name: z.string().min(1),
   status: commercialConfigurationStatusSchema,
   scope: commercialScopeSchema,
@@ -236,9 +242,7 @@ export const ruleEvaluationContextSchema = z.object({
   experimentCohort: z.string().optional(),
   effectiveAt: z.string().datetime().optional(),
 });
-export type RuleEvaluationContext = z.infer<
-  typeof ruleEvaluationContextSchema
->;
+export type RuleEvaluationContext = z.infer<typeof ruleEvaluationContextSchema>;
 
 export const ruleExplanationSchema = z.object({
   ruleId: z.string(),
@@ -262,9 +266,7 @@ export const ruleEvaluationResultSchema = z.object({
   outcomes: z.record(z.string(), commercialScalarSchema),
   explanation: z.array(ruleExplanationSchema),
 });
-export type RuleEvaluationResult = z.infer<
-  typeof ruleEvaluationResultSchema
->;
+export type RuleEvaluationResult = z.infer<typeof ruleEvaluationResultSchema>;
 
 export const monetizationCatalogSchema = z.object({
   configurationVersionId: z.string(),
@@ -314,6 +316,7 @@ export const monetizationQuoteSchema = z.object({
   configurationVersionId: z.string(),
   marketCode: marketCodeSchema,
   currency: z.string().length(3),
+  listingId: z.string().min(1).optional(),
   lines: z.array(quoteLineSchema).min(1),
   subtotalMinor: z.number().int().nonnegative(),
   discountMinor: z.number().int().nonnegative(),
@@ -400,7 +403,11 @@ export type SubscriptionCancellationRequest = z.infer<
 >;
 
 export const promotionValidationRequestSchema = z.object({
-  code: z.string().min(3).max(40).transform((value) => value.toUpperCase()),
+  code: z
+    .string()
+    .min(3)
+    .max(40)
+    .transform((value) => value.toUpperCase()),
   productIds: z.array(z.string().min(1)).min(1).max(20),
   marketCode: marketCodeSchema,
   categoryId: z.string().optional(),
@@ -430,9 +437,7 @@ export const configurationConflictSchema = z.object({
   entityIds: z.array(z.string()),
   message: z.string(),
 });
-export type ConfigurationConflict = z.infer<
-  typeof configurationConflictSchema
->;
+export type ConfigurationConflict = z.infer<typeof configurationConflictSchema>;
 
 export const commercialConfigurationVersionSchema = z.object({
   id: z.string(),
@@ -470,9 +475,7 @@ export const commercialAuditEventSchema = z.object({
   ipPrefix: z.string().optional(),
   createdAt: z.string().datetime(),
 });
-export type CommercialAuditEvent = z.infer<
-  typeof commercialAuditEventSchema
->;
+export type CommercialAuditEvent = z.infer<typeof commercialAuditEventSchema>;
 
 export const monetizationAdminOverviewSchema = z.object({
   publishedVersion: commercialConfigurationVersionSchema,
@@ -497,6 +500,4 @@ export const commercialDraftPatchSchema = z.object({
   rules: z.array(commercialRuleSchema).optional(),
   promotions: z.array(promotionSchema).optional(),
 });
-export type CommercialDraftPatch = z.infer<
-  typeof commercialDraftPatchSchema
->;
+export type CommercialDraftPatch = z.infer<typeof commercialDraftPatchSchema>;

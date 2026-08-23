@@ -52,10 +52,7 @@ export const withQuery = (
 
 export const routes = {
   home: () => "/",
-  category: (
-    categorySlug: string,
-    params: { subCategory?: string } = {},
-  ) =>
+  category: (categorySlug: string, params: { subCategory?: string } = {}) =>
     withQuery(`/categorie/${pathSegment(categorySlug)}`, {
       subCategory: params.subCategory,
     }),
@@ -88,8 +85,7 @@ export const routes = {
       if (queryOrParams.sellerType)
         params.set("sellerType", queryOrParams.sellerType);
       if (queryOrParams.delivery) params.set("delivery", "true");
-      if (queryOrParams.onlinePayment)
-        params.set("onlinePayment", "true");
+      if (queryOrParams.onlinePayment) params.set("onlinePayment", "true");
       if (queryOrParams.onlyDeals) params.set("onlyDeals", "true");
       if (queryOrParams.condition) {
         params.set(
@@ -122,8 +118,9 @@ export const routes = {
   courses: {
     search: () => "/cours",
     tutor: (slug: string) => `/cours/professeur/${pathSegment(slug)}`,
-    request: (params: { tutor?: string; subject?: string; compare?: string } = {}) =>
-      withQuery("/cours/demande", params),
+    request: (
+      params: { tutor?: string; subject?: string; compare?: string } = {},
+    ) => withQuery("/cours/demande", params),
     publish: (params: { mode?: string; step?: string } = {}) =>
       withQuery("/deposer/cours", params),
     availability: () =>
@@ -138,7 +135,9 @@ export const routes = {
     search: () => "/auto",
     vehicle: (slug: string) => `/auto/vehicule/${pathSegment(slug)}`,
     compare: (ids: string[] = []) =>
-      withQuery("/auto/comparer", { ids: ids.length ? ids.join(",") : undefined }),
+      withQuery("/auto/comparer", {
+        ids: ids.length ? ids.join(",") : undefined,
+      }),
     publish: () => "/deposer/auto",
     workspace: () => "/compte/auto",
   },
@@ -165,8 +164,7 @@ export const routes = {
   },
   listing: {
     detail: (id: string) => `/annonce/${pathSegment(id)}`,
-    publish: (params: { edit?: string } = {}) =>
-      withQuery("/deposer", params),
+    publish: (params: { edit?: string } = {}) => withQuery("/deposer", params),
   },
   seller: {
     profile: (id: string) => `/profil/${pathSegment(id)}`,
@@ -224,8 +222,7 @@ export const routes = {
     overview: () => `/admin`,
     verifications: () => `/admin/verifications`,
     providers: () => `/admin/fournisseurs`,
-    providerDetail: (id: string) =>
-      `/admin/fournisseurs/${pathSegment(id)}`,
+    providerDetail: (id: string) => `/admin/fournisseurs/${pathSegment(id)}`,
     markets: () => `/admin/marches`,
     taxonomy: (params: { tab?: string; node?: string } = {}) =>
       withQuery("/admin/taxonomie", params),

@@ -1,4 +1,4 @@
-import type { TrendingAdminConfig, TrendWeights } from './trending.types.js';
+import type { TrendingAdminConfig, TrendWeights } from "./trending.types.js";
 
 export const DEFAULT_TREND_WEIGHTS: TrendWeights = {
   searchGrowth: 0.18,
@@ -13,7 +13,9 @@ export const DEFAULT_TREND_WEIGHTS: TrendWeights = {
   editorial: 0.07,
 };
 
-export const createDefaultTrendingConfig = (now = new Date()): TrendingAdminConfig => ({
+export const createDefaultTrendingConfig = (
+  now = new Date(),
+): TrendingAdminConfig => ({
   enabled: true,
   maxTopics: 8,
   minTopics: 4,
@@ -22,8 +24,8 @@ export const createDefaultTrendingConfig = (now = new Date()): TrendingAdminConf
   displayPeriodDays: 7,
   cacheTtlMinutes: 20,
   personalizationWeight: 0.22,
-  title: 'En ce moment sur Shongre',
-  subtitle: 'Découvrez ce qui attire le plus les acheteurs en ce moment.',
+  title: "En ce moment sur Shongre",
+  subtitle: "Découvrez ce qui attire le plus les acheteurs en ce moment.",
   mobileVisible: true,
   desktopVisible: true,
   excludedCategories: [],
@@ -32,4 +34,3 @@ export const createDefaultTrendingConfig = (now = new Date()): TrendingAdminConf
   overrides: [],
   updatedAt: now.toISOString(),
 });
-

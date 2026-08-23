@@ -85,46 +85,73 @@ const asCard = (job: JobPostingDetail) => {
 };
 
 const includes = (value: string, query?: string) =>
-  !query || value.toLocaleLowerCase("fr").includes(query.toLocaleLowerCase("fr"));
+  !query ||
+  value.toLocaleLowerCase("fr").includes(query.toLocaleLowerCase("fr"));
 
 const distanceKm = (
   from: { latitude?: number; longitude?: number },
   to: { latitude?: number; longitude?: number },
 ) => {
-  if (from.latitude === undefined || from.longitude === undefined || to.latitude === undefined || to.longitude === undefined)
+  if (
+    from.latitude === undefined ||
+    from.longitude === undefined ||
+    to.latitude === undefined ||
+    to.longitude === undefined
+  )
     return Number.POSITIVE_INFINITY;
   const radians = (value: number) => (value * Math.PI) / 180;
   const latitudeDelta = radians(to.latitude - from.latitude);
   const longitudeDelta = radians(to.longitude - from.longitude);
   const a =
     Math.sin(latitudeDelta / 2) ** 2 +
-    Math.cos(radians(from.latitude)) * Math.cos(radians(to.latitude)) *
+    Math.cos(radians(from.latitude)) *
+      Math.cos(radians(to.latitude)) *
       Math.sin(longitudeDelta / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const relevanceScore = (job: JobPostingDetail, query: EmploymentSearchQuery) => {
+const relevanceScore = (
+  job: JobPostingDetail,
+  query: EmploymentSearchQuery,
+) => {
   const needle = query.keywords?.trim().toLocaleLowerCase("fr");
   if (!needle) return 0;
   return (
     (job.title.toLocaleLowerCase("fr").includes(needle) ? 100 : 0) +
     (job.professionLabel.toLocaleLowerCase("fr").includes(needle) ? 60 : 0) +
-    (job.requiredSkills.some((skill) => skill.toLocaleLowerCase("fr").includes(needle)) ? 30 : 0)
+    (job.requiredSkills.some((skill) =>
+      skill.toLocaleLowerCase("fr").includes(needle),
+    )
+      ? 30
+      : 0)
   );
 };
 
 export class DemoEmploymentService implements EmploymentServiceContract {
   private catalog = clone(DEFAULT_EMPLOYMENT_CATALOG);
-  private jobs = new Map(EMPLOYMENT_DEMO_JOBS.map((job) => [job.id, clone(job)]));
+  private jobs = new Map(
+    EMPLOYMENT_DEMO_JOBS.map((job) => [job.id, clone(job)]),
+  );
   private drafts = new Map<string, JobDraft>();
-  private applications = new Map(EMPLOYMENT_DEMO_APPLICATIONS.map((item) => [item.id, clone(item)]));
+  private applications = new Map(
+    EMPLOYMENT_DEMO_APPLICATIONS.map((item) => [item.id, clone(item)]),
+  );
   private candidateWorkspaces = new Map<string, CandidateWorkspace>([
     ["user_thomas", clone(EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE)],
   ]);
   private recruiterWorkspace = clone(EMPLOYMENT_DEMO_RECRUITER_WORKSPACE);
-  private notes = new Map(EMPLOYMENT_DEMO_RECRUITER_NOTES.map((item) => [item.id, clone(item)]));
-  private interviews = new Map(EMPLOYMENT_DEMO_INTERVIEWS.map((item) => [item.id, clone(item)]));
-  private imports = new Map(EMPLOYMENT_DEMO_RECRUITER_WORKSPACE.imports.map((item) => [item.id, clone(item)]));
+  private notes = new Map(
+    EMPLOYMENT_DEMO_RECRUITER_NOTES.map((item) => [item.id, clone(item)]),
+  );
+  private interviews = new Map(
+    EMPLOYMENT_DEMO_INTERVIEWS.map((item) => [item.id, clone(item)]),
+  );
+  private imports = new Map(
+    EMPLOYMENT_DEMO_RECRUITER_WORKSPACE.imports.map((item) => [
+      item.id,
+      clone(item),
+    ]),
+  );
   private checkouts = new Map<string, VerticalCheckout>();
   private privacyRequests = new Map<string, EmploymentDataSubjectRequest>();
   private jobReports = new Map<string, EmploymentJobReport>();
@@ -137,7 +164,11 @@ export class DemoEmploymentService implements EmploymentServiceContract {
 
   private currentUser() {
     const user = storageService.getCurrentUser();
-    if (!user) throw fail("UNAUTHENTICATED", "Connectez-vous pour utiliser Shongre Emploi.");
+    if (!user)
+      throw fail(
+        "UNAUTHENTICATED",
+        "Connectez-vous pour utiliser Shongre Emploi.",
+      );
     return user;
   }
 
@@ -163,16 +194,18 @@ export class DemoEmploymentService implements EmploymentServiceContract {
         visibility: "private",
         updatedAt: now(),
       },
-      cvs: [{
-        id: `cv-${user.id}`,
-        candidateId,
-        label: `CV de ${user.name}`,
-        fileName: `cv-${user.slug || user.id}.pdf`,
-        mimeType: "application/pdf",
-        malwareScanStatus: "clean",
-        isDefault: true,
-        createdAt: now(),
-      }],
+      cvs: [
+        {
+          id: `cv-${user.id}`,
+          candidateId,
+          label: `CV de ${user.name}`,
+          fileName: `cv-${user.slug || user.id}.pdf`,
+          mimeType: "application/pdf",
+          malwareScanStatus: "clean",
+          isDefault: true,
+          createdAt: now(),
+        },
+      ],
       savedJobs: [],
       applications: [],
       interviews: [],
@@ -193,14 +226,20 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     // Keep the original general-purpose Pro account compatible with older
     // demo journeys while making the dedicated recruiter persona the canonical
     // organization member for the employment workspace.
-    if ([EMPLOYMENT_DEMO_RECRUITER_USER_ID, "user_pro_atelier"].includes(user.id))
+    if (
+      [EMPLOYMENT_DEMO_RECRUITER_USER_ID, "user_pro_atelier"].includes(user.id)
+    )
       return [this.recruiterWorkspace.employer];
     if (user.id === "user_camille") return [privateEmployer];
     return [];
   }
 
   private assertRecruiterEmployer(employerId: string) {
-    if (!this.recruiterEmployersForCurrentUser().some((employer) => employer.id === employerId))
+    if (
+      !this.recruiterEmployersForCurrentUser().some(
+        (employer) => employer.id === employerId,
+      )
+    )
       throw fail("NOT_FOUND", "Espace recruteur introuvable.");
   }
 
@@ -212,7 +251,10 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     );
     return clone({
       ...resolved,
-      activation: { ...resolved.activation, marketCode: marketCode.toUpperCase() },
+      activation: {
+        ...resolved.activation,
+        marketCode: marketCode.toUpperCase(),
+      },
       config: { ...resolved.config, marketCode: marketCode.toUpperCase() },
       dictionaries: resolved.dictionaries.filter((entry) => entry.isActive),
       offers: resolved.offers.filter((offer) => offer.isActive),
@@ -225,47 +267,130 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     const query = employmentSearchQuerySchema.parse(input);
     const locationOrigin = query.location
       ? Array.from(this.jobs.values()).find((job) =>
-          includes(`${job.primaryLocation.city} ${job.primaryLocation.label}`, query.location),
+          includes(
+            `${job.primaryLocation.city} ${job.primaryLocation.label}`,
+            query.location,
+          ),
         )?.primaryLocation
       : undefined;
     const jobs = Array.from(this.jobs.values()).filter((job) => {
-      if (job.marketCode !== query.marketCode || job.lifecycle !== "published") return false;
+      if (job.marketCode !== query.marketCode || job.lifecycle !== "published")
+        return false;
       const haystack = `${job.title} ${job.employer.name} ${job.professionLabel} ${job.industryLabel} ${job.requiredSkills.join(" ")}`;
       if (!includes(haystack, query.keywords)) return false;
-      if (query.professionIds.length && !query.professionIds.includes(job.professionId)) return false;
+      if (
+        query.professionIds.length &&
+        !query.professionIds.includes(job.professionId)
+      )
+        return false;
       if (query.jobFamilyIds.length) {
-        const profession = this.catalog.dictionaries.find((entry) => entry.id === job.professionId);
-        if (!profession?.parentId || !query.jobFamilyIds.includes(profession.parentId)) return false;
+        const profession = this.catalog.dictionaries.find(
+          (entry) => entry.id === job.professionId,
+        );
+        if (
+          !profession?.parentId ||
+          !query.jobFamilyIds.includes(profession.parentId)
+        )
+          return false;
       }
-      if (query.industryIds.length && !query.industryIds.includes(job.industryId)) return false;
+      if (
+        query.industryIds.length &&
+        !query.industryIds.includes(job.industryId)
+      )
+        return false;
       if (query.location) {
-        const withinRadius = query.radiusKm && locationOrigin
-          ? distanceKm(locationOrigin, job.primaryLocation) <= query.radiusKm
-          : includes(`${job.primaryLocation.city} ${job.primaryLocation.label}`, query.location);
+        const withinRadius =
+          query.radiusKm && locationOrigin
+            ? distanceKm(locationOrigin, job.primaryLocation) <= query.radiusKm
+            : includes(
+                `${job.primaryLocation.city} ${job.primaryLocation.label}`,
+                query.location,
+              );
         if (!withinRadius) return false;
       }
-      if (query.workingArrangementIds.length && !query.workingArrangementIds.includes(job.workingArrangementId)) return false;
-      if (query.contractTypeIds.length && !query.contractTypeIds.includes(job.contractTypeId)) return false;
-      if (query.workingTimeIds.length && !query.workingTimeIds.includes(job.workingTimeId)) return false;
-      if (query.salaryMinimumMinor !== undefined && (job.salary?.maximum?.amountMinor || 0) < query.salaryMinimumMinor) return false;
-      if (query.salaryFrequencyId && job.salary?.frequencyId !== query.salaryFrequencyId) return false;
-      if (query.experienceLevelIds.length && (!job.requiredExperienceId || !query.experienceLevelIds.includes(job.requiredExperienceId))) return false;
-      if (query.educationLevelIds.length && (!job.educationLevelId || !query.educationLevelIds.includes(job.educationLevelId))) return false;
-      if (query.languageIds.length && !job.languages.some((language) => query.languageIds.includes(language.levelId))) return false;
-      if (query.scheduleIds.length && !job.workScheduleIds.some((scheduleId) => query.scheduleIds.includes(scheduleId))) return false;
-      if (query.publishedSince && job.publishedAt < query.publishedSince) return false;
-      if (query.verifiedEmployerOnly && !job.employer.isPubliclyVerified) return false;
-      if (query.accessibilityOnly && !job.accessibilityInformation) return false;
-      if (query.employerTypeIds.length && !query.employerTypeIds.includes(job.employer.employerTypeId)) return false;
+      if (
+        query.workingArrangementIds.length &&
+        !query.workingArrangementIds.includes(job.workingArrangementId)
+      )
+        return false;
+      if (
+        query.contractTypeIds.length &&
+        !query.contractTypeIds.includes(job.contractTypeId)
+      )
+        return false;
+      if (
+        query.workingTimeIds.length &&
+        !query.workingTimeIds.includes(job.workingTimeId)
+      )
+        return false;
+      if (
+        query.salaryMinimumMinor !== undefined &&
+        (job.salary?.maximum?.amountMinor || 0) < query.salaryMinimumMinor
+      )
+        return false;
+      if (
+        query.salaryFrequencyId &&
+        job.salary?.frequencyId !== query.salaryFrequencyId
+      )
+        return false;
+      if (
+        query.experienceLevelIds.length &&
+        (!job.requiredExperienceId ||
+          !query.experienceLevelIds.includes(job.requiredExperienceId))
+      )
+        return false;
+      if (
+        query.educationLevelIds.length &&
+        (!job.educationLevelId ||
+          !query.educationLevelIds.includes(job.educationLevelId))
+      )
+        return false;
+      if (
+        query.languageIds.length &&
+        !job.languages.some((language) =>
+          query.languageIds.includes(language.levelId),
+        )
+      )
+        return false;
+      if (
+        query.scheduleIds.length &&
+        !job.workScheduleIds.some((scheduleId) =>
+          query.scheduleIds.includes(scheduleId),
+        )
+      )
+        return false;
+      if (query.publishedSince && job.publishedAt < query.publishedSince)
+        return false;
+      if (query.verifiedEmployerOnly && !job.employer.isPubliclyVerified)
+        return false;
+      if (query.accessibilityOnly && !job.accessibilityInformation)
+        return false;
+      if (
+        query.employerTypeIds.length &&
+        !query.employerTypeIds.includes(job.employer.employerTypeId)
+      )
+        return false;
       return true;
     });
     jobs.sort((a, b) => {
-      if (query.sort === "salary") return (b.salary?.maximum?.amountMinor || 0) - (a.salary?.maximum?.amountMinor || 0);
-      if (query.sort === "deadline") return (a.applicationDeadline || a.expiresAt).localeCompare(b.applicationDeadline || b.expiresAt);
+      if (query.sort === "salary")
+        return (
+          (b.salary?.maximum?.amountMinor || 0) -
+          (a.salary?.maximum?.amountMinor || 0)
+        );
+      if (query.sort === "deadline")
+        return (a.applicationDeadline || a.expiresAt).localeCompare(
+          b.applicationDeadline || b.expiresAt,
+        );
       if (query.sort === "distance" && locationOrigin)
-        return distanceKm(locationOrigin, a.primaryLocation) - distanceKm(locationOrigin, b.primaryLocation);
+        return (
+          distanceKm(locationOrigin, a.primaryLocation) -
+          distanceKm(locationOrigin, b.primaryLocation)
+        );
       if (query.sort === "promoted") {
-        const placement = Number(b.isFeatured || b.isSponsored) - Number(a.isFeatured || a.isSponsored);
+        const placement =
+          Number(b.isFeatured || b.isSponsored) -
+          Number(a.isFeatured || a.isSponsored);
         if (placement) return placement;
       }
       if (query.sort === "relevance") {
@@ -276,20 +401,33 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     });
     const offset = Number(query.cursor || 0);
     return {
-      items: jobs.slice(offset, offset + query.limit).map(asCard).map(clone),
+      items: jobs
+        .slice(offset, offset + query.limit)
+        .map(asCard)
+        .map(clone),
       total: jobs.length,
       organicResultCount: jobs.filter((job) => !job.isSponsored).length,
-      recommendationFactors: ["profession", "compétences", "localisation", "préférences de travail"],
+      recommendationFactors: [
+        "profession",
+        "compétences",
+        "localisation",
+        "préférences de travail",
+      ],
       pageInfo: {
         hasNextPage: offset + query.limit < jobs.length,
-        nextCursor: offset + query.limit < jobs.length ? String(offset + query.limit) : undefined,
+        nextCursor:
+          offset + query.limit < jobs.length
+            ? String(offset + query.limit)
+            : undefined,
       },
     };
   }
 
   async getJob(idOrSlug: string) {
     await simulateNetworkDelay();
-    const job = this.jobs.get(idOrSlug) || Array.from(this.jobs.values()).find((item) => item.slug === idOrSlug);
+    const job =
+      this.jobs.get(idOrSlug) ||
+      Array.from(this.jobs.values()).find((item) => item.slug === idOrSlug);
     if (!job) throw fail("NOT_FOUND", "Offre d’emploi introuvable.");
     return clone(job);
   }
@@ -297,7 +435,12 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   async getSimilarJobs(idOrSlug: string) {
     const job = await this.getJob(idOrSlug);
     return Array.from(this.jobs.values())
-      .filter((item) => item.id !== job.id && (item.professionId === job.professionId || item.industryId === job.industryId))
+      .filter(
+        (item) =>
+          item.id !== job.id &&
+          (item.professionId === job.professionId ||
+            item.industryId === job.industryId),
+      )
       .slice(0, 3)
       .map(asCard)
       .map(clone);
@@ -321,13 +464,20 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     if (!draft) throw fail("NOT_FOUND", "Brouillon Emploi introuvable.");
     const data = draft.data;
     const duplicateCandidateIds = Array.from(this.jobs.values())
-      .filter((job) =>
-        job.employer.id === draft.employerId &&
-        job.title.toLocaleLowerCase("fr") === String(data.title || "").toLocaleLowerCase("fr") &&
-        job.primaryLocation.city.toLocaleLowerCase("fr") === String(data.city || "").toLocaleLowerCase("fr"),
+      .filter(
+        (job) =>
+          job.employer.id === draft.employerId &&
+          job.title.toLocaleLowerCase("fr") ===
+            String(data.title || "").toLocaleLowerCase("fr") &&
+          job.primaryLocation.city.toLocaleLowerCase("fr") ===
+            String(data.city || "").toLocaleLowerCase("fr"),
       )
       .map((job) => job.id);
-    this.drafts.set(draftId, { ...draft, duplicateCandidateIds, updatedAt: now() });
+    this.drafts.set(draftId, {
+      ...draft,
+      duplicateCandidateIds,
+      updatedAt: now(),
+    });
     return { duplicateCandidateIds };
   }
 
@@ -345,22 +495,26 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     };
   }
 
-  async flagProhibitedLanguage(content: string): Promise<ProhibitedLanguageFlag[]> {
+  async flagProhibitedLanguage(
+    content: string,
+  ): Promise<ProhibitedLanguageFlag[]> {
     await simulateNetworkDelay();
     const normalized = content.toLocaleLowerCase("fr");
     return this.catalog.config.prohibitedLanguageRules.flatMap((rule) =>
       rule.terms.flatMap((term, index) =>
         normalized.includes(term.toLocaleLowerCase("fr"))
-          ? [{
-              id: `${rule.id}-${index}`,
-              field: "content",
-              excerpt: term,
-              policyRuleId: rule.id,
-              explanation: rule.explanation,
-              neutralSuggestion: rule.neutralSuggestion,
-              requiresHumanReview: true,
-              isLegalDecision: false,
-            }]
+          ? [
+              {
+                id: `${rule.id}-${index}`,
+                field: "content",
+                excerpt: term,
+                policyRuleId: rule.id,
+                explanation: rule.explanation,
+                neutralSuggestion: rule.neutralSuggestion,
+                requiresHumanReview: true,
+                isLegalDecision: false,
+              },
+            ]
           : [],
       ),
     );
@@ -372,7 +526,9 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return clone({
       ...workspace,
       applications: Array.from(this.applications.values())
-        .filter((application) => application.candidateId === workspace.profile.id)
+        .filter(
+          (application) => application.candidateId === workspace.profile.id,
+        )
         .map(({ screeningAnswers: _answers, ...item }) => item),
       interviews: Array.from(this.interviews.values()).filter((interview) =>
         Array.from(this.applications.values()).some(
@@ -387,8 +543,14 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   async saveCandidateProfile(profile: CandidateProfile) {
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
-    if (profile.userId !== workspace.profile.userId || profile.id !== workspace.profile.id)
-      throw fail("FORBIDDEN", "Vous ne pouvez modifier que votre profil candidat.");
+    if (
+      profile.userId !== workspace.profile.userId ||
+      profile.id !== workspace.profile.id
+    )
+      throw fail(
+        "FORBIDDEN",
+        "Vous ne pouvez modifier que votre profil candidat.",
+      );
     const wasVisible = workspace.profile.visibility === "verified_recruiters";
     const isVisible = profile.visibility === "verified_recruiters";
     let recruiterSearchConsentId = workspace.profile.recruiterSearchConsentId;
@@ -404,11 +566,10 @@ export class DemoEmploymentService implements EmploymentServiceContract {
         expiresAt: "2027-08-22T10:00:00.000Z",
       });
     } else if (!isVisible && wasVisible && recruiterSearchConsentId) {
-      workspace.consentHistory = workspace.consentHistory.map(
-        (consent) =>
-          consent.id === recruiterSearchConsentId
-            ? { ...consent, status: "withdrawn" as const, withdrawnAt: now() }
-            : consent,
+      workspace.consentHistory = workspace.consentHistory.map((consent) =>
+        consent.id === recruiterSearchConsentId
+          ? { ...consent, status: "withdrawn" as const, withdrawnAt: now() }
+          : consent,
       );
       recruiterSearchConsentId = undefined;
     }
@@ -425,19 +586,54 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const job = await this.getJob(jobId);
-    if (job.lifecycle !== "published") throw fail("CONFLICT", "Cette offre n’accepte plus de candidatures.");
+    if (job.lifecycle !== "published")
+      throw fail("CONFLICT", "Cette offre n’accepte plus de candidatures.");
     const duplicate = Array.from(this.applications.values()).find(
-      (item) => item.jobId === jobId && item.candidateId === workspace.profile.id && !["withdrawn", "rejected", "archived"].includes(item.systemState),
+      (item) =>
+        item.jobId === jobId &&
+        item.candidateId === workspace.profile.id &&
+        !["withdrawn", "rejected", "archived"].includes(item.systemState),
     );
-    if (duplicate) throw fail("CONFLICT", "Vous avez déjà une candidature active pour cette offre.");
-    const cv = workspace.cvs.find((item) => item.id === input.cvId && item.malwareScanStatus === "clean");
-    if (!cv || !input.privacyConsent) throw fail("VALIDATION_ERROR", "Sélectionnez un CV valide et acceptez la notice de confidentialité.");
-    const knownQuestionIds = new Set(job.screeningQuestions.map((question) => question.id));
-    if (input.screeningAnswers.some((answer) => !knownQuestionIds.has(answer.questionId)))
-      throw fail("VALIDATION_ERROR", "Une réponse correspond à une question inconnue.");
-    if (job.screeningQuestions.some((question) => question.isRequired && !String(input.screeningAnswers.find((answer) => answer.questionId === question.id)?.answer || "").trim()))
+    if (duplicate)
+      throw fail(
+        "CONFLICT",
+        "Vous avez déjà une candidature active pour cette offre.",
+      );
+    const cv = workspace.cvs.find(
+      (item) => item.id === input.cvId && item.malwareScanStatus === "clean",
+    );
+    if (!cv || !input.privacyConsent)
+      throw fail(
+        "VALIDATION_ERROR",
+        "Sélectionnez un CV valide et acceptez la notice de confidentialité.",
+      );
+    const knownQuestionIds = new Set(
+      job.screeningQuestions.map((question) => question.id),
+    );
+    if (
+      input.screeningAnswers.some(
+        (answer) => !knownQuestionIds.has(answer.questionId),
+      )
+    )
+      throw fail(
+        "VALIDATION_ERROR",
+        "Une réponse correspond à une question inconnue.",
+      );
+    if (
+      job.screeningQuestions.some(
+        (question) =>
+          question.isRequired &&
+          !String(
+            input.screeningAnswers.find(
+              (answer) => answer.questionId === question.id,
+            )?.answer || "",
+          ).trim(),
+      )
+    )
       throw fail("VALIDATION_ERROR", "Répondez aux questions obligatoires.");
-    const stage = this.catalog.defaultPipelineStages.find((item) => item.systemState === "received")!;
+    const stage = this.catalog.defaultPipelineStages.find(
+      (item) => item.systemState === "received",
+    )!;
     const timestamp = now();
     const application: EmploymentApplication = {
       id: this.next("application"),
@@ -487,7 +683,10 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return { saved: index < 0 };
   }
 
-  async reportJob(jobId: string, input: Pick<EmploymentJobReport, "reason" | "details">) {
+  async reportJob(
+    jobId: string,
+    input: Pick<EmploymentJobReport, "reason" | "details">,
+  ) {
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     await this.getJob(jobId);
@@ -519,7 +718,9 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       id: this.next("alert"),
       candidateId: workspace.profile.id,
       label: input.label.trim() || "Ma recherche Emploi",
-      query: employmentSearchQuerySchema.omit({ cursor: true }).parse(input.query),
+      query: employmentSearchQuerySchema
+        .omit({ cursor: true })
+        .parse(input.query),
       frequency: input.frequency,
       enabled: true,
       createdAt: now(),
@@ -584,12 +785,21 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return clone(request);
   }
 
-  async respondToInterview(interviewId: string, status: "confirmed" | "cancelled") {
+  async respondToInterview(
+    interviewId: string,
+    status: "confirmed" | "cancelled",
+  ) {
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const interview = this.interviews.get(interviewId);
-    const application = interview ? this.applications.get(interview.applicationId) : undefined;
-    if (!interview || !application || application.candidateId !== workspace.profile.id)
+    const application = interview
+      ? this.applications.get(interview.applicationId)
+      : undefined;
+    if (
+      !interview ||
+      !application ||
+      application.candidateId !== workspace.profile.id
+    )
       throw fail("NOT_FOUND", "Entretien introuvable.");
     if (!["proposed", "confirmed", "rescheduled"].includes(interview.status))
       throw fail("CONFLICT", "Cet entretien ne peut plus être modifié.");
@@ -616,22 +826,29 @@ export class DemoEmploymentService implements EmploymentServiceContract {
           .filter((job) => job.employer.id === employerId)
           .map(asCard),
         applications: Array.from(this.applications.values()).filter(
-          (application) => this.jobs.get(application.jobId)?.employer.id === employerId,
+          (application) =>
+            this.jobs.get(application.jobId)?.employer.id === employerId,
         ),
         stages: this.recruiterWorkspace.stages,
         interviews: [],
         recruiterNotes: [],
         imports: [],
-        members: [{
-          id: "membership-private-camille",
-          userId: "user_camille",
-          displayName: "Camille Martin",
-          role: "owner",
-          branchIds: [],
-          clientEmployerIds: [],
-          permissions: ["job.manage", "application.manage", "interview.manage"],
-          status: "active",
-        }],
+        members: [
+          {
+            id: "membership-private-camille",
+            userId: "user_camille",
+            displayName: "Camille Martin",
+            role: "owner",
+            branchIds: [],
+            clientEmployerIds: [],
+            permissions: [
+              "job.manage",
+              "application.manage",
+              "interview.manage",
+            ],
+            status: "active",
+          },
+        ],
         activeOfferId: "employment.employer.free",
         entitlements: {
           maxActiveJobs: 1,
@@ -647,7 +864,10 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     }
     return clone({
       ...this.recruiterWorkspace,
-      applications: Array.from(this.applications.values()).filter((application) => this.jobs.get(application.jobId)?.employer.id === employerId),
+      applications: Array.from(this.applications.values()).filter(
+        (application) =>
+          this.jobs.get(application.jobId)?.employer.id === employerId,
+      ),
       recruiterNotes: Array.from(this.notes.values()),
       interviews: Array.from(this.interviews.values()),
       imports: Array.from(this.imports.values()),
@@ -683,11 +903,14 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       screeningQuestions: job.screeningQuestions,
       selectedOfferId: "employment.employer.free",
       selectedAddOnIds: [],
-      validationIssues: [{
-        field: "title",
-        code: "duplicate_review_required",
-        message: "Vérifiez l’intitulé, les dates et la référence avant publication.",
-      }],
+      validationIssues: [
+        {
+          field: "title",
+          code: "duplicate_review_required",
+          message:
+            "Vérifiez l’intitulé, les dates et la référence avant publication.",
+        },
+      ],
       duplicateCandidateIds: [job.id],
       updatedAt: now(),
     };
@@ -703,8 +926,11 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     const application = this.applications.get(applicationId);
-    const stage = this.recruiterWorkspace.stages.find((item) => item.id === input.stageId);
-    if (!application || !stage) throw fail("NOT_FOUND", "Candidature ou étape introuvable.");
+    const stage = this.recruiterWorkspace.stages.find(
+      (item) => item.id === input.stageId,
+    );
+    if (!application || !stage)
+      throw fail("NOT_FOUND", "Candidature ou étape introuvable.");
     if (["rejected", "archived"].includes(stage.systemState) && !input.reason)
       throw fail("VALIDATION_ERROR", "Un motif est requis.");
     const updated = {
@@ -718,7 +944,11 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return clone(updated);
   }
 
-  async addRecruiterNote(employerId: string, applicationId: string, body: string) {
+  async addRecruiterNote(
+    employerId: string,
+    applicationId: string,
+    body: string,
+  ) {
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     const note: RecruiterNote = {
@@ -736,14 +966,19 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   async scheduleInterview(
     employerId: string,
     applicationId: string,
-    input: Omit<EmploymentInterview, "id" | "applicationId" | "createdAt" | "updatedAt">,
+    input: Omit<
+      EmploymentInterview,
+      "id" | "applicationId" | "createdAt" | "updatedAt"
+    >,
   ) {
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     if (Date.parse(input.endsAt) <= Date.parse(input.startsAt))
       throw fail("VALIDATION_ERROR", "Le créneau d’entretien est invalide.");
     try {
-      new Intl.DateTimeFormat("fr-FR", { timeZone: input.timezone }).format(new Date(input.startsAt));
+      new Intl.DateTimeFormat("fr-FR", { timeZone: input.timezone }).format(
+        new Date(input.startsAt),
+      );
     } catch {
       throw fail("VALIDATION_ERROR", "Le fuseau horaire est invalide.");
     }
@@ -751,13 +986,19 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       ...input,
       id: this.next("interview"),
       applicationId,
-      participantUserIds: Array.from(new Set([
-        ...input.participantUserIds,
-        this.currentUser().id,
-        ...Array.from(this.candidateWorkspaces.values())
-          .filter((workspace) => workspace.profile.id === this.applications.get(applicationId)?.candidateId)
-          .map((workspace) => workspace.profile.userId),
-      ])),
+      participantUserIds: Array.from(
+        new Set([
+          ...input.participantUserIds,
+          this.currentUser().id,
+          ...Array.from(this.candidateWorkspaces.values())
+            .filter(
+              (workspace) =>
+                workspace.profile.id ===
+                this.applications.get(applicationId)?.candidateId,
+            )
+            .map((workspace) => workspace.profile.userId),
+        ]),
+      ),
       createdAt: now(),
       updatedAt: now(),
     };
@@ -775,12 +1016,19 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   ) {
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
-    const employer = this.recruiterEmployersForCurrentUser().find((item) => item.id === employerId)!;
+    const employer = this.recruiterEmployersForCurrentUser().find(
+      (item) => item.id === employerId,
+    )!;
     if (!employer.organizationId)
-      throw fail("FORBIDDEN", "Les imports sont réservés aux organisations autorisées.");
+      throw fail(
+        "FORBIDDEN",
+        "Les imports sont réservés aux organisations autorisées.",
+      );
     const organizationId = employer.organizationId;
     const existing = Array.from(this.imports.values()).find(
-      (item) => item.organizationId === organizationId && item.idempotencyKey === input.idempotencyKey,
+      (item) =>
+        item.organizationId === organizationId &&
+        item.idempotencyKey === input.idempotencyKey,
     );
     if (existing) return clone(existing);
     const job: EmploymentImport = {
@@ -810,9 +1058,12 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     await simulateNetworkDelay();
     const workspace = await this.getRecruiterWorkspace(employerId);
     if (
-      (input.sourceType === "csv" && workspace.entitlements.csvImport !== true) ||
-      (input.sourceType === "xml" && workspace.entitlements.xmlImport !== true) ||
-      (["json_api", "ats", "career_site"].includes(input.sourceType) && workspace.entitlements.apiSync !== true)
+      (input.sourceType === "csv" &&
+        workspace.entitlements.csvImport !== true) ||
+      (input.sourceType === "xml" &&
+        workspace.entitlements.xmlImport !== true) ||
+      (["json_api", "ats", "career_site"].includes(input.sourceType) &&
+        workspace.entitlements.apiSync !== true)
     )
       throw fail("FORBIDDEN", "Votre offre ne comprend pas ce mode d’import.");
     return {
@@ -841,11 +1092,24 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     if (existing) return clone(existing);
     const catalog = await this.getCatalog(input.marketCode);
     const offer = catalog.offers.find((item) => item.id === input.offerId);
-    const addOns = catalog.addOns.filter((item) => input.addOnIds?.includes(item.id));
+    const addOns = catalog.addOns.filter((item) =>
+      input.addOnIds?.includes(item.id),
+    );
     const price = offer?.prices.find((item) => item.isActive);
-    const total = (price?.amount.amountMinor || 0) + addOns.reduce((sum, item) => sum + item.price.amountMinor, 0);
+    const total =
+      (price?.amount.amountMinor || 0) +
+      addOns.reduce((sum, item) => sum + item.price.amountMinor, 0);
     const scenario = input.scenario || "success";
-    const status = total === 0 ? "paid" : scenario === "success" ? "paid" : scenario === "pending" ? "pending" : scenario === "requires_action" ? "requires_action" : "failed";
+    const status =
+      total === 0
+        ? "paid"
+        : scenario === "success"
+          ? "paid"
+          : scenario === "pending"
+            ? "pending"
+            : scenario === "requires_action"
+              ? "requires_action"
+              : "failed";
     const checkout: VerticalCheckout = {
       id: this.next("checkout"),
       verticalType: "employment",
@@ -854,11 +1118,16 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       offerId: offer?.id,
       addOnIds: addOns.map((item) => item.id),
       total: { amountMinor: total, currency: catalog.config.currency },
-      tax: { amountMinor: Math.round(total - total / 1.2), currency: catalog.config.currency },
+      tax: {
+        amountMinor: Math.round(total - total / 1.2),
+        currency: catalog.config.currency,
+      },
       status,
       provider: "demo",
-      providerPaymentId: status === "paid" && total > 0 ? this.next("demo-payment") : undefined,
-      invoiceId: status === "paid" && total > 0 ? this.next("demo-invoice") : undefined,
+      providerPaymentId:
+        status === "paid" && total > 0 ? this.next("demo-payment") : undefined,
+      invoiceId:
+        status === "paid" && total > 0 ? this.next("demo-invoice") : undefined,
       idempotencyKey: input.idempotencyKey,
       createdAt: now(),
       updatedAt: now(),
@@ -872,15 +1141,28 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return {
       catalog: await this.getCatalog(marketCode),
       employerCounts: { active: 483, verified: 296, suspended: 7, private: 82 },
-      jobCounts: { published: 2841, pending_review: 37, expired: 416, flagged: 12 },
-      applicationCounts: { received: 6820, interview: 614, offer: 103, hired: 72 },
+      jobCounts: {
+        published: 2841,
+        pending_review: 37,
+        expired: 416,
+        flagged: 12,
+      },
+      applicationCounts: {
+        received: 6820,
+        interview: 614,
+        offer: 103,
+        hired: 72,
+      },
       importErrorCount: 3,
       moderationQueueCount: 37,
       prohibitedLanguageReviewCount: 9,
     };
   }
 
-  async updateMarketConfig(marketCode: string, patch: Partial<(typeof this.catalog)["config"]>) {
+  async updateMarketConfig(
+    marketCode: string,
+    patch: Partial<(typeof this.catalog)["config"]>,
+  ) {
     await simulateNetworkDelay();
     if (marketCode.toUpperCase() !== this.catalog.config.marketCode)
       throw fail("NOT_FOUND", "Marché Emploi introuvable.");
@@ -889,11 +1171,20 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return clone(this.catalog.config);
   }
 
-  async updateOffer(offerId: string, patch: Partial<(typeof this.catalog)["offers"][number]>) {
+  async updateOffer(
+    offerId: string,
+    patch: Partial<(typeof this.catalog)["offers"][number]>,
+  ) {
     await simulateNetworkDelay();
-    const index = this.catalog.offers.findIndex((offer) => offer.id === offerId);
+    const index = this.catalog.offers.findIndex(
+      (offer) => offer.id === offerId,
+    );
     if (index < 0) throw fail("NOT_FOUND", "Offre Emploi introuvable.");
-    this.catalog.offers[index] = { ...this.catalog.offers[index], ...clone(patch), verticalType: "employment" };
+    this.catalog.offers[index] = {
+      ...this.catalog.offers[index],
+      ...clone(patch),
+      verticalType: "employment",
+    };
     return clone(this.catalog.offers[index]);
   }
 }

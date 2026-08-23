@@ -31,10 +31,25 @@ export class DemoPromotionsService implements PromotionsServiceContract {
     const expiresAt = new Date(
       Date.now() + boost.durationDays * 86400000,
     ).toISOString();
+    const startsAt = new Date().toISOString();
+    const promotionType = {
+      urgent: "urgent_badge",
+      top_of_list: "search_bump",
+      highlight: "featured",
+      gallery_boost: "featured",
+    }[boost.id] as "urgent_badge" | "search_bump" | "featured";
     await listingRepository.updateListing(listingId, {
       isBoosted: true,
-      boostType: boost.id as any,
+      boostType: boost.id,
       boostExpiresAt: expiresAt,
+      promotionState: "active",
+      promotionType,
+      promotionSource: "purchase",
+      promotionSourceId: `demo-order:${listingId}:${boost.productId}:${startsAt}`,
+      promotionLabel: boost.badgeLabel,
+      promotionStartAt: startsAt,
+      promotionEndAt: expiresAt,
+      promotedAt: startsAt,
     });
 
     return {

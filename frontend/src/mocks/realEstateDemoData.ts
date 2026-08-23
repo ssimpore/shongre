@@ -10,7 +10,6 @@ import type {
   RealEstateAdminOverview,
   RealEstateCatalog,
 } from "@shongre/contracts/real-estate";
-import type { Listing } from "../types";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 export const IMMO_DEMO_NOW = "2026-08-22T10:00:00.000Z";
@@ -824,85 +823,6 @@ export const toPublicProperty = (property: PropertyPrivate): PropertyPublic => {
     isFavorite: false,
   };
 };
-
-export const IMMO_GENERIC_LISTINGS: Listing[] = IMMO_DEMO_PROPERTIES.map(
-  (privateProperty) => {
-    const property = toPublicProperty(privateProperty);
-    const coverImageUrl = property.media.photos[0] || IMMO_DEMO_MEDIA.apartment;
-    return {
-      id: property.listingId,
-      title: property.title,
-      description: property.description,
-      price: property.financials.price.amountMinor / 100,
-      currency: property.financials.price.currency,
-      isNegotiable: property.financials.isNegotiable,
-      isFreeDonation: false,
-      categorySlug: "immobilier",
-      subCategorySlug:
-        property.transactionType === "sale"
-          ? "ventes-immobilieres"
-          : "locations-immobilieres",
-      categoryLabel: "Immobilier",
-      subCategoryLabel:
-        property.transactionType === "sale" ? "Ventes" : "Locations",
-      condition: "not_applicable",
-      sellerId: property.seller.id,
-      sellerName: property.seller.displayName,
-      sellerType: property.seller.type === "owner" ? "individual" : "pro",
-      sellerAvatarUrl: property.seller.logoUrl,
-      sellerRating: 0,
-      sellerReviewCount: 0,
-      sellerIsVerified: property.seller.verificationLabels.length > 0,
-      sellerCity: property.address.city,
-      sellerPostalCode: property.address.postalCode,
-      city: property.address.publicLabel,
-      postalCode: property.address.postalCode,
-      department: property.address.administrativeArea || "",
-      region: property.address.administrativeArea || "",
-      latitude: property.address.latitude,
-      longitude: property.address.longitude,
-      photos: property.media.photos.map((url, index) => ({
-        id: `${property.listingId}-photo-${index + 1}`,
-        url,
-        isCover: index === 0,
-        alt: property.title,
-      })),
-      coverImageUrl,
-      deliveryOptions: [{ type: "hand_delivery", available: true, price: 0 }],
-      isOnlinePaymentAvailable: false,
-      isReservable: false,
-      attributes: {
-        verticalType: "real_estate",
-        verticalEntityId: property.id,
-        verticalSchemaVersion: property.schemaVersion,
-        canonicalPath: `/immo/bien/${property.slug}`,
-        propertyType: property.propertyType,
-        transactionType: property.transactionType,
-        livingAreaSquareMeters: property.characteristics.livingAreaSquareMeters,
-        rooms: property.characteristics.rooms,
-        bedrooms: property.characteristics.bedrooms,
-        dpeClass: property.energy.dpeClass,
-      },
-      status: "active",
-      createdAt: property.publishedAt || property.sortDate,
-      updatedAt: property.sortDate,
-      expiresAt: "2026-10-20T10:00:00.000Z",
-      viewsCount: 0,
-      favoritesCount: 0,
-      contactCount: 0,
-      isBoosted:
-        property.promotion.featured || property.promotion.urgent || undefined,
-      boostType: property.promotion.featured
-        ? "highlight"
-        : property.promotion.urgent
-          ? "urgent"
-          : undefined,
-      boostExpiresAt: property.promotion.endsAt,
-      marketCode: property.marketCodes[0],
-      marketCodes: property.marketCodes,
-    };
-  },
-);
 
 export const IMMO_DEMO_LEADS: PropertyLead[] = [
   {

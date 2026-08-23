@@ -593,7 +593,13 @@ export const dealerStockTransferSchema = z.object({
   fromLocationId: z.string().min(1),
   toLocationId: z.string().min(1),
   requestedByUserId: z.string().min(1),
-  status: z.enum(["requested", "approved", "in_transit", "completed", "cancelled"]),
+  status: z.enum([
+    "requested",
+    "approved",
+    "in_transit",
+    "completed",
+    "cancelled",
+  ]),
   requestedAt: z.string(),
   completedAt: z.string().optional(),
 });

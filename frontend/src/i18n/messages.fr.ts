@@ -807,7 +807,7 @@ export const messagesFr = {
     "Masquer le panneau de filtres",
   "search.searchPage.livraisonDisponible": "Livraison disponible",
   "search.searchPage.paiementSecuriseEnLigne": "Paiement sécurisé en ligne",
-  "search.searchPage.sauvegarderCetteRecherche": "Sauvegarder cette recherche",
+  "search.searchPage.sauvegarderCetteRecherche": "Sauvegarder",
   "search.searchPage.effacerTousLesFiltres": "Effacer tous les filtres",
   "search.searchPage.filtresDeRecherche": "Filtres de recherche",
   "search.searchPage.resultatsDeRecherche": "Résultats de recherche",
@@ -816,6 +816,8 @@ export const messagesFr = {
   "search.searchPage.sousCategories": "Sous-catégories",
   "search.searchPage.trierPar": "Trier par :",
   "search.searchPage.trierPar2": "Trier par",
+  "search.searchPage.loadError":
+    "Impossible de charger les annonces pour le moment. Vos filtres sont conservés.",
 
   // --- sellerworkspace.accountOverviewPage ---
   "sellerworkspace.accountOverviewPage.presentezVousBrievementAuxAutres":
@@ -3468,6 +3470,44 @@ export const messagesFr = {
   "employment.import.confirm": "Confirmer l’import",
   "employment.import.idempotent":
     "Une synchronisation répétée met à jour l’offre source sans créer de doublon.",
+  "admin.discovery.title": "Recherche et découverte",
+  "admin.discovery.tab": "Découverte",
+  "admin.discovery.description":
+    "Les abonnements, dépenses publicitaires et types de vendeur sont exclus du score organique. Toute visibilité payante reste un placement séparé et identifié.",
+  "admin.discovery.loading": "Chargement de la politique de découverte…",
+  "admin.discovery.unavailableTitle": "Politique de découverte indisponible",
+  "admin.discovery.unavailable": "La configuration n’a pas pu être chargée.",
+  "admin.discovery.saveError": "Enregistrement impossible.",
+  "admin.discovery.reasonPrompt": "Motif obligatoire (8 caractères minimum)",
+  "admin.discovery.publishReason": "Activation de la politique de découverte",
+  "admin.discovery.draftReason": "Préparation de la politique de découverte",
+  "admin.discovery.publishedNotice": "Politique {version} activée et auditée.",
+  "admin.discovery.draftNotice":
+    "Brouillon {version} créé sans modifier la politique active.",
+  "admin.discovery.saveDraft": "Enregistrer un brouillon",
+  "admin.discovery.publish": "Publier",
+  "admin.discovery.metricsTitle": "Observabilité sur 30 jours",
+  "admin.discovery.weightsTitle": "Poids organiques",
+  "admin.discovery.total": "Total {total}",
+  "admin.discovery.sponsoredTitle": "Insertion sponsorisée contrôlée",
+  "admin.discovery.positions": "Positions",
+  "admin.discovery.maxPerPage": "Maximum par page",
+  "admin.discovery.maxShare": "Part maximale",
+  "admin.discovery.minimumRelevance": "Pertinence minimale",
+  "admin.discovery.weight.relevance": "Pertinence texte",
+  "admin.discovery.weight.category": "Catégorie",
+  "admin.discovery.weight.location": "Localisation",
+  "admin.discovery.weight.quality": "Qualité",
+  "admin.discovery.weight.freshness": "Fraîcheur réelle",
+  "admin.discovery.weight.trust": "Confiance",
+  "admin.discovery.weight.price": "Plausibilité prix",
+  "admin.discovery.weight.personalization": "Personnalisation",
+  "admin.discovery.metric.searches": "Recherches",
+  "admin.discovery.metric.noResults": "Sans résultat",
+  "admin.discovery.metric.sponsored": "Placements sponsorisés",
+  "admin.discovery.metric.duplicates": "Doublons écartés",
+  "admin.discovery.metric.diversity": "Diversifications",
+  "admin.discovery.metric.latency": "Latence moyenne (ms)",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

@@ -1,5 +1,5 @@
-import { AppError } from '../errors/app-error.js';
-import { PlatformRole, Permission, hasPermission } from './rbac.js';
+import { AppError } from "../errors/app-error.js";
+import { PlatformRole, Permission, hasPermission } from "./rbac.js";
 
 /**
  * The authenticated caller for a single request.
@@ -18,13 +18,13 @@ export interface Principal {
 
 /** An anonymous caller. Kept explicit so route handlers never see `null` unexpectedly. */
 export const GUEST_PRINCIPAL: Principal = {
-  userId: '',
-  email: '',
-  role: 'guest',
+  userId: "",
+  email: "",
+  role: "guest",
 };
 
 export function isAuthenticated(principal: Principal): boolean {
-  return principal.userId !== '' && principal.role !== 'guest';
+  return principal.userId !== "" && principal.role !== "guest";
 }
 
 /**
@@ -33,8 +33,8 @@ export function isAuthenticated(principal: Principal): boolean {
 export function requireAuthenticated(principal: Principal): Principal {
   if (!isAuthenticated(principal)) {
     throw new AppError({
-      code: 'UNAUTHENTICATED',
-      message: 'Vous devez être connecté pour effectuer cette action.',
+      code: "UNAUTHENTICATED",
+      message: "Vous devez être connecté pour effectuer cette action.",
     });
   }
   return principal;
@@ -46,12 +46,16 @@ export function requireAuthenticated(principal: Principal): Principal {
  * The message deliberately does not name the missing permission: telling an
  * attacker exactly which grant they lack maps out the permission model for them.
  */
-export function requirePermission(principal: Principal, permission: Permission): Principal {
+export function requirePermission(
+  principal: Principal,
+  permission: Permission,
+): Principal {
   requireAuthenticated(principal);
   if (!hasPermission(principal.role, permission)) {
     throw new AppError({
-      code: 'FORBIDDEN',
-      message: "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
+      code: "FORBIDDEN",
+      message:
+        "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
     });
   }
   return principal;
@@ -68,7 +72,7 @@ export function requirePermission(principal: Principal, permission: Permission):
 export function requireOwnership(
   principal: Principal,
   resourceOwnerId: string,
-  override?: Permission
+  override?: Permission,
 ): Principal {
   requireAuthenticated(principal);
 
@@ -78,8 +82,8 @@ export function requireOwnership(
   // 404 rather than 403: confirming the resource exists but is not yours still
   // leaks that the id is real, which is enough to enumerate users and orders.
   throw new AppError({
-    code: 'NOT_FOUND',
-    message: 'Ressource introuvable.',
+    code: "NOT_FOUND",
+    message: "Ressource introuvable.",
   });
 }
 
@@ -89,9 +93,17 @@ export function requireOwnership(
  * Callers may address their own data by id or by the literal `me`. Anything
  * else has to survive the ownership check.
  */
-export function resolveOwnerId(principal: Principal, requestedId: string | undefined, override?: Permission): string {
+export function resolveOwnerId(
+  principal: Principal,
+  requestedId: string | undefined,
+  override?: Permission,
+): string {
   requireAuthenticated(principal);
-  if (!requestedId || requestedId === 'me' || requestedId === principal.userId) {
+  if (
+    !requestedId ||
+    requestedId === "me" ||
+    requestedId === principal.userId
+  ) {
     return principal.userId;
   }
   requireOwnership(principal, requestedId, override);

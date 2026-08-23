@@ -38,7 +38,9 @@ export interface EmploymentServiceContract {
   getSimilarJobs(idOrSlug: string): Promise<JobPostingCard[]>;
   getDraft(draftId: string): Promise<JobDraft | null>;
   saveDraft(draft: JobDraft): Promise<JobDraft>;
-  checkDuplicateDraft(draftId: string): Promise<{ duplicateCandidateIds: string[] }>;
+  checkDuplicateDraft(
+    draftId: string,
+  ): Promise<{ duplicateCandidateIds: string[] }>;
   submitDraft(draftId: string): Promise<{
     jobId: string;
     lifecycle: "pending_review" | "published";
@@ -47,7 +49,10 @@ export interface EmploymentServiceContract {
   flagProhibitedLanguage(content: string): Promise<ProhibitedLanguageFlag[]>;
   getCandidateWorkspace(): Promise<CandidateWorkspace>;
   saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
-  apply(jobId: string, input: EmploymentApplicationDraft): Promise<EmploymentApplication>;
+  apply(
+    jobId: string,
+    input: EmploymentApplicationDraft,
+  ): Promise<EmploymentApplication>;
   withdrawApplication(applicationId: string): Promise<EmploymentApplication>;
   toggleSavedJob(jobId: string): Promise<{ saved: boolean }>;
   reportJob(
@@ -82,7 +87,10 @@ export interface EmploymentServiceContract {
   scheduleInterview(
     employerId: string,
     applicationId: string,
-    interview: Omit<EmploymentInterview, "id" | "applicationId" | "createdAt" | "updatedAt">,
+    interview: Omit<
+      EmploymentInterview,
+      "id" | "applicationId" | "createdAt" | "updatedAt"
+    >,
   ): Promise<EmploymentInterview>;
   previewImport(
     employerId: string,

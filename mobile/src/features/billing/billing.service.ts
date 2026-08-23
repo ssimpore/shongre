@@ -25,7 +25,10 @@ export interface EntitlementSnapshot {
 export interface BillingService {
   getCatalog(marketCode?: string): Promise<MonetizationCatalog>;
   createQuote(request: QuoteRequest): Promise<MonetizationQuote>;
-  createCheckout(quoteId: string, idempotencyKey: string): Promise<MonetizationOrder>;
+  createCheckout(
+    quoteId: string,
+    idempotencyKey: string,
+  ): Promise<MonetizationOrder>;
   restoreEntitlements(): Promise<EntitlementSnapshot>;
   classify(
     productClass: BillingProductClass,
@@ -44,7 +47,9 @@ function demoHash(value: string) {
   return (hash >>> 0).toString(16).padStart(8, "0").repeat(8);
 }
 
-async function createDemoQuote(request: QuoteRequest): Promise<MonetizationQuote> {
+async function createDemoQuote(
+  request: QuoteRequest,
+): Promise<MonetizationQuote> {
   const existing = demoQuotes.get(request.idempotencyKey);
   if (existing) return structuredClone(existing);
   const now = new Date();
@@ -57,12 +62,17 @@ async function createDemoQuote(request: QuoteRequest): Promise<MonetizationQuote
           new Date(entry.endsAt) > now,
       )
     : undefined;
-  if (request.promotionCode && !promotion) throw new Error("PROMOTION_DISABLED");
+  if (request.promotionCode && !promotion)
+    throw new Error("PROMOTION_DISABLED");
   const lines = request.productIds.map((id) => {
-    const product = BASELINE_MONETIZATION_CATALOG.products.find((entry) => entry.id === id);
+    const product = BASELINE_MONETIZATION_CATALOG.products.find(
+      (entry) => entry.id === id,
+    );
     if (!product) throw new Error("Produit indisponible");
-    const price = product.prices.find((candidate) =>
-      !request.priceIds?.[product.id] || candidate.id === request.priceIds[product.id],
+    const price = product.prices.find(
+      (candidate) =>
+        !request.priceIds?.[product.id] ||
+        candidate.id === request.priceIds[product.id],
     );
     if (!price) throw new Error("Prix indisponible");
     const discountMinor = !promotion?.productIds.includes(product.id)
@@ -71,7 +81,9 @@ async function createDemoQuote(request: QuoteRequest): Promise<MonetizationQuote
         ? Math.min(price.amount.amountMinor, promotion.discountValue)
         : Math.min(
             price.amount.amountMinor,
-            Math.round((price.amount.amountMinor * promotion.discountValue) / 10_000),
+            Math.round(
+              (price.amount.amountMinor * promotion.discountValue) / 10_000,
+            ),
           );
     const taxableMinor = price.amount.amountMinor - discountMinor;
     const taxMinor = price.priceIncludesTax
@@ -97,7 +109,8 @@ async function createDemoQuote(request: QuoteRequest): Promise<MonetizationQuote
   const quote: MonetizationQuote = {
     id: `quote_${demoHash(request.idempotencyKey).slice(0, 24)}`,
     accountId: "mobile-demo-account",
-    configurationVersionId: BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+    configurationVersionId:
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
     marketCode: request.marketCode,
     currency: BASELINE_MONETIZATION_CATALOG.currency,
     lines,
@@ -177,19 +190,27 @@ export const billingService: BillingService = {
   },
 
   async restoreEntitlements() {
-    const entitlements = mobileEnvironment.dataMode === "demo"
-      ? demoEntitlements
-      : await apiRequest<ActiveEntitlement[]>("/monetization/entitlements");
+    const entitlements =
+      mobileEnvironment.dataMode === "demo"
+        ? demoEntitlements
+        : await apiRequest<ActiveEntitlement[]>("/monetization/entitlements");
     const numeric = (key: string) =>
       entitlements
         .filter((entry) => entry.status === "active" && entry.key === key)
-        .reduce((sum, entry) => sum + (typeof entry.value === "number" ? entry.value : 0), 0);
+        .reduce(
+          (sum, entry) =>
+            sum + (typeof entry.value === "number" ? entry.value : 0),
+          0,
+        );
     return {
       source: "backend",
       featuredCredits: numeric("featuredCredits"),
       bumpCredits: numeric("searchBumpCredits") + numeric("monthlyBumpCredits"),
       storeEnabled: entitlements.some(
-        (entry) => entry.status === "active" && entry.key === "storefrontCustomization" && entry.value === true,
+        (entry) =>
+          entry.status === "active" &&
+          entry.key === "storefrontCustomization" &&
+          entry.value === true,
       ),
     };
   },

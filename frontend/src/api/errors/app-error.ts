@@ -74,12 +74,8 @@ export function getFriendlyErrorMessage(error: unknown): string {
       case "TIMEOUT":
         return "Délai d’attente dépassé lors de la communication avec le serveur.";
       default:
-        return error.message || "Une erreur inattendue est survenue.";
+        return "Une erreur inattendue est survenue.";
     }
-  }
-
-  if (error instanceof Error) {
-    return error.message;
   }
 
   return "Une erreur inattendue est survenue.";

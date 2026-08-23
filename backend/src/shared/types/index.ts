@@ -1,10 +1,10 @@
 export type UserRole =
-  | 'guest'
-  | 'individual_buyer'
-  | 'individual_seller'
-  | 'pro_seller'
-  | 'moderator'
-  | 'admin'
+  | "guest"
+  | "individual_buyer"
+  | "individual_seller"
+  | "pro_seller"
+  | "moderator"
+  | "admin"
   | string;
 
 export interface UserProfile {
@@ -12,11 +12,17 @@ export interface UserProfile {
   slug: string;
   email: string;
   name: string;
-  accountType: 'individual' | 'professional' | 'internal';
+  accountType: "individual" | "professional" | "internal";
   primaryRole: string;
   role: UserRole;
-  sellerType?: 'individual' | 'pro';
-  status: 'active' | 'suspended' | 'pending_verification' | 'banned' | 'archived' | 'deleted';
+  sellerType?: "individual" | "pro";
+  status:
+    | "active"
+    | "suspended"
+    | "pending_verification"
+    | "banned"
+    | "archived"
+    | "deleted";
   avatarUrl?: string;
   phone?: string;
   city?: string;
@@ -38,25 +44,37 @@ export interface UserProfile {
 }
 
 export type ListingStatus =
-  | 'draft'
-  | 'published'
-  | 'reserved'
-  | 'sold'
-  | 'archived'
-  | 'rejected'
-  | 'flagged';
+  | "draft"
+  | "published"
+  | "reserved"
+  | "sold"
+  | "archived"
+  | "rejected"
+  | "flagged";
 
 export type DeliveryType =
-  | 'hand_delivery'
-  | 'relay_point'
-  | 'home_delivery'
-  | 'cocolis'
-  | 'express';
+  "hand_delivery" | "relay_point" | "home_delivery" | "cocolis" | "express";
 
 export interface Listing {
   id: string;
   sellerId: string;
   storeId?: string;
+  /** Canonical ownership. Legacy sellerId remains the authorized publishing actor. */
+  publisherType?: "private" | "professional";
+  publisherUserId?: string;
+  publisherOrganizationId?: string;
+  publisherBranchId?: string;
+  publisherVerificationStatus?:
+    | "unverified"
+    | "email_verified"
+    | "phone_verified"
+    | "identity_verified"
+    | "business_verified"
+    | "suspended";
+  publisherStatus?: "active" | "suspended" | "deleted";
+  publicationOfferId?: string;
+  subscriptionId?: string;
+  entitlementSnapshot?: Record<string, string | number | boolean | string[]>;
   seller?: UserProfile;
   categoryId: string;
   title: string;
@@ -84,6 +102,36 @@ export interface Listing {
   urgentExpiresAt?: string;
   featuredExpiresAt?: string;
   bumpedAt?: string;
+  promotionState?:
+    | "inactive"
+    | "scheduled"
+    | "active"
+    | "expired"
+    | "cancelled"
+    | "refunded"
+    | "failed";
+  promotionType?:
+    | "urgent_badge"
+    | "search_bump"
+    | "featured"
+    | "top_placement"
+    | "sponsored_search"
+    | "homepage_spotlight"
+    | "category_spotlight"
+    | "local_spotlight"
+    | "seller_spotlight";
+  promotionSource?: "purchase" | "subscription_credit" | "admin_grant";
+  promotionSourceId?: string;
+  promotionLabel?: string;
+  promotionStartAt?: string;
+  promotionEndAt?: string;
+  publishedAt?: string;
+  materiallyUpdatedAt?: string;
+  organicFreshnessAt?: string;
+  promotedAt?: string;
+  externalStockId?: string;
+  duplicateGroupId?: string;
+  discovery?: import("@shongre/contracts").DiscoveryPresentation;
   viewCount: number;
   favoriteCount: number;
   safetyRiskScore?: number;
@@ -108,9 +156,18 @@ export interface SearchFilters {
   deliveryType?: DeliveryType;
   isUrgent?: boolean;
   isPro?: boolean;
+  sellerType?: "all" | "private" | "professional" | "individual" | "pro";
+  verifiedPublishersOnly?: boolean;
   sellerId?: string;
+  publisherOrganizationId?: string;
   attributes?: Record<string, any>;
-  sortBy?: 'recent' | 'price_asc' | 'price_desc' | 'relevance';
+  sortBy?:
+    | "recent"
+    | "date_desc"
+    | "price_asc"
+    | "price_desc"
+    | "relevance"
+    | "distance";
   page?: number;
   limit?: number;
 }
@@ -118,7 +175,7 @@ export interface SearchFilters {
 export interface Transaction {
   id: string;
   orderNumber: string;
-  transactionType: 'DIRECT_PURCHASE' | 'RESERVATION';
+  transactionType: "DIRECT_PURCHASE" | "RESERVATION";
   listingId: string;
   listing?: Partial<Listing>;
   buyerId: string;
@@ -126,14 +183,14 @@ export interface Transaction {
   sellerId: string;
   seller?: Partial<UserProfile>;
   status:
-    | 'initiated'
-    | 'escrow_funded'
-    | 'shipped'
-    | 'pin_pending'
-    | 'disputed'
-    | 'completed'
-    | 'refunded'
-    | 'cancelled';
+    | "initiated"
+    | "escrow_funded"
+    | "shipped"
+    | "pin_pending"
+    | "disputed"
+    | "completed"
+    | "refunded"
+    | "cancelled";
   itemAmount: number;
   protectionFee: number;
   shippingFee: number;
@@ -180,7 +237,7 @@ export interface Message {
   attachments?: string[];
   isOffer?: boolean;
   offerPrice?: number;
-  offerStatus?: 'pending' | 'accepted' | 'declined' | 'expired';
+  offerStatus?: "pending" | "accepted" | "declined" | "expired";
   isPickupProposal?: boolean;
   pickupDetails?: Record<string, any>;
   createdAt: string;

@@ -455,16 +455,76 @@ export const AUTO_DEMO_CATALOG: AutoCatalog = {
       validityDays: 7,
     },
     ...[
-      ["auto_addon_homepage", "homepage_spotlight", "Spotlight accueil", 2990, true],
-      ["auto_addon_category", "category_spotlight", "Spotlight catégorie", 1990, true],
-      ["auto_addon_qualified_lead", "qualified_lead", "Lead acheteur qualifié", 590, true],
-      ["auto_addon_sponsored_dealer", "sponsored_dealer", "Concession sponsorisée", 4990, true],
-      ["auto_addon_inspection_referral", "inspection_referral", "Demande d’inspection", 0, false],
-      ["auto_addon_warranty_referral", "warranty_referral", "Demande de garantie", 0, false],
-      ["auto_addon_financing_referral", "financing_referral", "Demande de financement", 0, false],
-      ["auto_addon_insurance_referral", "insurance_referral", "Demande d’assurance", 0, false],
-      ["auto_addon_delivery_referral", "delivery_referral", "Demande de livraison", 0, false],
-      ["auto_addon_trade_in_referral", "trade_in_referral", "Demande de reprise", 0, false],
+      [
+        "auto_addon_homepage",
+        "homepage_spotlight",
+        "Spotlight accueil",
+        2990,
+        true,
+      ],
+      [
+        "auto_addon_category",
+        "category_spotlight",
+        "Spotlight catégorie",
+        1990,
+        true,
+      ],
+      [
+        "auto_addon_qualified_lead",
+        "qualified_lead",
+        "Lead acheteur qualifié",
+        590,
+        true,
+      ],
+      [
+        "auto_addon_sponsored_dealer",
+        "sponsored_dealer",
+        "Concession sponsorisée",
+        4990,
+        true,
+      ],
+      [
+        "auto_addon_inspection_referral",
+        "inspection_referral",
+        "Demande d’inspection",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_warranty_referral",
+        "warranty_referral",
+        "Demande de garantie",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_financing_referral",
+        "financing_referral",
+        "Demande de financement",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_insurance_referral",
+        "insurance_referral",
+        "Demande d’assurance",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_delivery_referral",
+        "delivery_referral",
+        "Demande de livraison",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_trade_in_referral",
+        "trade_in_referral",
+        "Demande de reprise",
+        0,
+        false,
+      ],
     ].map(([id, type, name, amountMinor, isActive]) => ({
       id: String(id),
       type: type as AutoCatalog["addOns"][number]["type"],
@@ -832,9 +892,8 @@ export const AUTO_DEMO_WORKSPACE: DealerWorkspace = {
   usage: {
     activeVehicles: AUTO_DEMO_PRIVATE_VEHICLES.length,
     remainingVehicleSlots:
-      (AUTO_DEMO_CATALOG.plans.find(
-        (plan) => plan.id === "auto_dealer_growth",
-      )?.entitlements.maxActiveVehicles || 0) -
+      (AUTO_DEMO_CATALOG.plans.find((plan) => plan.id === "auto_dealer_growth")
+        ?.entitlements.maxActiveVehicles || 0) -
       AUTO_DEMO_PRIVATE_VEHICLES.length,
     remainingPromotionCredits: 24,
     medianResponseMinutes: 42,

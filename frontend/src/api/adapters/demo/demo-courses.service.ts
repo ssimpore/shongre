@@ -32,6 +32,7 @@ import {
   DEMO_LEARNER_REQUESTS,
   DEMO_TUTORS,
 } from "../../../mocks/coursesDemoData";
+import { demoVerticalDiscoveryStore } from "../../../domains/discovery/demo-vertical-discovery.store";
 
 const clone = <T>(value: T): T => structuredClone(value);
 
@@ -46,27 +47,48 @@ function fromPrice(offer: CourseOffer) {
   );
 }
 
-function relevance(query: TutorSearchQuery, tutor: TutorProfile, offer: CourseOffer) {
+function relevance(
+  query: TutorSearchQuery,
+  tutor: TutorProfile,
+  offer: CourseOffer,
+) {
   let score = 0.35;
   if (!query.subjectId || query.subjectId === offer.subjectId) score += 0.25;
-  if (!query.levelIds?.length || query.levelIds.some((id) => offer.levelIds.includes(id))) score += 0.15;
-  if (!query.deliveryModes?.length || query.deliveryModes.some((mode) => offer.deliveryModes.includes(mode))) score += 0.1;
-  if (!query.city || tutor.serviceArea?.cityLabel.toLowerCase().includes(query.city.toLowerCase())) score += 0.08;
+  if (
+    !query.levelIds?.length ||
+    query.levelIds.some((id) => offer.levelIds.includes(id))
+  )
+    score += 0.15;
+  if (
+    !query.deliveryModes?.length ||
+    query.deliveryModes.some((mode) => offer.deliveryModes.includes(mode))
+  )
+    score += 0.1;
+  if (
+    !query.city ||
+    tutor.serviceArea?.cityLabel
+      .toLowerCase()
+      .includes(query.city.toLowerCase())
+  )
+    score += 0.08;
   if (offer.capacityStatus === "available") score += 0.04;
-  if (tutor.isFeatured) score += 0.03;
   return score;
 }
 
 export class DemoCoursesService implements CoursesServiceContract {
   private catalog = clone(DEMO_COURSE_CATALOG);
-  private tutors = new Map(DEMO_TUTORS.map((tutor) => [tutor.id, clone(tutor)]));
+  private tutors = new Map(
+    DEMO_TUTORS.map((tutor) => [tutor.id, clone(tutor)]),
+  );
   private offers = new Map(
     DEMO_COURSE_OFFERS.map((offer) => [offer.id, clone(offer)]),
   );
   private requests = new Map(
     DEMO_LEARNER_REQUESTS.map((request) => [request.id, clone(request)]),
   );
-  private leads = new Map(DEMO_COURSE_LEADS.map((lead) => [lead.id, clone(lead)]));
+  private leads = new Map(
+    DEMO_COURSE_LEADS.map((lead) => [lead.id, clone(lead)]),
+  );
   private savedTutors = new Map<string, Set<string>>([
     ["user_thomas", new Set(["tutor_ines"])],
   ]);
@@ -75,10 +97,18 @@ export class DemoCoursesService implements CoursesServiceContract {
 
   async getCatalog(marketCode: string): Promise<CourseCatalog> {
     await simulateNetworkDelay();
-    const catalog = clone(applyMonetizationToCourseCatalog({
-      ...this.catalog,
-      config: { ...this.catalog.config, marketCode: marketCode.toUpperCase() },
-    }, BASELINE_MONETIZATION_CATALOG));
+    const catalog = clone(
+      applyMonetizationToCourseCatalog(
+        {
+          ...this.catalog,
+          config: {
+            ...this.catalog.config,
+            marketCode: marketCode.toUpperCase(),
+          },
+        },
+        BASELINE_MONETIZATION_CATALOG,
+      ),
+    );
     return {
       ...catalog,
       subjects: catalog.subjects.filter((subject) => subject.isActive),
@@ -90,10 +120,18 @@ export class DemoCoursesService implements CoursesServiceContract {
 
   async getAdminCatalog(marketCode: string): Promise<CourseCatalog> {
     await simulateNetworkDelay();
-    return clone(applyMonetizationToCourseCatalog({
-      ...this.catalog,
-      config: { ...this.catalog.config, marketCode: marketCode.toUpperCase() },
-    }, BASELINE_MONETIZATION_CATALOG));
+    return clone(
+      applyMonetizationToCourseCatalog(
+        {
+          ...this.catalog,
+          config: {
+            ...this.catalog.config,
+            marketCode: marketCode.toUpperCase(),
+          },
+        },
+        BASELINE_MONETIZATION_CATALOG,
+      ),
+    );
   }
 
   async searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
@@ -101,46 +139,97 @@ export class DemoCoursesService implements CoursesServiceContract {
     let pairs = Array.from(this.offers.values())
       .filter((offer) => offer.status === "published")
       .map((offer) => ({ offer, tutor: this.tutors.get(offer.tutorProfileId) }))
-      .filter((pair): pair is { offer: CourseOffer; tutor: TutorProfile } => Boolean(pair.tutor))
+      .filter((pair): pair is { offer: CourseOffer; tutor: TutorProfile } =>
+        Boolean(pair.tutor),
+      )
       .filter(({ tutor, offer }) => {
-        if (query.subjectId && offer.subjectId !== query.subjectId) return false;
-        if (query.levelIds?.length && !query.levelIds.some((id) => offer.levelIds.includes(id))) return false;
-        if (query.deliveryModes?.length && !query.deliveryModes.some((mode) => offer.deliveryModes.includes(mode))) return false;
-        if (query.languages?.length && !query.languages.some((language) => offer.languages.includes(language))) return false;
-        if (query.city && !tutor.serviceArea?.cityLabel.toLowerCase().includes(query.city.toLowerCase())) return false;
-        if (query.verifiedOnly && tutor.verifications.identity !== "verified") return false;
-        if (query.minRating && (!tutor.ratingIsStatisticallyMeaningful || (tutor.rating || 0) < query.minRating)) return false;
-        if (query.tutorType === "individual" && tutor.profileType !== "individual") return false;
-        if (query.tutorType === "organization" && !tutor.organizationId) return false;
+        if (query.subjectId && offer.subjectId !== query.subjectId)
+          return false;
+        if (
+          query.levelIds?.length &&
+          !query.levelIds.some((id) => offer.levelIds.includes(id))
+        )
+          return false;
+        if (
+          query.deliveryModes?.length &&
+          !query.deliveryModes.some((mode) =>
+            offer.deliveryModes.includes(mode),
+          )
+        )
+          return false;
+        if (
+          query.languages?.length &&
+          !query.languages.some((language) =>
+            offer.languages.includes(language),
+          )
+        )
+          return false;
+        if (
+          query.city &&
+          !tutor.serviceArea?.cityLabel
+            .toLowerCase()
+            .includes(query.city.toLowerCase())
+        )
+          return false;
+        if (query.verifiedOnly && tutor.verifications.identity !== "verified")
+          return false;
+        if (
+          query.minRating &&
+          (!tutor.ratingIsStatisticallyMeaningful ||
+            (tutor.rating || 0) < query.minRating)
+        )
+          return false;
+        if (
+          query.tutorType === "individual" &&
+          tutor.profileType !== "individual"
+        )
+          return false;
+        if (query.tutorType === "organization" && !tutor.organizationId)
+          return false;
         const price = fromPrice(offer).amountMinor;
-        if (query.minPriceMinor !== undefined && price < query.minPriceMinor) return false;
-        if (query.maxPriceMinor !== undefined && price > query.maxPriceMinor) return false;
+        if (query.minPriceMinor !== undefined && price < query.minPriceMinor)
+          return false;
+        if (query.maxPriceMinor !== undefined && price > query.maxPriceMinor)
+          return false;
         if (query.query) {
-          const text = `${tutor.displayName} ${tutor.headline} ${offer.title} ${offer.description}`.toLowerCase();
+          const text =
+            `${tutor.displayName} ${tutor.headline} ${offer.title} ${offer.description}`.toLowerCase();
           if (!text.includes(query.query.toLowerCase())) return false;
         }
         return true;
       });
 
     pairs.sort((a, b) => {
-      if (query.sort === "price_asc") return fromPrice(a.offer).amountMinor - fromPrice(b.offer).amountMinor;
-      if (query.sort === "price_desc") return fromPrice(b.offer).amountMinor - fromPrice(a.offer).amountMinor;
-      if (query.sort === "rating") return (b.tutor.rating || 0) - (a.tutor.rating || 0);
-      if (query.sort === "response_time") return (a.tutor.responseTimeMinutes || 99999) - (b.tutor.responseTimeMinutes || 99999);
-      return relevance(query, b.tutor, b.offer) - relevance(query, a.tutor, a.offer);
+      if (query.sort === "price_asc")
+        return fromPrice(a.offer).amountMinor - fromPrice(b.offer).amountMinor;
+      if (query.sort === "price_desc")
+        return fromPrice(b.offer).amountMinor - fromPrice(a.offer).amountMinor;
+      if (query.sort === "rating")
+        return (b.tutor.rating || 0) - (a.tutor.rating || 0);
+      if (query.sort === "response_time")
+        return (
+          (a.tutor.responseTimeMinutes || 99999) -
+          (b.tutor.responseTimeMinutes || 99999)
+        );
+      return (
+        relevance(query, b.tutor, b.offer) - relevance(query, a.tutor, a.offer)
+      );
     });
 
     const offset = Number(query.cursor || 0);
     const limit = Math.min(50, query.limit || 20);
-    const items: TutorSearchItem[] = pairs.slice(offset, offset + limit).map(
-      ({ tutor, offer }, index) => ({
+    const items: TutorSearchItem[] = pairs
+      .slice(offset, offset + limit)
+      .map(({ tutor, offer }, index) => ({
         tutor: clone(tutor),
         offer: clone(offer),
         subjectLabel:
-          this.catalog.subjects.find((subject) => subject.id === offer.subjectId)
-            ?.label || offer.subjectId,
+          this.catalog.subjects.find(
+            (subject) => subject.id === offer.subjectId,
+          )?.label || offer.subjectId,
         levelLabels: offer.levelIds.map(
-          (id) => this.catalog.levels.find((level) => level.id === id)?.label || id,
+          (id) =>
+            this.catalog.levels.find((level) => level.id === id)?.label || id,
         ),
         fromPrice: fromPrice(offer),
         distanceKm:
@@ -155,8 +244,7 @@ export class DemoCoursesService implements CoursesServiceContract {
             : "Identité non vérifiée",
         ],
         isSaved: false,
-      }),
-    );
+      }));
     return {
       items,
       total: pairs.length,
@@ -197,6 +285,11 @@ export class DemoCoursesService implements CoursesServiceContract {
       updatedAt: now,
     };
     this.tutors.set(id, clone(tutor));
+    Array.from(this.offers.values())
+      .filter((offer) => offer.tutorProfileId === id)
+      .forEach((offer) =>
+        demoVerticalDiscoveryStore.syncCourseOffer(tutor, offer),
+      );
     return clone(tutor);
   }
 
@@ -205,9 +298,13 @@ export class DemoCoursesService implements CoursesServiceContract {
     const tutor = this.tutors.get(input.tutorProfileId);
     if (!tutor) throw new Error("Profil professeur introuvable");
     const catalog = await this.getCatalog("FR");
-    const plan = catalog.plans.find((item) => item.id === tutor.planId) || catalog.plans[0];
+    const plan =
+      catalog.plans.find((item) => item.id === tutor.planId) ||
+      catalog.plans[0];
     const activeCount = Array.from(this.offers.values()).filter(
-      (offer) => offer.tutorProfileId === tutor.id && ["published", "pending_review"].includes(offer.status),
+      (offer) =>
+        offer.tutorProfileId === tutor.id &&
+        ["published", "pending_review"].includes(offer.status),
     ).length;
     if (activeCount >= plan.entitlements.maxActiveOffers) {
       throw new Error("Le quota de cours actifs de votre formule est atteint.");
@@ -223,10 +320,13 @@ export class DemoCoursesService implements CoursesServiceContract {
       updatedAt: now,
     };
     this.offers.set(offer.id, clone(offer));
+    demoVerticalDiscoveryStore.syncCourseOffer(tutor, offer);
     return clone(offer);
   }
 
-  async submitLearnerRequest(input: LearnerRequestDraft): Promise<LearnerRequest> {
+  async submitLearnerRequest(
+    input: LearnerRequestDraft,
+  ): Promise<LearnerRequest> {
     await simulateNetworkDelay();
     if (input.learnerAgeBand !== "adult" && !input.guardianContact) {
       throw new Error(
@@ -248,7 +348,8 @@ export class DemoCoursesService implements CoursesServiceContract {
 
   async getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace> {
     await simulateNetworkDelay();
-    const tutor = this.tutors.get(tutorProfileId) || this.tutors.get("tutor_sophie");
+    const tutor =
+      this.tutors.get(tutorProfileId) || this.tutors.get("tutor_sophie");
     if (!tutor) throw new Error("Espace professeur introuvable");
     const offers = Array.from(this.offers.values()).filter(
       (offer) => offer.tutorProfileId === tutor.id,
@@ -304,7 +405,10 @@ export class DemoCoursesService implements CoursesServiceContract {
       userId: `invited_user_${this.sequence++}`,
       displayName,
       role: input.role,
-      permissions: input.role === "tutor" ? ["offers:read", "leads:respond"] : ["workspace:read"],
+      permissions:
+        input.role === "tutor"
+          ? ["offers:read", "leads:respond"]
+          : ["workspace:read"],
       status: "invited",
     });
     this.organizationWorkspace.organization.memberCount =
@@ -322,7 +426,8 @@ export class DemoCoursesService implements CoursesServiceContract {
     }
     const label = input.label.trim();
     if (!label) throw new Error("Indiquez un lieu d’enseignement.");
-    const locationLimit = this.organizationWorkspace.plan.entitlements.locations;
+    const locationLimit =
+      this.organizationWorkspace.plan.entitlements.locations;
     if (this.organizationWorkspace.locations.length >= locationLimit) {
       throw new Error("Le quota de lieux de cette formule est atteint.");
     }
@@ -386,7 +491,8 @@ export class DemoCoursesService implements CoursesServiceContract {
     await simulateNetworkDelay();
     if (
       config.featureFlags.paymentsEnabled &&
-      (!config.featureFlags.bookingEnabled || !config.featureFlags.payoutsEnabled)
+      (!config.featureFlags.bookingEnabled ||
+        !config.featureFlags.payoutsEnabled)
     ) {
       throw new Error(
         "Les paiements nécessitent les réservations et versements activés.",
@@ -421,12 +527,16 @@ export class DemoCoursesService implements CoursesServiceContract {
     marketCode: string,
     planId: string,
     patch: Partial<
-      Pick<CoursePlan, "isActive" | "monthlyPrice" | "annualPrice" | "entitlements">
+      Pick<
+        CoursePlan,
+        "isActive" | "monthlyPrice" | "annualPrice" | "entitlements"
+      >
     >,
   ): Promise<CoursePlan> {
     await simulateNetworkDelay();
     const index = this.catalog.plans.findIndex(
-      (plan) => plan.id === planId && plan.marketCode === marketCode.toUpperCase(),
+      (plan) =>
+        plan.id === planId && plan.marketCode === marketCode.toUpperCase(),
     );
     if (index < 0) throw new Error("Formule introuvable.");
     const updated = { ...this.catalog.plans[index], ...patch };

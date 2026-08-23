@@ -43,8 +43,9 @@ export const LocationPickerModal: React.FC = () => {
     isWholeCountry ? "" : location.city,
   );
   const [radius, setRadius] = useState<number>(location.radiusKm || 0);
-  const [geolocationState, setGeolocationState] =
-    useState<GeolocationState>({ status: "idle" });
+  const [geolocationState, setGeolocationState] = useState<GeolocationState>({
+    status: "idle",
+  });
 
   useEffect(() => {
     if (!isLocationModalOpen) return;
@@ -91,10 +92,7 @@ export const LocationPickerModal: React.FC = () => {
     setGeolocationState({ status: "locating" });
 
     try {
-      const result = await locateCurrentCity(
-        activeMarket.code,
-        popularCities,
-      );
+      const result = await locateCurrentCity(activeMarket.code, popularCities);
       setCityInput(result.city.name);
       setGeolocationState({ status: "success", city: result.city.name });
     } catch (error) {

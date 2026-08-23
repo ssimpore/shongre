@@ -20,12 +20,17 @@ describe("DemoCoursesService", () => {
     });
     expect(second).toEqual(first);
     expect(first.items.length).toBeGreaterThan(0);
-    expect(first.items.every((item) => Number.isInteger(item.fromPrice.amountMinor))).toBe(true);
+    expect(
+      first.items.every((item) => Number.isInteger(item.fromPrice.amountMinor)),
+    ).toBe(true);
   });
 
   it("does not apply a rating filter to profiles without enough verified reviews", async () => {
     const service = new DemoCoursesService();
-    const result = await service.searchTutors({ marketCode: "FR", minRating: 4.5 });
+    const result = await service.searchTutors({
+      marketCode: "FR",
+      minRating: 4.5,
+    });
     expect(
       result.items.every(
         (item) =>
@@ -38,8 +43,12 @@ describe("DemoCoursesService", () => {
   it("keeps saved tutors isolated by account", async () => {
     const service = new DemoCoursesService();
     await service.toggleSavedTutor("account_a", "tutor_thomas");
-    expect(await service.getSavedTutorIds("account_a")).toContain("tutor_thomas");
-    expect(await service.getSavedTutorIds("account_b")).not.toContain("tutor_thomas");
+    expect(await service.getSavedTutorIds("account_a")).toContain(
+      "tutor_thomas",
+    );
+    expect(await service.getSavedTutorIds("account_b")).not.toContain(
+      "tutor_thomas",
+    );
   });
 
   it("requires guardian details for a minor", async () => {

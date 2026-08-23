@@ -1,8 +1,10 @@
 import React from "react";
 import { cn } from "../utils/variants";
 
-export interface ScrollableRegionProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "aria-label"> {
+export interface ScrollableRegionProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "aria-label"
+> {
   "aria-label": string;
 }
 

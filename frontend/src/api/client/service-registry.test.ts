@@ -57,7 +57,9 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(registry.workspace instanceof DemoWorkspaceService).toBe(true);
     expect(registry.admin instanceof DemoAdminService).toBe(true);
     expect(registry.reviews instanceof DemoReviewsService).toBe(true);
-    expect(registry.businessRules instanceof DemoBusinessRulesService).toBe(true);
+    expect(registry.businessRules instanceof DemoBusinessRulesService).toBe(
+      true,
+    );
   });
 
   it("instantiates the service registry in api mode when configured", () => {
@@ -81,7 +83,9 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(apiRegistry.workspace instanceof HttpWorkspaceService).toBe(true);
     expect(apiRegistry.admin instanceof HttpAdminService).toBe(true);
     expect(apiRegistry.reviews instanceof HttpReviewsService).toBe(true);
-    expect(apiRegistry.businessRules instanceof HttpBusinessRulesService).toBe(true);
+    expect(apiRegistry.businessRules instanceof HttpBusinessRulesService).toBe(
+      true,
+    );
   });
 
   it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {

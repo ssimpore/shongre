@@ -71,7 +71,8 @@ function absoluteUrl(url: string, origin: string): string {
 
 function formatPriceLabel(listing: Listing): string {
   if (listing.isFreeDonation) return "Don gratuit";
-  const currency = listing.currency === "EUR" || !listing.currency ? "€" : listing.currency;
+  const currency =
+    listing.currency === "EUR" || !listing.currency ? "€" : listing.currency;
   return `${listing.price} ${currency}`;
 }
 
@@ -273,7 +274,14 @@ export function structuredDataForRoute(
         ...(seller.avatarUrl
           ? { image: absoluteUrl(seller.avatarUrl, origin) }
           : {}),
-        ...(seller.city ? { address: { "@type": "PostalAddress", addressLocality: seller.city } } : {}),
+        ...(seller.city
+          ? {
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: seller.city,
+              },
+            }
+          : {}),
         url: canonical,
       },
     };

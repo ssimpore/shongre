@@ -4,7 +4,8 @@
 @source "../../packages/ui/src";
 @source "../../packages/features/src";
 @layer base {
-  html, body {
+  html,
+  body {
     height: 100%;
     width: 100%;
   }
@@ -63,7 +64,9 @@
      through Input/Select/Textarea: compact by default, touch-sized in the
      primitives, and always on the semantic control radius. Utility variants
      can intentionally opt into another owned size without inventing pixels. */
-  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+      [type="file"]
+    ):not([type="color"]),
   select {
     min-height: var(--spacing-control-md);
     border-radius: var(--radius-control);
@@ -79,7 +82,11 @@
       linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
       linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
     background-position:
-      calc(100% - var(--spacing-select-chevron-offset) - var(--spacing-select-chevron-size)) 50%,
+      calc(
+          100% - var(--spacing-select-chevron-offset) -
+            var(--spacing-select-chevron-size)
+        )
+        50%,
       calc(100% - var(--spacing-select-chevron-offset)) 50%;
     background-repeat: no-repeat;
     background-size:
@@ -91,13 +98,13 @@
   /* Search fields render their own Shongre clear action. Hide the browser's
      second cancel affordance so every search variant exposes one clear button
      with the same accessible name and behaviour. */
-  input[type='search'] {
+  input[type="search"] {
     -webkit-appearance: none;
     appearance: none;
   }
 
-  input[type='search']::-webkit-search-cancel-button,
-  input[type='search']::-webkit-search-decoration {
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration {
     -webkit-appearance: none;
     appearance: none;
     display: none;
@@ -125,8 +132,8 @@
      24px WCAG 2.5.8 target minimum, and it appears at ~16 call sites. The
      primitive already wraps bare checkboxes in a 24px box; this catches the
      ones written by hand. */
-  input[type='checkbox'],
-  input[type='radio'] {
+  input[type="checkbox"],
+  input[type="radio"] {
     accent-color: var(--color-primary);
     min-width: var(--spacing-control-indicator);
     min-height: var(--spacing-control-indicator);
@@ -135,8 +142,8 @@
   /* … and the interactive target reaches the 24px floor via padding on coarse
      pointers, where the finger — not the cursor — is doing the aiming. */
   @media (pointer: coarse) {
-    input[type='checkbox'],
-    input[type='radio'] {
+    input[type="checkbox"],
+    input[type="radio"] {
       min-width: var(--spacing-control-target);
       min-height: var(--spacing-control-target);
     }
@@ -182,7 +189,9 @@
 
   /* Global prefers-reduced-motion compliance */
   @media (prefers-reduced-motion: reduce) {
-    *, ::before, ::after {
+    *,
+    ::before,
+    ::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -201,7 +210,8 @@
   @keyframes shongre-enter {
     from {
       opacity: var(--enter-opacity, 1);
-      transform: translate3d(var(--enter-x, 0), var(--enter-y, 0), 0) scale(var(--enter-scale, 1));
+      transform: translate3d(var(--enter-x, 0), var(--enter-y, 0), 0)
+        scale(var(--enter-scale, 1));
     }
   }
 
@@ -212,23 +222,39 @@
     animation-fill-mode: both;
   }
 
-  .fade-in { --enter-opacity: 0; }
+  .fade-in {
+    --enter-opacity: 0;
+  }
 
   /* Standalone fade for elements that appear without a companion transform
      (lightbox backdrop, notification badge, timeline status pills). */
   @keyframes shongre-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   .animate-fade-in {
     animation: shongre-fade-in var(--duration-normal) var(--ease-out-soft) both;
   }
 
-  .zoom-in-95 { --enter-scale: 0.95; }
-  .slide-in-from-top { --enter-y: -0.5rem; }
-  .slide-in-from-bottom { --enter-y: 0.5rem; }
-  .slide-in-from-left { --enter-x: -0.5rem; }
-  .slide-in-from-right { --enter-x: 100%; }
+  .zoom-in-95 {
+    --enter-scale: 0.95;
+  }
+  .slide-in-from-top {
+    --enter-y: -0.5rem;
+  }
+  .slide-in-from-bottom {
+    --enter-y: 0.5rem;
+  }
+  .slide-in-from-left {
+    --enter-x: -0.5rem;
+  }
+  .slide-in-from-right {
+    --enter-x: 100%;
+  }
 
   /* Horizontal rails (filter chips, tab strips, category rows) scroll without
      showing a scrollbar — the affordance is the content bleeding off-edge. */
@@ -247,7 +273,8 @@
      normal or slow step. New controls should use motion-interactive or
      motion-surface directly. */
   .transition-all {
-    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-property:
+      color, background-color, border-color, box-shadow, opacity, transform;
     transition-duration: var(--duration-fast);
     transition-timing-function: var(--ease-standard);
   }
@@ -275,9 +302,15 @@
        normal — surfaces entering or leaving (menus, sheets, toasts)
        slow   — large or full-width movement that needs to be followed
      ------------------------------------------------------------------------ */
-  .duration-fast { transition-duration: var(--duration-fast); }
-  .duration-normal { transition-duration: var(--duration-normal); }
-  .duration-slow { transition-duration: var(--duration-slow); }
+  .duration-fast {
+    transition-duration: var(--duration-fast);
+  }
+  .duration-normal {
+    transition-duration: var(--duration-normal);
+  }
+  .duration-slow {
+    transition-duration: var(--duration-slow);
+  }
 
   /* Shared interaction recipes. A control should animate only the properties
      that communicate state; `transition-all` made layout, color and geometry
@@ -285,7 +318,8 @@
      recipes keep the motion vocabulary token-backed and consistent across
      buttons, chips, toggles and icon actions. */
   .motion-interactive {
-    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-property:
+      color, background-color, border-color, box-shadow, opacity, transform;
     transition-duration: var(--duration-fast);
     transition-timing-function: var(--ease-standard);
   }
@@ -302,27 +336,57 @@
     transition-timing-function: var(--ease-out-soft);
   }
 
-  .animate-duration-fast { animation-duration: var(--duration-fast); }
-  .animate-duration-normal { animation-duration: var(--duration-normal); }
-  .animate-duration-slow { animation-duration: var(--duration-slow); }
+  .animate-duration-fast {
+    animation-duration: var(--duration-fast);
+  }
+  .animate-duration-normal {
+    animation-duration: var(--duration-normal);
+  }
+  .animate-duration-slow {
+    animation-duration: var(--duration-slow);
+  }
 
   /* Safe-area helpers for iOS / future app wrappers. */
-  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
 }
 
 /* Tailwind v4 custom utilities participate in hover/focus/responsive variants,
    unlike plain global classes. Keep stacking meaning at the call site. */
-@utility z-base { z-index: var(--z-base); }
-@utility z-raised { z-index: var(--z-raised); }
-@utility z-sticky { z-index: var(--z-sticky); }
-@utility z-dropdown { z-index: var(--z-dropdown); }
-@utility z-popover { z-index: var(--z-popover); }
-@utility z-header { z-index: var(--z-header); }
-@utility z-drawer { z-index: var(--z-drawer); }
-@utility z-modal { z-index: var(--z-modal); }
-@utility z-toast { z-index: var(--z-toast); }
-@utility z-tooltip { z-index: var(--z-tooltip); }
+@utility z-base {
+  z-index: var(--z-base);
+}
+@utility z-raised {
+  z-index: var(--z-raised);
+}
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-dropdown {
+  z-index: var(--z-dropdown);
+}
+@utility z-popover {
+  z-index: var(--z-popover);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-drawer {
+  z-index: var(--z-drawer);
+}
+@utility z-modal {
+  z-index: var(--z-modal);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+@utility z-tooltip {
+  z-index: var(--z-tooltip);
+}
 
 /* --- Critical runtime contracts ------------------------------------------
    Tailwind normally emits these from `@theme` / `@utility`. Keep the small set
@@ -334,17 +398,39 @@
    the generated utility graph is being refreshed. The fallback values mirror
    the canonical card token and preserve usable geometry if a custom property
    is temporarily unavailable. */
-.z-base { z-index: var(--z-base, 0); }
-.z-raised { z-index: var(--z-raised, 10); }
-.z-sticky { z-index: var(--z-sticky, 20); }
-.z-dropdown { z-index: var(--z-dropdown, 30); }
-.z-popover { z-index: var(--z-popover, 35); }
-.z-header { z-index: var(--z-header, 40); }
-.z-drawer { z-index: var(--z-drawer, 45); }
-.z-modal { z-index: var(--z-modal, 50); }
-.z-toast { z-index: var(--z-toast, 60); }
-.z-tooltip { z-index: var(--z-tooltip, 70); }
-.w-listing-card { width: var(--spacing-listing-card, 15rem); }
+.z-base {
+  z-index: var(--z-base, 0);
+}
+.z-raised {
+  z-index: var(--z-raised, 10);
+}
+.z-sticky {
+  z-index: var(--z-sticky, 20);
+}
+.z-dropdown {
+  z-index: var(--z-dropdown, 30);
+}
+.z-popover {
+  z-index: var(--z-popover, 35);
+}
+.z-header {
+  z-index: var(--z-header, 40);
+}
+.z-drawer {
+  z-index: var(--z-drawer, 45);
+}
+.z-modal {
+  z-index: var(--z-modal, 50);
+}
+.z-toast {
+  z-index: var(--z-toast, 60);
+}
+.z-tooltip {
+  z-index: var(--z-tooltip, 70);
+}
+.w-listing-card {
+  width: var(--spacing-listing-card, 15rem);
+}
 
 /* Safari can otherwise let a wide flex track contribute its max-content width
    to the document at a breakpoint boundary, even though the track itself sits
@@ -414,6 +500,16 @@
     width: var(--spacing-listing-card, 15rem);
     min-width: var(--spacing-listing-card, 15rem);
     max-width: var(--spacing-listing-card, 15rem);
+  }
+
+  /* Result grids should consume the complete content row. Rails and curated
+     grids keep the canonical fixed card width; only an explicitly fluid grid
+     lets its cards follow the responsive column track. */
+  .listing-grid-fluid .listing-card-standard,
+  .listing-grid-fluid .listing-card-skeleton {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
   }
 }
 
@@ -499,7 +595,7 @@
    / `text-xs` on controls without resorting to `!important`.
    ============================================================================= */
 @media (pointer: coarse) {
-  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
   textarea,
   select {
     font-size: var(--text-base);

@@ -164,7 +164,7 @@ export class FulfillmentResolver {
         provider: "hand_delivery",
         code: "HAND_DELIVERY",
         title: "Remise en main propre",
-        description: `Gratuit à ${listing.city} (${listing.postalCode}) avec code PIN sécurisé`,
+        description: `À ${listing.city} (${listing.postalCode}) avec code PIN sécurisé`,
         deliveryType: "hand_delivery",
         price: 0,
         currency: effectiveMarket.localization.defaultCurrency || "EUR",
@@ -181,7 +181,7 @@ export class FulfillmentResolver {
         provider: "store_pickup",
         code: "STORE_PICKUP",
         title: "Retrait en boutique",
-        description: `Retrait gratuit en magasin (${listing.sellerCity || listing.city})`,
+        description: `Disponible en magasin (${listing.sellerCity || listing.city})`,
         deliveryType: "store_pickup",
         price: 0,
         currency: effectiveMarket.localization.defaultCurrency || "EUR",
@@ -195,9 +195,12 @@ export class FulfillmentResolver {
     if (hasParcelDelivery) {
       const tier: PackageSizeTier = packageSpecs?.sizeTier || "medium";
       const commercialTier = tier === "heavy" ? "xlarge" : tier;
-      const relayPrice = getDemoDeliveryAmountMinor("relay_point", commercialTier) / 100;
-      const homePrice = getDemoDeliveryAmountMinor("home", commercialTier) / 100;
-      const expressPrice = getDemoDeliveryAmountMinor("express", commercialTier) / 100;
+      const relayPrice =
+        getDemoDeliveryAmountMinor("relay_point", commercialTier) / 100;
+      const homePrice =
+        getDemoDeliveryAmountMinor("home", commercialTier) / 100;
+      const expressPrice =
+        getDemoDeliveryAmountMinor("express", commercialTier) / 100;
 
       // Mondial Relay (Check market config and provider availability)
       const isRelayAvailable = providerService.isCapabilityAvailable(
@@ -356,9 +359,8 @@ export class FulfillmentResolver {
     }
 
     const sellerCommission =
-      Math.round(
-        itemSubtotalMinor * (commercials.commissionRateBps / 10_000),
-      ) / 100;
+      Math.round(itemSubtotalMinor * (commercials.commissionRateBps / 10_000)) /
+      100;
 
     const discount = 0;
     const tax = 0; // VAT included in prices for consumers

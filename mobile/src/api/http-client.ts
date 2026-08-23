@@ -75,25 +75,34 @@ export async function apiRequest<T>(
   ) {
     const stored = await sessionStorage.read();
     if (stored?.refreshToken) {
-      const refreshResponse = await fetch(`${mobileEnvironment.apiUrl}/auth/refresh`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "X-Shongre-Client": "native",
+      const refreshResponse = await fetch(
+        `${mobileEnvironment.apiUrl}/auth/refresh`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Shongre-Client": "native",
+          },
+          body: JSON.stringify({ refreshToken: stored.refreshToken }),
         },
-        body: JSON.stringify({ refreshToken: stored.refreshToken }),
-      });
+      );
       const refreshText = await refreshResponse.text();
-      const refreshed = refreshText ? (JSON.parse(refreshText) as StoredSession) : null;
+      const refreshed = refreshText
+        ? (JSON.parse(refreshText) as StoredSession)
+        : null;
       if (refreshResponse.ok && refreshed?.token && refreshed.user) {
         await sessionStorage.write(refreshed);
         const retryHeaders = new Headers(init.headers);
         retryHeaders.set("Accept", "application/json");
         retryHeaders.set("X-Shongre-Client", "native");
-        if (init.body && !retryHeaders.has("Content-Type")) retryHeaders.set("Content-Type", "application/json");
+        if (init.body && !retryHeaders.has("Content-Type"))
+          retryHeaders.set("Content-Type", "application/json");
         retryHeaders.set("Authorization", `Bearer ${refreshed.token}`);
-        const retry = await fetch(`${mobileEnvironment.apiUrl}${path}`, { ...init, headers: retryHeaders });
+        const retry = await fetch(`${mobileEnvironment.apiUrl}${path}`, {
+          ...init,
+          headers: retryHeaders,
+        });
         const retryText = await retry.text();
         const retryPayload = retryText ? JSON.parse(retryText) : null;
         if (retry.ok) return retryPayload as T;

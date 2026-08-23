@@ -40,6 +40,27 @@ describe("FulfillmentResolver", () => {
     expect(realEstateCaps.allowBulkyDelivery).toBe(false);
   });
 
+  it("keeps zero-price wording in the quote price instead of repeating it in the description", () => {
+    const quotes = fulfillmentResolver.resolveAvailableQuotes({
+      listing: {
+        id: "l-hand-delivery",
+        title: "Machine à café",
+        price: 180,
+        city: "Lyon 2e",
+        postalCode: "69002",
+        sellerType: "individual",
+        deliveryOptions: [{ type: "hand_delivery", available: true }],
+      } as any,
+    });
+
+    expect(quotes[0]).toMatchObject({
+      deliveryType: "hand_delivery",
+      price: 0,
+      description: "À Lyon 2e (69002) avec code PIN sécurisé",
+    });
+    expect(quotes[0]?.description.toLowerCase()).not.toContain("gratuit");
+  });
+
   it("calculates order pricing and buyer protection service fee accurately", () => {
     const mockListing: any = {
       id: "l-1",

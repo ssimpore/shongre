@@ -1,4 +1,4 @@
-import { BASELINE_MONETIZATION_CATALOG } from '@shongre/contracts/monetization-catalog';
+import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 
 export interface MarketPricingRule {
   protectionFeeRate: number; // e.g. 0.04 (4%)
@@ -18,7 +18,7 @@ export interface EscrowOrderBreakdown {
 export const DEFAULT_MARKET_RULES: Record<string, MarketPricingRule> =
   Object.fromEntries(
     BASELINE_MONETIZATION_CATALOG.rules
-      .filter((rule) => rule.key.startsWith('fees.buyer_protection.'))
+      .filter((rule) => rule.key.startsWith("fees.buyer_protection."))
       .flatMap((rule) =>
         rule.scope.marketCodes.map((marketCode) => [
           marketCode,
@@ -36,18 +36,29 @@ export function calculateOrderTotal(params: {
   marketCode?: string;
   ruleOverride?: Partial<MarketPricingRule>;
 }): EscrowOrderBreakdown {
-  const itemAmountMinor = Math.max(0, Math.round((Number(params.itemAmount) || 0) * 100));
-  const shippingFeeMinor = Math.max(0, Math.round((Number(params.shippingFee) || 0) * 100));
+  const itemAmountMinor = Math.max(
+    0,
+    Math.round((Number(params.itemAmount) || 0) * 100),
+  );
+  const shippingFeeMinor = Math.max(
+    0,
+    Math.round((Number(params.shippingFee) || 0) * 100),
+  );
   const itemAmount = itemAmountMinor / 100;
   const shippingFee = shippingFeeMinor / 100;
-  const baseRule = DEFAULT_MARKET_RULES[params.marketCode || 'FR'] || DEFAULT_MARKET_RULES.FR;
+  const baseRule =
+    DEFAULT_MARKET_RULES[params.marketCode || "FR"] || DEFAULT_MARKET_RULES.FR;
 
-  const rate = params.ruleOverride?.protectionFeeRate ?? baseRule.protectionFeeRate;
-  const fixed = params.ruleOverride?.protectionFixedFee ?? baseRule.protectionFixedFee;
+  const rate =
+    params.ruleOverride?.protectionFeeRate ?? baseRule.protectionFeeRate;
+  const fixed =
+    params.ruleOverride?.protectionFixedFee ?? baseRule.protectionFixedFee;
 
-  const protectionFeeMinor = Math.round(itemAmountMinor * rate) + Math.round(fixed * 100);
+  const protectionFeeMinor =
+    Math.round(itemAmountMinor * rate) + Math.round(fixed * 100);
   const protectionFee = protectionFeeMinor / 100;
-  const totalCharged = (itemAmountMinor + protectionFeeMinor + shippingFeeMinor) / 100;
+  const totalCharged =
+    (itemAmountMinor + protectionFeeMinor + shippingFeeMinor) / 100;
   const escrowSecuredAmount = (itemAmountMinor + shippingFeeMinor) / 100;
   const sellerNetProceeds = itemAmount;
   const platformMargin = protectionFee;

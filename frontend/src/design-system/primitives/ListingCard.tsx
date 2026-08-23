@@ -54,9 +54,33 @@ function toListingCardView(listing: Listing): ListingCardView {
       isIdentityVerified: listing.sellerIsVerified,
       rating: listing.sellerRating,
       reviewCount: listing.sellerReviewCount,
+      organizationName: listing.publisherOrganizationName,
+      organizationLogoUrl: listing.publisherOrganizationLogoUrl,
+      branchName: listing.publisherBranchName,
+      isBusinessVerified:
+        listing.publisherVerificationStatus === "business_verified",
     },
-    isUrgent: listing.boostType === "urgent",
-    isFeatured: Boolean(listing.isBoosted && listing.boostType !== "urgent"),
+    isUrgent:
+      listing.promotionState === "active"
+        ? listing.promotionType === "urgent_badge"
+        : listing.boostType === "urgent",
+    isFeatured: Boolean(
+      listing.promotionState === "active"
+        ? listing.promotionType && listing.promotionType !== "urgent_badge"
+        : listing.isBoosted && listing.boostType !== "urgent",
+    ),
+    promotion: listing.promotionType
+      ? {
+          state: listing.promotionState || "inactive",
+          type: listing.promotionType,
+          source: listing.promotionSource,
+          sourceId: listing.promotionSourceId,
+          startsAt: listing.promotionStartAt,
+          endsAt: listing.promotionEndAt,
+          label: listing.promotionLabel,
+        }
+      : undefined,
+    discovery: listing.discovery,
   };
 }
 

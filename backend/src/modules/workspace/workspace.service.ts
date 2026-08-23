@@ -1,10 +1,16 @@
-import { Listing, Transaction } from '../../shared/types/index.js';
-import { IWorkspaceRepository, repositories, UserWorkspaceSummary } from '../../infrastructure/database/repositories/index.js';
+import { Listing } from "../../shared/types/index.js";
+import {
+  IWorkspaceRepository,
+  repositories,
+  UserWorkspaceSummary,
+} from "../../infrastructure/database/repositories/index.js";
 
 export type { UserWorkspaceSummary };
 
 export class WorkspaceService {
-  constructor(private workspaceRepo: IWorkspaceRepository = repositories.workspace) {}
+  constructor(
+    private workspaceRepo: IWorkspaceRepository = repositories.workspace,
+  ) {}
 
   async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
     return this.workspaceRepo.getUserWorkspaceSummary(userId);

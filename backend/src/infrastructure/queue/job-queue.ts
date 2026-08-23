@@ -1,4 +1,4 @@
-import { logger } from '../logging/logger.js';
+import { logger } from "../logging/logger.js";
 
 export type JobHandler<T = any> = (data: T) => Promise<void>;
 

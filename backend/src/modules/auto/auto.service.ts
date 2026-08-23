@@ -27,7 +27,10 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
-import { businessRulesService, BusinessRulesService } from "../business-rules/business-rules.service.js";
+import {
+  businessRulesService,
+  BusinessRulesService,
+} from "../business-rules/business-rules.service.js";
 
 export class AutoService {
   constructor(
@@ -489,7 +492,9 @@ export class AutoService {
       id: randomUUID(),
       requesterUserId,
       dealerOrganizationId: vehicle.dealerOrganizationId,
-      contactEmail: String(body.contactEmail || "").trim().toLowerCase(),
+      contactEmail: String(body.contactEmail || "")
+        .trim()
+        .toLowerCase(),
       status: suspicious ? "spam" : "new",
       spamAssessment: suspicious ? "blocked" : duplicate ? "review" : "clear",
       marketingConsent: body.marketingConsent === true,

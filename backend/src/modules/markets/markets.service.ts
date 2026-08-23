@@ -1,5 +1,9 @@
-import { CountryMarketDefinition } from '../../shared/types/index.js';
-import { IMarketRepository, repositories, CANONICAL_DEMO_MARKETS } from '../../infrastructure/database/repositories/index.js';
+import { CountryMarketDefinition } from "../../shared/types/index.js";
+import {
+  IMarketRepository,
+  repositories,
+  CANONICAL_DEMO_MARKETS,
+} from "../../infrastructure/database/repositories/index.js";
 
 export const CANONICAL_MARKETS = CANONICAL_DEMO_MARKETS;
 
@@ -22,7 +26,9 @@ export class MarketsService {
     return this.marketRepo.setActive(code);
   }
 
-  async getEffectiveMarketConfig(code: string): Promise<CountryMarketDefinition> {
+  async getEffectiveMarketConfig(
+    code: string,
+  ): Promise<CountryMarketDefinition> {
     return this.marketRepo.getEffective(code);
   }
 }

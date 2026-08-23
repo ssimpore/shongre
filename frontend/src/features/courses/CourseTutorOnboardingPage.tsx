@@ -83,7 +83,9 @@ const STEPS = [
 ] as const;
 
 const toggle = <T,>(values: T[], value: T): T[] =>
-  values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
+  values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
 
 const slugify = (value: string) =>
   value
@@ -114,15 +116,19 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
   usePageMeta({
     title: "Devenir professeur sur Shongre Cours",
-    description: "Créez votre profil professeur et publiez votre premier cours.",
+    description:
+      "Créez votre profil professeur et publiez votre premier cours.",
     canonicalPath: "/deposer/cours",
     noIndex: true,
   });
 
   useEffect(() => {
-    services.courses.getCatalog("FR").then(setCatalog).catch(() => {
-      toast.error("Le catalogue Cours est momentanément indisponible.");
-    });
+    services.courses
+      .getCatalog("FR")
+      .then(setCatalog)
+      .catch(() => {
+        toast.error("Le catalogue Cours est momentanément indisponible.");
+      });
   }, [toast]);
 
   useEffect(() => {
@@ -140,19 +146,33 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     return catalog.levels.filter((level) => allowed.has(level.id));
   }, [catalog, draft.subjectIds]);
 
-  const update = <K extends keyof OnboardingDraft>(key: K, value: OnboardingDraft[K]) => {
+  const update = <K extends keyof OnboardingDraft>(
+    key: K,
+    value: OnboardingDraft[K],
+  ) => {
     setDraft((current) => ({ ...current, [key]: value }));
   };
 
   const canContinue = (() => {
     if (step === 0) {
-      return draft.displayName.trim().length >= 2 &&
-        (draft.accountKind === "individual" || draft.organizationName.trim().length >= 2);
+      return (
+        draft.displayName.trim().length >= 2 &&
+        (draft.accountKind === "individual" ||
+          draft.organizationName.trim().length >= 2)
+      );
     }
-    if (step === 1) return draft.subjectIds.length > 0 && draft.levelIds.length > 0;
-    if (step === 2) return draft.deliveryModes.length > 0 && draft.city.trim().length >= 2;
-    if (step === 3) return draft.headline.length >= 10 && draft.biography.length >= 60 && draft.teachingApproach.length >= 30;
-    if (step === 4) return draft.priceMinor >= 1000 && draft.availability.length > 0;
+    if (step === 1)
+      return draft.subjectIds.length > 0 && draft.levelIds.length > 0;
+    if (step === 2)
+      return draft.deliveryModes.length > 0 && draft.city.trim().length >= 2;
+    if (step === 3)
+      return (
+        draft.headline.length >= 10 &&
+        draft.biography.length >= 60 &&
+        draft.teachingApproach.length >= 30
+      );
+    if (step === 4)
+      return draft.priceMinor >= 1000 && draft.availability.length > 0;
     return true;
   })();
 
@@ -162,11 +182,17 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     try {
       const now = new Date().toISOString();
       const profile = await services.courses.saveTutorProfile({
-        organizationId: draft.accountKind === "organization" ? "org_lumiere" : undefined,
-        profileType: draft.accountKind === "organization" ? "organization_member" : "individual",
+        organizationId:
+          draft.accountKind === "organization" ? "org_lumiere" : undefined,
+        profileType:
+          draft.accountKind === "organization"
+            ? "organization_member"
+            : "individual",
         slug: slugify(draft.displayName),
         displayName: draft.displayName,
-        avatarUrl: currentUser?.avatarUrl || "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=85",
+        avatarUrl:
+          currentUser?.avatarUrl ||
+          "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=85",
         headline: draft.headline,
         biography: draft.biography,
         teachingApproach: draft.teachingApproach,
@@ -214,10 +240,14 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         verifications: {
           email: currentUser?.isEmailVerified ? "verified" : "not_submitted",
           phone: currentUser?.isPhoneVerified ? "verified" : "not_submitted",
-          identity: currentUser?.isIdentityVerified ? "verified" : "not_submitted",
+          identity: currentUser?.isIdentityVerified
+            ? "verified"
+            : "not_submitted",
           qualifications: "not_submitted",
-          business: draft.accountKind === "organization" ? "pending" : "not_submitted",
-          representative: draft.accountKind === "organization" ? "pending" : "not_submitted",
+          business:
+            draft.accountKind === "organization" ? "pending" : "not_submitted",
+          representative:
+            draft.accountKind === "organization" ? "pending" : "not_submitted",
           payment: "not_submitted",
           payout: "not_submitted",
           personalServicesEligibility: "not_submitted",
@@ -263,13 +293,18 @@ export const CourseTutorOnboardingPage: React.FC = () => {
       storageService.remove(draftKey);
       setIsComplete(true);
     } catch (reason) {
-      toast.error(reason instanceof Error ? reason.message : "Publication impossible.");
+      toast.error(
+        reason instanceof Error ? reason.message : "Publication impossible.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (!catalog) return <Skeleton className="mx-auto h-[38rem] w-full max-w-5xl rounded-card" />;
+  if (!catalog)
+    return (
+      <Skeleton className="mx-auto h-[38rem] w-full max-w-5xl rounded-card" />
+    );
 
   if (isComplete) {
     return (
@@ -277,13 +312,20 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-pill bg-success-surface text-success">
           <CheckCircle2 className="h-8 w-8" aria-hidden="true" />
         </span>
-        <h1 className="mt-5 text-xl font-black text-text-main">Votre profil est en cours d’examen</h1>
+        <h1 className="mt-5 text-xl font-black text-text-main">
+          Votre profil est en cours d’examen
+        </h1>
         <p className="mt-3 text-sm leading-relaxed text-text-secondary">
-          Le cours est enregistré. Les coordonnées et pièces privées ne seront jamais affichées sur votre profil public.
+          Le cours est enregistré. Les coordonnées et pièces privées ne seront
+          jamais affichées sur votre profil public.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button onClick={() => navigate("/compte/cours")}>Ouvrir mon espace Cours</Button>
-          <Button variant="outline" to="/cours">Voir les professeurs</Button>
+          <Button onClick={() => navigate("/compte/cours")}>
+            Ouvrir mon espace Cours
+          </Button>
+          <Button variant="outline" to="/cours">
+            Voir les professeurs
+          </Button>
         </div>
       </div>
     );
@@ -294,10 +336,17 @@ export const CourseTutorOnboardingPage: React.FC = () => {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <Badge variant="primary">Shongre Cours</Badge>
-          <h1 className="mt-2 text-xl font-black text-text-main sm:text-2xl">Créez votre activité de cours</h1>
-          <p className="mt-1 text-xs text-text-secondary">Brouillon enregistré automatiquement · aucune donnée de paiement stockée</p>
+          <h1 className="mt-2 text-xl font-black text-text-main sm:text-2xl">
+            Créez votre activité de cours
+          </h1>
+          <p className="mt-1 text-xs text-text-secondary">
+            Brouillon enregistré automatiquement · aucune donnée de paiement
+            stockée
+          </p>
         </div>
-        <p className="text-xs font-bold text-text-muted">Étape {step + 1} sur {STEPS.length}</p>
+        <p className="text-xs font-bold text-text-muted">
+          Étape {step + 1} sur {STEPS.length}
+        </p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[14rem_minmax(0,1fr)]">
@@ -310,10 +359,18 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                   onClick={() => index <= step && setStep(index)}
                   disabled={index > step}
                   className={`flex min-h-control-touch w-full items-center gap-2 rounded-control px-2.5 text-left text-xs font-bold ${
-                    index === step ? "bg-primary-light text-primary" : index < step ? "text-success" : "text-text-disabled"
+                    index === step
+                      ? "bg-primary-light text-primary"
+                      : index < step
+                        ? "text-success"
+                        : "text-text-disabled"
                   }`}
                 >
-                  {index < step ? <Check className="h-icon-sm w-icon-sm" /> : <Icon className="h-icon-sm w-icon-sm" />}
+                  {index < step ? (
+                    <Check className="h-icon-sm w-icon-sm" />
+                  ) : (
+                    <Icon className="h-icon-sm w-icon-sm" />
+                  )}
                   <span className="hidden lg:inline">{label}</span>
                 </button>
               </li>
@@ -324,35 +381,74 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         <main className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
           {step === 0 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Qui propose les cours ?</h2>
-              <p className="mt-1 text-xs text-text-secondary">Un professeur indépendant ou une équipe avec plusieurs membres et lieux.</p>
+              <h2 className="text-lg font-black text-text-main">
+                Qui propose les cours ?
+              </h2>
+              <p className="mt-1 text-xs text-text-secondary">
+                Un professeur indépendant ou une équipe avec plusieurs membres
+                et lieux.
+              </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {[
-                  ["individual", UserRound, "Professeur indépendant", "Un profil, vos cours et vos propres demandes."],
-                  ["organization", Building2, "Organisme de cours", "Une équipe, plusieurs lieux et une boîte de réception centralisée."],
+                  [
+                    "individual",
+                    UserRound,
+                    "Professeur indépendant",
+                    "Un profil, vos cours et vos propres demandes.",
+                  ],
+                  [
+                    "organization",
+                    Building2,
+                    "Organisme de cours",
+                    "Une équipe, plusieurs lieux et une boîte de réception centralisée.",
+                  ],
                 ].map(([value, Icon, title, description]) => {
-                  const ChoiceIcon = Icon as React.ComponentType<{ className?: string }>;
+                  const ChoiceIcon = Icon as React.ComponentType<{
+                    className?: string;
+                  }>;
                   return (
                     <SelectableCard
                       key={String(value)}
                       selected={draft.accountKind === value}
-                      onSelect={() => update("accountKind", value as OnboardingDraft["accountKind"])}
+                      onSelect={() =>
+                        update(
+                          "accountKind",
+                          value as OnboardingDraft["accountKind"],
+                        )
+                      }
                       className="rounded-card border border-border-base p-4"
                     >
-                      <ChoiceIcon className="h-6 w-6 text-primary" aria-hidden="true" />
-                      <p className="mt-3 text-sm font-black text-text-main">{String(title)}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-text-secondary">{String(description)}</p>
+                      <ChoiceIcon
+                        className="h-6 w-6 text-primary"
+                        aria-hidden="true"
+                      />
+                      <p className="mt-3 text-sm font-black text-text-main">
+                        {String(title)}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                        {String(description)}
+                      </p>
                     </SelectableCard>
                   );
                 })}
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <FormField label="Nom public" required>
-                  <Input value={draft.displayName} onChange={(event) => update("displayName", event.target.value)} />
+                  <Input
+                    value={draft.displayName}
+                    onChange={(event) =>
+                      update("displayName", event.target.value)
+                    }
+                  />
                 </FormField>
                 {draft.accountKind === "organization" && (
                   <FormField label="Nom de l’organisme" required>
-                    <Input value={draft.organizationName} onChange={(event) => update("organizationName", event.target.value)} />
+                    <Input
+                      value={draft.organizationName}
+                      onChange={(event) =>
+                        update("organizationName", event.target.value)
+                      }
+                    />
                   </FormField>
                 )}
               </div>
@@ -361,30 +457,48 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === 1 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Matières et niveaux enseignés</h2>
-              <p className="mt-1 text-xs text-text-secondary">Les niveaux proposés dépendent des matières activées pour le marché France.</p>
+              <h2 className="text-lg font-black text-text-main">
+                Matières et niveaux enseignés
+              </h2>
+              <p className="mt-1 text-xs text-text-secondary">
+                Les niveaux proposés dépendent des matières activées pour le
+                marché France.
+              </p>
               <fieldset className="mt-5">
-                <legend className="text-xs font-bold text-text-main">Matières</legend>
+                <legend className="text-xs font-bold text-text-main">
+                  Matières
+                </legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {catalog.subjects.filter((subject) => subject.isActive).map((subject) => (
-                    <Checkbox
-                      key={subject.id}
-                      label={subject.label}
-                      checked={draft.subjectIds.includes(subject.id)}
-                      onChange={() => update("subjectIds", toggle(draft.subjectIds, subject.id))}
-                    />
-                  ))}
+                  {catalog.subjects
+                    .filter((subject) => subject.isActive)
+                    .map((subject) => (
+                      <Checkbox
+                        key={subject.id}
+                        label={subject.label}
+                        checked={draft.subjectIds.includes(subject.id)}
+                        onChange={() =>
+                          update(
+                            "subjectIds",
+                            toggle(draft.subjectIds, subject.id),
+                          )
+                        }
+                      />
+                    ))}
                 </div>
               </fieldset>
               <fieldset className="mt-5">
-                <legend className="text-xs font-bold text-text-main">Niveaux</legend>
+                <legend className="text-xs font-bold text-text-main">
+                  Niveaux
+                </legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                   {availableLevels.map((level) => (
                     <Checkbox
                       key={level.id}
                       label={level.label}
                       checked={draft.levelIds.includes(level.id)}
-                      onChange={() => update("levelIds", toggle(draft.levelIds, level.id))}
+                      onChange={() =>
+                        update("levelIds", toggle(draft.levelIds, level.id))
+                      }
                     />
                   ))}
                 </div>
@@ -394,33 +508,64 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === 2 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Où et comment enseignez-vous ?</h2>
+              <h2 className="text-lg font-black text-text-main">
+                Où et comment enseignez-vous ?
+              </h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 {[
                   ["online", Laptop, "En ligne"],
                   ["in_person", MapPin, "En présentiel"],
                   ["hybrid", Sparkles, "Hybride"],
                 ].map(([value, Icon, label]) => {
-                  const ChoiceIcon = Icon as React.ComponentType<{ className?: string }>;
+                  const ChoiceIcon = Icon as React.ComponentType<{
+                    className?: string;
+                  }>;
                   return (
                     <SelectableCard
                       key={String(value)}
-                      selected={draft.deliveryModes.includes(value as DeliveryMode)}
-                      onSelect={() => update("deliveryModes", toggle(draft.deliveryModes, value as DeliveryMode))}
+                      selected={draft.deliveryModes.includes(
+                        value as DeliveryMode,
+                      )}
+                      onSelect={() =>
+                        update(
+                          "deliveryModes",
+                          toggle(draft.deliveryModes, value as DeliveryMode),
+                        )
+                      }
                       className="rounded-card border border-border-base p-4 text-center"
                     >
-                      <ChoiceIcon className="mx-auto h-6 w-6 text-primary" aria-hidden="true" />
-                      <p className="mt-2 text-xs font-black text-text-main">{String(label)}</p>
+                      <ChoiceIcon
+                        className="mx-auto h-6 w-6 text-primary"
+                        aria-hidden="true"
+                      />
+                      <p className="mt-2 text-xs font-black text-text-main">
+                        {String(label)}
+                      </p>
                     </SelectableCard>
                   );
                 })}
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <FormField label="Ville de référence" required hint="Seule une zone approximative sera publique.">
-                  <Input value={draft.city} onChange={(event) => update("city", event.target.value)} />
+                <FormField
+                  label="Ville de référence"
+                  required
+                  hint="Seule une zone approximative sera publique."
+                >
+                  <Input
+                    value={draft.city}
+                    onChange={(event) => update("city", event.target.value)}
+                  />
                 </FormField>
                 <FormField label="Rayon de déplacement (km)">
-                  <Input type="number" min={0} max={250} value={draft.radiusKm} onChange={(event) => update("radiusKm", Number(event.target.value))} />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={250}
+                    value={draft.radiusKm}
+                    onChange={(event) =>
+                      update("radiusKm", Number(event.target.value))
+                    }
+                  />
                 </FormField>
               </div>
             </section>
@@ -428,19 +573,48 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === 3 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Présentez votre pédagogie</h2>
+              <h2 className="text-lg font-black text-text-main">
+                Présentez votre pédagogie
+              </h2>
               <div className="mt-5 space-y-4">
                 <FormField label="Titre du profil" required>
-                  <Input value={draft.headline} onChange={(event) => update("headline", event.target.value)} />
+                  <Input
+                    value={draft.headline}
+                    onChange={(event) => update("headline", event.target.value)}
+                  />
                 </FormField>
-                <FormField label="À propos" required hint={`${draft.biography.length} caractères · minimum 60`}>
-                  <Textarea rows={5} value={draft.biography} onChange={(event) => update("biography", event.target.value)} />
+                <FormField
+                  label="À propos"
+                  required
+                  hint={`${draft.biography.length} caractères · minimum 60`}
+                >
+                  <Textarea
+                    rows={5}
+                    value={draft.biography}
+                    onChange={(event) =>
+                      update("biography", event.target.value)
+                    }
+                  />
                 </FormField>
                 <FormField label="Méthode d’enseignement" required>
-                  <Textarea rows={4} value={draft.teachingApproach} onChange={(event) => update("teachingApproach", event.target.value)} />
+                  <Textarea
+                    rows={4}
+                    value={draft.teachingApproach}
+                    onChange={(event) =>
+                      update("teachingApproach", event.target.value)
+                    }
+                  />
                 </FormField>
                 <FormField label="Années d’expérience">
-                  <Input type="number" min={0} max={70} value={draft.experienceYears} onChange={(event) => update("experienceYears", Number(event.target.value))} />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={70}
+                    value={draft.experienceYears}
+                    onChange={(event) =>
+                      update("experienceYears", Number(event.target.value))
+                    }
+                  />
                 </FormField>
               </div>
             </section>
@@ -448,14 +622,33 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === 4 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Tarif et disponibilités</h2>
+              <h2 className="text-lg font-black text-text-main">
+                Tarif et disponibilités
+              </h2>
               <div className="mt-5 max-w-sm">
-                <FormField label="Tarif horaire (€)" required hint="Le montant public est affiché toutes taxes comprises lorsque cela s’applique.">
-                  <Input type="number" min={10} step={1} value={draft.priceMinor / 100} onChange={(event) => update("priceMinor", Math.round(Number(event.target.value) * 100))} />
+                <FormField
+                  label="Tarif horaire (€)"
+                  required
+                  hint="Le montant public est affiché toutes taxes comprises lorsque cela s’applique."
+                >
+                  <Input
+                    type="number"
+                    min={10}
+                    step={1}
+                    value={draft.priceMinor / 100}
+                    onChange={(event) =>
+                      update(
+                        "priceMinor",
+                        Math.round(Number(event.target.value) * 100),
+                      )
+                    }
+                  />
                 </FormField>
               </div>
               <fieldset className="mt-5">
-                <legend className="text-xs font-bold text-text-main">Créneaux habituels</legend>
+                <legend className="text-xs font-bold text-text-main">
+                  Créneaux habituels
+                </legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   {[
                     ["weekday_day", "En semaine · journée"],
@@ -464,7 +657,17 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                     ["saturday_morning", "Samedi · matin"],
                     ["weekend", "Week-end"],
                   ].map(([value, label]) => (
-                    <Checkbox key={value} label={label} checked={draft.availability.includes(value)} onChange={() => update("availability", toggle(draft.availability, value))} />
+                    <Checkbox
+                      key={value}
+                      label={label}
+                      checked={draft.availability.includes(value)}
+                      onChange={() =>
+                        update(
+                          "availability",
+                          toggle(draft.availability, value),
+                        )
+                      }
+                    />
                   ))}
                 </div>
               </fieldset>
@@ -473,11 +676,19 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === 5 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Choisissez votre formule</h2>
-              <p className="mt-1 text-xs text-text-secondary">Les mises en avant restent secondaires dans le classement : la pertinence passe avant le paiement.</p>
+              <h2 className="text-lg font-black text-text-main">
+                Choisissez votre formule
+              </h2>
+              <p className="mt-1 text-xs text-text-secondary">
+                Les mises en avant restent secondaires dans le classement : la
+                pertinence passe avant le paiement.
+              </p>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {catalog.plans
-                  .filter((plan) => plan.isActive && plan.audience === draft.accountKind)
+                  .filter(
+                    (plan) =>
+                      plan.isActive && plan.audience === draft.accountKind,
+                  )
                   .map((plan) => (
                     <SelectableCard
                       key={plan.id}
@@ -485,17 +696,43 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                       onSelect={() => update("planId", plan.id)}
                       className="relative rounded-card border border-border-base p-4"
                     >
-                      {plan.isRecommended && <Badge variant="primary" className="absolute right-3 top-3">Recommandé</Badge>}
-                      <h3 className="text-sm font-black text-text-main">{plan.name}</h3>
-                      <p className="mt-1 text-xs text-text-secondary">{plan.description}</p>
+                      {plan.isRecommended && (
+                        <Badge
+                          variant="primary"
+                          className="absolute right-3 top-3"
+                        >
+                          Recommandé
+                        </Badge>
+                      )}
+                      <h3 className="text-sm font-black text-text-main">
+                        {plan.name}
+                      </h3>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        {plan.description}
+                      </p>
                       <p className="mt-4 text-lg font-black text-text-main">
-                        {plan.monthlyPrice ? `${(plan.monthlyPrice.amountMinor / 100).toLocaleString("fr-FR")} €` : "Gratuit"}
-                        {plan.monthlyPrice && <span className="text-xs font-medium text-text-muted"> / mois</span>}
+                        {plan.monthlyPrice
+                          ? `${(plan.monthlyPrice.amountMinor / 100).toLocaleString("fr-FR")} €`
+                          : "Gratuit"}
+                        {plan.monthlyPrice && (
+                          <span className="text-xs font-medium text-text-muted">
+                            {" "}
+                            / mois
+                          </span>
+                        )}
                       </p>
                       <ul className="mt-3 space-y-1.5 text-xs text-text-secondary">
-                        <li>• {plan.entitlements.maxActiveOffers} cours actifs</li>
-                        <li>• {plan.entitlements.maxMonthlyLeads} demandes qualifiées / mois</li>
-                        <li>• {plan.entitlements.teamMembers} membre{plan.entitlements.teamMembers > 1 ? "s" : ""}</li>
+                        <li>
+                          • {plan.entitlements.maxActiveOffers} cours actifs
+                        </li>
+                        <li>
+                          • {plan.entitlements.maxMonthlyLeads} demandes
+                          qualifiées / mois
+                        </li>
+                        <li>
+                          • {plan.entitlements.teamMembers} membre
+                          {plan.entitlements.teamMembers > 1 ? "s" : ""}
+                        </li>
                       </ul>
                     </SelectableCard>
                   ))}
@@ -505,20 +742,45 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === 6 && (
             <section>
-              <h2 className="text-lg font-black text-text-main">Vérifications et publication</h2>
+              <h2 className="text-lg font-black text-text-main">
+                Vérifications et publication
+              </h2>
               <div className="mt-5 rounded-card border border-info-border bg-info-surface p-4">
-                <h3 className="flex items-center gap-2 text-sm font-black text-text-main"><ShieldCheck className="h-icon-md w-icon-md text-info" />Ce qui sera affiché</h3>
+                <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
+                  <ShieldCheck className="h-icon-md w-icon-md text-info" />
+                  Ce qui sera affiché
+                </h3>
                 <p className="mt-2 text-xs leading-relaxed text-text-secondary">
-                  Shongre distingue clairement les déclarations du professeur, les preuves privées téléversées et les éléments réellement vérifiés. Aucun diplôme ne sera présenté comme vérifié avant contrôle.
+                  Shongre distingue clairement les déclarations du professeur,
+                  les preuves privées téléversées et les éléments réellement
+                  vérifiés. Aucun diplôme ne sera présenté comme vérifié avant
+                  contrôle.
                 </p>
               </div>
               <dl className="mt-5 divide-y divide-border-subtle rounded-card border border-border-base px-4 text-xs">
                 {[
-                  ["E-mail", currentUser?.isEmailVerified ? "Vérifié" : "À vérifier"],
-                  ["Téléphone", currentUser?.isPhoneVerified ? "Vérifié" : "À vérifier"],
-                  ["Identité", currentUser?.isIdentityVerified ? "Vérifiée" : "Facultatif à ce stade"],
-                  ["Diplômes et certifications", "Déclarés — preuve privée possible"],
-                  ["Éligibilité services à la personne", "Non vérifiée / conditionnelle"],
+                  [
+                    "E-mail",
+                    currentUser?.isEmailVerified ? "Vérifié" : "À vérifier",
+                  ],
+                  [
+                    "Téléphone",
+                    currentUser?.isPhoneVerified ? "Vérifié" : "À vérifier",
+                  ],
+                  [
+                    "Identité",
+                    currentUser?.isIdentityVerified
+                      ? "Vérifiée"
+                      : "Facultatif à ce stade",
+                  ],
+                  [
+                    "Diplômes et certifications",
+                    "Déclarés — preuve privée possible",
+                  ],
+                  [
+                    "Éligibilité services à la personne",
+                    "Non vérifiée / conditionnelle",
+                  ],
                 ].map(([label, status]) => (
                   <div key={label} className="flex justify-between gap-4 py-3">
                     <dt className="font-bold text-text-main">{label}</dt>
@@ -527,21 +789,36 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                 ))}
               </dl>
               <div className="mt-5 rounded-card border border-warning-border bg-warning-surface p-4 text-xs text-text-secondary">
-                Les réservations, paiements, versements et forfaits récurrents sont désactivés en France tant que les obligations prestataire, fiscales et réglementaires ne sont pas validées.
+                Les réservations, paiements, versements et forfaits récurrents
+                sont désactivés en France tant que les obligations prestataire,
+                fiscales et réglementaires ne sont pas validées.
               </div>
             </section>
           )}
 
           <footer className="mt-8 flex items-center justify-between gap-3 border-t border-border-subtle pt-5">
-            <Button variant="ghost" disabled={step === 0 || isSubmitting} onClick={() => setStep((value) => value - 1)} leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}>
+            <Button
+              variant="ghost"
+              disabled={step === 0 || isSubmitting}
+              onClick={() => setStep((value) => value - 1)}
+              leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
+            >
               Retour
             </Button>
             {step < STEPS.length - 1 ? (
-              <Button disabled={!canContinue} onClick={() => setStep((value) => value + 1)} rightIcon={<ArrowRight className="h-icon-sm w-icon-sm" />}>
+              <Button
+                disabled={!canContinue}
+                onClick={() => setStep((value) => value + 1)}
+                rightIcon={<ArrowRight className="h-icon-sm w-icon-sm" />}
+              >
                 Continuer
               </Button>
             ) : (
-              <Button isLoading={isSubmitting} onClick={publish} leftIcon={<CheckCircle2 className="h-icon-sm w-icon-sm" />}>
+              <Button
+                isLoading={isSubmitting}
+                onClick={publish}
+                leftIcon={<CheckCircle2 className="h-icon-sm w-icon-sm" />}
+              >
                 Envoyer pour examen
               </Button>
             )}

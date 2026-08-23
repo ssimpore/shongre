@@ -40,12 +40,15 @@ const ROLE_LABELS = {
 
 export const CourseOrganizationWorkspacePage: React.FC = () => {
   const toast = useToast();
-  const [workspace, setWorkspace] = useState<CourseOrganizationWorkspace | null>(null);
+  const [workspace, setWorkspace] =
+    useState<CourseOrganizationWorkspace | null>(null);
   const [error, setError] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [memberName, setMemberName] = useState("");
-  const [memberRole, setMemberRole] = useState<"tutor" | "manager" | "lead_coordinator">("tutor");
+  const [memberRole, setMemberRole] = useState<
+    "tutor" | "manager" | "lead_coordinator"
+  >("tutor");
   const [locationLabel, setLocationLabel] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -89,7 +92,9 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       setInviteOpen(false);
       toast.success("Invitation ajoutée à l’espace organisme.");
     } catch (reason) {
-      toast.error(reason instanceof Error ? reason.message : "Invitation impossible.");
+      toast.error(
+        reason instanceof Error ? reason.message : "Invitation impossible.",
+      );
     } finally {
       setSaving(false);
     }
@@ -108,7 +113,9 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       setLocationOpen(false);
       toast.success("Lieu ajouté à l’espace organisme.");
     } catch (reason) {
-      toast.error(reason instanceof Error ? reason.message : "Ajout impossible.");
+      toast.error(
+        reason instanceof Error ? reason.message : "Ajout impossible.",
+      );
     } finally {
       setSaving(false);
     }
@@ -119,17 +126,36 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-black text-text-main sm:text-2xl">{organization.publicName}</h1>
+            <h1 className="text-xl font-black text-text-main sm:text-2xl">
+              {organization.publicName}
+            </h1>
             <Badge variant="pro">Organisme</Badge>
             {organization.verificationStatus === "verified" && (
-              <Badge variant="success" icon>Vérifié</Badge>
+              <Badge variant="success" icon>
+                Vérifié
+              </Badge>
             )}
           </div>
-          <p className="mt-1 max-w-2xl text-xs text-text-secondary">{organization.description}</p>
+          <p className="mt-1 max-w-2xl text-xs text-text-secondary">
+            {organization.description}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setInviteOpen(true)} variant="outline" size="compact" leftIcon={<UserPlus className="h-icon-sm w-icon-sm" />}>Inviter un membre</Button>
-          <Button to={routes.courses.publish()} size="compact" leftIcon={<Plus className="h-icon-sm w-icon-sm" />}>Ajouter un cours</Button>
+          <Button
+            onClick={() => setInviteOpen(true)}
+            variant="outline"
+            size="compact"
+            leftIcon={<UserPlus className="h-icon-sm w-icon-sm" />}
+          >
+            Inviter un membre
+          </Button>
+          <Button
+            to={routes.courses.publish()}
+            size="compact"
+            leftIcon={<Plus className="h-icon-sm w-icon-sm" />}
+          >
+            Ajouter un cours
+          </Button>
         </div>
       </header>
 
@@ -141,11 +167,21 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           [Users, "Professeurs", analytics.activeTutors],
           [BookOpen, "Cours actifs", organization.activeOfferCount],
         ].map(([Icon, label, value], index) => {
-          const MetricIcon = Icon as React.ComponentType<{ className?: string }>;
+          const MetricIcon = Icon as React.ComponentType<{
+            className?: string;
+          }>;
           return (
-            <article key={String(label)} className={`p-4 ${index ? "border-l border-border-subtle" : ""} ${index === 4 ? "col-span-2 border-t lg:col-span-1 lg:border-t-0" : ""}`}>
-              <p className="flex items-center gap-1.5 text-micro font-semibold text-text-muted"><MetricIcon className="h-icon-xs w-icon-xs" />{String(label)}</p>
-              <p className="mt-1 text-lg font-black text-text-main">{String(value)}</p>
+            <article
+              key={String(label)}
+              className={`p-4 ${index ? "border-l border-border-subtle" : ""} ${index === 4 ? "col-span-2 border-t lg:col-span-1 lg:border-t-0" : ""}`}
+            >
+              <p className="flex items-center gap-1.5 text-micro font-semibold text-text-muted">
+                <MetricIcon className="h-icon-xs w-icon-xs" />
+                {String(label)}
+              </p>
+              <p className="mt-1 text-lg font-black text-text-main">
+                {String(value)}
+              </p>
               <p className="text-micro text-text-muted">30 derniers jours</p>
             </article>
           );
@@ -156,19 +192,53 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
         <main className="min-w-0 space-y-5">
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle p-4">
-              <div><h2 className="text-sm font-black text-text-main">Équipe et permissions</h2><p className="mt-0.5 text-micro text-text-muted">Les accès sont accordés par rôle, jamais par simple appartenance.</p></div>
-              <Badge variant="neutral">{organization.memberCount} membres</Badge>
+              <div>
+                <h2 className="text-sm font-black text-text-main">
+                  Équipe et permissions
+                </h2>
+                <p className="mt-0.5 text-micro text-text-muted">
+                  Les accès sont accordés par rôle, jamais par simple
+                  appartenance.
+                </p>
+              </div>
+              <Badge variant="neutral">
+                {organization.memberCount} membres
+              </Badge>
             </div>
             <ScrollableRegion aria-label="Tableau des membres de l’organisme">
               <table className="w-full min-w-[42rem] text-left text-xs">
-                <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-secondary"><tr><th className="px-4 py-2.5">Membre</th><th className="px-4 py-2.5">Rôle</th><th className="px-4 py-2.5">Permissions</th><th className="px-4 py-2.5">Statut</th></tr></thead>
+                <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-secondary">
+                  <tr>
+                    <th className="px-4 py-2.5">Membre</th>
+                    <th className="px-4 py-2.5">Rôle</th>
+                    <th className="px-4 py-2.5">Permissions</th>
+                    <th className="px-4 py-2.5">Statut</th>
+                  </tr>
+                </thead>
                 <tbody className="divide-y divide-border-subtle">
                   {workspace.members.map((member) => (
                     <tr key={member.id}>
-                      <td className="px-4 py-3 font-bold text-text-main">{member.displayName}</td>
-                      <td className="px-4 py-3 text-text-secondary">{ROLE_LABELS[member.role]}</td>
-                      <td className="px-4 py-3 text-text-secondary">{member.permissions.slice(0, 2).join(" · ")}{member.permissions.length > 2 ? ` +${member.permissions.length - 2}` : ""}</td>
-                      <td className="px-4 py-3"><Badge variant={member.status === "active" ? "success" : "warning"}>{member.status === "active" ? "Actif" : "Invité"}</Badge></td>
+                      <td className="px-4 py-3 font-bold text-text-main">
+                        {member.displayName}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {ROLE_LABELS[member.role]}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {member.permissions.slice(0, 2).join(" · ")}
+                        {member.permissions.length > 2
+                          ? ` +${member.permissions.length - 2}`
+                          : ""}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant={
+                            member.status === "active" ? "success" : "warning"
+                          }
+                        >
+                          {member.status === "active" ? "Actif" : "Invité"}
+                        </Badge>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -177,38 +247,118 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-black text-text-main">Lieux d’enseignement</h2><Button onClick={() => setLocationOpen(true)} variant="ghost" size="sm" leftIcon={<Plus className="h-icon-xs w-icon-xs" />}>Ajouter un lieu</Button></div>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-black text-text-main">
+                Lieux d’enseignement
+              </h2>
+              <Button
+                onClick={() => setLocationOpen(true)}
+                variant="ghost"
+                size="sm"
+                leftIcon={<Plus className="h-icon-xs w-icon-xs" />}
+              >
+                Ajouter un lieu
+              </Button>
+            </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {workspace.locations.map((location) => (
-                <article key={location.id} className="rounded-card border border-border-subtle p-4">
+                <article
+                  key={location.id}
+                  className="rounded-card border border-border-subtle p-4"
+                >
                   <MapPin className="h-icon-md w-icon-md text-primary" />
-                  <p className="mt-2 text-xs font-black text-text-main">{location.label}</p>
-                  <p className="mt-1 text-micro text-text-muted">{location.activeTutorCount} professeurs actifs</p>
+                  <p className="mt-2 text-xs font-black text-text-main">
+                    {location.label}
+                  </p>
+                  <p className="mt-1 text-micro text-text-muted">
+                    {location.activeTutorCount} professeurs actifs
+                  </p>
                 </article>
               ))}
             </div>
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-black text-text-main">Boîte de réception centralisée</h2><p className="mt-0.5 text-micro text-text-muted">Affectez les demandes par matière, niveau, lieu et disponibilité.</p></div><Badge variant="primary">{analytics.leadsReceived - analytics.leadsAccepted} à traiter</Badge></div>
-            <div className="mt-4 rounded-card border border-info-border bg-info-surface p-4 text-xs text-text-secondary">Les coordonnées sont retenues jusqu’à l’acceptation de la demande par un membre autorisé. Les refus et contestations de lead restent auditables.</div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-black text-text-main">
+                  Boîte de réception centralisée
+                </h2>
+                <p className="mt-0.5 text-micro text-text-muted">
+                  Affectez les demandes par matière, niveau, lieu et
+                  disponibilité.
+                </p>
+              </div>
+              <Badge variant="primary">
+                {analytics.leadsReceived - analytics.leadsAccepted} à traiter
+              </Badge>
+            </div>
+            <div className="mt-4 rounded-card border border-info-border bg-info-surface p-4 text-xs text-text-secondary">
+              Les coordonnées sont retenues jusqu’à l’acceptation de la demande
+              par un membre autorisé. Les refus et contestations de lead restent
+              auditables.
+            </div>
           </section>
         </main>
 
         <aside className="space-y-4">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main"><Building2 className="h-icon-sm w-icon-sm text-primary" />Formule</h2>
-            <p className="mt-3 text-lg font-black text-text-main">{plan.name}</p>
-            <dl className="mt-3 space-y-2 text-xs"><div className="flex justify-between"><dt className="text-text-muted">Membres</dt><dd className="font-bold">{organization.memberCount} / {plan.entitlements.teamMembers}</dd></div><div className="flex justify-between"><dt className="text-text-muted">Lieux</dt><dd className="font-bold">{workspace.locations.length} / {plan.entitlements.locations}</dd></div><div className="flex justify-between"><dt className="text-text-muted">Cours</dt><dd className="font-bold">{organization.activeOfferCount} / {plan.entitlements.maxActiveOffers}</dd></div></dl>
-            <Button to={routes.workspace.pro.subscriptions()} variant="ghost" size="sm" className="mt-3">Gérer la formule</Button>
+            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <Building2 className="h-icon-sm w-icon-sm text-primary" />
+              Formule
+            </h2>
+            <p className="mt-3 text-lg font-black text-text-main">
+              {plan.name}
+            </p>
+            <dl className="mt-3 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <dt className="text-text-muted">Membres</dt>
+                <dd className="font-bold">
+                  {organization.memberCount} / {plan.entitlements.teamMembers}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-muted">Lieux</dt>
+                <dd className="font-bold">
+                  {workspace.locations.length} / {plan.entitlements.locations}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-muted">Cours</dt>
+                <dd className="font-bold">
+                  {organization.activeOfferCount} /{" "}
+                  {plan.entitlements.maxActiveOffers}
+                </dd>
+              </div>
+            </dl>
+            <Button
+              to={routes.workspace.pro.subscriptions()}
+              variant="ghost"
+              size="sm"
+              className="mt-3"
+            >
+              Gérer la formule
+            </Button>
           </section>
           <section className="rounded-card border border-success-border bg-success-surface p-4">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main"><ShieldCheck className="h-icon-sm w-icon-sm text-success" />Organisme vérifié</h2>
-            <p className="mt-2 text-xs leading-relaxed text-text-secondary">Le statut public ne révèle ni document, ni identifiant administratif privé.</p>
+            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <ShieldCheck className="h-icon-sm w-icon-sm text-success" />
+              Organisme vérifié
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+              Le statut public ne révèle ni document, ni identifiant
+              administratif privé.
+            </p>
           </section>
           <section className="rounded-card border border-warning-border bg-warning-surface p-4">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main"><Lock className="h-icon-sm w-icon-sm text-warning" />Paiements désactivés</h2>
-            <p className="mt-2 text-xs leading-relaxed text-text-secondary">Les réservations et versements restent hors service sur le marché France.</p>
+            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <Lock className="h-icon-sm w-icon-sm text-warning" />
+              Paiements désactivés
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+              Les réservations et versements restent hors service sur le marché
+              France.
+            </p>
           </section>
         </aside>
       </div>
@@ -231,16 +381,28 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             <Select
               aria-label="Rôle du membre"
               value={memberRole}
-              onChange={(event) => setMemberRole(event.target.value as typeof memberRole)}
+              onChange={(event) =>
+                setMemberRole(event.target.value as typeof memberRole)
+              }
             >
               <option value="tutor">Professeur</option>
               <option value="manager">Responsable</option>
-              <option value="lead_coordinator">Coordination des demandes</option>
+              <option value="lead_coordinator">
+                Coordination des demandes
+              </option>
             </Select>
           </FormField>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setInviteOpen(false)}>Annuler</Button>
-            <Button type="submit" isLoading={saving}>Envoyer l’invitation</Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setInviteOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" isLoading={saving}>
+              Envoyer l’invitation
+            </Button>
           </div>
         </form>
       </Modal>
@@ -262,8 +424,16 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             />
           </FormField>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setLocationOpen(false)}>Annuler</Button>
-            <Button type="submit" isLoading={saving}>Ajouter le lieu</Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setLocationOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" isLoading={saving}>
+              Ajouter le lieu
+            </Button>
           </div>
         </form>
       </Modal>

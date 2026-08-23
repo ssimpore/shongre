@@ -420,6 +420,20 @@ export interface Listing {
   sellerId: string;
   sellerName: string;
   sellerType: SellerType;
+  publisherType?: "private" | "professional";
+  publisherUserId?: string;
+  publisherOrganizationId?: string;
+  publisherBranchId?: string;
+  publisherVerificationStatus?:
+    | "unverified"
+    | "email_verified"
+    | "phone_verified"
+    | "identity_verified"
+    | "business_verified"
+    | "suspended";
+  publisherOrganizationName?: string;
+  publisherOrganizationLogoUrl?: string;
+  publisherBranchName?: string;
   sellerAvatarUrl?: string;
   sellerRating: number;
   sellerReviewCount: number;
@@ -452,6 +466,36 @@ export interface Listing {
   boostType?:
     "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight";
   boostExpiresAt?: string;
+  promotionState?:
+    | "inactive"
+    | "scheduled"
+    | "active"
+    | "expired"
+    | "cancelled"
+    | "refunded"
+    | "failed";
+  promotionType?:
+    | "urgent_badge"
+    | "search_bump"
+    | "featured"
+    | "top_placement"
+    | "sponsored_search"
+    | "homepage_spotlight"
+    | "category_spotlight"
+    | "local_spotlight"
+    | "seller_spotlight";
+  promotionSource?: "purchase" | "subscription_credit" | "admin_grant";
+  promotionSourceId?: string;
+  promotionLabel?: string;
+  promotionStartAt?: string;
+  promotionEndAt?: string;
+  publishedAt?: string;
+  materiallyUpdatedAt?: string;
+  organicFreshnessAt?: string;
+  promotedAt?: string;
+  externalStockId?: string;
+  duplicateGroupId?: string;
+  discovery?: import("@shongre/contracts").DiscoveryPresentation;
   marketCode?: string; // Primary market code e.g. 'FR'
   marketCodes?: string[]; // All markets in which this listing is published e.g. ['FR', 'BE']
   marketPublications?: Array<{
@@ -552,11 +596,7 @@ export interface SearchFilters {
   publishedToday?: boolean;
   attributes?: Record<
     string,
-    | string
-    | string[]
-    | number
-    | boolean
-    | { min?: number; max?: number }
+    string | string[] | number | boolean | { min?: number; max?: number }
   >;
   sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
   marketCode?: string; // Scopes search to active market (e.g. 'FR', 'BE', 'ES', 'CH')

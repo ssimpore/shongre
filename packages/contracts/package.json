@@ -18,6 +18,7 @@
     "./employment-catalog": "./src/fixtures/employment-catalog.ts",
     "./employment-demo": "./src/fixtures/employment-demo.ts",
     "./monetization": "./src/schemas/monetization.ts",
+    "./discovery": "./src/schemas/discovery.ts",
     "./monetization-catalog": "./src/fixtures/monetization-catalog.ts",
     "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts"
   },

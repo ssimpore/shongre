@@ -64,11 +64,15 @@ describe("geolocation service", () => {
 
   it("normalizes browser permission errors", async () => {
     const provider = {
-      getCurrentPosition: (_success: unknown, error: (reason: { code: number }) => void) =>
-        error({ code: 1 }),
+      getCurrentPosition: (
+        _success: unknown,
+        error: (reason: { code: number }) => void,
+      ) => error({ code: 1 }),
     } as unknown as Geolocation;
 
-    await expect(locateCurrentCity("FR", franceCities, provider)).rejects.toMatchObject({
+    await expect(
+      locateCurrentCity("FR", franceCities, provider),
+    ).rejects.toMatchObject({
       code: "permission_denied",
     });
   });

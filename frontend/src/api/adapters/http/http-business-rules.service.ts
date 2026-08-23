@@ -25,7 +25,10 @@ export class HttpBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   evaluate(context: RuleEvaluationContext) {
-    return httpClient.post<RuleEvaluationResult>("/admin/business-rules/simulate", context);
+    return httpClient.post<RuleEvaluationResult>(
+      "/admin/business-rules/simulate",
+      context,
+    );
   }
 
   createQuote(request: QuoteRequest) {
@@ -51,7 +54,9 @@ export class HttpBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   getSubscriptions() {
-    return httpClient.get<MonetizationSubscription[]>("/monetization/subscriptions");
+    return httpClient.get<MonetizationSubscription[]>(
+      "/monetization/subscriptions",
+    );
   }
 
   updateSubscriptionCancellation(request: SubscriptionCancellationRequest) {

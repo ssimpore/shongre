@@ -1,137 +1,110 @@
-# Shongre Backend Architecture
+# Shongre backend
 
-This directory (`backend/`) contains 100% of the server-side code, database migrations, Supabase configurations, background jobs, external integrations, API route handlers, domain services, security policies, and testing suites for the Shongre Marketplace & Escrow platform.
+`backend/` is the server boundary for the Shongre modular monolith. It owns the
+versioned HTTP API, domain services, repositories, privileged integrations,
+workers, Supabase migrations and backend tests. Web and mobile applications
+consume public contracts; they never import this implementation.
 
----
-
-## Directory Overview
+## Layout
 
 ```text
 backend/
 ├── src/
-│   ├── app/            # Application configuration (BACKEND_DATA_MODE), bootstrap, and HTTP server
-│   ├── api/v1/         # Versioned REST API route handlers
-│   ├── modules/        # Domain business logic (Listings, Escrow, KYC, Monetization, etc.)
-│   ├── infrastructure/
-│   │   ├── database/   # Repository layer (I*, Demo*, Postgres*) and DB clients
-│   │   │   └── repositories/
-│   │   ├── logging/    # Structured logger
-│   │   ├── payments/   # Stripe adapter
-│   │   ├── search/     # PostgreSQL full-text search provider
-│   │   └── supabase/   # Supabase client singleton
-│   ├── integrations/   # External provider abstractions (Stripe, Gemini AI, SIRENE, KYC)
-│   │   └── providers/  # Provider interfaces and containers (payment, kyc, registry, ai)
-│   ├── shared/         # Common error classes, money calculations, RBAC and DTO types
-│   └── workers/        # Asynchronous job runners (Lifecycle cleanup, Notifications, AI screening)
+│   ├── app/                    configuration and server bootstrap
+│   ├── api/v1/                 versioned HTTP routing
+│   ├── modules/                marketplace application/domain services
+│   ├── infrastructure/         repositories, Supabase, payments, search, logs
+│   ├── integrations/providers/ explicit demo and external-provider boundaries
+│   ├── shared/                 errors, auth, money and backend DTOs
+│   ├── generated/              canonical generated database types
+│   └── workers/                background entrypoints
 ├── supabase/
-│   ├── config.toml     # Supabase project configuration
-│   ├── migrations/     # Canonical SQL migrations (00001 to 00005)
-│   ├── functions/      # Supabase Edge Functions (Stripe, Escrow, AI Moderation, Expiry)
-│   ├── seed/           # Seed SQL data
-│   ├── policies/       # Row Level Security documentation
-│   └── tests/          # SQL RLS tests
-├── scripts/            # Database migration, seed, type generation, and boundary checks
-├── tests/              # Vitest test suites (Unit, Contracts, Integration, RLS, Security)
-├── docs/               # Architecture, Database, API, and Security technical specifications
-└── generated/          # Database type declarations generated from schema
+│   ├── migrations/             ordered, canonical SQL migrations
+│   ├── functions/              Edge Functions
+│   ├── policies/ and tests/    RLS documentation and SQL tests
+│   └── seed/                   deterministic local seed data
+├── scripts/                    migration, type generation and maintenance tools
+├── tests/                      unit, contract, integration, RLS and security tests
+└── docs/                       backend-specific technical documentation
 ```
 
----
+There is no second root-level Supabase tree and no compatibility `generated/`
+directory. `src/generated/database.types.ts` is the only database-type output.
 
-## Central Data Mode & Provider Configuration
-
-The backend supports switching between in-memory demo repositories and live PostgreSQL/Supabase database tables through `BACKEND_DATA_MODE`:
+## Runtime modes
 
 ```env
-# BACKEND_DATA_MODE: "demo" (default) | "database"
-BACKEND_DATA_MODE=demo
+BACKEND_DATA_MODE=demo       # deterministic in-memory repositories
+BACKEND_DATA_MODE=database   # authoritative PostgreSQL/Supabase repositories
 
-# External Providers: "demo" | "stripe", "demo" | "live", "demo" | "siret", "demo" | "gemini"
-PAYMENT_PROVIDER=demo
-KYC_PROVIDER=demo
-BUSINESS_REGISTRY_PROVIDER=demo
-AI_PROVIDER=demo
+PAYMENT_PROVIDER=demo        # or stripe
+KYC_PROVIDER=demo            # or stripe/live
+BUSINESS_REGISTRY_PROVIDER=demo # or siret
+AI_PROVIDER=demo             # or gemini
 ```
 
----
+Modes are validated at boot. Database mode never falls back to seeded demo
+records after a query failure. External modes that do not yet have a complete
+production adapter fail closed with a neutral `503`; they never fabricate a
+successful live KYC, registry, AI or balance response. Keep every provider in
+`demo` until its adapter and operational credentials are explicitly completed.
 
-## Getting Started & Makefile Automation
+## Commands
 
-### 1. Environment & Setup
+Run commands from the repository root so environment precedence and ports stay
+consistent:
+
 ```bash
-# Initialize backend/.env from .env.example
-make backend-env
-
-# Install all monorepo dependencies
-make install
-```
-
-### 2. Development Server
-```bash
-# Start frontend and backend on the ports configured in the root environment
-make dev
-
-# Run Frontend in API mode against Backend in Demo mode
-make dev-api-demo
-
-# Run Frontend in API mode against Backend in PostgreSQL mode
-make dev-db
-
-# Start Backend API server only on port 4000
+make env-init
 make backend-dev
-```
-
-### 3. Testing & Benchmarking
-```bash
-# Run all backend Vitest tests
+make backend-typecheck
 make backend-test
-
-# Run repository contract tests across Demo and PostgreSQL modes
-make backend-test-contracts
-
-# Run specific backend test suites
-make backend-test-unit         # Escrow, monetization, KYC, lifecycle
-make backend-test-integration  # REST API HTTP routes & controllers
-make backend-test-rls          # Supabase Row Level Security policies
-make backend-test-security     # Boundary checks and secret isolation
-make backend-test-watch        # Interactive Vitest watch mode
-
-# Run computation & latency SLA benchmarks (<100µs SLA)
-make backend-benchmark
-```
-
-### 4. Code Quality & Compilation
-```bash
-# Run TypeScript type checks (tsc --noEmit)
-make backend-lint
-
-# Build backend for production (tsc && tsc-alias)
 make backend-build
-
-# Clean backend build artifacts (dist/)
-make backend-clean
-
-# Full backend CI pipeline (lint + test + build + benchmark + boundary)
 make backend-check
 ```
 
-### 5. Database & Supabase Operations
+The full repository gate is `make check`; CI additionally enforces formatting,
+migration ordering and high/critical dependency audit failures.
+
+## Database workflow
+
+All schema changes are additive, ordered SQL files under
+`backend/supabase/migrations/`.
+
 ```bash
-# Validate and execute SQL migrations
-make backend-db-migrate
-
-# Seed database with canonical dataset
-make backend-db-seed
-
-# Generate TypeScript types from DB schema
-make backend-db-types
+make infra-start
+make db-migrate
+make db-seed
+make db-types
+make infra-stop
 ```
 
-### 6. Docker Containerization
-```bash
-# Build production Docker image (shongre-backend:latest)
-make backend-docker-build
+`make db-migrate` always validates every migration file name, uniqueness and
+non-empty SQL. If
+`DATABASE_URL` is set it applies unapplied migrations with `psql`, transaction
+failure-on-error semantics and the Supabase-compatible migration ledger. With
+no URL it is an explicit validation-only command and says so.
 
-# Run backend container locally
-make backend-docker-run
-```
+`make db-seed` follows the same safety model: without `DATABASE_URL` it validates
+the canonical seed entrypoint; with a URL it applies the idempotent reference
+data in one transaction and stops on the first SQL error.
+
+`make db-types` requires the Supabase CLI plus either `DATABASE_URL` or
+`SUPABASE_PROJECT_REF`; it writes directly to
+`backend/src/generated/database.types.ts` and refuses placeholder output.
+
+Use `make db-reset` only for disposable local development data. The root target
+refuses to reset outside `APP_ENV=development`.
+
+## Security invariants
+
+- The service-role key, database URL and provider secrets remain server-only.
+- HTTP identity comes from the verified principal, never a client-supplied user
+  ID.
+- Repository database failures are surfaced as neutral availability errors,
+  without demo fallback or raw SQL/provider details.
+- Money authority and state transitions belong to backend services/database
+  constraints; clients display normalized contracts.
+- Every Supabase-exposed table uses deny-by-default RLS, tested independently.
+- Logs must not contain passwords, OTPs, handover PINs, full payment/bank
+  identifiers, identity documents or internal fraud scores.

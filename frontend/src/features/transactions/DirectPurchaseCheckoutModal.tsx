@@ -336,13 +336,8 @@ export const DirectPurchaseCheckoutModal: React.FC<
                         )}
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-stone-900 flex items-center gap-2 mb-0.5">
-                          <span>{quote.title}</span>
-                          {quote.price === 0 && (
-                            <span className="text-xs bg-success-surface text-success font-bold px-2 py-0.5 rounded-md">
-                              Gratuit
-                            </span>
-                          )}
+                        <div className="text-sm font-bold text-stone-900 mb-0.5">
+                          {quote.title}
                         </div>
                         <div className="text-xs text-stone-500 font-medium">
                           {quote.description} • {quote.estimatedDeliveryDays}

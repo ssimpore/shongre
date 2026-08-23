@@ -26,7 +26,6 @@ import {
   Send,
   Edit3,
   Sliders,
-  Sparkles,
   Star,
 } from "lucide-react";
 import { routes } from "../../configuration/routes";
@@ -591,11 +590,29 @@ export const ListingDetailPage: React.FC = () => {
                       {t("listings.listingDetailPage.vendeurPro")}
                     </Badge>
                   )}
-                  {listing.isBoosted && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-warning-surface text-warning border border-warning-border shadow-2xs">
-                      <Sparkles className="w-3.5 h-3.5 text-warning" />
-                      {t("listings.listingDetailPage.aLaUne")}
-                    </span>
+                  {(listing.promotionState === "active" ||
+                    listing.isBoosted) && (
+                    <Badge
+                      variant={
+                        listing.promotionType === "urgent_badge" ||
+                        listing.boostType === "urgent"
+                          ? "urgent"
+                          : "featured"
+                      }
+                      size="md"
+                      icon
+                    >
+                      {listing.discovery?.isSponsored
+                        ? listing.discovery.promotionLabel || "Sponsorisé"
+                        : listing.promotionLabel ||
+                          (listing.promotionType === "search_bump" ||
+                          listing.boostType === "top_of_list"
+                            ? "Remonté · sponsorisé"
+                            : listing.promotionType === "urgent_badge" ||
+                                listing.boostType === "urgent"
+                              ? "Urgent"
+                              : "À la une · sponsorisé")}
+                    </Badge>
                   )}
                 </div>
 
@@ -890,10 +907,10 @@ export const ListingDetailPage: React.FC = () => {
                  The shared `md` action metric is the same 44px control used by
                  the Pro discovery CTA. It keeps these transaction actions aligned
                  with the rest of the marketplace instead of promoting them to the
-                 48px page-level `lg` step. The last two actions also use a responsive
-                 two-column row — so a listing that allowed contact but not an
-                 offer rendered a single half-width "Message" button stranded
-                 beside an empty cell. */
+                 48px page-level `lg` step. Every action stays on its own full-width
+                 row: the desktop breakpoint describes the page, not the width of
+                 this four-column sidebar, so two long translated labels cannot be
+                 assumed to fit side by side here. */
               <div className="space-y-3" data-testid="listing-desktop-actions">
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
@@ -930,13 +947,7 @@ export const ListingDetailPage: React.FC = () => {
                   </Button>
                 )}
 
-                <div
-                  className={`grid gap-3 pt-1 ${
-                    actions.canMakeOffer && actions.canContact
-                      ? "grid-cols-2"
-                      : "grid-cols-1"
-                  }`}
-                >
+                <div className="grid grid-cols-1 gap-3 pt-1">
                   {/* 3. Price Negotiation Offer */}
                   {actions.canMakeOffer && (
                     <Button
@@ -956,16 +967,7 @@ export const ListingDetailPage: React.FC = () => {
                       }}
                       leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
                     >
-                      {/* Two buttons share this row on a phone, and the full
-                          label plus its icon does not fit the 137px cell — it
-                          rendered clipped mid-word. The pinned buy bar already
-                          uses the short form, so they now agree. */}
-                      <span className="sm:hidden">
-                        {t("listings.listingDetailPage.offreDePrixCourt")}
-                      </span>
-                      <span className="hidden sm:inline">
-                        {t("listings.listingDetailPage.offreDePrix")}
-                      </span>
+                      {t("listings.listingDetailPage.offreDePrix")}
                     </Button>
                   )}
 

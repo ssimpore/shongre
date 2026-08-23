@@ -236,7 +236,8 @@ describe("Publication System & Schema Resolvers", () => {
       taxonomyNodeId: "jobs.offers",
       listingIntent: "JOB_OFFER",
       title: "Développeur frontend senior",
-      description: "CDI basé à Paris avec deux jours de télétravail par semaine.",
+      description:
+        "CDI basé à Paris avec deux jours de télétravail par semaine.",
       photos: [],
       pricing: {
         priceModel: "on_request",
@@ -245,7 +246,12 @@ describe("Publication System & Schema Resolvers", () => {
         isNegotiable: false,
         isFreeDonation: false,
       },
-      location: { city: "Paris", postalCode: "75011", countryCode: "FR", hideExactAddress: true },
+      location: {
+        city: "Paris",
+        postalCode: "75011",
+        countryCode: "FR",
+        hideExactAddress: true,
+      },
       attributes: {},
     });
     expect(result.errors.some((error) => error.field === "photos")).toBe(false);

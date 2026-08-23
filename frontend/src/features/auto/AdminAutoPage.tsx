@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   AlertTriangle,
-  BarChart3,
   CarFront,
   FileClock,
   Layers3,
@@ -106,7 +105,9 @@ export const AdminAutoPage: React.FC = () => {
           ),
         },
       });
-      toast.success(`${plan.name} ${next.isActive ? "activée" : "désactivée"}.`);
+      toast.success(
+        `${plan.name} ${next.isActive ? "activée" : "désactivée"}.`,
+      );
     } catch (reason) {
       toast.error(
         reason instanceof Error ? reason.message : "Modification refusée.",
@@ -128,7 +129,9 @@ export const AdminAutoPage: React.FC = () => {
           ),
         },
       });
-      toast.success(`${addOn.name} ${next.isActive ? "activée" : "désactivée"}.`);
+      toast.success(
+        `${addOn.name} ${next.isActive ? "activée" : "désactivée"}.`,
+      );
     } catch (reason) {
       toast.error(
         reason instanceof Error ? reason.message : "Modification refusée.",
@@ -332,7 +335,9 @@ export const AdminAutoPage: React.FC = () => {
                       type="button"
                       onClick={() => togglePlan(plan)}
                       aria-label={`${plan.isActive ? "Désactiver" : "Activer"} ${plan.name}`}
-                      className={plan.isActive ? "text-success" : "text-text-muted"}
+                      className={
+                        plan.isActive ? "text-success" : "text-text-muted"
+                      }
                     >
                       {plan.isActive ? (
                         <ToggleRight className="h-icon-lg w-icon-lg" />
@@ -364,7 +369,9 @@ export const AdminAutoPage: React.FC = () => {
                   type="button"
                   onClick={() => toggleAddOn(addOn)}
                   aria-label={`${addOn.isActive ? "Désactiver" : "Activer"} ${addOn.name}`}
-                  className={addOn.isActive ? "text-success" : "text-text-muted"}
+                  className={
+                    addOn.isActive ? "text-success" : "text-text-muted"
+                  }
                 >
                   {addOn.isActive ? (
                     <ToggleRight className="h-icon-lg w-icon-lg" />

@@ -35,10 +35,12 @@ Shongre is an enterprise-grade C2C & B2C marketplace designed for European multi
 ## 2. Dual-Mode Repository & Provider Architecture
 
 ### 2.1 Central Configuration (`BACKEND_DATA_MODE`)
+
 - `BACKEND_DATA_MODE=demo` (Default): Domain services consume `Demo*Repository` implementations backed by deterministic in-memory collections.
 - `BACKEND_DATA_MODE=database`: Domain services consume `Postgres*Repository` implementations querying PostgreSQL tables via Supabase clients with typed schema rows.
 
 ### 2.2 Repository Container (`src/infrastructure/database/repositories/`)
+
 - `IUserRepository` $\to$ `DemoUserRepository` / `PostgresUserRepository`
 - `IListingRepository` $\to$ `DemoListingRepository` / `PostgresListingRepository`
 - `IMarketRepository` $\to$ `DemoMarketRepository` / `PostgresMarketRepository`
@@ -53,6 +55,7 @@ Shongre is an enterprise-grade C2C & B2C marketplace designed for European multi
 - `IWorkspaceRepository` $\to$ `DemoWorkspaceRepository` / `PostgresWorkspaceRepository`
 
 ### 2.3 Provider Abstraction Layer (`src/integrations/providers/`)
+
 - `IPaymentProvider` $\to$ `DemoPaymentProvider` / `StripePaymentProvider`
 - `IKYCProvider` $\to$ `DemoKYCProvider` / `LiveKYCProvider`
 - `IBusinessRegistryProvider` $\to$ `DemoBusinessRegistryProvider` / `SiretBusinessRegistryProvider`

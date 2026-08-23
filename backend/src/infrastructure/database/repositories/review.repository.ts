@@ -1,6 +1,6 @@
-import { ReviewItem } from '../../../shared/types/index.js';
-import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
-import { logger } from '../../logging/logger.js';
+import { ReviewItem } from "../../../shared/types/index.js";
+import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { databaseFailure } from "./repository-error.js";
 
 export interface IReviewRepository {
   getUserReviews(userId: string): Promise<ReviewItem[]>;
@@ -9,13 +9,13 @@ export interface IReviewRepository {
 
 export const CANONICAL_DEMO_REVIEWS: ReviewItem[] = [
   {
-    id: 'rev_1',
-    targetUserId: 'user_camille',
-    authorId: 'user_thomas',
-    authorName: 'Thomas Laurent',
+    id: "rev_1",
+    targetUserId: "user_camille",
+    authorId: "user_thomas",
+    authorName: "Thomas Laurent",
     rating: 5,
-    comment: 'Transaction parfaite, envoi soigné et très rapide !',
-    listingTitle: 'Vélo Gravel Specialized Diverge',
+    comment: "Transaction parfaite, envoi soigné et très rapide !",
+    listingTitle: "Vélo Gravel Specialized Diverge",
     createdAt: new Date().toISOString(),
   },
 ];
@@ -33,17 +33,20 @@ export class DemoReviewRepository implements IReviewRepository {
   }
 
   async getUserReviews(userId: string): Promise<ReviewItem[]> {
-    const userReviews = Array.from(this.reviews.values()).filter((r) => r.targetUserId === userId);
+    const userReviews = Array.from(this.reviews.values()).filter(
+      (r) => r.targetUserId === userId,
+    );
     if (userReviews.length === 0) {
       return [
         {
           id: `rev_init_${userId}`,
           targetUserId: userId,
-          authorId: 'user_thomas',
-          authorName: 'Thomas Laurent',
+          authorId: "user_thomas",
+          authorName: "Thomas Laurent",
           rating: 5,
-          comment: 'Très bonne expérience, vendeur réactif et produit conforme.',
-          listingTitle: 'Article de qualité',
+          comment:
+            "Très bonne expérience, vendeur réactif et produit conforme.",
+          listingTitle: "Article de qualité",
           createdAt: new Date().toISOString(),
         },
       ];
@@ -63,7 +66,7 @@ export class PostgresReviewRepository implements IReviewRepository {
       id: row.id,
       targetUserId: row.target_user_id,
       authorId: row.author_id,
-      authorName: row.author?.name || 'Acheteur Vérifié',
+      authorName: row.author?.name || "Acheteur Vérifié",
       rating: Number(row.rating),
       comment: row.comment,
       listingTitle: row.listing_title || undefined,
@@ -75,26 +78,22 @@ export class PostgresReviewRepository implements IReviewRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('reviews')
-        .select('*, author:author_id(name)')
-        .eq('target_user_id', userId)
-        .order('created_at', { ascending: false });
+        .from("reviews")
+        .select("*, author:author_id(name)")
+        .eq("target_user_id", userId)
+        .order("created_at", { ascending: false });
 
-      if (error || !data || data.length === 0) {
-        const demo = new DemoReviewRepository();
-        return demo.getUserReviews(userId);
-      }
+      if (error || !data) databaseFailure("reviews.getUserReviews", error);
       return data.map((r: any) => this.mapRowToReview(r));
-    } catch {
-      const demo = new DemoReviewRepository();
-      return demo.getUserReviews(userId);
+    } catch (error) {
+      databaseFailure("reviews.getUserReviews", error);
     }
   }
 
   async save(review: ReviewItem): Promise<ReviewItem> {
     const supabase = getSupabaseAdminClient();
     const payload = {
-      id: review.id.includes('-') ? review.id : undefined,
+      id: review.id.includes("-") ? review.id : undefined,
       target_user_id: review.targetUserId,
       author_id: review.authorId,
       rating: review.rating,
@@ -103,7 +102,11 @@ export class PostgresReviewRepository implements IReviewRepository {
       created_at: review.createdAt,
     };
 
-    const { data, error } = await (supabase.from('reviews').insert(payload as any).select('*, author:author_id(name)').single() as any);
+    const { data, error } = await (supabase
+      .from("reviews")
+      .insert(payload as any)
+      .select("*, author:author_id(name)")
+      .single() as any);
     if (error || !data) {
       throw new Error(`Failed to save review: ${error?.message}`);
     }

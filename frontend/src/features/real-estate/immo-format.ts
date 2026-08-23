@@ -10,7 +10,10 @@ export const formatImmoMoney = (
     maximumFractionDigits: 0,
   }).format(money.amountMinor / 100);
 
-export const propertyTypeLabels: Record<PropertyPublic["propertyType"], string> = {
+export const propertyTypeLabels: Record<
+  PropertyPublic["propertyType"],
+  string
+> = {
   apartment: "Appartement",
   house: "Maison",
   land: "Terrain",
@@ -45,4 +48,3 @@ export const pricePeriodSuffix: Record<
   week: " / semaine",
   night: " / nuit",
 };
-

@@ -8,7 +8,11 @@ import {
   type SocialAuthStartInput,
 } from "../../contracts/auth.contract";
 import { httpClient } from "./http-client";
-import { type AuthResult, type UserProfile, type UserRole } from "../../../types";
+import {
+  type AuthResult,
+  type UserProfile,
+  type UserRole,
+} from "../../../types";
 
 interface BackendAuthResponse {
   user: UserProfile;
@@ -26,45 +30,74 @@ export class HttpAuthService implements AuthServiceContract {
 
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>("/auth/login", credentials);
+      const response = await httpClient.post<BackendAuthResponse>(
+        "/auth/login",
+        credentials,
+      );
       return { success: true, user: response.user };
     } catch (error) {
-      return { success: false, errorMessage: error instanceof Error ? error.message : "Connexion impossible." };
+      return {
+        success: false,
+        errorMessage:
+          error instanceof Error ? error.message : "Connexion impossible.",
+      };
     }
   }
 
   async loginWithMFA(): Promise<AuthResult> {
-    return { success: false, errorMessage: "La validation MFA doit être effectuée par le serveur d’authentification." };
+    return {
+      success: false,
+      errorMessage:
+        "La validation MFA doit être effectuée par le serveur d’authentification.",
+    };
   }
 
-  async registerIndividual(input: RegisterIndividualInput): Promise<AuthResult> {
+  async registerIndividual(
+    input: RegisterIndividualInput,
+  ): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>("/auth/register", {
-        email: input.email,
-        name: input.name,
-        password: input.password,
-        role: "individual_buyer",
-      });
+      const response = await httpClient.post<BackendAuthResponse>(
+        "/auth/register",
+        {
+          email: input.email,
+          name: input.name,
+          password: input.password,
+          role: "individual_buyer",
+        },
+      );
       return { success: true, user: response.user };
     } catch (error) {
-      return { success: false, errorMessage: error instanceof Error ? error.message : "Inscription impossible." };
+      return {
+        success: false,
+        errorMessage:
+          error instanceof Error ? error.message : "Inscription impossible.",
+      };
     }
   }
 
-  async registerProfessional(input: RegisterProfessionalInput): Promise<AuthResult> {
+  async registerProfessional(
+    input: RegisterProfessionalInput,
+  ): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>("/auth/register", {
-        email: input.email,
-        name: input.name,
-        password: input.password,
-        role: "pro_seller",
-        companyName: input.companyName,
-        siret: input.sirenSiret,
-        phone: input.phone,
-      });
+      const response = await httpClient.post<BackendAuthResponse>(
+        "/auth/register",
+        {
+          email: input.email,
+          name: input.name,
+          password: input.password,
+          role: "pro_seller",
+          companyName: input.companyName,
+          siret: input.sirenSiret,
+          phone: input.phone,
+        },
+      );
       return { success: true, user: response.user };
     } catch (error) {
-      return { success: false, errorMessage: error instanceof Error ? error.message : "Inscription impossible." };
+      return {
+        success: false,
+        errorMessage:
+          error instanceof Error ? error.message : "Inscription impossible.",
+      };
     }
   }
 
@@ -77,7 +110,10 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async switchRole(role: UserRole): Promise<UserProfile> {
-    const response = await httpClient.post<BackendAuthResponse>("/auth/switch-role", { role });
+    const response = await httpClient.post<BackendAuthResponse>(
+      "/auth/switch-role",
+      { role },
+    );
     return response.user;
   }
 
@@ -86,23 +122,38 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async verifyPhone(phone: string, code: string): Promise<boolean> {
-    const response = await httpClient.post<{ verified: boolean }>("/auth/verify-phone", { phone, code });
+    const response = await httpClient.post<{ verified: boolean }>(
+      "/auth/verify-phone",
+      { phone, code },
+    );
     return response.verified;
   }
 
   async verifyEmail(token: string): Promise<boolean> {
-    const response = await httpClient.post<{ verified: boolean }>("/auth/verify-email", { token });
+    const response = await httpClient.post<{ verified: boolean }>(
+      "/auth/verify-email",
+      { token },
+    );
     return response.verified;
   }
 
   async resendEmailVerification(email: string) {
     await httpClient.post("/auth/verify-email/resend", { email });
-    return { success: true, message: "Si ce compte existe, un email de validation a été envoyé." };
+    return {
+      success: true,
+      message: "Si ce compte existe, un email de validation a été envoyé.",
+    };
   }
 
   async requestPasswordReset(email: string) {
-    const response = await httpClient.post<{ accepted: true }>("/auth/password/forgot", { email });
-    return { success: response.accepted, message: "Si ce compte existe, un lien de réinitialisation a été envoyé." };
+    const response = await httpClient.post<{ accepted: true }>(
+      "/auth/password/forgot",
+      { email },
+    );
+    return {
+      success: response.accepted,
+      message: "Si ce compte existe, un lien de réinitialisation a été envoyé.",
+    };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -111,17 +162,24 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async getSocialAuthAvailability() {
-    return httpClient.get<Record<SocialAuthProvider, boolean> & { linking: boolean }>("/auth/oauth/providers");
+    return httpClient.get<
+      Record<SocialAuthProvider, boolean> & { linking: boolean }
+    >("/auth/oauth/providers");
   }
 
-  async startSocialAuth(input: SocialAuthStartInput): Promise<{ authorizationUrl: string }> {
+  async startSocialAuth(
+    input: SocialAuthStartInput,
+  ): Promise<{ authorizationUrl: string }> {
     return httpClient.post(`/auth/oauth/${input.provider}/start`, {
       ...input,
       clientKind: "web",
     });
   }
 
-  async completeOAuthProfile(input: { email: string; accountType?: "individual" | "professional" }): Promise<void> {
+  async completeOAuthProfile(input: {
+    email: string;
+    accountType?: "individual" | "professional";
+  }): Promise<void> {
     await httpClient.post("/auth/oauth/complete-profile", input);
   }
 
@@ -137,8 +195,14 @@ export class HttpAuthService implements AuthServiceContract {
     await httpClient.delete(`/auth/identities/${provider}`);
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await httpClient.post("/auth/password/change", { currentPassword, newPassword });
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    await httpClient.post("/auth/password/change", {
+      currentPassword,
+      newPassword,
+    });
   }
 
   async addPassword(newPassword: string): Promise<void> {

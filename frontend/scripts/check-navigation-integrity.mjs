@@ -12,7 +12,10 @@ function walk(directory) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) walk(absolute);
-    else if (/\.(ts|tsx)$/.test(entry.name) && !entry.name.endsWith(".test.tsx")) {
+    else if (
+      /\.(ts|tsx)$/.test(entry.name) &&
+      !entry.name.endsWith(".test.tsx")
+    ) {
       sourceFiles.push(absolute);
     }
   }
@@ -89,7 +92,9 @@ const errors = [];
 const checked = [];
 
 function location(sourceFile, node) {
-  const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+  const position = sourceFile.getLineAndCharacterOfPosition(
+    node.getStart(sourceFile),
+  );
   return `${path.relative(root, sourceFile.fileName)}:${position.line + 1}`;
 }
 
@@ -117,13 +122,17 @@ function validateDestination(destination, sourceFile, node) {
   const value = destination.trim();
   const where = location(sourceFile, node);
   if (!value || value === "#" || /^javascript:/i.test(value)) {
-    errors.push(`${where} contains an empty or placeholder destination (${JSON.stringify(value)}).`);
+    errors.push(
+      `${where} contains an empty or placeholder destination (${JSON.stringify(value)}).`,
+    );
     return;
   }
   if (value.startsWith("#")) {
     if (value.includes("sample")) return;
     const target = value.slice(1);
-    const pattern = new RegExp(`(?:id|name)=["']${target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`);
+    const pattern = new RegExp(
+      `(?:id|name)=["']${target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`,
+    );
     if (!pattern.test(sourceFile.text)) {
       errors.push(`${where} targets missing in-page anchor ${value}.`);
     }
@@ -135,7 +144,9 @@ function validateDestination(destination, sourceFile, node) {
     errors.push(`${where} contains a malformed internal path ${value}.`);
     return;
   }
-  const valid = matchers.some(({ expression }) => expression.test(parsed.pathname));
+  const valid = matchers.some(({ expression }) =>
+    expression.test(parsed.pathname),
+  );
   if (!valid) {
     errors.push(`${where} points to an unregistered route ${value}.`);
     return;
@@ -160,7 +171,9 @@ function validateDestination(destination, sourceFile, node) {
     ]);
     for (const key of parsed.searchParams.keys()) {
       if (!allowed.has(key) && !key.startsWith("attr_")) {
-        errors.push(`${where} uses unsupported search parameter ${key} in ${value}.`);
+        errors.push(
+          `${where} uses unsupported search parameter ${key} in ${value}.`,
+        );
       }
     }
   }
@@ -222,10 +235,13 @@ for (const file of sourceFiles) {
             ? attribute.initializer.expression
             : undefined;
         const values = valuesFromExpression(expression, sourceFile);
-        for (const value of values) validateDestination(value, sourceFile, attribute);
+        for (const value of values)
+          validateDestination(value, sourceFile, attribute);
         if (tag === "a" && values.some((value) => value.startsWith("/"))) {
           if (!targetAttribute) {
-            errors.push(`${location(sourceFile, opening)} uses a native anchor for internal navigation.`);
+            errors.push(
+              `${location(sourceFile, opening)} uses a native anchor for internal navigation.`,
+            );
           }
         }
       }
@@ -233,14 +249,19 @@ for (const file of sourceFiles) {
 
     if (
       ts.isCallExpression(node) &&
-      ["navigate", "router.navigate"].includes(node.expression.getText(sourceFile))
+      ["navigate", "router.navigate"].includes(
+        node.expression.getText(sourceFile),
+      )
     ) {
       for (const value of valuesFromExpression(node.arguments[0], sourceFile)) {
         validateDestination(value, sourceFile, node.arguments[0]);
       }
     }
 
-    if (ts.isPropertyAssignment(node) && node.name.getText(sourceFile) === "destination") {
+    if (
+      ts.isPropertyAssignment(node) &&
+      node.name.getText(sourceFile) === "destination"
+    ) {
       for (const value of valuesFromExpression(node.initializer, sourceFile)) {
         validateDestination(value, sourceFile, node.initializer);
       }
@@ -253,7 +274,9 @@ for (const file of sourceFiles) {
 }
 
 if (errors.length) {
-  console.error(`Navigation integrity check failed with ${errors.length} issue(s):`);
+  console.error(
+    `Navigation integrity check failed with ${errors.length} issue(s):`,
+  );
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }

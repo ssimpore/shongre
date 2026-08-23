@@ -184,21 +184,37 @@ export class PublicationService {
               message,
             });
 
-          if (
-            ["number", "year", "money"].includes(attribute.dataType)
-          ) {
+          if (["number", "year", "money"].includes(attribute.dataType)) {
             const numericValue = Number(rawVal);
             if (!Number.isFinite(numericValue)) {
-              addAttributeError("ATTRIBUTE_INVALID_NUMBER", `Le champ "${attribute.label}" doit être un nombre.`);
+              addAttributeError(
+                "ATTRIBUTE_INVALID_NUMBER",
+                `Le champ "${attribute.label}" doit être un nombre.`,
+              );
             } else {
-              if (validation?.min !== undefined && numericValue < validation.min) {
-                addAttributeError("ATTRIBUTE_BELOW_MINIMUM", `Le champ "${attribute.label}" est inférieur au minimum autorisé.`);
+              if (
+                validation?.min !== undefined &&
+                numericValue < validation.min
+              ) {
+                addAttributeError(
+                  "ATTRIBUTE_BELOW_MINIMUM",
+                  `Le champ "${attribute.label}" est inférieur au minimum autorisé.`,
+                );
               }
-              if (validation?.max !== undefined && numericValue > validation.max) {
-                addAttributeError("ATTRIBUTE_ABOVE_MAXIMUM", `Le champ "${attribute.label}" dépasse le maximum autorisé.`);
+              if (
+                validation?.max !== undefined &&
+                numericValue > validation.max
+              ) {
+                addAttributeError(
+                  "ATTRIBUTE_ABOVE_MAXIMUM",
+                  `Le champ "${attribute.label}" dépasse le maximum autorisé.`,
+                );
               }
               if (validation?.integer && !Number.isInteger(numericValue)) {
-                addAttributeError("ATTRIBUTE_NOT_INTEGER", `Le champ "${attribute.label}" doit être un nombre entier.`);
+                addAttributeError(
+                  "ATTRIBUTE_NOT_INTEGER",
+                  `Le champ "${attribute.label}" doit être un nombre entier.`,
+                );
               }
             }
           }
@@ -209,58 +225,116 @@ export class PublicationService {
               rawVal === null ||
               Array.isArray(rawVal)
             ) {
-              addAttributeError("ATTRIBUTE_INVALID_RANGE", `Le champ "${attribute.label}" doit contenir une borne minimale et maximale.`);
+              addAttributeError(
+                "ATTRIBUTE_INVALID_RANGE",
+                `Le champ "${attribute.label}" doit contenir une borne minimale et maximale.`,
+              );
             } else {
               const lower = (rawVal as { min?: unknown }).min;
               const upper = (rawVal as { max?: unknown }).max;
-              if (lower !== "" && lower !== undefined && !Number.isFinite(Number(lower))) {
-                addAttributeError("ATTRIBUTE_INVALID_RANGE", `La borne minimale de "${attribute.label}" est invalide.`);
-              }
-              if (upper !== "" && upper !== undefined && !Number.isFinite(Number(upper))) {
-                addAttributeError("ATTRIBUTE_INVALID_RANGE", `La borne maximale de "${attribute.label}" est invalide.`);
+              if (
+                lower !== "" &&
+                lower !== undefined &&
+                !Number.isFinite(Number(lower))
+              ) {
+                addAttributeError(
+                  "ATTRIBUTE_INVALID_RANGE",
+                  `La borne minimale de "${attribute.label}" est invalide.`,
+                );
               }
               if (
-                lower !== "" && upper !== "" &&
-                lower !== undefined && upper !== undefined &&
+                upper !== "" &&
+                upper !== undefined &&
+                !Number.isFinite(Number(upper))
+              ) {
+                addAttributeError(
+                  "ATTRIBUTE_INVALID_RANGE",
+                  `La borne maximale de "${attribute.label}" est invalide.`,
+                );
+              }
+              if (
+                lower !== "" &&
+                upper !== "" &&
+                lower !== undefined &&
+                upper !== undefined &&
                 Number(lower) > Number(upper)
               ) {
-                addAttributeError("ATTRIBUTE_INVALID_RANGE", `La borne minimale de "${attribute.label}" doit être inférieure à la borne maximale.`);
+                addAttributeError(
+                  "ATTRIBUTE_INVALID_RANGE",
+                  `La borne minimale de "${attribute.label}" doit être inférieure à la borne maximale.`,
+                );
               }
             }
           }
 
-          if (attribute.dataType === "select" || attribute.dataType === "year") {
-            const allowed = new Set((attribute.options || []).map((option) => option.value));
+          if (
+            attribute.dataType === "select" ||
+            attribute.dataType === "year"
+          ) {
+            const allowed = new Set(
+              (attribute.options || []).map((option) => option.value),
+            );
             if (allowed.size > 0 && !allowed.has(String(rawVal))) {
-              addAttributeError("ATTRIBUTE_INVALID_OPTION", `La valeur du champ "${attribute.label}" est invalide.`);
+              addAttributeError(
+                "ATTRIBUTE_INVALID_OPTION",
+                `La valeur du champ "${attribute.label}" est invalide.`,
+              );
             }
           }
 
           if (attribute.dataType === "multi_select") {
             if (!Array.isArray(rawVal)) {
-              addAttributeError("ATTRIBUTE_INVALID_OPTIONS", `Le champ "${attribute.label}" doit contenir une liste de valeurs.`);
+              addAttributeError(
+                "ATTRIBUTE_INVALID_OPTIONS",
+                `Le champ "${attribute.label}" doit contenir une liste de valeurs.`,
+              );
             } else {
-              const allowed = new Set((attribute.options || []).map((option) => option.value));
-              if (allowed.size > 0 && rawVal.some((value) => !allowed.has(String(value)))) {
-                addAttributeError("ATTRIBUTE_INVALID_OPTION", `Une valeur du champ "${attribute.label}" est invalide.`);
+              const allowed = new Set(
+                (attribute.options || []).map((option) => option.value),
+              );
+              if (
+                allowed.size > 0 &&
+                rawVal.some((value) => !allowed.has(String(value)))
+              ) {
+                addAttributeError(
+                  "ATTRIBUTE_INVALID_OPTION",
+                  `Une valeur du champ "${attribute.label}" est invalide.`,
+                );
               }
             }
           }
 
           if (typeof rawVal === "string") {
-            if (validation?.minLength !== undefined && rawVal.length < validation.minLength) {
-              addAttributeError("ATTRIBUTE_TOO_SHORT", `Le champ "${attribute.label}" est trop court.`);
+            if (
+              validation?.minLength !== undefined &&
+              rawVal.length < validation.minLength
+            ) {
+              addAttributeError(
+                "ATTRIBUTE_TOO_SHORT",
+                `Le champ "${attribute.label}" est trop court.`,
+              );
             }
-            if (validation?.maxLength !== undefined && rawVal.length > validation.maxLength) {
-              addAttributeError("ATTRIBUTE_TOO_LONG", `Le champ "${attribute.label}" est trop long.`);
+            if (
+              validation?.maxLength !== undefined &&
+              rawVal.length > validation.maxLength
+            ) {
+              addAttributeError(
+                "ATTRIBUTE_TOO_LONG",
+                `Le champ "${attribute.label}" est trop long.`,
+              );
             }
             if (validation?.pattern) {
               try {
                 if (!new RegExp(validation.pattern).test(rawVal)) {
-                  addAttributeError("ATTRIBUTE_INVALID_FORMAT", `Le format du champ "${attribute.label}" est invalide.`);
+                  addAttributeError(
+                    "ATTRIBUTE_INVALID_FORMAT",
+                    `Le format du champ "${attribute.label}" est invalide.`,
+                  );
                 }
               } catch {
-                warnings.push(`La règle de format du champ "${attribute.label}" est invalide dans le registre.`);
+                warnings.push(
+                  `La règle de format du champ "${attribute.label}" est invalide dans le registre.`,
+                );
               }
             }
           }

@@ -306,9 +306,15 @@ describe("RLS & Role-Based Access Control Matrix", () => {
   });
 
   it("makes quotes and audit evidence immutable and server-role only", () => {
-    expect(commercialMigration).toContain("CREATE TRIGGER immutable_quote_items");
-    expect(commercialMigration).toContain("CREATE TRIGGER immutable_commercial_audit");
-    expect(commercialMigration).toContain("REVOKE ALL ON FUNCTION public.process_monetization_stripe_event");
+    expect(commercialMigration).toContain(
+      "CREATE TRIGGER immutable_quote_items",
+    );
+    expect(commercialMigration).toContain(
+      "CREATE TRIGGER immutable_commercial_audit",
+    );
+    expect(commercialMigration).toContain(
+      "REVOKE ALL ON FUNCTION public.process_monetization_stripe_event",
+    );
     expect(commercialMigration).toContain("TO service_role");
   });
 
@@ -318,7 +324,9 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     expect(hasPermission("finance", "commercial_rules.approve")).toBe(true);
     expect(hasPermission("finance", "commercial_rules.publish")).toBe(false);
     expect(hasPermission("admin", "commercial_rules.publish")).toBe(true);
-    expect(hasPermission("individual_seller", "commercial_rules.read")).toBe(false);
+    expect(hasPermission("individual_seller", "commercial_rules.read")).toBe(
+      false,
+    );
   });
 
   it("keeps every Employment candidate, pipeline, import, report, and audit table behind RLS", () => {
@@ -344,10 +352,18 @@ describe("RLS & Role-Based Access Control Matrix", () => {
   });
 
   it("keeps Employment documents private and recruiter notes inaccessible to candidates", () => {
-    expect(employmentMigration).toContain('CREATE POLICY "Candidate documents stay private"');
-    expect(employmentMigration).toContain('CREATE POLICY "Authorized recruiters read submitted CVs"');
-    expect(employmentMigration).toContain('CREATE POLICY "Recruiter notes never reach candidates"');
-    expect(employmentMigration).not.toContain("Candidate reads recruiter notes");
+    expect(employmentMigration).toContain(
+      'CREATE POLICY "Candidate documents stay private"',
+    );
+    expect(employmentMigration).toContain(
+      'CREATE POLICY "Authorized recruiters read submitted CVs"',
+    );
+    expect(employmentMigration).toContain(
+      'CREATE POLICY "Recruiter notes never reach candidates"',
+    );
+    expect(employmentMigration).not.toContain(
+      "Candidate reads recruiter notes",
+    );
     expect(employmentMigration).toContain("secret_reference TEXT");
     expect(employmentMigration).toContain(
       "Opaque secret-manager reference only; never store provider credentials here.",
@@ -355,10 +371,18 @@ describe("RLS & Role-Based Access Control Matrix", () => {
   });
 
   it("grants Employment operations by role while resource membership remains service-enforced", () => {
-    expect(hasPermission("individual_buyer", "employment.candidate.manage.own")).toBe(true);
-    expect(hasPermission("individual_buyer", "employment.recruiter.manage.own")).toBe(false);
-    expect(hasPermission("individual_seller", "employment.recruiter.manage.own")).toBe(true);
+    expect(
+      hasPermission("individual_buyer", "employment.candidate.manage.own"),
+    ).toBe(true);
+    expect(
+      hasPermission("individual_buyer", "employment.recruiter.manage.own"),
+    ).toBe(false);
+    expect(
+      hasPermission("individual_seller", "employment.recruiter.manage.own"),
+    ).toBe(true);
     expect(hasPermission("pro_seller", "employment.import.own")).toBe(true);
-    expect(hasPermission("market_manager", "employment.admin.manage")).toBe(true);
+    expect(hasPermission("market_manager", "employment.admin.manage")).toBe(
+      true,
+    );
   });
 });

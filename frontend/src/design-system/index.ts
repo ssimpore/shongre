@@ -15,6 +15,7 @@ export * from "./primitives/Button";
 export * from "./primitives/DataTable";
 export * from "./primitives/DropdownMenu";
 export * from "./primitives/FilterChip";
+export * from "./primitives/FilterPanel";
 export * from "./primitives/FormField";
 export * from "./primitives/IconButton";
 export * from "./primitives/Icon";

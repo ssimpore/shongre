@@ -93,7 +93,11 @@ const CookieBanner: React.FC = () => {
               >
                 {t("consent.rejectAll")}
               </Button>
-              <Button variant="ghost" size={isCompact ? "md" : "sm"} onClick={openPreferences}>
+              <Button
+                variant="ghost"
+                size={isCompact ? "md" : "sm"}
+                onClick={openPreferences}
+              >
                 {t("consent.customise")}
               </Button>
             </div>

@@ -20,6 +20,8 @@ import {
   autoService,
   realEstateService,
   employmentService,
+  publisherEntitlementsService,
+  unifiedDiscoveryService,
   socialAuthService,
   facebookDataDeletionService,
 } from "../../modules/index.js";
@@ -85,7 +87,9 @@ export interface RouteContext {
 export type RouteHandler = (ctx: RouteContext) => Promise<any>;
 
 function isNativeClient(req: IncomingMessage): boolean {
-  return String(req.headers["x-shongre-client"] || "").toLowerCase() === "native";
+  return (
+    String(req.headers["x-shongre-client"] || "").toLowerCase() === "native"
+  );
 }
 
 /**
@@ -94,7 +98,10 @@ function isNativeClient(req: IncomingMessage): boolean {
  * secure cookies. Native clients opt into the token response explicitly and
  * persist it in the operating-system keychain.
  */
-function publicAuthResult<T extends { user: unknown }>(result: T, req: IncomingMessage): T | { user: T["user"] } {
+function publicAuthResult<T extends { user: unknown }>(
+  result: T,
+  req: IncomingMessage,
+): T | { user: T["user"] } {
   return isNativeClient(req) ? result : { user: result.user };
 }
 
@@ -153,119 +160,269 @@ export class ApiV1Router {
       }
       return publicAuthResult(result, req);
     });
-    this.addRoute("POST", "/auth/register", PUBLIC, async ({ body, req, res }) => {
-      const result = await authService.register(body, requestMetadata(req));
-      if (result.refreshToken && result.expiresAt && result.sessionId) {
+    this.addRoute(
+      "POST",
+      "/auth/register",
+      PUBLIC,
+      async ({ body, req, res }) => {
+        const result = await authService.register(body, requestMetadata(req));
+        if (result.refreshToken && result.expiresAt && result.sessionId) {
+          setSessionCookies(res, {
+            token: result.token,
+            refreshToken: result.refreshToken,
+            expiresAt: result.expiresAt,
+            sessionId: result.sessionId,
+          });
+        }
+        return publicAuthResult(result, req);
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/auth/logout",
+      PUBLIC,
+      async ({ principal, res }) => {
+        await authService.logout(principal);
+        clearSessionCookies(res);
+        return { success: true };
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/auth/refresh",
+      PUBLIC,
+      async ({ body, req, res }) => {
+        const result = await authService.refresh(
+          body?.refreshToken || refreshCookie(req) || "",
+          requestMetadata(req),
+        );
+        if (!result.refreshToken || !result.expiresAt || !result.sessionId)
+          throw new AppError({
+            code: "UNAUTHENTICATED",
+            message: "Session invalide.",
+          });
         setSessionCookies(res, {
           token: result.token,
           refreshToken: result.refreshToken,
           expiresAt: result.expiresAt,
           sessionId: result.sessionId,
         });
-      }
-      return publicAuthResult(result, req);
-    });
-    this.addRoute("POST", "/auth/logout", PUBLIC, async ({ principal, res }) => {
-      await authService.logout(principal);
-      clearSessionCookies(res);
-      return { success: true };
-    });
-    this.addRoute("POST", "/auth/refresh", PUBLIC, async ({ body, req, res }) => {
-      const result = await authService.refresh(body?.refreshToken || refreshCookie(req) || '', requestMetadata(req));
-      if (!result.refreshToken || !result.expiresAt || !result.sessionId) throw new AppError({ code: 'UNAUTHENTICATED', message: 'Session invalide.' });
-      setSessionCookies(res, { token: result.token, refreshToken: result.refreshToken, expiresAt: result.expiresAt, sessionId: result.sessionId });
-      return publicAuthResult(result, req);
-    });
-    this.addRoute("POST", "/auth/logout-all", AUTHENTICATED, async ({ principal, body, res }) => {
-      await authService.logoutAll(principal, Boolean(body?.keepCurrent));
-      if (!body?.keepCurrent) clearSessionCookies(res);
-      return { success: true };
-    });
-    this.addRoute("GET", "/auth/sessions", AUTHENTICATED, async ({ principal }) => ({
-      items: await authService.listSessions(principal),
-    }));
-    this.addRoute("DELETE", "/auth/sessions/:id", AUTHENTICATED, async ({ principal, params, res }) => {
-      await authService.revokeSession(principal, params.id);
-      if (params.id === principal.sessionId) clearSessionCookies(res);
-      return { success: true };
-    });
-    this.addRoute("POST", "/auth/reauthenticate", AUTHENTICATED, async ({ principal, body }) =>
-      authService.reauthenticate(principal, body?.password),
+        return publicAuthResult(result, req);
+      },
     );
-    this.addRoute("POST", "/auth/password/change", AUTHENTICATED, async ({ principal, body }) => {
-      await authService.changePassword(principal, body?.currentPassword, body?.newPassword);
-      return { success: true };
-    });
-    this.addRoute("POST", "/auth/password/add", AUTHENTICATED, async ({ principal, body }) => {
-      await authService.addPassword(principal, body?.newPassword);
-      return { success: true };
-    });
-
-    this.addRoute("GET", "/auth/oauth/providers", PUBLIC, async () => socialAuthService.availability());
-    this.addRoute("POST", "/auth/oauth/:provider/start", PUBLIC, async ({ params, body, principal, req }) =>
-      socialAuthService.start({ ...body, provider: params.provider }, principal, requestMetadata(req)),
+    this.addRoute(
+      "POST",
+      "/auth/logout-all",
+      AUTHENTICATED,
+      async ({ principal, body, res }) => {
+        await authService.logoutAll(principal, Boolean(body?.keepCurrent));
+        if (!body?.keepCurrent) clearSessionCookies(res);
+        return { success: true };
+      },
     );
-    const oauthCallback = async ({ params, body, principal: _principal, query, req, res }: RouteContext) => {
-      const result = await socialAuthService.callback({
-        provider: params.provider,
-        state: String(body?.state || query.get('state') || ''),
-        code: String(body?.code || query.get('code') || ''),
-        error: String(body?.error || query.get('error') || ''),
-        appleUser: body?.user || null,
-      }, requestMetadata(req));
+    this.addRoute(
+      "GET",
+      "/auth/sessions",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        items: await authService.listSessions(principal),
+      }),
+    );
+    this.addRoute(
+      "DELETE",
+      "/auth/sessions/:id",
+      AUTHENTICATED,
+      async ({ principal, params, res }) => {
+        await authService.revokeSession(principal, params.id);
+        if (params.id === principal.sessionId) clearSessionCookies(res);
+        return { success: true };
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/auth/reauthenticate",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        authService.reauthenticate(principal, body?.password),
+    );
+    this.addRoute(
+      "POST",
+      "/auth/password/change",
+      AUTHENTICATED,
+      async ({ principal, body }) => {
+        await authService.changePassword(
+          principal,
+          body?.currentPassword,
+          body?.newPassword,
+        );
+        return { success: true };
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/auth/password/add",
+      AUTHENTICATED,
+      async ({ principal, body }) => {
+        await authService.addPassword(principal, body?.newPassword);
+        return { success: true };
+      },
+    );
 
-      const frontendBase = config.frontendUrl || config.oauthAllowedReturnOrigins[0] || 'http://localhost:3000';
-      const webCallback = new URL('/auth/callback', frontendBase);
-      webCallback.searchParams.set('provider', params.provider);
-      webCallback.searchParams.set('status', result.status);
-      webCallback.searchParams.set('returnTo', result.returnTo);
-      if (result.status === 'authenticated' && result.onboarding) webCallback.searchParams.set('onboarding', result.onboarding);
-      if (result.status === 'link_required') webCallback.searchParams.set('account', result.maskedEmail);
+    this.addRoute("GET", "/auth/oauth/providers", PUBLIC, async () =>
+      socialAuthService.availability(),
+    );
+    this.addRoute(
+      "POST",
+      "/auth/oauth/:provider/start",
+      PUBLIC,
+      async ({ params, body, principal, req }) =>
+        socialAuthService.start(
+          { ...body, provider: params.provider },
+          principal,
+          requestMetadata(req),
+        ),
+    );
+    const oauthCallback = async ({
+      params,
+      body,
+      principal: _principal,
+      query,
+      req,
+      res,
+    }: RouteContext) => {
+      const result = await socialAuthService.callback(
+        {
+          provider: params.provider,
+          state: String(body?.state || query.get("state") || ""),
+          code: String(body?.code || query.get("code") || ""),
+          error: String(body?.error || query.get("error") || ""),
+          appleUser: body?.user || null,
+        },
+        requestMetadata(req),
+      );
 
-      if (result.status === 'authenticated' && result.clientKind === 'web' && result.tokens) {
+      const frontendBase =
+        config.frontendUrl ||
+        config.oauthAllowedReturnOrigins[0] ||
+        "http://localhost:3000";
+      const webCallback = new URL("/auth/callback", frontendBase);
+      webCallback.searchParams.set("provider", params.provider);
+      webCallback.searchParams.set("status", result.status);
+      webCallback.searchParams.set("returnTo", result.returnTo);
+      if (result.status === "authenticated" && result.onboarding)
+        webCallback.searchParams.set("onboarding", result.onboarding);
+      if (result.status === "link_required")
+        webCallback.searchParams.set("account", result.maskedEmail);
+
+      if (
+        result.status === "authenticated" &&
+        result.clientKind === "web" &&
+        result.tokens
+      ) {
         setSessionCookies(res, result.tokens);
       }
-      if (result.status === 'email_required') {
-        if (result.clientKind === 'web') {
+      if (result.status === "email_required") {
+        if (result.clientKind === "web") {
           setOAuthCompletionCookie(res, result.completionHandle);
         } else {
           const nativeTarget = new URL(config.mobileAuthCallbackUrl);
-          nativeTarget.hash = new URLSearchParams({ status: result.status, completion: result.completionHandle }).toString();
+          nativeTarget.hash = new URLSearchParams({
+            status: result.status,
+            completion: result.completionHandle,
+          }).toString();
           return redirectResponse(res, nativeTarget.toString());
         }
       }
-      if (result.status === 'authenticated' && result.clientKind === 'native' && result.nativeExchangeCode) {
+      if (
+        result.status === "authenticated" &&
+        result.clientKind === "native" &&
+        result.nativeExchangeCode
+      ) {
         const nativeTarget = new URL(config.mobileAuthCallbackUrl);
-        nativeTarget.hash = new URLSearchParams({ status: 'success', exchange: result.nativeExchangeCode }).toString();
+        nativeTarget.hash = new URLSearchParams({
+          status: "success",
+          exchange: result.nativeExchangeCode,
+        }).toString();
         return redirectResponse(res, nativeTarget.toString());
       }
       return redirectResponse(res, webCallback.toString());
     };
-    this.addRoute("GET", "/auth/oauth/:provider/callback", PUBLIC, oauthCallback);
-    this.addRoute("POST", "/auth/oauth/:provider/callback", PUBLIC, oauthCallback);
-    this.addRoute("POST", "/auth/oauth/complete-profile", PUBLIC, async ({ body, req }) =>
-      socialAuthService.completePendingRegistration({
-        completionHandle: body?.completionHandle || oauthCompletionCookie(req) || '',
-        email: body?.email,
-        accountType: body?.accountType,
-      }),
+    this.addRoute(
+      "GET",
+      "/auth/oauth/:provider/callback",
+      PUBLIC,
+      oauthCallback,
     );
-    this.addRoute("POST", "/auth/oauth/native-exchange", PUBLIC, async ({ body, req }) => {
-      const result = await socialAuthService.exchangeNativeCode(body?.code, requestMetadata(req));
-      return { user: result.user, ...result.tokens, returnTo: result.returnTo };
-    });
-    this.addRoute("GET", "/auth/security", AUTHENTICATED, async ({ principal }) =>
-      socialAuthService.securityOverview(principal.userId, principal.sessionId),
+    this.addRoute(
+      "POST",
+      "/auth/oauth/:provider/callback",
+      PUBLIC,
+      oauthCallback,
     );
-    this.addRoute("DELETE", "/auth/identities/:provider", AUTHENTICATED, async ({ principal, params }) => {
-      await socialAuthService.unlink(principal.userId, principal.sessionId, params.provider);
-      return { success: true };
-    });
-    this.addRoute("POST", "/auth/oauth/facebook/data-deletion", PUBLIC, async ({ body }) =>
-      facebookDataDeletionService.request(body?.signed_request),
+    this.addRoute(
+      "POST",
+      "/auth/oauth/complete-profile",
+      PUBLIC,
+      async ({ body, req }) =>
+        socialAuthService.completePendingRegistration({
+          completionHandle:
+            body?.completionHandle || oauthCompletionCookie(req) || "",
+          email: body?.email,
+          accountType: body?.accountType,
+        }),
     );
-    this.addRoute("GET", "/auth/oauth/facebook/data-deletion/status", PUBLIC, async ({ query }) =>
-      facebookDataDeletionService.status(query.get('code') || ''),
+    this.addRoute(
+      "POST",
+      "/auth/oauth/native-exchange",
+      PUBLIC,
+      async ({ body, req }) => {
+        const result = await socialAuthService.exchangeNativeCode(
+          body?.code,
+          requestMetadata(req),
+        );
+        return {
+          user: result.user,
+          ...result.tokens,
+          returnTo: result.returnTo,
+        };
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/auth/security",
+      AUTHENTICATED,
+      async ({ principal }) =>
+        socialAuthService.securityOverview(
+          principal.userId,
+          principal.sessionId,
+        ),
+    );
+    this.addRoute(
+      "DELETE",
+      "/auth/identities/:provider",
+      AUTHENTICATED,
+      async ({ principal, params }) => {
+        await socialAuthService.unlink(
+          principal.userId,
+          principal.sessionId,
+          params.provider,
+        );
+        return { success: true };
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/auth/oauth/facebook/data-deletion",
+      PUBLIC,
+      async ({ body }) =>
+        facebookDataDeletionService.request(body?.signed_request),
+    );
+    this.addRoute(
+      "GET",
+      "/auth/oauth/facebook/data-deletion/status",
+      PUBLIC,
+      async ({ query }) =>
+        facebookDataDeletionService.status(query.get("code") || ""),
     );
     this.addRoute(
       "POST",
@@ -293,17 +450,30 @@ export class ApiV1Router {
       const verified = await authService.verifyEmail(body?.token);
       return { verified };
     });
-    this.addRoute("POST", "/auth/verify-email/resend", PUBLIC, async ({ body, req }) =>
-      authService.sendEmailVerification(body?.email, requestMetadata(req)),
+    this.addRoute(
+      "POST",
+      "/auth/verify-email/resend",
+      PUBLIC,
+      async ({ body, req }) =>
+        authService.sendEmailVerification(body?.email, requestMetadata(req)),
     );
-    this.addRoute("POST", "/auth/password/forgot", PUBLIC, async ({ body, req }) =>
-      authService.requestPasswordReset(body?.email, requestMetadata(req)),
+    this.addRoute(
+      "POST",
+      "/auth/password/forgot",
+      PUBLIC,
+      async ({ body, req }) =>
+        authService.requestPasswordReset(body?.email, requestMetadata(req)),
     );
-    this.addRoute("POST", "/auth/password/reset", PUBLIC, async ({ body, res }) => {
-      await authService.resetPassword(body?.token, body?.newPassword);
-      clearSessionCookies(res);
-      return { success: true };
-    });
+    this.addRoute(
+      "POST",
+      "/auth/password/reset",
+      PUBLIC,
+      async ({ body, res }) => {
+        await authService.resetPassword(body?.token, body?.newPassword);
+        clearSessionCookies(res);
+        return { success: true };
+      },
+    );
 
     // --------------------------------------------------------------------------
     // USERS ROUTES
@@ -383,6 +553,19 @@ export class ApiV1Router {
         // publish listings under another account's name.
         return listingsService.publishListing(body?.draft, principal.userId);
       },
+    );
+    this.addRoute(
+      "POST",
+      "/publication/entitlements",
+      permission("listing.create"),
+      async ({ principal, body }) =>
+        publisherEntitlementsService.getPublicationEntitlements({
+          actorUserId: principal.userId,
+          organizationId: body?.organizationId,
+          branchId: body?.branchId,
+          marketCode: body?.marketCode || "FR",
+          categoryId: body?.categoryId,
+        }),
     );
     this.addRoute(
       "PUT",
@@ -857,22 +1040,14 @@ export class ApiV1Router {
       "/real-estate/admin/markets/:marketCode/offers/:offerId",
       permission("immo.admin.manage"),
       async ({ params, body }) =>
-        realEstateService.updateOffer(
-          params.marketCode,
-          params.offerId,
-          body,
-        ),
+        realEstateService.updateOffer(params.marketCode, params.offerId, body),
     );
     this.addRoute(
       "PATCH",
       "/real-estate/admin/markets/:marketCode/add-ons/:addOnId",
       permission("immo.admin.manage"),
       async ({ params, body }) =>
-        realEstateService.updateAddOn(
-          params.marketCode,
-          params.addOnId,
-          body,
-        ),
+        realEstateService.updateAddOn(params.marketCode, params.addOnId, body),
     );
     this.addRoute(
       "PATCH",
@@ -894,7 +1069,7 @@ export class ApiV1Router {
           params.marketCode,
           params.ruleId,
           body,
-      ),
+        ),
     );
 
     // --------------------------------------------------------------------------
@@ -909,117 +1084,148 @@ export class ApiV1Router {
     this.addRoute("GET", "/employment/jobs/:id", PUBLIC, async ({ params }) =>
       employmentService.getPublicJob(params.id),
     );
-    this.addRoute("GET", "/employment/jobs/:id/similar", PUBLIC, async ({ params }) =>
-      employmentService.getSimilarJobs(params.id),
+    this.addRoute(
+      "GET",
+      "/employment/jobs/:id/similar",
+      PUBLIC,
+      async ({ params }) => employmentService.getSimilarJobs(params.id),
     );
     this.addRoute(
       "GET",
       "/employment/drafts/:id",
       permission("employment.job.manage.own"),
-      async ({ principal, params }) => employmentService.getOwnDraft(principal.userId, params.id),
+      async ({ principal, params }) =>
+        employmentService.getOwnDraft(principal.userId, params.id),
     );
     this.addRoute(
       "PUT",
       "/employment/drafts/:id",
       permission("employment.job.manage.own"),
-      async ({ principal, params, body }) => employmentService.saveOwnDraft(principal.userId, params.id, body),
+      async ({ principal, params, body }) =>
+        employmentService.saveOwnDraft(principal.userId, params.id, body),
     );
     this.addRoute(
       "POST",
       "/employment/drafts/:id/duplicate-check",
       permission("employment.job.manage.own"),
-      async ({ principal, params }) => employmentService.checkDuplicateDraft(principal.userId, params.id),
+      async ({ principal, params }) =>
+        employmentService.checkDuplicateDraft(principal.userId, params.id),
     );
     this.addRoute(
       "POST",
       "/employment/drafts/:id/submit",
       permission("employment.job.manage.own"),
-      async ({ principal, params }) => employmentService.submitOwnDraft(principal.userId, params.id),
+      async ({ principal, params }) =>
+        employmentService.submitOwnDraft(principal.userId, params.id),
     );
     this.addRoute(
       "POST",
       "/employment/compliance/prohibited-language",
       permission("employment.job.manage.own"),
-      async ({ body }) => ({ flags: await employmentService.flagProhibitedLanguage(body?.content, body?.marketCode || "FR") }),
+      async ({ body }) => ({
+        flags: await employmentService.flagProhibitedLanguage(
+          body?.content,
+          body?.marketCode || "FR",
+        ),
+      }),
     );
     this.addRoute(
       "GET",
       "/employment/candidate/workspace",
       permission("employment.candidate.manage.own"),
-      async ({ principal }) => employmentService.getOwnCandidateWorkspace(principal.userId),
+      async ({ principal }) =>
+        employmentService.getOwnCandidateWorkspace(principal.userId),
     );
     this.addRoute(
       "PUT",
       "/employment/candidate/profile",
       permission("employment.candidate.manage.own"),
-      async ({ principal, body }) => employmentService.saveOwnCandidateProfile(principal.userId, body),
+      async ({ principal, body }) =>
+        employmentService.saveOwnCandidateProfile(principal.userId, body),
     );
     this.addRoute(
       "POST",
       "/employment/jobs/:id/applications",
       permission("employment.candidate.manage.own"),
-      async ({ principal, params, body }) => employmentService.apply(principal.userId, params.id, body),
+      async ({ principal, params, body }) =>
+        employmentService.apply(principal.userId, params.id, body),
     );
     this.addRoute(
       "POST",
       "/employment/applications/:id/withdraw",
       permission("employment.candidate.manage.own"),
-      async ({ principal, params }) => employmentService.withdrawOwnApplication(principal.userId, params.id),
+      async ({ principal, params }) =>
+        employmentService.withdrawOwnApplication(principal.userId, params.id),
     );
     this.addRoute(
       "POST",
       "/employment/jobs/:id/save",
       permission("employment.candidate.manage.own"),
-      async ({ principal, params }) => employmentService.toggleSavedJob(principal.userId, params.id),
+      async ({ principal, params }) =>
+        employmentService.toggleSavedJob(principal.userId, params.id),
     );
     this.addRoute(
       "POST",
       "/employment/jobs/:id/report",
       permission("employment.candidate.manage.own"),
-      async ({ principal, params, body }) => employmentService.reportJob(principal.userId, params.id, body),
+      async ({ principal, params, body }) =>
+        employmentService.reportJob(principal.userId, params.id, body),
     );
     this.addRoute(
       "POST",
       "/employment/candidate/alerts",
       permission("employment.candidate.manage.own"),
-      async ({ principal, body }) => employmentService.saveOwnJobAlert(principal.userId, body),
+      async ({ principal, body }) =>
+        employmentService.saveOwnJobAlert(principal.userId, body),
     );
     this.addRoute(
       "DELETE",
       "/employment/candidate/alerts/:id",
       permission("employment.candidate.manage.own"),
-      async ({ principal, params }) => employmentService.deleteOwnJobAlert(principal.userId, params.id),
+      async ({ principal, params }) =>
+        employmentService.deleteOwnJobAlert(principal.userId, params.id),
     );
     this.addRoute(
       "POST",
       "/employment/candidate/data-export",
       permission("employment.candidate.manage.own"),
-      async ({ principal }) => employmentService.exportOwnCandidateData(principal.userId),
+      async ({ principal }) =>
+        employmentService.exportOwnCandidateData(principal.userId),
     );
     this.addRoute(
       "POST",
       "/employment/candidate/deletion-request",
       permission("employment.candidate.manage.own"),
-      async ({ principal }) => employmentService.requestOwnCandidateDeletion(principal.userId),
+      async ({ principal }) =>
+        employmentService.requestOwnCandidateDeletion(principal.userId),
     );
     this.addRoute(
       "PATCH",
       "/employment/candidate/interviews/:id",
       permission("employment.candidate.manage.own"),
       async ({ principal, params, body }) =>
-        employmentService.respondToOwnInterview(principal.userId, params.id, body),
+        employmentService.respondToOwnInterview(
+          principal.userId,
+          params.id,
+          body,
+        ),
     );
     this.addRoute(
       "GET",
       "/employment/recruiter/employers",
       permission("employment.recruiter.manage.own"),
-      async ({ principal }) => employmentService.listOwnRecruiterEmployers(principal.userId),
+      async ({ principal }) =>
+        employmentService.listOwnRecruiterEmployers(principal.userId),
     );
     this.addRoute(
       "GET",
       "/employment/employers/:employerId/workspace",
       permission("employment.recruiter.manage.own"),
-      async ({ principal, params }) => employmentService.getOwnRecruiterWorkspace(principal.userId, params.employerId),
+      async ({ principal, params }) =>
+        employmentService.getOwnRecruiterWorkspace(
+          principal.userId,
+          params.employerId,
+        ),
     );
     this.addRoute(
       "POST",
@@ -1036,56 +1242,91 @@ export class ApiV1Router {
       "PATCH",
       "/employment/employers/:employerId/applications/:applicationId/stage",
       permission("employment.application.manage.own"),
-      async ({ principal, params, body }) => employmentService.moveApplication(principal.userId, params.employerId, params.applicationId, body),
+      async ({ principal, params, body }) =>
+        employmentService.moveApplication(
+          principal.userId,
+          params.employerId,
+          params.applicationId,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
       "/employment/employers/:employerId/applications/:applicationId/notes",
       permission("employment.application.manage.own"),
-      async ({ principal, params, body }) => employmentService.addRecruiterNote(principal.userId, params.employerId, params.applicationId, body?.body),
+      async ({ principal, params, body }) =>
+        employmentService.addRecruiterNote(
+          principal.userId,
+          params.employerId,
+          params.applicationId,
+          body?.body,
+        ),
     );
     this.addRoute(
       "POST",
       "/employment/employers/:employerId/applications/:applicationId/interviews",
       permission("employment.application.manage.own"),
-      async ({ principal, params, body }) => employmentService.scheduleInterview(principal.userId, params.employerId, params.applicationId, body),
+      async ({ principal, params, body }) =>
+        employmentService.scheduleInterview(
+          principal.userId,
+          params.employerId,
+          params.applicationId,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
       "/employment/employers/:employerId/imports/preview",
       permission("employment.import.own"),
       async ({ principal, params, body }) =>
-        employmentService.previewImport(principal.userId, params.employerId, body),
+        employmentService.previewImport(
+          principal.userId,
+          params.employerId,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
       "/employment/employers/:employerId/imports",
       permission("employment.import.own"),
-      async ({ principal, params, body }) => employmentService.requestImport(principal.userId, params.employerId, body),
+      async ({ principal, params, body }) =>
+        employmentService.requestImport(
+          principal.userId,
+          params.employerId,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
       "/employment/checkouts",
       permission("payment.initiate"),
-      async ({ principal, body }) => employmentService.createCheckout(principal.userId, body),
+      async ({ principal, body }) =>
+        employmentService.createCheckout(principal.userId, body),
     );
     this.addRoute(
       "GET",
       "/employment/admin/overview",
       permission("employment.admin.manage"),
-      async ({ query }) => employmentService.getAdminOverview(query.get("market") || "FR"),
+      async ({ query }) =>
+        employmentService.getAdminOverview(query.get("market") || "FR"),
     );
     this.addRoute(
       "PUT",
       "/employment/admin/markets/:marketCode",
       permission("employment.admin.manage"),
-      async ({ principal, params, body }) => employmentService.updateMarketConfig(principal.userId, params.marketCode, body),
+      async ({ principal, params, body }) =>
+        employmentService.updateMarketConfig(
+          principal.userId,
+          params.marketCode,
+          body,
+        ),
     );
     this.addRoute(
       "PATCH",
       "/employment/admin/offers/:offerId",
       permission("employment.admin.manage"),
-      async ({ principal, params, body }) => employmentService.updateOffer(principal.userId, params.offerId, body),
+      async ({ principal, params, body }) =>
+        employmentService.updateOffer(principal.userId, params.offerId, body),
     );
 
     // --------------------------------------------------------------------------
@@ -1237,50 +1478,182 @@ export class ApiV1Router {
     this.addRoute("GET", "/business-rules/catalog", PUBLIC, async ({ query }) =>
       businessRulesService.getCatalog(query.get("marketCode") || "FR"),
     );
-    this.addRoute("POST", "/business-rules/eligibility", AUTHENTICATED, async ({ principal, body }) =>
-      businessRulesService.getAccountEligibility(principal.userId, body),
+    this.addRoute(
+      "POST",
+      "/business-rules/eligibility",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        businessRulesService.getAccountEligibility(principal.userId, body),
     );
-    this.addRoute("POST", "/monetization/quotes", AUTHENTICATED, async ({ principal, body }) =>
-      businessRulesService.createQuote(principal.userId, body),
+    this.addRoute(
+      "POST",
+      "/monetization/quotes",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        businessRulesService.createQuote(principal.userId, body),
     );
-    this.addRoute("POST", "/monetization/checkouts", AUTHENTICATED, async ({ principal, body }) =>
-      businessRulesService.createCheckout(principal.userId, body?.quoteId, body?.idempotencyKey),
+    this.addRoute(
+      "POST",
+      "/monetization/checkouts",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        businessRulesService.createCheckout(
+          principal.userId,
+          body?.quoteId,
+          body?.idempotencyKey,
+        ),
     );
-    this.addRoute("POST", "/monetization/promotions/validate", AUTHENTICATED, async ({ principal, body }) =>
-      businessRulesService.validatePromotion(principal.userId, body),
+    this.addRoute(
+      "POST",
+      "/monetization/promotions/validate",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        businessRulesService.validatePromotion(principal.userId, body),
     );
-    this.addRoute("GET", "/monetization/entitlements", AUTHENTICATED, async ({ principal }) =>
-      businessRulesService.getActiveEntitlements(principal.userId),
+    this.addRoute(
+      "GET",
+      "/monetization/entitlements",
+      AUTHENTICATED,
+      async ({ principal }) =>
+        businessRulesService.getActiveEntitlements(principal.userId),
     );
-    this.addRoute("GET", "/monetization/subscriptions", AUTHENTICATED, async ({ principal }) =>
-      businessRulesService.getSubscriptions(principal.userId),
+    this.addRoute(
+      "GET",
+      "/monetization/subscriptions",
+      AUTHENTICATED,
+      async ({ principal }) =>
+        businessRulesService.getSubscriptions(principal.userId),
     );
-    this.addRoute("PATCH", "/monetization/subscriptions/:id", permission("subscription.manage.own"), async ({ principal, params, body }) =>
-      businessRulesService.updateSubscriptionCancellation(principal.userId, {
-        subscriptionId: params.id,
-        cancelAtPeriodEnd: body?.cancelAtPeriodEnd,
-      }),
+    this.addRoute(
+      "PATCH",
+      "/monetization/subscriptions/:id",
+      permission("subscription.manage.own"),
+      async ({ principal, params, body }) =>
+        businessRulesService.updateSubscriptionCancellation(principal.userId, {
+          subscriptionId: params.id,
+          cancelAtPeriodEnd: body?.cancelAtPeriodEnd,
+        }),
     );
-    this.addRoute("GET", "/admin/business-rules", permission("commercial_rules.read"), async ({ query }) =>
-      businessRulesService.getAdminOverview(query.get("marketCode") || "FR"),
+    this.addRoute(
+      "GET",
+      "/admin/business-rules",
+      permission("commercial_rules.read"),
+      async ({ query }) =>
+        businessRulesService.getAdminOverview(query.get("marketCode") || "FR"),
     );
-    this.addRoute("POST", "/admin/business-rules/simulate", permission("commercial_rules.read"), async ({ body }) =>
-      businessRulesService.evaluate(body),
+    this.addRoute(
+      "POST",
+      "/admin/business-rules/simulate",
+      permission("commercial_rules.read"),
+      async ({ body }) => businessRulesService.evaluate(body),
     );
-    this.addRoute("POST", "/admin/business-rules/drafts", permission("commercial_rules.edit"), async ({ principal, body }) =>
-      businessRulesService.createDraft(principal.userId, body),
+    this.addRoute(
+      "GET",
+      "/admin/discovery/configuration",
+      permission("commercial_rules.read"),
+      async ({ query }) =>
+        unifiedDiscoveryService.getEffectiveConfiguration(
+          query.get("marketCode") || "FR",
+          query.get("categoryId") || undefined,
+          (query.get("context") || "search") as any,
+        ),
     );
-    this.addRoute("POST", "/admin/business-rules/versions/:id/submit", permission("commercial_rules.edit"), async ({ principal, params, body }) =>
-      businessRulesService.transitionVersion({ versionId: params.id, action: "submit", actorId: principal.userId, reason: body?.reason }),
+    this.addRoute(
+      "POST",
+      "/admin/discovery/explain",
+      permission("commercial_rules.read"),
+      async ({ body }) =>
+        unifiedDiscoveryService.explainListing(
+          body?.listingId,
+          body?.filters || {},
+        ),
     );
-    this.addRoute("POST", "/admin/business-rules/versions/:id/approve", permission("commercial_rules.approve"), async ({ principal, params, body }) =>
-      businessRulesService.transitionVersion({ versionId: params.id, action: "approve", actorId: principal.userId, reason: body?.reason }),
+    this.addRoute(
+      "GET",
+      "/admin/discovery/metrics",
+      permission("commercial_rules.read"),
+      async ({ query }) =>
+        unifiedDiscoveryService.getMetrics(
+          query.get("marketCode") || "FR",
+          query.get("since") || undefined,
+        ),
     );
-    this.addRoute("POST", "/admin/business-rules/versions/:id/publish", permission("commercial_rules.publish"), async ({ principal, params, body }) =>
-      businessRulesService.transitionVersion({ versionId: params.id, action: "publish", actorId: principal.userId, reason: body?.reason }),
+    this.addRoute(
+      "POST",
+      "/admin/discovery/configuration/drafts",
+      permission("commercial_rules.edit"),
+      async ({ principal, body }) =>
+        unifiedDiscoveryService.saveConfigurationVersion(body?.configuration, {
+          actorUserId: principal.userId,
+          changeReason: body?.changeReason,
+          activate: false,
+        }),
     );
-    this.addRoute("POST", "/admin/business-rules/versions/:id/rollback", permission("commercial_rules.publish"), async ({ principal, params, body }) =>
-      businessRulesService.transitionVersion({ versionId: params.id, action: "rollback", actorId: principal.userId, reason: body?.reason }),
+    this.addRoute(
+      "POST",
+      "/admin/discovery/configuration/publish",
+      permission("commercial_rules.publish"),
+      async ({ principal, body }) =>
+        unifiedDiscoveryService.saveConfigurationVersion(body?.configuration, {
+          actorUserId: principal.userId,
+          changeReason: body?.changeReason,
+          activate: true,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/business-rules/drafts",
+      permission("commercial_rules.edit"),
+      async ({ principal, body }) =>
+        businessRulesService.createDraft(principal.userId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/business-rules/versions/:id/submit",
+      permission("commercial_rules.edit"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "submit",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/business-rules/versions/:id/approve",
+      permission("commercial_rules.approve"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "approve",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/business-rules/versions/:id/publish",
+      permission("commercial_rules.publish"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "publish",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/business-rules/versions/:id/rollback",
+      permission("commercial_rules.publish"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "rollback",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
     );
     this.addRoute("GET", "/promotions/boosts", PUBLIC, async ({ query }) =>
       monetizationService.getAvailableBoosts(
@@ -1769,6 +2142,14 @@ export class ApiV1Router {
         message: "Annonce introuvable.",
       });
     }
+    if (
+      await publisherEntitlementsService.canManageListing(
+        principal.userId,
+        listing,
+      )
+    ) {
+      return;
+    }
     requireOwnership(principal, listing.sellerId, "listing.moderate");
   }
 
@@ -1891,19 +2272,27 @@ export class ApiV1Router {
         // CSRF. Cookie-authenticated mutations are, so require the double-
         // submit token except for unauthenticated credential entry points and
         // provider callbacks (which are protected by OAuth state).
-        const usesCookieSession = Boolean(accessCookie(req)) && !extractBearerToken(req.headers.authorization);
-        const csrfExempt = pathname === '/auth/login'
-          || pathname === '/auth/register'
-          || pathname === '/auth/refresh'
-          || pathname === '/auth/password/forgot'
-          || pathname === '/auth/password/reset'
-          || pathname === '/auth/verify-email'
-          || pathname === '/auth/verify-email/resend'
-          || pathname === '/auth/oauth/complete-profile'
-          || pathname === '/auth/oauth/native-exchange'
-          || /\/auth\/oauth\/[^/]+\/callback$/.test(pathname)
-          || (/\/auth\/oauth\/[^/]+\/start$/.test(pathname) && body?.intent !== 'link');
-        if (usesCookieSession && !['GET', 'HEAD', 'OPTIONS'].includes(method) && !csrfExempt) {
+        const usesCookieSession =
+          Boolean(accessCookie(req)) &&
+          !extractBearerToken(req.headers.authorization);
+        const csrfExempt =
+          pathname === "/auth/login" ||
+          pathname === "/auth/register" ||
+          pathname === "/auth/refresh" ||
+          pathname === "/auth/password/forgot" ||
+          pathname === "/auth/password/reset" ||
+          pathname === "/auth/verify-email" ||
+          pathname === "/auth/verify-email/resend" ||
+          pathname === "/auth/oauth/complete-profile" ||
+          pathname === "/auth/oauth/native-exchange" ||
+          /\/auth\/oauth\/[^/]+\/callback$/.test(pathname) ||
+          (/\/auth\/oauth\/[^/]+\/start$/.test(pathname) &&
+            body?.intent !== "link");
+        if (
+          usesCookieSession &&
+          !["GET", "HEAD", "OPTIONS"].includes(method) &&
+          !csrfExempt
+        ) {
           requireCsrf(req);
         }
 
@@ -1939,7 +2328,8 @@ export class ApiV1Router {
   }
 
   private async resolvePrincipal(req: IncomingMessage): Promise<Principal> {
-    const token = extractBearerToken(req.headers.authorization) || accessCookie(req);
+    const token =
+      extractBearerToken(req.headers.authorization) || accessCookie(req);
     if (!token) return GUEST_PRINCIPAL;
     return authService.resolvePrincipal(token);
   }
@@ -1999,9 +2389,13 @@ export class ApiV1Router {
         // the raw payload, and re-serializing parsed JSON does not reproduce it.
         (req as any).rawBody = data;
         if (!data.trim()) return resolve(null);
-        const contentType = String(req.headers['content-type'] || '').toLowerCase();
-        if (contentType.includes('application/x-www-form-urlencoded')) {
-          return resolve(Object.fromEntries(new URLSearchParams(data).entries()));
+        const contentType = String(
+          req.headers["content-type"] || "",
+        ).toLowerCase();
+        if (contentType.includes("application/x-www-form-urlencoded")) {
+          return resolve(
+            Object.fromEntries(new URLSearchParams(data).entries()),
+          );
         }
         try {
           resolve(JSON.parse(data));
@@ -2015,8 +2409,8 @@ export class ApiV1Router {
 
 function redirectResponse(res: ServerResponse, location: string): void {
   res.statusCode = 302;
-  res.setHeader('Location', location);
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader("Location", location);
+  res.setHeader("Cache-Control", "no-store");
   res.end();
 }
 

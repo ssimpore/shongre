@@ -50,7 +50,9 @@ export interface CoursesServiceContract {
   createCourseOffer(offer: CourseOfferDraft): Promise<CourseOffer>;
   submitLearnerRequest(request: LearnerRequestDraft): Promise<LearnerRequest>;
   getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace>;
-  getOrganizationWorkspace(organizationId: string): Promise<CourseOrganizationWorkspace>;
+  getOrganizationWorkspace(
+    organizationId: string,
+  ): Promise<CourseOrganizationWorkspace>;
   inviteOrganizationMember(
     organizationId: string,
     input: CourseOrganizationInviteInput,
@@ -80,7 +82,10 @@ export interface CoursesServiceContract {
     marketCode: string,
     planId: string,
     patch: Partial<
-      Pick<CoursePlan, "isActive" | "monthlyPrice" | "annualPrice" | "entitlements">
+      Pick<
+        CoursePlan,
+        "isActive" | "monthlyPrice" | "annualPrice" | "entitlements"
+      >
     >,
   ): Promise<CoursePlan>;
 }

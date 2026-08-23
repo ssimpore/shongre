@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {
   CalendarDays,
-  CheckCircle2,
   Clock3,
   Heart,
   Laptop,
@@ -44,9 +43,6 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
 }) => {
   const { tutor, offer } = item;
   const isIdentityVerified = tutor.verifications.identity === "verified";
-  const verifiedQualification = tutor.qualifications.find(
-    (qualification) => qualification.verificationStatus === "verified",
-  );
 
   return (
     <article className="relative overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:border-border-hover hover:shadow-sm">
@@ -102,7 +98,10 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
                   className="inline-flex text-success"
                   title="Identité vérifiée par Shongre"
                 >
-                  <ShieldCheck className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                  <ShieldCheck
+                    className="h-icon-sm w-icon-sm"
+                    aria-hidden="true"
+                  />
                   <span className="sr-only">Identité vérifiée</span>
                 </span>
               )}
@@ -145,7 +144,10 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
 
           <div className="grid gap-2 border-t border-border-subtle pt-3 text-xs sm:grid-cols-2">
             <div className="flex items-start gap-2">
-              <Clock3 className="mt-0.5 h-icon-xs w-icon-xs shrink-0 text-text-muted" aria-hidden="true" />
+              <Clock3
+                className="mt-0.5 h-icon-xs w-icon-xs shrink-0 text-text-muted"
+                aria-hidden="true"
+              />
               <div>
                 <span className="block text-text-muted">Réponse</span>
                 <span className="font-semibold text-text-main">
@@ -154,7 +156,10 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <CalendarDays className="mt-0.5 h-icon-xs w-icon-xs shrink-0 text-text-muted" aria-hidden="true" />
+              <CalendarDays
+                className="mt-0.5 h-icon-xs w-icon-xs shrink-0 text-text-muted"
+                aria-hidden="true"
+              />
               <div>
                 <span className="block text-text-muted">Disponibilités</span>
                 <span className="font-semibold text-text-main">
@@ -163,36 +168,21 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
               </div>
             </div>
           </div>
-
-          <div className="rounded-control border border-border-subtle bg-bg-subtle p-3 text-xs">
-            <p className="font-bold text-text-main">Confiance et qualifications</p>
-            <div className="mt-2 space-y-1.5">
-              <p className="flex items-center gap-1.5 text-text-secondary">
-                {isIdentityVerified ? (
-                  <CheckCircle2 className="h-icon-xs w-icon-xs text-success" aria-hidden="true" />
-                ) : (
-                  <span className="h-2 w-2 rounded-pill bg-text-disabled" />
-                )}
-                Identité {isIdentityVerified ? "vérifiée" : "non vérifiée"}
-              </p>
-              <p className="text-text-secondary">
-                {verifiedQualification
-                  ? verifiedQualification.publicLabel
-                  : tutor.qualifications[0]?.publicLabel ||
-                    "Aucune qualification renseignée"}
-              </p>
-            </div>
-          </div>
         </div>
 
         <div className="flex min-w-0 flex-col border-t border-border-subtle pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
           <p className="text-xl font-black text-text-main">
             {priceFormatter.format(item.fromPrice.amountMinor / 100)}
-            <span className="ml-1 text-xs font-medium text-text-muted">/ h</span>
+            <span className="ml-1 text-xs font-medium text-text-muted">
+              / h
+            </span>
           </p>
           {tutor.ratingIsStatisticallyMeaningful && tutor.rating ? (
             <p className="mt-1 flex items-center gap-1 text-xs text-text-secondary">
-              <Star className="h-icon-xs w-icon-xs fill-warning text-warning" aria-hidden="true" />
+              <Star
+                className="h-icon-xs w-icon-xs fill-warning text-warning"
+                aria-hidden="true"
+              />
               <span className="font-bold text-text-main">{tutor.rating}</span>
               <span>({tutor.reviewCount} avis vérifiés)</span>
             </p>

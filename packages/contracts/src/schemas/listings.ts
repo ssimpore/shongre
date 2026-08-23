@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 import { publicUserSchema } from "./users";
+import {
+  discoveryPresentationSchema,
+  listingPromotionStateSchema,
+} from "./discovery";
 
 export const listingCardSchema = z.object({
   id: z.string().min(1),
@@ -23,5 +27,7 @@ export const listingCardSchema = z.object({
   seller: publicUserSchema.optional(),
   isUrgent: z.boolean().default(false),
   isFeatured: z.boolean().default(false),
+  promotion: listingPromotionStateSchema.optional(),
+  discovery: discoveryPresentationSchema.optional(),
 });
 export type ListingCardView = z.infer<typeof listingCardSchema>;

@@ -15,7 +15,6 @@ import {
   Gauge,
   History,
   LockKeyhole,
-  MapPin,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";

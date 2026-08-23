@@ -31,6 +31,30 @@ describe("MessagingCapabilitiesService", () => {
     expect(caps.disabledReason).toBeUndefined();
   });
 
+  it("rejects conversations without a distinct counterpart", () => {
+    const caps = messagingCapabilitiesService.resolve({
+      viewer: mockViewer,
+      counterpartId: mockViewer.id,
+    });
+
+    expect(caps.canRead).toBe(false);
+    expect(caps.canSend).toBe(false);
+    expect(caps.canReport).toBe(false);
+  });
+
+  it("keeps history usable but disables listing actions when unavailable", () => {
+    const caps = messagingCapabilitiesService.resolve({
+      viewer: mockViewer,
+      counterpartId: "seller_123",
+      isListingAvailable: false,
+    });
+
+    expect(caps.canRead).toBe(true);
+    expect(caps.canSend).toBe(true);
+    expect(caps.canMakeOffer).toBe(false);
+    expect(caps.canSchedulePickup).toBe(false);
+  });
+
   it("disables sending when viewer has blocked counterpart", () => {
     const caps = messagingCapabilitiesService.resolve({
       viewer: mockViewer,

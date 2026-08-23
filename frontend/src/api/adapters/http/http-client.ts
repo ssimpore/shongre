@@ -22,7 +22,9 @@ export class HttpClient {
       .split(";")
       .map((value) => value.trim())
       .find((value) => value.startsWith("shongre_csrf="));
-    return entry ? decodeURIComponent(entry.slice("shongre_csrf=".length)) : null;
+    return entry
+      ? decodeURIComponent(entry.slice("shongre_csrf=".length))
+      : null;
   }
 
   private async refreshSession(): Promise<boolean> {
@@ -30,7 +32,10 @@ export class HttpClient {
     this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: "{}",
     })
       .then((response) => response.ok)
@@ -45,7 +50,13 @@ export class HttpClient {
     endpoint: string,
     options: HttpRequestOptions = {},
   ): Promise<T> {
-    const { params, headers, timeoutMs = 15000, _retried = false, ...customConfig } = options;
+    const {
+      params,
+      headers,
+      timeoutMs = 15000,
+      _retried = false,
+      ...customConfig
+    } = options;
 
     let url = `${this.baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
     if (params) {

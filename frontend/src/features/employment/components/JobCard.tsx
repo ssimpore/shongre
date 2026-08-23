@@ -50,7 +50,10 @@ export const JobCard: React.FC<{
               {job.title}
             </Link>
             <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs font-semibold text-text-secondary">
-              <Building2 className="h-icon-xs w-icon-xs shrink-0" aria-hidden="true" />
+              <Building2
+                className="h-icon-xs w-icon-xs shrink-0"
+                aria-hidden="true"
+              />
               <span className="truncate">{job.employer.name}</span>
               {job.employer.isPubliclyVerified ? (
                 <BadgeCheck
@@ -84,7 +87,10 @@ export const JobCard: React.FC<{
             {job.workingArrangementLabel}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <BriefcaseBusiness className="h-icon-xs w-icon-xs" aria-hidden="true" />
+            <BriefcaseBusiness
+              className="h-icon-xs w-icon-xs"
+              aria-hidden="true"
+            />
             {job.contractTypeLabel}
           </span>
         </div>
@@ -95,7 +101,9 @@ export const JobCard: React.FC<{
 
         {!compact ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            {job.isUrgent ? <Badge variant="warning">Recrutement urgent</Badge> : null}
+            {job.isUrgent ? (
+              <Badge variant="warning">Recrutement urgent</Badge>
+            ) : null}
             {job.isFeatured ? <Badge variant="primary">À la une</Badge> : null}
             {job.isSponsored ? <Badge>Placement sponsorisé</Badge> : null}
             <Badge>{job.professionLabel}</Badge>
@@ -104,7 +112,8 @@ export const JobCard: React.FC<{
 
         <p className="mt-3 flex items-center gap-1.5 border-t border-border-subtle pt-3 text-micro text-text-muted">
           <Clock3 className="h-icon-xs w-icon-xs" aria-hidden="true" />
-          Publiée {relativeEmploymentDate(job.publishedAt, catalog?.config.locale)}
+          Publiée{" "}
+          {relativeEmploymentDate(job.publishedAt, catalog?.config.locale)}
         </p>
       </div>
     </div>

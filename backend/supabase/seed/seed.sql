@@ -1,5 +1,5 @@
 -- Master Seed Script for Shongre Database
-\i migrations/00004_seed_data.sql
-\i seed/courses.sql
-\i seed/auto.sql
-\i seed/real-estate.sql
+\ir ../migrations/00004_seed_data.sql
+\ir courses.sql
+\ir auto.sql
+\ir real-estate.sql

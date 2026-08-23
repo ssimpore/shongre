@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   Bell,
   CarFront,
@@ -21,9 +21,11 @@ import {
   Button,
   Container,
   Drawer,
+  FilterPanel,
   Skeleton,
   StatePanel,
 } from "../../design-system";
+import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
@@ -36,14 +38,41 @@ interface FiltersProps {
   catalog: AutoCatalog;
   params: URLSearchParams;
   update: (key: string, value?: string) => void;
+  onReset: () => void;
   onApply?: () => void;
+  presentation?: FilterPanelPresentation;
 }
+
+const AUTO_FILTER_KEYS = [
+  "type",
+  "make",
+  "model",
+  "minPrice",
+  "maxPrice",
+  "minYear",
+  "maxYear",
+  "maxMileage",
+  "body",
+  "minPower",
+  "maxPower",
+  "minBattery",
+  "minRange",
+  "city",
+  "radius",
+  "fuel",
+  "transmission",
+  "seller",
+  "warranty",
+  "financing",
+] as const;
 
 const AutoFilters: React.FC<FiltersProps> = ({
   catalog,
   params,
   update,
+  onReset,
   onApply,
+  presentation = "surface",
 }) => {
   const fuels = split(params.get("fuel"));
   const bodyTypeOptions =
@@ -56,40 +85,18 @@ const AutoFilters: React.FC<FiltersProps> = ({
     update("fuel", next.length ? next.join(",") : undefined);
   };
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-black text-text-main">Filtres Auto</h2>
-        <button
-          type="button"
-          onClick={() =>
-            [
-              "type",
-              "make",
-              "model",
-              "minPrice",
-              "maxPrice",
-              "minYear",
-              "maxYear",
-              "maxMileage",
-              "body",
-              "minPower",
-              "maxPower",
-              "minBattery",
-              "minRange",
-              "city",
-              "radius",
-              "fuel",
-              "transmission",
-              "seller",
-              "warranty",
-              "financing",
-            ].forEach((key) => update(key))
-          }
-          className="text-xs font-bold text-primary hover:underline"
-        >
-          Réinitialiser
-        </button>
-      </div>
+    <FilterPanel
+      title="Filtres"
+      presentation={presentation}
+      onReset={onReset}
+      footer={
+        onApply ? (
+          <Button fullWidth onClick={onApply}>
+            Voir les véhicules
+          </Button>
+        ) : undefined
+      }
+    >
       <label className="block text-xs font-bold text-text-main">
         Type de véhicule
         <select
@@ -387,12 +394,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
           Estimation mensuelle disponible
         </label>
       </fieldset>
-      {onApply && (
-        <Button fullWidth onClick={onApply}>
-          Voir les véhicules
-        </Button>
-      )}
-    </div>
+    </FilterPanel>
   );
 };
 
@@ -414,6 +416,17 @@ export const AutoSearchPage: React.FC = () => {
         const next = new URLSearchParams(current);
         if (value) next.set(key, value);
         else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const resetFilters = () => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        AUTO_FILTER_KEYS.forEach((key) => next.delete(key));
         return next;
       },
       { replace: true },
@@ -465,11 +478,10 @@ export const AutoSearchPage: React.FC = () => {
         ? Number(params.get("minRange"))
         : undefined,
       city: params.get("city") || undefined,
-      radiusKm: params.get("city") && catalog
-        ? Number(
-            params.get("radius") || catalog.config.defaultSearchRadiusKm,
-          )
-        : undefined,
+      radiusKm:
+        params.get("city") && catalog
+          ? Number(params.get("radius") || catalog.config.defaultSearchRadiusKm)
+          : undefined,
       warrantyOnly: params.get("warranty") === "true" || undefined,
       financingAvailable: params.get("financing") === "true" || undefined,
       sort: (params.get("sort") || "relevance") as VehicleSearchQuery["sort"],
@@ -625,11 +637,19 @@ export const AutoSearchPage: React.FC = () => {
       </form>
 
       <div
-        className={`grid min-w-0 gap-4 ${compared.length ? "xl:grid-cols-[15rem_minmax(0,1fr)_17rem]" : "lg:grid-cols-[15rem_minmax(0,1fr)]"}`}
+        className={`grid min-w-0 gap-6 ${compared.length ? "xl:grid-cols-[16rem_minmax(0,1fr)_17rem]" : "lg:grid-cols-[16rem_minmax(0,1fr)]"}`}
       >
         {catalog && (
-          <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface p-4 shadow-xs lg:block">
-            <AutoFilters catalog={catalog} params={params} update={update} />
+          <aside
+            className="hidden self-start lg:sticky lg:top-24 lg:block"
+            aria-label="Filtres Auto"
+          >
+            <AutoFilters
+              catalog={catalog}
+              params={params}
+              update={update}
+              onReset={resetFilters}
+            />
           </aside>
         )}
         <main className="min-w-0">
@@ -766,7 +786,9 @@ export const AutoSearchPage: React.FC = () => {
             catalog={catalog}
             params={params}
             update={update}
+            onReset={resetFilters}
             onApply={() => setFilterOpen(false)}
+            presentation="drawer"
           />
         </Drawer>
       )}

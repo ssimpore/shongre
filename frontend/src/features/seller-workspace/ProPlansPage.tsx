@@ -17,7 +17,13 @@ export const ProPlansPage: React.FC = () => {
     services.businessRules
       .getCatalog("FR")
       .then((result) => active && setCatalog(result))
-      .catch((error) => active && setCatalogError(error instanceof Error ? error.message : "Offres indisponibles"));
+      .catch(
+        (error) =>
+          active &&
+          setCatalogError(
+            error instanceof Error ? error.message : "Offres indisponibles",
+          ),
+      );
     return () => {
       active = false;
     };
@@ -29,16 +35,22 @@ export const ProPlansPage: React.FC = () => {
     canonicalPath: "/solutions-pro",
   });
 
-  const plans = catalog?.products.filter(
-    (product) =>
-      product.status === "active" &&
-      (product.id === "listing.standard.individual" || product.id.startsWith("plan.pro.")),
-  ) || [];
-  const boosts = catalog?.products.filter(
-    (product) => product.status === "active" && product.kind === "premium_option",
-  ) || [];
+  const plans =
+    catalog?.products.filter(
+      (product) =>
+        product.status === "active" &&
+        (product.id === "listing.standard.individual" ||
+          product.id.startsWith("plan.pro.")),
+    ) || [];
+  const boosts =
+    catalog?.products.filter(
+      (product) =>
+        product.status === "active" && product.kind === "premium_option",
+    ) || [];
   const formatMinor = (amountMinor: number, currency: string) =>
-    new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(amountMinor / 100);
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(
+      amountMinor / 100,
+    );
 
   return (
     <div className="space-y-12 pb-16">
@@ -57,12 +69,18 @@ export const ProPlansPage: React.FC = () => {
       </div>
 
       {!catalog && !catalogError && (
-        <div className="max-w-6xl mx-auto rounded-xl border border-border-base bg-bg-surface p-8 text-center text-sm font-semibold text-stone-600" aria-live="polite">
+        <div
+          className="max-w-6xl mx-auto rounded-xl border border-border-base bg-bg-surface p-8 text-center text-sm font-semibold text-stone-600"
+          aria-live="polite"
+        >
           Chargement des offres actives…
         </div>
       )}
       {catalogError && (
-        <div className="max-w-6xl mx-auto rounded-xl border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger" role="alert">
+        <div
+          className="max-w-6xl mx-auto rounded-xl border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger"
+          role="alert"
+        >
           {catalogError}
         </div>
       )}
@@ -75,8 +93,12 @@ export const ProPlansPage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {plans.map((plan) => {
           const isPopular = plan.recommended;
-          const price = plan.prices.find((entry) => entry.billingPeriod === "month") || plan.prices[0];
-          const maxActiveListings = plan.entitlements.find((entry) => entry.key === "maxActiveListings")?.value;
+          const price =
+            plan.prices.find((entry) => entry.billingPeriod === "month") ||
+            plan.prices[0];
+          const maxActiveListings = plan.entitlements.find(
+            (entry) => entry.key === "maxActiveListings",
+          )?.value;
           /* The free tier is the individual account, not a professional one, so
              it signs up through the individual flow. Every card used to point at
              the professional route, which met someone choosing "Particulier"
@@ -106,26 +128,39 @@ export const ProPlansPage: React.FC = () => {
                     {plan.name}
                   </h2>
                   <Badge variant={isPopular ? "primary" : "neutral"} size="sm">
-                    {typeof maxActiveListings === "number" ? maxActiveListings : "—"} annonces
+                    {typeof maxActiveListings === "number"
+                      ? maxActiveListings
+                      : "—"}{" "}
+                    annonces
                   </Badge>
                 </div>
 
                 <div className="flex items-baseline gap-1 my-4">
                   <span className="text-3xl sm:text-4xl font-black text-stone-900">
-                    {formatMinor(price.amount.amountMinor, price.amount.currency)}
+                    {formatMinor(
+                      price.amount.amountMinor,
+                      price.amount.currency,
+                    )}
                   </span>
                   <span className="text-xs text-stone-500 font-semibold">
                     HT / mois
                   </span>
                 </div>
 
-                <p className="text-xs text-stone-500 mb-6">{plan.description}</p>
+                <p className="text-xs text-stone-500 mb-6">
+                  {plan.description}
+                </p>
 
                 <ul className="space-y-3 text-xs text-stone-700 pb-6 border-b border-border-subtle">
                   {plan.entitlements.map((entitlement) => (
-                    <li key={entitlement.key} className="flex items-start gap-2.5">
+                    <li
+                      key={entitlement.key}
+                      className="flex items-start gap-2.5"
+                    >
                       <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                      <span>{entitlement.label} : {String(entitlement.value)}</span>
+                      <span>
+                        {entitlement.label} : {String(entitlement.value)}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -162,29 +197,35 @@ export const ProPlansPage: React.FC = () => {
           {boosts.map((opt) => {
             const price = opt.prices[0];
             return (
-            <div
-              key={opt.id}
-              className="bg-white rounded-xl border border-border-base p-5 shadow-xs flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-9 h-9 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-3">
-                  <Zap className="w-4 h-4" />
+              <div
+                key={opt.id}
+                className="bg-white rounded-xl border border-border-base p-5 shadow-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-9 h-9 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-3">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-sm text-stone-900">
+                    {opt.name}
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {opt.description}
+                  </p>
                 </div>
-                <h3 className="font-bold text-sm text-stone-900">{opt.name}</h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                  {opt.description}
-                </p>
+                <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between">
+                  <span className="text-xs text-stone-500">
+                    {price.durationDays || 1} jours
+                  </span>
+                  <span className="text-sm font-black text-primary">
+                    {formatMinor(
+                      price.amount.amountMinor,
+                      price.amount.currency,
+                    )}
+                  </span>
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-border-subtle flex items-center justify-between">
-                <span className="text-xs text-stone-500">
-                  {price.durationDays || 1} jours
-                </span>
-                <span className="text-sm font-black text-primary">
-                  {formatMinor(price.amount.amountMinor, price.amount.currency)}
-                </span>
-              </div>
-            </div>
-          );})}
+            );
+          })}
         </div>
       </div>
     </div>

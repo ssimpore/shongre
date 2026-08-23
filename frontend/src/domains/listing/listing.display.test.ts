@@ -112,6 +112,35 @@ describe("Listing Detail Display & Action Resolvers", () => {
       expect(summary).toContain("160 × 90 cm");
       expect(summary).toContain("Très bon état");
     });
+
+    it("keeps employment cards essential while preserving full detail values", () => {
+      const employmentListing: Partial<Listing> = {
+        id: "list-job-1",
+        title: "Développeur·se front-end React",
+        categorySlug: "emploi",
+        subCategorySlug: "offres-d-emploi",
+        condition: "not_applicable",
+        attributes: {
+          contract_type: "cdi",
+          job_sector: "tech_informatique",
+          telework: "hybrid",
+        },
+      };
+
+      const listing = employmentListing as Listing;
+      const summary = listingDisplayResolver.resolveSummaryAttributes(listing);
+      const detailItems = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(summary).toEqual(["CDI", "Télétravail hybride"]);
+      expect(detailItems.find((item) => item.code === "job_sector")?.value).toBe(
+        "Informatique / Tech / Data & IA",
+      );
+      expect(detailItems.find((item) => item.code === "telework")?.value).toBe(
+        "Télétravail hybride (2-3 jours/semaine)",
+      );
+    });
   });
 
   // =========================================================================

@@ -144,8 +144,9 @@ export const resolveNearestMarketCity = (
 };
 
 export const requestCurrentCoordinates = (
-  provider: Geolocation | undefined =
-    typeof navigator === "undefined" ? undefined : navigator.geolocation,
+  provider: Geolocation | undefined = typeof navigator === "undefined"
+    ? undefined
+    : navigator.geolocation,
 ): Promise<GeoCoordinates> => {
   if (!provider) {
     return Promise.reject(new CurrentLocationError("unsupported"));

@@ -183,7 +183,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     password: string,
     options?: { rememberMe?: boolean },
   ): Promise<AuthResult> => {
-    const result = await services.auth.login({ email, password, rememberMe: options?.rememberMe });
+    const result = await services.auth.login({
+      email,
+      password,
+      rememberMe: options?.rememberMe,
+    });
     if (result.success && result.user) {
       setCurrentUser(result.user);
       announceAuthChange("login");

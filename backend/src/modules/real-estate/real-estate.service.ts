@@ -28,11 +28,13 @@ import {
   IRealEstateRepository,
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
-import { config } from "../../app/config/index.js";
 import { stripeCheckoutAdapter } from "../../infrastructure/payments/stripe-checkout-adapter.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { storageService } from "../../infrastructure/storage/storage-service.js";
-import { businessRulesService, BusinessRulesService } from "../business-rules/business-rules.service.js";
+import {
+  businessRulesService,
+  BusinessRulesService,
+} from "../business-rules/business-rules.service.js";
 
 const currentIso = () => new Date().toISOString();
 const hash = (value: string) =>
@@ -783,12 +785,15 @@ export class RealEstateService {
     let invoiceId: string | undefined;
     let checkoutId: string = randomUUID();
     if (totalMinor > 0) {
-      const offerProductId = offer ? IMMO_COMMERCIAL_PRODUCT_IDS[offer.id] : undefined;
-      const productIds = [offerProductId, ...addOns.map((addOn) => addOn.id)]
-        .filter((id): id is string => Boolean(id));
-      const priceIds = offerProductId && price
-        ? { [offerProductId]: price.id }
+      const offerProductId = offer
+        ? IMMO_COMMERCIAL_PRODUCT_IDS[offer.id]
         : undefined;
+      const productIds = [
+        offerProductId,
+        ...addOns.map((addOn) => addOn.id),
+      ].filter((id): id is string => Boolean(id));
+      const priceIds =
+        offerProductId && price ? { [offerProductId]: price.id } : undefined;
       const quote = await this.commercialRules.createQuote(userId, {
         productIds,
         priceIds,
@@ -808,7 +813,8 @@ export class RealEstateService {
       providerPaymentId = order.providerPaymentId;
       invoiceId = order.invoiceId;
       centralProvider = order.provider === "stripe" ? "stripe" : "demo";
-      status = order.status === "partially_refunded" ? "refunded" : order.status;
+      status =
+        order.status === "partially_refunded" ? "refunded" : order.status;
     }
     const checkout = verticalCheckoutSchema.parse({
       id: checkoutId,

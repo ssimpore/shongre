@@ -6,10 +6,12 @@ import {
   ArrowUpDown,
   Tag,
   PanelLeftClose,
-  PanelLeft,
   Layers,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { listingRepository } from "../../repositories/listing.repository";
+import type { SearchFacetValue } from "../../api/contracts/search.contract";
+import { services } from "../../api/client/service-registry";
 import { Listing, SearchFilters, ListingCondition } from "../../types";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import {
@@ -23,7 +25,13 @@ import { Button } from "../../design-system/primitives/Button";
 import { Input, Checkbox } from "../../design-system/primitives/FormField";
 import { Drawer } from "../../design-system/primitives/Modal";
 import { plural } from "../../utilities/formatters";
-import { ListingCardSkeleton, ListingGrid, Skeleton } from "../../design-system";
+import {
+  ListingCardSkeleton,
+  FilterPanel,
+  ListingGrid,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -64,6 +72,16 @@ const CONDITION_FILTER_OPTIONS: { value: ListingCondition; label: string }[] = [
   { value: "for_parts", label: "Pour pièces" },
 ];
 
+function deleteAttributeFilters(params: URLSearchParams): void {
+  Array.from(params.keys()).forEach((key) => {
+    if (key.startsWith("attr_")) params.delete(key);
+  });
+}
+
+function humanizeFacetValue(value: string): string {
+  return value.replace(/_/g, " ").replace(/^./, (first) => first.toUpperCase());
+}
+
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -83,7 +101,13 @@ export const SearchPage: React.FC = () => {
   const [showDesktopFilters, setShowDesktopFilters] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [attributeFacetValues, setAttributeFacetValues] = useState<
+    Record<string, SearchFacetValue[]>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
+  const [searchError, setSearchError] = useState(false);
+  const [searchAttempt, setSearchAttempt] = useState(0);
 
   /* `/categorie/:categorySlug` is the pretty, linkable form of a category
      search. The route was registered but nothing ever read its parameter, so
@@ -151,6 +175,8 @@ export const SearchPage: React.FC = () => {
   const sortBy = (searchParams.get("sortBy") as any) || "date_desc";
   const marketCode =
     searchParams.get("market") || storageService.getActiveMarketCode() || "FR";
+  const pageParam = Number(searchParams.get("page") || "1");
+  const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
 
   const dynamicAttributeFilters = useMemo(() => {
     const values: SearchFilters["attributes"] = {};
@@ -169,7 +195,9 @@ export const SearchPage: React.FC = () => {
           max: max ? Number(max) : undefined,
         };
       } else if (value !== null && value !== "") {
-        values[key] = value.includes(",") ? value.split(",").filter(Boolean) : value;
+        values[key] = value.includes(",")
+          ? value.split(",").filter(Boolean)
+          : value;
       }
     });
     return values;
@@ -184,7 +212,9 @@ export const SearchPage: React.FC = () => {
 
   // Execute search query
   useEffect(() => {
+    let cancelled = false;
     setIsLoading(true);
+    setSearchError(false);
     const filters: SearchFilters = {
       query: query || undefined,
       categorySlug: categorySlug || undefined,
@@ -204,19 +234,49 @@ export const SearchPage: React.FC = () => {
           : undefined,
       sortBy,
       marketCode,
-      page: 1,
+      page,
       limit: 24,
     };
 
-    listingRepository.getListings(filters).then((res) => {
-      setListings(res.listings);
-      setTotalCount(res.total);
-      setIsLoading(false);
-    });
+    services.search
+      .search(filters)
+      .then((res) => {
+        if (cancelled) return;
+        setListings(res.items);
+        setTotalCount(res.total);
+        setTotalPages(res.totalPages);
+        setAttributeFacetValues(res.facets?.attributes || {});
+
+        if (page > res.totalPages) {
+          setSearchParams(
+            (previous) => {
+              const next = new URLSearchParams(previous);
+              if (res.totalPages <= 1) next.delete("page");
+              else next.set("page", String(res.totalPages));
+              return next;
+            },
+            { replace: true },
+          );
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setListings([]);
+        setTotalCount(0);
+        setTotalPages(1);
+        setAttributeFacetValues({});
+        setSearchError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
     if (query) {
       storageService.addRecentSearch(query);
     }
+    return () => {
+      cancelled = true;
+    };
   }, [
     query,
     categorySlug,
@@ -233,6 +293,9 @@ export const SearchPage: React.FC = () => {
     JSON.stringify(dynamicAttributeFilters),
     sortBy,
     marketCode,
+    page,
+    searchAttempt,
+    setSearchParams,
   ]);
 
   const toggleCondition = (value: ListingCondition) => {
@@ -256,8 +319,26 @@ export const SearchPage: React.FC = () => {
           next.delete("subCategory");
         }
       }
+      if (key === "category" || key === "subCategory") {
+        deleteAttributeFilters(next);
+      }
       next.delete("page");
       return next;
+    });
+  };
+
+  const updatePage = (nextPage: number) => {
+    const boundedPage = Math.min(totalPages, Math.max(1, nextPage));
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      if (boundedPage <= 1) next.delete("page");
+      else next.set("page", String(boundedPage));
+      return next;
+    });
+    requestAnimationFrame(() => {
+      document
+        .getElementById("search-results-toolbar")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
@@ -308,7 +389,8 @@ export const SearchPage: React.FC = () => {
   const activeSubCat = activeCategory?.subCategories.find(
     (s) => s.slug === subCategorySlug || s.id === subCategorySlug,
   );
-  const activeNodeId = activeCanonicalNode?.id || activeSubCat?.id || activeCategory?.id;
+  const activeNodeId =
+    activeCanonicalNode?.id || activeSubCat?.id || activeCategory?.id;
 
   // A search is useful on the home page only if it can be resumed with the
   // same criteria. Store the structured URL after every meaningful search or
@@ -329,6 +411,7 @@ export const SearchPage: React.FC = () => {
       delivery ||
       onlinePayment ||
       onlyDeals ||
+      conditions.length > 0 ||
       hasAttributeFilters,
     );
     if (!hasCriteria) return;
@@ -357,6 +440,7 @@ export const SearchPage: React.FC = () => {
     activeSubCat?.slug,
     categorySlug,
     city,
+    conditions.length,
     delivery,
     maxPrice,
     minPrice,
@@ -373,6 +457,46 @@ export const SearchPage: React.FC = () => {
   const dynamicFacets = useMemo(() => {
     return taxonomyService.resolveSearchFilters(activeNodeId);
   }, [activeNodeId]);
+
+  const dynamicFacetDropdownOptions = useMemo(() => {
+    return Object.fromEntries(
+      dynamicFacets.map((facet) => {
+        const { attribute } = facet;
+        const discovered = attributeFacetValues[attribute.code] || [];
+        const discoveredCounts = new Map(
+          discovered.map((value) => [value.value, value.count]),
+        );
+        const declared = attribute.options?.map((option) => ({
+          value: option.value,
+          label: option.label,
+        }));
+        const values =
+          declared && declared.length > 0
+            ? declared
+            : discovered.map((value) => ({
+                value: value.value,
+                label: humanizeFacetValue(value.value),
+              }));
+        const current = searchParams.get(`attr_${attribute.code}`);
+        if (current && !values.some((value) => value.value === current)) {
+          values.push({ value: current, label: humanizeFacetValue(current) });
+        }
+
+        const options: DropdownOption[] = [
+          { value: "", label: "Tous / Toutes" },
+          ...values.map((value) => {
+            const count = discoveredCounts.get(value.value);
+            return {
+              ...value,
+              sublabel:
+                count === undefined ? undefined : plural(count, "annonce"),
+            };
+          }),
+        ];
+        return [attribute.code, options];
+      }),
+    ) as Record<string, DropdownOption[]>;
+  }, [attributeFacetValues, dynamicFacets, searchParams]);
 
   const categoryDropdownOptions: DropdownOption[] = useMemo(
     () => [
@@ -425,9 +549,13 @@ export const SearchPage: React.FC = () => {
     if (delivery) count++;
     if (onlyDeals) count++;
     if (onlinePayment) count++;
-    for (const key of searchParams.keys()) {
-      if (key.startsWith("attr_")) count++;
-    }
+    if (conditions.length > 0) count++;
+    const attributeCodes = new Set(
+      Array.from(searchParams.keys())
+        .filter((key) => key.startsWith("attr_"))
+        .map((key) => key.replace(/^attr_/, "").replace(/_(min|max)$/, "")),
+    );
+    count += attributeCodes.size;
     return count;
   }, [
     categorySlug,
@@ -439,8 +567,45 @@ export const SearchPage: React.FC = () => {
     delivery,
     onlyDeals,
     onlinePayment,
+    conditions.length,
     searchParams,
   ]);
+
+  const paginationPages = useMemo(() => {
+    const pages = new Set([1, totalPages, page - 1, page, page + 1]);
+    return Array.from(pages)
+      .filter((value) => value >= 1 && value <= totalPages)
+      .sort((a, b) => a - b);
+  }, [page, totalPages]);
+
+  const activeDynamicFilterChips = useMemo(() => {
+    return dynamicFacets.flatMap((facet) => {
+      const code = facet.attribute.code;
+      const min = searchParams.get(`attr_${code}_min`);
+      const max = searchParams.get(`attr_${code}_max`);
+      const value = searchParams.get(`attr_${code}`);
+      if (min !== null || max !== null) {
+        return [
+          {
+            code,
+            label: `${facet.attribute.label} : ${min || "min"} – ${max || "max"}${facet.attribute.unit ? ` ${facet.attribute.unit}` : ""}`,
+            keys: [`attr_${code}_min`, `attr_${code}_max`],
+          },
+        ];
+      }
+      if (!value) return [];
+      const option = dynamicFacetDropdownOptions[code]?.find(
+        (candidate) => candidate.value === value,
+      );
+      return [
+        {
+          code,
+          label: `${facet.attribute.label} : ${option?.label || humanizeFacetValue(value)}`,
+          keys: [`attr_${code}`],
+        },
+      ];
+    });
+  }, [dynamicFacetDropdownOptions, dynamicFacets, searchParams]);
 
   /**
    * The h1 describes what the user is actually looking at: their query, the
@@ -549,6 +714,9 @@ export const SearchPage: React.FC = () => {
           }) => {
             setSearchParams((prev) => {
               const next = new URLSearchParams(prev);
+              if (newCat !== categorySlug || newSub !== subCategorySlug) {
+                deleteAttributeFilters(next);
+              }
               if (newQ) next.set("query", newQ);
               else next.delete("query");
               if (newCat) next.set("category", newCat);
@@ -566,14 +734,7 @@ export const SearchPage: React.FC = () => {
         />
 
         {/* Active Filters Badges */}
-        {(query ||
-          categorySlug ||
-          city ||
-          minPrice ||
-          maxPrice ||
-          sellerType !== "all" ||
-          delivery ||
-          onlyDeals) && (
+        {(query || activeFilterCount > 0) && (
           <div className="flex items-center gap-1.5 flex-wrap pt-3 border-t border-border-subtle mt-3">
             <span className="text-xs font-bold text-stone-500 uppercase tracking-wider mr-1">
               Filtres actifs :
@@ -642,6 +803,52 @@ export const SearchPage: React.FC = () => {
               </FilterChip>
             )}
 
+            {onlinePayment && (
+              <FilterChip
+                tone="success"
+                onRemove={() => updateFilter("onlinePayment", undefined)}
+              >
+                Paiement en ligne
+              </FilterChip>
+            )}
+
+            {conditions.length > 0 && (
+              <FilterChip onRemove={() => updateFilter("condition", undefined)}>
+                {conditions.length === 1
+                  ? CONDITION_FILTER_OPTIONS.find(
+                      (option) => option.value === conditions[0],
+                    )?.label || "État"
+                  : `${conditions.length} états`}
+              </FilterChip>
+            )}
+
+            {(minPrice !== undefined || maxPrice !== undefined) && (
+              <FilterChip
+                onRemove={() => {
+                  updateFilter("minPrice", undefined);
+                  updateFilter("maxPrice", undefined);
+                }}
+              >
+                {`${minPrice ?? "min"} € – ${maxPrice ?? "max"} €`}
+              </FilterChip>
+            )}
+
+            {activeDynamicFilterChips.map((chip) => (
+              <FilterChip
+                key={chip.code}
+                onRemove={() => {
+                  setSearchParams((previous) => {
+                    const next = new URLSearchParams(previous);
+                    chip.keys.forEach((key) => next.delete(key));
+                    next.delete("page");
+                    return next;
+                  });
+                }}
+              >
+                {chip.label}
+              </FilterChip>
+            ))}
+
             <button
               type="button"
               onClick={clearAllFilters}
@@ -663,20 +870,11 @@ export const SearchPage: React.FC = () => {
       >
         {/* Desktop Sidebar Filters */}
         {showDesktopFilters && (
-          <aside className="hidden lg:block lg:col-span-1 space-y-6">
-            <div className="bg-bg-surface rounded-card border border-border-base p-6 space-y-6 shadow-sm">
-              {/* One control owns the panel: the toggle in the results toolbar,
-                  beside the count. This header used to carry a second
-                  "Masquer" — with the toolbar toggle also reading "Masquer"
-                  once open, the page showed two identically-labelled buttons
-                  for the same action. */}
-              <div className="flex items-center justify-between pb-4 border-b border-stone-100">
-                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
-                  Filtres
-                </h2>
-              </div>
-
+          <aside
+            className="hidden lg:col-span-1 lg:block"
+            aria-label="Filtres de recherche"
+          >
+            <FilterPanel title="Filtres" onReset={clearAllFilters}>
               {/* Categories */}
               <div>
                 <label
@@ -700,19 +898,9 @@ export const SearchPage: React.FC = () => {
                     }
                     options={categoryDropdownOptions}
                     value={categorySlug || ""}
-                    onChange={(val) => {
-                      setSearchParams((prev) => {
-                        const next = new URLSearchParams(prev);
-                        if (val) {
-                          next.set("category", val);
-                        } else {
-                          next.delete("category");
-                        }
-                        next.delete("subCategory");
-                        next.delete("page");
-                        return next;
-                      });
-                    }}
+                    onChange={(val) =>
+                      updateFilter("category", val || undefined)
+                    }
                   />
 
                   {/* Subcategory dropdown when category with children is active */}
@@ -738,18 +926,9 @@ export const SearchPage: React.FC = () => {
                         }
                         options={subcategoryDropdownOptions}
                         value={subCategorySlug || ""}
-                        onChange={(val) => {
-                          setSearchParams((prev) => {
-                            const next = new URLSearchParams(prev);
-                            if (val) {
-                              next.set("subCategory", val);
-                            } else {
-                              next.delete("subCategory");
-                            }
-                            next.delete("page");
-                            return next;
-                          });
-                        }}
+                        onChange={(val) =>
+                          updateFilter("subCategory", val || undefined)
+                        }
                       />
                     </div>
                   )}
@@ -874,20 +1053,14 @@ export const SearchPage: React.FC = () => {
                     const attr = facet.attribute;
                     const currentValue =
                       searchParams.get(`attr_${attr.code}`) || "";
+                    const facetOptions =
+                      dynamicFacetDropdownOptions[attr.code] || [];
 
                     if (
                       (facet.facetType === "select" ||
                         facet.facetType === "multi_select") &&
-                      attr.options
+                      facetOptions.length > 1
                     ) {
-                      const facetOptions: DropdownOption[] = [
-                        { value: "", label: "Tous / Toutes" },
-                        ...attr.options.map((opt) => ({
-                          value: opt.value,
-                          label: opt.label,
-                        })),
-                      ];
-
                       return (
                         <div key={attr.id} className="space-y-1">
                           <label className="text-xs font-semibold text-stone-700 block">
@@ -974,7 +1147,7 @@ export const SearchPage: React.FC = () => {
                   })}
                 </div>
               )}
-            </div>
+            </FilterPanel>
           </aside>
         )}
 
@@ -985,7 +1158,10 @@ export const SearchPage: React.FC = () => {
           }
         >
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
-          <div className="bg-bg-surface p-4 rounded-card border border-border-base shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4">
+          <div
+            id="search-results-toolbar"
+            className="scroll-mt-24 bg-bg-surface p-4 rounded-card border border-border-base shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4"
+          >
             <div className="flex items-center gap-3 min-w-0 shrink">
               {/* The result count is the only feedback a filter change gives on
                   this page — the grid below simply rewrites itself. Announced so
@@ -1129,7 +1305,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Results Display (Grid / List / Map) */}
           {isLoading ? (
-            <ListingGrid>
+            <ListingGrid fluid>
               {[...Array(12)].map((_, i) => (
                 <ListingCardSkeleton
                   key={i}
@@ -1137,6 +1313,19 @@ export const SearchPage: React.FC = () => {
                 />
               ))}
             </ListingGrid>
+          ) : searchError ? (
+            <StatePanel
+              variant="error"
+              title={t("common.error")}
+              description={t("search.searchPage.loadError")}
+              action={
+                <Button
+                  onClick={() => setSearchAttempt((attempt) => attempt + 1)}
+                >
+                  {t("common.retry")}
+                </Button>
+              }
+            />
           ) : listings.length > 0 ? (
             viewMode === "map" ? (
               <React.Suspense
@@ -1157,7 +1346,7 @@ export const SearchPage: React.FC = () => {
                 />
               </React.Suspense>
             ) : viewMode === "grid" ? (
-              <ListingGrid>
+              <ListingGrid fluid>
                 {listings.map((listing) => (
                   <ListingCard
                     key={listing.id}
@@ -1187,6 +1376,65 @@ export const SearchPage: React.FC = () => {
               saveSearchLabel={t("search.searchPage.sauvegarderCetteRecherche")}
             />
           )}
+
+          {!isLoading &&
+            !searchError &&
+            listings.length > 0 &&
+            totalPages > 1 && (
+              <nav
+                aria-label="Pagination des résultats"
+                className="flex items-center justify-center gap-1.5 pt-3"
+              >
+                <button
+                  type="button"
+                  onClick={() => updatePage(page - 1)}
+                  disabled={page <= 1}
+                  className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-white px-2.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                  aria-label="Page précédente"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Précédente</span>
+                </button>
+
+                {paginationPages.map((pageNumber, index) => (
+                  <React.Fragment key={pageNumber}>
+                    {index > 0 &&
+                      pageNumber - paginationPages[index - 1] > 1 && (
+                        <span
+                          className="px-1 text-xs text-stone-400"
+                          aria-hidden
+                        >
+                          …
+                        </span>
+                      )}
+                    <button
+                      type="button"
+                      onClick={() => updatePage(pageNumber)}
+                      aria-current={pageNumber === page ? "page" : undefined}
+                      aria-label={`Page ${pageNumber}`}
+                      className={`h-control-sm min-w-8 rounded-control px-2 text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
+                        pageNumber === page
+                          ? "bg-primary text-white"
+                          : "border border-border-base bg-white text-stone-700 hover:bg-bg-subtle"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  </React.Fragment>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => updatePage(page + 1)}
+                  disabled={page >= totalPages}
+                  className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-white px-2.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                  aria-label="Page suivante"
+                >
+                  <span className="hidden sm:inline">Suivante</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </nav>
+            )}
         </div>
       </div>
 
@@ -1196,7 +1444,20 @@ export const SearchPage: React.FC = () => {
         onClose={() => setIsFilterDrawerOpen(false)}
         title={t("search.searchPage.filtresDeRecherche")}
       >
-        <div className="space-y-6">
+        <FilterPanel
+          presentation="drawer"
+          onReset={clearAllFilters}
+          footer={
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => setIsFilterDrawerOpen(false)}
+            >
+              Voir les résultats ({totalCount})
+            </Button>
+          }
+          contentClassName="space-y-6"
+        >
           {/* Category */}
           <div>
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
@@ -1274,6 +1535,29 @@ export const SearchPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Condition */}
+          <div>
+            <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+              {t("search.searchPage.etat")}
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {CONDITION_FILTER_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="touch-row gap-2 rounded-control border border-border-subtle px-2 py-1.5 text-xs font-medium text-stone-700 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={conditions.includes(option.value)}
+                    onChange={() => toggleCondition(option.value)}
+                    className="h-4 w-4 shrink-0"
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Price */}
           <div>
             <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
@@ -1325,20 +1609,14 @@ export const SearchPage: React.FC = () => {
                 const attr = facet.attribute;
                 const currentValue =
                   searchParams.get(`attr_${attr.code}`) || "";
+                const facetOptions =
+                  dynamicFacetDropdownOptions[attr.code] || [];
 
                 if (
                   (facet.facetType === "select" ||
                     facet.facetType === "multi_select") &&
-                  attr.options
+                  facetOptions.length > 1
                 ) {
-                  const facetOptions: DropdownOption[] = [
-                    { value: "", label: "Tous / Toutes" },
-                    ...attr.options.map((opt) => ({
-                      value: opt.value,
-                      label: opt.label,
-                    })),
-                  ];
-
                   return (
                     <div key={attr.id} className="space-y-1">
                       <label className="text-xs font-semibold text-stone-700 block">
@@ -1421,26 +1699,7 @@ export const SearchPage: React.FC = () => {
             </div>
           )}
 
-          <div className="flex gap-2 pt-4 border-t border-border-subtle sticky bottom-0 bg-white pb-2">
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => {
-                clearAllFilters();
-                setIsFilterDrawerOpen(false);
-              }}
-            >
-              {t("search.searchPage.effacerTout")}
-            </Button>
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={() => setIsFilterDrawerOpen(false)}
-            >
-              Voir les résultats ({totalCount})
-            </Button>
-          </div>
-        </div>
+        </FilterPanel>
       </Drawer>
     </div>
   );

@@ -104,7 +104,10 @@ export function buildTaxonomyCoverageReport(
   const duplicates = duplicateCandidates(nodes);
   const identityIssues = CANONICAL_TAXONOMY_IDENTITIES.flatMap((identity) => {
     const node = service.getNode(identity.id);
-    if (!node) return [`Shared identity ${identity.id} is missing from the demo taxonomy`];
+    if (!node)
+      return [
+        `Shared identity ${identity.id} is missing from the demo taxonomy`,
+      ];
     const mismatches = [
       node.code !== identity.code ? "code" : "",
       node.slug !== identity.slug ? "slug" : "",
@@ -187,15 +190,14 @@ export function buildTaxonomyCoverageReport(
     ),
     ...rows
       .filter((row) => row.status === "incomplete")
-      .map(
-        (row) =>
-          `${row.nodeId}: missing ${row.missing.join(", ")}`,
-      ),
+      .map((row) => `${row.nodeId}: missing ${row.missing.join(", ")}`),
   ];
 
   return {
     generatedAt: new Date().toISOString(),
-    taxonomyVersion: Math.max(...nodes.map((node) => node.taxonomyVersion || 1)),
+    taxonomyVersion: Math.max(
+      ...nodes.map((node) => node.taxonomyVersion || 1),
+    ),
     totals: {
       roots: service.getRootCategories().length,
       nodes: nodes.length,

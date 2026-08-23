@@ -1,10 +1,21 @@
-import { logger } from '../../infrastructure/logging/logger.js';
-import { geminiClient } from '../../integrations/ai/gemini-client.js';
+import { logger } from "../../infrastructure/logging/logger.js";
+import { providers } from "../../integrations/providers/provider-container.js";
 
 export class ModerationWorker {
-  async evaluateListing(listingId: string, title: string, description: string, price: number) {
-    logger.info(`Running AI Moderation screening for listing ${listingId}`);
-    const assessment = await geminiClient.analyzeListingContent(title, description, price);
+  async evaluateListing(
+    listingId: string,
+    title: string,
+    description: string,
+    price: number,
+  ) {
+    logger.info("Running automated listing moderation screening", {
+      listingId,
+    });
+    const assessment = await providers.ai.analyzeListingContent(
+      title,
+      description,
+      price,
+    );
     return assessment;
   }
 }

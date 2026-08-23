@@ -1,5 +1,5 @@
-import { createHmac, timingSafeEqual, randomUUID } from 'crypto';
-import { PlatformRole } from './rbac.js';
+import { createHmac, timingSafeEqual, randomUUID } from "crypto";
+import { PlatformRole } from "./rbac.js";
 
 /**
  * Session tokens.
@@ -32,7 +32,7 @@ export interface TokenClaims {
 export class TokenError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'TokenError';
+    this.name = "TokenError";
   }
 }
 
@@ -40,30 +40,33 @@ export const DEFAULT_TOKEN_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 
 function base64UrlEncode(input: Buffer | string): string {
   return Buffer.from(input)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 function base64UrlDecode(input: string): Buffer {
-  const padded = input.replace(/-/g, '+').replace(/_/g, '/');
-  return Buffer.from(padded + '='.repeat((4 - (padded.length % 4)) % 4), 'base64');
+  const padded = input.replace(/-/g, "+").replace(/_/g, "/");
+  return Buffer.from(
+    padded + "=".repeat((4 - (padded.length % 4)) % 4),
+    "base64",
+  );
 }
 
 function sign(payload: string, secret: string): string {
-  return base64UrlEncode(createHmac('sha256', secret).update(payload).digest());
+  return base64UrlEncode(createHmac("sha256", secret).update(payload).digest());
 }
 
-const HEADER = base64UrlEncode(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+const HEADER = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
 
 export function issueToken(
-  claims: Omit<TokenClaims, 'iat' | 'exp' | 'jti'>,
+  claims: Omit<TokenClaims, "iat" | "exp" | "jti">,
   secret: string,
-  ttlSeconds: number = DEFAULT_TOKEN_TTL_SECONDS
+  ttlSeconds: number = DEFAULT_TOKEN_TTL_SECONDS,
 ): string {
   if (!secret) {
-    throw new TokenError('Cannot issue a token without a signing secret.');
+    throw new TokenError("Cannot issue a token without a signing secret.");
   }
   const now = Math.floor(Date.now() / 1000);
   const full: TokenClaims = {
@@ -84,15 +87,15 @@ export function issueToken(
  */
 export function verifyToken(token: string, secret: string): TokenClaims {
   if (!secret) {
-    throw new TokenError('Cannot verify a token without a signing secret.');
+    throw new TokenError("Cannot verify a token without a signing secret.");
   }
-  if (typeof token !== 'string' || token.length === 0) {
-    throw new TokenError('Missing token.');
+  if (typeof token !== "string" || token.length === 0) {
+    throw new TokenError("Missing token.");
   }
 
-  const segments = token.split('.');
+  const segments = token.split(".");
   if (segments.length !== 3) {
-    throw new TokenError('Malformed token.');
+    throw new TokenError("Malformed token.");
   }
 
   const [header, payload, signature] = segments;
@@ -101,32 +104,37 @@ export function verifyToken(token: string, secret: string): TokenClaims {
   // Compare as buffers of equal length; timingSafeEqual throws on length mismatch.
   const provided = Buffer.from(signature);
   const expectedBuf = Buffer.from(expected);
-  if (provided.length !== expectedBuf.length || !timingSafeEqual(provided, expectedBuf)) {
-    throw new TokenError('Invalid token signature.');
+  if (
+    provided.length !== expectedBuf.length ||
+    !timingSafeEqual(provided, expectedBuf)
+  ) {
+    throw new TokenError("Invalid token signature.");
   }
 
   let claims: TokenClaims;
   try {
-    claims = JSON.parse(base64UrlDecode(payload).toString('utf8'));
+    claims = JSON.parse(base64UrlDecode(payload).toString("utf8"));
   } catch {
-    throw new TokenError('Unreadable token payload.');
+    throw new TokenError("Unreadable token payload.");
   }
 
-  if (!claims || typeof claims.sub !== 'string' || !claims.sub) {
-    throw new TokenError('Token is missing a subject.');
+  if (!claims || typeof claims.sub !== "string" || !claims.sub) {
+    throw new TokenError("Token is missing a subject.");
   }
-  if (typeof claims.exp !== 'number' || Number.isNaN(claims.exp)) {
-    throw new TokenError('Token is missing an expiry.');
+  if (typeof claims.exp !== "number" || Number.isNaN(claims.exp)) {
+    throw new TokenError("Token is missing an expiry.");
   }
   if (Math.floor(Date.now() / 1000) >= claims.exp) {
-    throw new TokenError('Token has expired.');
+    throw new TokenError("Token has expired.");
   }
 
   return claims;
 }
 
 /** Extracts the raw bearer token from an Authorization header value. */
-export function extractBearerToken(headerValue: string | string[] | undefined): string | null {
+export function extractBearerToken(
+  headerValue: string | string[] | undefined,
+): string | null {
   if (!headerValue) return null;
   const raw = Array.isArray(headerValue) ? headerValue[0] : headerValue;
   const match = /^Bearer\s+(.+)$/i.exec(raw.trim());

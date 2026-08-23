@@ -39,7 +39,8 @@ export interface ResolveListingActionsParams {
 
 export class ListingActionsResolver {
   resolve(params: ResolveListingActionsParams): ResolvedListingActions {
-    const { listing, viewer, transactionCapabilities, taxonomyPrimaryCta } = params;
+    const { listing, viewer, transactionCapabilities, taxonomyPrimaryCta } =
+      params;
     const isOwner = !!(viewer && viewer.id === listing.sellerId);
 
     // 1. Owner Actions Resolution

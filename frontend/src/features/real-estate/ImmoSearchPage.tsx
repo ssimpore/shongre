@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Bell, Building2, Filter, List, Map, Search, X } from "lucide-react";
+import { Bell, Filter, List, Map, Search } from "lucide-react";
 import type {
   EnergyClass,
   PropertyPublic,
@@ -11,7 +11,15 @@ import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Button, Container, Skeleton, StatePanel } from "../../design-system";
+import {
+  Button,
+  Container,
+  Drawer,
+  FilterPanel,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
+import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 import { ImmoMap } from "./components/ImmoMap";
@@ -24,11 +32,39 @@ const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 const number = (value: string | null, multiplier = 1) =>
   value ? Number(value) * multiplier : undefined;
 
-const Filters: React.FC<{
+const IMMO_FILTER_KEYS = [
+  "types",
+  "minPrice",
+  "maxPrice",
+  "minSurface",
+  "maxSurface",
+  "minPricePerSquareMeter",
+  "maxPricePerSquareMeter",
+  "rooms",
+  "bedrooms",
+  "dpe",
+  "seller",
+  "furnished",
+  "amenities",
+] as const;
+
+const ImmoFilters: React.FC<{
   catalog: RealEstateCatalog;
   params: URLSearchParams;
   setParam: (key: string, value?: string) => void;
-}> = ({ catalog, params, setParam }) => {
+  onReset: () => void;
+  presentation?: FilterPanelPresentation;
+  onApply?: () => void;
+  resultCount?: number;
+}> = ({
+  catalog,
+  params,
+  setParam,
+  onReset,
+  presentation = "surface",
+  onApply,
+  resultCount = 0,
+}) => {
   const selectedTypes = csv(params.get("types"));
   const selectedAmenities = csv(params.get("amenities"));
   const toggleType = (type: string) => {
@@ -44,33 +80,18 @@ const Filters: React.FC<{
     setParam("amenities", next.length ? next.join(",") : undefined);
   };
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-black text-text-main">Affiner</h2>
-        <button
-          type="button"
-          onClick={() =>
-            [
-              "types",
-              "minPrice",
-              "maxPrice",
-              "minSurface",
-              "maxSurface",
-              "minPricePerSquareMeter",
-              "maxPricePerSquareMeter",
-              "rooms",
-              "bedrooms",
-              "dpe",
-              "seller",
-              "furnished",
-              "amenities",
-            ].forEach((key) => setParam(key))
-          }
-          className="text-xs font-bold text-primary hover:underline"
-        >
-          Réinitialiser
-        </button>
-      </div>
+    <FilterPanel
+      title="Filtres"
+      presentation={presentation}
+      onReset={onReset}
+      footer={
+        onApply ? (
+          <Button fullWidth onClick={onApply}>
+            Voir {resultCount} bien{resultCount > 1 ? "s" : ""}
+          </Button>
+        ) : undefined
+      }
+    >
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Projet
@@ -288,7 +309,7 @@ const Filters: React.FC<{
           <option value="developer">Promoteur</option>
         </select>
       </label>
-    </div>
+    </FilterPanel>
   );
 };
 
@@ -429,6 +450,17 @@ export const ImmoSearchPage: React.FC = () => {
         const next = new URLSearchParams(current);
         if (value) next.set(key, value);
         else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const resetFilters = () => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        IMMO_FILTER_KEYS.forEach((key) => next.delete(key));
         return next;
       },
       { replace: true },
@@ -632,12 +664,17 @@ export const ImmoSearchPage: React.FC = () => {
           />
         ) : null}
         {!error && catalog ? (
-          <div className="grid items-start gap-4 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(30rem,0.9fr)_minmax(26rem,1.1fr)]">
+          <div className="grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(30rem,0.9fr)_minmax(24rem,1.1fr)]">
             <aside
-              className="sticky top-24 hidden rounded-card border border-border-base bg-bg-surface p-4 lg:block"
+              className="sticky top-24 hidden lg:block"
               aria-label="Filtres immobiliers"
             >
-              <Filters catalog={catalog} params={params} setParam={setParam} />
+              <ImmoFilters
+                catalog={catalog}
+                params={params}
+                setParam={setParam}
+                onReset={resetFilters}
+              />
             </aside>
             <section
               aria-label="Résultats immobiliers"
@@ -687,35 +724,22 @@ export const ImmoSearchPage: React.FC = () => {
         ) : null}
       </Container>
 
-      {mobileFilters && catalog ? (
-        <div
-          className="fixed inset-0 z-modal bg-overlay-scrim lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Filtres immobiliers"
+      {catalog ? (
+        <Drawer
+          isOpen={mobileFilters}
+          onClose={() => setMobileFilters(false)}
+          title="Filtres immobiliers"
         >
-          <div className="ml-auto h-full w-[min(90vw,22rem)] overflow-y-auto bg-bg-surface p-5 shadow-modal">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-black">Filtres</h2>
-              <button
-                type="button"
-                onClick={() => setMobileFilters(false)}
-                aria-label="Fermer les filtres"
-                className="grid h-control-md w-10 place-items-center"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <Filters catalog={catalog} params={params} setParam={setParam} />
-            <Button
-              variant="primary"
-              className="mt-6 w-full"
-              onClick={() => setMobileFilters(false)}
-            >
-              Voir {total} biens
-            </Button>
-          </div>
-        </div>
+          <ImmoFilters
+            catalog={catalog}
+            params={params}
+            setParam={setParam}
+            onReset={resetFilters}
+            presentation="drawer"
+            resultCount={total}
+            onApply={() => setMobileFilters(false)}
+          />
+        </Drawer>
       ) : null}
     </main>
   );

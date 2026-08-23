@@ -77,10 +77,15 @@ describe("Taxonomy Service & Integrity", () => {
     leaves.forEach((leaf) => {
       const schema = taxonomyService.resolvePublicationSchema(leaf.id);
       expect(schema?.attributes.length, leaf.id).toBeGreaterThan(0);
-      expect(schema?.mediaGuidance?.minimumPhotoCount, leaf.id).toBeGreaterThanOrEqual(0);
+      expect(
+        schema?.mediaGuidance?.minimumPhotoCount,
+        leaf.id,
+      ).toBeGreaterThanOrEqual(0);
       expect(schema?.mediaGuidance?.maxPhotoCount, leaf.id).toBeGreaterThan(0);
       expect(
-        taxonomyService.resolveSearchFilters(leaf.id).every((facet) => facet.attribute.filterable),
+        taxonomyService
+          .resolveSearchFilters(leaf.id)
+          .every((facet) => facet.attribute.filterable),
         leaf.id,
       ).toBe(true);
     });
@@ -88,7 +93,9 @@ describe("Taxonomy Service & Integrity", () => {
 
   it("resolves dependent publication fields and nested descendants from metadata", () => {
     const descendants = taxonomyService.getDescendants("vehicles");
-    expect(descendants.some((node) => node.id === "vehicles.cars.citadines")).toBe(true);
+    expect(
+      descendants.some((node) => node.id === "vehicles.cars.citadines"),
+    ).toBe(true);
 
     const electricSchema = publicationResolver.resolve({
       taxonomyNodeId: "vehicles.cars",
@@ -111,7 +118,8 @@ describe("Taxonomy Service & Integrity", () => {
     const node3 = TaxonomyMigration.resolveCanonicalNode("multimedia");
     expect(node3?.id).toBe("electronics");
 
-    const redirect = TaxonomyMigration.resolveCanonicalRedirect("real-estate-sale");
+    const redirect =
+      TaxonomyMigration.resolveCanonicalRedirect("real-estate-sale");
     expect(redirect).toEqual({
       node: expect.objectContaining({ id: "real_estate.sales" }),
       redirectPath: "/categorie/ventes-immobilieres",

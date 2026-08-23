@@ -5,6 +5,7 @@
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "strict": true,
+    "noUnusedLocals": true,
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true

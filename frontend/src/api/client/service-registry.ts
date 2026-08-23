@@ -123,7 +123,9 @@ export function createServiceRegistry(
     auto: useDemo ? demoAutoService : httpAutoService,
     realEstate: useDemo ? demoRealEstateService : httpRealEstateService,
     employment: useDemo ? demoEmploymentService : httpEmploymentService,
-    businessRules: useDemo ? demoBusinessRulesService : httpBusinessRulesService,
+    businessRules: useDemo
+      ? demoBusinessRulesService
+      : httpBusinessRulesService,
   };
 }
 

@@ -115,8 +115,6 @@ class TransactionService {
   ): AmountBreakdown {
     const itemPriceCents = Math.round(itemPrice * 100);
     const mCode = marketCode || storageService.getActiveMarketCode() || "FR";
-    const config = marketService.getEffectiveConfig(mCode);
-
     // Buyer protection fee: rate + fixed fee from effective market config
     const commercials = getDemoTransactionCommercials(mCode, sellerType);
     const rate = commercials.protectionRateBps / 10_000;
@@ -161,10 +159,10 @@ class TransactionService {
   }
 
   /**
-   * Generate a random 6-digit confirmation PIN
+   * Return a deterministic demo confirmation PIN.
    */
   generateVerificationPin(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return "482731";
   }
 
   /**

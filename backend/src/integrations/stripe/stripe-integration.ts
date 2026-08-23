@@ -1,7 +1,7 @@
-import { stripeAdapter } from '../../infrastructure/payments/stripe-adapter.js';
+import { stripeAdapter } from "../../infrastructure/payments/stripe-adapter.js";
 
 export class StripeIntegration {
-  async initiateEscrowHold(orderId: string, amount: number, currency = 'EUR') {
+  async initiateEscrowHold(orderId: string, amount: number, currency = "EUR") {
     return stripeAdapter.createPaymentIntent({
       amount,
       currency,

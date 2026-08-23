@@ -64,7 +64,9 @@ describe("Shongre Auto domain service", () => {
       override async getActiveCatalog(marketCode: string) {
         const catalog = await super.getActiveCatalog(marketCode);
         const changed = structuredClone(catalog!);
-        changed.products.find((product) => product.id === "auto.dealer.starter")!.prices[0].amount.amountMinor = 8123;
+        changed.products.find(
+          (product) => product.id === "auto.dealer.starter",
+        )!.prices[0].amount.amountMinor = 8123;
         return changed;
       }
     }
@@ -73,7 +75,10 @@ describe("Shongre Auto domain service", () => {
       new BusinessRulesService(new CommercialRepository()),
     );
     const catalog = await service.getCatalog("FR");
-    expect(catalog.plans.find((plan) => plan.id === "auto_dealer_starter")?.monthlyPrice?.amountMinor).toBe(8123);
+    expect(
+      catalog.plans.find((plan) => plan.id === "auto_dealer_starter")
+        ?.monthlyPrice?.amountMinor,
+    ).toBe(8123);
   });
 
   it("returns only approved public vehicle fields", async () => {
@@ -256,10 +261,14 @@ describe("Shongre Auto domain service", () => {
       source: "vehicle_page" as const,
       marketingConsent: false,
     };
-    await expect(service.submitLead(undefined, cleanLead)).resolves.toMatchObject({
+    await expect(
+      service.submitLead(undefined, cleanLead),
+    ).resolves.toMatchObject({
       spamAssessment: "clear",
     });
-    await expect(service.submitLead(undefined, cleanLead)).resolves.toMatchObject({
+    await expect(
+      service.submitLead(undefined, cleanLead),
+    ).resolves.toMatchObject({
       spamAssessment: "review",
     });
 

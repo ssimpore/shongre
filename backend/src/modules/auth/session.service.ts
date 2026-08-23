@@ -1,16 +1,16 @@
-import { randomUUID } from 'crypto';
-import { config } from '../../app/config/index.js';
-import { AppError } from '../../shared/errors/app-error.js';
-import { issueToken } from '../../shared/auth/tokens.js';
-import type { UserProfile } from '../../shared/types/index.js';
-import type { AuthProvider } from '../../shared/auth/identity.js';
+import { randomUUID } from "crypto";
+import { config } from "../../app/config/index.js";
+import { AppError } from "../../shared/errors/app-error.js";
+import { issueToken } from "../../shared/auth/tokens.js";
+import type { UserProfile } from "../../shared/types/index.js";
+import type { AuthProvider } from "../../shared/auth/identity.js";
 import {
   authRepository,
   type IAuthRepository,
   type AuthSessionRecord,
-} from '../../infrastructure/database/repositories/auth.repository.js';
-import { randomOAuthValue, sha256 } from './oauth-provider.client.js';
-import type { PlatformRole } from '../../shared/auth/rbac.js';
+} from "../../infrastructure/database/repositories/auth.repository.js";
+import { randomOAuthValue, sha256 } from "./oauth-provider.client.js";
+import type { PlatformRole } from "../../shared/auth/rbac.js";
 
 export interface AuthRequestMetadata {
   ipPrefix?: string | null;
@@ -37,7 +37,10 @@ export interface SessionView {
 }
 
 function unauthenticated(): AppError {
-  return new AppError({ code: 'UNAUTHENTICATED', message: 'Session invalide ou expirée.' });
+  return new AppError({
+    code: "UNAUTHENTICATED",
+    message: "Session invalide ou expirée.",
+  });
 }
 
 export class SessionService {
@@ -57,25 +60,37 @@ export class SessionService {
       familyId: randomUUID(),
       rotatedFrom: null,
       provider,
-      deviceLabel: metadata.deviceLabel?.slice(0, 120) || 'Navigateur',
+      deviceLabel: metadata.deviceLabel?.slice(0, 120) || "Navigateur",
       ipPrefix: metadata.ipPrefix || null,
-      lastReauthenticatedAt: recentlyAuthenticated ? new Date(now).toISOString() : null,
-      expiresAt: new Date(now + config.authRefreshTokenTtlSeconds * 1000).toISOString(),
+      lastReauthenticatedAt: recentlyAuthenticated
+        ? new Date(now).toISOString()
+        : null,
+      expiresAt: new Date(
+        now + config.authRefreshTokenTtlSeconds * 1000,
+      ).toISOString(),
     });
     return this.tokensFor(user, session, refreshToken);
   }
 
-  async rotate(refreshToken: string, metadata: AuthRequestMetadata = {}): Promise<{ userId: string; tokens: SessionTokens }> {
+  async rotate(
+    refreshToken: string,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<{ userId: string; tokens: SessionTokens }> {
     if (!refreshToken) throw unauthenticated();
-    const existing = await this.repository.findSessionByRefreshHash(sha256(refreshToken));
+    const existing = await this.repository.findSessionByRefreshHash(
+      sha256(refreshToken),
+    );
     if (!existing) throw unauthenticated();
 
     if (existing.revokedAt) {
-      if (existing.revokedReason === 'rotated') {
-        await this.repository.revokeSessionFamily(existing.familyId, 'reuse_detected');
+      if (existing.revokedReason === "rotated") {
+        await this.repository.revokeSessionFamily(
+          existing.familyId,
+          "reuse_detected",
+        );
         await this.repository.recordSecurityEvent({
           userId: existing.userId,
-          eventType: 'session_reuse_detected',
+          eventType: "session_reuse_detected",
           provider: existing.provider,
           ipPrefix: metadata.ipPrefix,
         });
@@ -83,11 +98,11 @@ export class SessionService {
       throw unauthenticated();
     }
     if (Date.parse(existing.expiresAt) <= Date.now()) {
-      await this.repository.revokeSession(existing.id, 'expired');
+      await this.repository.revokeSession(existing.id, "expired");
       throw unauthenticated();
     }
 
-    await this.repository.revokeSession(existing.id, 'rotated');
+    await this.repository.revokeSession(existing.id, "rotated");
     const nextRefresh = randomOAuthValue(48);
     const next = await this.repository.createSession({
       userId: existing.userId,
@@ -103,9 +118,11 @@ export class SessionService {
     return {
       userId: existing.userId,
       tokens: {
-        token: '',
+        token: "",
         refreshToken: nextRefresh,
-        expiresAt: new Date(Date.now() + config.authTokenTtlSeconds * 1000).toISOString(),
+        expiresAt: new Date(
+          Date.now() + config.authTokenTtlSeconds * 1000,
+        ).toISOString(),
         sessionId: next.id,
       },
     };
@@ -134,11 +151,17 @@ export class SessionService {
     );
   }
 
-  async hasRecentAuthentication(sessionId: string | undefined): Promise<boolean> {
+  async hasRecentAuthentication(
+    sessionId: string | undefined,
+  ): Promise<boolean> {
     if (!sessionId) return false;
     const session = await this.repository.findSessionById(sessionId);
-    if (!session || session.revokedAt || !session.lastReauthenticatedAt) return false;
-    return Date.now() - Date.parse(session.lastReauthenticatedAt) <= config.authRecentAuthenticationSeconds * 1000;
+    if (!session || session.revokedAt || !session.lastReauthenticatedAt)
+      return false;
+    return (
+      Date.now() - Date.parse(session.lastReauthenticatedAt) <=
+      config.authRecentAuthenticationSeconds * 1000
+    );
   }
 
   async markReauthenticated(sessionId: string): Promise<void> {
@@ -149,14 +172,20 @@ export class SessionService {
     await this.repository.touchSession(sessionId);
   }
 
-  async list(userId: string, currentSessionId?: string): Promise<SessionView[]> {
+  async list(
+    userId: string,
+    currentSessionId?: string,
+  ): Promise<SessionView[]> {
     const sessions = await this.repository.listSessions(userId);
     return sessions
-      .filter((session) => !session.revokedAt && Date.parse(session.expiresAt) > Date.now())
+      .filter(
+        (session) =>
+          !session.revokedAt && Date.parse(session.expiresAt) > Date.now(),
+      )
       .map((session) => ({
         id: session.id,
         provider: session.provider,
-        deviceLabel: session.deviceLabel || 'Appareil',
+        deviceLabel: session.deviceLabel || "Appareil",
         ipPrefix: session.ipPrefix,
         issuedAt: session.issuedAt,
         lastUsedAt: session.lastUsedAt,
@@ -169,20 +198,33 @@ export class SessionService {
     const session = await this.repository.findSessionById(sessionId);
     if (!session || session.userId !== userId) {
       // Do not reveal whether a session id belongs to another account.
-      throw new AppError({ code: 'NOT_FOUND', message: 'Session introuvable.' });
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Session introuvable.",
+      });
     }
-    await this.repository.revokeSession(sessionId, 'admin_revoked');
+    await this.repository.revokeSession(sessionId, "admin_revoked");
   }
 
-  async revokeAll(userId: string, exceptId?: string, reason = 'logout_all'): Promise<void> {
+  async revokeAll(
+    userId: string,
+    exceptId?: string,
+    reason = "logout_all",
+  ): Promise<void> {
     await this.repository.revokeSessions(userId, reason, exceptId);
   }
 
-  private tokensFor(user: UserProfile, session: AuthSessionRecord, refreshToken: string): SessionTokens {
+  private tokensFor(
+    user: UserProfile,
+    session: AuthSessionRecord,
+    refreshToken: string,
+  ): SessionTokens {
     return {
       token: this.issueAccessToken(user, session.id),
       refreshToken,
-      expiresAt: new Date(Date.now() + config.authTokenTtlSeconds * 1000).toISOString(),
+      expiresAt: new Date(
+        Date.now() + config.authTokenTtlSeconds * 1000,
+      ).toISOString(),
       sessionId: session.id,
     };
   }

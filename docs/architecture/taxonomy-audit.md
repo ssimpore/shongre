@@ -38,21 +38,21 @@ coverage gate prevents it from drifting from the shared identities.
 
 ## Audit inventory
 
-| Surface | Existing source | Finding | Resolution |
-| --- | --- | --- | --- |
-| Frontend taxonomy | `frontend/src/domains/taxonomy/taxonomy.data.ts` | Richest source: 16 roots, inheritance and vertical metadata | Retained and enriched; checked against shared identities |
-| Attribute definitions | `frontend/src/domains/taxonomy/attribute.registry.ts` | 109 reusable fields, but comparison coverage was incomplete | Retained; comparison flags completed |
-| Publication | resolver, service and `PublishWizard` | Schema-driven fields existed; pricing/media copy still assumed a product | Reused; intent, media, price model, inventory and standard policy now resolve by family |
-| Cards/details | shared `ListingCard`, listing display resolver and detail page | Detail groups were schema-driven; card summaries and CTA labels were not wired through | Shared web/native cards now render taxonomy summary fields; detail CTA follows taxonomy |
-| Search/comparison | demo search, Auto and Cours verticals | Facets were schema-driven; compatible-leaf rule was not centralized | One compatibility guard and comparison attribute resolver added |
-| Administration | taxonomy and monetization pages | Versioning existed; CTA, moderation and standard allowance were not editable | Existing editor extended; commercial simulator uses canonical IDs |
-| Backend demo | taxonomy repository | Obsolete seven-root parallel tree and legacy slugs | Parallel tree removed; repository reads shared 61-node catalogue |
-| Backend validation | taxonomy/listing/business-rule services | Server validation and quota authorization existed | Retained; final-leaf validation and job/on-request pricing added |
-| Database | migrations 00001, 00004 and 00010 | Legacy IDs plus a v2 registry, without a complete canonical seed or aliases | Migration 00016 expands, maps, verifies and deprecates safely |
-| Monetization | shared commercial catalogue and Immo scopes | `courses` and `real-estate` were commercial category aliases | Replaced with canonical taxonomy IDs |
-| Demo listings | `frontend/src/mocks/initialDemoData.ts` | Several historical slugs were normalized independently in storage | One shared alias resolver now normalizes all seeded listings |
-| SEO/navigation | category routes and taxonomy labels | Canonical routing existed but old aliases lacked one auditable map | Alias resolver returns canonical `/categorie/:slug` redirects |
-| Discovery | collections and trending | `Bons plans` is a cross-category collection | Explicitly excluded from taxonomy aliases |
+| Surface               | Existing source                                                | Finding                                                                                | Resolution                                                                              |
+| --------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Frontend taxonomy     | `frontend/src/domains/taxonomy/taxonomy.data.ts`               | Richest source: 16 roots, inheritance and vertical metadata                            | Retained and enriched; checked against shared identities                                |
+| Attribute definitions | `frontend/src/domains/taxonomy/attribute.registry.ts`          | 109 reusable fields, but comparison coverage was incomplete                            | Retained; comparison flags completed                                                    |
+| Publication           | resolver, service and `PublishWizard`                          | Schema-driven fields existed; pricing/media copy still assumed a product               | Reused; intent, media, price model, inventory and standard policy now resolve by family |
+| Cards/details         | shared `ListingCard`, listing display resolver and detail page | Detail groups were schema-driven; card summaries and CTA labels were not wired through | Shared web/native cards now render taxonomy summary fields; detail CTA follows taxonomy |
+| Search/comparison     | demo search, Auto and Cours verticals                          | Facets were schema-driven; compatible-leaf rule was not centralized                    | One compatibility guard and comparison attribute resolver added                         |
+| Administration        | taxonomy and monetization pages                                | Versioning existed; CTA, moderation and standard allowance were not editable           | Existing editor extended; commercial simulator uses canonical IDs                       |
+| Backend demo          | taxonomy repository                                            | Obsolete seven-root parallel tree and legacy slugs                                     | Parallel tree removed; repository reads shared 61-node catalogue                        |
+| Backend validation    | taxonomy/listing/business-rule services                        | Server validation and quota authorization existed                                      | Retained; final-leaf validation and job/on-request pricing added                        |
+| Database              | migrations 00001, 00004 and 00010                              | Legacy IDs plus a v2 registry, without a complete canonical seed or aliases            | Migration 00016 expands, maps, verifies and deprecates safely                           |
+| Monetization          | shared commercial catalogue and Immo scopes                    | `courses` and `real-estate` were commercial category aliases                           | Replaced with canonical taxonomy IDs                                                    |
+| Demo listings         | `frontend/src/mocks/initialDemoData.ts`                        | Several historical slugs were normalized independently in storage                      | One shared alias resolver now normalizes all seeded listings                            |
+| SEO/navigation        | category routes and taxonomy labels                            | Canonical routing existed but old aliases lacked one auditable map                     | Alias resolver returns canonical `/categorie/:slug` redirects                           |
+| Discovery             | collections and trending                                       | `Bons plans` is a cross-category collection                                            | Explicitly excluded from taxonomy aliases                                               |
 
 No category remains backend-only or frontend-only in active runtime identity
 data. Historical values remain only in migrations, aliases, fixtures used to
@@ -135,28 +135,28 @@ Migration 00016 records counts before changing references, updates listings,
 saved searches, category attributes, activity events and trending topics, then
 marks old category rows `deprecated`. It never deletes a referenced category.
 
-| Legacy source | Canonical target |
-| --- | --- |
-| `cars` | `vehicles.cars` |
-| `motorcycles` | `vehicles.motos` |
-| `bicycles` | `vehicles.cycles` |
-| `real-estate` | `real_estate` |
-| `real-estate-sale` | `real_estate.sales` |
-| `real-estate-rent` | `real_estate.rentals` |
-| `multimedia` | `electronics` |
-| `smartphones` | `electronics.smartphones` |
-| `computers` | `electronics.computers` |
-| `gaming` | `electronics.gaming` |
-| `home-garden` | `home_garden` |
-| `furniture` | `home_garden.furniture` |
-| `appliances` | `home_garden.appliances` |
-| `clothing-women` | `fashion.women` |
-| `clothing-men` | `fashion.men` |
-| `luxury-watches` | `fashion.jewelry` |
-| `leisure-sports` | `leisure_culture` |
+| Legacy source         | Canonical target              |
+| --------------------- | ----------------------------- |
+| `cars`                | `vehicles.cars`               |
+| `motorcycles`         | `vehicles.motos`              |
+| `bicycles`            | `vehicles.cycles`             |
+| `real-estate`         | `real_estate`                 |
+| `real-estate-sale`    | `real_estate.sales`           |
+| `real-estate-rent`    | `real_estate.rentals`         |
+| `multimedia`          | `electronics`                 |
+| `smartphones`         | `electronics.smartphones`     |
+| `computers`           | `electronics.computers`       |
+| `gaming`              | `electronics.gaming`          |
+| `home-garden`         | `home_garden`                 |
+| `furniture`           | `home_garden.furniture`       |
+| `appliances`          | `home_garden.appliances`      |
+| `clothing-women`      | `fashion.women`               |
+| `clothing-men`        | `fashion.men`                 |
+| `luxury-watches`      | `fashion.jewelry`             |
+| `leisure-sports`      | `leisure_culture`             |
 | `musical-instruments` | `leisure_culture.instruments` |
-| `sport-equipment` | `sports_outdoors.fitness` |
-| `professional` | `professional_btp` |
+| `sport-equipment`     | `sports_outdoors.fitness`     |
+| `professional`        | `professional_btp`            |
 
 Additional historical French slugs are stored as aliases. `Bons plans` is not
 mapped to `Dons & Solidarité`; it remains a discovery collection.

@@ -60,7 +60,7 @@ test('save search shares the results toolbar row with filters', async ({ page })
   await waitForStableLayout(page);
 
   const filterButton = page.locator('button[aria-label^="Ouvrir les filtres de recherche"]');
-  const saveButton = page.getByRole('button', { name: 'Sauvegarder cette recherche', exact: true });
+  const saveButton = page.getByRole('button', { name: 'Sauvegarder', exact: true });
 
   await expect(filterButton).toBeVisible();
   await expect(saveButton).toBeVisible();
@@ -68,7 +68,7 @@ test('save search shares the results toolbar row with filters', async ({ page })
   const alignment = await page.evaluate(() => {
     const filter = document.querySelector<HTMLButtonElement>('button[aria-label^="Ouvrir les filtres de recherche"]');
     const save = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
-      (button) => button.getAttribute('aria-label') === 'Sauvegarder cette recherche',
+      (button) => button.getAttribute('aria-label') === 'Sauvegarder',
     );
     if (!filter || !save) return null;
 

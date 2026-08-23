@@ -17,7 +17,10 @@ describe("canonical taxonomy identity catalog", () => {
   it("has no orphan or circular parent relationships", () => {
     CANONICAL_TAXONOMY_IDENTITIES.forEach((node) => {
       if (node.parentId) {
-        expect(CANONICAL_TAXONOMY_IDENTITY_BY_ID.has(node.parentId), node.id).toBe(true);
+        expect(
+          CANONICAL_TAXONOMY_IDENTITY_BY_ID.has(node.parentId),
+          node.id,
+        ).toBe(true);
       }
       const visited = new Set([node.id]);
       let parentId = node.parentId;

@@ -89,10 +89,15 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     return result.flags;
   }
   getCandidateWorkspace() {
-    return httpClient.get<CandidateWorkspace>("/employment/candidate/workspace");
+    return httpClient.get<CandidateWorkspace>(
+      "/employment/candidate/workspace",
+    );
   }
   saveCandidateProfile(profile: CandidateProfile) {
-    return httpClient.put<CandidateProfile>("/employment/candidate/profile", profile);
+    return httpClient.put<CandidateProfile>(
+      "/employment/candidate/profile",
+      profile,
+    );
   }
   apply(jobId: string, input: EmploymentApplicationDraft) {
     return httpClient.post<EmploymentApplication>(
@@ -110,7 +115,10 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       `/employment/jobs/${encodeURIComponent(jobId)}/save`,
     );
   }
-  reportJob(jobId: string, input: Pick<EmploymentJobReport, "reason" | "details">) {
+  reportJob(
+    jobId: string,
+    input: Pick<EmploymentJobReport, "reason" | "details">,
+  ) {
     return httpClient.post<EmploymentJobReport>(
       `/employment/jobs/${encodeURIComponent(jobId)}/report`,
       input,
@@ -130,7 +138,9 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     );
   }
   exportCandidateData() {
-    return httpClient.post<CandidateDataExport>("/employment/candidate/data-export");
+    return httpClient.post<CandidateDataExport>(
+      "/employment/candidate/data-export",
+    );
   }
   requestCandidateDeletion() {
     return httpClient.post<EmploymentDataSubjectRequest>(
@@ -175,7 +185,10 @@ export class HttpEmploymentService implements EmploymentServiceContract {
   scheduleInterview(
     employerId: string,
     applicationId: string,
-    interview: Omit<EmploymentInterview, "id" | "applicationId" | "createdAt" | "updatedAt">,
+    interview: Omit<
+      EmploymentInterview,
+      "id" | "applicationId" | "createdAt" | "updatedAt"
+    >,
   ) {
     return httpClient.post<EmploymentInterview>(
       `/employment/employers/${encodeURIComponent(employerId)}/applications/${encodeURIComponent(applicationId)}/interviews`,
@@ -217,9 +230,12 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     return httpClient.post<VerticalCheckout>("/employment/checkouts", input);
   }
   getAdminOverview(marketCode: string) {
-    return httpClient.get<EmploymentAdminOverview>("/employment/admin/overview", {
-      params: { market: marketCode },
-    });
+    return httpClient.get<EmploymentAdminOverview>(
+      "/employment/admin/overview",
+      {
+        params: { market: marketCode },
+      },
+    );
   }
   updateMarketConfig(
     marketCode: string,
@@ -230,7 +246,10 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       patch,
     );
   }
-  updateOffer(offerId: string, patch: Partial<EmploymentCatalog["offers"][number]>) {
+  updateOffer(
+    offerId: string,
+    patch: Partial<EmploymentCatalog["offers"][number]>,
+  ) {
     return httpClient.request<EmploymentCatalog["offers"][number]>(
       `/employment/admin/offers/${encodeURIComponent(offerId)}`,
       { method: "PATCH", body: JSON.stringify(patch) },

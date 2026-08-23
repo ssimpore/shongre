@@ -45,16 +45,10 @@ export type AttributeDataType =
  * computed/system field is never rendered as an input.
  */
 export type TaxonomyAttributeFieldRole =
-  | "required"
-  | "recommended"
-  | "optional"
-  | "computed"
-  | "system";
+  "required" | "recommended" | "optional" | "computed" | "system";
 
 export type TaxonomyAttributeVisibility =
-  | "public"
-  | "seller_only"
-  | "moderator_only";
+  "public" | "seller_only" | "moderator_only";
 
 export interface AttributeOption {
   value: string;

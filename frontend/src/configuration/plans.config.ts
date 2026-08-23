@@ -39,8 +39,12 @@ const entitlement = (
 export const PRO_PLANS: ProPlan[] = BASELINE_MONETIZATION_CATALOG.products
   .filter((product) => product.id in LEGACY_PLAN_IDS)
   .map((product) => {
-    const monthly = product.prices.find((price) => price.billingPeriod === "month") || product.prices[0];
-    const annual = product.prices.find((price) => price.billingPeriod === "year");
+    const monthly =
+      product.prices.find((price) => price.billingPeriod === "month") ||
+      product.prices[0];
+    const annual = product.prices.find(
+      (price) => price.billingPeriod === "year",
+    );
     const maxListings = entitlement(product, "maxActiveListings");
     const maxPhotos = entitlement(product, "maxPhotosPerListing");
     const analytics = entitlement(product, "analyticsLevel");
@@ -50,20 +54,26 @@ export const PRO_PLANS: ProPlan[] = BASELINE_MONETIZATION_CATALOG.products
       name: product.name,
       tagline: product.description,
       monthlyPrice: monthly.amount.amountMinor / 100,
-      annualPriceMonthlyEquivalent: annual ? annual.amount.amountMinor / 1200 : 0,
+      annualPriceMonthlyEquivalent: annual
+        ? annual.amount.amountMinor / 1200
+        : 0,
       maxActiveListings: typeof maxListings === "number" ? maxListings : 0,
       photosPerListing: typeof maxPhotos === "number" ? maxPhotos : 0,
       storefrontCustomization: Boolean(entitlement(product, "storeEnabled")),
       prioritySupport: Boolean(entitlement(product, "prioritySupport")),
       analyticsLevel:
-        analytics === "standard" || analytics === "advanced" || analytics === "enterprise"
+        analytics === "standard" ||
+        analytics === "advanced" ||
+        analytics === "enterprise"
           ? analytics
           : "basic",
       verifiedBadge: Boolean(entitlement(product, "verifiedBadge")),
       automaticRelisting: Boolean(entitlement(product, "automaticRelisting")),
       bulkImportExport: Boolean(entitlement(product, "bulkPublish")),
       isPopular: product.recommended,
-      features: product.entitlements.map((entry) => `${entry.label} : ${String(entry.value)}`),
+      features: product.entitlements.map(
+        (entry) => `${entry.label} : ${String(entry.value)}`,
+      ),
     };
   });
 

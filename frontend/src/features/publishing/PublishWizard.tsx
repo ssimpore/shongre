@@ -142,7 +142,9 @@ export const PublishWizard: React.FC = () => {
   const [aiPromptKeyword] = useState("");
   const [, setAiGeneratedTips] = useState<string[]>([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
-  const [visibilityOffers, setVisibilityOffers] = useState<ListingBoostOption[]>([]);
+  const [visibilityOffers, setVisibilityOffers] = useState<
+    ListingBoostOption[]
+  >([]);
   const [visibilityOffersState, setVisibilityOffersState] = useState<
     "loading" | "ready" | "error"
   >("loading");
@@ -605,8 +607,10 @@ export const PublishWizard: React.FC = () => {
             /* Derived from the draft, not from `currentStep > p.id`: the index
                comparison claimed a phase was finished simply because the user
                had moved past it. */
-            const isDone = !isCurrent && p.id < currentStep && isPhaseComplete(p.id);
-            const isLocked = p.id > currentStep && firstBlockingPhase(p.id) !== null;
+            const isDone =
+              !isCurrent && p.id < currentStep && isPhaseComplete(p.id);
+            const isLocked =
+              p.id > currentStep && firstBlockingPhase(p.id) !== null;
             return (
               <li key={p.id}>
                 <button
@@ -767,7 +771,9 @@ export const PublishWizard: React.FC = () => {
                     key={n.id}
                     type="button"
                     onClick={() => {
-                      updateDraft({ taxonomyNodeId: resolveSelectableNodeId(n.id) });
+                      updateDraft({
+                        taxonomyNodeId: resolveSelectableNodeId(n.id),
+                      });
                       setCategorySearchQuery("");
                     }}
                     className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
@@ -1003,7 +1009,10 @@ export const PublishWizard: React.FC = () => {
                           value={value}
                           min={attr.validation?.min}
                           max={attr.validation?.max}
-                          step={attr.validation?.step || (attr.dataType === "year" ? 1 : undefined)}
+                          step={
+                            attr.validation?.step ||
+                            (attr.dataType === "year" ? 1 : undefined)
+                          }
                           onChange={(e) =>
                             updateAttribute(
                               attr.code,
@@ -1018,7 +1027,9 @@ export const PublishWizard: React.FC = () => {
 
                   if (attr.dataType === "range") {
                     const rangeValue =
-                      value && typeof value === "object" && !Array.isArray(value)
+                      value &&
+                      typeof value === "object" &&
+                      !Array.isArray(value)
                         ? value
                         : { min: "", max: "" };
                     return (
@@ -1033,7 +1044,9 @@ export const PublishWizard: React.FC = () => {
                             <Input
                               key={bound}
                               type="number"
-                              aria-label={bound === "min" ? "Minimum" : "Maximum"}
+                              aria-label={
+                                bound === "min" ? "Minimum" : "Maximum"
+                              }
                               placeholder={bound === "min" ? "Min" : "Max"}
                               value={rangeValue[bound] ?? ""}
                               min={attr.validation?.min}
@@ -1059,8 +1072,8 @@ export const PublishWizard: React.FC = () => {
                     return (
                       <div key={attr.id} className="flex items-center pt-6">
                         <Checkbox
-                        label={attr.label}
-                        description={attr.helpText}
+                          label={attr.label}
+                          description={attr.helpText}
                           checked={!!value}
                           onChange={(e) =>
                             updateAttribute(attr.code, e.target.checked)
@@ -1091,7 +1104,10 @@ export const PublishWizard: React.FC = () => {
                     );
                   }
 
-                  if (attr.dataType === "date" || attr.dataType === "date_time") {
+                  if (
+                    attr.dataType === "date" ||
+                    attr.dataType === "date_time"
+                  ) {
                     return (
                       <FormField
                         key={attr.id}
@@ -1100,7 +1116,9 @@ export const PublishWizard: React.FC = () => {
                         hint={hint}
                       >
                         <Input
-                          type={attr.dataType === "date" ? "date" : "datetime-local"}
+                          type={
+                            attr.dataType === "date" ? "date" : "datetime-local"
+                          }
                           value={value}
                           onChange={(event) =>
                             updateAttribute(attr.code, event.target.value)
@@ -1333,7 +1351,10 @@ export const PublishWizard: React.FC = () => {
                       pricing: {
                         ...draft.pricing,
                         priceModel,
-                        amount: priceModel === "on_request" || priceModel === "free" ? 0 : draft.pricing.amount,
+                        amount:
+                          priceModel === "on_request" || priceModel === "free"
+                            ? 0
+                            : draft.pricing.amount,
                         isFreeDonation: priceModel === "free",
                         isNegotiable: priceModel === "negotiable",
                       },
@@ -1352,47 +1373,47 @@ export const PublishWizard: React.FC = () => {
 
             {draft.pricing.priceModel !== "free" &&
               draft.pricing.priceModel !== "on_request" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  label={`${PRICE_MODEL_LABELS[draft.pricing.priceModel]} (${schema?.currency.symbol || "€"})`}
-                  required
-                >
-                  <Input
-                    type="number"
-                    placeholder="ex: 150"
-                    value={draft.pricing.amount || ""}
-                    onChange={(e) =>
-                      updateDraft({
-                        pricing: {
-                          ...draft.pricing,
-                          amount: Number(e.target.value),
-                        },
-                      })
-                    }
-                  />
-                </FormField>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    label={`${PRICE_MODEL_LABELS[draft.pricing.priceModel]} (${schema?.currency.symbol || "€"})`}
+                    required
+                  >
+                    <Input
+                      type="number"
+                      placeholder="ex: 150"
+                      value={draft.pricing.amount || ""}
+                      onChange={(e) =>
+                        updateDraft({
+                          pricing: {
+                            ...draft.pricing,
+                            amount: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </FormField>
 
-                {isProductLike && (
-                <div className="flex items-center pt-6">
-                  <Checkbox
-                    label={t("publishing.publishWizard.prixNegociable")}
-                    description={t(
-                      "publishing.publishWizard.permetAuxAcheteursDeFaire",
-                    )}
-                    checked={draft.pricing.isNegotiable}
-                    onChange={(e) =>
-                      updateDraft({
-                        pricing: {
-                          ...draft.pricing,
-                          isNegotiable: e.target.checked,
-                        },
-                      })
-                    }
-                  />
+                  {isProductLike && (
+                    <div className="flex items-center pt-6">
+                      <Checkbox
+                        label={t("publishing.publishWizard.prixNegociable")}
+                        description={t(
+                          "publishing.publishWizard.permetAuxAcheteursDeFaire",
+                        )}
+                        checked={draft.pricing.isNegotiable}
+                        onChange={(e) =>
+                          updateDraft({
+                            pricing: {
+                              ...draft.pricing,
+                              isNegotiable: e.target.checked,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
-                )}
-              </div>
-            )}
+              )}
 
             {/* Pro Inventory section if Pro Seller */}
             {currentUser?.role === "pro_seller" && isProductLike && (
@@ -2084,8 +2105,7 @@ export const PublishWizard: React.FC = () => {
                   description: t("publishing.publishWizard.standardIncludes", {
                     photos:
                       schema?.publication.standardPolicy.mediaAllowance || 12,
-                    days:
-                      schema?.publication.standardPolicy.durationDays || 60,
+                    days: schema?.publication.standardPolicy.durationDays || 60,
                   }),
                 },
                 ...visibilityOffers,

@@ -95,21 +95,21 @@ metadata keys that resemble passwords, tokens, codes or secrets.
 
 ## Routes
 
-| Method | Route | Purpose |
-| --- | --- | --- |
-| POST | `/auth/login`, `/auth/register` | Password session creation |
-| POST | `/auth/refresh`, `/auth/logout`, `/auth/logout-all` | Session lifecycle |
-| GET/DELETE | `/auth/sessions`, `/auth/sessions/:id` | Device list and revocation |
-| POST | `/auth/reauthenticate` | Recent-auth proof |
-| POST | `/auth/password/forgot`, `/auth/password/reset` | One-time password recovery |
-| POST | `/auth/verify-email/resend`, `/auth/verify-email` | One-time email verification |
-| POST | `/auth/oauth/:provider/start` | Create state/nonce/PKCE flow |
-| GET/POST | `/auth/oauth/:provider/callback` | Provider callback (Apple uses `form_post`) |
-| POST | `/auth/oauth/native-exchange` | One-time app handoff |
-| POST | `/auth/oauth/complete-profile` | Supply an email when the provider cannot |
-| GET | `/auth/security` | Connected methods and active sessions |
-| DELETE | `/auth/identities/:provider` | Guarded provider unlink |
-| POST/GET | `/auth/oauth/facebook/data-deletion`, `/auth/oauth/facebook/data-deletion/status` | Signed Meta deletion request and opaque status |
+| Method     | Route                                                                             | Purpose                                        |
+| ---------- | --------------------------------------------------------------------------------- | ---------------------------------------------- |
+| POST       | `/auth/login`, `/auth/register`                                                   | Password session creation                      |
+| POST       | `/auth/refresh`, `/auth/logout`, `/auth/logout-all`                               | Session lifecycle                              |
+| GET/DELETE | `/auth/sessions`, `/auth/sessions/:id`                                            | Device list and revocation                     |
+| POST       | `/auth/reauthenticate`                                                            | Recent-auth proof                              |
+| POST       | `/auth/password/forgot`, `/auth/password/reset`                                   | One-time password recovery                     |
+| POST       | `/auth/verify-email/resend`, `/auth/verify-email`                                 | One-time email verification                    |
+| POST       | `/auth/oauth/:provider/start`                                                     | Create state/nonce/PKCE flow                   |
+| GET/POST   | `/auth/oauth/:provider/callback`                                                  | Provider callback (Apple uses `form_post`)     |
+| POST       | `/auth/oauth/native-exchange`                                                     | One-time app handoff                           |
+| POST       | `/auth/oauth/complete-profile`                                                    | Supply an email when the provider cannot       |
+| GET        | `/auth/security`                                                                  | Connected methods and active sessions          |
+| DELETE     | `/auth/identities/:provider`                                                      | Guarded provider unlink                        |
+| POST/GET   | `/auth/oauth/facebook/data-deletion`, `/auth/oauth/facebook/data-deletion/status` | Signed Meta deletion request and opaque status |
 
 Cookie-authenticated mutations require `X-CSRF-Token`; credential entry points,
 provider callbacks and native bearer requests are exempt for the reasons stated

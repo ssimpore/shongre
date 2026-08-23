@@ -26,11 +26,15 @@ import { httpClient } from "./http-client";
 
 export class HttpCoursesService implements CoursesServiceContract {
   getCatalog(marketCode: string): Promise<CourseCatalog> {
-    return httpClient.get("/courses/catalog", { params: { market: marketCode } });
+    return httpClient.get("/courses/catalog", {
+      params: { market: marketCode },
+    });
   }
 
   getAdminCatalog(marketCode: string): Promise<CourseCatalog> {
-    return httpClient.get("/courses/admin/catalog", { params: { market: marketCode } });
+    return httpClient.get("/courses/admin/catalog", {
+      params: { market: marketCode },
+    });
   }
 
   searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
@@ -38,9 +42,10 @@ export class HttpCoursesService implements CoursesServiceContract {
   }
 
   getTutorProfile(idOrSlug: string) {
-    return httpClient.get<{ tutor: TutorPublicProfile; offers: CoursePublicOffer[] }>(
-      `/courses/tutors/${encodeURIComponent(idOrSlug)}`,
-    );
+    return httpClient.get<{
+      tutor: TutorPublicProfile;
+      offers: CoursePublicOffer[];
+    }>(`/courses/tutors/${encodeURIComponent(idOrSlug)}`);
   }
 
   saveTutorProfile(profile: TutorProfileDraft): Promise<TutorProfile> {
@@ -114,7 +119,9 @@ export class HttpCoursesService implements CoursesServiceContract {
     _accountId: string,
     _tutorProfileId: string,
   ): Promise<boolean> {
-    throw new Error("La sauvegarde des professeurs sera disponible après migration des favoris verticaux.");
+    throw new Error(
+      "La sauvegarde des professeurs sera disponible après migration des favoris verticaux.",
+    );
   }
 
   updateMarketConfig(
@@ -142,7 +149,10 @@ export class HttpCoursesService implements CoursesServiceContract {
     marketCode: string,
     planId: string,
     patch: Partial<
-      Pick<CoursePlan, "isActive" | "monthlyPrice" | "annualPrice" | "entitlements">
+      Pick<
+        CoursePlan,
+        "isActive" | "monthlyPrice" | "annualPrice" | "entitlements"
+      >
     >,
   ): Promise<CoursePlan> {
     return httpClient.request(

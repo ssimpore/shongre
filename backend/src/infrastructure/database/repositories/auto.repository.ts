@@ -683,16 +683,76 @@ export const DEFAULT_AUTO_CATALOG: AutoCatalog = {
       isActive: true,
     },
     ...[
-      ["auto_addon_homepage", "homepage_spotlight", "Spotlight accueil", 2990, true],
-      ["auto_addon_category", "category_spotlight", "Spotlight catégorie", 1990, true],
-      ["auto_addon_qualified_lead", "qualified_lead", "Lead acheteur qualifié", 590, true],
-      ["auto_addon_sponsored_dealer", "sponsored_dealer", "Concession sponsorisée", 4990, true],
-      ["auto_addon_inspection_referral", "inspection_referral", "Demande d’inspection", 0, false],
-      ["auto_addon_warranty_referral", "warranty_referral", "Demande de garantie", 0, false],
-      ["auto_addon_financing_referral", "financing_referral", "Demande de financement", 0, false],
-      ["auto_addon_insurance_referral", "insurance_referral", "Demande d’assurance", 0, false],
-      ["auto_addon_delivery_referral", "delivery_referral", "Demande de livraison", 0, false],
-      ["auto_addon_trade_in_referral", "trade_in_referral", "Demande de reprise", 0, false],
+      [
+        "auto_addon_homepage",
+        "homepage_spotlight",
+        "Spotlight accueil",
+        2990,
+        true,
+      ],
+      [
+        "auto_addon_category",
+        "category_spotlight",
+        "Spotlight catégorie",
+        1990,
+        true,
+      ],
+      [
+        "auto_addon_qualified_lead",
+        "qualified_lead",
+        "Lead acheteur qualifié",
+        590,
+        true,
+      ],
+      [
+        "auto_addon_sponsored_dealer",
+        "sponsored_dealer",
+        "Concession sponsorisée",
+        4990,
+        true,
+      ],
+      [
+        "auto_addon_inspection_referral",
+        "inspection_referral",
+        "Demande d’inspection",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_warranty_referral",
+        "warranty_referral",
+        "Demande de garantie",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_financing_referral",
+        "financing_referral",
+        "Demande de financement",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_insurance_referral",
+        "insurance_referral",
+        "Demande d’assurance",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_delivery_referral",
+        "delivery_referral",
+        "Demande de livraison",
+        0,
+        false,
+      ],
+      [
+        "auto_addon_trade_in_referral",
+        "trade_in_referral",
+        "Demande de reprise",
+        0,
+        false,
+      ],
     ].map(([id, type, name, amountMinor, isActive]) => ({
       id: String(id),
       marketCode: "FR" as const,
@@ -916,12 +976,13 @@ function matches(query: VehicleSearchQuery, vehicle: VehiclePrivate) {
   )
     return false;
   if (query.warrantyOnly && !vehicle.history.warrantyMonths) return false;
-  if (query.financingAvailable && !vehicle.financingAvailable)
-    return false;
+  if (query.financingAvailable && !vehicle.financingAvailable) return false;
   for (const [key, values] of Object.entries(query.dynamicAttributes || {})) {
     if (!values.length) continue;
     const actual = vehicle.dynamicAttributes[key];
-    const actualValues = Array.isArray(actual) ? actual.map(String) : [String(actual)];
+    const actualValues = Array.isArray(actual)
+      ? actual.map(String)
+      : [String(actual)];
     if (!values.some((value) => actualValues.includes(value))) return false;
   }
   if (
@@ -1079,7 +1140,7 @@ export class DemoAutoRepository implements IAutoRepository {
       );
       const sameRegistration = Boolean(
         candidate.registrationHash &&
-          vehicle.registrationHash === candidate.registrationHash,
+        vehicle.registrationHash === candidate.registrationHash,
       );
       if (sameVin) signals.add("duplicate_vin");
       if (sameRegistration) signals.add("duplicate_registration");
@@ -1257,9 +1318,8 @@ export class DemoAutoRepository implements IAutoRepository {
         activeVehicles: vehicles.length,
         remainingVehicleSlots: Math.max(
           0,
-          (this.catalog.plans.find(
-            (plan) => plan.id === "auto_dealer_growth",
-          )?.entitlements.maxActiveVehicles || 0) - vehicles.length,
+          (this.catalog.plans.find((plan) => plan.id === "auto_dealer_growth")
+            ?.entitlements.maxActiveVehicles || 0) - vehicles.length,
         ),
         remainingPromotionCredits: 24,
         medianResponseMinutes: 42,
@@ -1378,10 +1438,8 @@ export class PostgresAutoRepository implements IAutoRepository {
         parsed.featureFlags.insuranceReferralsEnabled,
       inspection_referrals_enabled:
         parsed.featureFlags.inspectionReferralsEnabled,
-      warranty_referrals_enabled:
-        parsed.featureFlags.warrantyReferralsEnabled,
-      delivery_referrals_enabled:
-        parsed.featureFlags.deliveryReferralsEnabled,
+      warranty_referrals_enabled: parsed.featureFlags.warrantyReferralsEnabled,
+      delivery_referrals_enabled: parsed.featureFlags.deliveryReferralsEnabled,
       trade_in_referrals_enabled: parsed.featureFlags.tradeInReferralsEnabled,
       boat_listings_enabled: parsed.featureFlags.boatListingsEnabled,
       config_payload: parsed,

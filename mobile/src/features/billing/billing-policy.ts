@@ -1,10 +1,8 @@
 export type BillingProductClass =
-  | "physical-marketplace-transaction"
-  | "digital-listing-promotion";
+  "physical-marketplace-transaction" | "digital-listing-promotion";
 
 export type BillingChannelDecision =
-  | "external-payment-eligible"
-  | "store-policy-review-required";
+  "external-payment-eligible" | "store-policy-review-required";
 
 /** Pure store-policy decision shared by the native billing runtime and contract tests. */
 export function classifyBillingProduct(

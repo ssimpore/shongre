@@ -1,4 +1,5 @@
 import { SecurityAuditLog } from "../types";
+import { telemetryService } from "../services/telemetry.service";
 
 const AUDIT_STORAGE_KEY = "shongre_security_audit_logs_v1";
 
@@ -89,7 +90,7 @@ class AuditService {
         window.localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(logs));
       }
     } catch (e) {
-      console.warn("Could not save audit logs", e);
+      telemetryService.captureException(e, "audit-storage-write");
     }
   }
 

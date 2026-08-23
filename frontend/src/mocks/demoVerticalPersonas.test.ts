@@ -11,31 +11,36 @@ const cases = [
   ["pro_employment_clara", "employment.recruiter.manage.own"],
 ] as const satisfies ReadonlyArray<readonly [string, Permission]>;
 
-const workspacePermissions: Permission[] = cases.map(([, permission]) => permission);
+const workspacePermissions: Permission[] = cases.map(
+  ([, permission]) => permission,
+);
 
 afterEach(() => {
   storageService.remove("shongre_users_v1");
 });
 
 describe("vertical Pro demo personas", () => {
-  it.each(cases)("scopes %s to its own professional workspace", (key, permission) => {
-    const user = DEMO_USERS[key];
-    expect(user).toMatchObject({
-      accountType: "professional",
-      primaryRole: "pro_seller",
-      status: "active",
-      isVerified: true,
-      isEmailVerified: true,
-      isPhoneVerified: true,
-      activePlanId: "pro_business",
-    });
-    expect(authorizationService.can(user, permission)).toBe(true);
-    workspacePermissions
-      .filter((candidate) => candidate !== permission)
-      .forEach((candidate) => {
-        expect(authorizationService.can(user, candidate)).toBe(false);
+  it.each(cases)(
+    "scopes %s to its own professional workspace",
+    (key, permission) => {
+      const user = DEMO_USERS[key];
+      expect(user).toMatchObject({
+        accountType: "professional",
+        primaryRole: "pro_seller",
+        status: "active",
+        isVerified: true,
+        isEmailVerified: true,
+        isPhoneVerified: true,
+        activePlanId: "pro_business",
       });
-  });
+      expect(authorizationService.can(user, permission)).toBe(true);
+      workspacePermissions
+        .filter((candidate) => candidate !== permission)
+        .forEach((candidate) => {
+          expect(authorizationService.can(user, candidate)).toBe(false);
+        });
+    },
+  );
 
   it("adds new canonical personas to an older persisted demo user store", () => {
     storageService.set("shongre_users_v1", {

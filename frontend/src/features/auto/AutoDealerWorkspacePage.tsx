@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
   ArrowRightLeft,
-  Building2,
   CalendarDays,
   CarFront,
   CheckCircle2,
@@ -182,10 +181,22 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       vehicle.price.currency,
     ]);
     const csv = [
-      ["reference", "marque", "modele", "finition", "annee", "montant_minor", "devise"],
+      [
+        "reference",
+        "marque",
+        "modele",
+        "finition",
+        "annee",
+        "montant_minor",
+        "devise",
+      ],
       ...rows,
     ]
-      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+      .map((row) =>
+        row
+          .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+          .join(","),
+      )
       .join("\n");
     const url = URL.createObjectURL(
       new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }),
@@ -216,7 +227,9 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       </Container>
     );
 
-  const normalizedInventoryQuery = inventoryQuery.trim().toLocaleLowerCase("fr");
+  const normalizedInventoryQuery = inventoryQuery
+    .trim()
+    .toLocaleLowerCase("fr");
   const visibleVehicles = normalizedInventoryQuery
     ? workspace.vehicles.filter((vehicle) =>
         [
@@ -294,59 +307,59 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                 (metric) => metric.vehicleId === vehicle.id,
               );
               return (
-              <tr key={vehicle.id}>
-                <td className="px-4 py-3 font-mono text-micro">
-                  {vehicle.stockReference}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={vehicle.mediaUrls[0]}
-                      alt=""
-                      className="h-10 w-14 rounded-control object-cover"
-                    />
-                    <div>
-                      <p className="font-bold text-text-main">
-                        {vehicle.makeLabel} {vehicle.modelLabel}{" "}
-                        {vehicle.trimLabel}
-                      </p>
-                      <p className="text-micro text-text-muted">
-                        {vehicle.technical.modelYear} ·{" "}
-                        {formatAutoMileage(vehicle)}
-                      </p>
+                <tr key={vehicle.id}>
+                  <td className="px-4 py-3 font-mono text-micro">
+                    {vehicle.stockReference}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={vehicle.mediaUrls[0]}
+                        alt=""
+                        className="h-10 w-14 rounded-control object-cover"
+                      />
+                      <div>
+                        <p className="font-bold text-text-main">
+                          {vehicle.makeLabel} {vehicle.modelLabel}{" "}
+                          {vehicle.trimLabel}
+                        </p>
+                        <p className="text-micro text-text-muted">
+                          {vehicle.technical.modelYear} ·{" "}
+                          {formatAutoMileage(vehicle)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 font-bold">
-                  {formatAutoMoney(vehicle.price)}
-                </td>
-                <td className="px-4 py-3">
-                  {vehicleMetric
-                    ? `${vehicleMetric.views30d} / ${vehicleMetric.leads30d}`
-                    : "— / —"}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge
-                    variant={vehicle.documents.length ? "success" : "warning"}
-                  >
-                    {vehicle.documents.length ? "Complet" : "À compléter"}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant="success">Approuvé</Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <Button
-                    to={routes.auto.vehicle(vehicle.slug)}
-                    variant="ghost"
-                    size="sm"
-                    aria-label={`Voir ${vehicle.title}`}
-                    className="touch-square h-control-sm w-control-sm p-0"
-                  >
-                    <MoreHorizontal className="h-icon-sm w-icon-sm" />
-                  </Button>
-                </td>
-              </tr>
+                  </td>
+                  <td className="px-4 py-3 font-bold">
+                    {formatAutoMoney(vehicle.price)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {vehicleMetric
+                      ? `${vehicleMetric.views30d} / ${vehicleMetric.leads30d}`
+                      : "— / —"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge
+                      variant={vehicle.documents.length ? "success" : "warning"}
+                    >
+                      {vehicle.documents.length ? "Complet" : "À compléter"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant="success">Approuvé</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Button
+                      to={routes.auto.vehicle(vehicle.slug)}
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Voir ${vehicle.title}`}
+                      className="touch-square h-control-sm w-control-sm p-0"
+                    >
+                      <MoreHorizontal className="h-icon-sm w-icon-sm" />
+                    </Button>
+                  </td>
+                </tr>
               );
             })}
           </tbody>
@@ -486,13 +499,13 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                       }
                       className="h-control-compact rounded-control border border-border-base px-2 h-control-touch"
                     >
-                      <option value="new">Nouveau</option>
-                      <option value="qualified">Qualifié</option>
-                      <option value="in_progress">En cours</option>
-                      <option value="appointment">Rendez-vous</option>
-                      <option value="won">Gagné</option>
-                      <option value="lost">Perdu</option>
-                      <option value="spam">Indésirable</option>
+                      {Object.entries(leadStatusLabels).map(
+                        ([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ),
+                      )}
                     </select>
                   </td>
                   <td className="px-4 py-3 text-text-secondary">

@@ -35,7 +35,6 @@ export class TransactionCapabilitiesService {
     const {
       taxonomyNodeId,
       marketCode = "FR",
-      sellerType = "individual",
       sellerIsVerified = true,
       listingIntent = "SELL",
       price = 0,
@@ -72,6 +71,13 @@ export class TransactionCapabilitiesService {
       canDirectPurchase = false;
       directPurchaseDisabledReason =
         "Le paiement en ligne requiert un prix de vente positif.";
+    } else if (stock <= 0) {
+      canDirectPurchase = false;
+      directPurchaseDisabledReason = "Cet article n'est plus disponible.";
+    } else if (!sellerIsVerified) {
+      canDirectPurchase = false;
+      directPurchaseDisabledReason =
+        "Le vendeur doit être vérifié pour proposer le paiement sécurisé.";
     } else if (!effectiveMarket.payments.enabled) {
       canDirectPurchase = false;
       directPurchaseDisabledReason =
@@ -89,7 +95,10 @@ export class TransactionCapabilitiesService {
     let canReserve = false;
     let reservationDisabledReason: string | undefined;
 
-    if (family === "job") {
+    if (stock <= 0) {
+      canReserve = false;
+      reservationDisabledReason = "Cet article n'est plus disponible.";
+    } else if (family === "job") {
       canReserve = false;
       reservationDisabledReason =
         "La réservation n'est pas applicable aux offres d'emploi.";

@@ -20,7 +20,12 @@ describe("employment contracts", () => {
           offer.prices.some((price) => price.amount.amountMinor === 0),
       ),
     ).toBe(true);
-    expect(catalog.offers.every((offer) => offer.id !== "employment.visibility.pack" || !offer.isRecommended)).toBe(true);
+    expect(
+      catalog.offers.every(
+        (offer) =>
+          offer.id !== "employment.visibility.pack" || !offer.isRecommended,
+      ),
+    ).toBe(true);
   });
 
   it("rejects reversed and mixed-currency salary ranges", () => {
@@ -53,7 +58,9 @@ describe("employment contracts", () => {
   });
 
   it("makes candidate fees impossible in the public job contract", () => {
-    const result = jobPostingDetailSchema.safeParse({ candidateFeeRequired: true });
+    const result = jobPostingDetailSchema.safeParse({
+      candidateFeeRequired: true,
+    });
     expect(result.success).toBe(false);
   });
 });

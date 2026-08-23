@@ -1,4 +1,4 @@
-import { AppError } from '../../shared/errors/app-error.js';
+import { AppError } from "../../shared/errors/app-error.js";
 
 export interface StripePaymentIntentParams {
   amount: number; // in EUR cents or full euros
@@ -10,25 +10,33 @@ export class StripeAdapter {
   async createPaymentIntent(params: StripePaymentIntentParams): Promise<{
     id: string;
     clientSecret: string;
-    status: 'succeeded' | 'requires_action' | 'pending' | 'failed';
+    status: "succeeded" | "requires_action" | "pending" | "failed";
     amount: number;
     currency: string;
   }> {
     void params;
     throw new AppError({
-      code: 'CONFLICT',
-      message: 'Les PaymentIntents libres sont désactivés. Utilisez un devis immuable et Checkout.',
+      code: "CONFLICT",
+      message:
+        "Les PaymentIntents libres sont désactivés. Utilisez un devis immuable et Checkout.",
     });
   }
 
-  async createPayout(sellerId: string, amount: number, iban: string): Promise<{
+  async createPayout(
+    sellerId: string,
+    amount: number,
+    iban: string,
+  ): Promise<{
     payoutId: string;
-    status: 'completed' | 'processing';
+    status: "completed" | "processing";
   }> {
-    void sellerId; void amount; void iban;
+    void sellerId;
+    void amount;
+    void iban;
     throw new AppError({
-      code: 'CONFLICT',
-      message: 'Le compte Stripe Connect du vendeur doit être validé avant un virement.',
+      code: "CONFLICT",
+      message:
+        "Le compte Stripe Connect du vendeur doit être validé avant un virement.",
     });
   }
 }

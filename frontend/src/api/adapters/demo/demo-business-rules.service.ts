@@ -38,7 +38,10 @@ const versions: CommercialConfigurationVersion[] = [
   },
 ];
 const catalogs = new Map<string, MonetizationCatalog>([
-  [BASELINE_MONETIZATION_CATALOG.configurationVersionId, structuredClone(BASELINE_MONETIZATION_CATALOG)],
+  [
+    BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+    structuredClone(BASELINE_MONETIZATION_CATALOG),
+  ],
 ]);
 const auditEvents: CommercialAuditEvent[] = [];
 const quotes = new Map<string, MonetizationQuote>();
@@ -47,7 +50,11 @@ const activeEntitlements: ActiveEntitlement[] = [];
 const subscriptions: MonetizationSubscription[] = [];
 
 function dimension(values: string[], actual?: string) {
-  return values.length === 0 || values.includes("all") || Boolean(actual && values.includes(actual));
+  return (
+    values.length === 0 ||
+    values.includes("all") ||
+    Boolean(actual && values.includes(actual))
+  );
 }
 
 function digest(value: string) {
@@ -62,11 +69,17 @@ function digest(value: string) {
 export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async getCatalog(marketCode = "FR") {
     await simulateNetworkDelay();
-    const version = versions.find((entry) => entry.marketCode === marketCode && entry.status === "active");
-    return structuredClone(catalogs.get(version?.id || "") || BASELINE_MONETIZATION_CATALOG);
+    const version = versions.find(
+      (entry) => entry.marketCode === marketCode && entry.status === "active",
+    );
+    return structuredClone(
+      catalogs.get(version?.id || "") || BASELINE_MONETIZATION_CATALOG,
+    );
   }
 
-  async evaluate(context: RuleEvaluationContext): Promise<RuleEvaluationResult> {
+  async evaluate(
+    context: RuleEvaluationContext,
+  ): Promise<RuleEvaluationResult> {
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(context.marketCode);
     const ordered = [...catalog.rules].sort((a, b) => b.priority - a.priority);
@@ -92,21 +105,34 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         ruleName: rule.name,
         matched,
         priority: rule.priority,
-        specificity: Object.values(rule.scope).filter((value) => value.length).length * 100,
+        specificity:
+          Object.values(rule.scope).filter((value) => value.length).length *
+          100,
         outcome: matched ? rule.outcome : undefined,
         reasonCode: matched ? "MATCHED" : "SCOPE_NOT_MATCHED",
       };
     });
-    const quotaLimit = typeof outcomes.quotaLimit === "number" ? outcomes.quotaLimit : undefined;
-    const quotaRemaining = quotaLimit === undefined ? undefined : Math.max(0, quotaLimit - context.usageLevel);
-    const eligible = outcomes.eligible !== false && (quotaRemaining === undefined || quotaRemaining > 0);
+    const quotaLimit =
+      typeof outcomes.quotaLimit === "number" ? outcomes.quotaLimit : undefined;
+    const quotaRemaining =
+      quotaLimit === undefined
+        ? undefined
+        : Math.max(0, quotaLimit - context.usageLevel);
+    const eligible =
+      outcomes.eligible !== false &&
+      (quotaRemaining === undefined || quotaRemaining > 0);
     return {
       configurationVersionId: catalog.configurationVersionId,
       eligible,
-      reasonCode: eligible ? String(outcomes.reasonCode || "ELIGIBLE") : "QUOTA_EXHAUSTED",
+      reasonCode: eligible
+        ? String(outcomes.reasonCode || "ELIGIBLE")
+        : "QUOTA_EXHAUSTED",
       quotaLimit,
       quotaRemaining,
-      durationDays: typeof outcomes.durationDays === "number" ? outcomes.durationDays : undefined,
+      durationDays:
+        typeof outcomes.durationDays === "number"
+          ? outcomes.durationDays
+          : undefined,
       outcomes,
       explanation,
     };
@@ -131,13 +157,17 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       throw new Error(promotionValidation.reasonCode);
     }
     const promotion = promotionValidation?.promotionId
-      ? catalog.promotions.find((entry) => entry.id === promotionValidation.promotionId)
+      ? catalog.promotions.find(
+          (entry) => entry.id === promotionValidation.promotionId,
+        )
       : undefined;
     const lines = request.productIds.map((id) => {
       const product = catalog.products.find((entry) => entry.id === id);
       if (!product) throw new Error("Produit indisponible");
-      const price = product.prices.find((candidate) =>
-        !request.priceIds?.[product.id] || candidate.id === request.priceIds[product.id],
+      const price = product.prices.find(
+        (candidate) =>
+          !request.priceIds?.[product.id] ||
+          candidate.id === request.priceIds[product.id],
       );
       if (!price) throw new Error("Prix indisponible");
       const discountMinor = !promotion?.productIds.includes(product.id)
@@ -146,10 +176,14 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           ? Math.min(price.amount.amountMinor, promotion.discountValue)
           : Math.min(
               price.amount.amountMinor,
-              Math.round((price.amount.amountMinor * promotion.discountValue) / 10_000),
+              Math.round(
+                (price.amount.amountMinor * promotion.discountValue) / 10_000,
+              ),
             );
       const taxableMinor = price.amount.amountMinor - discountMinor;
-      const taxMinor = price.priceIncludesTax ? 0 : Math.round((taxableMinor * price.taxRateBps) / 10_000);
+      const taxMinor = price.priceIncludesTax
+        ? 0
+        : Math.round((taxableMinor * price.taxRateBps) / 10_000);
       return {
         productId: product.id,
         productVersionId: product.versionId,
@@ -212,11 +246,15 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     orders.set(idempotencyKey, order);
     const catalog = catalogs.get(quote.configurationVersionId);
     quote.lines.forEach((line) => {
-      const product = catalog?.products.find((entry) => entry.id === line.productId);
+      const product = catalog?.products.find(
+        (entry) => entry.id === line.productId,
+      );
       const price = product?.prices.find((entry) => entry.id === line.priceId);
       const periodEnd = new Date(now);
-      if (line.billingPeriod === "year") periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 1);
-      else if (line.billingPeriod === "month") periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
+      if (line.billingPeriod === "year")
+        periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 1);
+      else if (line.billingPeriod === "month")
+        periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
       const endsAt = price?.durationDays
         ? new Date(Date.now() + price.durationDays * 86_400_000).toISOString()
         : line.billingPeriod === "once"
@@ -262,12 +300,17 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async validatePromotion(request: PromotionValidationRequest) {
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(request.marketCode);
-    const promotion = catalog.promotions.find((entry) => entry.code === request.code.toUpperCase());
+    const promotion = catalog.promotions.find(
+      (entry) => entry.code === request.code.toUpperCase(),
+    );
     const applicableProductIds = promotion
       ? request.productIds.filter((id) => promotion.productIds.includes(id))
       : [];
-    const active = promotion && promotion.status === "active" &&
-      new Date(promotion.startsAt) <= new Date() && new Date(promotion.endsAt) > new Date();
+    const active =
+      promotion &&
+      promotion.status === "active" &&
+      new Date(promotion.startsAt) <= new Date() &&
+      new Date(promotion.endsAt) > new Date();
     const valid = Boolean(active && applicableProductIds.length > 0);
     return {
       valid,
@@ -291,7 +334,9 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async getActiveEntitlements() {
     await simulateNetworkDelay();
-    return structuredClone(activeEntitlements.filter((entry) => entry.status === "active"));
+    return structuredClone(
+      activeEntitlements.filter((entry) => entry.status === "active"),
+    );
   }
 
   async getSubscriptions() {
@@ -299,9 +344,13 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(subscriptions);
   }
 
-  async updateSubscriptionCancellation(request: SubscriptionCancellationRequest) {
+  async updateSubscriptionCancellation(
+    request: SubscriptionCancellationRequest,
+  ) {
     await simulateNetworkDelay();
-    const subscription = subscriptions.find((entry) => entry.id === request.subscriptionId);
+    const subscription = subscriptions.find(
+      (entry) => entry.id === request.subscriptionId,
+    );
     if (!subscription) throw new Error("Abonnement introuvable");
     subscription.cancelAtPeriodEnd = request.cancelAtPeriodEnd;
     subscription.updatedAt = new Date().toISOString();
@@ -311,15 +360,25 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async getAdminOverview(marketCode = "FR") {
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(marketCode);
-    const marketVersions = versions.filter((version) => version.marketCode === marketCode);
+    const marketVersions = versions.filter(
+      (version) => version.marketCode === marketCode,
+    );
     return {
-      publishedVersion: marketVersions.find((version) => version.status === "active")!,
+      publishedVersion: marketVersions.find(
+        (version) => version.status === "active",
+      )!,
       versions: structuredClone(marketVersions),
       catalog,
-      scheduledChanges: marketVersions.filter((version) => version.status === "scheduled").length,
-      conflictCount: marketVersions.flatMap((version) => version.conflicts).filter((entry) => entry.severity === "blocking").length,
+      scheduledChanges: marketVersions.filter(
+        (version) => version.status === "scheduled",
+      ).length,
+      conflictCount: marketVersions
+        .flatMap((version) => version.conflicts)
+        .filter((entry) => entry.severity === "blocking").length,
       quoteCountToday: quotes.size / 2,
-      activeSubscriptionCount: subscriptions.filter((entry) => ["active", "trialing", "past_due"].includes(entry.status)).length,
+      activeSubscriptionCount: subscriptions.filter((entry) =>
+        ["active", "trialing", "past_due"].includes(entry.status),
+      ).length,
       orders: [...orders.values()].map((order) => structuredClone(order)),
       entitlements: structuredClone(activeEntitlements),
       auditEvents: structuredClone(auditEvents),
@@ -329,7 +388,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async createDraft(patch: CommercialDraftPatch) {
     await simulateNetworkDelay();
     const current = await this.getCatalog("FR");
-    const number = Math.max(...versions.map((version) => version.versionNumber)) + 1;
+    const number =
+      Math.max(...versions.map((version) => version.versionNumber)) + 1;
     const id = `commercial-fr-v${number}`;
     const now = new Date().toISOString();
     const catalog: MonetizationCatalog = {
@@ -337,18 +397,29 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       configurationVersionId: id,
       versionNumber: number,
       generatedAt: now,
-      products: structuredClone(patch.products || current.products).map((product) => ({
-        ...product,
-        versionId: `${id}:${product.id}`,
-        prices: product.prices.map((price) => ({ ...price, id: `${id}:${product.id}:${price.billingPeriod}` })),
-        status: product.status === "disabled" ? "disabled" : "draft",
+      products: structuredClone(patch.products || current.products).map(
+        (product) => ({
+          ...product,
+          versionId: `${id}:${product.id}`,
+          prices: product.prices.map((price) => ({
+            ...price,
+            id: `${id}:${product.id}:${price.billingPeriod}`,
+          })),
+          status: product.status === "disabled" ? "disabled" : "draft",
+        }),
+      ),
+      rules: structuredClone(patch.rules || current.rules).map((rule) => ({
+        ...rule,
+        versionId: id,
+        status: "draft",
       })),
-      rules: structuredClone(patch.rules || current.rules).map((rule) => ({ ...rule, versionId: id, status: "draft" })),
-      promotions: structuredClone(patch.promotions || current.promotions).map((promotion) => ({
-        ...promotion,
-        id: `${id}:${promotion.code.toLowerCase()}`,
-        status: promotion.status === "disabled" ? "disabled" : "draft",
-      })),
+      promotions: structuredClone(patch.promotions || current.promotions).map(
+        (promotion) => ({
+          ...promotion,
+          id: `${id}:${promotion.code.toLowerCase()}`,
+          status: promotion.status === "disabled" ? "disabled" : "draft",
+        }),
+      ),
     };
     const version: CommercialConfigurationVersion = {
       id,
@@ -380,18 +451,30 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(version);
   }
 
-  async transitionVersion(versionId: string, action: "submit" | "approve" | "publish" | "rollback", reason: string) {
+  async transitionVersion(
+    versionId: string,
+    action: "submit" | "approve" | "publish" | "rollback",
+    reason: string,
+  ) {
     await simulateNetworkDelay();
     const version = versions.find((entry) => entry.id === versionId);
     if (!version) throw new Error("Version introuvable");
-    if (action === "submit" && version.status === "draft") version.status = "pending_approval";
+    if (action === "submit" && version.status === "draft")
+      version.status = "pending_approval";
     else if (action === "approve" && version.status === "pending_approval") {
       version.status = "approved";
       version.approvedBy = "finance-demo";
     } else if (action === "publish" && version.status === "approved") {
-      const scheduled = Boolean(version.effectiveFrom && version.effectiveFrom > new Date().toISOString());
+      const scheduled = Boolean(
+        version.effectiveFrom &&
+        version.effectiveFrom > new Date().toISOString(),
+      );
       if (!scheduled) {
-        versions.filter((entry) => entry.status === "active").forEach((entry) => { entry.status = "archived"; });
+        versions
+          .filter((entry) => entry.status === "active")
+          .forEach((entry) => {
+            entry.status = "archived";
+          });
       }
       version.status = scheduled ? "scheduled" : "active";
       version.publishedAt = scheduled ? undefined : new Date().toISOString();
@@ -416,8 +499,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         rules: source.rules,
         promotions: source.promotions,
       });
-    }
-    else throw new Error("Transition invalide");
+    } else throw new Error("Transition invalide");
     version.reason = reason;
     return structuredClone(version);
   }

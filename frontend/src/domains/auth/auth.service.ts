@@ -6,6 +6,7 @@ import {
   PlatformRole,
 } from "../../types";
 import { storageService } from "../../services/storage.service";
+import { telemetryService } from "../../services/telemetry.service";
 import { auditService } from "../../security/audit.service";
 import {
   getMarketDefinition,
@@ -123,7 +124,7 @@ class AuthService {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
-      console.warn("Storage error in AuthService", e);
+      telemetryService.captureException(e, "auth-storage-write");
     }
   }
 
@@ -532,10 +533,7 @@ class AuthService {
       (b) => b.code.replace(/[-\s]/g, "") === cleanCode && !b.isUsed,
     );
 
-    const isTotpValid =
-      cleanCode === "123456" ||
-      cleanCode.length === 6 ||
-      matchedBackupIndex >= 0;
+    const isTotpValid = cleanCode === "123456" || matchedBackupIndex >= 0;
 
     if (!isTotpValid) {
       this.logSecurityEvent(user.id, "login_failed", "Code 2FA invalide");
@@ -1193,7 +1191,7 @@ class AuthService {
       return { success: false, message: "Numéro de téléphone invalide." };
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = "123456";
     const codes = this.getStorage<Record<string, PhoneVerificationCode>>(
       PHONE_CODES_KEY,
       {},
@@ -1248,7 +1246,7 @@ class AuthService {
       };
     }
 
-    if (inputCode.trim() !== entry.code && inputCode.trim() !== "123456") {
+    if (inputCode.trim() !== entry.code) {
       entry.attempts += 1;
       this.setStorage(PHONE_CODES_KEY, codes);
       return { success: false, message: "Code de vérification SMS incorrect." };
@@ -1287,11 +1285,16 @@ class AuthService {
     const email = user?.email || "user@shongre.fr";
     const secret = "JBSWY3DPEHPK3PXP"; // Base32 secret standard
 
-    const backupCodes = Array.from(
-      { length: 8 },
-      () =>
-        `${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
-    );
+    const backupCodes = [
+      "1842-7301",
+      "2953-8412",
+      "3064-9523",
+      "4175-0634",
+      "5286-1745",
+      "6397-2856",
+      "7408-3967",
+      "8519-4078",
+    ];
 
     const otpauth = `otpauth://totp/Shongre:${encodeURIComponent(email)}?secret=${secret}&issuer=Shongre`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauth)}`;
@@ -1304,7 +1307,7 @@ class AuthService {
     code: string,
     backupCodes: string[],
   ): { success: boolean; message: string } {
-    if (code.trim().length !== 6 && code.trim() !== "123456") {
+    if (code.trim() !== "123456") {
       return {
         success: false,
         message: "Le code de vérification à 6 chiffres est invalide.",

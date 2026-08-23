@@ -90,7 +90,7 @@ describe("TransactionService - Escrow & Fee Calculations", () => {
 
   it("generates a 6-digit confirmation PIN code", () => {
     const pin = transactionService.generateVerificationPin();
-    expect(pin).toMatch(/^\d{6}$/);
+    expect(pin).toBe("482731");
     const num = parseInt(pin, 10);
     expect(num).toBeGreaterThanOrEqual(100000);
     expect(num).toBeLessThanOrEqual(999999);

@@ -1,5 +1,5 @@
-import { logger } from '../../infrastructure/logging/logger.js';
-import { getSupabaseAdminClient } from '../../infrastructure/supabase/supabase-client.js';
+import { logger } from "../../infrastructure/logging/logger.js";
+import { getSupabaseAdminClient } from "../../infrastructure/supabase/supabase-client.js";
 
 export class LifecycleWorker {
   async runExpiredListingsCleanup(): Promise<number> {
@@ -8,11 +8,11 @@ export class LifecycleWorker {
       const now = new Date().toISOString();
 
       const { data } = await supabase
-        .from('listings')
-        .update({ status: 'archived', updated_at: now })
-        .eq('status', 'published')
-        .lt('expires_at', now)
-        .select('id');
+        .from("listings")
+        .update({ status: "archived", updated_at: now })
+        .eq("status", "published")
+        .lt("expires_at", now)
+        .select("id");
 
       const count = data?.length || 0;
       if (count > 0) {
@@ -31,16 +31,16 @@ export class LifecycleWorker {
       const now = new Date().toISOString();
 
       await supabase
-        .from('listings')
+        .from("listings")
         .update({ is_urgent: false })
-        .eq('is_urgent', true)
-        .lt('urgent_expires_at', now);
+        .eq("is_urgent", true)
+        .lt("urgent_expires_at", now);
 
       await supabase
-        .from('listings')
+        .from("listings")
         .update({ is_featured: false })
-        .eq('is_featured', true)
-        .lt('featured_expires_at', now);
+        .eq("is_featured", true)
+        .lt("featured_expires_at", now);
     } catch (err: any) {
       logger.error(`Boosts expiration error: ${err.message}`);
     }

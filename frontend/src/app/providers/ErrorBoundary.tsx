@@ -2,6 +2,7 @@ import React, { ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Button } from "../../design-system/primitives/Button";
+import { telemetryService } from "../../services/telemetry.service";
 
 interface Props {
   children: ReactNode;
@@ -9,7 +10,6 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
 }
 
 /**
@@ -21,10 +21,9 @@ interface State {
  * that, and it keeps the fallback translatable like every other surface.
  */
 const ErrorFallback: React.FC<{
-  message?: string;
   onReload: () => void;
   onReset: () => void;
-}> = ({ message, onReload, onReset }) => {
+}> = ({ onReload, onReset }) => {
   const { t } = useTranslation();
 
   return (
@@ -45,12 +44,6 @@ const ErrorFallback: React.FC<{
             {t("shell.errorBoundary.applicationARencontreUnProbleme")}
           </p>
         </div>
-
-        {message && (
-          <div className="p-3 bg-bg-subtle rounded-control border border-border-base text-left text-xs font-mono text-text-secondary max-h-24 overflow-y-auto">
-            {message}
-          </div>
-        )}
 
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <Button
@@ -90,20 +83,22 @@ export class ErrorBoundary extends React.Component<Props, State> {
     super(props);
     this.state = {
       hasError: false,
-      error: null,
     };
   }
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  public static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
 
   public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error in React tree:", error, errorInfo);
+    telemetryService.captureException(
+      { error, errorInfo },
+      "react-error-boundary",
+    );
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false });
     window.location.href = "/";
   };
 
@@ -115,7 +110,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <ErrorFallback
-          message={this.state.error?.message}
           onReload={this.handleReload}
           onReset={this.handleReset}
         />

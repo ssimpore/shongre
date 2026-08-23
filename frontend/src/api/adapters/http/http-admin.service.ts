@@ -8,6 +8,10 @@ import type {
   TrendingAdminConfig,
   TrendingTopicOverride,
 } from "../../../domains/trending/trending.types";
+import type {
+  DiscoveryConfiguration,
+  DiscoveryMetrics,
+} from "@shongre/contracts/discovery";
 
 export class HttpAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -98,6 +102,29 @@ export class HttpAdminService implements AdminServiceContract {
     return httpClient.put<TrendingAdminConfig>(
       `/admin/trending/overrides/${encodeURIComponent(override.topicKey)}`,
       override,
+    );
+  }
+
+  async getDiscoveryConfiguration(marketCode = "FR") {
+    return httpClient.get<DiscoveryConfiguration>(
+      `/admin/discovery/configuration?marketCode=${encodeURIComponent(marketCode)}`,
+    );
+  }
+
+  async getDiscoveryMetrics(marketCode = "FR") {
+    return httpClient.get<DiscoveryMetrics>(
+      `/admin/discovery/metrics?marketCode=${encodeURIComponent(marketCode)}`,
+    );
+  }
+
+  async saveDiscoveryConfiguration(
+    configuration: DiscoveryConfiguration,
+    changeReason: string,
+    activate: boolean,
+  ) {
+    return httpClient.post<DiscoveryConfiguration>(
+      `/admin/discovery/configuration/${activate ? "publish" : "drafts"}`,
+      { configuration, changeReason },
     );
   }
 }

@@ -281,6 +281,8 @@ export const EmploymentJobDetailPage: React.FC = () => {
               <dl className="mt-6 grid gap-3 rounded-card bg-bg-subtle p-4 sm:grid-cols-2 xl:grid-cols-4">
                 {[
                   [MapPin, "Localisation", job.primaryLocation.label],
+                  [BriefcaseBusiness, "Métier", job.professionLabel],
+                  [Building2, "Secteur", job.industryLabel],
                   [Radio, "Organisation", job.workingArrangementLabel],
                   [BriefcaseBusiness, "Contrat", job.contractTypeLabel],
                   [

@@ -41,4 +41,30 @@ describe("TransactionCapabilitiesService", () => {
     expect(giveCaps.canDirectPurchase).toBe(false);
     expect(giveCaps.canReserve).toBe(false);
   });
+
+  it("requires a verified seller for secure direct purchase", () => {
+    const caps = transactionCapabilitiesService.resolve({
+      taxonomyNodeId: "electronics.smartphones",
+      marketCode: "FR",
+      sellerIsVerified: false,
+      price: 350,
+    });
+
+    expect(caps.canDirectPurchase).toBe(false);
+    expect(caps.directPurchaseDisabledReason).toContain("vérifié");
+    expect(caps.canReserve).toBe(true);
+  });
+
+  it("disables purchase and reservation when stock is exhausted", () => {
+    const caps = transactionCapabilitiesService.resolve({
+      taxonomyNodeId: "electronics.smartphones",
+      marketCode: "FR",
+      price: 350,
+      stock: 0,
+    });
+
+    expect(caps.canDirectPurchase).toBe(false);
+    expect(caps.canReserve).toBe(false);
+    expect(caps.defaultModes).toEqual(["CONTACT_ONLY"]);
+  });
 });

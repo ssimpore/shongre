@@ -3,7 +3,9 @@ import { resolveSafeReturn } from "./safe-return";
 
 describe("resolveSafeReturn", () => {
   it("preserves an internal route with query and hash", () => {
-    expect(resolveSafeReturn("/annonce/42?offer=1#message")).toBe("/annonce/42?offer=1#message");
+    expect(resolveSafeReturn("/annonce/42?offer=1#message")).toBe(
+      "/annonce/42?offer=1#message",
+    );
   });
 
   it.each([

@@ -1,6 +1,6 @@
-import { logger } from '../../infrastructure/logging/logger.js';
-import { marketsService } from '../../modules/markets/markets.service.js';
-import { trendingService } from '../../modules/trending/trending.service.js';
+import { logger } from "../../infrastructure/logging/logger.js";
+import { marketsService } from "../../modules/markets/markets.service.js";
+import { trendingService } from "../../modules/trending/trending.service.js";
 
 /**
  * Scheduled refresh entrypoint for the homepage cache.
@@ -17,8 +17,15 @@ export class TrendingWorker {
     const windowStart = new Date(windowEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     for (const market of markets.filter((item) => item.isActive !== false)) {
-      await trendingService.refreshActivityWindow(market.code, windowStart.toISOString(), windowEnd.toISOString());
-      const response = await trendingService.refreshSection({ marketCode: market.code, limit: 12 });
+      await trendingService.refreshActivityWindow(
+        market.code,
+        windowStart.toISOString(),
+        windowEnd.toISOString(),
+      );
+      const response = await trendingService.refreshSection({
+        marketCode: market.code,
+        limit: 12,
+      });
       if (response.topics.length > 0) refreshed += 1;
     }
 

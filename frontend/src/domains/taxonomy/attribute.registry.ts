@@ -1009,7 +1009,10 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     dataType: "long_text",
     fieldRole: "recommended",
     publicationGroup: "legal",
-    validation: { maxLength: 1000, placeholder: "Décrivez les défauts visibles ou connus." },
+    validation: {
+      maxLength: 1000,
+      placeholder: "Décrivez les défauts visibles ou connus.",
+    },
     displayOrder: 90,
   },
   "product.included_accessories": {
@@ -1149,7 +1152,13 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     filterable: true,
     publicationGroup: "performance",
     displayOrder: 29,
-    dependencies: [{ attributeId: "vehicle.fuel", operator: "in", value: ["electric", "hybrid"] }],
+    dependencies: [
+      {
+        attributeId: "vehicle.fuel",
+        operator: "in",
+        value: ["electric", "hybrid"],
+      },
+    ],
     options: [
       { value: "type_2", label: "Type 2" },
       { value: "ccs", label: "CCS" },
@@ -1169,7 +1178,13 @@ const DOMAIN_ATTRIBUTE_EXTENSIONS: Record<string, TaxonomyAttribute> = {
     publicationGroup: "general",
     displayOrder: 15,
     validation: { min: 0, max: 1000000, step: 1 },
-    dependencies: [{ attributeId: "real_estate.property_type", operator: "in", value: ["apartment", "house", "studio", "room", "commercial"] }],
+    dependencies: [
+      {
+        attributeId: "real_estate.property_type",
+        operator: "in",
+        value: ["apartment", "house", "studio", "room", "commercial"],
+      },
+    ],
   },
   "real_estate.charges_amount": {
     id: "real_estate.charges_amount",

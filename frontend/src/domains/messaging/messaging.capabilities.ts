@@ -49,6 +49,23 @@ export class MessagingCapabilitiesService {
       };
     }
 
+    // A conversation must always have a distinct, explicit counterpart.
+    if (!counterpartId || counterpartId === viewer.id) {
+      return {
+        canRead: false,
+        canSend: false,
+        canAttach: false,
+        canMakeOffer: false,
+        canSchedulePickup: false,
+        canBlock: false,
+        canUnblock: false,
+        canReport: false,
+        isBlockedByViewer: false,
+        isBlockedByCounterpart: false,
+        disabledReason: "Cette conversation n'est pas disponible.",
+      };
+    }
+
     // 2. Suspended user
     if (isViewerSuspended || viewer.status === "suspended") {
       return {
@@ -117,6 +134,24 @@ export class MessagingCapabilitiesService {
         isBlockedByCounterpart: false,
         disabledReason:
           "Cette conversation est archivée. Vous pouvez consulter l'historique en lecture seule.",
+      };
+    }
+
+    // Historical messaging remains available after a listing leaves the
+    // marketplace, but listing-dependent actions must not create new intent.
+    if (!isListingAvailable) {
+      return {
+        canRead: true,
+        canSend: true,
+        canAttach: true,
+        canMakeOffer: false,
+        canSchedulePickup: false,
+        canBlock: true,
+        canUnblock: false,
+        canReport: true,
+        isBlockedByViewer: false,
+        isBlockedByCounterpart: false,
+        disabledReason: undefined,
       };
     }
 

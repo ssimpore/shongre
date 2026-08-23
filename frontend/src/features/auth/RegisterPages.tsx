@@ -570,101 +570,101 @@ export const RegisterProPage: React.FC = () => {
 
           {step === 1 ? (
             <>
-            <form onSubmit={handleNextStep} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="reg-pro-name"
-                  className="block text-xs font-bold text-stone-800 mb-1.5"
-                >
-                  {t("auth.registerPages.nomEtPrenomDuResponsable")}
-                  <span className="text-primary">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="reg-pro-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="ex: Sophie Marchand"
+              <form onSubmit={handleNextStep} className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="reg-pro-name"
+                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                  >
+                    {t("auth.registerPages.nomEtPrenomDuResponsable")}
+                    <span className="text-primary">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="reg-pro-name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="ex: Sophie Marchand"
+                      required
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    />
+                    <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="reg-email-professionnel"
+                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                  >
+                    Email professionnel <span className="text-primary">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="reg-email-professionnel"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="contact@boutiquedeco.fr"
+                      required
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    />
+                    <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="reg-telephonecommercial"
+                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                  >
+                    {t("auth.registerPages.telephoneCommercial")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="reg-telephonecommercial"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="01 42 68 90 12"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    />
+                    <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  </div>
+                </div>
+
+                <div>
+                  <PasswordField
+                    id="pro-reg-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    showStrength
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    autoComplete="new-password"
                   />
-                  <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
-              </div>
 
-              <div>
-                <label
-                  htmlFor="reg-email-professionnel"
-                  className="block text-xs font-bold text-stone-800 mb-1.5"
-                >
-                  Email professionnel <span className="text-primary">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="reg-email-professionnel"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="contact@boutiquedeco.fr"
-                    required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
-                  />
-                  <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    className="w-full"
+                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                  >
+                    {t(
+                      "auth.registerPages.continuerVersLesInformationsEntreprise",
+                    )}
+                  </Button>
                 </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reg-telephonecommercial"
-                  className="block text-xs font-bold text-stone-800 mb-1.5"
-                >
-                  {t("auth.registerPages.telephoneCommercial")}
-                </label>
-                <div className="relative">
-                  <input
-                    id="reg-telephonecommercial"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="01 42 68 90 12"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
-                  />
-                  <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div>
-                <PasswordField
-                  id="pro-reg-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  showStrength
-                  required
-                  autoComplete="new-password"
+              </form>
+              <div className="mt-6">
+                <SocialLoginButtons
+                  accountType="professional"
+                  returnTo={returnTo}
                 />
               </div>
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
-                >
-                  {t(
-                    "auth.registerPages.continuerVersLesInformationsEntreprise",
-                  )}
-                </Button>
-              </div>
-            </form>
-            <div className="mt-6">
-              <SocialLoginButtons
-                accountType="professional"
-                returnTo={returnTo}
-              />
-            </div>
             </>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,11 +1,16 @@
-import { Conversation, Message } from '../../../shared/types/index.js';
-import { getSupabaseAdminClient } from '../../supabase/supabase-client.js';
-import { logger } from '../../logging/logger.js';
+import { Conversation, Message } from "../../../shared/types/index.js";
+import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { randomUUID } from "node:crypto";
+import { databaseFailure } from "./repository-error.js";
 
 export interface IMessagingRepository {
   getUserConversations(userId: string): Promise<Conversation[]>;
   getConversationById(id: string): Promise<Conversation | null>;
-  createConversation(listingId: string, buyerId: string, sellerId: string): Promise<Conversation>;
+  createConversation(
+    listingId: string,
+    buyerId: string,
+    sellerId: string,
+  ): Promise<Conversation>;
   saveMessage(message: Message): Promise<Message>;
   getMessages(conversationId: string): Promise<Message[]>;
   markAsRead(conversationId: string, userId: string): Promise<void>;
@@ -16,11 +21,11 @@ export interface IMessagingRepository {
 
 export const CANONICAL_DEMO_CONVERSATIONS: Conversation[] = [
   {
-    id: 'conv_1',
-    listingId: 'list_1',
-    buyerId: 'user_thomas',
-    sellerId: 'user_camille',
-    lastMessageText: 'Bonjour, le vélo est-il toujours disponible ?',
+    id: "conv_1",
+    listingId: "list_1",
+    buyerId: "user_thomas",
+    sellerId: "user_camille",
+    lastMessageText: "Bonjour, le vélo est-il toujours disponible ?",
     lastMessageAt: new Date().toISOString(),
     unreadCount: 1,
     createdAt: new Date().toISOString(),
@@ -41,12 +46,12 @@ export class DemoMessagingRepository implements IMessagingRepository {
     this.messages.clear();
     this.blockedPairs.clear();
     initialConvs.forEach((c) => this.conversations.set(c.id, { ...c }));
-    this.messages.set('conv_1', [
+    this.messages.set("conv_1", [
       {
-        id: 'msg_init_1',
-        conversationId: 'conv_1',
-        senderId: 'user_thomas',
-        text: 'Bonjour, le vélo est-il toujours disponible ?',
+        id: "msg_init_1",
+        conversationId: "conv_1",
+        senderId: "user_thomas",
+        text: "Bonjour, le vélo est-il toujours disponible ?",
         createdAt: new Date().toISOString(),
       },
     ]);
@@ -63,18 +68,25 @@ export class DemoMessagingRepository implements IMessagingRepository {
     return conv ? { ...conv } : null;
   }
 
-  async createConversation(listingId: string, buyerId: string, sellerId: string): Promise<Conversation> {
+  async createConversation(
+    listingId: string,
+    buyerId: string,
+    sellerId: string,
+  ): Promise<Conversation> {
     const existing = Array.from(this.conversations.values()).find(
-      (c) => c.listingId === listingId && c.buyerId === buyerId && c.sellerId === sellerId
+      (c) =>
+        c.listingId === listingId &&
+        c.buyerId === buyerId &&
+        c.sellerId === sellerId,
     );
     if (existing) return { ...existing };
 
     const newConv: Conversation = {
-      id: `conv_${Math.random().toString(36).substring(2, 10)}`,
+      id: randomUUID(),
       listingId,
       buyerId,
       sellerId,
-      lastMessageText: '',
+      lastMessageText: "",
       lastMessageAt: new Date().toISOString(),
       unreadCount: 0,
       createdAt: new Date().toISOString(),
@@ -115,15 +127,20 @@ export class DemoMessagingRepository implements IMessagingRepository {
 
   async blockUser(userId: string, targetUserId: string): Promise<void> {
     this.blockedPairs.add(`${userId}:${targetUserId}`);
-    logger.info(`User ${userId} blocked ${targetUserId}`);
   }
 
   async unblockUser(userId: string, targetUserId: string): Promise<void> {
     this.blockedPairs.delete(`${userId}:${targetUserId}`);
   }
 
-  async isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean> {
-    return this.blockedPairs.has(`${firstUserId}:${secondUserId}`) || this.blockedPairs.has(`${secondUserId}:${firstUserId}`);
+  async isBlockedBetween(
+    firstUserId: string,
+    secondUserId: string,
+  ): Promise<boolean> {
+    return (
+      this.blockedPairs.has(`${firstUserId}:${secondUserId}`) ||
+      this.blockedPairs.has(`${secondUserId}:${firstUserId}`)
+    );
   }
 }
 
@@ -160,15 +177,16 @@ export class PostgresMessagingRepository implements IMessagingRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('conversations')
-        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
+        .from("conversations")
+        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
         .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-        .order('last_message_at', { ascending: false });
+        .order("last_message_at", { ascending: false });
 
-      if (error || !data) return [];
+      if (error || !data)
+        databaseFailure("messaging.getUserConversations", error);
       return data.map((r: any) => this.mapRowToConversation(r));
-    } catch {
-      return [];
+    } catch (error) {
+      databaseFailure("messaging.getUserConversations", error);
     }
   }
 
@@ -176,28 +194,40 @@ export class PostgresMessagingRepository implements IMessagingRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('conversations')
-        .select('*, listings(*), buyer:buyer_id(*), seller:seller_id(*)')
-        .eq('id', id)
+        .from("conversations")
+        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
+        .eq("id", id)
         .single();
-      if (error || !data) return null;
+      if (error) {
+        if (error.code === "PGRST116") return null;
+        databaseFailure("messaging.getConversationById", error);
+      }
+      if (!data) return null;
       return this.mapRowToConversation(data);
-    } catch {
-      return null;
+    } catch (error) {
+      databaseFailure("messaging.getConversationById", error);
     }
   }
 
-  async createConversation(listingId: string, buyerId: string, sellerId: string): Promise<Conversation> {
+  async createConversation(
+    listingId: string,
+    buyerId: string,
+    sellerId: string,
+  ): Promise<Conversation> {
     const supabase = getSupabaseAdminClient();
     const payload = {
       listing_id: listingId,
       buyer_id: buyerId,
       seller_id: sellerId,
-      last_message_text: '',
+      last_message_text: "",
       last_message_at: new Date().toISOString(),
     };
 
-    const { data, error } = await (supabase.from('conversations').upsert(payload as any).select().single() as any);
+    const { data, error } = await (supabase
+      .from("conversations")
+      .upsert(payload as any)
+      .select()
+      .single() as any);
     if (error || !data) {
       throw new Error(`Failed to create conversation: ${error?.message}`);
     }
@@ -207,7 +237,7 @@ export class PostgresMessagingRepository implements IMessagingRepository {
   async saveMessage(message: Message): Promise<Message> {
     const supabase = getSupabaseAdminClient();
     const payload = {
-      id: message.id.includes('-') ? message.id : undefined,
+      id: message.id.includes("-") ? message.id : undefined,
       conversation_id: message.conversationId,
       sender_id: message.senderId,
       text: message.text,
@@ -220,17 +250,30 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       created_at: message.createdAt,
     };
 
-    const { data, error } = await (supabase.from('messages').insert(payload as any).select().single() as any);
+    const { data, error } = await (supabase
+      .from("messages")
+      .insert(payload as any)
+      .select()
+      .single() as any);
     if (error || !data) {
       throw new Error(`Failed to save message: ${error?.message}`);
     }
 
     // Update parent conversation last_message
-    await (supabase.from('conversations' as any) as any).update({
-      last_message_text: message.text,
-      last_message_at: message.createdAt,
-      updated_at: new Date().toISOString(),
-    }).eq('id', message.conversationId);
+    const { error: conversationError } = await (
+      supabase.from("conversations" as any) as any
+    )
+      .update({
+        last_message_text: message.text,
+        last_message_at: message.createdAt,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", message.conversationId);
+    if (conversationError)
+      databaseFailure(
+        "messaging.updateConversationAfterMessage",
+        conversationError,
+      );
 
     return this.mapRowToMessage(data);
   }
@@ -239,46 +282,57 @@ export class PostgresMessagingRepository implements IMessagingRepository {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
-      if (error || !data) return [];
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+      if (error || !data) databaseFailure("messaging.getMessages", error);
       return data.map((r: any) => this.mapRowToMessage(r));
-    } catch {
-      return [];
+    } catch (error) {
+      databaseFailure("messaging.getMessages", error);
     }
   }
 
   async markAsRead(conversationId: string, userId: string): Promise<void> {
-    // Handled in database
+    const supabase = getSupabaseAdminClient();
+    const { error } = await (supabase as any).rpc("mark_conversation_read", {
+      p_conversation_id: conversationId,
+      p_user_id: userId,
+    });
+    if (error) databaseFailure("messaging.markAsRead", error);
   }
 
   async blockUser(userId: string, targetUserId: string): Promise<void> {
     const supabase = getSupabaseAdminClient();
-    const { error } = await supabase.from('blocked_users').upsert({
+    const { error } = await supabase.from("blocked_users").upsert({
       blocker_id: userId,
       blocked_id: targetUserId,
       created_at: new Date().toISOString(),
     });
     if (error) throw new Error(`Failed to block user: ${error.message}`);
-    logger.info(`User ${userId} blocked ${targetUserId} in database`);
   }
 
   async unblockUser(userId: string, targetUserId: string): Promise<void> {
     const supabase = getSupabaseAdminClient();
-    const { error } = await supabase.from('blocked_users')
+    const { error } = await supabase
+      .from("blocked_users")
       .delete()
-      .eq('blocker_id', userId)
-      .eq('blocked_id', targetUserId);
+      .eq("blocker_id", userId)
+      .eq("blocked_id", targetUserId);
     if (error) throw new Error(`Failed to unblock user: ${error.message}`);
   }
 
-  async isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean> {
+  async isBlockedBetween(
+    firstUserId: string,
+    secondUserId: string,
+  ): Promise<boolean> {
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase.from('blocked_users')
-      .select('blocker_id')
-      .or(`and(blocker_id.eq.${firstUserId},blocked_id.eq.${secondUserId}),and(blocker_id.eq.${secondUserId},blocked_id.eq.${firstUserId})`)
+    const { data, error } = await supabase
+      .from("blocked_users")
+      .select("blocker_id")
+      .or(
+        `and(blocker_id.eq.${firstUserId},blocked_id.eq.${secondUserId}),and(blocker_id.eq.${secondUserId},blocked_id.eq.${firstUserId})`,
+      )
       .limit(1);
     if (error) throw new Error(`Failed to check user block: ${error.message}`);
     return Boolean(data?.length);

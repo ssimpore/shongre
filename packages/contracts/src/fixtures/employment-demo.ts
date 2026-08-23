@@ -21,7 +21,8 @@ const employers: Record<string, EmployerSummary> = {
     name: "TechNova",
     slug: "technova",
     employerTypeId: "employment.fr.employer_type.company",
-    description: "Éditeur logiciel lyonnais développant des services numériques accessibles.",
+    description:
+      "Éditeur logiciel lyonnais développant des services numériques accessibles.",
     verificationLevel: "domain_verified",
     isPubliclyVerified: true,
   },
@@ -31,7 +32,8 @@ const employers: Record<string, EmployerSummary> = {
     name: "Atelier Vert",
     slug: "atelier-vert",
     employerTypeId: "employment.fr.employer_type.small_business",
-    description: "Petite entreprise spécialisée dans la distribution responsable.",
+    description:
+      "Petite entreprise spécialisée dans la distribution responsable.",
     verificationLevel: "manually_verified",
     isPubliclyVerified: true,
   },
@@ -41,7 +43,8 @@ const employers: Record<string, EmployerSummary> = {
     name: "Horizon Talents",
     slug: "horizon-talents",
     employerTypeId: "employment.fr.employer_type.agency",
-    description: "Agence de recrutement généraliste avec mandats employeurs identifiés.",
+    description:
+      "Agence de recrutement généraliste avec mandats employeurs identifiés.",
     verificationLevel: "provider_verified",
     isPubliclyVerified: true,
   },
@@ -50,7 +53,8 @@ const employers: Record<string, EmployerSummary> = {
     name: "Famille Martin",
     slug: "famille-martin-lyon",
     employerTypeId: "employment.fr.employer_type.private",
-    description: "Employeur particulier recrutant une aide à domicile déclarée.",
+    description:
+      "Employeur particulier recrutant une aide à domicile déclarée.",
     verificationLevel: "self_declared",
     isPubliclyVerified: false,
   },
@@ -115,7 +119,10 @@ const makeJob = (seed: JobSeed): JobPostingDetail => ({
   workingTimeId: `employment.fr.work_schedule.${seed.workingTime}`,
   primaryLocation: {
     id: `location-${seed.id}`,
-    label: seed.arrangement[0] === "remote" ? `Télétravail — ${seed.city}` : seed.city,
+    label:
+      seed.arrangement[0] === "remote"
+        ? `Télétravail — ${seed.city}`
+        : seed.city,
     city: seed.city,
     postalCode: seed.postalCode,
     countryCode: "FR",
@@ -146,28 +153,48 @@ const makeJob = (seed: JobSeed): JobPostingDetail => ({
   positionsCount: seed.id === "job-seasonal-nice" ? 4 : 1,
   contractDuration: seed.contract[0] === "fixed_term" ? "6 mois" : undefined,
   responsibilities: seed.responsibilities,
-  requiredSkillIds: seed.requiredSkills.map((skill) => `employment.fr.skill.${skill}`),
-  requiredSkills: seed.requiredSkills.map((skill) => ({
-    typescript: "TypeScript",
-    react: "React",
-    sql: "SQL",
-    figma: "Figma",
-    customer_service: "Relation client",
-    care_support: "Accompagnement",
-  })[skill] || skill),
-  preferredSkillIds: (seed.preferredSkills || []).map((skill) => `employment.fr.skill.${skill}`),
+  requiredSkillIds: seed.requiredSkills.map(
+    (skill) => `employment.fr.skill.${skill}`,
+  ),
+  requiredSkills: seed.requiredSkills.map(
+    (skill) =>
+      ({
+        typescript: "TypeScript",
+        react: "React",
+        sql: "SQL",
+        figma: "Figma",
+        customer_service: "Relation client",
+        care_support: "Accompagnement",
+      })[skill] || skill,
+  ),
+  preferredSkillIds: (seed.preferredSkills || []).map(
+    (skill) => `employment.fr.skill.${skill}`,
+  ),
   preferredSkills: seed.preferredSkills || [],
   requiredExperienceId: "employment.fr.seniority.intermediate",
   educationLevelId: "employment.fr.education_level.bachelor",
   certifications: [],
-  languages: [{ languageId: "fr", levelId: "employment.fr.language_level.professional", label: "Français professionnel" }],
+  languages: [
+    {
+      languageId: "fr",
+      levelId: "employment.fr.language_level.professional",
+      label: "Français professionnel",
+    },
+  ],
   workScheduleIds: [`employment.fr.work_schedule.${seed.workingTime}`],
   additionalLocations: [],
   accessibilityInformation: seed.accessibility,
   benefits: seed.benefits || [],
-  trialPeriodInformation: seed.contract[0] === "permanent" ? "Selon la convention et le contrat applicables." : undefined,
+  trialPeriodInformation:
+    seed.contract[0] === "permanent"
+      ? "Selon la convention et le contrat applicables."
+      : undefined,
   desiredStartDate: "2026-09-15",
-  recruitmentProcess: ["Échange de 30 minutes", "Entretien avec l’équipe", "Réponse sous une semaine"],
+  recruitmentProcess: [
+    "Échange de 30 minutes",
+    "Entretien avec l’équipe",
+    "Réponse sous une semaine",
+  ],
   employerDescription: seed.employer.description,
   applicationMethod: seed.applicationMethod || "shongre",
   externalApplicationUrl:
@@ -176,7 +203,8 @@ const makeJob = (seed: JobSeed): JobPostingDetail => ({
       : undefined,
   contactPreferences: ["messaging"],
   screeningQuestions: seed.screeningQuestions || [],
-  safetyNotice: "Aucun paiement ne peut être demandé à un candidat pour postuler sur Shongre.",
+  safetyNotice:
+    "Aucun paiement ne peut être demandé à un candidat pour postuler sur Shongre.",
   candidateFeeRequired: false,
 });
 
@@ -195,16 +223,26 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [4_500_000, 5_500_000, "year"],
     daysAgo: 1,
     featured: true,
-    responsibilities: ["Concevoir des interfaces accessibles", "Faire évoluer le design system", "Participer aux revues de code"],
+    responsibilities: [
+      "Concevoir des interfaces accessibles",
+      "Faire évoluer le design system",
+      "Participer aux revues de code",
+    ],
     requiredSkills: ["typescript", "react"],
     preferredSkills: ["figma"],
-    benefits: ["Deux jours de télétravail", "Budget formation", "Titres-restaurant"],
-    accessibility: "Locaux accessibles et aménagement du poste possible sur demande.",
+    benefits: [
+      "Deux jours de télétravail",
+      "Budget formation",
+      "Titres-restaurant",
+    ],
+    accessibility:
+      "Locaux accessibles et aménagement du poste possible sur demande.",
     screeningQuestions: [
       {
         id: "question-react-typescript",
         questionTypeId: "employment.fr.screening_question_type.yes_no",
-        label: "Avez-vous déjà travaillé avec TypeScript dans un produit en production ?",
+        label:
+          "Avez-vous déjà travaillé avec TypeScript dans un produit en production ?",
         helpText: "Une réponse négative n’entraîne pas de rejet automatique.",
         isRequired: true,
         options: ["Oui", "Non"],
@@ -233,7 +271,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     postalCode: "75011",
     salary: [3_800_000, 4_400_000, "year"],
     daysAgo: 3,
-    responsibilities: ["Construire les tableaux de bord", "Documenter les indicateurs", "Accompagner les équipes métier"],
+    responsibilities: [
+      "Construire les tableaux de bord",
+      "Documenter les indicateurs",
+      "Accompagner les équipes métier",
+    ],
     requiredSkills: ["sql"],
     preferredSkills: ["customer_service"],
   }),
@@ -250,7 +292,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     postalCode: "33000",
     salary: [80_000, 95_000, "month"],
     daysAgo: 5,
-    responsibilities: ["Préparer des prototypes", "Mener des tests utilisateurs", "Contribuer à la bibliothèque Figma"],
+    responsibilities: [
+      "Préparer des prototypes",
+      "Mener des tests utilisateurs",
+      "Contribuer à la bibliothèque Figma",
+    ],
     requiredSkills: ["figma"],
     preferredSkills: ["customer_service"],
   }),
@@ -266,7 +312,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     city: "Lille",
     postalCode: "59000",
     daysAgo: 2,
-    responsibilities: ["Accueillir et conseiller", "Mettre en valeur les produits", "Participer au suivi des commandes"],
+    responsibilities: [
+      "Accueillir et conseiller",
+      "Mettre en valeur les produits",
+      "Participer au suivi des commandes",
+    ],
     requiredSkills: ["customer_service"],
   }),
   makeJob({
@@ -283,7 +333,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [1_250, 1_450, "hour"],
     daysAgo: 0,
     urgent: true,
-    responsibilities: ["Préparer l’ouverture", "Accueillir les visiteurs", "Assurer le rangement de l’espace"],
+    responsibilities: [
+      "Préparer l’ouverture",
+      "Accueillir les visiteurs",
+      "Assurer le rangement de l’espace",
+    ],
     requiredSkills: ["customer_service"],
   }),
   makeJob({
@@ -300,7 +354,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [55_000, 70_000, "hour"],
     daysAgo: 4,
     sponsored: true,
-    responsibilities: ["Cadrer une refonte de parcours", "Animer des ateliers", "Livrer et documenter les composants"],
+    responsibilities: [
+      "Cadrer une refonte de parcours",
+      "Animer des ateliers",
+      "Livrer et documenter les composants",
+    ],
     requiredSkills: ["figma"],
   }),
   makeJob({
@@ -316,7 +374,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     postalCode: "69005",
     salary: [1_450, 1_700, "hour"],
     daysAgo: 6,
-    responsibilities: ["Accompagner les gestes du quotidien", "Préparer des repas simples", "Assurer un relais avec la famille"],
+    responsibilities: [
+      "Accompagner les gestes du quotidien",
+      "Préparer des repas simples",
+      "Assurer un relais avec la famille",
+    ],
     requiredSkills: ["care_support"],
     accessibility: "Logement accessible par ascenseur.",
   }),
@@ -334,7 +396,11 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [1_320, 1_480, "hour"],
     daysAgo: 1,
     urgent: true,
-    responsibilities: ["Préparer les commandes", "Contrôler les expéditions", "Appliquer les règles de sécurité"],
+    responsibilities: [
+      "Préparer les commandes",
+      "Contrôler les expéditions",
+      "Appliquer les règles de sécurité",
+    ],
     requiredSkills: [],
   }),
 ];
@@ -344,12 +410,29 @@ export const EMPLOYMENT_DEMO_CANDIDATE_PROFILE: CandidateProfile = {
   userId: "user_thomas",
   marketCode: "FR",
   professionalTitle: "Développeur front-end React",
-  summary: "Développeur front-end attentif à l’accessibilité, aux performances et à la qualité produit.",
+  summary:
+    "Développeur front-end attentif à l’accessibilité, aux performances et à la qualité produit.",
   skillIds: ["employment.fr.skill.typescript", "employment.fr.skill.react"],
-  experiences: [{ id: "experience-1", title: "Développeur front-end", organization: "Studio Lumen", startsAt: "2023-01-01" }],
-  education: [{ id: "education-1", label: "Master informatique", completedAt: "2022-06-30" }],
+  experiences: [
+    {
+      id: "experience-1",
+      title: "Développeur front-end",
+      organization: "Studio Lumen",
+      startsAt: "2023-01-01",
+    },
+  ],
+  education: [
+    {
+      id: "education-1",
+      label: "Master informatique",
+      completedAt: "2022-06-30",
+    },
+  ],
   certifications: [],
-  languages: [{ languageId: "fr", levelId: "fluent" }, { languageId: "en", levelId: "professional" }],
+  languages: [
+    { languageId: "fr", levelId: "fluent" },
+    { languageId: "en", levelId: "professional" },
+  ],
   desiredProfessionIds: ["employment.fr.profession.frontend_engineer"],
   desiredContractTypeIds: ["employment.fr.contract_type.permanent"],
   preferredLocationIds: ["lyon"],
@@ -378,13 +461,15 @@ const application = (
     jobId,
     candidateId: EMPLOYMENT_DEMO_CANDIDATE_PROFILE.id,
     cvId: "cv-thomas-2026",
-    coverMessage: "Je souhaite contribuer à une équipe attentive à la qualité et à l’accessibilité.",
+    coverMessage:
+      "Je souhaite contribuer à une équipe attentive à la qualité et à l’accessibilité.",
     screeningAnswers: [],
     pipelineId: "employment.pipeline.default",
     stageId: stage.id,
     systemState: stage.systemState,
     candidateVisibleStatus: stage.candidateVisibleLabel,
-    assignedRecruiterIds: stageIndex > 0 ? [EMPLOYMENT_DEMO_RECRUITER_USER_ID] : [],
+    assignedRecruiterIds:
+      stageIndex > 0 ? [EMPLOYMENT_DEMO_RECRUITER_USER_ID] : [],
     privacyPolicyVersion: "employment-candidate-v1",
     consentRecordId: "consent-application-react",
     submittedAt,
@@ -394,9 +479,24 @@ const application = (
 };
 
 export const EMPLOYMENT_DEMO_APPLICATIONS: EmploymentApplication[] = [
-  application("application-react", "job-react-lyon", 3, "2026-08-20T09:30:00.000Z"),
-  application("application-data", "job-data-paris", 1, "2026-08-18T14:15:00.000Z"),
-  application("application-design", "job-product-intern-bordeaux", 0, "2026-08-21T16:45:00.000Z"),
+  application(
+    "application-react",
+    "job-react-lyon",
+    3,
+    "2026-08-20T09:30:00.000Z",
+  ),
+  application(
+    "application-data",
+    "job-data-paris",
+    1,
+    "2026-08-18T14:15:00.000Z",
+  ),
+  application(
+    "application-design",
+    "job-product-intern-bordeaux",
+    0,
+    "2026-08-21T16:45:00.000Z",
+  ),
 ];
 
 export const EMPLOYMENT_DEMO_INTERVIEWS: EmploymentInterview[] = [
@@ -442,7 +542,9 @@ export const EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE: CandidateWorkspace = {
     },
   ],
   savedJobs: EMPLOYMENT_DEMO_JOBS.filter((job) => job.saved),
-  applications: EMPLOYMENT_DEMO_APPLICATIONS.map(({ screeningAnswers: _answers, ...item }) => item),
+  applications: EMPLOYMENT_DEMO_APPLICATIONS.map(
+    ({ screeningAnswers: _answers, ...item }) => item,
+  ),
   interviews: EMPLOYMENT_DEMO_INTERVIEWS,
   consentHistory: [
     {
@@ -489,7 +591,9 @@ export const EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE: CandidateWorkspace = {
 
 export const EMPLOYMENT_DEMO_RECRUITER_WORKSPACE: RecruiterWorkspace = {
   employer: employers.technova,
-  jobs: EMPLOYMENT_DEMO_JOBS.filter((job) => job.employer.id === employers.technova.id),
+  jobs: EMPLOYMENT_DEMO_JOBS.filter(
+    (job) => job.employer.id === employers.technova.id,
+  ),
   applications: EMPLOYMENT_DEMO_APPLICATIONS,
   stages: EMPLOYMENT_DEFAULT_PIPELINE_STAGES,
   interviews: EMPLOYMENT_DEMO_INTERVIEWS,
@@ -519,7 +623,12 @@ export const EMPLOYMENT_DEMO_RECRUITER_WORKSPACE: RecruiterWorkspace = {
       role: "recruitment_admin",
       branchIds: ["branch-technova-lyon"],
       clientEmployerIds: [],
-      permissions: ["job.manage", "application.manage", "pipeline.manage", "team.manage"],
+      permissions: [
+        "job.manage",
+        "application.manage",
+        "pipeline.manage",
+        "team.manage",
+      ],
       status: "active",
     },
     {
