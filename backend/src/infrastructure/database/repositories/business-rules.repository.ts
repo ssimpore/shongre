@@ -13,6 +13,7 @@ import type {
   SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { getBillingUsagePresentation } from "@shongre/shared";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 
 export interface BusinessRulesRepository {
@@ -119,12 +120,12 @@ const initialVersion = (): CommercialConfigurationVersion => ({
   versionNumber: BASELINE_MONETIZATION_CATALOG.versionNumber,
   marketCode: BASELINE_MONETIZATION_CATALOG.marketCode,
   status: "active",
-  reason: "Backfill initial du catalogue commercial audité",
-  effectiveFrom: "2026-08-22T00:00:00.000Z",
+  reason: "Publication du catalogue professionnel verticalisé v2",
+  effectiveFrom: BASELINE_MONETIZATION_CATALOG.generatedAt,
   createdBy: "system:migration",
   approvedBy: "system:migration",
-  createdAt: "2026-08-22T00:00:00.000Z",
-  publishedAt: "2026-08-22T00:00:00.000Z",
+  createdAt: BASELINE_MONETIZATION_CATALOG.generatedAt,
+  publishedAt: BASELINE_MONETIZATION_CATALOG.generatedAt,
   productCount: BASELINE_MONETIZATION_CATALOG.products.length,
   ruleCount: BASELINE_MONETIZATION_CATALOG.rules.length,
   conflicts: [],
@@ -430,9 +431,8 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     );
     const limits = accountEntitlements.filter(
       (entry) =>
-        ["maxActiveListings", "maxPhotosPerListing", "teamMembers"].includes(
-          entry.key,
-        ) && typeof entry.value === "number",
+        typeof entry.value === "number" &&
+        Boolean(getBillingUsagePresentation(entry.key)),
     );
     return {
       currentSubscription,
@@ -440,11 +440,12 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       entitlements: accountEntitlements,
       usage: limits.map((entry) => ({
         key: entry.key,
-        label: entry.key,
+        label: getBillingUsagePresentation(entry.key)!.label,
         used: 0,
         limit: Number(entry.value),
-        unit: "unités",
+        unit: getBillingUsagePresentation(entry.key)!.unit,
         resetsAt: currentSubscription?.currentPeriodEnd,
+        verticalId: entry.verticalId,
       })),
       orders: accountOrders,
       payments: [],
@@ -979,7 +980,9 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       );
     }
     const numericLimits = accountEntitlements.filter(
-      (entry) => typeof entry.value === "number",
+      (entry) =>
+        typeof entry.value === "number" &&
+        Boolean(getBillingUsagePresentation(entry.key)),
     );
     const customer = customerResult.data;
     return {
@@ -1002,11 +1005,12 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       entitlements: accountEntitlements,
       usage: numericLimits.map((entry) => ({
         key: entry.key,
-        label: entry.key,
+        label: getBillingUsagePresentation(entry.key)!.label,
         used: usageByKey.get(entry.key) || 0,
         limit: Number(entry.value),
-        unit: "unités",
+        unit: getBillingUsagePresentation(entry.key)!.unit,
         resetsAt: currentSubscription?.currentPeriodEnd,
+        verticalId: entry.verticalId,
       })),
       orders: (ordersResult.data || []).map(
         (row: any) => row.order_snapshot as MonetizationOrder,

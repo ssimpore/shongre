@@ -20,10 +20,8 @@ export interface ProPlan {
 }
 
 const LEGACY_PLAN_IDS: Record<string, ProPlan["id"]> = {
-  "listing.standard.individual": "free",
-  "plan.pro.starter": "pro_starter",
+  "plan.pro.free": "free",
   "plan.pro.business": "pro_business",
-  "plan.pro.enterprise": "pro_enterprise",
 };
 
 const entitlement = (
@@ -37,7 +35,9 @@ const entitlement = (
  * synchronous entitlement consumer has migrated to BusinessRulesService.
  */
 export const PRO_PLANS: ProPlan[] = BASELINE_MONETIZATION_CATALOG.products
-  .filter((product) => product.id in LEGACY_PLAN_IDS)
+  .filter(
+    (product) => product.status === "active" && product.id in LEGACY_PLAN_IDS,
+  )
   .map((product) => {
     const monthly =
       product.prices.find((price) => price.billingPeriod === "month") ||

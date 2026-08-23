@@ -63,7 +63,12 @@ export class DemoPromotionsService implements PromotionsServiceContract {
     planId: string,
   ): Promise<{ success: boolean; plan: ProPlan }> {
     await simulateNetworkDelay();
-    const plan = PRO_PLANS.find((p) => p.id === planId) || PRO_PLANS[0];
+    const normalizedPlanId = ["pro_starter", "pro_enterprise"].includes(planId)
+      ? "pro_business"
+      : planId;
+    const plan =
+      PRO_PLANS.find((candidate) => candidate.id === normalizedPlanId) ||
+      PRO_PLANS[0];
     return {
       success: true,
       plan,

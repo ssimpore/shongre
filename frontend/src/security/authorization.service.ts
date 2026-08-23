@@ -255,8 +255,12 @@ export class AuthorizationService {
   }
 
   getUserPlan(user: UserProfile | null): ProPlan {
+    const persistedPlanId =
+      user?.activePlanId || (isProSeller(user) ? "pro_business" : "free");
     const planId =
-      user?.activePlanId || (isProSeller(user) ? "pro_starter" : "free");
+      persistedPlanId === "pro_starter" || persistedPlanId === "pro_enterprise"
+        ? "pro_business"
+        : persistedPlanId;
     return PRO_PLANS.find((plan) => plan.id === planId) || PRO_PLANS[0];
   }
 

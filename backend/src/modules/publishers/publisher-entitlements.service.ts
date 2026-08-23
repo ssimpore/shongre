@@ -1,9 +1,11 @@
 import type {
   ActiveEntitlement,
+  BusinessVerticalCode,
   EffectivePublisher,
   ListingPromotionState,
   MonetizationProduct,
 } from "@shongre/contracts";
+import { resolveEffectiveEntitlementsForVertical } from "@shongre/shared";
 import type { Listing, UserProfile } from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
@@ -23,6 +25,8 @@ export type EntitlementReasonCode =
   | "CATEGORY_DISABLED"
   | "MARKET_NOT_AVAILABLE"
   | "STANDARD_QUOTA_REACHED"
+  | "ACTIVE_CAPACITY_REACHED"
+  | "MONTHLY_PUBLICATION_QUOTA_REACHED"
   | "SUBSCRIPTION_EXPIRED"
   | "ORGANIZATION_PERMISSION_REQUIRED"
   | "ORGANIZATION_SUSPENDED"
@@ -43,6 +47,10 @@ export interface PublicationEntitlements {
   reasonCode: EntitlementReasonCode | string;
   quotaLimit?: number;
   quotaRemaining?: number;
+  monthlyPublicationLimit?: number;
+  monthlyPublicationRemaining?: number;
+  verticalId?: BusinessVerticalCode;
+  quotaSource: "commercial_rule" | "plan_entitlement";
   durationDays?: number;
   standardPublicationAvailable: boolean;
   activeEntitlements: ActiveEntitlement[];
@@ -55,6 +63,38 @@ export interface EntitlementDecision {
 }
 
 const PUBLISHER_ROLES = new Set(["owner", "admin", "manager", "seller"]);
+
+const ACTIVE_CAPACITY_KEYS: Record<string, string[]> = {
+  general: ["maxActiveListings"],
+  auto: ["maxActiveVehicles", "maxActiveListings"],
+  immo: ["maxActiveListings"],
+  emploi: ["maxActiveJobs", "maxActiveListings"],
+  cours: ["maxActiveOffers", "maxActiveListings"],
+};
+
+function numericEntitlement(
+  entitlements: Array<{ key: string; value: unknown }>,
+  keys: string[],
+) {
+  for (const key of keys) {
+    const value = entitlements.find((entry) => entry.key === key)?.value;
+    if (typeof value === "number") return { key, value };
+  }
+  return undefined;
+}
+
+function publicationFailureReason(reasonCode: string): EntitlementReasonCode {
+  if (
+    reasonCode === "STANDARD_QUOTA_REACHED" ||
+    reasonCode === "ACTIVE_CAPACITY_REACHED" ||
+    reasonCode === "MONTHLY_PUBLICATION_QUOTA_REACHED" ||
+    reasonCode === "MARKET_NOT_AVAILABLE" ||
+    reasonCode === "CATEGORY_DISABLED"
+  ) {
+    return reasonCode;
+  }
+  return "CATEGORY_DISABLED";
+}
 
 function verificationStatus(
   user: UserProfile,
@@ -199,10 +239,11 @@ export class PublisherEntitlementsService {
           limit: 1,
         }
       : { sellerId: publisher.userId, marketCode: input.marketCode, limit: 1 };
-    const [all, category, activeEntitlements] = await Promise.all([
+    const [all, category, activeEntitlements, catalog] = await Promise.all([
       this.listings.search(ownerFilter),
       this.listings.search({ ...ownerFilter, categoryId: input.categoryId }),
       this.rules.getActiveEntitlements(accountId),
+      this.rules.getCatalog(input.marketCode.toUpperCase()),
     ]);
     const preview = await this.rules.getAccountEligibility(
       accountId,
@@ -220,20 +261,70 @@ export class PublisherEntitlementsService {
       },
       { total: all.total, category: category.total },
     );
+    const configuredVertical = catalog.verticals.find((vertical) =>
+      vertical.categoryIds.includes(input.categoryId),
+    );
+    const verticalId = configuredVertical?.id || "general";
+    const effectiveEntitlements = resolveEffectiveEntitlementsForVertical({
+      catalog,
+      entitlements: activeEntitlements,
+      verticalId,
+    });
+    const capacity = numericEntitlement(
+      effectiveEntitlements,
+      ACTIVE_CAPACITY_KEYS[verticalId] || ["maxActiveListings"],
+    );
+    const monthly = numericEntitlement(effectiveEntitlements, [
+      "maxMonthlyPublications",
+    ]);
+    const capacityUsed = verticalId === "general" ? all.total : category.total;
+    const quotaRemaining = capacity
+      ? Math.max(0, capacity.value - capacityUsed)
+      : preview.quotaRemaining;
+    const monthlyUsage = monthly
+      ? await this.rules.getEntitlementQuotaUsage(accountId, {
+          entitlementKey: monthly.key,
+          verticalId,
+          marketCode: input.marketCode,
+        })
+      : undefined;
+    const monthlyRemaining = monthly
+      ? Math.max(0, monthly.value - (monthlyUsage?.used || 0))
+      : undefined;
+    const verticalEnabled =
+      !configuredVertical || configuredVertical.status === "active";
+    const planCanReplaceRuleQuota =
+      Boolean(capacity) && preview.reasonCode === "QUOTA_EXHAUSTED";
+    const underlyingEligible = preview.eligible || planCanReplaceRuleQuota;
+    const eligible =
+      verticalEnabled &&
+      underlyingEligible &&
+      (quotaRemaining === undefined || quotaRemaining > 0) &&
+      (monthlyRemaining === undefined || monthlyRemaining > 0);
+    const reasonCode = !verticalEnabled
+      ? "CATEGORY_DISABLED"
+      : quotaRemaining !== undefined && quotaRemaining <= 0
+        ? "ACTIVE_CAPACITY_REACHED"
+        : monthlyRemaining !== undefined && monthlyRemaining <= 0
+          ? "MONTHLY_PUBLICATION_QUOTA_REACHED"
+          : underlyingEligible
+            ? "ELIGIBLE"
+            : preview.reasonCode;
     const entitlementSnapshot = Object.fromEntries(
-      activeEntitlements.map((entry) => [entry.key, entry.value]),
+      effectiveEntitlements.map((entry) => [entry.key, entry.value]),
     );
     return {
       publisher,
-      eligible: preview.eligible,
-      reasonCode:
-        preview.reasonCode === "QUOTA_EXHAUSTED"
-          ? "STANDARD_QUOTA_REACHED"
-          : preview.reasonCode,
-      quotaLimit: preview.quotaLimit,
-      quotaRemaining: preview.quotaRemaining,
+      eligible,
+      reasonCode,
+      quotaLimit: capacity?.value ?? preview.quotaLimit,
+      quotaRemaining,
+      monthlyPublicationLimit: monthly?.value,
+      monthlyPublicationRemaining: monthlyRemaining,
+      verticalId,
+      quotaSource: capacity ? "plan_entitlement" : "commercial_rule",
       durationDays: preview.durationDays,
-      standardPublicationAvailable: preview.eligible,
+      standardPublicationAvailable: eligible,
       activeEntitlements,
       entitlementSnapshot,
     };
@@ -249,13 +340,32 @@ export class PublisherEntitlementsService {
     const entitlements = await this.getPublicationEntitlements(input);
     if (!entitlements.eligible) {
       failure(
-        entitlements.reasonCode === "STANDARD_QUOTA_REACHED"
-          ? "STANDARD_QUOTA_REACHED"
-          : "CATEGORY_DISABLED",
+        publicationFailureReason(entitlements.reasonCode),
         "La publication standard n’est pas disponible dans ce contexte.",
       );
     }
     const accountId = await this.policyAccountId(entitlements.publisher);
+    if (
+      entitlements.quotaSource === "plan_entitlement" &&
+      typeof entitlements.monthlyPublicationLimit === "number"
+    ) {
+      const used = await this.rules.consumeEntitlementQuota(accountId, {
+        entitlementKey: "maxMonthlyPublications",
+        verticalId: entitlements.verticalId || "general",
+        marketCode: input.marketCode,
+        limit: entitlements.monthlyPublicationLimit,
+      });
+      return {
+        ...entitlements,
+        monthlyPublicationRemaining: Math.max(
+          0,
+          entitlements.monthlyPublicationLimit - used,
+        ),
+      };
+    }
+    if (entitlements.quotaSource === "plan_entitlement") {
+      return entitlements;
+    }
     const ownerFilter = entitlements.publisher.organizationId
       ? {
           publisherOrganizationId: entitlements.publisher.organizationId,

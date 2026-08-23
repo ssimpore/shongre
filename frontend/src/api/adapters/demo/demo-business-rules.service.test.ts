@@ -23,6 +23,26 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     expect(first.snapshotHash).toMatch(/^[a-f0-9]{64}$/);
   });
 
+  it("quotes the Founding Pros free phase before its fixed discount periods", async () => {
+    storageService.setCurrentUserKey("pro_auto_michel");
+    const service = new DemoBusinessRulesService();
+    const quote = await service.createQuote({
+      productIds: ["auto.dealer.growth"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      promotionCode: "AUTO2026",
+      idempotencyKey: "frontend-founding-pros-quote-01",
+    });
+
+    expect(quote).toMatchObject({
+      amountDueTodayMinor: 0,
+      promotion: { freePeriodDays: 90, durationBillingPeriods: 3 },
+      trial: { productId: "auto.dealer.growth", durationDays: 90 },
+    });
+    expect(quote.discountMinor).toBe(quote.subtotalMinor / 2);
+    expect(quote.nextChargeMinor).toBe(quote.totalMinor);
+  });
+
   it("explains the specific Auto quota in a deterministic simulation", async () => {
     const service = new DemoBusinessRulesService();
     const result = await service.evaluate({
@@ -65,10 +85,10 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       initial.invoices.find(
         (invoice) => invoice.subscriptionId === initial.currentSubscription?.id,
       )?.total.amountMinor,
-    ).toBe(9_480);
+    ).toBe(2_388);
 
     const target = catalog.products.find(
-      (product) => product.id === "plan.pro.enterprise",
+      (product) => product.id === "auto.dealer.growth",
     )!;
     const targetPrice = target.prices.find(
       (price) => price.billingPeriod === "month",
@@ -77,23 +97,24 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       subscriptionId: initial.currentSubscription!.id,
       targetProductId: target.id,
       targetPriceId: targetPrice.id,
-      idempotencyKey: "test-enterprise-upgrade-1",
+      idempotencyKey: "test-auto-business-upgrade-1",
     };
     const preview = await service.previewSubscriptionChange(request);
     expect(preview.effectiveAt).toBe("immediately");
     expect(preview.tax.amountMinor).toBeGreaterThan(0);
 
     const changed = await service.applySubscriptionChange(request);
-    expect(changed.productId).toBe("plan.pro.enterprise");
+    expect(changed.productId).toBe("auto.dealer.growth");
     const changedBilling = await service.getBillingOverview();
     expect(
       changedBilling.effectiveEntitlements.find(
         (entitlement) =>
-          entitlement.key === "maxActiveListings" && !entitlement.verticalId,
+          entitlement.key === "maxActiveVehicles" &&
+          entitlement.verticalId === "auto",
       ),
     ).toMatchObject({
-      value: 2000,
-      sourceProductIds: ["plan.pro.enterprise"],
+      value: 80,
+      sourceProductIds: ["auto.dealer.growth"],
     });
     expect(
       changedBilling.entitlements.some(
@@ -102,6 +123,16 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
           entitlement.status === "active",
       ),
     ).toBe(false);
+    expect(
+      changedBilling.usage.find(
+        (usage) =>
+          usage.key === "maxActiveVehicles" && usage.verticalId === "auto",
+      ),
+    ).toMatchObject({
+      label: "Véhicules actifs",
+      limit: 80,
+      unit: "véhicules",
+    });
 
     const cancellation = await service.updateSubscriptionCancellation({
       subscriptionId: changed.id,
@@ -127,6 +158,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
   });
 
   it("quotes a vertical trial once and exposes scoped effective entitlements", async () => {
+    storageService.setCurrentUserKey("pro_auto_michel");
     const service = new DemoBusinessRulesService();
     const quote = await service.createQuote({
       productIds: ["auto.dealer.starter"],
@@ -137,7 +169,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     expect(quote).toMatchObject({
       amountDueTodayMinor: 0,
       reasonCode: "TRIAL_ELIGIBLE",
-      trial: { productId: "auto.dealer.starter", durationDays: 14 },
+      trial: { productId: "auto.dealer.starter", durationDays: 30 },
     });
     await service.createCheckout(quote.id, "frontend-auto-trial-checkout-01");
     const overview = await service.getBillingOverview();
@@ -163,10 +195,10 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
         (balance) => balance.creditType === "auto_visibility",
       ),
     ).toMatchObject({
-      available: 5,
+      available: 1,
       transactions: [
         expect.objectContaining({
-          quantity: 5,
+          quantity: 1,
           sourceType: "subscription",
         }),
       ],
@@ -178,7 +210,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     const service = new DemoBusinessRulesService();
     const catalog = await service.getCatalog("FR");
     const product = catalog.products.find(
-      (candidate) => candidate.id === "course.training.business",
+      (candidate) => candidate.id === "course.school.organization",
     )!;
     const request = await service.requestComplimentaryGrant({
       accountId: "organization_partner_demo",

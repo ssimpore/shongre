@@ -19,10 +19,31 @@ describe("BusinessRulesService quotes", () => {
       ),
     ).toBe(true);
     expect(
-      catalog.plans.every(
-        (plan) => plan.commercialProfile.professionalOnly,
-      ),
+      catalog.plans.every((plan) => plan.commercialProfile.professionalOnly),
     ).toBe(true);
+  });
+
+  it("versions vertical configuration without duplicating the product catalog", async () => {
+    const repository = new DemoBusinessRulesRepository();
+    const service = new BusinessRulesService(repository);
+    const current = await service.getCatalog("FR");
+    const draft = await service.createDraft("vertical-admin", {
+      reason: "Mise à jour contrôlée de la verticale automobile",
+      verticals: current.verticals.map((vertical) =>
+        vertical.id === "auto"
+          ? { ...vertical, name: "Automobile", sortOrder: 12 }
+          : vertical,
+      ),
+    });
+    const snapshot = await repository.getCatalogVersion(draft.id);
+
+    expect(
+      snapshot?.verticals.find((vertical) => vertical.id === "auto"),
+    ).toMatchObject({ name: "Automobile", sortOrder: 12 });
+    expect(snapshot?.products).toHaveLength(current.products.length);
+    expect((await service.getCatalog("FR")).verticals).toEqual(
+      current.verticals,
+    );
   });
 
   it("creates an authoritative minor-unit quote from the active catalog", async () => {
@@ -32,7 +53,7 @@ describe("BusinessRulesService quotes", () => {
       marketCode: "FR",
       idempotencyKey: "quote-test-urgent-0001",
     });
-    expect(quote.configurationVersionId).toBe("commercial-fr-v1");
+    expect(quote.configurationVersionId).toBe("commercial-fr-v2");
     expect(quote.lines).toHaveLength(1);
     expect(quote.lines[0].unitAmountMinor).toBeGreaterThan(0);
     expect(quote.totalMinor).toBe(
@@ -80,9 +101,29 @@ describe("BusinessRulesService quotes", () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
     await expect(
       service.createQuote("individual_quote_test", {
-        productIds: ["plan.pro.starter"],
+        productIds: ["plan.pro.business"],
         marketCode: "FR",
         idempotencyKey: "quote-test-plan-0003",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("lets an organization buy professional plans without opening organization-only tiers", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const quote = await service.createQuote("organization_dealer_quote", {
+      productIds: ["auto.dealer.starter"],
+      marketCode: "FR",
+      categoryId: "vehicles",
+      idempotencyKey: "quote-org-professional-plan-0001",
+    });
+    expect(quote.trial?.durationDays).toBe(30);
+
+    await expect(
+      service.createQuote("professional_solo_account", {
+        productIds: ["auto.dealer.network"],
+        marketCode: "FR",
+        categoryId: "vehicles",
+        idempotencyKey: "quote-professional-org-tier-0002",
       }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
@@ -91,7 +132,7 @@ describe("BusinessRulesService quotes", () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
     const catalog = await service.getCatalog("FR");
     const plan = catalog.products.find(
-      (product) => product.id === "plan.pro.starter",
+      (product) => product.id === "auto.dealer.starter",
     )!;
     const annualPrice = plan.prices.find(
       (price) => price.billingPeriod === "year",
@@ -100,6 +141,7 @@ describe("BusinessRulesService quotes", () => {
       productIds: [plan.id],
       priceIds: { [plan.id]: annualPrice.id },
       marketCode: "FR",
+      categoryId: "vehicles",
       idempotencyKey: "quote-test-annual-plan-0004",
     });
     expect(quote.lines[0]).toMatchObject({
@@ -122,7 +164,7 @@ describe("BusinessRulesService quotes", () => {
       amountDueTodayMinor: 0,
       nextChargeMinor: quote.totalMinor,
       reasonCode: "TRIAL_ELIGIBLE",
-      trial: { productId: plan.id, durationDays: 14 },
+      trial: { productId: plan.id, durationDays: 30 },
     });
     expect(subscriptions).toContainEqual(
       expect.objectContaining({ productId: plan.id, status: "trialing" }),
@@ -150,7 +192,7 @@ describe("BusinessRulesService quotes", () => {
       idempotencyKey: "quote-auto-trial-first-0001",
     });
     expect(first.amountDueTodayMinor).toBe(0);
-    expect(first.trial?.durationDays).toBe(14);
+    expect(first.trial?.durationDays).toBe(30);
     await service.createCheckout(
       accountId,
       first.id,
@@ -177,8 +219,14 @@ describe("BusinessRulesService quotes", () => {
       promotionCode: "AUTO2026",
       idempotencyKey: "quote-auto-campaign-0001",
     });
-    expect(quote.discountMinor).toBeGreaterThan(0);
-    expect(quote.promotionCode).toBe("AUTO2026");
+    expect(quote).toMatchObject({
+      amountDueTodayMinor: 0,
+      promotionCode: "AUTO2026",
+      promotion: { freePeriodDays: 90, durationBillingPeriods: 3 },
+      trial: { productId: "auto.dealer.starter", durationDays: 90 },
+    });
+    expect(quote.discountMinor).toBe(quote.subtotalMinor / 2);
+    expect(quote.nextChargeMinor).toBe(quote.totalMinor);
     await service.createCheckout(
       accountId,
       quote.id,
@@ -368,18 +416,18 @@ describe("BusinessRulesService quotes", () => {
     const overview = await service.getAdminOverview("FR");
     expect(overview.publishedVersion.id).toBe(draft.id);
     expect(
-      overview.versions.find((version) => version.id === "commercial-fr-v1")
+      overview.versions.find((version) => version.id === "commercial-fr-v2")
         ?.status,
     ).toBe("archived");
 
     const rollback = await service.transitionVersion({
-      versionId: "commercial-fr-v1",
+      versionId: "commercial-fr-v2",
       action: "rollback",
       actorId: "rollback-admin",
       reason: "Préparation contrôlée du retour à la version initiale",
     });
     expect(rollback.status).toBe("draft");
-    expect(rollback.id).not.toBe("commercial-fr-v1");
+    expect(rollback.id).not.toBe("commercial-fr-v2");
     const rollbackCatalog = await repository.getCatalogVersion(rollback.id);
     expect(
       rollbackCatalog?.products.every((product) =>
@@ -388,7 +436,7 @@ describe("BusinessRulesService quotes", () => {
     ).toBe(true);
     expect(
       (await service.getAdminOverview("FR")).versions.find(
-        (entry) => entry.id === "commercial-fr-v1",
+        (entry) => entry.id === "commercial-fr-v2",
       )?.status,
     ).toBe("archived");
   });

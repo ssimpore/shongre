@@ -37,15 +37,32 @@ export const commercialAudienceSchema = z.enum([
   "organization",
   "all",
 ]);
+export type CommercialAudience = z.infer<typeof commercialAudienceSchema>;
 
-export const businessVerticalCodeSchema = z.enum([
-  "general",
-  "auto",
-  "immo",
-  "emploi",
-  "cours",
-  "services",
-]);
+/** Organizations are professional accounts with an organization scope. */
+export function isCommercialAudienceCompatible(
+  allowed: CommercialAudience | CommercialAudience[],
+  actual: CommercialAudience,
+) {
+  const audiences = Array.isArray(allowed) ? allowed : [allowed];
+  return (
+    audiences.includes("all") ||
+    audiences.includes(actual) ||
+    (actual === "organization" && audiences.includes("professional"))
+  );
+}
+
+/**
+ * Stable, admin-configurable vertical identifier.
+ *
+ * Known verticals are seeded in the commercial catalog, but the contract must
+ * not require a frontend/backend release when an administrator adds a new one.
+ */
+export const businessVerticalCodeSchema = z
+  .string()
+  .min(2)
+  .max(30)
+  .regex(/^[a-z][a-z0-9_-]*$/);
 export type BusinessVerticalCode = z.infer<typeof businessVerticalCodeSchema>;
 
 export const businessVerticalSchema = z.object({
@@ -109,9 +126,7 @@ export const commercialPlanProfileSchema = z.object({
   ]),
   displayOrder: z.number().int().nonnegative(),
 });
-export type CommercialPlanProfile = z.infer<
-  typeof commercialPlanProfileSchema
->;
+export type CommercialPlanProfile = z.infer<typeof commercialPlanProfileSchema>;
 
 export const commercialRuleFieldSchema = z.enum([
   "marketCode",
@@ -311,6 +326,7 @@ export const promotionSchema = z.object({
   maximumRedemptionsPerAccount: z.number().int().positive().default(1),
   activationMode: z.enum(["coupon", "automatic", "admin_grant"]),
   eligibleCustomerType: z.enum(["new", "existing", "all"]),
+  freePeriodDays: z.number().int().positive().optional(),
   durationBillingPeriods: z.number().int().positive().optional(),
   minimumCommitmentPeriods: z.number().int().nonnegative().default(0),
   campaignId: z.string().min(1).optional(),
@@ -443,6 +459,7 @@ export const monetizationQuoteSchema = z.object({
       id: z.string(),
       code: z.string(),
       name: z.string(),
+      freePeriodDays: z.number().int().positive().optional(),
       durationBillingPeriods: z.number().int().positive().optional(),
       endsAt: z.string().datetime(),
     })
@@ -944,6 +961,7 @@ export type MonetizationAdminOverview = z.infer<
 export const commercialDraftPatchSchema = z.object({
   reason: z.string().min(8).max(500),
   effectiveFrom: z.string().datetime().optional(),
+  verticals: z.array(businessVerticalSchema).optional(),
   products: z.array(monetizationProductSchema).optional(),
   rules: z.array(commercialRuleSchema).optional(),
   promotions: z.array(promotionSchema).optional(),

@@ -1,4 +1,5 @@
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { isCommercialAudienceCompatible } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 export type DemoCommercialCategory =
@@ -8,10 +9,10 @@ export type DemoCommercialCategory =
   | undefined;
 
 const PLAN_PRODUCT_IDS: Record<string, string> = {
-  free: "listing.standard.individual",
-  pro_starter: "plan.pro.starter",
+  free: "plan.pro.free",
+  pro_starter: "plan.pro.business",
   pro_business: "plan.pro.business",
-  pro_enterprise: "plan.pro.enterprise",
+  pro_enterprise: "plan.pro.business",
 };
 
 function rule(key: string, marketCode = "FR") {
@@ -133,7 +134,7 @@ export function getDemoPublicationPolicy(input: {
         (scope.marketCodes.length === 0 ||
           scope.marketCodes.includes(marketCode)) &&
         (scope.audiences.length === 0 ||
-          scope.audiences.includes(input.audience)) &&
+          isCommercialAudienceCompatible(scope.audiences, input.audience)) &&
         (scope.categoryIds.length === 0 ||
           (!!input.categoryId &&
             scope.categoryIds.includes(input.categoryId))) &&
@@ -158,7 +159,7 @@ export function getDemoPublicationPolicy(input: {
     PLAN_PRODUCT_IDS[input.planId || ""] ||
     (input.audience === "individual"
       ? "listing.standard.individual"
-      : "plan.pro.starter");
+      : "plan.pro.free");
   const planProduct = BASELINE_MONETIZATION_CATALOG.products.find(
     (candidate) => candidate.id === planProductId,
   );

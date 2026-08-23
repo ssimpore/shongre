@@ -32,6 +32,7 @@ import {
   subscriptionCancellationRequestSchema,
   subscriptionChangeRequestSchema,
   subscriptionChangePreviewSchema,
+  isCommercialAudienceCompatible,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { resolveAllEffectiveEntitlements } from "@shongre/shared";
@@ -50,6 +51,24 @@ import { evaluateCommercialRules } from "./rule-evaluator.js";
 
 const CACHE_TTL_MS = 60_000;
 const QUOTE_TTL_MS = 30 * 60_000;
+
+function currentUtcMonth() {
+  const now = new Date();
+  const periodStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+  );
+  const periodEnd = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+  );
+  return {
+    periodStart: periodStart.toISOString(),
+    periodEnd: periodEnd.toISOString(),
+  };
+}
+
+function entitlementQuotaKey(verticalId: string, entitlementKey: string) {
+  return `entitlement.${verticalId}.${entitlementKey}`;
+}
 
 function stableValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stableValue);
@@ -118,12 +137,18 @@ function isScopeInContext(
   scope: MonetizationProduct["scope"],
   context: RuleEvaluationContext,
 ) {
+  if (
+    context.userType &&
+    scope.audiences.length > 0 &&
+    !isCommercialAudienceCompatible(scope.audiences, context.userType)
+  ) {
+    return false;
+  }
   const dimensions: Array<[string[], string | undefined]> = [
     [scope.marketCodes, context.marketCode],
     [scope.currencies, context.currency],
     [scope.categoryIds, context.categoryId],
     [scope.subtypeIds, context.subtypeId],
-    [scope.audiences, context.userType],
   ];
   return dimensions.every(
     ([allowed, actual]) =>
@@ -302,10 +327,7 @@ export class BusinessRulesService {
         product && targetFamilies.has(product.commercialProfile.familyId),
       );
     });
-    if (
-      promotion.eligibleCustomerType === "new" &&
-      hasTargetFamilyHistory
-    ) {
+    if (promotion.eligibleCustomerType === "new" && hasTargetFamilyHistory) {
       return invalid("PROMOTION_NEW_CUSTOMERS_ONLY");
     }
     if (
@@ -488,6 +510,57 @@ export class BusinessRulesService {
     return resolved.result;
   }
 
+  async getEntitlementQuotaUsage(
+    accountId: string,
+    input: {
+      entitlementKey: string;
+      verticalId: string;
+      marketCode: string;
+    },
+  ) {
+    const { periodStart, periodEnd } = currentUtcMonth();
+    const used = await this.repository.getQuotaUsage(
+      accountId,
+      entitlementQuotaKey(input.verticalId, input.entitlementKey),
+      input.marketCode.toUpperCase(),
+      periodStart,
+    );
+    return { used, periodStart, periodEnd };
+  }
+
+  /** Atomically consumes a monthly quota declared by the active plan snapshot. */
+  async consumeEntitlementQuota(
+    accountId: string,
+    input: {
+      entitlementKey: string;
+      verticalId: string;
+      marketCode: string;
+      limit: number;
+      observedMinimum?: number;
+      amount?: number;
+    },
+  ) {
+    const { periodStart, periodEnd } = currentUtcMonth();
+    try {
+      return await this.repository.consumeQuota({
+        accountId,
+        ruleKey: entitlementQuotaKey(input.verticalId, input.entitlementKey),
+        marketCode: input.marketCode.toUpperCase(),
+        periodStart,
+        periodEnd,
+        limit: input.limit,
+        observedMinimum: input.observedMinimum || 0,
+        amount: input.amount || 1,
+      });
+    } catch {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le quota mensuel inclus dans le forfait est atteint.",
+        details: { reasonCode: "MONTHLY_PUBLICATION_QUOTA_REACHED" },
+      });
+    }
+  }
+
   async createQuote(
     accountId: string,
     rawRequest: QuoteRequest,
@@ -521,7 +594,7 @@ export class BusinessRulesService {
     const accountAudience = await this.repository.getAccountAudience(accountId);
     const incompatibleAudience = selected.find(
       (product) =>
-        product.audience !== "all" && product.audience !== accountAudience,
+        !isCommercialAudienceCompatible(product.audience, accountAudience),
     );
     if (incompatibleAudience) {
       throw new AppError({
@@ -600,24 +673,48 @@ export class BusinessRulesService {
       accountId,
       200,
     );
-    const trialProduct = selectedSubscriptions.find((product) => {
+    const catalogTrialProduct = selectedSubscriptions.find((product) => {
       const policy = product.commercialProfile.trialPolicy;
       if (!policy.enabled || !policy.durationDays) return false;
-      if (!policy.eligibleAudiences.includes(accountAudience)) return false;
-      if (!policy.eligibleMarketCodes.includes(request.marketCode)) return false;
-      if (policy.campaignStartsAt && new Date(policy.campaignStartsAt) > effectiveAt)
+      if (
+        !isCommercialAudienceCompatible(
+          policy.eligibleAudiences,
+          accountAudience,
+        )
+      )
         return false;
-      if (policy.campaignEndsAt && new Date(policy.campaignEndsAt) <= effectiveAt)
+      if (!policy.eligibleMarketCodes.includes(request.marketCode))
+        return false;
+      if (
+        policy.campaignStartsAt &&
+        new Date(policy.campaignStartsAt) > effectiveAt
+      )
+        return false;
+      if (
+        policy.campaignEndsAt &&
+        new Date(policy.campaignEndsAt) <= effectiveAt
+      )
         return false;
       if (!policy.firstTimeCustomersOnly) return true;
       return !priorSubscriptions.some((subscription) => {
         const priorProduct = catalog.products.find(
           (candidate) => candidate.id === subscription.productId,
         );
-        return priorProduct?.commercialProfile.familyId === product.commercialProfile.familyId;
+        return (
+          priorProduct?.commercialProfile.familyId ===
+          product.commercialProfile.familyId
+        );
       });
     });
-    const trialDays = trialProduct?.commercialProfile.trialPolicy.durationDays;
+    const promotionalTrialProduct = promotion?.freePeriodDays
+      ? selectedSubscriptions.find((product) =>
+          promotion.productIds.includes(product.id),
+        )
+      : undefined;
+    const trialProduct = promotionalTrialProduct || catalogTrialProduct;
+    const trialDays =
+      promotion?.freePeriodDays ||
+      trialProduct?.commercialProfile.trialPolicy.durationDays;
     const trialEndsAt = trialDays
       ? new Date(effectiveAt.getTime() + trialDays * 86_400_000).toISOString()
       : undefined;
@@ -650,7 +747,9 @@ export class BusinessRulesService {
               ? subtotalMinor
               : Math.min(
                   subtotalMinor,
-                  Math.round((subtotalMinor * promotion!.discountValue) / 10_000),
+                  Math.round(
+                    (subtotalMinor * promotion!.discountValue) / 10_000,
+                  ),
                 );
       const taxableMinor = subtotalMinor - discountMinor;
       const taxMinor =
@@ -676,8 +775,14 @@ export class BusinessRulesService {
       };
     });
     const createdAt = new Date().toISOString();
-    const subtotalMinor = lines.reduce((sum, line) => sum + line.subtotalMinor, 0);
-    const discountMinor = lines.reduce((sum, line) => sum + line.discountMinor, 0);
+    const subtotalMinor = lines.reduce(
+      (sum, line) => sum + line.subtotalMinor,
+      0,
+    );
+    const discountMinor = lines.reduce(
+      (sum, line) => sum + line.discountMinor,
+      0,
+    );
     const taxMinor = lines.reduce((sum, line) => sum + line.taxMinor, 0);
     const totalMinor = lines.reduce((sum, line) => sum + line.totalMinor, 0);
     const quotePayload = {
@@ -692,6 +797,7 @@ export class BusinessRulesService {
             id: promotion.id,
             code: promotion.code,
             name: promotion.name,
+            freePeriodDays: promotion.freePeriodDays,
             durationBillingPeriods: promotion.durationBillingPeriods,
             endsAt: promotion.endsAt,
           }
@@ -711,8 +817,10 @@ export class BusinessRulesService {
               durationDays: trialDays,
               endsAt: trialEndsAt,
               requiresPaymentMethod:
-                trialProduct.commercialProfile.trialPolicy.requiresPaymentMethod,
-              autoConverts: trialProduct.commercialProfile.trialPolicy.autoConverts,
+                trialProduct.commercialProfile.trialPolicy
+                  .requiresPaymentMethod,
+              autoConverts:
+                trialProduct.commercialProfile.trialPolicy.autoConverts,
             }
           : undefined,
     };
@@ -1410,6 +1518,7 @@ export class BusinessRulesService {
       configurationVersionId: id,
       versionNumber,
       generatedAt: createdAt,
+      verticals: structuredClone(patch.verticals || current.verticals),
       products: (patch.products || current.products).map((product) => ({
         ...product,
         versionId: `${id}:${product.id}`,

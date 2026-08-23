@@ -39,6 +39,10 @@ const price = (
   product: MonetizationProduct,
   period: "once" | "month" | "year",
 ) => product.prices.find((entry) => entry.billingPeriod === period);
+const trialDays = (product: MonetizationProduct, fallback?: number) =>
+  product.commercialProfile.trialPolicy.enabled
+    ? product.commercialProfile.trialPolicy.durationDays
+    : fallback;
 
 /**
  * Keeps the established vertical response contracts while making every price,
@@ -68,7 +72,7 @@ export function applyMonetizationToAutoCatalog(
             : undefined,
         annualPrice: annual?.amount,
         durationDays: monthly?.durationDays,
-        trialDays: monthly?.trialDays,
+        trialDays: trialDays(product, monthly?.trialDays),
         taxRateBps: monthly?.taxRateBps || 0,
         isActive: active(product),
         isRecommended: product.recommended,
@@ -165,7 +169,7 @@ export function applyMonetizationToRealEstateCatalog(
           amount: entry.amount,
           billingPeriod: entry.billingPeriod,
           durationDays: entry.durationDays,
-          trialDays: entry.trialDays,
+          trialDays: trialDays(product, entry.trialDays),
           taxRateBps: entry.taxRateBps,
           isActive: active(product),
         })),
@@ -216,7 +220,7 @@ export function applyMonetizationToEmploymentCatalog(
           amount: entry.amount,
           billingPeriod: entry.billingPeriod,
           durationDays: entry.durationDays,
-          trialDays: entry.trialDays,
+          trialDays: trialDays(product, entry.trialDays),
           taxRateBps: entry.taxRateBps,
           isActive: active(product),
         })),

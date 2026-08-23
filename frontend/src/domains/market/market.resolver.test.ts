@@ -159,8 +159,8 @@ describe("Multi-Market Inheritance Engine (MarketResolver)", () => {
         franceMarket,
       );
       expect(config.monetization.boostPricing.urgent).toBe(9.99); // Overridden
-      expect(config.monetization.boostPricing.highlight).toBe(8.5); // Inherited from the active FR catalog
-      expect(config.monetization.boostPricing.top_of_list).toBe(6.9); // Inherited from the active FR catalog
+      expect(config.monetization.boostPricing.highlight).toBe(19.9); // Inherited from the active FR catalog
+      expect(config.monetization.boostPricing.top_of_list).toBe(1.9); // Inherited from the active FR catalog
       expect(config.monetization.boostPricing.gallery_boost).toBe(14.9); // Inherited from the active FR catalog
     });
   });

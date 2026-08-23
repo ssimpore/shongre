@@ -14,14 +14,14 @@ describe("Monetization & Subscriptions", () => {
     expect(boosts.some((b) => b.type === "featured")).toBe(true);
   });
 
-  it("provides the free and three paid generic Pro tiers", async () => {
+  it("provides the configured Free and generic Pro offers only", async () => {
     const plans = await monetizationService.getProSubscriptionPlans();
-    expect(plans.length).toBe(4);
+    expect(plans.length).toBe(2);
     const planIds = plans.map((p) => p.id);
     expect(planIds).toContain("free");
-    expect(planIds).toContain("starter");
     expect(planIds).toContain("pro");
-    expect(planIds).toContain("enterprise");
+    expect(planIds).not.toContain("starter");
+    expect(planIds).not.toContain("enterprise");
   });
 
   it("routes a legacy boost id through the authoritative quote checkout", async () => {

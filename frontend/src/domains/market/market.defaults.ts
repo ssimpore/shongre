@@ -150,44 +150,29 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     },
     plans: {
       free: {
-        priceMonthly: productPrice("listing.standard.individual"),
-        maxActiveListings: planNumber(
-          "listing.standard.individual",
-          "maxActiveListings",
-        ),
+        priceMonthly: productPrice("plan.pro.free"),
+        maxActiveListings: planNumber("plan.pro.free", "maxActiveListings"),
+        photosPerListing: planNumber("plan.pro.free", "maxPhotosPerListing"),
+        storefrontCustomization: planBoolean("plan.pro.free", "storeEnabled"),
+        prioritySupport: planBoolean("plan.pro.free", "prioritySupport"),
+        bulkImportExport: planBoolean("plan.pro.free", "bulkPublish"),
+        automaticRelisting: planBoolean("plan.pro.free", "automaticRelisting"),
+      },
+      starter: {
+        priceMonthly: productPrice("plan.pro.business", "month"),
+        maxActiveListings: planNumber("plan.pro.business", "maxActiveListings"),
         photosPerListing: planNumber(
-          "listing.standard.individual",
+          "plan.pro.business",
           "maxPhotosPerListing",
         ),
         storefrontCustomization: planBoolean(
-          "listing.standard.individual",
+          "plan.pro.business",
           "storeEnabled",
         ),
-        prioritySupport: planBoolean(
-          "listing.standard.individual",
-          "prioritySupport",
-        ),
-        bulkImportExport: planBoolean(
-          "listing.standard.individual",
-          "bulkPublish",
-        ),
+        prioritySupport: planBoolean("plan.pro.business", "prioritySupport"),
+        bulkImportExport: planBoolean("plan.pro.business", "bulkPublish"),
         automaticRelisting: planBoolean(
-          "listing.standard.individual",
-          "automaticRelisting",
-        ),
-      },
-      starter: {
-        priceMonthly: productPrice("plan.pro.starter", "month"),
-        maxActiveListings: planNumber("plan.pro.starter", "maxActiveListings"),
-        photosPerListing: planNumber("plan.pro.starter", "maxPhotosPerListing"),
-        storefrontCustomization: planBoolean(
-          "plan.pro.starter",
-          "storeEnabled",
-        ),
-        prioritySupport: planBoolean("plan.pro.starter", "prioritySupport"),
-        bulkImportExport: planBoolean("plan.pro.starter", "bulkPublish"),
-        automaticRelisting: planBoolean(
-          "plan.pro.starter",
+          "plan.pro.business",
           "automaticRelisting",
         ),
       },
@@ -210,23 +195,20 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
         ),
       },
       enterprise: {
-        priceMonthly: productPrice("plan.pro.enterprise", "month"),
-        maxActiveListings: planNumber(
-          "plan.pro.enterprise",
-          "maxActiveListings",
-        ),
+        priceMonthly: productPrice("plan.pro.business", "month"),
+        maxActiveListings: planNumber("plan.pro.business", "maxActiveListings"),
         photosPerListing: planNumber(
-          "plan.pro.enterprise",
+          "plan.pro.business",
           "maxPhotosPerListing",
         ),
         storefrontCustomization: planBoolean(
-          "plan.pro.enterprise",
+          "plan.pro.business",
           "storeEnabled",
         ),
-        prioritySupport: planBoolean("plan.pro.enterprise", "prioritySupport"),
-        bulkImportExport: planBoolean("plan.pro.enterprise", "bulkPublish"),
+        prioritySupport: planBoolean("plan.pro.business", "prioritySupport"),
+        bulkImportExport: planBoolean("plan.pro.business", "bulkPublish"),
         automaticRelisting: planBoolean(
-          "plan.pro.enterprise",
+          "plan.pro.business",
           "automaticRelisting",
         ),
       },

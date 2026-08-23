@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type {
+  BusinessVertical,
   CommercialConfigurationVersion,
   MonetizationAdminOverview,
   MonetizationProduct,
@@ -47,6 +48,7 @@ import { useAuthorization } from "../../security/useAuthorization";
 
 type TabId =
   | "catalog"
+  | "verticals"
   | "rules"
   | "plans"
   | "promotions"
@@ -58,6 +60,7 @@ type TabId =
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "catalog", label: "Catalogue" },
+  { id: "verticals", label: "Verticales" },
   { id: "rules", label: "Règles" },
   { id: "plans", label: "Offres Pro" },
   { id: "promotions", label: "Promotions" },
@@ -156,11 +159,21 @@ export const AdminMonetizationPage: React.FC = () => {
   const [draftEffectiveFrom, setDraftEffectiveFrom] = useState("");
   const [saving, setSaving] = useState(false);
   const [campaignOpen, setCampaignOpen] = useState(false);
+  const [verticalEditor, setVerticalEditor] = useState<
+    | (Omit<BusinessVertical, "categoryIds" | "capabilityKeys"> & {
+        categoryIds: string;
+        capabilityKeys: string;
+        existing: boolean;
+      })
+    | null
+  >(null);
+  const [verticalReason, setVerticalReason] = useState("");
   const [campaign, setCampaign] = useState({
     name: "",
     code: "",
     verticalId: "auto",
     percentage: 20,
+    freePeriodDays: 0,
     durationBillingPeriods: 1,
     providerCouponId: "",
     startsAt: "",
@@ -363,9 +376,7 @@ export const AdminMonetizationPage: React.FC = () => {
               planIds: [],
               customerSegments: [],
               publicationChannels: ["web", "mobile"],
-              verticalIds: [
-                campaign.verticalId as "auto" | "immo" | "emploi" | "cours",
-              ],
+              verticalIds: [campaign.verticalId],
             },
             productIds: targetProducts,
             discountType: "percentage",
@@ -374,13 +385,12 @@ export const AdminMonetizationPage: React.FC = () => {
             maximumRedemptionsPerAccount: 1,
             activationMode: "coupon",
             eligibleCustomerType: "new",
+            freePeriodDays: campaign.freePeriodDays || undefined,
             durationBillingPeriods: campaign.durationBillingPeriods,
             minimumCommitmentPeriods: 0,
             campaignId: `campaign-${code.toLowerCase()}`,
             providerCouponId: campaign.providerCouponId.trim() || undefined,
-            verticalIds: [
-              campaign.verticalId as "auto" | "immo" | "emploi" | "cours",
-            ],
+            verticalIds: [campaign.verticalId],
             startsAt: new Date(campaign.startsAt).toISOString(),
             endsAt: new Date(campaign.endsAt).toISOString(),
           },
@@ -394,6 +404,91 @@ export const AdminMonetizationPage: React.FC = () => {
         caught instanceof Error
           ? caught.message
           : "Création de la campagne impossible.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openVerticalEditor = (vertical?: BusinessVertical) => {
+    setVerticalReason("");
+    setVerticalEditor(
+      vertical
+        ? {
+            ...vertical,
+            categoryIds: vertical.categoryIds.join(", "),
+            capabilityKeys: vertical.capabilityKeys.join(", "),
+            existing: true,
+          }
+        : {
+            id: "",
+            name: "",
+            description: "",
+            categoryIds: "",
+            capabilityKeys: "",
+            status: "disabled",
+            sortOrder: (overview?.catalog.verticals.length || 0) * 10,
+            existing: false,
+          },
+    );
+  };
+
+  const saveVerticalDraft = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (
+      !overview ||
+      !verticalEditor ||
+      verticalReason.trim().length < 8 ||
+      !verticalEditor.id.trim() ||
+      !verticalEditor.name.trim()
+    )
+      return;
+    const list = (value: string) => [
+      ...new Set(
+        value
+          .split(",")
+          .map((entry) => entry.trim())
+          .filter(Boolean),
+      ),
+    ];
+    const updated: BusinessVertical = {
+      id: verticalEditor.id.trim().toLowerCase(),
+      name: verticalEditor.name.trim(),
+      description: verticalEditor.description.trim(),
+      categoryIds: list(verticalEditor.categoryIds),
+      capabilityKeys: list(verticalEditor.capabilityKeys),
+      status: verticalEditor.status,
+      sortOrder: verticalEditor.sortOrder,
+    };
+    const duplicate = overview.catalog.verticals.some(
+      (entry) => entry.id === updated.id && !verticalEditor.existing,
+    );
+    if (duplicate) {
+      setError("Cet identifiant de verticale existe déjà.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      const verticals = verticalEditor.existing
+        ? overview.catalog.verticals.map((entry) =>
+            entry.id === updated.id ? updated : entry,
+          )
+        : [...overview.catalog.verticals, updated];
+      const version = await services.businessRules.createDraft({
+        reason: verticalReason.trim(),
+        verticals,
+      });
+      setNotice(
+        `Verticale enregistrée dans le brouillon v${version.versionNumber}.`,
+      );
+      setVerticalEditor(null);
+      await loadOverview();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Enregistrement de la verticale impossible.",
       );
     } finally {
       setSaving(false);
@@ -648,6 +743,7 @@ export const AdminMonetizationPage: React.FC = () => {
 
         {![
           "history",
+          "verticals",
           "rules",
           "promotions",
           "discovery",
@@ -713,7 +809,9 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="divide-y divide-border-subtle">
                 <div className="hidden md:grid grid-cols-[minmax(220px,1fr)_130px_110px_110px_32px] gap-3 px-4 py-2 bg-bg-subtle text-micro font-black uppercase tracking-wide text-stone-500">
                   <span>Produit</span>
-                  <span>{tab === "plans" ? "Verticale · niveau" : "Audience"}</span>
+                  <span>
+                    {tab === "plans" ? "Verticale · niveau" : "Audience"}
+                  </span>
                   <span>Prix actif</span>
                   <span>État</span>
                   <span />
@@ -738,11 +836,14 @@ export const AdminMonetizationPage: React.FC = () => {
                       </span>
                       <span className="mt-2 md:mt-0 inline-flex text-xs font-semibold text-stone-700 capitalize">
                         {tab === "plans"
-                          ? `${overview.catalog.verticals.find(
-                              (vertical) =>
-                                vertical.id ===
-                                (product.commercialProfile.verticalId || "general"),
-                            )?.name || "Général"} · ${product.commercialProfile.tier || "—"}`
+                          ? `${
+                              overview.catalog.verticals.find(
+                                (vertical) =>
+                                  vertical.id ===
+                                  (product.commercialProfile.verticalId ||
+                                    "general"),
+                              )?.name || "Général"
+                            } · ${product.commercialProfile.tier || "—"}`
                           : product.audience === "all"
                             ? "Toutes"
                             : product.audience}
@@ -774,6 +875,92 @@ export const AdminMonetizationPage: React.FC = () => {
                     Aucune offre ne correspond aux filtres.
                   </div>
                 )}
+              </div>
+            )}
+
+            {tab === "verticals" && (
+              <div className="p-4">
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-black text-stone-950">
+                      Verticales commerciales
+                    </h2>
+                    <p className="mt-1 text-micro text-stone-500">
+                      Identifiants stables, catégories et capacités publiés via
+                      le workflow versionné.
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={() => openVerticalEditor()}>
+                    <Plus className="h-4 w-4" /> Nouvelle verticale
+                  </Button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[...overview.catalog.verticals]
+                    .sort((left, right) => left.sortOrder - right.sortOrder)
+                    .map((vertical) => {
+                      const planCount = overview.catalog.products.filter(
+                        (product) =>
+                          product.kind === "subscription" &&
+                          product.status === "active" &&
+                          (product.commercialProfile.verticalId ||
+                            "general") === vertical.id,
+                      ).length;
+                      return (
+                        <article
+                          key={vertical.id}
+                          className="rounded-lg border border-border-base p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h3 className="text-sm font-black text-stone-950">
+                                  {vertical.name}
+                                </h3>
+                                <Badge
+                                  variant={
+                                    vertical.status === "active"
+                                      ? "success"
+                                      : "neutral"
+                                  }
+                                >
+                                  {labelIdentifier(vertical.status)}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 text-micro text-stone-500">
+                                {vertical.id} · ordre {vertical.sortOrder} ·{" "}
+                                {planCount} forfait(s)
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openVerticalEditor(vertical)}
+                            >
+                              Modifier
+                            </Button>
+                          </div>
+                          <p className="mt-3 text-xs text-stone-600">
+                            {vertical.description}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {vertical.categoryIds.map((categoryId) => (
+                              <span
+                                key={categoryId}
+                                className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-stone-700"
+                              >
+                                {categoryId}
+                              </span>
+                            ))}
+                            {vertical.categoryIds.length === 0 && (
+                              <span className="text-micro text-stone-400">
+                                Aucune catégorie spécialisée
+                              </span>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                </div>
               </div>
             )}
 
@@ -826,7 +1013,8 @@ export const AdminMonetizationPage: React.FC = () => {
                       Campagnes et coupons
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
-                      Les changements sont ajoutés à un brouillon soumis au workflow d’approbation.
+                      Les changements sont ajoutés à un brouillon soumis au
+                      workflow d’approbation.
                     </p>
                   </div>
                   <Button size="sm" onClick={() => setCampaignOpen(true)}>
@@ -835,64 +1023,66 @@ export const AdminMonetizationPage: React.FC = () => {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {overview.catalog.promotions.map((promotion) => (
-                  <article
-                    key={promotion.id}
-                    className="rounded-lg border border-border-base p-4"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <h2 className="text-sm font-black text-stone-950">
-                        {promotion.name}
-                      </h2>
-                      <Badge>{statusLabel(promotion.status)}</Badge>
-                    </div>
-                    <div className="mt-2 font-mono text-xs font-bold text-primary">
-                      {promotion.code}
-                    </div>
-                    <p className="mt-2 text-xs text-stone-600">
-                      {promotion.discountType === "percentage"
-                        ? `${promotion.discountValue / 100} %`
-                        : promotion.discountType === "free_period"
-                          ? "Période offerte"
-                          : formatMinor(promotion.discountValue)}{" "}
-                      · {labelIdentifier(promotion.stackingPolicy)} ·{" "}
-                      {labelIdentifier(promotion.activationMode)}
-                    </p>
-                    <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
-                      <div>
-                        <dt className="text-stone-500">Cible</dt>
-                        <dd className="font-bold text-stone-800">
-                          {labelIdentifier(promotion.eligibleCustomerType)}
-                        </dd>
+                    <article
+                      key={promotion.id}
+                      className="rounded-lg border border-border-base p-4"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <h2 className="text-sm font-black text-stone-950">
+                          {promotion.name}
+                        </h2>
+                        <Badge>{statusLabel(promotion.status)}</Badge>
                       </div>
-                      <div>
-                        <dt className="text-stone-500">Durée</dt>
-                        <dd className="font-bold text-stone-800">
-                          {promotion.durationBillingPeriods
-                            ? `${promotion.durationBillingPeriods} période(s)`
-                            : "Ponctuelle"}
-                        </dd>
+                      <div className="mt-2 font-mono text-xs font-bold text-primary">
+                        {promotion.code}
                       </div>
-                      <div>
-                        <dt className="text-stone-500">Verticales</dt>
-                        <dd className="font-bold text-stone-800">
-                          {promotion.verticalIds
-                            .map(
-                              (id) =>
-                                overview.catalog.verticals.find(
-                                  (vertical) => vertical.id === id,
-                                )?.name || id,
-                            )
-                            .join(", ") || "Toutes"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-stone-500">Fin</dt>
-                        <dd className="font-bold text-stone-800">
-                          {new Date(promotion.endsAt).toLocaleDateString("fr-FR")}
-                        </dd>
-                      </div>
-                    </dl>
-                  </article>
+                      <p className="mt-2 text-xs text-stone-600">
+                        {promotion.discountType === "percentage"
+                          ? `${promotion.discountValue / 100} %`
+                          : promotion.discountType === "free_period"
+                            ? "Période offerte"
+                            : formatMinor(promotion.discountValue)}{" "}
+                        · {labelIdentifier(promotion.stackingPolicy)} ·{" "}
+                        {labelIdentifier(promotion.activationMode)}
+                      </p>
+                      <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
+                        <div>
+                          <dt className="text-stone-500">Cible</dt>
+                          <dd className="font-bold text-stone-800">
+                            {labelIdentifier(promotion.eligibleCustomerType)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-stone-500">Durée</dt>
+                          <dd className="font-bold text-stone-800">
+                            {promotion.durationBillingPeriods
+                              ? `${promotion.durationBillingPeriods} période(s)`
+                              : "Ponctuelle"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-stone-500">Verticales</dt>
+                          <dd className="font-bold text-stone-800">
+                            {promotion.verticalIds
+                              .map(
+                                (id) =>
+                                  overview.catalog.verticals.find(
+                                    (vertical) => vertical.id === id,
+                                  )?.name || id,
+                              )
+                              .join(", ") || "Toutes"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-stone-500">Fin</dt>
+                          <dd className="font-bold text-stone-800">
+                            {new Date(promotion.endsAt).toLocaleDateString(
+                              "fr-FR",
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    </article>
                   ))}
                 </div>
               </div>
@@ -991,7 +1181,10 @@ export const AdminMonetizationPage: React.FC = () => {
                             Boolean(product.commercialProfile.tier),
                         )
                         .map((product) => (
-                          <option key={product.versionId} value={product.versionId}>
+                          <option
+                            key={product.versionId}
+                            value={product.versionId}
+                          >
                             {product.name} · {statusLabel(product.status)}
                           </option>
                         ))}
@@ -1100,8 +1293,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         setComplimentaryDecision((current) => ({
                           ...current,
                           decision: event.target.value as
-                            | "approved"
-                            | "rejected",
+                            "approved" | "rejected",
                         }))
                       }
                       className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
@@ -1128,8 +1320,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     size="sm"
                     type="submit"
                     disabled={
-                      saving ||
-                      !can("monetization.complimentary_grants.create")
+                      saving || !can("monetization.complimentary_grants.create")
                     }
                   >
                     Enregistrer la décision
@@ -1220,7 +1411,8 @@ export const AdminMonetizationPage: React.FC = () => {
                       <tbody className="divide-y divide-border-subtle">
                         {overview.subscriptions.map((subscription) => {
                           const product = overview.catalog.products.find(
-                            (candidate) => candidate.id === subscription.productId,
+                            (candidate) =>
+                              candidate.id === subscription.productId,
                           );
                           return (
                             <tr key={subscription.id}>
@@ -1232,17 +1424,23 @@ export const AdminMonetizationPage: React.FC = () => {
                                   {product?.name || subscription.productId}
                                 </div>
                                 <div className="text-micro text-stone-500">
-                                  {subscription.productVersionId || "Version héritée"}
+                                  {subscription.productVersionId ||
+                                    "Version héritée"}
                                 </div>
                               </td>
                               <td className="px-3 py-2 text-stone-700">
-                                {labelIdentifier(subscription.verticalId || "general")} ·{" "}
+                                {labelIdentifier(
+                                  subscription.verticalId || "general",
+                                )}{" "}
+                                ·{" "}
                                 {labelIdentifier(
                                   product?.commercialProfile.tier || "legacy",
                                 )}
                               </td>
                               <td className="px-3 py-2">
-                                <Badge>{labelIdentifier(subscription.status)}</Badge>
+                                <Badge>
+                                  {labelIdentifier(subscription.status)}
+                                </Badge>
                               </td>
                               <td className="px-3 py-2 text-stone-700">
                                 {new Date(
@@ -1250,11 +1448,13 @@ export const AdminMonetizationPage: React.FC = () => {
                                     subscription.currentPeriodEnd,
                                 ).toLocaleDateString("fr-FR")}
                                 {subscription.scheduledProductId
-                                  ? ` · ${overview.catalog.products.find(
-                                      (candidate) =>
-                                        candidate.id ===
-                                        subscription.scheduledProductId,
-                                    )?.name || subscription.scheduledProductId}`
+                                  ? ` · ${
+                                      overview.catalog.products.find(
+                                        (candidate) =>
+                                          candidate.id ===
+                                          subscription.scheduledProductId,
+                                      )?.name || subscription.scheduledProductId
+                                    }`
                                   : ""}
                               </td>
                             </tr>
@@ -1686,10 +1886,16 @@ export const AdminMonetizationPage: React.FC = () => {
                         Transitions configurées
                       </div>
                       <p className="mt-1 text-stone-700">
-                        Montée : {selectedProduct.commercialProfile.upgradeProductIds.join(", ") || "aucune"}
+                        Montée :{" "}
+                        {selectedProduct.commercialProfile.upgradeProductIds.join(
+                          ", ",
+                        ) || "aucune"}
                       </p>
                       <p className="mt-1 text-stone-700">
-                        Baisse : {selectedProduct.commercialProfile.downgradeProductIds.join(", ") || "aucune"}
+                        Baisse :{" "}
+                        {selectedProduct.commercialProfile.downgradeProductIds.join(
+                          ", ",
+                        ) || "aucune"}
                       </p>
                     </div>
                   )}
@@ -1834,6 +2040,171 @@ export const AdminMonetizationPage: React.FC = () => {
         </form>
       </Modal>
       <Modal
+        isOpen={Boolean(verticalEditor)}
+        onClose={() => setVerticalEditor(null)}
+        title={
+          verticalEditor?.existing
+            ? "Modifier la verticale"
+            : "Créer une verticale"
+        }
+        description="Le changement crée un brouillon versionné et ne modifie jamais directement le catalogue publié."
+        maxWidth="lg"
+      >
+        {verticalEditor && (
+          <form onSubmit={saveVerticalDraft} className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FormField
+                label="Identifiant stable"
+                required
+                hint="Lettres minuscules, chiffres, tiret ou underscore."
+              >
+                <Input
+                  value={verticalEditor.id}
+                  disabled={verticalEditor.existing}
+                  pattern="[a-z][a-z0-9_-]{1,29}"
+                  onChange={(event) =>
+                    setVerticalEditor((current) =>
+                      current
+                        ? { ...current, id: event.target.value }
+                        : current,
+                    )
+                  }
+                  placeholder="mobilite"
+                />
+              </FormField>
+              <FormField label="Nom public" required>
+                <Input
+                  value={verticalEditor.name}
+                  onChange={(event) =>
+                    setVerticalEditor((current) =>
+                      current
+                        ? { ...current, name: event.target.value }
+                        : current,
+                    )
+                  }
+                  placeholder="Mobilité"
+                />
+              </FormField>
+            </div>
+            <FormField label="Description">
+              <Textarea
+                rows={2}
+                value={verticalEditor.description}
+                onChange={(event) =>
+                  setVerticalEditor((current) =>
+                    current
+                      ? { ...current, description: event.target.value }
+                      : current,
+                  )
+                }
+              />
+            </FormField>
+            <FormField
+              label="Catégories associées"
+              hint="Identifiants séparés par des virgules."
+            >
+              <Input
+                value={verticalEditor.categoryIds}
+                onChange={(event) =>
+                  setVerticalEditor((current) =>
+                    current
+                      ? { ...current, categoryIds: event.target.value }
+                      : current,
+                  )
+                }
+                placeholder="vehicles, mobility"
+              />
+            </FormField>
+            <FormField
+              label="Capacités"
+              hint="Clés d’autorisation séparées par des virgules."
+            >
+              <Input
+                value={verticalEditor.capabilityKeys}
+                onChange={(event) =>
+                  setVerticalEditor((current) =>
+                    current
+                      ? { ...current, capabilityKeys: event.target.value }
+                      : current,
+                  )
+                }
+                placeholder="mobility.inventory.manage.own"
+              />
+            </FormField>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FormField label="État" required>
+                <select
+                  value={verticalEditor.status}
+                  onChange={(event) =>
+                    setVerticalEditor((current) =>
+                      current
+                        ? {
+                            ...current,
+                            status: event.target
+                              .value as BusinessVertical["status"],
+                          }
+                        : current,
+                    )
+                  }
+                  className="w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+                >
+                  <option value="active">Active</option>
+                  <option value="disabled">Désactivée</option>
+                  <option value="archived">Archivée</option>
+                </select>
+              </FormField>
+              <FormField label="Ordre d’affichage" required>
+                <Input
+                  type="number"
+                  min={0}
+                  value={verticalEditor.sortOrder}
+                  onChange={(event) =>
+                    setVerticalEditor((current) =>
+                      current
+                        ? {
+                            ...current,
+                            sortOrder: Math.max(0, Number(event.target.value)),
+                          }
+                        : current,
+                    )
+                  }
+                />
+              </FormField>
+            </div>
+            <FormField label="Motif du changement" required>
+              <Textarea
+                rows={3}
+                value={verticalReason}
+                onChange={(event) => setVerticalReason(event.target.value)}
+                placeholder="Ex. Ouverture contrôlée de la verticale après validation commerciale…"
+              />
+            </FormField>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setVerticalEditor(null)}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={saving || verticalReason.trim().length < 8}
+              >
+                {saving ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}{" "}
+                Créer le brouillon
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+      <Modal
         isOpen={campaignOpen}
         onClose={() => setCampaignOpen(false)}
         title="Créer une campagne promotionnelle"
@@ -1846,7 +2217,10 @@ export const AdminMonetizationPage: React.FC = () => {
               <Input
                 value={campaign.name}
                 onChange={(event) =>
-                  setCampaign((current) => ({ ...current, name: event.target.value }))
+                  setCampaign((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
                 }
                 placeholder="Lancement Auto"
               />
@@ -1874,10 +2248,13 @@ export const AdminMonetizationPage: React.FC = () => {
                 }
                 className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
-                <option value="auto">Auto</option>
-                <option value="immo">Immo</option>
-                <option value="emploi">Emploi</option>
-                <option value="cours">Cours</option>
+                {overview?.catalog.verticals
+                  .filter((vertical) => vertical.status === "active")
+                  .map((vertical) => (
+                    <option key={vertical.id} value={vertical.id}>
+                      {vertical.name}
+                    </option>
+                  ))}
               </select>
             </FormField>
             <FormField label="Remise (%)" required>
@@ -1889,7 +2266,30 @@ export const AdminMonetizationPage: React.FC = () => {
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
-                    percentage: Math.min(100, Math.max(1, Number(event.target.value))),
+                    percentage: Math.min(
+                      100,
+                      Math.max(1, Number(event.target.value)),
+                    ),
+                  }))
+                }
+              />
+            </FormField>
+            <FormField
+              label="Période gratuite (jours)"
+              hint="0 désactive la phase gratuite de la campagne."
+            >
+              <Input
+                type="number"
+                min={0}
+                max={365}
+                value={campaign.freePeriodDays}
+                onChange={(event) =>
+                  setCampaign((current) => ({
+                    ...current,
+                    freePeriodDays: Math.min(
+                      365,
+                      Math.max(0, Number(event.target.value)),
+                    ),
                   }))
                 }
               />
@@ -1899,7 +2299,10 @@ export const AdminMonetizationPage: React.FC = () => {
                 type="datetime-local"
                 value={campaign.startsAt}
                 onChange={(event) =>
-                  setCampaign((current) => ({ ...current, startsAt: event.target.value }))
+                  setCampaign((current) => ({
+                    ...current,
+                    startsAt: event.target.value,
+                  }))
                 }
               />
             </FormField>
@@ -1908,7 +2311,10 @@ export const AdminMonetizationPage: React.FC = () => {
                 type="datetime-local"
                 value={campaign.endsAt}
                 onChange={(event) =>
-                  setCampaign((current) => ({ ...current, endsAt: event.target.value }))
+                  setCampaign((current) => ({
+                    ...current,
+                    endsAt: event.target.value,
+                  }))
                 }
               />
             </FormField>
@@ -1954,19 +2360,34 @@ export const AdminMonetizationPage: React.FC = () => {
               rows={3}
               value={campaign.reason}
               onChange={(event) =>
-                setCampaign((current) => ({ ...current, reason: event.target.value }))
+                setCampaign((current) => ({
+                  ...current,
+                  reason: event.target.value,
+                }))
               }
             />
           </FormField>
           <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-stone-700">
-            Le coupon cible les nouveaux clients de la verticale, ne se cumule pas et reste inactif jusqu’à publication du brouillon.
+            Le coupon cible les nouveaux clients de la verticale, ne se cumule
+            pas et reste inactif jusqu’à publication du brouillon.
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setCampaignOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCampaignOpen(false)}
+            >
               Annuler
             </Button>
-            <Button type="submit" disabled={saving || campaign.reason.trim().length < 8}>
-              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            <Button
+              type="submit"
+              disabled={saving || campaign.reason.trim().length < 8}
+            >
+              {saving ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
               Ajouter au brouillon
             </Button>
           </div>

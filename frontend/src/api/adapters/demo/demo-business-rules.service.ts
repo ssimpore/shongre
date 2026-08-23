@@ -21,9 +21,13 @@ import type {
   RuleEvaluationContext,
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
+import { isCommercialAudienceCompatible } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { colors, palette } from "@shongre/design-tokens";
-import { resolveAllEffectiveEntitlements } from "@shongre/shared";
+import {
+  getBillingUsagePresentation,
+  resolveAllEffectiveEntitlements,
+} from "@shongre/shared";
 import type {
   BusinessRulesServiceContract,
   ComplimentaryGrantDecisionInput,
@@ -34,15 +38,15 @@ import type {
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
 
-const createdAt = "2026-08-22T00:00:00.000Z";
+const createdAt = BASELINE_MONETIZATION_CATALOG.generatedAt;
 const versions: CommercialConfigurationVersion[] = [
   {
     id: BASELINE_MONETIZATION_CATALOG.configurationVersionId,
     setId: "commercial-core",
-    versionNumber: 1,
+    versionNumber: BASELINE_MONETIZATION_CATALOG.versionNumber,
     marketCode: "FR",
     status: "active",
-    reason: "Backfill initial du catalogue commercial audité",
+    reason: "Publication du catalogue professionnel verticalisé v2",
     effectiveFrom: createdAt,
     createdBy: "Système",
     approvedBy: "Direction commerciale",
@@ -82,7 +86,8 @@ function currentAccountId() {
   return storageService.getCurrentUser()?.id || "guest";
 }
 
-function currentAccountAudience(): "individual" | "professional" | "organization" {
+function currentAccountAudience():
+  "individual" | "professional" | "organization" {
   const user = storageService.getCurrentUser();
   if (/org|organization|dealer|agency|school/i.test(user?.id || "")) {
     return "organization";
@@ -210,10 +215,7 @@ function grantDemoRecurringCredits(
       creditBalances.push(balance);
     }
     balance.available += recurring.quantity;
-    balance.nextExpiryAt = [
-      balance.nextExpiryAt,
-      subscription.currentPeriodEnd,
-    ]
+    balance.nextExpiryAt = [balance.nextExpiryAt, subscription.currentPeriodEnd]
       .filter((value): value is string => Boolean(value))
       .sort()[0];
     balance.transactions.unshift(transaction);
@@ -226,11 +228,7 @@ function ensureSeededBilling(accountId: string) {
     return;
   if (subscriptions.some((entry) => entry.accountId === accountId)) return;
   const productId =
-    user.activePlanId === "pro_enterprise"
-      ? "plan.pro.enterprise"
-      : user.activePlanId === "pro_starter"
-        ? "plan.pro.starter"
-        : "plan.pro.business";
+    user.activePlanId === "free" ? "plan.pro.free" : "plan.pro.business";
   const product = BASELINE_MONETIZATION_CATALOG.products.find(
     (entry) => entry.id === productId,
   );
@@ -287,7 +285,8 @@ function ensureSeededBilling(accountId: string) {
       startsAt: periodStart,
       endsAt: periodEnd,
       status: "active",
-      verticalId: entitlement.verticalId || product.commercialProfile.verticalId,
+      verticalId:
+        entitlement.verticalId || product.commercialProfile.verticalId,
       mergePolicy: entitlement.mergePolicy,
     });
   });
@@ -459,7 +458,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     if (
       selectedProducts.some(
         (product) =>
-          (product.audience !== "all" && product.audience !== accountAudience) ||
+          !isCommercialAudienceCompatible(product.audience, accountAudience) ||
           !product.scope.marketCodes.includes(request.marketCode) ||
           !product.scope.currencies.includes(catalog.currency) ||
           (product.scope.categoryIds.length > 0 &&
@@ -467,15 +466,32 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
               !product.scope.categoryIds.includes(request.categoryId))),
       )
     ) {
-      throw new Error("Cette offre ne correspond pas au compte ou au marché sélectionné");
+      throw new Error(
+        "Cette offre ne correspond pas au compte ou au marché sélectionné",
+      );
     }
-    const trialProduct = selectedSubscriptions.find((product) => {
+    const catalogTrialProduct = selectedSubscriptions.find((product) => {
       const policy = product.commercialProfile.trialPolicy;
       if (!policy.enabled || !policy.durationDays) return false;
-      if (!policy.eligibleAudiences.includes(accountAudience)) return false;
-      if (!policy.eligibleMarketCodes.includes(request.marketCode)) return false;
-      if (policy.campaignStartsAt && new Date(policy.campaignStartsAt) > new Date()) return false;
-      if (policy.campaignEndsAt && new Date(policy.campaignEndsAt) <= new Date()) return false;
+      if (
+        !isCommercialAudienceCompatible(
+          policy.eligibleAudiences,
+          accountAudience,
+        )
+      )
+        return false;
+      if (!policy.eligibleMarketCodes.includes(request.marketCode))
+        return false;
+      if (
+        policy.campaignStartsAt &&
+        new Date(policy.campaignStartsAt) > new Date()
+      )
+        return false;
+      if (
+        policy.campaignEndsAt &&
+        new Date(policy.campaignEndsAt) <= new Date()
+      )
+        return false;
       if (!policy.firstTimeCustomersOnly) return true;
       return !subscriptions
         .filter((entry) => entry.accountId === accountId)
@@ -489,7 +505,15 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           );
         });
     });
-    const trialDays = trialProduct?.commercialProfile.trialPolicy.durationDays;
+    const promotionalTrialProduct = promotion?.freePeriodDays
+      ? selectedSubscriptions.find((product) =>
+          promotion.productIds.includes(product.id),
+        )
+      : undefined;
+    const trialProduct = promotionalTrialProduct || catalogTrialProduct;
+    const trialDays =
+      promotion?.freePeriodDays ||
+      trialProduct?.commercialProfile.trialPolicy.durationDays;
     const trialEndsAt = trialDays
       ? new Date(Date.now() + trialDays * 86_400_000).toISOString()
       : undefined;
@@ -512,7 +536,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
               : Math.min(
                   price.amount.amountMinor,
                   Math.round(
-                    (price.amount.amountMinor * promotion.discountValue) / 10_000,
+                    (price.amount.amountMinor * promotion.discountValue) /
+                      10_000,
                   ),
                 );
       const taxableMinor = price.amount.amountMinor - discountMinor;
@@ -560,8 +585,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
               durationDays: trialDays,
               endsAt: trialEndsAt,
               requiresPaymentMethod:
-                trialProduct.commercialProfile.trialPolicy.requiresPaymentMethod,
-              autoConverts: trialProduct.commercialProfile.trialPolicy.autoConverts,
+                trialProduct.commercialProfile.trialPolicy
+                  .requiresPaymentMethod,
+              autoConverts:
+                trialProduct.commercialProfile.trialPolicy.autoConverts,
             }
           : undefined,
       snapshotHash: digest(JSON.stringify(lines)),
@@ -571,6 +598,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
             id: promotion.id,
             code: promotion.code,
             name: promotion.name,
+            freePeriodDays: promotion.freePeriodDays,
             durationBillingPeriods: promotion.durationBillingPeriods,
             endsAt: promotion.endsAt,
           }
@@ -661,9 +689,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
             priceId: line.priceId,
             sourceOrderId: order.id,
             status:
-              quote.trial?.productId === line.productId
-                ? "trialing"
-                : "active",
+              quote.trial?.productId === line.productId ? "trialing" : "active",
             providerSubscriptionId: order.providerCheckoutId,
             billingPeriod: line.billingPeriod,
             currentPeriodStart: now,
@@ -764,22 +790,22 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           : true;
     const verticalCompatible = Boolean(
       promotion &&
-        (promotion.verticalIds.length === 0 ||
-          catalog.products
-            .filter((product) => applicableProductIds.includes(product.id))
-            .every(
-              (product) =>
-                product.commercialProfile.verticalId &&
-                promotion.verticalIds.includes(
-                  product.commercialProfile.verticalId,
-                ),
-            )),
+      (promotion.verticalIds.length === 0 ||
+        catalog.products
+          .filter((product) => applicableProductIds.includes(product.id))
+          .every(
+            (product) =>
+              product.commercialProfile.verticalId &&
+              promotion.verticalIds.includes(
+                product.commercialProfile.verticalId,
+              ),
+          )),
     );
     const valid = Boolean(
       active &&
-        applicableProductIds.length > 0 &&
-        customerCompatible &&
-        verticalCompatible,
+      applicableProductIds.length > 0 &&
+      customerCompatible &&
+      verticalCompatible,
     );
     return {
       valid,
@@ -794,11 +820,11 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
               ? promotion.eligibleCustomerType === "new"
                 ? "PROMOTION_NEW_CUSTOMERS_ONLY"
                 : "PROMOTION_EXISTING_CUSTOMERS_ONLY"
-            : !verticalCompatible
-              ? "PROMOTION_VERTICAL_MISMATCH"
-            : valid
-              ? "PROMOTION_VALID"
-              : "PROMOTION_EXPIRED",
+              : !verticalCompatible
+                ? "PROMOTION_VERTICAL_MISMATCH"
+                : valid
+                  ? "PROMOTION_VALID"
+                  : "PROMOTION_EXPIRED",
       promotionId: valid ? promotion?.id : undefined,
       discountType: valid ? promotion?.discountType : undefined,
       discountValue: valid ? promotion?.discountValue : undefined,
@@ -847,18 +873,33 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         "cancellation_pending",
       ].includes(entry.status),
     );
-    const listingLimit = accountEntitlements.find(
-      (entry) => entry.key === "maxActiveListings",
-    );
-    const photoLimit = accountEntitlements.find(
-      (entry) => entry.key === "maxPhotosPerListing",
-    );
-    const teamLimit = accountEntitlements.find(
-      (entry) => entry.key === "teamMembers",
-    );
     const effectiveEntitlements = resolveAllEffectiveEntitlements({
       catalog: BASELINE_MONETIZATION_CATALOG,
       entitlements: accountEntitlements,
+    });
+    const usage = effectiveEntitlements.flatMap((entry) => {
+      const presentation = getBillingUsagePresentation(entry.key);
+      if (!presentation || typeof entry.value !== "number") return [];
+      const sampleUsed = /Photo|Media|Video|Tour/i.test(entry.key)
+        ? 8
+        : /Team|Members|Seats|Locations/i.test(entry.key)
+          ? 1
+          : /Credits/i.test(entry.key)
+            ? 0
+            : /Monthly/i.test(entry.key)
+              ? 18
+              : 12;
+      return [
+        {
+          key: entry.key,
+          label: presentation.label,
+          used: Math.min(sampleUsed, entry.value),
+          limit: entry.value,
+          unit: presentation.unit,
+          resetsAt: currentSubscription?.currentPeriodEnd,
+          verticalId: entry.verticalId,
+        },
+      ];
     });
     return {
       customer: user
@@ -888,32 +929,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         : undefined,
       subscriptions: structuredClone(accountSubscriptions),
       entitlements: structuredClone(accountEntitlements),
-      usage: [
-        listingLimit && {
-          key: "activeListings",
-          label: "Annonces actives",
-          used: Math.min(12, Number(listingLimit.value)),
-          limit: Number(listingLimit.value),
-          unit: "annonces",
-          resetsAt: currentSubscription?.currentPeriodEnd,
-        },
-        photoLimit && {
-          key: "photosPerListing",
-          label: "Photos par annonce",
-          used: Math.min(8, Number(photoLimit.value)),
-          limit: Number(photoLimit.value),
-          unit: "photos",
-          resetsAt: currentSubscription?.currentPeriodEnd,
-        },
-        teamLimit && {
-          key: "teamMembers",
-          label: "Membres d’équipe",
-          used: Math.min(2, Number(teamLimit.value)),
-          limit: Number(teamLimit.value),
-          unit: "membres",
-          resetsAt: currentSubscription?.currentPeriodEnd,
-        },
-      ].filter((entry): entry is NonNullable<typeof entry> => Boolean(entry)),
+      usage,
       orders: [
         ...new Map(
           [...orders.values()]
@@ -1246,6 +1262,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       configurationVersionId: id,
       versionNumber: number,
       generatedAt: now,
+      verticals: structuredClone(patch.verticals || current.verticals),
       products: structuredClone(patch.products || current.products).map(
         (product) => ({
           ...product,

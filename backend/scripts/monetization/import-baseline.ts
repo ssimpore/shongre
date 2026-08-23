@@ -23,10 +23,10 @@ async function importBaseline() {
     .update(JSON.stringify(stableValue(catalog)))
     .digest("hex");
   const client = getSupabaseAdminClient() as any;
-  const { error } = await client.rpc("import_commercial_catalog", {
+  const { error } = await client.rpc("install_commercial_catalog_release", {
     p_catalog: catalog,
     p_snapshot_hash: hash,
-    p_reason: "Backfill initial du catalogue commercial audité",
+    p_reason: "Publication du catalogue professionnel verticalisé v2",
   });
   if (error) throw error;
   console.log(
