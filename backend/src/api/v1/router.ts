@@ -1525,6 +1525,40 @@ export class ApiV1Router {
         businessRulesService.getSubscriptions(principal.userId),
     );
     this.addRoute(
+      "GET",
+      "/monetization/billing",
+      AUTHENTICATED,
+      async ({ principal }) =>
+        businessRulesService.getBillingOverview(principal.userId),
+    );
+    this.addRoute(
+      "GET",
+      "/monetization/invoices/:id/document",
+      AUTHENTICATED,
+      async ({ principal, params }) =>
+        businessRulesService.getInvoiceDocument(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/monetization/subscriptions/:id/change-preview",
+      permission("subscription.manage.own"),
+      async ({ principal, params, body }) =>
+        businessRulesService.previewSubscriptionChange(principal.userId, {
+          ...body,
+          subscriptionId: params.id,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/monetization/subscriptions/:id/change",
+      permission("subscription.manage.own"),
+      async ({ principal, params, body }) =>
+        businessRulesService.applySubscriptionChange(principal.userId, {
+          ...body,
+          subscriptionId: params.id,
+        }),
+    );
+    this.addRoute(
       "PATCH",
       "/monetization/subscriptions/:id",
       permission("subscription.manage.own"),

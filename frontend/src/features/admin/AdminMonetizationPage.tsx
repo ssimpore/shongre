@@ -652,7 +652,7 @@ export const AdminMonetizationPage: React.FC = () => {
 
             {tab === "operations" && (
               <div className="p-4 space-y-5">
-                <div className="grid sm:grid-cols-3 gap-3">
+                <div className="grid sm:grid-cols-2 xl:grid-cols-6 gap-3">
                   <div className="rounded-lg border border-border-base p-3">
                     <div className="text-micro text-stone-500">
                       Devis aujourd’hui
@@ -676,6 +676,101 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="mt-1 text-lg font-black text-stone-950">
                       {overview.entitlements.length}
                     </div>
+                  </div>
+                  <div className="rounded-lg border border-border-base p-3">
+                    <div className="text-micro text-stone-500">
+                      Paiements réussis
+                    </div>
+                    <div className="mt-1 text-lg font-black text-stone-950">
+                      {
+                        overview.payments.filter(
+                          (payment) => payment.status === "succeeded",
+                        ).length
+                      }
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border-base p-3">
+                    <div className="text-micro text-stone-500">
+                      Factures
+                    </div>
+                    <div className="mt-1 text-lg font-black text-stone-950">
+                      {overview.invoices.length}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border-base p-3">
+                    <div className="text-micro text-stone-500">
+                      Remboursements
+                    </div>
+                    <div className="mt-1 text-lg font-black text-stone-950">
+                      {overview.refunds.length}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xs font-black text-stone-950">
+                    Registre financier
+                  </h2>
+                  <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
+                    <table className="w-full min-w-[620px] text-xs">
+                      <thead className="bg-bg-subtle text-left text-stone-600">
+                        <tr>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Référence
+                          </th>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Type
+                          </th>
+                          <th className="px-3 py-2 font-bold" scope="col">
+                            Statut
+                          </th>
+                          <th className="px-3 py-2 text-right font-bold" scope="col">
+                            Montant
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border-subtle">
+                        {overview.invoices.slice(0, 10).map((invoice) => (
+                          <tr key={invoice.id}>
+                            <td className="px-3 py-2 font-mono font-bold text-stone-900">
+                              {invoice.number}
+                            </td>
+                            <td className="px-3 py-2 text-stone-600">Facture</td>
+                            <td className="px-3 py-2 text-stone-600">{invoice.status}</td>
+                            <td className="px-3 py-2 text-right font-black text-stone-950">
+                              {formatMinor(
+                                invoice.total.amountMinor,
+                                invoice.total.currency,
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                        {overview.refunds.slice(0, 10).map((refund) => (
+                          <tr key={refund.id}>
+                            <td className="px-3 py-2 font-mono font-bold text-stone-900">
+                              {refund.id}
+                            </td>
+                            <td className="px-3 py-2 text-stone-600">
+                              Remboursement
+                            </td>
+                            <td className="px-3 py-2 text-stone-600">{refund.status}</td>
+                            <td className="px-3 py-2 text-right font-black text-stone-950">
+                              − {formatMinor(
+                                refund.amount.amountMinor,
+                                refund.amount.currency,
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                        {overview.invoices.length === 0 &&
+                          overview.refunds.length === 0 && (
+                            <tr>
+                              <td colSpan={4} className="px-3 py-5 text-center text-stone-500">
+                                Aucun mouvement financier à afficher.
+                              </td>
+                            </tr>
+                          )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
                 <div>

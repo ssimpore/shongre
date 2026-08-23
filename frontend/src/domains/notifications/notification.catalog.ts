@@ -500,6 +500,16 @@ export const NOTIFICATION_TEMPLATES: Record<
     getDestination: () => "/compte/pro/tableau-de-bord",
   },
 
+  "subscription.trial_ending": {
+    type: "subscription.trial_ending",
+    category: "monetization",
+    defaultPriority: "high",
+    getTitle: () => "Votre essai Pro se termine bientôt",
+    getBody: (ctx) =>
+      `Votre période d’essai se termine le ${ctx?.renewalDate || "prochainement"}. Vérifiez le forfait et le moyen de paiement avant l’échéance.`,
+    getDestination: () => "/solutions-pro",
+  },
+
   "subscription.renewal_upcoming": {
     type: "subscription.renewal_upcoming",
     category: "monetization",
@@ -508,6 +518,16 @@ export const NOTIFICATION_TEMPLATES: Record<
     getBody: (ctx) =>
       `Votre abonnement sera renouvelé le ${ctx?.renewalDate || "prochainement"}.`,
     getDestination: () => "/compte/pro/abonnements",
+  },
+
+  "subscription.renewed": {
+    type: "subscription.renewed",
+    category: "monetization",
+    defaultPriority: "normal",
+    getTitle: () => "Forfait Pro renouvelé",
+    getBody: (ctx) =>
+      `Votre abonnement ${ctx?.planName || "Pro"} a été renouvelé. Votre facture est disponible dans votre espace.`,
+    getDestination: () => "/solutions-pro",
   },
 
   "subscription.payment_failed": {
@@ -529,14 +549,43 @@ export const NOTIFICATION_TEMPLATES: Record<
     ],
   },
 
+  "subscription.changed": {
+    type: "subscription.changed",
+    category: "monetization",
+    defaultPriority: "normal",
+    getTitle: () => "Changement de forfait enregistré",
+    getBody: (ctx) =>
+      `Votre forfait ${ctx?.planName || "Pro"} est mis à jour selon la date d’effet confirmée.`,
+    getDestination: () => "/solutions-pro",
+  },
+
+  "subscription.cancellation_scheduled": {
+    type: "subscription.cancellation_scheduled",
+    category: "monetization",
+    defaultPriority: "high",
+    getTitle: () => "Résiliation programmée",
+    getBody: (ctx) =>
+      `Votre forfait reste actif jusqu’au ${ctx?.renewalDate || "terme de la période payée"}. Vous pouvez le réactiver avant cette date.`,
+    getDestination: () => "/solutions-pro",
+  },
+
   "subscription.cancelled": {
     type: "subscription.cancelled",
     category: "monetization",
     defaultPriority: "normal",
-    getTitle: () => "Abonnement Pro résilié",
+    getTitle: () => "Abonnement Pro terminé",
+    getBody: () => "Votre forfait Pro est arrivé à son terme.",
+    getDestination: () => "/solutions-pro",
+  },
+
+  "subscription.expired": {
+    type: "subscription.expired",
+    category: "monetization",
+    defaultPriority: "high",
+    getTitle: () => "Abonnement Pro expiré",
     getBody: () =>
-      "Votre forfait Pro prendra fin à la date d'échéance en cours.",
-    getDestination: () => "/compte/pro/abonnements",
+      "Votre forfait a expiré. Choisissez une offre pour réactiver les fonctionnalités Pro.",
+    getDestination: () => "/solutions-pro",
   },
 
   // 9. Promotions

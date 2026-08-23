@@ -1,5 +1,6 @@
 import type {
   ActiveEntitlement,
+  BillingOverview,
   CommercialConfigurationVersion,
   CommercialDraftPatch,
   MonetizationAdminOverview,
@@ -13,8 +14,13 @@ import type {
   RuleEvaluationContext,
   RuleEvaluationResult,
   SubscriptionCancellationRequest,
+  SubscriptionChangePreview,
+  SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
-import type { BusinessRulesServiceContract } from "../../contracts/business-rules.contract";
+import type {
+  BusinessRulesServiceContract,
+  InvoiceDocument,
+} from "../../contracts/business-rules.contract";
 import { httpClient } from "./http-client";
 
 export class HttpBusinessRulesService implements BusinessRulesServiceContract {
@@ -56,6 +62,30 @@ export class HttpBusinessRulesService implements BusinessRulesServiceContract {
   getSubscriptions() {
     return httpClient.get<MonetizationSubscription[]>(
       "/monetization/subscriptions",
+    );
+  }
+
+  getBillingOverview() {
+    return httpClient.get<BillingOverview>("/monetization/billing");
+  }
+
+  getInvoiceDocument(invoiceId: string) {
+    return httpClient.get<InvoiceDocument>(
+      `/monetization/invoices/${encodeURIComponent(invoiceId)}/document`,
+    );
+  }
+
+  previewSubscriptionChange(request: SubscriptionChangeRequest) {
+    return httpClient.post<SubscriptionChangePreview>(
+      `/monetization/subscriptions/${encodeURIComponent(request.subscriptionId)}/change-preview`,
+      request,
+    );
+  }
+
+  applySubscriptionChange(request: SubscriptionChangeRequest) {
+    return httpClient.post<MonetizationSubscription>(
+      `/monetization/subscriptions/${encodeURIComponent(request.subscriptionId)}/change`,
+      request,
     );
   }
 

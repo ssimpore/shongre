@@ -1,12 +1,16 @@
 import { createHash } from "node:crypto";
 import type {
   ActiveEntitlement,
+  BillingOverview,
+  CreditTransaction,
   CommercialAuditEvent,
   CommercialConfigurationVersion,
   MonetizationCatalog,
   MonetizationOrder,
   MonetizationQuote,
   MonetizationSubscription,
+  SubscriptionChangePreview,
+  SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
@@ -51,6 +55,12 @@ export interface BusinessRulesRepository {
     accountId?: string,
     limit?: number,
   ): Promise<MonetizationSubscription[]>;
+  getBillingOverview(accountId: string): Promise<BillingOverview>;
+  applySubscriptionChange(
+    accountId: string,
+    request: SubscriptionChangeRequest,
+    preview: SubscriptionChangePreview,
+  ): Promise<MonetizationSubscription>;
   updateSubscriptionCancellation(
     subscriptionId: string,
     accountId: string,
@@ -325,9 +335,12 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
               id: subscriptionId,
               accountId: order.accountId,
               productId: line.productId,
+              productVersionId: line.productVersionId,
+              priceId: line.priceId,
               sourceOrderId: order.id,
               status: "active",
               providerSubscriptionId: order.providerCheckoutId,
+              billingPeriod: line.billingPeriod,
               currentPeriodStart: startsAt,
               currentPeriodEnd: periodEnd.toISOString(),
               cancelAtPeriodEnd: false,
@@ -388,6 +401,69 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       .map((entry) => structuredClone(entry));
   }
 
+  async getBillingOverview(accountId: string): Promise<BillingOverview> {
+    const subscriptions = await this.listSubscriptions(accountId, 100);
+    const entitlements = await this.listEntitlements(accountId, 200);
+    const accountOrders = [...memory.orders.values()].filter(
+      (entry) => entry.accountId === accountId,
+    );
+    const accountSubscriptions = subscriptions as MonetizationSubscription[];
+    const accountEntitlements = entitlements as ActiveEntitlement[];
+    const currentSubscription = accountSubscriptions.find((entry) =>
+      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
+        entry.status,
+      ),
+    );
+    const limits = accountEntitlements.filter(
+      (entry) =>
+        ["maxActiveListings", "maxPhotosPerListing", "teamMembers"].includes(
+          entry.key,
+        ) && typeof entry.value === "number",
+    );
+    return {
+      currentSubscription,
+      subscriptions: accountSubscriptions,
+      entitlements: accountEntitlements,
+      usage: limits.map((entry) => ({
+        key: entry.key,
+        label: entry.key,
+        used: 0,
+        limit: Number(entry.value),
+        unit: "unités",
+        resetsAt: currentSubscription?.currentPeriodEnd,
+      })),
+      orders: accountOrders,
+      payments: [],
+      invoices: [],
+      refunds: [],
+      creditBalances: [],
+      subscriptionEvents: [],
+    };
+  }
+
+  async applySubscriptionChange(
+    accountId: string,
+    request: SubscriptionChangeRequest,
+    preview: SubscriptionChangePreview,
+  ) {
+    const subscription = memory.subscriptions.get(request.subscriptionId);
+    if (!subscription || subscription.accountId !== accountId)
+      throw new Error("subscription not found");
+    if (preview.effectiveAt === "period_end") {
+      subscription.scheduledProductId = request.targetProductId;
+      subscription.scheduledPriceId = request.targetPriceId;
+      subscription.scheduledChangeAt = subscription.currentPeriodEnd;
+    } else {
+      subscription.productId = request.targetProductId;
+      subscription.priceId = request.targetPriceId;
+      subscription.scheduledProductId = undefined;
+      subscription.scheduledPriceId = undefined;
+      subscription.scheduledChangeAt = undefined;
+    }
+    subscription.updatedAt = now();
+    return structuredClone(subscription);
+  }
+
   async updateSubscriptionCancellation(
     subscriptionId: string,
     accountId: string,
@@ -397,6 +473,9 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     if (!subscription || subscription.accountId !== accountId)
       throw new Error("subscription not found");
     subscription.cancelAtPeriodEnd = cancelAtPeriodEnd;
+    subscription.status = cancelAtPeriodEnd
+      ? "cancellation_pending"
+      : "active";
     subscription.updatedAt = now();
     return structuredClone(subscription);
   }
@@ -476,6 +555,29 @@ function versionFromRow(row: any): CommercialConfigurationVersion {
     productCount: snapshot?.products?.length || 0,
     ruleCount: snapshot?.rules?.length || 0,
     conflicts: Array.isArray(row.conflicts) ? row.conflicts : [],
+  };
+}
+
+function subscriptionFromRow(row: any): MonetizationSubscription {
+  return {
+    id: String(row.id),
+    accountId: String(row.account_id),
+    productId: String(row.product_id),
+    productVersionId: row.product_version_id || undefined,
+    priceId: row.price_id || undefined,
+    sourceOrderId: String(row.source_order_id),
+    status: row.status,
+    providerSubscriptionId: row.provider_subscription_id || undefined,
+    billingPeriod: row.billing_period || undefined,
+    currentPeriodStart: String(row.current_period_start),
+    currentPeriodEnd: String(row.current_period_end),
+    cancelAtPeriodEnd: Boolean(row.cancel_at_period_end),
+    scheduledProductId: row.scheduled_product_id || undefined,
+    scheduledPriceId: row.scheduled_price_id || undefined,
+    scheduledChangeAt: row.scheduled_change_at || undefined,
+    gracePeriodEndsAt: row.grace_period_ends_at || undefined,
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
   };
 }
 
@@ -694,19 +796,274 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     if (accountId) query = query.eq("account_id", accountId);
     const { data, error } = await query;
     if (error) throw error;
-    return (data || []).map((row: any): MonetizationSubscription => ({
+    return (data || []).map(subscriptionFromRow);
+  }
+
+  async getBillingOverview(accountId: string): Promise<BillingOverview> {
+    const [
+      customerResult,
+      subscriptions,
+      entitlements,
+      ordersResult,
+      paymentsResult,
+      invoicesResult,
+      refundsResult,
+      creditsResult,
+      usageResult,
+      eventsResult,
+    ] = await Promise.all([
+      this.client
+        .from("monetization_billing_customers")
+        .select("*")
+        .eq("account_id", accountId)
+        .maybeSingle(),
+      this.listSubscriptions(accountId, 100),
+      this.listEntitlements(accountId, 200),
+      this.client
+        .from("monetization_orders")
+        .select("order_snapshot")
+        .eq("account_id", accountId)
+        .order("created_at", { ascending: false })
+        .limit(100),
+      this.client
+        .from("monetization_payments")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("created_at", { ascending: false })
+        .limit(100),
+      this.client
+        .from("monetization_invoices")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("issued_at", { ascending: false })
+        .limit(100),
+      this.client
+        .from("monetization_refunds")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("created_at", { ascending: false })
+        .limit(100),
+      this.client
+        .from("monetization_credit_transactions")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("created_at", { ascending: false })
+        .limit(500),
+      this.client
+        .from("monetization_usage_records")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("recorded_at", { ascending: false })
+        .limit(500),
+      this.client
+        .from("monetization_subscription_events")
+        .select("*")
+        .eq("account_id", accountId)
+        .order("occurred_at", { ascending: false })
+        .limit(200),
+    ]);
+    const results = [
+      customerResult,
+      ordersResult,
+      paymentsResult,
+      invoicesResult,
+      refundsResult,
+      creditsResult,
+      usageResult,
+      eventsResult,
+    ];
+    const failure = results.find((result: any) => result.error)?.error;
+    if (failure) throw failure;
+    const accountSubscriptions = subscriptions as MonetizationSubscription[];
+    const accountEntitlements = entitlements as ActiveEntitlement[];
+    const currentSubscription = accountSubscriptions.find((entry) =>
+      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
+        entry.status,
+      ),
+    );
+    const creditTransactions: CreditTransaction[] = (
+      creditsResult.data || []
+    ).map((row: any) => ({
       id: String(row.id),
       accountId: String(row.account_id),
-      productId: String(row.product_id),
-      sourceOrderId: String(row.source_order_id),
-      status: row.status,
-      providerSubscriptionId: row.provider_subscription_id || undefined,
-      currentPeriodStart: String(row.current_period_start),
-      currentPeriodEnd: String(row.current_period_end),
-      cancelAtPeriodEnd: Boolean(row.cancel_at_period_end),
+      creditType: String(row.credit_type),
+      quantity: Number(row.quantity),
+      reason: String(row.reason),
+      sourceType: row.source_type,
+      sourceId: row.source_id || undefined,
+      expiresAt: row.expires_at || undefined,
+      idempotencyKey: String(row.idempotency_key),
       createdAt: String(row.created_at),
-      updatedAt: String(row.updated_at),
     }));
+    const creditTypes = [...new Set(creditTransactions.map((entry) => entry.creditType))];
+    const usageRows = usageResult.data || [];
+    const usageByKey = new Map<string, number>();
+    for (const row of usageRows) {
+      usageByKey.set(
+        String(row.usage_key),
+        (usageByKey.get(String(row.usage_key)) || 0) + Number(row.quantity),
+      );
+    }
+    const numericLimits = accountEntitlements.filter(
+      (entry) => typeof entry.value === "number",
+    );
+    const customer = customerResult.data;
+    return {
+      customer: customer
+        ? {
+            id: String(customer.id),
+            accountId: String(customer.account_id),
+            legalName: String(customer.legal_name),
+            email: String(customer.email),
+            taxId: customer.tax_id || undefined,
+            taxExempt: Boolean(customer.tax_exempt),
+            address: customer.billing_address || undefined,
+            providerCustomerId: customer.provider_customer_id || undefined,
+            createdAt: String(customer.created_at),
+            updatedAt: String(customer.updated_at),
+          }
+        : undefined,
+      currentSubscription,
+      subscriptions: accountSubscriptions,
+      entitlements: accountEntitlements,
+      usage: numericLimits.map((entry) => ({
+        key: entry.key,
+        label: entry.key,
+        used: usageByKey.get(entry.key) || 0,
+        limit: Number(entry.value),
+        unit: "unités",
+        resetsAt: currentSubscription?.currentPeriodEnd,
+      })),
+      orders: (ordersResult.data || []).map(
+        (row: any) => row.order_snapshot as MonetizationOrder,
+      ),
+      payments: (paymentsResult.data || []).map((row: any) => ({
+        id: String(row.id),
+        accountId: String(row.account_id),
+        orderId: String(row.order_id),
+        status: row.status,
+        amount: { amountMinor: Number(row.amount_minor), currency: row.currency },
+        provider: row.provider,
+        providerPaymentId: row.provider_payment_id || undefined,
+        failureCode: row.failure_code || undefined,
+        failureMessage: row.failure_message || undefined,
+        paidAt: row.paid_at || undefined,
+        createdAt: String(row.created_at),
+        updatedAt: String(row.updated_at),
+      })),
+      invoices: (invoicesResult.data || []).map((row: any) => ({
+        id: String(row.id),
+        accountId: String(row.account_id),
+        orderId: row.order_id || undefined,
+        subscriptionId: row.subscription_id || undefined,
+        number: String(row.invoice_number),
+        status: row.status,
+        subtotal: { amountMinor: Number(row.subtotal_minor), currency: row.currency },
+        discount: { amountMinor: Number(row.discount_minor), currency: row.currency },
+        tax: { amountMinor: Number(row.tax_minor), currency: row.currency },
+        total: { amountMinor: Number(row.total_minor), currency: row.currency },
+        amountPaid: { amountMinor: Number(row.amount_paid_minor), currency: row.currency },
+        amountDue: { amountMinor: Number(row.amount_due_minor), currency: row.currency },
+        issuedAt: String(row.issued_at),
+        dueAt: row.due_at || undefined,
+        paidAt: row.paid_at || undefined,
+        receiptUrl: row.receipt_url || undefined,
+        providerInvoiceId: row.provider_invoice_id || undefined,
+      })),
+      refunds: (refundsResult.data || []).map((row: any) => ({
+        id: String(row.id),
+        accountId: String(row.account_id),
+        orderId: String(row.order_id),
+        paymentId: String(row.payment_id),
+        status: row.status,
+        amount: { amountMinor: Number(row.amount_minor), currency: row.currency },
+        reason: String(row.reason),
+        providerRefundId: row.provider_refund_id || undefined,
+        requestedBy: String(row.requested_by),
+        approvedBy: row.approved_by || undefined,
+        createdAt: String(row.created_at),
+        updatedAt: String(row.updated_at),
+      })),
+      creditBalances: creditTypes.map((creditType) => {
+        const transactions = creditTransactions.filter(
+          (entry) => entry.creditType === creditType,
+        );
+        return {
+          accountId,
+          creditType,
+          available: Math.max(
+            0,
+            transactions.reduce((sum, entry) => sum + entry.quantity, 0),
+          ),
+          reserved: 0,
+          nextExpiryAt: transactions
+            .map((entry) => entry.expiresAt)
+            .filter((value): value is string => Boolean(value))
+            .sort()[0],
+          transactions,
+        };
+      }),
+      subscriptionEvents: (eventsResult.data || []).map((row: any) => ({
+        id: String(row.id),
+        subscriptionId: String(row.subscription_id),
+        accountId: String(row.account_id),
+        type: row.event_type,
+        fromStatus: row.from_status || undefined,
+        toStatus: row.to_status || undefined,
+        metadata: row.metadata || {},
+        idempotencyKey: String(row.idempotency_key),
+        occurredAt: String(row.occurred_at),
+      })),
+    };
+  }
+
+  async applySubscriptionChange(
+    accountId: string,
+    request: SubscriptionChangeRequest,
+    preview: SubscriptionChangePreview,
+  ) {
+    const update =
+      preview.effectiveAt === "period_end"
+        ? {
+            scheduled_product_id: request.targetProductId,
+            scheduled_price_id: request.targetPriceId,
+            scheduled_change_at: preview.nextBillingAt,
+            updated_at: now(),
+          }
+        : {
+            product_id: request.targetProductId,
+            price_id: request.targetPriceId,
+            scheduled_product_id: null,
+            scheduled_price_id: null,
+            scheduled_change_at: null,
+            updated_at: now(),
+          };
+    const { data, error } = await this.client
+      .from("monetization_subscriptions")
+      .update(update)
+      .eq("id", request.subscriptionId)
+      .eq("account_id", accountId)
+      .select("*")
+      .single();
+    if (error) throw error;
+    const { error: eventError } = await this.client
+      .from("monetization_subscription_events")
+      .insert({
+        subscription_id: data.id,
+        account_id: data.account_id,
+        event_type:
+          preview.effectiveAt === "period_end" ? "change_scheduled" : "changed",
+        from_status: data.status,
+        to_status: data.status,
+        metadata: {
+          productId: request.targetProductId,
+          priceId: request.targetPriceId,
+          effectiveAt: preview.effectiveAt,
+        },
+        idempotency_key: request.idempotencyKey,
+      });
+    if (eventError && eventError.code !== "23505") throw eventError;
+    return subscriptionFromRow(data);
   }
 
   async updateSubscriptionCancellation(
@@ -714,27 +1071,31 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     accountId: string,
     cancelAtPeriodEnd: boolean,
   ) {
-    const { data, error } = await this.client
+    const { data: owned, error: ownershipError } = await this.client
       .from("monetization_subscriptions")
-      .update({ cancel_at_period_end: cancelAtPeriodEnd, updated_at: now() })
+      .select("id,updated_at")
       .eq("id", subscriptionId)
       .eq("account_id", accountId)
-      .select("*")
-      .single();
+      .maybeSingle();
+    if (ownershipError) throw ownershipError;
+    if (!owned) throw new Error("subscription not found");
+    const { data, error } = await this.client.rpc(
+      "transition_monetization_subscription",
+      {
+        p_subscription_id: subscriptionId,
+        p_target_status: cancelAtPeriodEnd
+          ? "cancellation_pending"
+          : "active",
+        p_event_type: cancelAtPeriodEnd
+          ? "cancellation_scheduled"
+          : "reactivated",
+        p_idempotency_key: `cancellation:${cancelAtPeriodEnd}:${owned.updated_at}`,
+        p_metadata: { cancelAtPeriodEnd },
+        p_actor_id: accountId,
+      },
+    );
     if (error) throw error;
-    return {
-      id: String(data.id),
-      accountId: String(data.account_id),
-      productId: String(data.product_id),
-      sourceOrderId: String(data.source_order_id),
-      status: data.status,
-      providerSubscriptionId: data.provider_subscription_id || undefined,
-      currentPeriodStart: String(data.current_period_start),
-      currentPeriodEnd: String(data.current_period_end),
-      cancelAtPeriodEnd: Boolean(data.cancel_at_period_end),
-      createdAt: String(data.created_at),
-      updatedAt: String(data.updated_at),
-    };
+    return subscriptionFromRow(data);
   }
 
   async countQuotesSince(since: string) {

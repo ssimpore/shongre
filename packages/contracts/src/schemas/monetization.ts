@@ -155,6 +155,7 @@ export type CommercialRule = z.infer<typeof commercialRuleSchema>;
 
 export const monetizationPriceSchema = z.object({
   id: z.string().min(1),
+  providerPriceId: z.string().min(1).optional(),
   amount: moneySchema.extend({ amountMinor: z.number().int().nonnegative() }),
   billingPeriod: z.enum(["once", "month", "year"]),
   taxRateBps: z.number().int().min(0).max(10_000),
@@ -370,26 +371,72 @@ export const activeEntitlementSchema = z.object({
 });
 export type ActiveEntitlement = z.infer<typeof activeEntitlementSchema>;
 
-export const monetizationSubscriptionSchema = z.object({
-  id: z.string(),
-  accountId: z.string(),
-  productId: z.string(),
-  sourceOrderId: z.string(),
-  status: z.enum([
-    "trialing",
-    "active",
-    "past_due",
-    "paused",
-    "cancelled",
-    "expired",
-  ]),
-  providerSubscriptionId: z.string().optional(),
-  currentPeriodStart: z.string().datetime(),
-  currentPeriodEnd: z.string().datetime(),
-  cancelAtPeriodEnd: z.boolean(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
+export const monetizationSubscriptionSchema = z
+  .object({
+    id: z.string(),
+    accountId: z.string(),
+    productId: z.string(),
+    productVersionId: z.string().optional(),
+    priceId: z.string().optional(),
+    sourceOrderId: z.string(),
+    status: z.enum([
+      "incomplete",
+      "trialing",
+      "active",
+      "past_due",
+      "paused",
+      "cancellation_pending",
+      "cancelled",
+      "expired",
+      "suspended",
+    ]),
+    providerSubscriptionId: z.string().optional(),
+    billingPeriod: z.enum(["once", "month", "year"]).optional(),
+    currentPeriodStart: z.string().datetime(),
+    currentPeriodEnd: z.string().datetime(),
+    cancelAtPeriodEnd: z.boolean(),
+    scheduledProductId: z.string().optional(),
+    scheduledPriceId: z.string().optional(),
+    scheduledChangeAt: z.string().datetime().optional(),
+    gracePeriodEndsAt: z.string().datetime().optional(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .superRefine((subscription, context) => {
+    if (
+      new Date(subscription.currentPeriodEnd) <=
+      new Date(subscription.currentPeriodStart)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["currentPeriodEnd"],
+        message: "current period end must follow its start",
+      });
+    }
+    const scheduledFields = [
+      subscription.scheduledProductId,
+      subscription.scheduledPriceId,
+      subscription.scheduledChangeAt,
+    ];
+    const scheduledCount = scheduledFields.filter(Boolean).length;
+    if (scheduledCount !== 0 && scheduledCount !== scheduledFields.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["scheduledChangeAt"],
+        message: "scheduled subscription changes must be complete",
+      });
+    }
+    if (
+      subscription.status === "cancellation_pending" &&
+      !subscription.cancelAtPeriodEnd
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["cancelAtPeriodEnd"],
+        message: "cancellation pending requires an end-of-period cancellation",
+      });
+    }
+  });
 export type MonetizationSubscription = z.infer<
   typeof monetizationSubscriptionSchema
 >;
@@ -401,6 +448,256 @@ export const subscriptionCancellationRequestSchema = z.object({
 export type SubscriptionCancellationRequest = z.infer<
   typeof subscriptionCancellationRequestSchema
 >;
+
+export const subscriptionChangeRequestSchema = z.object({
+  subscriptionId: z.string().min(1),
+  targetProductId: z.string().min(1),
+  targetPriceId: z.string().min(1),
+  idempotencyKey: z.string().min(8).max(200),
+});
+export type SubscriptionChangeRequest = z.infer<
+  typeof subscriptionChangeRequestSchema
+>;
+
+export const subscriptionChangePreviewSchema = z.object({
+  subscriptionId: z.string(),
+  targetProductId: z.string(),
+  targetPriceId: z.string(),
+  effectiveAt: z.enum(["immediately", "period_end"]),
+  proration: moneySchema,
+  tax: moneySchema,
+  totalDueNow: moneySchema,
+  nextPeriodTotal: moneySchema,
+  nextBillingAt: z.string().datetime(),
+});
+export type SubscriptionChangePreview = z.infer<
+  typeof subscriptionChangePreviewSchema
+>;
+
+export const billingAddressSchema = z.object({
+  line1: z.string().min(1),
+  line2: z.string().optional(),
+  postalCode: z.string().min(1),
+  city: z.string().min(1),
+  countryCode: z.string().length(2),
+});
+export type BillingAddress = z.infer<typeof billingAddressSchema>;
+
+export const billingCustomerSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  legalName: z.string(),
+  email: z.string().email(),
+  taxId: z.string().optional(),
+  taxExempt: z.boolean(),
+  address: billingAddressSchema.optional(),
+  providerCustomerId: z.string().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type BillingCustomer = z.infer<typeof billingCustomerSchema>;
+
+export const monetizationPaymentSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  orderId: z.string(),
+  invoiceId: z.string().optional(),
+  status: z.enum([
+    "pending",
+    "requires_action",
+    "succeeded",
+    "failed",
+    "cancelled",
+    "partially_refunded",
+    "refunded",
+  ]),
+  amount: moneySchema,
+  provider: z.enum(["demo", "stripe"]),
+  providerPaymentId: z.string().optional(),
+  failureCode: z.string().optional(),
+  failureMessage: z.string().optional(),
+  paidAt: z.string().datetime().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type MonetizationPayment = z.infer<typeof monetizationPaymentSchema>;
+
+export const monetizationInvoiceSchema = z
+  .object({
+    id: z.string(),
+    accountId: z.string(),
+    orderId: z.string().optional(),
+    subscriptionId: z.string().optional(),
+    number: z.string(),
+    status: z.enum(["draft", "open", "paid", "void", "uncollectible"]),
+    subtotal: moneySchema,
+    discount: moneySchema,
+    tax: moneySchema,
+    total: moneySchema,
+    amountPaid: moneySchema,
+    amountDue: moneySchema,
+    issuedAt: z.string().datetime(),
+    dueAt: z.string().datetime().optional(),
+    paidAt: z.string().datetime().optional(),
+    receiptUrl: z.string().url().optional(),
+    providerInvoiceId: z.string().optional(),
+  })
+  .superRefine((invoice, context) => {
+    const currency = invoice.total.currency;
+    const currencies = [
+      invoice.subtotal.currency,
+      invoice.discount.currency,
+      invoice.tax.currency,
+      invoice.amountPaid.currency,
+      invoice.amountDue.currency,
+    ];
+    if (currencies.some((candidate) => candidate !== currency)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["total", "currency"],
+        message: "all invoice amounts must use the same currency",
+      });
+    }
+    if (
+      invoice.total.amountMinor !==
+      invoice.subtotal.amountMinor -
+        invoice.discount.amountMinor +
+        invoice.tax.amountMinor
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["total", "amountMinor"],
+        message: "invoice total does not reconcile",
+      });
+    }
+    if (
+      invoice.amountPaid.amountMinor + invoice.amountDue.amountMinor !==
+      invoice.total.amountMinor
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["amountDue", "amountMinor"],
+        message: "paid and due amounts must equal the invoice total",
+      });
+    }
+  });
+export type MonetizationInvoice = z.infer<typeof monetizationInvoiceSchema>;
+
+export const monetizationRefundSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  orderId: z.string(),
+  paymentId: z.string(),
+  status: z.enum(["pending", "succeeded", "failed", "cancelled"]),
+  amount: moneySchema,
+  reason: z.string(),
+  providerRefundId: z.string().optional(),
+  requestedBy: z.string(),
+  approvedBy: z.string().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type MonetizationRefund = z.infer<typeof monetizationRefundSchema>;
+
+export const creditTransactionSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  creditType: z.string().min(1),
+  quantity: z.number().int().refine((value) => value !== 0),
+  reason: z.string().min(1),
+  sourceType: z.enum([
+    "subscription",
+    "purchase",
+    "promotion",
+    "usage",
+    "refund",
+    "admin_adjustment",
+    "expiry",
+  ]),
+  sourceId: z.string().optional(),
+  expiresAt: z.string().datetime().optional(),
+  idempotencyKey: z.string().min(1),
+  createdAt: z.string().datetime(),
+});
+export type CreditTransaction = z.infer<typeof creditTransactionSchema>;
+
+export const creditBalanceSchema = z.object({
+  accountId: z.string(),
+  creditType: z.string(),
+  available: z.number().int().nonnegative(),
+  reserved: z.number().int().nonnegative(),
+  nextExpiryAt: z.string().datetime().optional(),
+  transactions: z.array(creditTransactionSchema),
+});
+export type CreditBalance = z.infer<typeof creditBalanceSchema>;
+
+export const usageRecordSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  subscriptionId: z.string().optional(),
+  key: z.string(),
+  quantity: z.number().int().positive(),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+  idempotencyKey: z.string().min(1),
+  recordedAt: z.string().datetime(),
+});
+export type UsageRecord = z.infer<typeof usageRecordSchema>;
+
+export const subscriptionEventSchema = z.object({
+  id: z.string(),
+  subscriptionId: z.string(),
+  accountId: z.string(),
+  type: z.enum([
+    "created",
+    "trial_started",
+    "trial_ending",
+    "activated",
+    "renewal_upcoming",
+    "renewed",
+    "payment_failed",
+    "past_due",
+    "change_scheduled",
+    "changed",
+    "cancellation_scheduled",
+    "reactivated",
+    "cancelled",
+    "paused",
+    "resumed",
+    "expired",
+  ]),
+  fromStatus: z.string().optional(),
+  toStatus: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()),
+  idempotencyKey: z.string().min(1),
+  occurredAt: z.string().datetime(),
+});
+export type SubscriptionEvent = z.infer<typeof subscriptionEventSchema>;
+
+export const billingUsageSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  used: z.number().int().nonnegative(),
+  limit: z.number().int().nonnegative().nullable(),
+  unit: z.string(),
+  resetsAt: z.string().datetime().optional(),
+});
+export type BillingUsage = z.infer<typeof billingUsageSchema>;
+
+export const billingOverviewSchema = z.object({
+  customer: billingCustomerSchema.optional(),
+  currentSubscription: monetizationSubscriptionSchema.optional(),
+  subscriptions: z.array(monetizationSubscriptionSchema),
+  entitlements: z.array(activeEntitlementSchema),
+  usage: z.array(billingUsageSchema),
+  orders: z.array(monetizationOrderSchema),
+  payments: z.array(monetizationPaymentSchema),
+  invoices: z.array(monetizationInvoiceSchema),
+  refunds: z.array(monetizationRefundSchema),
+  creditBalances: z.array(creditBalanceSchema),
+  subscriptionEvents: z.array(subscriptionEventSchema),
+});
+export type BillingOverview = z.infer<typeof billingOverviewSchema>;
 
 export const promotionValidationRequestSchema = z.object({
   code: z
@@ -487,6 +784,12 @@ export const monetizationAdminOverviewSchema = z.object({
   activeSubscriptionCount: z.number().int().nonnegative(),
   orders: z.array(monetizationOrderSchema),
   entitlements: z.array(activeEntitlementSchema),
+  payments: z.array(monetizationPaymentSchema),
+  invoices: z.array(monetizationInvoiceSchema),
+  refunds: z.array(monetizationRefundSchema),
+  subscriptions: z.array(monetizationSubscriptionSchema),
+  creditBalances: z.array(creditBalanceSchema),
+  subscriptionEvents: z.array(subscriptionEventSchema),
   auditEvents: z.array(commercialAuditEventSchema),
 });
 export type MonetizationAdminOverview = z.infer<

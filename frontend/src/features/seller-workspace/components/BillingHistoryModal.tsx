@@ -1,11 +1,14 @@
-import React, { useState } from "react";
-import { FileText, Download } from "lucide-react";
-import { Modal } from "../../../design-system/primitives/Modal";
-import { Button } from "../../../design-system/primitives/Button";
-import { Badge } from "../../../design-system/primitives/Badge";
+import React, { useEffect, useState } from "react";
+import type {
+  BillingOverview,
+  MonetizationInvoice,
+} from "@shongre/contracts/monetization";
+import { Download, FileText } from "lucide-react";
+import { services } from "../../../api";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { formatPrice } from "../../../utilities/formatters";
-import { useTranslation } from "../../../i18n/I18nProvider";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { Button } from "../../../design-system/primitives/Button";
+import { Modal } from "../../../design-system/primitives/Modal";
 
 interface BillingHistoryModalProps {
   isOpen: boolean;
@@ -13,232 +16,202 @@ interface BillingHistoryModalProps {
   userType?: "individual" | "professional";
 }
 
-interface InvoiceItem {
-  id: string;
-  invoiceNumber: string;
-  date: string;
-  description: string;
-  type: "subscription" | "boost" | "escrow_fee";
-  amountHt: number;
-  vatAmount: number;
-  totalTtc: number;
-  status: "paid" | "pending" | "refunded";
-  paymentMethod: string;
-}
+type InvoiceFilter = "all" | "subscription" | "one_off";
 
-const SAMPLE_INVOICES: InvoiceItem[] = [
-  {
-    id: "inv-2026-003",
-    invoiceNumber: "FAC-2026-08492",
-    date: "2026-02-15T10:30:00.000Z",
-    description: "Forfait Pro Illimité - Mensualité Février 2026",
-    type: "subscription",
-    amountHt: 74.17,
-    vatAmount: 14.83,
-    totalTtc: 89.0,
-    status: "paid",
-    paymentMethod: "CB •••• 4242",
-  },
-  {
-    id: "inv-2026-002",
-    invoiceNumber: "FAC-2026-07914",
-    date: "2026-02-10T14:15:00.000Z",
-    description:
-      'Pack Visibilité Intégrale (14 jours) - Annonce "Canapé Scandinave"',
-    type: "boost",
-    amountHt: 12.42,
-    vatAmount: 2.48,
-    totalTtc: 14.9,
-    status: "paid",
-    paymentMethod: "CB •••• 4242",
-  },
-  {
-    id: "inv-2026-001",
-    invoiceNumber: "FAC-2026-06102",
-    date: "2026-01-15T09:00:00.000Z",
-    description: "Forfait Pro Illimité - Mensualité Janvier 2026",
-    type: "subscription",
-    amountHt: 74.17,
-    vatAmount: 14.83,
-    totalTtc: 89.0,
-    status: "paid",
-    paymentMethod: "CB •••• 4242",
-  },
-  {
-    id: "inv-2025-012",
-    invoiceNumber: "FAC-2025-11045",
-    date: "2025-12-28T16:40:00.000Z",
-    description:
-      "Frais de Séquestre & Protection Acheteur - Commande #SHG-39210",
-    type: "escrow_fee",
-    amountHt: 2.92,
-    vatAmount: 0.58,
-    totalTtc: 3.5,
-    status: "paid",
-    paymentMethod: "CB •••• 1122",
-  },
-];
+const STATUS_LABELS: Record<MonetizationInvoice["status"], string> = {
+  draft: "Brouillon",
+  open: "À payer",
+  paid: "Payée",
+  void: "Annulée",
+  uncollectible: "Impayée",
+};
+
+function formatMoney(amountMinor: number, currency: string) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency,
+  }).format(amountMinor / 100);
+}
 
 export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
   isOpen,
   onClose,
   userType = "individual",
 }) => {
-  const { t } = useTranslation();
   const toast = useToast();
-  const [filterType, setFilterType] = useState<
-    "all" | "subscription" | "boost" | "escrow_fee"
-  >("all");
+  const [billing, setBilling] = useState<BillingOverview | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<InvoiceFilter>("all");
 
-  const filteredInvoices = SAMPLE_INVOICES.filter((inv) => {
-    if (filterType === "all") return true;
-    return inv.type === filterType;
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setLoading(true);
+    setError(null);
+    services.businessRules
+      .getBillingOverview()
+      .then((result) => {
+        if (active) setBilling(result);
+      })
+      .catch((reason) => {
+        if (active) {
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "Factures indisponibles.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [isOpen]);
+
+  const invoices = (billing?.invoices || []).filter((invoice) => {
+    if (filter === "all") return true;
+    return filter === "subscription"
+      ? Boolean(invoice.subscriptionId)
+      : !invoice.subscriptionId;
   });
 
-  const handleDownloadPdf = (invoice: InvoiceItem) => {
-    // Generate simulated text-based printable invoice / receipt
-    const content = `=====================================================
-                    FACTURE SHONGRE SAS
-=====================================================
-Numéro de facture : ${invoice.invoiceNumber}
-Date d'émission   : ${new Date(invoice.date).toLocaleDateString("fr-FR")}
-Statut            : ACQUITTÉE / PAYÉE
-
-Éditeur :
-Shongre SAS - 14 bd Haussmann, 75009 Paris
-RCS Paris 912 345 678 - TVA FR82912345678
-
-Détail de la prestation :
-- ${invoice.description}
------------------------------------------------------
-Montant Hors Taxes (HT) : ${invoice.amountHt.toFixed(2)} €
-TVA applicable (20.0%)  : ${invoice.vatAmount.toFixed(2)} €
------------------------------------------------------
-TOTAL TTC PAYÉ          : ${invoice.totalTtc.toFixed(2)} €
-Moyen de paiement       : ${invoice.paymentMethod}
-=====================================================
-Merci de votre confiance sur Shongre !
-`;
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `${invoice.invoiceNumber}.txt`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast.success(`Le reçu ${invoice.invoiceNumber} a été téléchargé.`);
+  const downloadInvoice = async (invoice: MonetizationInvoice) => {
+    setDownloadingId(invoice.id);
+    try {
+      const document = await services.businessRules.getInvoiceDocument(
+        invoice.id,
+      );
+      const blob = new Blob([document.content], { type: document.mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = document.fileName;
+      window.document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success(`La facture ${invoice.number} a été téléchargée.`);
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : "Téléchargement impossible.",
+      );
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t(
-        "sellerworkspace.billingHistoryModal.historiqueDeFacturationRecus",
-      )}
-      description={t(
-        "sellerworkspace.billingHistoryModal.consultezEtTelechargezVosFactures",
-      )}
-      maxWidth="lg"
+      title="Factures et reçus"
+      description={
+        userType === "professional"
+          ? "Documents du compte professionnel, montants HT, TVA et total réglé."
+          : "Documents de facturation associés à votre compte."
+      }
+      maxWidth="xl"
     >
       <div className="space-y-5">
-        {/* Filter bar */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div
+          className="flex flex-wrap gap-1.5"
+          role="group"
+          aria-label="Filtrer les factures"
+        >
           {[
-            { id: "all", label: "Toutes les factures" },
-            { id: "subscription", label: "Abonnements Pro" },
-            { id: "boost", label: "Packs de visibilité" },
-            { id: "escrow_fee", label: "Frais de protection" },
-          ].map((f) => (
+            { id: "all" as const, label: "Toutes" },
+            { id: "subscription" as const, label: "Abonnements" },
+            { id: "one_off" as const, label: "Achats ponctuels" },
+          ].map((option) => (
             <button
-              key={f.id}
+              key={option.id}
               type="button"
-              onClick={() => setFilterType(f.id as any)}
-              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                filterType === f.id
-                  ? "bg-primary text-white shadow-xs"
-                  : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+              onClick={() => setFilter(option.id)}
+              aria-pressed={filter === option.id}
+              className={`rounded-control px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
+                filter === option.id
+                  ? "bg-primary text-white"
+                  : "bg-bg-subtle text-text-secondary hover:text-text-main"
               }`}
             >
-              {f.label}
+              {option.label}
             </button>
           ))}
         </div>
 
-        {/* Invoices list */}
-        <div className="divide-y divide-border-subtle rounded-xl border border-border-base bg-white overflow-hidden">
-          {filteredInvoices.length > 0 ? (
-            filteredInvoices.map((inv) => (
-              <div
-                key={inv.id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-stone-50/70 transition-colors"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary-light text-primary flex items-center justify-center shrink-0 mt-0.5">
-                    <FileText className="w-5 h-5" />
+        {loading && (
+          <div className="rounded-card border border-border-base p-8 text-center text-sm font-semibold text-text-secondary" aria-live="polite">
+            Chargement des documents…
+          </div>
+        )}
+        {error && (
+          <div className="rounded-card border border-danger-border bg-danger-surface p-4 text-sm font-semibold text-danger" role="alert">
+            {error}
+          </div>
+        )}
+        {!loading && !error && (
+          <div className="divide-y divide-border-subtle overflow-hidden rounded-card border border-border-base bg-bg-surface">
+            {invoices.length ? (
+              invoices.map((invoice) => (
+                <article
+                  key={invoice.id}
+                  className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
+                      <FileText className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-mono text-sm font-black text-text-main">
+                          {invoice.number}
+                        </h3>
+                        <Badge
+                          variant={invoice.status === "paid" ? "verified" : "neutral"}
+                          size="sm"
+                        >
+                          {STATUS_LABELS[invoice.status]}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        Émise le {new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}
+                        {invoice.subscriptionId ? " · abonnement" : " · achat ponctuel"}
+                      </p>
+                      <p className="mt-1 text-micro text-text-muted">
+                        HT {formatMoney(invoice.subtotal.amountMinor, invoice.subtotal.currency)} · TVA {formatMoney(invoice.tax.amountMinor, invoice.tax.currency)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs sm:text-sm text-stone-900 font-mono">
-                        {inv.invoiceNumber}
-                      </span>
-                      <Badge variant="verified" size="sm">
-                        {t("sellerworkspace.billingHistoryModal.payee")}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-stone-700 font-medium mt-0.5">
-                      {inv.description}
-                    </div>
-                    <div className="text-micro text-stone-500 mt-1 flex items-center gap-2">
-                      <span>
-                        {new Date(inv.date).toLocaleDateString("fr-FR")}
-                      </span>
-                      <span>•</span>
-                      <span>{inv.paymentMethod}</span>
-                    </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-border-subtle pt-3 sm:border-0 sm:pt-0">
+                    <strong className="text-sm text-text-main">
+                      {formatMoney(invoice.total.amountMinor, invoice.total.currency)} TTC
+                    </strong>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      isLoading={downloadingId === invoice.id}
+                      onClick={() => void downloadInvoice(invoice)}
+                      leftIcon={<Download className="h-4 w-4" />}
+                    >
+                      Télécharger
+                    </Button>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border-subtle">
-                  <div className="text-right">
-                    <div className="font-black text-sm text-stone-900">
-                      {formatPrice(inv.totalTtc)}
-                    </div>
-                    <div className="text-micro text-stone-500">
-                      dont {formatPrice(inv.vatAmount)} TVA
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownloadPdf(inv)}
-                    leftIcon={<Download className="w-3.5 h-3.5" />}
-                  >
-                    {t("sellerworkspace.billingHistoryModal.recu")}
-                  </Button>
-                </div>
+                </article>
+              ))
+            ) : (
+              <div className="p-8 text-center text-sm text-text-muted">
+                Aucune facture ne correspond à ce filtre.
               </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-stone-500 text-xs">
-              {t(
-                "sellerworkspace.billingHistoryModal.aucuneFactureNeCorrespondA",
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Footer info & close */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-stone-500">
-          <span>
-            {t(
-              "sellerworkspace.billingHistoryModal.toutesLesFacturesShongreSas",
             )}
-          </span>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 border-t border-border-subtle pt-4 text-xs text-text-muted sm:flex-row sm:items-center sm:justify-between">
+          <span>Les documents proviennent du même registre que les paiements et remboursements.</span>
           <Button variant="outline" size="sm" onClick={onClose}>
             Fermer
           </Button>

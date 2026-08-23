@@ -3,6 +3,7 @@ import type {
   CommercialAuditEvent,
   CommercialConfigurationVersion,
   CommercialDraftPatch,
+  BillingOverview,
   MonetizationAdminOverview,
   MonetizationCatalog,
   MonetizationOrder,
@@ -14,6 +15,8 @@ import type {
   QuoteRequest,
   RuleEvaluationContext,
   SubscriptionCancellationRequest,
+  SubscriptionChangePreview,
+  SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
 import {
   commercialDraftPatchSchema,
@@ -25,7 +28,10 @@ import {
   quoteRequestSchema,
   promotionValidationRequestSchema,
   ruleEvaluationContextSchema,
+  billingOverviewSchema,
   subscriptionCancellationRequestSchema,
+  subscriptionChangeRequestSchema,
+  subscriptionChangePreviewSchema,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { config } from "../../app/config/index.js";
@@ -720,10 +726,18 @@ export class BusinessRulesService {
       ),
       quoteCountToday,
       activeSubscriptionCount: subscriptions.filter((entry) =>
-        ["trialing", "active", "past_due"].includes(entry.status),
+        ["trialing", "active", "past_due", "cancellation_pending"].includes(
+          entry.status,
+        ),
       ).length,
       orders,
       entitlements,
+      payments: [],
+      invoices: [],
+      refunds: [],
+      subscriptions,
+      creditBalances: [],
+      subscriptionEvents: [],
       auditEvents,
     });
   }
@@ -740,6 +754,156 @@ export class BusinessRulesService {
 
   async getSubscriptions(accountId: string) {
     return this.repository.listSubscriptions(accountId, 100);
+  }
+
+  async getBillingOverview(accountId: string): Promise<BillingOverview> {
+    return billingOverviewSchema.parse(
+      await this.repository.getBillingOverview(accountId),
+    );
+  }
+
+  async getInvoiceDocument(accountId: string, invoiceId: string) {
+    const billing = await this.getBillingOverview(accountId);
+    const invoice = billing.invoices.find((entry) => entry.id === invoiceId);
+    if (!invoice) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Facture introuvable.",
+      });
+    }
+    const format = (amountMinor: number) =>
+      new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: invoice.total.currency,
+      }).format(amountMinor / 100);
+    const escape = (value: string) =>
+      value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    const customerName = escape(
+      billing.customer?.legalName || billing.customer?.email || accountId,
+    );
+    return {
+      fileName: `${invoice.number}.html`,
+      mimeType: "text/html;charset=utf-8",
+      content: `<!doctype html><html lang="fr"><meta charset="utf-8"><title>${escape(invoice.number)}</title><style>body{font-family:Arial,sans-serif;color:#1c1917;max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}h1{font-size:28px;margin:0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #e7e5e4}.number{text-align:right}.total{font-weight:700;font-size:18px}small{color:#78716c}</style><body><header><div><h1>SHONGRE.</h1><small>Facture</small></div><div><strong>${escape(invoice.number)}</strong><br>${new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}</div></header><section><div><strong>Facturé à</strong><br>${customerName}</div><div><strong>Émetteur</strong><br>Shongre SAS<br>France</div></section><table><tbody><tr><td>Services Shongre</td><td class="number">${format(invoice.subtotal.amountMinor)}</td></tr><tr><td>Remise</td><td class="number">− ${format(invoice.discount.amountMinor)}</td></tr><tr><td>TVA</td><td class="number">${format(invoice.tax.amountMinor)}</td></tr><tr class="total"><td>Total TTC</td><td class="number">${format(invoice.total.amountMinor)}</td></tr></tbody></table><p><small>Statut : ${escape(invoice.status)}.</small></p></body></html>`,
+    };
+  }
+
+  async previewSubscriptionChange(
+    accountId: string,
+    rawRequest: SubscriptionChangeRequest,
+  ): Promise<SubscriptionChangePreview> {
+    const request = subscriptionChangeRequestSchema.parse(rawRequest);
+    const subscription = (
+      await this.repository.listSubscriptions(accountId, 100)
+    ).find((entry) => entry.id === request.subscriptionId);
+    if (!subscription) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Abonnement introuvable.",
+      });
+    }
+    const catalog = await this.getCatalog("FR");
+    const currentProduct = catalog.products.find(
+      (entry) => entry.id === subscription.productId,
+    );
+    const targetProduct = catalog.products.find(
+      (entry) => entry.id === request.targetProductId,
+    );
+    const currentPrice =
+      currentProduct?.prices.find((entry) => entry.id === subscription.priceId) ||
+      currentProduct?.prices.find(
+        (entry) => entry.billingPeriod === subscription.billingPeriod,
+      );
+    const targetPrice = targetProduct?.prices.find(
+      (entry) => entry.id === request.targetPriceId,
+    );
+    if (!targetProduct || targetProduct.kind !== "subscription" || !targetPrice) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le forfait cible n’est pas disponible.",
+      });
+    }
+    const currentMinor = currentPrice?.amount.amountMinor || 0;
+    const isUpgrade = targetPrice.amount.amountMinor > currentMinor;
+    const periodStart = new Date(subscription.currentPeriodStart).getTime();
+    const periodEnd = new Date(subscription.currentPeriodEnd).getTime();
+    const remainingRatio = Math.max(
+      0,
+      Math.min(1, (periodEnd - Date.now()) / Math.max(1, periodEnd - periodStart)),
+    );
+    const prorationMinor = isUpgrade
+      ? Math.max(
+          0,
+          Math.round(
+            (targetPrice.amount.amountMinor - currentMinor) * remainingRatio,
+          ),
+        )
+      : 0;
+    const taxMinor = Math.round(
+      (prorationMinor * targetPrice.taxRateBps) / 10_000,
+    );
+    const nextTaxMinor = Math.round(
+      (targetPrice.amount.amountMinor * targetPrice.taxRateBps) / 10_000,
+    );
+    return subscriptionChangePreviewSchema.parse({
+      subscriptionId: subscription.id,
+      targetProductId: targetProduct.id,
+      targetPriceId: targetPrice.id,
+      effectiveAt: isUpgrade ? "immediately" : "period_end",
+      proration: {
+        amountMinor: prorationMinor,
+        currency: targetPrice.amount.currency,
+      },
+      tax: {
+        amountMinor: taxMinor,
+        currency: targetPrice.amount.currency,
+      },
+      totalDueNow: {
+        amountMinor: prorationMinor + taxMinor,
+        currency: targetPrice.amount.currency,
+      },
+      nextPeriodTotal: {
+        amountMinor: targetPrice.amount.amountMinor + nextTaxMinor,
+        currency: targetPrice.amount.currency,
+      },
+      nextBillingAt: subscription.currentPeriodEnd,
+    });
+  }
+
+  async applySubscriptionChange(
+    accountId: string,
+    rawRequest: SubscriptionChangeRequest,
+  ) {
+    const request = subscriptionChangeRequestSchema.parse(rawRequest);
+    const preview = await this.previewSubscriptionChange(accountId, request);
+    if (config.dataMode === "database") {
+      const subscription = (
+        await this.repository.listSubscriptions(accountId, 100)
+      ).find((entry) => entry.id === request.subscriptionId);
+      if (subscription?.providerSubscriptionId) {
+        throw new AppError({
+          code: "CONFLICT",
+          message:
+            "Le changement de forfait doit être confirmé via le parcours de paiement sécurisé.",
+        });
+      }
+    }
+    const updated = await this.repository.applySubscriptionChange(
+      accountId,
+      request,
+      preview,
+    );
+    logger.info("monetization_subscription_change_applied", {
+      userId: accountId,
+      subscriptionId: request.subscriptionId,
+      targetProductId: request.targetProductId,
+      effectiveAt: preview.effectiveAt,
+    });
+    return updated;
   }
 
   async updateSubscriptionCancellation(

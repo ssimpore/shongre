@@ -1,5 +1,6 @@
 import type {
   ActiveEntitlement,
+  BillingOverview,
   CommercialConfigurationVersion,
   CommercialDraftPatch,
   MonetizationAdminOverview,
@@ -13,7 +14,15 @@ import type {
   RuleEvaluationContext,
   RuleEvaluationResult,
   SubscriptionCancellationRequest,
+  SubscriptionChangePreview,
+  SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
+
+export interface InvoiceDocument {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
 
 export interface BusinessRulesServiceContract {
   getCatalog(marketCode?: string): Promise<MonetizationCatalog>;
@@ -28,6 +37,14 @@ export interface BusinessRulesServiceContract {
   ): Promise<PromotionValidationResult>;
   getActiveEntitlements(): Promise<ActiveEntitlement[]>;
   getSubscriptions(): Promise<MonetizationSubscription[]>;
+  getBillingOverview(): Promise<BillingOverview>;
+  getInvoiceDocument(invoiceId: string): Promise<InvoiceDocument>;
+  previewSubscriptionChange(
+    request: SubscriptionChangeRequest,
+  ): Promise<SubscriptionChangePreview>;
+  applySubscriptionChange(
+    request: SubscriptionChangeRequest,
+  ): Promise<MonetizationSubscription>;
   updateSubscriptionCancellation(
     request: SubscriptionCancellationRequest,
   ): Promise<MonetizationSubscription>;

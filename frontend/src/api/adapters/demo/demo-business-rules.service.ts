@@ -1,15 +1,22 @@
 import type {
   ActiveEntitlement,
+  BillingOverview,
   CommercialAuditEvent,
   CommercialConfigurationVersion,
   CommercialDraftPatch,
   MonetizationAdminOverview,
   MonetizationCatalog,
   MonetizationOrder,
+  MonetizationInvoice,
+  MonetizationPayment,
   MonetizationQuote,
+  MonetizationRefund,
   MonetizationSubscription,
   PromotionValidationRequest,
   SubscriptionCancellationRequest,
+  SubscriptionChangeRequest,
+  SubscriptionEvent,
+  CreditBalance,
   QuoteRequest,
   RuleEvaluationContext,
   RuleEvaluationResult,
@@ -17,6 +24,7 @@ import type {
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import type { BusinessRulesServiceContract } from "../../contracts/business-rules.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { storageService } from "../../../services/storage.service";
 
 const createdAt = "2026-08-22T00:00:00.000Z";
 const versions: CommercialConfigurationVersion[] = [
@@ -48,6 +56,168 @@ const quotes = new Map<string, MonetizationQuote>();
 const orders = new Map<string, MonetizationOrder>();
 const activeEntitlements: ActiveEntitlement[] = [];
 const subscriptions: MonetizationSubscription[] = [];
+const payments: MonetizationPayment[] = [];
+const invoices: MonetizationInvoice[] = [];
+const refunds: MonetizationRefund[] = [];
+const creditBalances: CreditBalance[] = [];
+const subscriptionEvents: SubscriptionEvent[] = [];
+
+function currentAccountId() {
+  return storageService.getCurrentUser()?.id || "guest";
+}
+
+function money(amountMinor: number, currency = "EUR") {
+  return { amountMinor, currency };
+}
+
+function pushSubscriptionEvent(
+  subscription: MonetizationSubscription,
+  type: SubscriptionEvent["type"],
+  idempotencyKey: string,
+  fromStatus?: string,
+  toStatus?: string,
+) {
+  if (subscriptionEvents.some((entry) => entry.idempotencyKey === idempotencyKey))
+    return;
+  subscriptionEvents.unshift({
+    id: `subevt_${digest(idempotencyKey).slice(0, 24)}`,
+    subscriptionId: subscription.id,
+    accountId: subscription.accountId,
+    type,
+    fromStatus,
+    toStatus,
+    metadata: {},
+    idempotencyKey,
+    occurredAt: subscription.updatedAt,
+  });
+}
+
+function ensureSeededBilling(accountId: string) {
+  const user = storageService.getCurrentUser();
+  if (!user || user.id !== accountId || user.accountType !== "professional") return;
+  if (subscriptions.some((entry) => entry.accountId === accountId)) return;
+  const productId =
+    user.activePlanId === "pro_enterprise"
+      ? "plan.pro.enterprise"
+      : user.activePlanId === "pro_starter"
+        ? "plan.pro.starter"
+        : "plan.pro.business";
+  const product = BASELINE_MONETIZATION_CATALOG.products.find(
+    (entry) => entry.id === productId,
+  );
+  const price = product?.prices.find((entry) => entry.billingPeriod === "month");
+  if (!product || !price) return;
+  const periodStart = "2026-08-01T00:00:00.000Z";
+  const periodEnd = "2026-09-01T00:00:00.000Z";
+  const orderId = `seed_order_${digest(accountId).slice(0, 16)}`;
+  const subscription: MonetizationSubscription = {
+    id: `seed_sub_${digest(accountId).slice(0, 16)}`,
+    accountId,
+    productId,
+    productVersionId: product.versionId,
+    priceId: price.id,
+    sourceOrderId: orderId,
+    status: "active",
+    providerSubscriptionId: `demo_sub_${digest(accountId).slice(0, 12)}`,
+    billingPeriod: "month",
+    currentPeriodStart: periodStart,
+    currentPeriodEnd: periodEnd,
+    cancelAtPeriodEnd: false,
+    createdAt: "2026-02-01T00:00:00.000Z",
+    updatedAt: periodStart,
+  };
+  subscriptions.push(subscription);
+  const taxMinor = Math.round((price.amount.amountMinor * price.taxRateBps) / 10_000);
+  const totalMinor = price.amount.amountMinor + taxMinor;
+  orders.set(orderId, {
+    id: orderId,
+    quoteId: `seed_quote_${digest(accountId).slice(0, 16)}`,
+    accountId,
+    snapshotHash: digest(`${accountId}:${productId}:${periodStart}`),
+    total: money(totalMinor),
+    status: "paid",
+    provider: "demo",
+    providerCheckoutId: `seed_checkout_${digest(accountId).slice(0, 12)}`,
+    createdAt: periodStart,
+    updatedAt: periodStart,
+  });
+  product.entitlements.forEach((entitlement) => {
+    activeEntitlements.push({
+      id: `seed_ent_${digest(`${accountId}:${entitlement.key}`).slice(0, 20)}`,
+      accountId,
+      productId,
+      key: entitlement.key,
+      value: entitlement.value,
+      sourceOrderId: orderId,
+      startsAt: periodStart,
+      endsAt: periodEnd,
+      status: "active",
+    });
+  });
+  const invoiceId = `seed_inv_${digest(accountId).slice(0, 16)}`;
+  invoices.push({
+    id: invoiceId,
+    accountId,
+    orderId,
+    subscriptionId: subscription.id,
+    number: `FAC-2026-${digest(accountId).slice(0, 5).toUpperCase()}`,
+    status: "paid",
+    subtotal: money(price.amount.amountMinor),
+    discount: money(0),
+    tax: money(taxMinor),
+    total: money(totalMinor),
+    amountPaid: money(totalMinor),
+    amountDue: money(0),
+    issuedAt: periodStart,
+    paidAt: periodStart,
+  });
+  payments.push({
+    id: `seed_pay_${digest(accountId).slice(0, 16)}`,
+    accountId,
+    orderId,
+    invoiceId,
+    status: "succeeded",
+    amount: money(totalMinor),
+    provider: "demo",
+    providerPaymentId: `demo_pay_${digest(accountId).slice(0, 12)}`,
+    paidAt: periodStart,
+    createdAt: periodStart,
+    updatedAt: periodStart,
+  });
+  const bumps = product.entitlements.find(
+    (entry) => entry.key === "monthlyBumpCredits",
+  );
+  if (typeof bumps?.value === "number" && bumps.value > 0) {
+    creditBalances.push({
+      accountId,
+      creditType: "search_bump",
+      available: bumps.value,
+      reserved: 0,
+      nextExpiryAt: periodEnd,
+      transactions: [
+        {
+          id: `seed_credit_${digest(accountId).slice(0, 16)}`,
+          accountId,
+          creditType: "search_bump",
+          quantity: bumps.value,
+          reason: "Allocation mensuelle du forfait",
+          sourceType: "subscription",
+          sourceId: subscription.id,
+          expiresAt: periodEnd,
+          idempotencyKey: `seed-credit:${accountId}:${periodStart}`,
+          createdAt: periodStart,
+        },
+      ],
+    });
+  }
+  pushSubscriptionEvent(
+    subscription,
+    "activated",
+    `seed-subscription:${accountId}`,
+    undefined,
+    "active",
+  );
+}
 
 function dimension(values: string[], actual?: string) {
   return (
@@ -140,7 +310,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async createQuote(request: QuoteRequest) {
     await simulateNetworkDelay();
-    const key = `demo-account:${request.idempotencyKey}`;
+    const accountId = currentAccountId();
+    const key = `${accountId}:${request.idempotencyKey}`;
     const existing = quotes.get(key);
     if (existing) return structuredClone(existing);
     const catalog = await this.getCatalog(request.marketCode);
@@ -203,7 +374,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     const now = new Date().toISOString();
     const quote: MonetizationQuote = {
       id: `quote_${digest(key).slice(0, 24)}`,
-      accountId: "demo-account",
+      accountId,
       configurationVersionId: catalog.configurationVersionId,
       marketCode: request.marketCode,
       currency: catalog.currency,
@@ -226,24 +397,29 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async createCheckout(quoteId: string, idempotencyKey: string) {
     await simulateNetworkDelay();
-    const existing = orders.get(idempotencyKey);
+    const accountId = currentAccountId();
+    const orderKey = `${accountId}:${idempotencyKey}`;
+    const existing = orders.get(orderKey);
     if (existing) return structuredClone(existing);
     const quote = quotes.get(quoteId);
     if (!quote) throw new Error("Devis introuvable");
+    if (quote.accountId !== accountId)
+      throw new Error("Ce devis appartient à un autre compte");
     const now = new Date().toISOString();
     const order: MonetizationOrder = {
-      id: `order_${digest(idempotencyKey).slice(0, 24)}`,
+      id: `order_${digest(orderKey).slice(0, 24)}`,
       quoteId,
       accountId: quote.accountId,
       snapshotHash: quote.snapshotHash,
       total: { amountMinor: quote.totalMinor, currency: quote.currency },
       status: "paid",
       provider: "demo",
-      providerCheckoutId: `demo_${digest(idempotencyKey).slice(0, 16)}`,
+      providerCheckoutId: `demo_${digest(orderKey).slice(0, 16)}`,
       createdAt: now,
       updatedAt: now,
     };
-    orders.set(idempotencyKey, order);
+    orders.set(orderKey, order);
+    orders.set(order.id, order);
     const catalog = catalogs.get(quote.configurationVersionId);
     quote.lines.forEach((line) => {
       const product = catalog?.products.find(
@@ -282,18 +458,61 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
             id,
             accountId: quote.accountId,
             productId: line.productId,
+            productVersionId: line.productVersionId,
+            priceId: line.priceId,
             sourceOrderId: order.id,
             status: "active",
             providerSubscriptionId: order.providerCheckoutId,
+            billingPeriod: line.billingPeriod,
             currentPeriodStart: now,
             currentPeriodEnd: periodEnd.toISOString(),
             cancelAtPeriodEnd: false,
             createdAt: now,
             updatedAt: now,
           });
+          pushSubscriptionEvent(
+            subscriptions[subscriptions.length - 1],
+            "activated",
+            `checkout:${order.id}:subscription:${line.productId}`,
+            "incomplete",
+            "active",
+          );
         }
       }
     });
+    const invoiceId = `inv_${digest(order.id).slice(0, 24)}`;
+    invoices.push({
+      id: invoiceId,
+      accountId: quote.accountId,
+      orderId: order.id,
+      subscriptionId: subscriptions.find(
+        (entry) => entry.sourceOrderId === order.id,
+      )?.id,
+      number: `FAC-${new Date(now).getUTCFullYear()}-${digest(order.id).slice(0, 6).toUpperCase()}`,
+      status: "paid",
+      subtotal: money(quote.subtotalMinor, quote.currency),
+      discount: money(quote.discountMinor, quote.currency),
+      tax: money(quote.taxMinor, quote.currency),
+      total: money(quote.totalMinor, quote.currency),
+      amountPaid: money(quote.totalMinor, quote.currency),
+      amountDue: money(0, quote.currency),
+      issuedAt: now,
+      paidAt: now,
+    });
+    payments.push({
+      id: `pay_${digest(order.id).slice(0, 24)}`,
+      accountId: quote.accountId,
+      orderId: order.id,
+      invoiceId,
+      status: "succeeded",
+      amount: money(quote.totalMinor, quote.currency),
+      provider: "demo",
+      providerPaymentId: order.providerCheckoutId,
+      paidAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+    quote.status = "consumed";
     return structuredClone(order);
   }
 
@@ -334,26 +553,263 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async getActiveEntitlements() {
     await simulateNetworkDelay();
+    const accountId = currentAccountId();
+    ensureSeededBilling(accountId);
     return structuredClone(
-      activeEntitlements.filter((entry) => entry.status === "active"),
+      activeEntitlements.filter(
+        (entry) => entry.accountId === accountId && entry.status === "active",
+      ),
     );
   }
 
   async getSubscriptions() {
     await simulateNetworkDelay();
-    return structuredClone(subscriptions);
+    const accountId = currentAccountId();
+    ensureSeededBilling(accountId);
+    return structuredClone(
+      subscriptions.filter((entry) => entry.accountId === accountId),
+    );
+  }
+
+  async getBillingOverview(): Promise<BillingOverview> {
+    await simulateNetworkDelay();
+    const accountId = currentAccountId();
+    const user = storageService.getCurrentUser();
+    ensureSeededBilling(accountId);
+    const accountSubscriptions = subscriptions.filter(
+      (entry) => entry.accountId === accountId,
+    );
+    const accountEntitlements = activeEntitlements.filter(
+      (entry) => entry.accountId === accountId && entry.status === "active",
+    );
+    const currentSubscription = accountSubscriptions.find((entry) =>
+      ["trialing", "active", "past_due", "paused", "cancellation_pending"].includes(
+        entry.status,
+      ),
+    );
+    const listingLimit = accountEntitlements.find(
+      (entry) => entry.key === "maxActiveListings",
+    );
+    const photoLimit = accountEntitlements.find(
+      (entry) => entry.key === "maxPhotosPerListing",
+    );
+    const teamLimit = accountEntitlements.find(
+      (entry) => entry.key === "teamMembers",
+    );
+    return {
+      customer: user
+        ? {
+            id: `billing_${digest(accountId).slice(0, 20)}`,
+            accountId,
+            legalName: user.companyName || user.name,
+            email: user.email,
+            taxId: user.vatNumber,
+            taxExempt: false,
+            address:
+              user.businessAddress && user.postalCode && user.city
+                ? {
+                    line1: user.businessAddress,
+                    postalCode: user.postalCode,
+                    city: user.city,
+                    countryCode: user.country || "FR",
+                  }
+                : undefined,
+            providerCustomerId: `demo_customer_${digest(accountId).slice(0, 12)}`,
+            createdAt: user.createdAt,
+            updatedAt: currentSubscription?.updatedAt || user.createdAt,
+          }
+        : undefined,
+      currentSubscription: currentSubscription
+        ? structuredClone(currentSubscription)
+        : undefined,
+      subscriptions: structuredClone(accountSubscriptions),
+      entitlements: structuredClone(accountEntitlements),
+      usage: [
+        listingLimit && {
+          key: "activeListings",
+          label: "Annonces actives",
+          used: Math.min(12, Number(listingLimit.value)),
+          limit: Number(listingLimit.value),
+          unit: "annonces",
+          resetsAt: currentSubscription?.currentPeriodEnd,
+        },
+        photoLimit && {
+          key: "photosPerListing",
+          label: "Photos par annonce",
+          used: Math.min(8, Number(photoLimit.value)),
+          limit: Number(photoLimit.value),
+          unit: "photos",
+          resetsAt: currentSubscription?.currentPeriodEnd,
+        },
+        teamLimit && {
+          key: "teamMembers",
+          label: "Membres d’équipe",
+          used: Math.min(2, Number(teamLimit.value)),
+          limit: Number(teamLimit.value),
+          unit: "membres",
+          resetsAt: currentSubscription?.currentPeriodEnd,
+        },
+      ].filter((entry): entry is NonNullable<typeof entry> => Boolean(entry)),
+      orders: [...new Map(
+        [...orders.values()]
+          .filter((entry) => entry.accountId === accountId)
+          .map((entry) => [entry.id, entry]),
+      ).values()].map((entry) => structuredClone(entry)),
+      payments: structuredClone(
+        payments.filter((entry) => entry.accountId === accountId),
+      ),
+      invoices: structuredClone(
+        invoices.filter((entry) => entry.accountId === accountId),
+      ),
+      refunds: structuredClone(
+        refunds.filter((entry) => entry.accountId === accountId),
+      ),
+      creditBalances: structuredClone(
+        creditBalances.filter((entry) => entry.accountId === accountId),
+      ),
+      subscriptionEvents: structuredClone(
+        subscriptionEvents.filter((entry) => entry.accountId === accountId),
+      ),
+    };
+  }
+
+  async getInvoiceDocument(invoiceId: string) {
+    await simulateNetworkDelay();
+    const accountId = currentAccountId();
+    ensureSeededBilling(accountId);
+    const invoice = invoices.find(
+      (entry) => entry.id === invoiceId && entry.accountId === accountId,
+    );
+    if (!invoice) throw new Error("Facture introuvable");
+    const user = storageService.getCurrentUser();
+    const format = (amountMinor: number) =>
+      new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: invoice.total.currency,
+      }).format(amountMinor / 100);
+    const escape = (value: string) =>
+      value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    const legalName = escape(user?.companyName || user?.name || accountId);
+    return {
+      fileName: `${invoice.number}.html`,
+      mimeType: "text/html;charset=utf-8",
+      content: `<!doctype html><html lang="fr"><meta charset="utf-8"><title>${escape(invoice.number)}</title><style>body{font-family:Arial,sans-serif;color:#1c1917;max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}h1{font-size:28px;margin:0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid #e7e5e4}.number{text-align:right}.total{font-weight:700;font-size:18px}small{color:#78716c}</style><body><header><div><h1>SHONGRE.</h1><small>Facture commerciale de démonstration</small></div><div><strong>${escape(invoice.number)}</strong><br>${new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}</div></header><section><div><strong>Facturé à</strong><br>${legalName}<br>${escape(user?.businessAddress || "Adresse de facturation du compte")}<br>${escape(`${user?.postalCode || ""} ${user?.city || ""}`.trim())}</div><div><strong>Émetteur</strong><br>Shongre SAS<br>France</div></section><table><thead><tr><th>Description</th><th class="number">Montant</th></tr></thead><tbody><tr><td>Services Shongre — commande ${escape(invoice.orderId || "—")}</td><td class="number">${format(invoice.subtotal.amountMinor)}</td></tr><tr><td>Remise</td><td class="number">− ${format(invoice.discount.amountMinor)}</td></tr><tr><td>TVA</td><td class="number">${format(invoice.tax.amountMinor)}</td></tr><tr class="total"><td>Total TTC</td><td class="number">${format(invoice.total.amountMinor)}</td></tr></tbody></table><p><small>Statut : ${escape(invoice.status)}. Document produit par le service de démonstration Shongre ; aucun paiement réel n’a été débité.</small></p></body></html>`,
+    };
+  }
+
+  async previewSubscriptionChange(request: SubscriptionChangeRequest) {
+    await simulateNetworkDelay();
+    const accountId = currentAccountId();
+    ensureSeededBilling(accountId);
+    const subscription = subscriptions.find(
+      (entry) =>
+        entry.id === request.subscriptionId && entry.accountId === accountId,
+    );
+    if (!subscription) throw new Error("Abonnement introuvable");
+    const catalog = await this.getCatalog("FR");
+    const currentProduct = catalog.products.find(
+      (entry) => entry.id === subscription.productId,
+    );
+    const targetProduct = catalog.products.find(
+      (entry) => entry.id === request.targetProductId,
+    );
+    const currentPrice = currentProduct?.prices.find(
+      (entry) => entry.id === subscription.priceId,
+    );
+    const targetPrice = targetProduct?.prices.find(
+      (entry) => entry.id === request.targetPriceId,
+    );
+    if (!targetProduct || !targetPrice) throw new Error("Offre indisponible");
+    const currentAmount = currentPrice?.amount.amountMinor || 0;
+    const isUpgrade = targetPrice.amount.amountMinor > currentAmount;
+    const prorationMinor = isUpgrade
+      ? Math.round((targetPrice.amount.amountMinor - currentAmount) / 2)
+      : 0;
+    const taxMinor = Math.round((prorationMinor * targetPrice.taxRateBps) / 10_000);
+    const nextTaxMinor = Math.round(
+      (targetPrice.amount.amountMinor * targetPrice.taxRateBps) / 10_000,
+    );
+    return {
+      subscriptionId: subscription.id,
+      targetProductId: targetProduct.id,
+      targetPriceId: targetPrice.id,
+      effectiveAt: isUpgrade ? "immediately" : "period_end",
+      proration: money(prorationMinor, targetPrice.amount.currency),
+      tax: money(taxMinor, targetPrice.amount.currency),
+      totalDueNow: money(prorationMinor + taxMinor, targetPrice.amount.currency),
+      nextPeriodTotal: money(
+        targetPrice.amount.amountMinor + nextTaxMinor,
+        targetPrice.amount.currency,
+      ),
+      nextBillingAt: subscription.currentPeriodEnd,
+    } as const;
+  }
+
+  async applySubscriptionChange(request: SubscriptionChangeRequest) {
+    const preview = await this.previewSubscriptionChange(request);
+    await simulateNetworkDelay();
+    const subscription = subscriptions.find(
+      (entry) => entry.id === request.subscriptionId,
+    )!;
+    const before = subscription.status;
+    if (preview.effectiveAt === "period_end") {
+      subscription.scheduledProductId = request.targetProductId;
+      subscription.scheduledPriceId = request.targetPriceId;
+      subscription.scheduledChangeAt = subscription.currentPeriodEnd;
+      subscription.updatedAt = new Date().toISOString();
+      pushSubscriptionEvent(
+        subscription,
+        "change_scheduled",
+        request.idempotencyKey,
+        before,
+        before,
+      );
+    } else {
+      subscription.productId = request.targetProductId;
+      subscription.priceId = request.targetPriceId;
+      subscription.scheduledProductId = undefined;
+      subscription.scheduledPriceId = undefined;
+      subscription.scheduledChangeAt = undefined;
+      subscription.updatedAt = new Date().toISOString();
+      pushSubscriptionEvent(
+        subscription,
+        "changed",
+        request.idempotencyKey,
+        before,
+        subscription.status,
+      );
+    }
+    return structuredClone(subscription);
   }
 
   async updateSubscriptionCancellation(
     request: SubscriptionCancellationRequest,
   ) {
     await simulateNetworkDelay();
+    const accountId = currentAccountId();
+    ensureSeededBilling(accountId);
     const subscription = subscriptions.find(
-      (entry) => entry.id === request.subscriptionId,
+      (entry) =>
+        entry.id === request.subscriptionId && entry.accountId === accountId,
     );
     if (!subscription) throw new Error("Abonnement introuvable");
+    const previousStatus = subscription.status;
     subscription.cancelAtPeriodEnd = request.cancelAtPeriodEnd;
+    subscription.status = request.cancelAtPeriodEnd
+      ? "cancellation_pending"
+      : "active";
     subscription.updatedAt = new Date().toISOString();
+    pushSubscriptionEvent(
+      subscription,
+      request.cancelAtPeriodEnd ? "cancellation_scheduled" : "reactivated",
+      `cancellation:${subscription.id}:${request.cancelAtPeriodEnd}`,
+      previousStatus,
+      subscription.status,
+    );
     return structuredClone(subscription);
   }
 
@@ -377,10 +833,20 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         .filter((entry) => entry.severity === "blocking").length,
       quoteCountToday: quotes.size / 2,
       activeSubscriptionCount: subscriptions.filter((entry) =>
-        ["active", "trialing", "past_due"].includes(entry.status),
+        ["active", "trialing", "past_due", "cancellation_pending"].includes(
+          entry.status,
+        ),
       ).length,
-      orders: [...orders.values()].map((order) => structuredClone(order)),
+      orders: [...new Map(
+        [...orders.values()].map((entry) => [entry.id, entry]),
+      ).values()].map((order) => structuredClone(order)),
       entitlements: structuredClone(activeEntitlements),
+      payments: structuredClone(payments),
+      invoices: structuredClone(invoices),
+      refunds: structuredClone(refunds),
+      subscriptions: structuredClone(subscriptions),
+      creditBalances: structuredClone(creditBalances),
+      subscriptionEvents: structuredClone(subscriptionEvents),
       auditEvents: structuredClone(auditEvents),
     } satisfies MonetizationAdminOverview;
   }
