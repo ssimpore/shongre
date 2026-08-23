@@ -24,11 +24,24 @@ export class HttpAdminService implements AdminServiceContract {
 
   async updateUserStatus(
     userId: string,
-    status: "active" | "suspended" | "banned",
+    status: "active" | "restricted" | "suspended" | "banned",
+    reason: string,
   ): Promise<UserProfile> {
     return httpClient.put<UserProfile>(`/admin/users/${userId}/status`, {
       status,
+      reason,
     });
+  }
+
+  async reviewProfessionalVerification(
+    userId: string,
+    approve: boolean,
+    notes: string,
+  ): Promise<UserProfile> {
+    return httpClient.put<UserProfile>(
+      `/admin/users/${userId}/verification`,
+      { approve, notes },
+    );
   }
 
   async getPendingReports(): Promise<
@@ -54,9 +67,11 @@ export class HttpAdminService implements AdminServiceContract {
   async resolveReport(
     reportId: string,
     action: "dismiss" | "remove_listing" | "ban_user",
+    reason: string,
   ): Promise<void> {
     return httpClient.post<void>(`/admin/reports/${reportId}/resolve`, {
       action,
+      reason,
     });
   }
 

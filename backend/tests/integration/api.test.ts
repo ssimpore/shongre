@@ -12,6 +12,9 @@ describe("API v1 Endpoints Integration", () => {
   let buyerToken: string;
   let proToken: string;
   let adminToken: string;
+  let moderatorToken: string;
+  let trustToken: string;
+  let financeToken: string;
 
   async function login(email: string): Promise<string> {
     const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
@@ -49,8 +52,11 @@ describe("API v1 Endpoints Integration", () => {
     });
 
     buyerToken = await login("thomas.laurent@example.fr");
-    proToken = await login("contact@atelier-nordique.fr");
+    proToken = await login("recrutement@technova.fr");
     adminToken = await login("admin@shongre.com");
+    moderatorToken = await login("moderation@shongre.com");
+    trustToken = await login("trust@shongre.com");
+    financeToken = await login("finance@shongre.com");
   });
 
   afterAll(async () => {
@@ -427,6 +433,91 @@ describe("API v1 Endpoints Integration", () => {
     expect(res.status).toBe(200);
     const stats = await res.json();
     expect(stats.totalUsers).toBeGreaterThan(0);
+  });
+
+  it("does not let administrative configuration imply moderation or finance", async () => {
+    const reports = await fetch(`${baseUrl}/api/v1/admin/reports`, {
+      headers: auth(adminToken),
+    });
+    expect(reports.status).toBe(403);
+
+    const refund = await fetch(
+      `${baseUrl}/api/v1/real-estate/checkouts/checkout-missing/refunds`,
+      {
+        method: "POST",
+        headers: auth(adminToken),
+        body: JSON.stringify({ reason: "Test de séparation des privilèges" }),
+      },
+    );
+    expect(refund.status).toBe(403);
+  });
+
+  it("keeps moderator and Trust & Safety actions distinct", async () => {
+    const reports = await fetch(`${baseUrl}/api/v1/admin/reports`, {
+      headers: auth(moderatorToken),
+    });
+    expect(reports.status).toBe(200);
+
+    const moderatorBan = await fetch(
+      `${baseUrl}/api/v1/admin/reports/report-missing/resolve`,
+      {
+        method: "POST",
+        headers: auth(moderatorToken),
+        body: JSON.stringify({
+          action: "ban_user",
+          reason: "Test de séparation des privilèges",
+        }),
+      },
+    );
+    expect(moderatorBan.status).toBe(403);
+
+    const trustRemoval = await fetch(
+      `${baseUrl}/api/v1/admin/reports/report-missing/resolve`,
+      {
+        method: "POST",
+        headers: auth(trustToken),
+        body: JSON.stringify({
+          action: "remove_listing",
+          reason: "Test de séparation des privilèges",
+        }),
+      },
+    );
+    expect(trustRemoval.status).toBe(403);
+
+    const trustStatus = await fetch(
+      `${baseUrl}/api/v1/admin/users/user_trust_safety/status`,
+      {
+        method: "PUT",
+        headers: auth(trustToken),
+        body: JSON.stringify({
+          status: "suspended",
+          reason: "Contrôle de portée sans mutation de compte",
+        }),
+      },
+    );
+    expect(trustStatus.status).toBe(400);
+  });
+
+  it("allows finance audit/refund capabilities without platform configuration", async () => {
+    const audit = await fetch(`${baseUrl}/api/v1/admin/audit-logs`, {
+      headers: auth(financeToken),
+    });
+    expect(audit.status).toBe(200);
+
+    const stats = await fetch(`${baseUrl}/api/v1/admin/stats`, {
+      headers: auth(financeToken),
+    });
+    expect(stats.status).toBe(403);
+
+    const refund = await fetch(
+      `${baseUrl}/api/v1/real-estate/checkouts/checkout-missing/refunds`,
+      {
+        method: "POST",
+        headers: auth(financeToken),
+        body: JSON.stringify({ reason: "Test de portée finance uniquement" }),
+      },
+    );
+    expect(refund.status).not.toBe(403);
   });
 
   it("protects Immo administration with the vertical permission", async () => {

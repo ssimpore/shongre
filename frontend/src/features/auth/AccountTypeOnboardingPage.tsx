@@ -31,9 +31,7 @@ export function AccountTypeOnboardingPage() {
       </header>
       <AccountTypeSelector
         selectedType={accountType}
-        onChange={(value) => {
-          if (value !== "internal") setAccountType(value);
-        }}
+        onChange={setAccountType}
       />
       <Button
         variant="primary"

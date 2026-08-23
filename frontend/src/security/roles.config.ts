@@ -1,268 +1,24 @@
-import { PlatformRole, AccountType, Permission } from "../types";
+import { capabilitiesForLegacyRole } from "@shongre/contracts/access-control";
+import type {
+  AccountType,
+  Permission,
+  PlatformRole,
+  StaffRole,
+} from "../types";
 
 export interface RoleMetadata {
+  /** Compatibility key for existing persisted demo profiles. */
   id: PlatformRole;
   title: string;
   shortLabel: string;
   accountType: AccountType;
-  hierarchyLevel: number; // 0 for guest, 10 for buyer, 20 for seller, 30 for pro, 50-90 for internal, 100 for super_admin
+  hierarchyLevel: number;
   badgeColor: string;
   description: string;
+  /** Derived from the shared canonical policy; never authored here. */
   defaultPermissions: Permission[];
   isInternalStaff: boolean;
 }
-
-// 1. Base Public & Guest Permissions
-const GUEST_PERMISSIONS: Permission[] = [
-  "profile.read",
-  "seller.profile.read",
-  "listing.read",
-  "report.create",
-  "course.read",
-  "auto.read",
-  "immo.read",
-  "employment.read",
-];
-
-// 2. Individual Buyer Permissions
-const BUYER_PERMISSIONS: Permission[] = [
-  ...GUEST_PERMISSIONS,
-  "profile.update.own",
-  "message.read.own",
-  "message.send",
-  "message.block",
-  "conversation.manage.own",
-  "favorite.manage.own",
-  "saved_search.manage.own",
-  "order.create",
-  "order.read.own",
-  "payment.initiate",
-  "review.create",
-  "review.update.own",
-  "course.request.create",
-  "course.booking.create",
-  "course.profile.manage.own",
-  "course.offer.manage.own",
-  "course.lead.read.own",
-  "course.lead.respond.own",
-  "employment.candidate.manage.own",
-  "employment.job.manage.own",
-];
-
-// 3. Individual Seller Permissions
-const SELLER_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "seller.profile.update.own",
-  "listing.create",
-  "listing.update.own",
-  "listing.delete.own",
-  "listing.publish",
-  "listing.mark_reserved",
-  "listing.mark_sold",
-  "listing.promote",
-  "order.manage.seller",
-  "course.profile.manage.own",
-  "course.offer.manage.own",
-  "course.lead.read.own",
-  "course.lead.respond.own",
-  "auto.vehicle.manage.own",
-  "immo.property.manage.own",
-  "employment.recruiter.manage.own",
-  "employment.application.manage.own",
-];
-
-// 4. Professional Seller Permissions
-const PRO_SELLER_PERMISSIONS: Permission[] = [
-  ...SELLER_PERMISSIONS,
-  "listing.bulk_import",
-  "store.manage.own",
-  "store.analytics.read.own",
-  "store.customization.manage",
-  "subscription.manage.own",
-  "subscription.upgrade",
-  "course.organization.manage.own",
-  "auto.dealer.manage.own",
-  "auto.lead.manage.own",
-  "auto.inventory.import.own",
-  "immo.agency.manage.own",
-  "immo.lead.manage.own",
-  "immo.inventory.import.own",
-  "employment.recruiter.manage.own",
-  "employment.application.manage.own",
-  "employment.import.own",
-];
-
-// 5. Support Specialist
-const SUPPORT_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "admin.access",
-  "staff.support.access",
-  "user.read",
-  "user.manage",
-  "conversation.audit.privileged",
-  "report.review",
-  "provider.read",
-  "provider.health.read",
-];
-
-// 6. Moderator
-const MODERATOR_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "admin.access",
-  "listing.moderate",
-  "report.review",
-  "moderation.review",
-  "moderation.action",
-  "user.read",
-  "user.suspend",
-  "user.reactivate",
-  "review.moderate",
-  "conversation.audit.privileged",
-  "audit.read",
-];
-
-// 7. Operations & Logistics Specialist
-const OPERATIONS_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "admin.access",
-  "staff.operations.access",
-  "order.read.own",
-  "order.manage.seller",
-  "order.refund",
-  "user.read",
-  "report.review",
-  "provider.read",
-  "provider.configuration.read",
-  "provider.health.read",
-];
-
-// 8. Finance & Billing Specialist
-const FINANCE_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "admin.access",
-  "staff.finance.access",
-  "transaction.audit.finance",
-  "payment.refund",
-  "order.refund",
-  "monetization.manage",
-  "user.read",
-  "audit.read",
-  "provider.read",
-  "provider.configuration.read",
-  "provider.health.read",
-];
-
-// 9. Commercial & Partnerships
-const COMMERCIAL_PERMISSIONS: Permission[] = [
-  ...PRO_SELLER_PERMISSIONS,
-  "admin.access",
-  "staff.commercial.access",
-  "user.read",
-  "user.verify",
-  "listing.feature",
-  "crm.access",
-  "crm.contact.read",
-  "crm.contact.manage",
-  "crm.company.read",
-  "crm.company.manage",
-  "crm.opportunity.read",
-  "crm.opportunity.manage",
-  "crm.ai_prospecting.use",
-];
-
-// 10. Content & Taxonomy Manager
-const CONTENT_MANAGER_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "admin.access",
-  "taxonomy.manage",
-  "listing.feature",
-  "listing.moderate",
-];
-
-// 11. Market Manager (Country/Region Scoped)
-const MARKET_MANAGER_PERMISSIONS: Permission[] = [
-  ...BUYER_PERMISSIONS,
-  "admin.access",
-  "market.manage",
-  "market.configure",
-  "taxonomy.manage",
-  "listing.moderate",
-  "listing.feature",
-  "user.read",
-  "user.verify",
-  "report.review",
-  "audit.read",
-  "crm.access",
-  "crm.contact.read",
-  "crm.company.read",
-  "crm.opportunity.read",
-  "provider.read",
-  "provider.configuration.read",
-  "provider.configuration.manage",
-  "provider.health.read",
-  "course.admin.manage",
-  "auto.admin.manage",
-  "immo.admin.manage",
-  "employment.admin.manage",
-];
-
-// 12. Administrator
-const ADMIN_PERMISSIONS: Permission[] = [
-  ...PRO_SELLER_PERMISSIONS,
-  "admin.access",
-  "listing.moderate",
-  "listing.feature",
-  "report.review",
-  "moderation.review",
-  "moderation.action",
-  "user.read",
-  "user.manage",
-  "user.suspend",
-  "user.reactivate",
-  "user.verify",
-  "staff.support.access",
-  "staff.operations.access",
-  "staff.finance.access",
-  "staff.commercial.access",
-  "transaction.audit.finance",
-  "payment.refund",
-  "order.refund",
-  "review.moderate",
-  "market.manage",
-  "market.configure",
-  "taxonomy.manage",
-  "monetization.manage",
-  "monetization.pricing.update",
-  "role.manage",
-  "audit.read",
-  "crm.access",
-  "crm.contact.read",
-  "crm.contact.manage",
-  "crm.company.read",
-  "crm.company.manage",
-  "crm.opportunity.read",
-  "crm.opportunity.manage",
-  "crm.ai_prospecting.use",
-  "provider.read",
-  "provider.manage",
-  "provider.configuration.read",
-  "provider.configuration.manage",
-  "provider.routing.manage",
-  "provider.credentials.status.read",
-  "provider.health.read",
-  "provider.test",
-  "course.admin.manage",
-  "auto.admin.manage",
-  "immo.admin.manage",
-  "employment.admin.manage",
-];
-
-// 13. Super Administrator (Unrestricted platform access)
-const SUPER_ADMIN_PERMISSIONS: Permission[] = [
-  ...ADMIN_PERMISSIONS,
-  "permission.manage",
-  "provider.credentials.manage",
-];
 
 export const ALL_PLATFORM_ROLES: PlatformRole[] = [
   "guest",
@@ -280,6 +36,26 @@ export const ALL_PLATFORM_ROLES: PlatformRole[] = [
   "super_admin",
 ];
 
+export const STAFF_ROLE_PRESENTATION: Record<
+  StaffRole,
+  { title: string; shortLabel: string }
+> = {
+  support_agent: { title: "Agent Support Client", shortLabel: "Support" },
+  moderator: { title: "Modérateur", shortLabel: "Modération" },
+  trust_safety: { title: "Analyste Trust & Safety", shortLabel: "Trust & Safety" },
+  compliance: { title: "Analyste Conformité", shortLabel: "Conformité" },
+  finance: { title: "Responsable Finance", shortLabel: "Finance" },
+  operations: { title: "Spécialiste Opérations", shortLabel: "Opérations" },
+  commercial: { title: "Responsable Commercial", shortLabel: "Commercial" },
+  content_manager: { title: "Gestionnaire de contenu", shortLabel: "Contenu" },
+  market_manager: { title: "Responsable Marché", shortLabel: "Marché" },
+  admin: { title: "Administrateur Plateforme", shortLabel: "Administrateur" },
+  owner: { title: "Propriétaire Plateforme", shortLabel: "Owner" },
+};
+
+const permissionsFor = (role: PlatformRole): Permission[] =>
+  capabilitiesForLegacyRole(role);
+
 export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
   guest: {
     id: "guest",
@@ -289,161 +65,152 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     hierarchyLevel: 0,
     badgeColor: "bg-stone-100 text-stone-700 border-stone-200",
     description: "Accès public libre pour la consultation et la recherche.",
-    defaultPermissions: GUEST_PERMISSIONS,
+    defaultPermissions: permissionsFor("guest"),
     isInternalStaff: false,
   },
   buyer: {
     id: "buyer",
-    title: "Acheteur Particulier",
+    title: "Compte Particulier",
     shortLabel: "Particulier",
     accountType: "individual",
     hierarchyLevel: 10,
     badgeColor: "bg-success-surface text-success border-success-border",
     description:
-      "Compte membre standard pour dialoguer, acheter et enregistrer des favoris.",
-    defaultPermissions: BUYER_PERMISSIONS,
+      "Compte individuel pouvant acheter et vendre selon son activité.",
+    defaultPermissions: permissionsFor("buyer"),
     isInternalStaff: false,
   },
   seller: {
     id: "seller",
-    title: "Vendeur Particulier",
-    shortLabel: "Particulier Vendeur",
+    title: "Compte Particulier",
+    shortLabel: "Particulier",
     accountType: "individual",
-    hierarchyLevel: 20,
+    hierarchyLevel: 10,
     badgeColor: "bg-success-surface text-success border-success-border",
     description:
-      "Particulier avec annonces actives et gestion de ventes personnelles.",
-    defaultPermissions: SELLER_PERMISSIONS,
+      "Alias historique d'un compte individuel, sans identité séparée vendeur.",
+    defaultPermissions: permissionsFor("seller"),
     isInternalStaff: false,
   },
   pro_seller: {
     id: "pro_seller",
-    title: "Vendeur Professionnel",
-    shortLabel: "Boutique Pro",
+    title: "Compte Professionnel",
+    shortLabel: "Professionnel",
     accountType: "professional",
     hierarchyLevel: 30,
     badgeColor: "bg-primary-light text-primary border-primary-border",
     description:
-      "Entreprise ou artisan avec vitrine dédiée, SIRET vérifié et outils avancés.",
-    defaultPermissions: PRO_SELLER_PERMISSIONS,
+      "Entreprise avec socle Pro et outils métier déterminés par sa verticale.",
+    defaultPermissions: permissionsFor("pro_seller"),
     isInternalStaff: false,
   },
   support: {
     id: "support",
     title: "Agent Support Client",
     shortLabel: "Support",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 50,
     badgeColor: "bg-info-surface text-info border-info-border",
-    description:
-      "Assistance aux utilisateurs, gestion des tickets et requêtes de litiges.",
-    defaultPermissions: SUPPORT_PERMISSIONS,
+    description: "Assistance et gestion des dossiers support autorisés.",
+    defaultPermissions: permissionsFor("support"),
     isInternalStaff: true,
   },
   moderator: {
     id: "moderator",
-    title: "Modérateur Confiance & Sécurité",
+    title: "Modérateur",
     shortLabel: "Modérateur",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 60,
     badgeColor: "bg-warning-surface text-warning border-warning-border",
-    description:
-      "Traitement des signalements, modération des annonces et suspensions.",
-    defaultPermissions: MODERATOR_PERMISSIONS,
+    description: "Traitement des signalements et actions de modération.",
+    defaultPermissions: permissionsFor("moderator"),
     isInternalStaff: true,
   },
   operations: {
     id: "operations",
-    title: "Spécialiste Opérations & Logistique",
+    title: "Spécialiste Opérations",
     shortLabel: "Opérations",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 65,
     badgeColor: "bg-indigo-100 text-indigo-900 border-indigo-300",
-    description:
-      "Gestion des incidents de livraison, relais et suivi opérationnel.",
-    defaultPermissions: OPERATIONS_PERMISSIONS,
+    description: "Suivi opérationnel dans un périmètre explicitement attribué.",
+    defaultPermissions: permissionsFor("operations"),
     isInternalStaff: true,
   },
   finance: {
     id: "finance",
-    title: "Responsable Finance & Comptabilité",
+    title: "Responsable Finance",
     shortLabel: "Finance",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 70,
     badgeColor: "bg-teal-100 text-teal-900 border-teal-300",
-    description:
-      "Supervision des séquestres, remboursements et conformité fiscale.",
-    defaultPermissions: FINANCE_PERMISSIONS,
+    description: "Transactions, remboursements et rapprochement financier.",
+    defaultPermissions: permissionsFor("finance"),
     isInternalStaff: true,
   },
   commercial: {
     id: "commercial",
     title: "Responsable Développement Marchand",
     shortLabel: "Commercial",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 68,
     badgeColor: "bg-fuchsia-100 text-fuchsia-900 border-fuchsia-300",
-    description: "Accompagnement des grands comptes et partenariats vendeurs.",
-    defaultPermissions: COMMERCIAL_PERMISSIONS,
+    description: "Accompagnement des comptes et partenariats autorisés.",
+    defaultPermissions: permissionsFor("commercial"),
     isInternalStaff: true,
   },
   content_manager: {
     id: "content_manager",
     title: "Gestionnaire Contenu & Taxonomie",
     shortLabel: "Contenu",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 62,
     badgeColor: "bg-violet-100 text-violet-900 border-violet-300",
-    description:
-      "Administration de l'arborescence des catégories, filtres et sélections.",
-    defaultPermissions: CONTENT_MANAGER_PERMISSIONS,
+    description: "Taxonomie et sélections éditoriales, sans privilège global.",
+    defaultPermissions: permissionsFor("content_manager"),
     isInternalStaff: true,
   },
   market_manager: {
     id: "market_manager",
     title: "Responsable Marché & Pays",
     shortLabel: "Market Manager",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 75,
     badgeColor: "bg-info-surface text-info border-info-border",
     description:
-      "Gestion territoriale locale pour un pays spécifique (FR, BE, etc.).",
-    defaultPermissions: MARKET_MANAGER_PERMISSIONS,
+      "Configuration d'un périmètre de marché explicitement attribué.",
+    defaultPermissions: permissionsFor("market_manager"),
     isInternalStaff: true,
   },
   admin: {
     id: "admin",
     title: "Administrateur Plateforme",
     shortLabel: "Administrateur",
-    accountType: "internal",
+    accountType: "staff",
     hierarchyLevel: 90,
     badgeColor: "bg-danger-surface text-danger border-danger-border",
     description:
-      "Supervision globale de la plateforme, gestion des comptes et tarifs.",
-    defaultPermissions: ADMIN_PERMISSIONS,
+      "Configuration et administration; aucun privilège opérationnel implicite.",
+    defaultPermissions: permissionsFor("admin"),
     isInternalStaff: true,
   },
   super_admin: {
     id: "super_admin",
-    title: "Super Administrateur Système",
-    shortLabel: "Super Admin",
-    accountType: "internal",
+    title: "Propriétaire Plateforme",
+    shortLabel: "Owner",
+    accountType: "staff",
     hierarchyLevel: 100,
     badgeColor: "bg-purple-100 text-purple-950 border-purple-400 font-black",
     description:
-      "Accès sans restriction, gestion de la matrice de sécurité et des permissions.",
-    defaultPermissions: SUPER_ADMIN_PERMISSIONS,
+      "Gouvernance critique et permissions, avec droits explicites et auditables.",
+    defaultPermissions: permissionsFor("super_admin"),
     isInternalStaff: true,
   },
 };
 
-/**
- * Normalizes any legacy or arbitrary role string into a canonical PlatformRole.
- */
+/** Normalize storage aliases without treating unknown input as privileged. */
 export function normalizePlatformRole(rawRole?: string): PlatformRole {
-  if (!rawRole) return "guest";
-  const clean = rawRole.toLowerCase().trim();
-
+  const clean = rawRole?.toLowerCase().trim();
   switch (clean) {
     case "guest":
       return "guest";
@@ -482,21 +249,13 @@ export function normalizePlatformRole(rawRole?: string): PlatformRole {
     case "root":
       return "super_admin";
     default:
-      return "buyer";
+      return "guest";
   }
 }
 
-/**
- * Staff-readable name for a role identifier.
- *
- * Role keys are storage values, not copy. Rendering them directly put
- * `super_admin` in front of staff in audit rows and role columns. Falls back to
- * a de-slugified form so an unknown key still reads as words rather than as an
- * identifier.
- */
 export function roleLabel(role: string | undefined | null): string {
   if (!role) return "—";
-  const known = ROLE_DEFINITIONS[role as PlatformRole];
+  const known = ROLE_DEFINITIONS[normalizePlatformRole(role)];
   if (known) return known.shortLabel;
   const spaced = String(role).replace(/_/g, " ");
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);

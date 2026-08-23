@@ -1,4 +1,9 @@
-import { AuthResult, UserProfile, UserRole } from "../../types";
+import {
+  AuthResult,
+  ProfessionalVertical,
+  UserProfile,
+  UserRole,
+} from "../../types";
 
 export type AuthProviderId = "password" | "google" | "apple" | "facebook";
 export type SocialAuthProvider = Exclude<AuthProviderId, "password">;
@@ -25,6 +30,7 @@ export interface RegisterProfessionalInput {
   email: string;
   password: string;
   companyName: string;
+  professionalVertical: ProfessionalVertical;
   sirenSiret: string;
   legalForm: string;
   vatNumber?: string;

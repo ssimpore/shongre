@@ -586,8 +586,7 @@ export const DEMO_COURSE_LEADS: CourseLead[] = DEMO_LEARNER_REQUESTS.map(
     ],
     contactReleaseStatus: "withheld",
     creditCost: 1,
-    expiresAt:
-      index === 0 ? "2026-08-23T10:00:00.000Z" : "2026-08-24T10:00:00.000Z",
+    expiresAt: request.expiresAt,
     createdAt:
       index === 0 ? "2026-08-20T08:25:00.000Z" : "2026-08-19T13:12:00.000Z",
   }),

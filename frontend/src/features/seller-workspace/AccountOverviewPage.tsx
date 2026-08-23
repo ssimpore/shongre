@@ -248,7 +248,7 @@ export const AccountOverviewPage: React.FC = () => {
               }
               className="w-full shadow-md shadow-primary/20 sm:w-auto"
             >
-              {t("sellerworkspace.accountOverviewPage.deposerUneAnnonce")}
+              {t(publishCta.labelKey)}
             </Button>
           </div>
         </div>

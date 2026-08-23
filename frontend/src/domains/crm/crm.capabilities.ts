@@ -4,6 +4,7 @@
  */
 
 import { UserProfile } from "../../types";
+import { authorizationService } from "../../security/authorization.service";
 
 export interface CrmCapabilities {
   canAccessCrm: boolean;
@@ -33,19 +34,26 @@ export class CrmCapabilitiesService {
       };
     }
 
-    const role = viewer.role;
-    const isCommercial = role === "commercial";
-    const isMarketManager = role === "market_manager";
-    const isAdmin = role === "admin" || role === "super_admin";
-    const isSupport = role === "support";
-
-    const canAccessCrm =
-      isCommercial || isMarketManager || isAdmin || isSupport;
-    const canManageContacts = isCommercial || isAdmin || isMarketManager;
-    const canManageCompanies = isCommercial || isAdmin || isMarketManager;
-    const canManageOpportunities = isCommercial || isAdmin;
-    const canUseAiProspecting = isCommercial || isAdmin;
-    const canExport = isAdmin;
+    const canAccessCrm = authorizationService.can(viewer, "crm.access");
+    const canManageContacts = authorizationService.can(
+      viewer,
+      "crm.contact.manage",
+    );
+    const canManageCompanies = authorizationService.can(
+      viewer,
+      "crm.company.manage",
+    );
+    const canManageOpportunities = authorizationService.can(
+      viewer,
+      "crm.opportunity.manage",
+    );
+    const canUseAiProspecting = authorizationService.can(
+      viewer,
+      "crm.ai_prospecting.use",
+    );
+    // No export capability exists yet, so deny by default instead of inferring
+    // a sensitive data export from a broad administrative label.
+    const canExport = false;
 
     const marketScope = viewer.marketScope?.countries || ["FR"];
 

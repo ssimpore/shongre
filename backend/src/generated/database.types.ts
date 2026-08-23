@@ -32,14 +32,27 @@ export interface Database {
           slug: string;
           email: string;
           name: string;
-          account_type: "individual" | "professional" | "internal";
+          account_type: "individual" | "professional" | "staff" | "internal";
+          professional_vertical:
+            | "generic"
+            | "real_estate"
+            | "automotive"
+            | "education"
+            | "employment"
+            | null;
+          staff_role: string | null;
+          custom_permissions: string[];
+          revoked_permissions: string[];
           primary_role: string;
           status:
             | "active"
+            | "pending"
+            | "restricted"
             | "suspended"
             | "pending_verification"
             | "banned"
             | "archived"
+            | "closed"
             | "deleted";
           avatar_url: string | null;
           phone: string | null;
@@ -67,14 +80,27 @@ export interface Database {
           slug: string;
           email: string;
           name: string;
-          account_type?: "individual" | "professional" | "internal";
+          account_type?: "individual" | "professional" | "staff" | "internal";
+          professional_vertical?:
+            | "generic"
+            | "real_estate"
+            | "automotive"
+            | "education"
+            | "employment"
+            | null;
+          staff_role?: string | null;
+          custom_permissions?: string[];
+          revoked_permissions?: string[];
           primary_role?: string;
           status?:
             | "active"
+            | "pending"
+            | "restricted"
             | "suspended"
             | "pending_verification"
             | "banned"
             | "archived"
+            | "closed"
             | "deleted";
           avatar_url?: string | null;
           phone?: string | null;
@@ -1926,10 +1952,13 @@ export interface Database {
       platform_role: string;
       account_status:
         | "active"
+        | "pending"
+        | "restricted"
         | "suspended"
         | "pending_verification"
         | "banned"
         | "archived"
+        | "closed"
         | "deleted";
       listing_status: string;
       transaction_status: string;

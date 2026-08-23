@@ -29,6 +29,18 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
 import { resolveSafeReturn } from "../../security/safe-return";
+import type { ProfessionalVertical } from "../../types";
+
+const PROFESSIONAL_VERTICAL_OPTIONS: ReadonlyArray<{
+  value: ProfessionalVertical;
+  label: string;
+}> = [
+  { value: "generic", label: "Commerce et services généralistes" },
+  { value: "real_estate", label: "Immobilier" },
+  { value: "automotive", label: "Automobile" },
+  { value: "education", label: "Cours et formation" },
+  { value: "employment", label: "Emploi et recrutement" },
+];
 
 const useRegistrationReturn = (fallback: string) => {
   const [searchParams] = useSearchParams();
@@ -87,7 +99,7 @@ export const RegisterChoicePage: React.FC = () => {
             </label>
             <AccountTypeSelector
               selectedType={selectedType}
-              onChange={(type) => setSelectedType(type as any)}
+              onChange={setSelectedType}
             />
           </div>
 
@@ -426,6 +438,8 @@ export const RegisterProPage: React.FC = () => {
 
   // Step 2: Company & Legal
   const [companyName, setCompanyName] = useState("");
+  const [professionalVertical, setProfessionalVertical] =
+    useState<ProfessionalVertical>("generic");
   const [country, setCountry] = useState("FR");
   const [sirenSiret, setSirenSiret] = useState("");
   const [legalForm, setLegalForm] = useState(
@@ -489,6 +503,7 @@ export const RegisterProPage: React.FC = () => {
         email: email.trim(),
         password,
         companyName: companyName.trim(),
+        professionalVertical,
         sirenSiret: sirenSiret.trim(),
         legalForm,
         vatNumber: vatNumber.trim() || undefined,
@@ -504,7 +519,12 @@ export const RegisterProPage: React.FC = () => {
         toast.success(
           "Compte Professionnel créé ! Bienvenue dans votre espace Pro.",
         );
-        navigate(returnTo, { replace: true });
+        navigate(
+          result.user?.status === "pending"
+            ? routes.workspace.verification()
+            : returnTo,
+          { replace: true },
+        );
       } else {
         setErrorMessage(
           result.errorMessage || "Échec de la création de compte Pro.",
@@ -668,6 +688,37 @@ export const RegisterProPage: React.FC = () => {
             </>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="reg-activite-professionnelle"
+                  className="block text-xs font-bold text-stone-800 mb-1.5"
+                >
+                  Activité professionnelle{" "}
+                  <span className="text-primary">*</span>
+                </label>
+                <select
+                  id="reg-activite-professionnelle"
+                  value={professionalVertical}
+                  onChange={(event) =>
+                    setProfessionalVertical(
+                      event.target.value as ProfessionalVertical,
+                    )
+                  }
+                  required
+                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                >
+                  {PROFESSIONAL_VERTICAL_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1.5 text-xs text-stone-500">
+                  Ce choix active uniquement les outils métier correspondant à
+                  votre activité. Il pourra être vérifié lors de l'onboarding.
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label

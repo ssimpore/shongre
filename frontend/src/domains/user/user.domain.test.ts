@@ -48,6 +48,7 @@ describe("showsVerifiedBadge", () => {
 
 describe("isInternalAccount", () => {
   it("recognises staff by account type", () => {
+    expect(isInternalAccount({ accountType: "staff" })).toBe(true);
     expect(isInternalAccount({ accountType: "internal" })).toBe(true);
   });
 
@@ -93,15 +94,12 @@ describe("isPubliclyListableProSeller", () => {
   });
 
   it("never lists a Shongre staff account, whatever its seller type", () => {
-    // Internal personas carry `sellerType: 'pro'` so staff can exercise the
-    // professional surfaces. That made `isProSeller()` true for them and put
-    // them in the public directory at /professionnels, internal role and all.
     const staff = {
       ...shop,
-      accountType: "internal",
+      accountType: "staff" as const,
       primaryRole: "commercial",
     };
-    expect(isProSeller(staff)).toBe(true);
+    expect(isProSeller(staff)).toBe(false);
     expect(isPubliclyListableProSeller(staff)).toBe(false);
   });
 
@@ -134,7 +132,7 @@ describe("isPubliclyListableProSeller", () => {
   it("excludes every internal persona shipped in the demo fixtures", () => {
     const leaked = Object.values(DEMO_USERS)
       .filter((u: any) => isPubliclyListableProSeller(u))
-      .filter((u: any) => u.accountType === "internal");
+      .filter((u: any) => u.accountType === "staff");
 
     expect(leaked.map((u: any) => u.email)).toEqual([]);
   });

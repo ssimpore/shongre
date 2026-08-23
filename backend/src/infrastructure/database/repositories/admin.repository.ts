@@ -10,6 +10,17 @@ export interface AdminStatsSummary {
   flaggedReports: number;
 }
 
+export interface AdminAuditLogInput {
+  actorId?: string;
+  actorName: string;
+  actorRole: string;
+  targetId?: string;
+  targetName?: string;
+  action: string;
+  details: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface IAdminRepository {
   getStats(): Promise<AdminStatsSummary>;
   getReports(): Promise<
@@ -41,16 +52,7 @@ export interface IAdminRepository {
       target: string;
     }>
   >;
-  saveAuditLog(log: {
-    actorId?: string;
-    actorName: string;
-    actorRole: string;
-    targetId?: string;
-    targetName?: string;
-    action: string;
-    details: string;
-    metadata?: any;
-  }): Promise<void>;
+  saveAuditLog(log: AdminAuditLogInput): Promise<void>;
 }
 
 export const CANONICAL_DEMO_REPORTS = [
@@ -137,7 +139,7 @@ export class DemoAdminRepository implements IAdminRepository {
     return [...this.auditLogs];
   }
 
-  async saveAuditLog(log: any): Promise<void> {
+  async saveAuditLog(log: AdminAuditLogInput): Promise<void> {
     this.auditLogs.unshift({
       id: `audit_${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -308,7 +310,7 @@ export class PostgresAdminRepository implements IAdminRepository {
     }
   }
 
-  async saveAuditLog(log: any): Promise<void> {
+  async saveAuditLog(log: AdminAuditLogInput): Promise<void> {
     try {
       const supabase = getSupabaseAdminClient();
       const { error } = await supabase.from("audit_logs").insert({

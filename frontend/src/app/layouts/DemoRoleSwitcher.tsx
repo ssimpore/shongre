@@ -19,6 +19,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { useToast } from "../providers/ToastProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../../configuration/routes";
+import { isDemoMode } from "../../api/client/api-client.config";
 
 interface DemoPersona {
   userKey: string;
@@ -114,26 +115,78 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     iconClassName: "text-category-jobs",
   },
   {
+    userKey: "support_hugo",
+    userId: "user_support_hugo",
+    label: "9. Support Shongre (Hugo)",
+    desc: "Dossiers support et consultation limitée des comptes",
+    group: "staff",
+    destination: routes.admin.overview(),
+    Icon: Shield,
+    iconClassName: "text-info",
+  },
+  {
     userKey: "moderator_claire",
     userId: "user_mod_claire",
-    label: "9. Modérateur Shongre (Claire)",
-    desc: "Validation annonces, signalements, sécurité",
+    label: "10. Modérateur Shongre (Claire)",
+    desc: "Validation annonces et traitement des signalements",
     group: "staff",
+    destination: routes.admin.moderation(),
     Icon: Shield,
     iconClassName: "text-indigo-600",
   },
   {
-    userKey: "admin_antoine",
-    userId: "user_admin_antoine",
-    label: "10. Administrateur Système (Antoine)",
-    desc: "Accès intégral plateforme, plans, configuration",
+    userKey: "trust_nadia",
+    userId: "user_trust_nadia",
+    label: "11. Trust & Safety (Nadia)",
+    desc: "Conformité, restrictions de compte et audit",
     group: "staff",
+    destination: routes.admin.verifications(),
+    Icon: Shield,
+    iconClassName: "text-danger",
+  },
+  {
+    userKey: "finance_marc",
+    userId: "user_finance_marc",
+    label: "12. Finance Shongre (Marc)",
+    desc: "Transactions, remboursements et journal d'audit",
+    group: "staff",
+    destination: routes.admin.audit(),
     Icon: Shield,
     iconClassName: "text-success",
   },
+  {
+    userKey: "ops_elena",
+    userId: "user_ops_elena",
+    label: "13. Opérations Shongre (Elena)",
+    desc: "Santé des fournisseurs et opérations de marché",
+    group: "staff",
+    destination: routes.admin.providers(),
+    Icon: Shield,
+    iconClassName: "text-warning",
+  },
+  {
+    userKey: "admin_antoine",
+    userId: "user_admin_antoine",
+    label: "14. Administrateur Système (Antoine)",
+    desc: "Configuration, marchés, plans et fournisseurs",
+    group: "staff",
+    destination: routes.admin.overview(),
+    Icon: Shield,
+    iconClassName: "text-success",
+  },
+  {
+    userKey: "super_admin_alex",
+    userId: "user_super_admin_alex",
+    label: "15. Propriétaire Gouvernance (Alexandre)",
+    desc: "Permissions, rôles, identifiants sensibles et audit",
+    group: "staff",
+    destination: routes.admin.roles(),
+    Icon: Shield,
+    iconClassName: "text-violet-600",
+  },
 ];
 
-export const DemoRoleSwitcher: React.FC = () => {
+const DemoRoleSwitcherContent: React.FC = () => {
   const { t } = useTranslation();
   const { platformRole, currentUser, switchDemoUser } = useAuth();
   const toast = useToast();
@@ -413,3 +466,8 @@ export const DemoRoleSwitcher: React.FC = () => {
     </div>
   );
 };
+
+// This control changes only the deterministic demo adapter. It must never
+// advertise or simulate privilege switching when API mode is active.
+export const DemoRoleSwitcher: React.FC = () =>
+  isDemoMode() ? <DemoRoleSwitcherContent /> : null;

@@ -17,35 +17,42 @@ export interface AdminStatsSummary {
   flaggedReports: number;
 }
 
+export interface AdminReportSummary {
+  id: string;
+  listingId: string;
+  reason: string;
+  reporterName: string;
+  createdAt: string;
+}
+
+export interface AdminAuditLogEntry {
+  id: string;
+  timestamp: string;
+  actor: string;
+  action: string;
+  target: string;
+}
+
 export interface AdminServiceContract {
   getPlatformStats(): Promise<AdminStatsSummary>;
   getAllUsers(): Promise<UserProfile[]>;
   updateUserStatus(
     userId: string,
-    status: "active" | "suspended" | "banned",
+    status: "active" | "restricted" | "suspended" | "banned",
+    reason: string,
   ): Promise<UserProfile>;
-  getPendingReports(): Promise<
-    Array<{
-      id: string;
-      listingId: string;
-      reason: string;
-      reporterName: string;
-      createdAt: string;
-    }>
-  >;
+  reviewProfessionalVerification(
+    userId: string,
+    approve: boolean,
+    notes: string,
+  ): Promise<UserProfile>;
+  getPendingReports(): Promise<AdminReportSummary[]>;
   resolveReport(
     reportId: string,
     action: "dismiss" | "remove_listing" | "ban_user",
+    reason: string,
   ): Promise<void>;
-  getAuditLogs(): Promise<
-    Array<{
-      id: string;
-      timestamp: string;
-      actor: string;
-      action: string;
-      target: string;
-    }>
-  >;
+  getAuditLogs(): Promise<AdminAuditLogEntry[]>;
   getTrendingConfig(marketCode?: string): Promise<TrendingAdminConfig>;
   updateTrendingConfig(
     updates: Partial<TrendingAdminConfig>,

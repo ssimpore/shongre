@@ -214,6 +214,10 @@ export const themeSpacing = {
      leaves room for titles and attributes while keeping the next card visible
      as an affordance that the rail continues horizontally. */
   "listing-card": "15rem",
+  /* Dense result grids may compress standard cards slightly so an available
+     listing can use an otherwise empty desktop column. The card component and
+     height remain shared with homepage rails. */
+  "listing-card-grid-min": "13rem",
   /* Standard vertical footprint for grid and rail cards. It includes the
      wrapping delivery/publication metadata row, so long labels remain fully
      readable without changing the rhythm between listing sections. */

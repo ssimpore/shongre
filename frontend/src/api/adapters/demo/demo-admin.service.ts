@@ -7,6 +7,9 @@ import { listingRepository } from "../../../repositories/listing.repository";
 import { transactionRepository } from "../../../repositories/transaction.repository";
 import { UserProfile, AccountStatus } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { authorizationService } from "../../../security/authorization.service";
+import { storageService } from "../../../services/storage.service";
+import { auditService } from "../../../security/audit.service";
 import {
   getTrendingAdminConfig,
   updateTrendingAdminConfig,
@@ -55,14 +58,51 @@ export class DemoAdminService implements AdminServiceContract {
 
   async updateUserStatus(
     userId: string,
-    status: "active" | "suspended" | "banned",
+    status: "active" | "restricted" | "suspended" | "banned",
+    reason: string,
   ): Promise<UserProfile> {
     await simulateNetworkDelay();
+    if (status === "active") return userRepository.reactivateUser(userId);
+    if (status === "suspended") {
+      return userRepository.suspendUser(userId, reason);
+    }
+    const currentUser = await userRepository.getCurrentUser();
+    authorizationService.assertCan(
+      currentUser,
+      status === "restricted"
+        ? "compliance.restrict_account"
+        : "user.suspend",
+    );
     const user = await userRepository.getUserById(userId);
     if (!user) throw new Error("Utilisateur introuvable");
-    const normalizedStatus: AccountStatus =
-      status === "banned" ? "suspended" : status;
-    return userRepository.updateProfile(userId, { status: normalizedStatus });
+    const updated: UserProfile = {
+      ...user,
+      status: status as AccountStatus,
+      isSuspended: status === "banned",
+      suspendedReason: reason,
+    };
+    storageService.saveUser(updated);
+    auditService.logEvent({
+      actorId: currentUser!.id,
+      actorName: currentUser!.name,
+      actorRole: currentUser!.staffRole || currentUser!.role,
+      targetId: userId,
+      targetName: user.name,
+      action: "user_suspended",
+      details: reason,
+      previousValue: { status: user.status },
+      newValue: { status },
+    });
+    return updated;
+  }
+
+  async reviewProfessionalVerification(
+    userId: string,
+    approve: boolean,
+    notes: string,
+  ): Promise<UserProfile> {
+    await simulateNetworkDelay();
+    return userRepository.verifyUser(userId, { approve, notes });
   }
 
   async getPendingReports(): Promise<
@@ -94,10 +134,20 @@ export class DemoAdminService implements AdminServiceContract {
   }
 
   async resolveReport(
-    _reportId: string,
-    _action: "dismiss" | "remove_listing" | "ban_user",
+    reportId: string,
+    action: "dismiss" | "remove_listing" | "ban_user",
+    reason: string,
   ): Promise<void> {
     await simulateNetworkDelay();
+    const currentUser = await userRepository.getCurrentUser();
+    authorizationService.assertCan(currentUser, "report.review");
+    if (action === "ban_user") {
+      authorizationService.assertCan(currentUser, "user.suspend");
+    }
+    if (action === "remove_listing") {
+      authorizationService.assertCan(currentUser, "moderation.action");
+    }
+    storageService.resolveUserReport(reportId, reason);
   }
 
   async getAuditLogs(): Promise<

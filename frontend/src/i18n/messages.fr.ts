@@ -1866,7 +1866,7 @@ export const messagesFr = {
   // --- shell.demoRoleSwitcher ---
   "shell.demoRoleSwitcher.modeDemo": "Mode Démo",
   "shell.demoRoleSwitcher.testerLes10ProfilsEt":
-    "Tester les 10 profils et parcours sans mot de passe :",
+    "Tester les 15 profils et parcours sans mot de passe :",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
     "Changer de profil utilisateur pour tester",
   "shell.demoRoleSwitcher.sessionUpdated":
@@ -3237,6 +3237,11 @@ export const messagesFr = {
   "publishCta.inactiveShort": "Inactif",
   "publishCta.postListing": "Déposer une annonce",
   "publishCta.postListingShort": "Déposer",
+  "publishCta.postVehicle": "Publier un véhicule",
+  "publishCta.postProperty": "Publier un bien",
+  "publishCta.postJob": "Publier une offre",
+  "publishCta.manageCourses": "Gérer les cours",
+  "publishCta.manageShort": "Gérer",
   "publishCta.becomeSeller": "Devenir vendeur",
   "publishCta.becomeSellerShort": "Vendre",
 
@@ -3405,6 +3410,7 @@ export const messagesFr = {
   "admin.accountType.individual": "Compte particulier",
   "admin.accountType.professional": "Compte professionnel",
   "admin.accountType.internal": "Collaborateur interne",
+  "admin.accountType.staff": "Collaborateur interne",
   "shell.demoRoleSwitcher.roleHorsPersonasDemo":
     "Rôle plateforme hors des personas de démonstration",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees":

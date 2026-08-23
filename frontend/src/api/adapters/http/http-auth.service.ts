@@ -87,6 +87,7 @@ export class HttpAuthService implements AuthServiceContract {
           password: input.password,
           role: "pro_seller",
           companyName: input.companyName,
+          professionalVertical: input.professionalVertical,
           siret: input.sirenSiret,
           phone: input.phone,
         },

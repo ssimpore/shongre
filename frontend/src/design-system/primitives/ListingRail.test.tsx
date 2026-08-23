@@ -36,8 +36,7 @@ describe("listing layout primitives", () => {
 
     expect(html).toContain("listing-grid-fluid");
     expect(html).toContain(
-      "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))]",
+      "sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card-grid-min),1fr))]",
     );
-    expect(html).toContain("sm:justify-start");
   });
 });

@@ -32,6 +32,10 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     expect(
       authorizationService.can(buyer as UserProfile, "course.admin.manage"),
     ).toBe(false);
+    // Buyer and seller are activities of the same individual identity.
+    expect(
+      authorizationService.can(buyer as UserProfile, "listing.create"),
+    ).toBe(true);
   });
 
   it("enforces resource ownership when editing an announcement", () => {
@@ -85,7 +89,7 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     ).toBe(true);
   });
 
-  it("grants moderation and audit permissions to moderators and admins", () => {
+  it("keeps moderation separate from platform administration", () => {
     const moderator: Partial<UserProfile> = {
       id: "mod-1",
       role: "moderator",
@@ -110,10 +114,70 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
       true,
     );
     expect(authorizationService.can(admin as UserProfile, "user.suspend")).toBe(
-      true,
+      false,
     );
+    expect(
+      authorizationService.can(admin as UserProfile, "moderation.review"),
+    ).toBe(false);
     expect(
       authorizationService.can(admin as UserProfile, "course.admin.manage"),
     ).toBe(true);
+  });
+
+  it("scopes professional tools to the selected vertical", () => {
+    const automotivePro: Partial<UserProfile> = {
+      id: "auto-pro",
+      accountType: "professional",
+      role: "pro_seller",
+      primaryRole: "pro_seller",
+      professionalVertical: "automotive",
+      status: "active",
+    };
+
+    expect(
+      authorizationService.can(
+        automotivePro as UserProfile,
+        "auto.dealer.manage.own",
+      ),
+    ).toBe(true);
+    expect(
+      authorizationService.can(
+        automotivePro as UserProfile,
+        "immo.agency.manage.own",
+      ),
+    ).toBe(false);
+    expect(
+      authorizationService.can(
+        automotivePro as UserProfile,
+        "course.profile.manage.own",
+      ),
+    ).toBe(false);
+    expect(
+      authorizationService.can(
+        automotivePro as UserProfile,
+        "employment.candidate.manage.own",
+      ),
+    ).toBe(false);
+    expect(
+      authorizationService.can(automotivePro as UserProfile, "listing.create"),
+    ).toBe(false);
+  });
+
+  it("does not grant commercial entitlements to staff administrators", () => {
+    const admin: Partial<UserProfile> = {
+      id: "admin-1",
+      accountType: "staff",
+      staffRole: "admin",
+      role: "admin",
+      primaryRole: "admin",
+      status: "active",
+      activePlanId: "pro_enterprise",
+    };
+    expect(
+      authorizationService.hasEntitlement(
+        admin as UserProfile,
+        "bulkImportExport",
+      ),
+    ).toBe(false);
   });
 });

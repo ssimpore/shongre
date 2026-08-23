@@ -10,10 +10,8 @@ import { FocusedLayout } from "../layouts/FocusedLayout";
 import { PageSuspense } from "../layouts/PageSuspense";
 
 // Security & RBAC Guards
-import { RequireAuth } from "../../security/components/RequireAuth";
 import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
-import { RequirePermission } from "../../security/components/RequirePermission";
-import { RequireRole } from "../../security/components/RequireRole";
+import { RequireRoutePolicy } from "../../security/components/RequireRoutePolicy";
 import { AdminLayout } from "../../features/admin/AdminLayout";
 
 // Lazy Loaded Features
@@ -496,41 +494,41 @@ export const router = createBrowserRouter([
       {
         path: "deposer",
         element: (
-          <RequirePermission permission="listing.create">
+          <RequireRoutePolicy policyId="publishListing">
             {withSuspense(PublishWizard)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "deposer/cours",
         element: (
-          <RequirePermission permission="course.profile.manage.own">
+          <RequireRoutePolicy policyId="publishCourse">
             {withSuspense(CourseTutorOnboardingPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "deposer/auto",
         element: (
-          <RequirePermission permission="auto.vehicle.manage.own">
+          <RequireRoutePolicy policyId="publishAuto">
             {withSuspense(AutoPublishWizardPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "deposer/immo",
         element: (
-          <RequirePermission permission="immo.property.manage.own">
+          <RequireRoutePolicy policyId="publishRealEstate">
             {withSuspense(ImmoPublishWizardPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "deposer/emploi",
         element: (
-          <RequirePermission permission="employment.job.manage.own">
+          <RequireRoutePolicy policyId="publishEmployment">
             {withSuspense(EmploymentPublishWizardPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
 
@@ -616,9 +614,9 @@ export const router = createBrowserRouter([
       {
         path: "emploi/offre/:slug/postuler",
         element: (
-          <RequirePermission permission="employment.candidate.manage.own">
+          <RequireRoutePolicy policyId="applyEmployment">
             {withSuspense(EmploymentApplyPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       { path: "cours", element: withSuspense(CoursesSearchPage) },
@@ -629,9 +627,9 @@ export const router = createBrowserRouter([
       {
         path: "cours/demande",
         element: (
-          <RequirePermission permission="course.request.create">
+          <RequireRoutePolicy policyId="requestCourse">
             {withSuspense(CourseLearnerRequestPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
@@ -649,9 +647,9 @@ export const router = createBrowserRouter([
       {
         path: "messages",
         element: (
-          <RequirePermission permission="message.read.own">
+          <RequireRoutePolicy policyId="messagesShortcut">
             {withSuspense(MessagingPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
 
@@ -678,94 +676,174 @@ export const router = createBrowserRouter([
       },
       { path: "account/delete", element: withSuspense(AccountDeletionPage) },
 
-      // Account & Workspaces (Guarded by RequireAuth)
+      // Customer account and professional workspaces.
       {
         path: "compte",
         element: (
-          <RequireAuth>
+          <RequireRoutePolicy policyId="accountOverview">
             <AccountLayout />
-          </RequireAuth>
+          </RequireRoutePolicy>
         ),
         children: [
           { index: true, element: withSuspense(AccountOverviewPage) },
-          { path: "annonces", element: withSuspense(MyListingsPage) },
-          { path: "favoris", element: withSuspense(FavoritesPage) },
-          { path: "recherches", element: withSuspense(SavedSearchesPage) },
-          { path: "messages", element: withSuspense(MessagingPage) },
-          { path: "notifications", element: withSuspense(NotificationsPage) },
+          {
+            path: "annonces",
+            element: (
+              <RequireRoutePolicy policyId="accountListings">
+                {withSuspense(MyListingsPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "favoris",
+            element: (
+              <RequireRoutePolicy policyId="accountFavorites">
+                {withSuspense(FavoritesPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "recherches",
+            element: (
+              <RequireRoutePolicy policyId="accountSavedSearches">
+                {withSuspense(SavedSearchesPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "messages",
+            element: (
+              <RequireRoutePolicy policyId="accountMessages">
+                {withSuspense(MessagingPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "notifications",
+            element: (
+              <RequireRoutePolicy policyId="accountNotifications">
+                {withSuspense(NotificationsPage)}
+              </RequireRoutePolicy>
+            ),
+          },
           {
             path: "notifications/preferences",
-            element: withSuspense(NotificationPreferencesPage),
+            element: (
+              <RequireRoutePolicy policyId="accountNotificationPreferences">
+                {withSuspense(NotificationPreferencesPage)}
+              </RequireRoutePolicy>
+            ),
           },
-          { path: "achats", element: withSuspense(TransactionsPage) },
+          {
+            path: "achats",
+            element: (
+              <RequireRoutePolicy policyId="accountPurchases">
+                {withSuspense(TransactionsPage)}
+              </RequireRoutePolicy>
+            ),
+          },
           {
             path: "verification",
-            element: withSuspense(VerificationCenterPage),
+            element: (
+              <RequireRoutePolicy policyId="accountVerification">
+                {withSuspense(VerificationCenterPage)}
+              </RequireRoutePolicy>
+            ),
           },
           {
             path: "securite-compte",
-            element: withSuspense(AccountSecurityPage),
+            element: (
+              <RequireRoutePolicy policyId="accountSecurity">
+                {withSuspense(AccountSecurityPage)}
+              </RequireRoutePolicy>
+            ),
           },
           {
             path: "type-de-compte",
-            element: withSuspense(AccountTypeOnboardingPage),
+            element: (
+              <RequireRoutePolicy policyId="accountType">
+                {withSuspense(AccountTypeOnboardingPage)}
+              </RequireRoutePolicy>
+            ),
           },
-          { path: "support", element: withSuspense(SupportRequestsPage) },
+          {
+            path: "support",
+            element: (
+              <RequireRoutePolicy policyId="accountSupport">
+                {withSuspense(SupportRequestsPage)}
+              </RequireRoutePolicy>
+            ),
+          },
           {
             path: "support/:id",
-            element: withSuspense(SupportRequestDetailPage),
+            element: (
+              <RequireRoutePolicy policyId="accountSupportDetail">
+                {withSuspense(SupportRequestDetailPage)}
+              </RequireRoutePolicy>
+            ),
           },
           {
             path: "newsletter",
-            element: withSuspense(NewsletterPreferencesPage),
+            element: (
+              <RequireRoutePolicy policyId="accountNewsletter">
+                {withSuspense(NewsletterPreferencesPage)}
+              </RequireRoutePolicy>
+            ),
           },
-          { path: "profil", element: withSuspense(AccountOverviewPage) },
+          {
+            path: "profil",
+            element: (
+              <RequireRoutePolicy policyId="accountProfile">
+                {withSuspense(AccountOverviewPage)}
+              </RequireRoutePolicy>
+            ),
+          },
           {
             path: "cours",
             element: (
-              <RequirePermission permission="course.profile.manage.own">
+              <RequireRoutePolicy policyId="accountCourse">
                 {withSuspense(CourseTutorWorkspacePage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
           {
             path: "cours/organisation",
             element: (
-              <RequirePermission permission="course.organization.manage.own">
+              <RequireRoutePolicy policyId="accountCourseOrganization">
                 {withSuspense(CourseOrganizationWorkspacePage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
           {
             path: "auto",
             element: (
-              <RequirePermission permission="auto.dealer.manage.own">
+              <RequireRoutePolicy policyId="accountAuto">
                 {withSuspense(AutoDealerWorkspacePage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
           {
             path: "immo",
             element: (
-              <RequirePermission permission="immo.agency.manage.own">
+              <RequireRoutePolicy policyId="accountRealEstate">
                 {withSuspense(ImmoAgencyWorkspacePage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
           {
             path: "emploi",
             element: (
-              <RequirePermission permission="employment.candidate.manage.own">
+              <RequireRoutePolicy policyId="accountEmploymentCandidate">
                 {withSuspense(EmploymentCandidateWorkspacePage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
           {
             path: "emploi/recruteur",
             element: (
-              <RequirePermission permission="employment.recruiter.manage.own">
+              <RequireRoutePolicy policyId="accountEmploymentRecruiter">
                 {withSuspense(EmploymentRecruiterWorkspacePage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
 
@@ -773,20 +851,27 @@ export const router = createBrowserRouter([
           {
             path: "pro/tableau-de-bord",
             element: (
-              <RequireRole roles={["pro_seller", "admin", "super_admin"]}>
+              <RequireRoutePolicy policyId="accountProDashboard">
                 {withSuspense(ProDashboardPage)}
-              </RequireRole>
+              </RequireRoutePolicy>
             ),
           },
           {
             path: "pro/vitrine",
             element: (
-              <RequirePermission permission="store.customization.manage">
+              <RequireRoutePolicy policyId="accountProStorefront">
                 {withSuspense(ProStorefrontEditorPage)}
-              </RequirePermission>
+              </RequireRoutePolicy>
             ),
           },
-          { path: "pro/abonnements", element: withSuspense(ProPlansPage) },
+          {
+            path: "pro/abonnements",
+            element: (
+              <RequireRoutePolicy policyId="accountProSubscriptions">
+                {withSuspense(ProPlansPage)}
+              </RequireRoutePolicy>
+            ),
+          },
         ],
       },
 
@@ -799,219 +884,211 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <RequireRole
-        roles={[
-          "moderator",
-          "support",
-          "operations",
-          "finance",
-          "commercial",
-          "content_manager",
-          "market_manager",
-          "admin",
-          "super_admin",
-        ]}
-      >
+      <RequireRoutePolicy policyId="adminOverview" standalone>
         <AdminLayout />
-      </RequireRole>
+      </RequireRoutePolicy>
     ),
     children: [
       { index: true, element: withSuspense(AdminOverviewPage) },
       {
         path: "moderation",
         element: (
-          <RequirePermission permission="moderation.review">
+          <RequireRoutePolicy policyId="adminModeration">
             {withSuspense(AdminModerationPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "utilisateurs",
         element: (
-          <RequirePermission permission="user.read">
+          <RequireRoutePolicy policyId="adminUsers">
             {withSuspense(AdminUsersPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "verifications",
         element: (
-          <RequirePermission permission="user.read">
+          <RequireRoutePolicy policyId="adminVerifications">
             {withSuspense(AdminVerificationsPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "marches",
         element: (
-          <RequirePermission permission="market.manage">
+          <RequireRoutePolicy policyId="adminMarkets">
             {withSuspense(AdminMarketsPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "fournisseurs",
         element: (
-          <RequirePermission permission="provider.read">
+          <RequireRoutePolicy policyId="adminProviders">
             {withSuspense(AdminProvidersPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "fournisseurs/:providerId",
         element: (
-          <RequirePermission permission="provider.read">
+          <RequireRoutePolicy policyId="adminProviderDetail">
             {withSuspense(AdminProviderDetailPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "taxonomie",
         element: (
-          <RequirePermission permission="taxonomy.manage">
+          <RequireRoutePolicy policyId="adminTaxonomy">
             {withSuspense(AdminTaxonomyPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "taxonomy",
         element: (
-          <RequirePermission permission="taxonomy.manage">
+          <RequireRoutePolicy policyId="adminTaxonomyAlias">
             {withSuspense(AdminTaxonomyPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "monetisation",
         element: (
-          <RequirePermission permission="monetization.manage">
+          <RequireRoutePolicy policyId="adminMonetization">
             {withSuspense(AdminMonetizationPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "tendances",
         element: (
-          <RequirePermission permission="admin.access">
+          <RequireRoutePolicy policyId="adminTrending">
             {withSuspense(AdminTrendingPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "roles",
-        element: withSuspense(AdminRolesMatrixPage),
+        element: (
+          <RequireRoutePolicy policyId="adminRoles">
+            {withSuspense(AdminRolesMatrixPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "audit",
         element: (
-          <RequirePermission permission="audit.read">
+          <RequireRoutePolicy policyId="adminAudit">
             {withSuspense(AdminAuditLogsPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "newsletter",
         element: (
-          <RequirePermission permission="market.manage">
+          <RequireRoutePolicy policyId="adminNewsletter">
             {withSuspense(AdminNewsletterPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "cours",
         element: (
-          <RequirePermission permission="course.admin.manage">
+          <RequireRoutePolicy policyId="adminCourse">
             {withSuspense(AdminCoursesPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "auto",
         element: (
-          <RequirePermission permission="auto.admin.manage">
+          <RequireRoutePolicy policyId="adminAuto">
             {withSuspense(AdminAutoPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "immo",
         element: (
-          <RequirePermission permission="immo.admin.manage">
+          <RequireRoutePolicy policyId="adminRealEstate">
             {withSuspense(AdminImmoPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "emploi",
         element: (
-          <RequirePermission permission="employment.admin.manage">
+          <RequireRoutePolicy policyId="adminEmployment">
             {withSuspense(EmploymentAdminPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       // CRM & AI Prospecting
       {
         path: "crm",
         element: (
-          <RequirePermission permission="crm.access">
+          <RequireRoutePolicy policyId="adminCrm">
             {withSuspense(CrmOverviewPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/contacts",
         element: (
-          <RequirePermission permission="crm.contact.read">
+          <RequireRoutePolicy policyId="adminCrmContacts">
             {withSuspense(CrmContactsPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/contacts/:id",
         element: (
-          <RequirePermission permission="crm.contact.read">
+          <RequireRoutePolicy policyId="adminCrmContactDetail">
             {withSuspense(CrmContactDetailPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/entreprises",
         element: (
-          <RequirePermission permission="crm.company.read">
+          <RequireRoutePolicy policyId="adminCrmCompanies">
             {withSuspense(CrmCompaniesPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/entreprises/:id",
         element: (
-          <RequirePermission permission="crm.company.read">
+          <RequireRoutePolicy policyId="adminCrmCompanyDetail">
             {withSuspense(CrmCompanyDetailPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/pipeline",
         element: (
-          <RequirePermission permission="crm.opportunity.read">
+          <RequireRoutePolicy policyId="adminCrmPipeline">
             {withSuspense(CrmPipelinePage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/prospection",
         element: (
-          <RequirePermission permission="crm.ai_prospecting.use">
+          <RequireRoutePolicy policyId="adminCrmProspecting">
             {withSuspense(CrmAiProspectingPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
       {
         path: "crm/taches",
         element: (
-          <RequirePermission permission="crm.access">
+          <RequireRoutePolicy policyId="adminCrmTasks">
             {withSuspense(CrmTasksPage)}
-          </RequirePermission>
+          </RequireRoutePolicy>
         ),
       },
     ],

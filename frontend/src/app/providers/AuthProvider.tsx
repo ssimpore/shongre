@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import {
   UserProfile,
+  ProfessionalVertical,
   UserRole,
   PlatformRole,
   AccountType,
@@ -64,6 +65,7 @@ interface AuthContextType {
     email: string;
     password: string;
     companyName: string;
+    professionalVertical: ProfessionalVertical;
     sirenSiret: string;
     legalForm: string;
     vatNumber?: string;
@@ -230,6 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     email: string;
     password: string;
     companyName: string;
+    professionalVertical: ProfessionalVertical;
     sirenSiret: string;
     legalForm: string;
     vatNumber?: string;

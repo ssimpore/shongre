@@ -1,3 +1,11 @@
+import type {
+  AccountStatus,
+  AccountType,
+  Capability,
+  ProfessionalVertical,
+  StaffRole,
+} from "@shongre/contracts/access-control";
+
 export type UserRole =
   | "guest"
   | "individual_buyer"
@@ -12,17 +20,15 @@ export interface UserProfile {
   slug: string;
   email: string;
   name: string;
-  accountType: "individual" | "professional" | "internal";
+  accountType: AccountType;
+  professionalVertical?: ProfessionalVertical;
+  staffRole?: StaffRole;
   primaryRole: string;
   role: UserRole;
   sellerType?: "individual" | "pro";
-  status:
-    | "active"
-    | "suspended"
-    | "pending_verification"
-    | "banned"
-    | "archived"
-    | "deleted";
+  status: AccountStatus;
+  customPermissions?: Capability[];
+  revokedPermissions?: Capability[];
   avatarUrl?: string;
   phone?: string;
   city?: string;

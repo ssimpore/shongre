@@ -24,6 +24,7 @@ import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import { useAuth } from "../../app/providers/AuthProvider";
 
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation();
@@ -35,6 +36,11 @@ export const AdminModerationPage: React.FC = () => {
   });
 
   const toast = useToast();
+  const { can } = useAuth();
+  const canReviewReports = can("report.review");
+  const canModerateListings = can("listing.moderate");
+  const canSuspendUsers = can("user.suspend");
+  const canReactivateUsers = can("user.reactivate");
 
   const [activeTab, setActiveTab] = useState<"reports" | "listings" | "users">(
     "reports",
@@ -56,20 +62,40 @@ export const AdminModerationPage: React.FC = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const loadData = () => {
-    setReports(storageService.getUserReports());
-    setListings(storageService.getListings());
-    const usersMap = storageService.getUsers();
-    setUsers(Object.values(usersMap));
+    setReports(canReviewReports ? storageService.getUserReports() : []);
+    setListings(canModerateListings ? storageService.getListings() : []);
+    setUsers(
+      canSuspendUsers || canReactivateUsers
+        ? Object.values(storageService.getUsers())
+        : [],
+    );
   };
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [
+    canModerateListings,
+    canReactivateUsers,
+    canReviewReports,
+    canSuspendUsers,
+  ]);
 
-  const handleResolveReport = (reportId: string) => {
-    storageService.resolveUserReport(reportId, "Traité par le modérateur");
-    loadData();
-    toast.success("Signalement classé et marqué comme traité.");
+  const handleResolveReport = async (reportId: string) => {
+    try {
+      await services.admin.resolveReport(
+        reportId,
+        "dismiss",
+        "Signalement classé sans suite après examen manuel.",
+      );
+      loadData();
+      toast.success("Signalement classé et marqué comme traité.");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de traiter ce signalement.",
+      );
+    }
   };
 
   const handleToggleListingStatus = async (
@@ -178,7 +204,7 @@ export const AdminModerationPage: React.FC = () => {
 
       {/* Tabs */}
       <div className="flex border-b border-border-base gap-4 text-xs font-bold overflow-x-auto no-scrollbar">
-        <button
+        {canReviewReports && (<button
           type="button"
           onClick={() => setActiveTab("reports")}
           className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
@@ -192,9 +218,9 @@ export const AdminModerationPage: React.FC = () => {
             Signalements Reçus (
             {reports.filter((r) => r.status !== "resolved").length})
           </span>
-        </button>
+        </button>)}
 
-        <button
+        {canModerateListings && (<button
           type="button"
           onClick={() => setActiveTab("listings")}
           className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
@@ -205,9 +231,9 @@ export const AdminModerationPage: React.FC = () => {
         >
           <Eye className="w-4 h-4" />
           <span>Contrôle & Audit IA Annonces ({listings.length})</span>
-        </button>
+        </button>)}
 
-        <button
+        {(canSuspendUsers || canReactivateUsers) && (<button
           type="button"
           onClick={() => setActiveTab("users")}
           className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
@@ -220,11 +246,11 @@ export const AdminModerationPage: React.FC = () => {
           <span>
             Comptes Suspendus ({users.filter((u) => u.isSuspended).length})
           </span>
-        </button>
+        </button>)}
       </div>
 
       {/* Tab: Reports */}
-      {activeTab === "reports" && (
+      {activeTab === "reports" && canReviewReports && (
         <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
           {reports.filter((r) => r.status !== "resolved").length === 0 ? (
             <div className="p-12 text-center text-stone-500">
@@ -270,18 +296,20 @@ export const AdminModerationPage: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleResolveReport(rep.id)}
+                        onClick={() => void handleResolveReport(rep.id)}
                         className="text-xs text-stone-700"
                       >
                         {t("admin.adminModerationPage.classerSansSuite")}
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => setSuspendUserId(rep.targetUserId)}
-                        className="text-xs bg-danger hover:bg-danger text-white"
-                      >
-                        {t("admin.adminModerationPage.suspendreLeProfil")}
-                      </Button>
+                      {canSuspendUsers && rep.targetUserId && (
+                        <Button
+                          size="sm"
+                          onClick={() => setSuspendUserId(rep.targetUserId)}
+                          className="text-xs bg-danger hover:bg-danger text-white"
+                        >
+                          {t("admin.adminModerationPage.suspendreLeProfil")}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -291,7 +319,7 @@ export const AdminModerationPage: React.FC = () => {
       )}
 
       {/* Tab: Listings with AI Audit */}
-      {activeTab === "listings" && (
+      {activeTab === "listings" && canModerateListings && (
         <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
           <div className="p-3.5 border-b border-border-subtle bg-bg-base text-xs font-semibold text-stone-600 flex justify-between items-center">
             <span>
@@ -405,7 +433,7 @@ export const AdminModerationPage: React.FC = () => {
       )}
 
       {/* Tab: Suspended Users */}
-      {activeTab === "users" && (
+      {activeTab === "users" && (canSuspendUsers || canReactivateUsers) && (
         <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
           <div className="divide-y divide-border-subtle">
             {users
@@ -438,7 +466,7 @@ export const AdminModerationPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <Button
+                  {canReactivateUsers && (<Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleReactivateUser(u.id)}
@@ -446,7 +474,7 @@ export const AdminModerationPage: React.FC = () => {
                   >
                     <Unlock className="w-3.5 h-3.5 mr-1" />
                     {t("admin.adminModerationPage.leverLaSuspension")}
-                  </Button>
+                  </Button>)}
                 </div>
               ))}
           </div>

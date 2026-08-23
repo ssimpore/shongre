@@ -11,8 +11,8 @@ import { AccountType } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface AccountTypeSelectorProps {
-  selectedType: AccountType;
-  onChange: (type: AccountType) => void;
+  selectedType: Exclude<AccountType, "staff">;
+  onChange: (type: Exclude<AccountType, "staff">) => void;
 }
 
 export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({

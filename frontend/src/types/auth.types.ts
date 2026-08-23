@@ -1,13 +1,7 @@
 import { UserProfile } from "./index";
+import type { AccountStatus as SharedAccountStatus } from "@shongre/contracts/access-control";
 
-export type AccountStatus =
-  | "pending"
-  | "active"
-  | "restricted"
-  | "limited"
-  | "suspended"
-  | "disabled"
-  | "deleted";
+export type AccountStatus = SharedAccountStatus;
 
 export type VerificationState =
   "none" | "pending" | "verified" | "rejected" | "requires_action" | "expired";

@@ -1,11 +1,22 @@
 import { z } from "zod";
+import {
+  ACCOUNT_STATUSES,
+  ACCOUNT_TYPES,
+  CAPABILITIES,
+  PROFESSIONAL_VERTICALS,
+  STAFF_ROLES,
+} from "../access-control";
 
 export const authUserSchema = z.object({
   id: z.string().min(1),
   email: z.string().email(),
   name: z.string().min(1),
   role: z.string().min(1),
-  accountType: z.enum(["individual", "professional", "internal"]),
+  accountType: z.enum(ACCOUNT_TYPES),
+  status: z.enum(ACCOUNT_STATUSES).optional(),
+  professionalVertical: z.enum(PROFESSIONAL_VERTICALS).optional(),
+  staffRole: z.enum(STAFF_ROLES).optional(),
+  capabilities: z.array(z.enum(CAPABILITIES)).optional(),
 });
 export type AuthUser = z.infer<typeof authUserSchema>;
 export const loginRequestSchema = z.object({

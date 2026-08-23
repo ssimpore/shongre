@@ -1985,8 +1985,11 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // ADMIN ROUTES
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/admin/stats", permission("admin.access"), async () =>
-      adminService.getPlatformStats(),
+    this.addRoute(
+      "GET",
+      "/admin/stats",
+      permission("admin.configuration.manage"),
+      async () => adminService.getPlatformStats(),
     );
     this.addRoute("GET", "/admin/users", permission("user.read"), async () =>
       adminService.getAllUsers(),
@@ -1994,7 +1997,7 @@ export class ApiV1Router {
     this.addRoute(
       "PUT",
       "/admin/users/:userId/status",
-      permission("user.suspend"),
+      permission("user.read"),
       async ({ principal, params, body }) => {
         if (params.userId === principal.userId) {
           throw new AppError({
@@ -2003,8 +2006,32 @@ export class ApiV1Router {
               "Vous ne pouvez pas modifier le statut de votre propre compte.",
           });
         }
-        return adminService.updateUserStatus(params.userId, body?.status);
+        if (body?.status === "active") {
+          requirePermission(principal, "user.reactivate");
+        } else if (body?.status === "restricted") {
+          requirePermission(principal, "compliance.restrict_account");
+        } else {
+          requirePermission(principal, "user.suspend");
+        }
+        return adminService.updateUserStatus({
+          userId: params.userId,
+          status: body?.status,
+          reason: body?.reason,
+          actor: principal,
+        });
       },
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/users/:userId/verification",
+      permission("user.verify"),
+      async ({ principal, params, body }) =>
+        adminService.reviewProfessionalVerification({
+          userId: params.userId,
+          approve: body?.approve === true,
+          notes: body?.notes,
+          actor: principal,
+        }),
     );
     this.addRoute(
       "GET",
@@ -2016,21 +2043,31 @@ export class ApiV1Router {
       "POST",
       "/admin/reports/:reportId/resolve",
       permission("report.review"),
-      async ({ params, body }) => {
-        await adminService.resolveReport(params.reportId, body?.action);
+      async ({ principal, params, body }) => {
+        if (body?.action === "ban_user") {
+          requirePermission(principal, "user.suspend");
+        } else if (body?.action === "remove_listing") {
+          requirePermission(principal, "moderation.action");
+        }
+        await adminService.resolveReport({
+          reportId: params.reportId,
+          action: body?.action,
+          reason: body?.reason,
+          actor: principal,
+        });
         return { success: true };
       },
     );
     this.addRoute(
       "GET",
       "/admin/audit-logs",
-      permission("admin.access"),
+      permission("audit.read"),
       async () => adminService.getAuditLogs(),
     );
     this.addRoute(
       "GET",
       "/admin/trending/config",
-      permission("admin.access"),
+      permission("admin.configuration.manage"),
       async ({ query }) =>
         trendingService.getConfig(
           query.get("market") || query.get("country") || "FR",
@@ -2039,7 +2076,7 @@ export class ApiV1Router {
     this.addRoute(
       "PUT",
       "/admin/trending/config",
-      permission("admin.access"),
+      permission("admin.configuration.manage"),
       async ({ body, query }) => {
         const marketCode = query.get("market") || body?.marketCode || "FR";
         return trendingService.saveConfig(
@@ -2051,7 +2088,7 @@ export class ApiV1Router {
     this.addRoute(
       "PUT",
       "/admin/trending/overrides/:topicKey",
-      permission("admin.access"),
+      permission("admin.configuration.manage"),
       async ({ params, body, query }) =>
         trendingService.upsertOverride(
           query.get("market") || body?.marketCode || "FR",

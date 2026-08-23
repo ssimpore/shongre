@@ -20,7 +20,13 @@ import {
   TokenError,
 } from "../../shared/auth/tokens.js";
 import { Principal, GUEST_PRINCIPAL } from "../../shared/auth/principal.js";
-import { PlatformRole } from "../../shared/auth/rbac.js";
+import { PlatformRole, permissionsForSubject } from "../../shared/auth/rbac.js";
+import {
+  PROFESSIONAL_VERTICALS,
+  type ProfessionalVertical,
+  canonicalAccessContext,
+  staffRoleFromLegacyRole,
+} from "@shongre/contracts/access-control";
 import {
   sessionService,
   type AuthRequestMetadata,
@@ -45,6 +51,7 @@ export interface RegisterInput {
   role: UserRole;
   password?: string;
   companyName?: string;
+  professionalVertical?: ProfessionalVertical;
   siret?: string;
   phone?: string;
 }
@@ -68,7 +75,7 @@ export const DEMO_PROFILES = CANONICAL_DEMO_USERS;
  */
 const SELF_ASSIGNABLE_ROLES: ReadonlySet<string> = new Set<UserRole>([
   "individual_buyer",
-  "individual_seller",
+  "individual_seller", // accepted as a legacy registration alias
   "pro_seller",
 ]);
 
@@ -120,7 +127,11 @@ export class AuthService {
       return GUEST_PRINCIPAL;
 
     const user = await this.userRepo.findById(claims.sub);
-    if (!user || user.status !== "active") return GUEST_PRINCIPAL;
+    if (!user) return GUEST_PRINCIPAL;
+    const access = canonicalAccessContext(user);
+    if (access.status === "banned" || access.status === "closed") {
+      return GUEST_PRINCIPAL;
+    }
 
     if (claims.sid) await this.sessions.touch(claims.sid);
 
@@ -128,6 +139,13 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       role: (user.primaryRole || user.role) as PlatformRole,
+      accountType: access.accountType,
+      status: user.status,
+      professionalVertical: user.professionalVertical,
+      staffRole:
+        user.staffRole ??
+        staffRoleFromLegacyRole(user.primaryRole || user.role),
+      capabilities: permissionsForSubject(user),
       sessionId: claims.sid,
     };
   }
@@ -206,7 +224,8 @@ export class AuthService {
       throw invalidCredentials();
     }
 
-    if (user.status !== "active") {
+    const accountStatus = canonicalAccessContext(user).status;
+    if (accountStatus === "banned" || accountStatus === "closed") {
       // Suspended and banned accounts get the same generic error: telling a
       // banned user their ban is in effect also tells an attacker the account
       // is real.
@@ -295,7 +314,22 @@ export class AuthService {
           "Ce type de compte ne peut pas être créé depuis l'inscription.",
       });
     }
-    const role: UserRole = requestedRole || "individual_buyer";
+    // Buyer and seller are activities of one individual account, not durable
+    // security identities. Keep one stored compatibility role and let the
+    // capability policy expose both legitimate journeys.
+    const role: UserRole = input.siret ? "pro_seller" : "individual_buyer";
+    const professionalVertical = input.siret
+      ? (input.professionalVertical ?? "generic")
+      : undefined;
+    if (
+      professionalVertical &&
+      !PROFESSIONAL_VERTICALS.includes(professionalVertical)
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Activité professionnelle invalide.",
+      });
+    }
 
     const newUser: UserProfile = {
       id: randomUUID(),
@@ -303,6 +337,7 @@ export class AuthService {
       email,
       name: input.name,
       accountType: input.siret ? "professional" : "individual",
+      professionalVertical,
       primaryRole: role,
       role,
       sellerType: input.siret ? "pro" : "individual",

@@ -1,5 +1,11 @@
 import { AppError } from "../errors/app-error.js";
 import { PlatformRole, Permission, hasPermission } from "./rbac.js";
+import type {
+  AccountStatus,
+  AccountType,
+  ProfessionalVertical,
+  StaffRole,
+} from "@shongre/contracts/access-control";
 
 /**
  * The authenticated caller for a single request.
@@ -12,6 +18,11 @@ export interface Principal {
   userId: string;
   email: string;
   role: PlatformRole;
+  accountType?: AccountType | "guest";
+  status?: AccountStatus;
+  professionalVertical?: ProfessionalVertical;
+  staffRole?: StaffRole;
+  capabilities?: readonly Permission[];
   /** Present for revocable sessions; absent on rollout-compatible legacy JWTs. */
   sessionId?: string;
 }
@@ -21,6 +32,9 @@ export const GUEST_PRINCIPAL: Principal = {
   userId: "",
   email: "",
   role: "guest",
+  accountType: "guest",
+  status: "active",
+  capabilities: [],
 };
 
 export function isAuthenticated(principal: Principal): boolean {
@@ -51,7 +65,10 @@ export function requirePermission(
   permission: Permission,
 ): Principal {
   requireAuthenticated(principal);
-  if (!hasPermission(principal.role, permission)) {
+  const allowed = principal.capabilities
+    ? principal.capabilities.includes(permission)
+    : hasPermission(principal.role, permission);
+  if (!allowed) {
     throw new AppError({
       code: "FORBIDDEN",
       message:
@@ -77,7 +94,13 @@ export function requireOwnership(
   requireAuthenticated(principal);
 
   if (principal.userId === resourceOwnerId) return principal;
-  if (override && hasPermission(principal.role, override)) return principal;
+  if (
+    override &&
+    (principal.capabilities
+      ? principal.capabilities.includes(override)
+      : hasPermission(principal.role, override))
+  )
+    return principal;
 
   // 404 rather than 403: confirming the resource exists but is not yours still
   // leaks that the id is real, which is enough to enumerate users and orders.

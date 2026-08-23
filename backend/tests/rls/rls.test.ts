@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { hasPermission, PlatformRole } from "../../src/shared/auth/rbac.js";
+import {
+  hasPermission,
+  subjectHasPermission,
+  PlatformRole,
+} from "../../src/shared/auth/rbac.js";
 
 describe("RLS & Role-Based Access Control Matrix", () => {
   const mobileSafetyMigration = readFileSync(
@@ -45,11 +49,18 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     ),
     "utf8",
   );
+  const canonicalAccessMigration = readFileSync(
+    new URL(
+      "../../supabase/migrations/00023_canonical_access_control.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
 
   it("allows buyers to read listings and create orders", () => {
     expect(hasPermission("individual_buyer", "listing.read")).toBe(true);
     expect(hasPermission("individual_buyer", "order.create")).toBe(true);
-    expect(hasPermission("individual_buyer", "listing.create")).toBe(false);
+    expect(hasPermission("individual_buyer", "listing.create")).toBe(true);
     expect(hasPermission("individual_buyer", "admin.access")).toBe(false);
   });
 
@@ -65,17 +76,35 @@ describe("RLS & Role-Based Access Control Matrix", () => {
   it("allows moderators to review and moderate listings", () => {
     expect(hasPermission("moderator", "listing.moderate")).toBe(true);
     expect(hasPermission("moderator", "report.review")).toBe(true);
-    expect(hasPermission("moderator", "user.suspend")).toBe(true);
+    expect(hasPermission("moderator", "user.suspend")).toBe(false);
   });
 
-  it("grants full administrative permissions to admin and super_admin", () => {
+  it("keeps administrative governance separate from finance operations", () => {
     const roles: PlatformRole[] = ["admin", "super_admin"];
     for (const role of roles) {
       expect(hasPermission(role, "admin.access")).toBe(true);
       expect(hasPermission(role, "market.manage")).toBe(true);
-      expect(hasPermission(role, "order.refund")).toBe(true);
+      expect(hasPermission(role, "order.refund")).toBe(false);
       expect(hasPermission(role, "user.manage")).toBe(true);
     }
+  });
+
+  it("retires broad admin RLS bypasses and protects profile authority fields", () => {
+    expect(canonicalAccessMigration).toContain(
+      "CREATE OR REPLACE FUNCTION public.has_capability",
+    );
+    expect(canonicalAccessMigration).toMatch(
+      /CREATE OR REPLACE FUNCTION public\.is_admin\(\)[\s\S]+?SELECT FALSE;/,
+    );
+    expect(canonicalAccessMigration).toContain(
+      "REVOKE SELECT, INSERT, UPDATE, DELETE ON public.profiles FROM anon, authenticated",
+    );
+    expect(canonicalAccessMigration).toContain(
+      "GRANT UPDATE (name, avatar_url, phone, city, postal_code, department, region, country, bio)",
+    );
+    expect(canonicalAccessMigration).toContain(
+      "CREATE OR REPLACE VIEW public.public_profiles",
+    );
   });
 
   it("enables RLS for block, push-token, and deletion-audit tables", () => {
@@ -230,8 +259,17 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     expect(hasPermission("individual_seller", "auto.vehicle.manage.own")).toBe(
       true,
     );
-    expect(hasPermission("pro_seller", "auto.dealer.manage.own")).toBe(true);
-    expect(hasPermission("pro_seller", "auto.lead.manage.own")).toBe(true);
+    expect(
+      subjectHasPermission(
+        {
+          accountType: "professional",
+          professionalVertical: "automotive",
+          status: "active",
+        },
+        "auto.dealer.manage.own",
+      ),
+    ).toBe(true);
+    expect(hasPermission("pro_seller", "auto.lead.manage.own")).toBe(false);
     expect(hasPermission("individual_seller", "auto.admin.manage")).toBe(false);
     expect(hasPermission("market_manager", "auto.admin.manage")).toBe(true);
     expect(hasPermission("admin", "auto.admin.manage")).toBe(true);
@@ -271,7 +309,16 @@ describe("RLS & Role-Based Access Control Matrix", () => {
   it("grants Immo administration and agency operations only to intended roles", () => {
     expect(hasPermission("individual_buyer", "immo.admin.manage")).toBe(false);
     expect(hasPermission("individual_seller", "immo.admin.manage")).toBe(false);
-    expect(hasPermission("pro_seller", "immo.agency.manage.own")).toBe(true);
+    expect(
+      subjectHasPermission(
+        {
+          accountType: "professional",
+          professionalVertical: "real_estate",
+          status: "active",
+        },
+        "immo.agency.manage.own",
+      ),
+    ).toBe(true);
     expect(hasPermission("market_manager", "immo.admin.manage")).toBe(true);
     expect(hasPermission("admin", "immo.admin.manage")).toBe(true);
   });
@@ -379,8 +426,27 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     ).toBe(false);
     expect(
       hasPermission("individual_seller", "employment.recruiter.manage.own"),
+    ).toBe(false);
+    expect(
+      subjectHasPermission(
+        {
+          accountType: "professional",
+          professionalVertical: "generic",
+          status: "active",
+        },
+        "employment.recruiter.manage.own",
+      ),
+    ).toBe(false);
+    expect(
+      subjectHasPermission(
+        {
+          accountType: "professional",
+          professionalVertical: "employment",
+          status: "active",
+        },
+        "employment.import.own",
+      ),
     ).toBe(true);
-    expect(hasPermission("pro_seller", "employment.import.own")).toBe(true);
     expect(hasPermission("market_manager", "employment.admin.manage")).toBe(
       true,
     );

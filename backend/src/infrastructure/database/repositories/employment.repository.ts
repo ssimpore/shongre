@@ -723,7 +723,7 @@ export class DemoEmploymentRepository implements EmploymentRepository {
     )!.employer;
     if (userId === "user_admin_antoine")
       return clone([this.recruiterWorkspace.employer, privateEmployer]);
-    if (userId === "user_pro_atelier")
+    if (userId === "user_pro_atelier" || userId === "user_employment_recruiter")
       return clone([this.recruiterWorkspace.employer]);
     if (userId === "user_camille") return clone([privateEmployer]);
     return [];

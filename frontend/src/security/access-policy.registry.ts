@@ -1,0 +1,177 @@
+import {
+  canonicalAccessContext,
+  resolveEffectiveCapabilities,
+  type AccountType,
+  type Capability,
+} from "@shongre/contracts/access-control";
+import type { UserProfile } from "../types";
+
+export type RouteAccessClass =
+  "authenticated" | "customer" | "professional" | "staff_capability";
+
+export interface RoutePolicy {
+  path: string;
+  access: RouteAccessClass;
+  capability?: Capability;
+  alternativeCapabilities?: readonly Capability[];
+  accountTypes: readonly AccountType[];
+}
+
+const customer = (path: string, capability?: Capability): RoutePolicy => ({
+  path,
+  access: "customer",
+  capability,
+  accountTypes: ["individual", "professional"],
+});
+
+const professional = (path: string, capability: Capability): RoutePolicy => ({
+  path,
+  access: "professional",
+  capability,
+  accountTypes: ["professional"],
+});
+
+const staff = (path: string, capability: Capability): RoutePolicy => ({
+  path,
+  access: "staff_capability",
+  capability,
+  accountTypes: ["staff"],
+});
+
+/**
+ * Canonical policy inventory for every protected frontend route.
+ *
+ * Public routes remain explicit in the router because they have no access
+ * policy. Protected navigation and router guards both read this registry.
+ */
+export const ROUTE_POLICIES = {
+  publishListing: customer("/deposer", "listing.create"),
+  publishCourse: customer("/deposer/cours", "course.profile.manage.own"),
+  publishAuto: customer("/deposer/auto", "auto.vehicle.manage.own"),
+  publishRealEstate: customer("/deposer/immo", "immo.property.manage.own"),
+  publishEmployment: customer("/deposer/emploi", "employment.job.manage.own"),
+  applyEmployment: customer(
+    "/emploi/offre/:slug/postuler",
+    "employment.candidate.manage.own",
+  ),
+  requestCourse: customer("/cours/demande", "course.request.create"),
+  messagesShortcut: customer("/messages", "message.read.own"),
+
+  accountOverview: customer("/compte"),
+  accountListings: customer("/compte/annonces", "listing.create"),
+  accountFavorites: customer("/compte/favoris", "favorite.manage.own"),
+  accountSavedSearches: customer(
+    "/compte/recherches",
+    "saved_search.manage.own",
+  ),
+  accountMessages: customer("/compte/messages", "message.read.own"),
+  accountNotifications: customer("/compte/notifications"),
+  accountNotificationPreferences: customer("/compte/notifications/preferences"),
+  accountPurchases: customer("/compte/achats", "order.read.own"),
+  accountVerification: customer("/compte/verification"),
+  accountSecurity: customer("/compte/securite-compte"),
+  accountType: customer("/compte/type-de-compte"),
+  accountSupport: customer("/compte/support"),
+  accountSupportDetail: customer("/compte/support/:id"),
+  accountNewsletter: customer("/compte/newsletter"),
+  accountProfile: customer("/compte/profil", "profile.update.own"),
+  accountCourse: customer("/compte/cours", "course.profile.manage.own"),
+  accountCourseOrganization: professional(
+    "/compte/cours/organisation",
+    "course.organization.manage.own",
+  ),
+  accountAuto: professional("/compte/auto", "auto.dealer.manage.own"),
+  accountRealEstate: professional("/compte/immo", "immo.agency.manage.own"),
+  accountEmploymentCandidate: customer(
+    "/compte/emploi",
+    "employment.candidate.manage.own",
+  ),
+  accountEmploymentRecruiter: professional(
+    "/compte/emploi/recruteur",
+    "employment.recruiter.manage.own",
+  ),
+  accountProDashboard: professional(
+    "/compte/pro/tableau-de-bord",
+    "store.analytics.read.own",
+  ),
+  accountProStorefront: professional(
+    "/compte/pro/vitrine",
+    "store.customization.manage",
+  ),
+  accountProSubscriptions: professional(
+    "/compte/pro/abonnements",
+    "subscription.manage.own",
+  ),
+
+  adminOverview: staff("/admin", "admin.access"),
+  adminModeration: {
+    ...staff("/admin/moderation", "moderation.review"),
+    alternativeCapabilities: ["report.review", "listing.moderate"],
+  },
+  adminUsers: staff("/admin/utilisateurs", "user.read"),
+  adminVerifications: {
+    ...staff("/admin/verifications", "user.verify"),
+    alternativeCapabilities: ["compliance.review"],
+  },
+  adminMarkets: staff("/admin/marches", "market.manage"),
+  adminProviders: staff("/admin/fournisseurs", "provider.read"),
+  adminProviderDetail: staff(
+    "/admin/fournisseurs/:providerId",
+    "provider.read",
+  ),
+  adminTaxonomy: staff("/admin/taxonomie", "taxonomy.manage"),
+  adminTaxonomyAlias: staff("/admin/taxonomy", "taxonomy.manage"),
+  adminMonetization: staff("/admin/monetisation", "monetization.manage"),
+  adminTrending: staff("/admin/tendances", "admin.configuration.manage"),
+  adminRoles: {
+    ...staff("/admin/roles", "role.manage"),
+    alternativeCapabilities: ["permission.manage"],
+  },
+  adminAudit: staff("/admin/audit", "audit.read"),
+  adminNewsletter: staff("/admin/newsletter", "market.manage"),
+  adminCourse: staff("/admin/cours", "course.admin.manage"),
+  adminAuto: staff("/admin/auto", "auto.admin.manage"),
+  adminRealEstate: staff("/admin/immo", "immo.admin.manage"),
+  adminEmployment: staff("/admin/emploi", "employment.admin.manage"),
+  adminCrm: staff("/admin/crm", "crm.access"),
+  adminCrmContacts: staff("/admin/crm/contacts", "crm.contact.read"),
+  adminCrmContactDetail: staff("/admin/crm/contacts/:id", "crm.contact.read"),
+  adminCrmCompanies: staff("/admin/crm/entreprises", "crm.company.read"),
+  adminCrmCompanyDetail: staff(
+    "/admin/crm/entreprises/:id",
+    "crm.company.read",
+  ),
+  adminCrmPipeline: staff("/admin/crm/pipeline", "crm.opportunity.read"),
+  adminCrmProspecting: staff(
+    "/admin/crm/prospection",
+    "crm.ai_prospecting.use",
+  ),
+  adminCrmTasks: staff("/admin/crm/taches", "crm.access"),
+} as const satisfies Record<string, RoutePolicy>;
+
+export type RoutePolicyId = keyof typeof ROUTE_POLICIES;
+
+export function requiredRouteCapability(id: RoutePolicyId): Capability {
+  const capability = ROUTE_POLICIES[id].capability;
+  if (!capability) {
+    throw new Error(`Route policy ${id} has no capability requirement.`);
+  }
+  return capability;
+}
+
+export function canAccessRoutePolicy(
+  user: UserProfile | null,
+  id: RoutePolicyId,
+): boolean {
+  const policy = ROUTE_POLICIES[id];
+  const access = canonicalAccessContext(user);
+  if (access.accountType === "guest") return false;
+  if (!policy.accountTypes.some((type) => type === access.accountType)) {
+    return false;
+  }
+  if (!policy.capability) return true;
+  const capabilities = resolveEffectiveCapabilities(user);
+  return [policy.capability, ...(policy.alternativeCapabilities ?? [])].some(
+    (capability) => capabilities.includes(capability),
+  );
+}

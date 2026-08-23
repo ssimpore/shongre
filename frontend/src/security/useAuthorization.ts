@@ -3,11 +3,13 @@ import { useMemo } from "react";
 import { useAuth } from "../app/providers/AuthProvider";
 import {
   authorizationService,
+  type FeatureRequirement,
   ResourceOwnershipContext,
   AuthorizationContextOptions,
 } from "./authorization.service";
 import { Permission, PlatformRole } from "../types";
 import { normalizePlatformRole } from "./roles.config";
+import type { RoutePolicyId } from "./access-policy.registry";
 
 export function useAuthorization() {
   const { currentUser } = useAuth();
@@ -19,7 +21,7 @@ export function useAuthorization() {
   const can = useMemo(() => {
     return (
       permission: Permission,
-      resource?: ResourceOwnershipContext | any,
+      resource?: ResourceOwnershipContext,
       options?: AuthorizationContextOptions,
     ): boolean => {
       return authorizationService.can(
@@ -49,13 +51,28 @@ export function useAuthorization() {
     };
   }, [currentUser]);
 
+  const getFeatureAvailability = useMemo(
+    () => (requirement: FeatureRequirement) =>
+      authorizationService.getFeatureAvailability(currentUser, requirement),
+    [currentUser],
+  );
+
+  const canAccessRoute = useMemo(
+    () => (policyId: RoutePolicyId) =>
+      authorizationService.canAccessRoute(currentUser, policyId),
+    [currentUser],
+  );
+
   const isSuspended =
     currentUser?.isSuspended || currentUser?.status === "suspended";
   const isDeactivated =
     currentUser?.isDeactivated ||
     currentUser?.status === "disabled" ||
-    currentUser?.status === "deleted";
-  const isLimited = currentUser?.status === "limited";
+    currentUser?.status === "deleted" ||
+    currentUser?.status === "closed" ||
+    currentUser?.status === "banned";
+  const isLimited =
+    currentUser?.status === "limited" || currentUser?.status === "restricted";
   const isPro = isProSeller(currentUser);
   const normalizedRole: PlatformRole =
     currentUser?.primaryRole || normalizePlatformRole(currentUser?.role);
@@ -66,6 +83,8 @@ export function useAuthorization() {
     can,
     hasEntitlement,
     canAccessMarket,
+    getFeatureAvailability,
+    canAccessRoute,
     role: normalizedRole,
     accountType:
       currentUser?.accountType || (isPro ? "professional" : "individual"),
@@ -79,7 +98,7 @@ export function useAuthorization() {
 
 export function useCan(
   permission: Permission,
-  resource?: ResourceOwnershipContext | any,
+  resource?: ResourceOwnershipContext,
   options?: AuthorizationContextOptions,
 ): boolean {
   const { can } = useAuthorization();

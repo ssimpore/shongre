@@ -220,6 +220,7 @@ export const routes = {
   deals: () => "/bons-plans",
   admin: {
     overview: () => `/admin`,
+    moderation: () => `/admin/moderation`,
     verifications: () => `/admin/verifications`,
     providers: () => `/admin/fournisseurs`,
     providerDetail: (id: string) => `/admin/fournisseurs/${pathSegment(id)}`,

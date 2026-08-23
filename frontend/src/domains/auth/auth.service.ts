@@ -690,6 +690,7 @@ class AuthService {
     email: string;
     password: string;
     companyName: string;
+    professionalVertical: UserProfile["professionalVertical"];
     sirenSiret: string;
     legalForm: string;
     vatNumber?: string;
@@ -745,6 +746,7 @@ class AuthService {
       email: normalizedEmail,
       name: `${data.name.trim()} (${data.companyName.trim()})`,
       companyName: data.companyName.trim(),
+      professionalVertical: data.professionalVertical ?? "generic",
       sirenSiret: formattedSiret,
       siret: formattedSiret,
       vatNumber: data.vatNumber?.trim() || `FR ${formattedSiret.slice(0, 9)}`,

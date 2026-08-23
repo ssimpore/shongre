@@ -12,6 +12,13 @@ import type {
   AuthErrorCode,
   AuthResult,
 } from "./auth.types";
+import type {
+  AccountType as CanonicalAccountType,
+  Capability,
+  PlatformRole as SharedPlatformRole,
+  ProfessionalVertical,
+  StaffRole,
+} from "@shongre/contracts/access-control";
 
 export type {
   AccountStatus,
@@ -31,22 +38,13 @@ export type {
 export * from "../domains/market/market.types";
 export * from "../domains/verification/verification.types";
 
-export type AccountType = "individual" | "professional" | "internal";
+export type AccountType = CanonicalAccountType;
+export type { ProfessionalVertical, StaffRole };
 
-export type PlatformRole =
-  | "guest"
-  | "buyer"
-  | "seller"
-  | "pro_seller"
-  | "support"
-  | "moderator"
-  | "operations"
-  | "finance"
-  | "commercial"
-  | "content_manager"
-  | "market_manager"
-  | "admin"
-  | "super_admin";
+export type PlatformRole = Exclude<
+  SharedPlatformRole,
+  "individual_buyer" | "individual_seller"
+>;
 
 // Compatibility alias with existing code
 export type UserRole =
@@ -65,130 +63,7 @@ export interface MarketScope {
   regions?: string[];
 }
 
-export type Permission =
-  // Profile
-  | "profile.read"
-  | "profile.update.own"
-  | "seller.profile.read"
-  | "seller.profile.update.own"
-  // Listings
-  | "listing.read"
-  | "listing.create"
-  | "listing.update.own"
-  | "listing.delete.own"
-  | "listing.publish"
-  | "listing.mark_reserved"
-  | "listing.mark_sold"
-  | "listing.promote"
-  | "listing.moderate"
-  | "listing.feature"
-  | "listing.bulk_import"
-  // Messaging
-  | "message.read.own"
-  | "message.send"
-  | "message.block"
-  | "conversation.manage.own"
-  | "conversation.audit.privileged"
-  // Favorites & Searches
-  | "favorite.manage.own"
-  | "saved_search.manage.own"
-  // Orders & Escrow
-  | "order.create"
-  | "order.read.own"
-  | "order.manage.seller"
-  | "order.refund"
-  | "transaction.audit.finance"
-  // Payments
-  | "payment.initiate"
-  | "payment.refund"
-  // Reviews
-  | "review.create"
-  | "review.update.own"
-  | "review.moderate"
-  // Storefront & Analytics
-  | "store.manage.own"
-  | "store.analytics.read.own"
-  | "store.customization.manage"
-  // Subscription & Monetization
-  | "subscription.manage.own"
-  | "subscription.upgrade"
-  | "monetization.manage"
-  | "monetization.pricing.update"
-  // Users & Staff
-  | "user.read"
-  | "user.manage"
-  | "user.suspend"
-  | "user.reactivate"
-  | "user.verify"
-  | "staff.support.access"
-  | "staff.operations.access"
-  | "staff.finance.access"
-  | "staff.commercial.access"
-  // Moderation & Safety
-  | "report.create"
-  | "report.review"
-  | "moderation.review"
-  | "moderation.action"
-  // Markets & Taxonomy
-  | "market.manage"
-  | "market.configure"
-  | "taxonomy.manage"
-  // Shongre Cours
-  | "course.read"
-  | "course.request.create"
-  | "course.profile.manage.own"
-  | "course.offer.manage.own"
-  | "course.lead.read.own"
-  | "course.lead.respond.own"
-  | "course.organization.manage.own"
-  | "course.booking.create"
-  | "course.admin.manage"
-  // Shongre Auto
-  | "auto.read"
-  | "auto.vehicle.manage.own"
-  | "auto.dealer.manage.own"
-  | "auto.lead.manage.own"
-  | "auto.inventory.import.own"
-  | "auto.admin.manage"
-  // Shongre Immo
-  | "immo.read"
-  | "immo.property.manage.own"
-  | "immo.agency.manage.own"
-  | "immo.lead.manage.own"
-  | "immo.inventory.import.own"
-  | "immo.admin.manage"
-  // Shongre Emploi
-  | "employment.read"
-  | "employment.candidate.manage.own"
-  | "employment.job.manage.own"
-  | "employment.recruiter.manage.own"
-  | "employment.application.manage.own"
-  | "employment.import.own"
-  | "employment.admin.manage"
-  // Providers & External Integrations
-  | "provider.read"
-  | "provider.manage"
-  | "provider.configuration.read"
-  | "provider.configuration.manage"
-  | "provider.routing.manage"
-  | "provider.credentials.status.read"
-  | "provider.credentials.manage"
-  | "provider.health.read"
-  | "provider.test"
-  // Administration
-  | "admin.access"
-  | "role.manage"
-  | "permission.manage"
-  | "audit.read"
-  // CRM & Commercial
-  | "crm.access"
-  | "crm.contact.read"
-  | "crm.contact.manage"
-  | "crm.company.read"
-  | "crm.company.manage"
-  | "crm.opportunity.read"
-  | "crm.opportunity.manage"
-  | "crm.ai_prospecting.use";
+export type Permission = Capability;
 
 export type SecurityAuditAction =
   | "role_assigned"
@@ -288,6 +163,8 @@ export interface UserProfile {
   email: string;
   name: string;
   accountType?: AccountType;
+  professionalVertical?: ProfessionalVertical;
+  staffRole?: StaffRole;
   primaryRole?: PlatformRole;
   roles?: PlatformRole[];
   role: UserRole;

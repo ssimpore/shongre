@@ -37,5 +37,10 @@ describe("Newsletter Topics & Capabilities", () => {
       viewer: DEMO_USERS.admin_antoine,
     });
     expect(adminCaps.canAdminCampaigns).toBe(true);
+
+    const moderatorCaps = newsletterCapabilitiesService.resolve({
+      viewer: DEMO_USERS.moderator_claire,
+    });
+    expect(moderatorCaps.canAdminCampaigns).toBe(false);
   });
 });

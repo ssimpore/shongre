@@ -13,7 +13,7 @@ export interface ListingGridProps {
  * Mobile keeps two readable columns. The default desktop layout uses the same
  * fixed width as rail cards. Result-heavy surfaces can opt into `fluid`, which
  * fills each row with as many token-sized columns as the available space can
- * hold without shrinking the card below the shared listing width.
+ * hold without shrinking the card below the shared dense-grid minimum.
  */
 export const ListingGrid: React.FC<ListingGridProps> = ({
   children,
@@ -23,7 +23,7 @@ export const ListingGrid: React.FC<ListingGridProps> = ({
   <div
     className={`listing-grid grid grid-cols-2 gap-3 sm:gap-4 ${
       fluid
-        ? "listing-grid-fluid sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))] sm:justify-start"
+        ? "listing-grid-fluid sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card-grid-min),1fr))]"
         : "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))] sm:justify-start"
     } ${className}`}
   >

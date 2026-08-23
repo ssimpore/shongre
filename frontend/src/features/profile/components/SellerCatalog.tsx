@@ -212,7 +212,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             size="md"
             leftIcon={<PlusCircle className="w-4 h-4" />}
           >
-            {t("profile.sellerCatalog.publierUnePremiereAnnonce")}
+            {t(publishCta.labelKey)}
           </Button>
         ) : (
           <Button to={routes.search()} variant="outline" size="md">

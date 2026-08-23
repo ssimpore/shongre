@@ -82,8 +82,8 @@ test.describe('design-token runtime contracts', () => {
     }
   });
 
-  test('keeps desktop listing grids on the same width and height tokens as rails', async ({ page }) => {
-    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'networkidle' });
+  test('packs available desktop search cards into shared dense columns', async ({ page }) => {
+    await page.goto('/recherche?category=vehicules&maxPrice=100000', { waitUntil: 'networkidle' });
     await waitForStableLayout(page);
 
     const contract = await page.evaluate(() => {
@@ -92,10 +92,18 @@ test.describe('design-token runtime contracts', () => {
       const card = grid?.querySelector<HTMLElement>('article');
       const gridStyle = grid ? getComputedStyle(grid) : null;
       const cardStyle = card ? getComputedStyle(card) : null;
+      const cards = grid ? [...grid.querySelectorAll<HTMLElement>('article.listing-card-standard')] : [];
+      const firstTop = cards[0]?.getBoundingClientRect().top;
+      const firstRow = cards.filter(
+        (candidate) => Math.abs(candidate.getBoundingClientRect().top - (firstTop ?? 0)) < 1,
+      );
       return {
         tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
+        gridMinWidth: root.getPropertyValue('--spacing-listing-card-grid-min').trim(),
         tokenHeight: root.getPropertyValue('--spacing-listing-card-height').trim(),
         gridColumns: gridStyle?.gridTemplateColumns ?? '',
+        cardCount: cards.length,
+        firstRowCount: firstRow.length,
         cardWidth: card?.getBoundingClientRect().width ?? null,
         cardHeight: card?.getBoundingClientRect().height ?? null,
         cardHeightToken: cardStyle?.height ?? '',
@@ -103,11 +111,61 @@ test.describe('design-token runtime contracts', () => {
     });
 
     expect(contract.tokenWidth).toBe('15rem');
+    expect(contract.gridMinWidth).toBe('13rem');
     expect(contract.tokenHeight).toBe('25rem');
-    expect(contract.gridColumns.split(' ').every((column) => column === '240px')).toBe(true);
-    expect(contract.cardWidth).toBeCloseTo(240, 0);
+    const columns = contract.gridColumns
+      .split(' ')
+      .map((column) => Number.parseFloat(column))
+      .filter((column) => column > 0);
+    expect(contract.cardCount).toBe(6);
+    expect(columns.length).toBeGreaterThanOrEqual(5);
+    expect(contract.firstRowCount).toBe(columns.length);
+    expect(columns.every((column) => column >= 208)).toBe(true);
+    expect(columns.every((column) => Math.abs(column - (columns[0] ?? 0)) < 1)).toBe(true);
+    expect(contract.cardWidth).toBeCloseTo(columns[0] ?? 0, 0);
     expect(contract.cardHeight).toBeCloseTo(400, 0);
     expect(contract.cardHeightToken).toBe('400px');
+  });
+
+  test('keeps a sparse result card on one shared dense grid track', async ({ page }) => {
+    await page.goto('/recherche?category=mode-accessoires', { waitUntil: 'networkidle' });
+    await waitForStableLayout(page);
+
+    const contract = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const grid = document.querySelector<HTMLElement>('.listing-grid');
+      const cards = grid ? [...grid.querySelectorAll<HTMLElement>('article.listing-card-standard')] : [];
+      const card = cards[0];
+      const image = card?.querySelector<HTMLElement>('img');
+      const columns = grid
+        ? getComputedStyle(grid)
+            .gridTemplateColumns.split(' ')
+            .map((column) => Number.parseFloat(column))
+            .filter((column) => column > 0)
+        : [];
+
+      return {
+        tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
+        gridMinWidth: root.getPropertyValue('--spacing-listing-card-grid-min').trim(),
+        tokenHeight: root.getPropertyValue('--spacing-listing-card-height').trim(),
+        cardCount: cards.length,
+        columns,
+        cardWidth: card?.getBoundingClientRect().width ?? null,
+        cardHeight: card?.getBoundingClientRect().height ?? null,
+        imageHeight: image?.getBoundingClientRect().height ?? null,
+      };
+    });
+
+    expect(contract.tokenWidth).toBe('15rem');
+    expect(contract.gridMinWidth).toBe('13rem');
+    expect(contract.tokenHeight).toBe('25rem');
+    expect(contract.cardCount).toBe(1);
+    expect(contract.columns.length).toBeGreaterThan(1);
+    expect(contract.columns.every((column) => column >= 208)).toBe(true);
+    expect(contract.columns.every((column) => Math.abs(column - (contract.columns[0] ?? 0)) < 1)).toBe(true);
+    expect(contract.cardWidth).toBeCloseTo(contract.columns[0] ?? 0, 0);
+    expect(contract.cardHeight).toBeCloseTo(400, 0);
+    expect(contract.imageHeight).toBeLessThan(contract.cardHeight ?? 0);
   });
 
   test('keeps listing rails and grids responsive across the supported viewport matrix', async ({ page }) => {
@@ -168,6 +226,7 @@ test.describe('design-token runtime contracts', () => {
           ? getComputedStyle(element)
               .gridTemplateColumns.split(' ')
               .map((column) => Number.parseFloat(column))
+              .filter((column) => column > 0)
           : [];
 
         return {
@@ -184,7 +243,8 @@ test.describe('design-token runtime contracts', () => {
       } else {
         expect(grid.columns.length, `${viewport.name}: desktop grid columns rendered`).toBeGreaterThan(0);
         for (const width of grid.columns) {
-          expect(width, `${viewport.name}: desktop grid column width`).toBeCloseTo(240, 0);
+          expect(width, `${viewport.name}: desktop grid respects the dense minimum`).toBeGreaterThanOrEqual(208);
+          expect(width, `${viewport.name}: desktop columns stay balanced`).toBeCloseTo(grid.columns[0] ?? 0, 0);
         }
       }
       for (const width of grid.cardWidths) {

@@ -1530,7 +1530,7 @@ export const messagesEn: MessageCatalogue = {
   // --- migrated surfaces ---
   "shell.demoRoleSwitcher.modeDemo": "Demo mode",
   "shell.demoRoleSwitcher.testerLes10ProfilsEt":
-    "Try the 10 profiles and journeys without a password:",
+    "Try the 15 profiles and journeys without a password:",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
     "Switch user profile to test",
   "shell.demoRoleSwitcher.sessionUpdated": "Demo session updated",
@@ -2592,6 +2592,11 @@ export const messagesEn: MessageCatalogue = {
   "publishCta.inactiveShort": "Inactive",
   "publishCta.postListing": "Post a listing",
   "publishCta.postListingShort": "Post",
+  "publishCta.postVehicle": "Post a vehicle",
+  "publishCta.postProperty": "Post a property",
+  "publishCta.postJob": "Post a job",
+  "publishCta.manageCourses": "Manage courses",
+  "publishCta.manageShort": "Manage",
   "publishCta.becomeSeller": "Become a seller",
   "publishCta.becomeSellerShort": "Sell",
 
@@ -2752,6 +2757,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.accountType.individual": "Individual account",
   "admin.accountType.professional": "Professional account",
   "admin.accountType.internal": "Internal staff",
+  "admin.accountType.staff": "Internal staff",
   "shell.demoRoleSwitcher.roleHorsPersonasDemo":
     "Platform role outside the demo personas",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees": "No data yet",

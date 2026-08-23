@@ -19,7 +19,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 
 export interface RequirePermissionProps {
   permission: Permission;
-  resource?: ResourceOwnershipContext | any;
+  resource?: ResourceOwnershipContext;
   options?: AuthorizationContextOptions;
   customTitle?: string;
   customMessage?: string;
@@ -200,8 +200,11 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
     );
   }
 
-  // Check Suspended state
-  if (isSuspended) {
+  const hasAccess = can(permission, resource, options);
+
+  // Suspended accounts retain only the safe capabilities defined by the
+  // canonical lifecycle policy (for example reading orders or filing a report).
+  if (isSuspended && !hasAccess) {
     return (
       <GuardShell standalone={standalone}>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
@@ -223,9 +226,6 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
       </GuardShell>
     );
   }
-
-  // Check specific permission
-  const hasAccess = can(permission, resource, options);
 
   if (!hasAccess) {
     // Specific UX if Pro permission required

@@ -26,6 +26,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import {
   normalizePlatformRole,
   ROLE_DEFINITIONS,
+  STAFF_ROLE_PRESENTATION,
 } from "../../security/roles.config";
 import { useAuthorization } from "../../security/useAuthorization";
 import { Container, Image, SkipLink } from "../../design-system";
@@ -35,7 +36,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 export const AdminLayout: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, role: platformRole } = useAuth();
-  const { can } = useAuthorization();
+  const { canAccessRoute } = useAuthorization();
   const location = useLocation();
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const sectionMenuRef = useRef<HTMLDivElement>(null);
@@ -68,6 +69,9 @@ export const AdminLayout: React.FC = () => {
   const roleMeta =
     ROLE_DEFINITIONS[normalizePlatformRole(platformRole)] ||
     ROLE_DEFINITIONS.guest;
+  const staffRoleMeta = currentUser?.staffRole
+    ? STAFF_ROLE_PRESENTATION[currentUser.staffRole]
+    : roleMeta;
   const marketScope = currentUser?.marketScope?.countries || ["FR"];
   const marketLabel = marketScope.includes("*")
     ? "Portée Globale (*)"
@@ -79,118 +83,109 @@ export const AdminLayout: React.FC = () => {
       end: true,
       label: "Vue d'ensemble",
       icon: LayoutDashboard,
-      show: true,
+      show: canAccessRoute("adminOverview"),
     },
     {
       to: "/admin/crm",
       label: "CRM & Pipeline Ventes",
       icon: Briefcase,
-      show:
-        can("crm.access") ||
-        can("staff.commercial.access") ||
-        can("admin.access"),
+      show: canAccessRoute("adminCrm"),
     },
     {
       to: "/admin/cours",
       label: "Shongre Cours",
       icon: GraduationCap,
-      show: can("course.admin.manage"),
+      show: canAccessRoute("adminCourse"),
     },
     {
       to: "/admin/auto",
       label: "Shongre Auto",
       icon: CarFront,
-      show: can("auto.admin.manage"),
+      show: canAccessRoute("adminAuto"),
     },
     {
       to: "/admin/immo",
       label: "Shongre Immo",
       icon: Building2,
-      show: can("immo.admin.manage"),
+      show: canAccessRoute("adminRealEstate"),
     },
     {
       to: "/admin/emploi",
       label: "Shongre Emploi",
       icon: Briefcase,
-      show: can("employment.admin.manage"),
+      show: canAccessRoute("adminEmployment"),
     },
     {
       to: "/admin/crm/prospection",
       label: "Prospection IA",
       icon: Sparkles,
-      show:
-        can("crm.ai_prospecting.use") ||
-        can("staff.commercial.access") ||
-        can("admin.access"),
+      show: canAccessRoute("adminCrmProspecting"),
     },
     {
       to: "/admin/moderation",
       label: "Modération & Signalements",
       icon: ShieldAlert,
-      show:
-        can("moderation.review") ||
-        can("report.review") ||
-        can("listing.moderate"),
+      show: canAccessRoute("adminModeration"),
     },
     {
       to: "/admin/utilisateurs",
       label: "Utilisateurs & Profils",
       icon: Users,
-      show: can("user.read") || can("user.manage") || can("user.verify"),
+      show: canAccessRoute("adminUsers"),
     },
     {
       to: "/admin/verifications",
       label: "Conformité KYC / KYB",
       icon: Shield,
-      show: can("user.read") || can("user.manage") || can("user.verify"),
+      show: canAccessRoute("adminVerifications"),
     },
     {
       to: "/admin/marches",
       label: "Marchés & Territoires",
       icon: Globe,
-      show: can("market.manage") || can("market.configure"),
+      show: canAccessRoute("adminMarkets"),
     },
     {
       to: "/admin/fournisseurs",
       label: "Fournisseurs & Intégrations",
       icon: Cpu,
-      show: can("provider.read") || can("admin.access"),
+      show: canAccessRoute("adminProviders"),
     },
     {
       to: "/admin/newsletter",
       label: "Newsletter & Campagnes",
       icon: Mail,
-      show: can("market.manage") || can("admin.access"),
+      show: canAccessRoute("adminNewsletter"),
     },
     {
       to: "/admin/taxonomie",
       label: "Taxonomie & Attributs",
       icon: Layers,
-      show: can("taxonomy.manage") || can("admin.access"),
+      show: canAccessRoute("adminTaxonomy"),
     },
     {
       to: "/admin/monetisation",
       label: "Monétisation & Forfaits Pro",
       icon: CreditCard,
-      show: can("monetization.manage") || can("staff.finance.access"),
+      show: canAccessRoute("adminMonetization"),
     },
     {
       to: "/admin/tendances",
       label: "Tendances de la page d’accueil",
       icon: Flame,
-      show: can("admin.access"),
+      show: canAccessRoute("adminTrending"),
     },
     {
       to: "/admin/roles",
       label: "Matrice Rôles & Permissions",
       icon: KeyRound,
-      show: true,
+      show: canAccessRoute("adminRoles"),
     },
     {
       to: "/admin/audit",
       label: "Registre d'Audit Sécurité",
       icon: FileSpreadsheet,
-      show: can("audit.read"),
+      show: canAccessRoute("adminAudit"),
     },
   ];
 
@@ -256,7 +251,7 @@ export const AdminLayout: React.FC = () => {
                   {currentUser?.name || "Agent Shongre"}
                 </span>
                 <span className="text-micro text-stone-400 font-medium">
-                  {roleMeta.title}
+                  {staffRoleMeta.title}
                 </span>
               </div>
             </div>
@@ -264,7 +259,7 @@ export const AdminLayout: React.FC = () => {
             <span
               className={`hidden sm:inline text-micro font-bold px-2 py-1 rounded-full border shrink-0 ${roleMeta.badgeColor}`}
             >
-              {roleMeta.shortLabel}
+              {staffRoleMeta.shortLabel}
             </span>
 
             {/* Back to public marketplace. A styled Link rather than a Button

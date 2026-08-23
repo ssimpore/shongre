@@ -3,8 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Search, CheckCircle2, AlertTriangle, FileCheck } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { storageService } from "../../services/storage.service";
-import { userRepository } from "../../repositories/user.repository";
 import {
   normalizePlatformRole,
   ROLE_DEFINITIONS,
@@ -12,12 +10,12 @@ import {
 } from "../../security/roles.config";
 import { UserProfile } from "../../types";
 import { Button } from "../../design-system/primitives/Button";
-import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { services } from "../../api/client/service-registry";
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
@@ -28,7 +26,7 @@ export const AdminUsersPage: React.FC = () => {
     noIndex: true,
   });
 
-  const { can, switchDemoUser } = useAuth();
+  const { can } = useAuth();
   const toast = useToast();
 
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -44,55 +42,75 @@ export const AdminUsersPage: React.FC = () => {
   const [reactivateModalUser, setReactivateModalUser] =
     useState<UserProfile | null>(null);
 
-  const loadUsers = () => {
-    const usersMap = storageService.getUsers();
-    setUsers(Object.values(usersMap));
+  const loadUsers = async () => {
+    setUsers(await services.admin.getAllUsers());
   };
 
   useEffect(() => {
-    loadUsers();
+    void loadUsers();
   }, []);
 
   const handleConfirmVerifyPro = async (notes: string) => {
     if (!kbisModalUser) return;
     try {
-      await userRepository.verifyUser(kbisModalUser.id, {
-        approve: true,
-        notes: notes || "Kbis vérifié conforme",
-      });
-      loadUsers();
+      await services.admin.reviewProfessionalVerification(
+        kbisModalUser.id,
+        true,
+        notes || "Kbis vérifié conforme",
+      );
+      await loadUsers();
       toast.success(
         `Compte Pro de ${kbisModalUser.name} vérifié et badge validé.`,
       );
       setKbisModalUser(null);
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la validation du KBIS");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la validation du KBIS",
+      );
     }
   };
 
   const handleConfirmSuspend = async (reason: string) => {
     if (!suspendModalUser) return;
     try {
-      await userRepository.suspendUser(suspendModalUser.id, reason);
-      loadUsers();
+      await services.admin.updateUserStatus(
+        suspendModalUser.id,
+        "suspended",
+        reason,
+      );
+      await loadUsers();
       toast.success(`Le compte de ${suspendModalUser.name} a été suspendu.`);
       setSuspendModalUser(null);
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la suspension");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la suspension",
+      );
     }
   };
 
-  const handleConfirmReactivate = async () => {
+  const handleConfirmReactivate = async (reason: string) => {
     if (!reactivateModalUser) return;
     try {
-      await userRepository.reactivateUser(reactivateModalUser.id);
-      loadUsers();
+      await services.admin.updateUserStatus(
+        reactivateModalUser.id,
+        "active",
+        reason,
+      );
+      await loadUsers();
       toast.success(
         `Le compte de ${reactivateModalUser.name} a été réactivé avec succès.`,
       );
       setReactivateModalUser(null);
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la réactivation");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la réactivation",
+      );
     }
   };
 
@@ -169,7 +187,7 @@ export const AdminUsersPage: React.FC = () => {
             </option>
             <option value="individual">Particulier</option>
             <option value="professional">Professionnel (Pro)</option>
-            <option value="internal_staff">Personnel Interne (Staff)</option>
+            <option value="staff">Personnel Interne (Staff)</option>
           </select>
 
           <select
@@ -238,6 +256,8 @@ export const AdminUsersPage: React.FC = () => {
                 const isPro = isProSeller(u);
                 const isPendingPro =
                   isPro && u.professionalVerification?.status === "pending";
+                const isSuspended =
+                  u.isSuspended || u.status === "suspended";
 
                 return (
                   <tr key={u.id} className="hover:bg-bg-base transition-colors">
@@ -294,7 +314,7 @@ export const AdminUsersPage: React.FC = () => {
                     {/* Status */}
                     <td className="p-3.5">
                       <div className="flex flex-col gap-1 items-start">
-                        {u.isSuspended ? (
+                        {isSuspended ? (
                           <span className="text-micro bg-danger-surface text-danger font-bold px-2 py-1 rounded-sm">
                             SUSPENDU
                           </span>
@@ -340,40 +360,27 @@ export const AdminUsersPage: React.FC = () => {
                         )}
 
                         {/* Suspend / Reactivate */}
-                        {can("user.suspend") && (
+                        {((isSuspended && can("user.reactivate")) ||
+                          (!isSuspended && can("user.suspend"))) && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => {
-                              if (u.isSuspended) {
+                              if (isSuspended) {
                                 setReactivateModalUser(u);
                               } else {
                                 setSuspendModalUser(u);
                               }
                             }}
                             className={`text-xs ${
-                              u.isSuspended
+                              isSuspended
                                 ? "text-success border-success-border"
                                 : "text-danger border-danger-border"
                             }`}
                           >
-                            {u.isSuspended ? "Réactiver" : "Suspendre"}
+                            {isSuspended ? "Réactiver" : "Suspendre"}
                           </Button>
                         )}
-
-                        {/* Impersonate / Switch to role for test */}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            switchDemoUser(u.id);
-                            toast.info(`Basculé sur l'identité : ${u.name}`);
-                          }}
-                          className="text-xs text-stone-700"
-                          title={t("admin.adminUsersPage.seConnecterEnTantQue")}
-                        >
-                          Tester
-                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -409,14 +416,15 @@ export const AdminUsersPage: React.FC = () => {
       />
 
       {/* Reactivate User Modal */}
-      <ConfirmModal
+      <PromptModal
         isOpen={Boolean(reactivateModalUser)}
         onClose={() => setReactivateModalUser(null)}
-        onConfirm={handleConfirmReactivate}
+        onSubmit={handleConfirmReactivate}
         title={t("admin.adminUsersPage.reactiverLeCompte")}
-        message={`Confirmez-vous la levée de la suspension pour l'utilisateur ${reactivateModalUser?.name} ?`}
+        label={`Motif de réactivation pour ${reactivateModalUser?.name || "ce compte"}`}
+        placeholder="Ex. Examen terminé et mesures correctives confirmées"
         confirmText="Réactiver le compte"
-        variant="success"
+        required
       />
     </div>
   );

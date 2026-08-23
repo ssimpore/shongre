@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useAuthorization } from "./useAuthorization";
 import { MessageKey } from "../i18n/messages.fr";
+import { routes } from "../configuration/routes";
 
 export interface PublishCta {
   /** Where the button should actually take this user. */
@@ -38,7 +39,8 @@ export interface PublishCtaKeys {
  * to the step that actually unblocks them, and label it for what it does.
  */
 export function usePublishCta(): PublishCtaKeys {
-  const { can, currentUser, isSuspended, isDeactivated } = useAuthorization();
+  const { can, currentUser, accountType, isSuspended, isDeactivated } =
+    useAuthorization();
 
   return useMemo(() => {
     if (isSuspended || isDeactivated) {
@@ -51,6 +53,37 @@ export function usePublishCta(): PublishCtaKeys {
           ? "publishCta.suspendedShort"
           : "publishCta.inactiveShort",
       };
+    }
+
+    if (accountType === "professional") {
+      if (can("auto.vehicle.manage.own")) {
+        return {
+          to: routes.auto.publish(),
+          labelKey: "publishCta.postVehicle",
+          shortLabelKey: "publishCta.postListingShort",
+        };
+      }
+      if (can("immo.property.manage.own")) {
+        return {
+          to: routes.immo.publish(),
+          labelKey: "publishCta.postProperty",
+          shortLabelKey: "publishCta.postListingShort",
+        };
+      }
+      if (can("employment.job.manage.own")) {
+        return {
+          to: routes.employment.publish(),
+          labelKey: "publishCta.postJob",
+          shortLabelKey: "publishCta.postListingShort",
+        };
+      }
+      if (can("course.organization.manage.own")) {
+        return {
+          to: routes.courses.organization(),
+          labelKey: "publishCta.manageCourses",
+          shortLabelKey: "publishCta.manageShort",
+        };
+      }
     }
 
     if (can("listing.create")) {
@@ -76,5 +109,5 @@ export function usePublishCta(): PublishCtaKeys {
       labelKey: "publishCta.postListing",
       shortLabelKey: "publishCta.postListingShort",
     };
-  }, [can, currentUser, isSuspended, isDeactivated]);
+  }, [accountType, can, currentUser, isSuspended, isDeactivated]);
 }

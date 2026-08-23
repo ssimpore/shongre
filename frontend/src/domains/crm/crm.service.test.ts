@@ -59,9 +59,15 @@ describe("CrmService & Capabilities", () => {
     const adminCaps = crmCapabilitiesService.resolve({
       viewer: DEMO_USERS.admin_antoine,
     });
-    expect(adminCaps.canAccessCrm).toBe(true);
-    expect(adminCaps.canManageOpportunities).toBe(true);
-    expect(adminCaps.canUseAiProspecting).toBe(true);
+    expect(adminCaps.canAccessCrm).toBe(false);
+
+    const commercialCaps = crmCapabilitiesService.resolve({
+      viewer: DEMO_USERS.commercial_lea,
+    });
+    expect(commercialCaps.canAccessCrm).toBe(true);
+    expect(commercialCaps.canManageOpportunities).toBe(true);
+    expect(commercialCaps.canUseAiProspecting).toBe(true);
+    expect(commercialCaps.canExport).toBe(false);
 
     const buyerCaps = crmCapabilitiesService.resolve({
       viewer: DEMO_USERS.buyer_thomas,

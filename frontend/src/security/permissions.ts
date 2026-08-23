@@ -1,4 +1,5 @@
 import { Permission } from "../types";
+import { CAPABILITIES } from "@shongre/contracts/access-control";
 
 export interface PermissionDefinition {
   id: Permission;
@@ -21,7 +22,7 @@ export interface PermissionDefinition {
   isSensitive?: boolean;
 }
 
-export const ALL_PERMISSIONS: PermissionDefinition[] = [
+const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
   // Shongre Emploi
   {
     id: "employment.read",
@@ -679,3 +680,38 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
 ];
+
+const describedById = new Map(
+  DESCRIBED_PERMISSIONS.map((definition) => [definition.id, definition]),
+);
+
+function fallbackCategory(
+  capability: Permission,
+): PermissionDefinition["category"] {
+  if (capability.startsWith("crm.")) return "Boutique & Vitrine";
+  if (capability.startsWith("provider.")) return "Administration Système";
+  if (capability.startsWith("support.")) return "Utilisateurs & Équipe";
+  if (capability.startsWith("compliance.")) return "Modération & Signalements";
+  if (capability.startsWith("commercial_rules."))
+    return "Marchés & Configuration";
+  return "Administration Système";
+}
+
+/**
+ * Presentation metadata follows the canonical capability registry. A newly
+ * added capability can never silently disappear from the staff matrix merely
+ * because its translated description has not been written yet.
+ */
+export const ALL_PERMISSIONS: PermissionDefinition[] = CAPABILITIES.map(
+  (capability) =>
+    describedById.get(capability) ?? {
+      id: capability,
+      name: capability
+        .split(".")
+        .map((part) => part.replace(/_/g, " "))
+        .join(" · "),
+      category: fallbackCategory(capability),
+      description: "Capacité explicite de la politique d'accès Shongre.",
+      isSensitive: true,
+    },
+);

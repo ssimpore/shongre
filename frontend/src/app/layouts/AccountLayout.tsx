@@ -35,19 +35,6 @@ import { storageService } from "../../services/storage.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
 
-function AdminRoleIcon({ label }: { label: string }): React.ReactElement {
-  return (
-    <span
-      role="img"
-      aria-label={label}
-      title={label}
-      className="inline-flex h-control-sm w-control-sm shrink-0 items-center justify-center rounded-pill border border-primary-border bg-primary-light text-primary"
-    >
-      <ShieldCheck className="h-icon-sm w-icon-sm" aria-hidden="true" />
-    </span>
-  );
-}
-
 function VerifiedAccountIcon({ label }: { label: string }): React.ReactElement {
   return (
     <span
@@ -64,18 +51,13 @@ function VerifiedAccountIcon({ label }: { label: string }): React.ReactElement {
 
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser, platformRole, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
-  const { can } = useAuthorization();
+  const { canAccessRoute } = useAuthorization();
   const navigate = useNavigate();
 
   const isPro = isProSeller(currentUser);
   const isVerified = showsVerifiedBadge(currentUser);
-  const isAdmin = platformRole === "admin" || platformRole === "super_admin";
-  const adminRoleLabel =
-    platformRole === "super_admin"
-      ? t("shell.accountLayout.roleSuperAdministrateur")
-      : t("shell.accountLayout.roleAdministrateur");
   const accountName = (
     currentUser?.companyName ||
     currentUser?.name ||
@@ -100,121 +82,135 @@ export const AccountLayout: React.FC = () => {
       label: "Vue d'ensemble",
       icon: <User className="w-4 h-4" />,
       end: true,
+      visible: canAccessRoute("accountOverview"),
     },
     {
       to: "/compte/annonces",
       label: "Mes annonces",
       icon: <List className="w-4 h-4" />,
       count: myListingsCount,
+      visible: canAccessRoute("accountListings"),
     },
     {
       to: "/compte/cours",
       label: "Espace Cours",
       icon: <GraduationCap className="w-4 h-4 text-primary" />,
+      visible: canAccessRoute("accountCourse"),
     },
     {
       to: "/compte/emploi",
       label: t("employment.nav.candidate"),
       icon: <Briefcase className="w-4 h-4 text-primary" />,
+      visible: canAccessRoute("accountEmploymentCandidate"),
     },
     {
       to: "/compte/favoris",
       label: "Mes favoris",
       icon: <Heart className="w-4 h-4" />,
       count: favCount,
+      visible: canAccessRoute("accountFavorites"),
     },
     {
       to: "/compte/recherches",
       label: "Recherches sauvegardées",
       icon: <Search className="w-4 h-4" />,
       count: savedSearchCount,
+      visible: canAccessRoute("accountSavedSearches"),
     },
     {
       to: "/compte/messages",
       label: "Messages & Offres",
       icon: <MessageSquare className="w-4 h-4" />,
       count: unreadMsgCount,
+      visible: canAccessRoute("accountMessages"),
     },
     {
       to: "/compte/notifications",
       label: "Notifications",
       icon: <Bell className="w-4 h-4" />,
       count: unreadNotifCount,
+      visible: canAccessRoute("accountNotifications"),
     },
     {
       to: "/compte/achats",
       label: "Transactions & Séquestre",
       icon: <ShoppingBag className="w-4 h-4" />,
+      visible: canAccessRoute("accountPurchases"),
     },
     {
       to: "/compte/verification",
       label: "Sécurité & Vérification",
       icon: <Shield className="w-4 h-4 text-success" />,
+      visible: canAccessRoute("accountVerification"),
     },
     {
       to: "/compte/securite-compte",
       label: "Connexion & sécurité",
       icon: <KeyRound className="w-4 h-4 text-primary" />,
+      visible: canAccessRoute("accountSecurity"),
     },
     {
       to: "/compte/support",
       label: "Aide & Assistance",
       icon: <Headphones className="w-4 h-4" />,
+      visible: canAccessRoute("accountSupport"),
     },
     {
       to: "/compte/newsletter",
       label: "Newsletter & Alertes",
       icon: <Mail className="w-4 h-4" />,
+      visible: canAccessRoute("accountNewsletter"),
     },
     {
       to: "/compte/profil",
       label: "Mon profil & Coordonnées",
       icon: <Settings className="w-4 h-4" />,
+      visible: canAccessRoute("accountProfile"),
     },
-  ];
+  ].filter((item) => item.visible);
 
   const proNavItems = [
     {
       to: routes.immo.workspace(),
       label: "Espace Immo",
       icon: <Building2 className="w-4 h-4 text-primary" />,
-      visible: can("immo.agency.manage.own"),
+      visible: canAccessRoute("accountRealEstate"),
     },
     {
       to: routes.auto.workspace(),
       label: "Espace Auto",
       icon: <CarFront className="w-4 h-4 text-primary" />,
-      visible: can("auto.dealer.manage.own"),
+      visible: canAccessRoute("accountAuto"),
     },
     {
       to: routes.courses.organization(),
       label: "Organisme Cours",
       icon: <GraduationCap className="w-4 h-4 text-primary" />,
-      visible: can("course.organization.manage.own"),
+      visible: canAccessRoute("accountCourseOrganization"),
     },
     {
       to: routes.employment.recruiterWorkspace(),
       label: t("employment.nav.recruiter"),
       icon: <Users className="w-4 h-4 text-primary" />,
-      visible: can("employment.recruiter.manage.own"),
+      visible: canAccessRoute("accountEmploymentRecruiter"),
     },
     {
       to: routes.workspace.pro.dashboard(),
       label: "Dashboard Pro",
       icon: <BarChart3 className="w-4 h-4 text-primary" />,
-      visible: true,
+      visible: canAccessRoute("accountProDashboard"),
     },
     {
       to: routes.workspace.pro.storefront(),
       label: "Personnaliser ma vitrine",
       icon: <Briefcase className="w-4 h-4 text-primary" />,
-      visible: true,
+      visible: canAccessRoute("accountProStorefront"),
     },
     {
       to: routes.workspace.pro.subscriptions(),
       label: "Mon forfait & Facturation",
       icon: <Sparkles className="w-4 h-4 text-amber-500" />,
-      visible: true,
+      visible: canAccessRoute("accountProSubscriptions"),
     },
   ].filter((item) => item.visible);
 
@@ -250,7 +246,6 @@ export const AccountLayout: React.FC = () => {
                   {isVerified && (
                     <VerifiedAccountIcon label={t("ui.badge.profilVerifie")} />
                   )}
-                  {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
                 <div
                   className="text-xs text-stone-500 truncate"
@@ -347,7 +342,6 @@ export const AccountLayout: React.FC = () => {
                   {isVerified && (
                     <VerifiedAccountIcon label={t("ui.badge.profilVerifie")} />
                   )}
-                  {isAdmin && <AdminRoleIcon label={adminRoleLabel} />}
                 </div>
                 <div
                   className="text-xs text-stone-500 truncate"

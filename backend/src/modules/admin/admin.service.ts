@@ -7,6 +7,7 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import type { Principal } from "../../shared/auth/principal.js";
 
 export type { AdminStatsSummary };
 
@@ -24,20 +25,90 @@ export class AdminService {
     return this.userRepo.getAll();
   }
 
-  async updateUserStatus(
-    userId: string,
-    status: "active" | "suspended" | "banned",
-  ): Promise<UserProfile> {
-    const updated = await this.userRepo.update(userId, { status });
+  async updateUserStatus(input: {
+    userId: string;
+    status: "active" | "restricted" | "suspended" | "banned";
+    reason: string;
+    actor: Principal;
+  }): Promise<UserProfile> {
+    if (
+      !new Set(["active", "restricted", "suspended", "banned"]).has(
+        input.status,
+      )
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Statut de compte invalide.",
+      });
+    }
+    if (!input.reason || input.reason.trim().length < 10) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un motif d'au moins 10 caractères est requis.",
+      });
+    }
+    const previous = await this.userRepo.findById(input.userId);
+    if (!previous) {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    const updated = await this.userRepo.update(input.userId, {
+      status: input.status,
+    });
     await this.adminRepo.saveAuditLog({
-      actorName: "Admin System",
-      actorRole: "admin",
-      targetId: userId,
+      actorId: input.actor.userId,
+      actorName: input.actor.email,
+      actorRole: input.actor.staffRole || input.actor.role,
+      targetId: input.userId,
       targetName: updated.name,
       action: "update_user_status",
-      details: `User status changed to ${status}`,
+      details: input.reason.trim(),
+      metadata: { previousStatus: previous.status, newStatus: input.status },
     });
-    logger.warn(`Admin updated user ${userId} status to ${status}`);
+    logger.warn(
+      `Staff actor ${input.actor.userId} updated user ${input.userId} status to ${input.status}`,
+    );
+    return updated;
+  }
+
+  async reviewProfessionalVerification(input: {
+    userId: string;
+    approve: boolean;
+    notes: string;
+    actor: Principal;
+  }): Promise<UserProfile> {
+    if (!input.notes || input.notes.trim().length < 10) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une note de décision d'au moins 10 caractères est requise.",
+      });
+    }
+    const previous = await this.userRepo.findById(input.userId);
+    if (!previous || previous.accountType !== "professional") {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Compte professionnel introuvable.",
+      });
+    }
+    const updated = await this.userRepo.update(input.userId, {
+      isVerified: input.approve,
+      isBusinessVerified: input.approve,
+      status: input.approve ? "active" : "restricted",
+    });
+    await this.adminRepo.saveAuditLog({
+      actorId: input.actor.userId,
+      actorName: input.actor.email,
+      actorRole: input.actor.staffRole || input.actor.role,
+      targetId: input.userId,
+      targetName: updated.name,
+      action: input.approve
+        ? "verification_approved"
+        : "verification_rejected",
+      details: input.notes.trim(),
+      metadata: {
+        previousBusinessVerification: previous.isBusinessVerified,
+        approved: input.approve,
+      },
+    });
     return updated;
   }
 
@@ -53,12 +124,36 @@ export class AdminService {
     return this.adminRepo.getReports();
   }
 
-  async resolveReport(
-    reportId: string,
-    action: "dismiss" | "remove_listing" | "ban_user",
-  ): Promise<void> {
-    await this.adminRepo.resolveReport(reportId, action);
-    logger.info(`Report ${reportId} resolved with action: ${action}`);
+  async resolveReport(input: {
+    reportId: string;
+    action: "dismiss" | "remove_listing" | "ban_user";
+    reason: string;
+    actor: Principal;
+  }): Promise<void> {
+    if (!new Set(["dismiss", "remove_listing", "ban_user"]).has(input.action)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Action de modération invalide.",
+      });
+    }
+    if (!input.reason || input.reason.trim().length < 10) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un motif d'au moins 10 caractères est requis.",
+      });
+    }
+    await this.adminRepo.resolveReport(input.reportId, input.action);
+    await this.adminRepo.saveAuditLog({
+      actorId: input.actor.userId,
+      actorName: input.actor.email,
+      actorRole: input.actor.staffRole || input.actor.role,
+      targetId: input.reportId,
+      action: `report_${input.action}`,
+      details: input.reason.trim(),
+    });
+    logger.info(
+      `Staff actor ${input.actor.userId} resolved report ${input.reportId} with action ${input.action}`,
+    );
   }
 
   async submitReport(input: {
