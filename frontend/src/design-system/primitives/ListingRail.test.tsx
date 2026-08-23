@@ -27,7 +27,7 @@ describe("listing layout primitives", () => {
     );
   });
 
-  it("can fill a result row with responsive columns", () => {
+  it("fills a result row with token-sized responsive columns", () => {
     const html = renderToStaticMarkup(
       <ListingGrid fluid>
         <div>card</div>
@@ -35,9 +35,9 @@ describe("listing layout primitives", () => {
     );
 
     expect(html).toContain("listing-grid-fluid");
-    expect(html).toContain("sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5");
-    expect(html).not.toContain(
+    expect(html).toContain(
       "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))]",
     );
+    expect(html).toContain("sm:justify-start");
   });
 });

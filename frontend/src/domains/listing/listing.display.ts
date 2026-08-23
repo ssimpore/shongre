@@ -14,6 +14,57 @@ import { CONDITION_OPTIONS } from "../../configuration/market.config";
 import { MarketConfiguration } from "../market/market.types";
 import { activeDataLocale } from "../../i18n/localized";
 
+/**
+ * Demo and imported listings can contain attributes that are not yet present
+ * in the taxonomy registry. They still need to read like product data rather
+ * than storage keys on a public detail page. Keep this fallback map here, at
+ * the presentation boundary, so cards, details and future HTTP data share the
+ * same graceful behaviour without teaching components about raw DTO shapes.
+ */
+const FALLBACK_ATTRIBUTE_LABELS: Record<string, string> = {
+  brand: "Marque",
+  model: "Modèle",
+  storage: "Stockage",
+  color: "Couleur",
+  bike_type: "Type de vélo",
+  frame_size: "Taille du cadre",
+  furniture_type: "Type de meuble",
+  clothing_category: "Catégorie",
+  size: "Taille",
+  platform: "Plateforme",
+  instrument_type: "Type d'instrument",
+  appliance_type: "Type d'appareil",
+  tool_type: "Type d'outil",
+  sport: "Sport",
+  pet_type: "Type d'animal",
+  equipment_type: "Type d'équipement",
+  service_type: "Type de service",
+  contract_type: "Type de contrat",
+  property_type: "Type de bien",
+};
+
+const FALLBACK_VALUE_LABELS: Record<string, string> = {
+  apple: "Apple",
+  appartement: "Appartement",
+  canape: "Canapé",
+  cdi: "CDI",
+  chene: "Chêne",
+  electroportatif: "Électroportatif",
+  essence: "Essence",
+  gravel: "Gravel",
+  guitare: "Guitare",
+  jardinage: "Jardinage",
+  laser: "Laser",
+  musique: "Musique",
+  peugeot: "Peugeot",
+  ps5: "PlayStation 5",
+  robot: "Robot ménager",
+  surf: "Surf",
+  table: "Table",
+  tissu: "Tissu",
+  velours: "Velours",
+};
+
 export interface FormattedCharacteristicItem {
   code: string;
   label: string;
@@ -406,9 +457,23 @@ export class ListingDisplayResolver {
       en_ligne: "En ligne / À distance",
     };
 
-    const valStr = String(value).toLowerCase();
+    const valStr = String(value).trim().toLowerCase();
     if (quickDict[valStr]) {
       return quickDict[valStr];
+    }
+
+    if (FALLBACK_VALUE_LABELS[valStr]) {
+      return FALLBACK_VALUE_LABELS[valStr];
+    }
+
+    // Unknown imported enums should still be readable. Preserve meaningful
+    // punctuation while turning storage values such as `m_38` into `M 38`.
+    const readable = String(value)
+      .trim()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ");
+    if (readable && readable === readable.toLowerCase()) {
+      return readable.replace(/^([a-zà-ÿ])/u, (letter) => letter.toUpperCase());
     }
 
     return String(value);
@@ -456,11 +521,22 @@ export class ListingDisplayResolver {
   }
 
   private formatFallbackLabel(key: string): string {
-    const clean = key.replace(
-      /^(product|vehicle|real_estate|electronics|home|fashion|service|job)\./,
-      "",
-    );
-    return clean.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    const clean = key
+      .replace(
+        /^(product|vehicle|real_estate|electronics|home|fashion|service|job)\./,
+        "",
+      )
+      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+      .replace(/[-\s]+/g, "_")
+      .toLowerCase();
+
+    if (FALLBACK_ATTRIBUTE_LABELS[clean]) {
+      return FALLBACK_ATTRIBUTE_LABELS[clean];
+    }
+
+    return clean
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
   /**

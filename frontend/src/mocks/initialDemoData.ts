@@ -1741,6 +1741,8 @@ export const INITIAL_LISTINGS: Listing[] = [
     viewsCount: 142,
     favoritesCount: 18,
     contactCount: 4,
+    isBoosted: true,
+    boostType: "highlight",
   },
   {
     id: "list-116",

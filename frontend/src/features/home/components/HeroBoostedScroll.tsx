@@ -136,7 +136,13 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     const list = promotedListings.length > 0 ? promotedListings : fallbackList;
     return list.slice(0, MAX_FEATURED_LISTINGS);
   }, [promotedListings, allListings]);
-  const hasPromotedInventory = promotedListings.length > 0;
+  const isFeaturedListing = (listing: Listing): boolean => {
+    if (listing.discovery?.isSponsored) return true;
+    if (listing.promotionState === "active") {
+      return listing.promotionType !== "urgent_badge";
+    }
+    return Boolean(listing.isBoosted && listing.boostType !== "urgent");
+  };
 
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
@@ -242,7 +248,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
           onScroll={handleScroll}
         >
           {scrollSequence.map((item, index) =>
-            renderItemCard(item, index, hasPromotedInventory),
+            renderItemCard(item, index, isFeaturedListing(item)),
           )}
         </div>
 

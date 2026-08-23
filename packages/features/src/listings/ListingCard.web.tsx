@@ -96,14 +96,20 @@ export function ListingCard({
         {listing.categoryLabel || listing.seller ? (
           <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted">
             <span className="flex min-w-0 items-center gap-1.5">
-              <span className="min-w-0 truncate">
-                {[
-                  listing.categoryLabel,
-                  listing.seller?.organizationName || listing.seller?.name,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
+              {listing.categoryLabel ? (
+                <span className="min-w-0 truncate">{listing.categoryLabel}</span>
+              ) : null}
+              {listing.categoryLabel &&
+              (listing.seller?.organizationName || listing.seller?.name) ? (
+                <span aria-hidden="true" className="shrink-0">
+                  ·
+                </span>
+              ) : null}
+              {listing.seller?.organizationName || listing.seller?.name ? (
+                <span className="min-w-0 truncate">
+                  {listing.seller.organizationName || listing.seller.name}
+                </span>
+              ) : null}
               {listing.seller?.sellerType === "pro" ? (
                 <Badge variant="pro">Pro</Badge>
               ) : listing.seller?.isIdentityVerified ? (

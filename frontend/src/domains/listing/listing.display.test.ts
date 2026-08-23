@@ -141,6 +141,42 @@ describe("Listing Detail Display & Action Resolvers", () => {
         "Télétravail hybride (2-3 jours/semaine)",
       );
     });
+
+    it("humanizes unregistered imported attributes on detail pages", () => {
+      const listing = {
+        id: "list-imported-1",
+        subCategorySlug: "velos",
+        attributes: {
+          bikeType: "gravel",
+          frameSize: "m",
+          serviceType: "musique",
+        },
+      } as unknown as Listing;
+
+      const items = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: "bikeType",
+            label: "Type de vélo",
+            value: "Gravel",
+          }),
+          expect.objectContaining({
+            code: "frameSize",
+            label: "Taille du cadre",
+            value: "M",
+          }),
+          expect.objectContaining({
+            code: "serviceType",
+            label: "Type de service",
+            value: "Musique",
+          }),
+        ]),
+      );
+    });
   });
 
   // =========================================================================

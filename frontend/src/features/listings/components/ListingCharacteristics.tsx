@@ -38,13 +38,13 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
       {groups.map((group) => (
         <div
           key={group.groupKey}
-          className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm"
+          className="bg-bg-surface rounded-card border border-border-base p-5 sm:p-6 space-y-4 shadow-xs"
         >
-          <div className="flex items-center gap-2.5 pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-border-subtle">
             {GROUP_ICONS[group.groupKey] || (
               <Sparkles className="w-5 h-5 text-primary" />
             )}
-            <h2 className="text-base font-black text-stone-900">
+            <h2 className="text-base font-black text-text-main">
               {group.groupTitle}
             </h2>
           </div>
@@ -59,9 +59,9 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
               return (
                 <div
                   key={item.code}
-                  className="p-4 rounded-2xl bg-stone-50 border border-stone-200/60 flex flex-col justify-between hover:bg-stone-100/50 transition-colors"
+                  className="p-3 rounded-control bg-bg-subtle border border-border-subtle flex flex-col justify-between hover:bg-bg-muted motion-interactive"
                 >
-                  <span className="text-xs text-stone-500 font-medium block truncate mb-1.5">
+                  <span className="text-xs text-text-secondary font-medium block truncate mb-1.5">
                     {item.label}
                   </span>
 
@@ -72,12 +72,12 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
                       >
                         {dpeVal}
                       </span>
-                      <span className="text-sm font-bold text-stone-900">
+                      <span className="text-sm font-bold text-text-main">
                         Classe {dpeVal}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm font-black text-stone-900 break-words">
+                    <span className="text-sm font-black text-text-main break-words">
                       {item.value}
                     </span>
                   )}

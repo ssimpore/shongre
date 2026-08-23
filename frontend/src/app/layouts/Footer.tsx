@@ -27,6 +27,7 @@ import { useConsent } from "../providers/ConsentProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 /* -----------------------------------------------------------------------------
    Shared surface recipes.
@@ -183,7 +184,7 @@ const FooterLink: React.FC<{
     <Link
       to={to}
       title={title}
-      className="group flex items-center justify-between gap-2 py-1.5 font-medium text-stone-400 hover:text-white transition-colors"
+      className="group touch-row flex items-center justify-between gap-2 py-1.5 font-medium text-stone-400 hover:text-white transition-colors"
     >
       <span>{children}</span>
       <ChevronRight className="w-3.5 h-3.5 shrink-0 text-stone-600 group-hover:text-primary-on-dark group-hover:translate-x-0.5 transition-all duration-fast" />
@@ -244,6 +245,7 @@ const FooterColumn: React.FC<{
 export const Footer: React.FC = () => {
   const { openPreferences } = useConsent();
   const { t } = useTranslation();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   // All accordion sections folded by default on mobile
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     categories: false,
@@ -314,7 +316,7 @@ export const Footer: React.FC = () => {
                   id="categories"
                   title={t("footer.sectionCategories")}
                   Icon={LayoutGrid}
-                  isOpen={openSections.categories}
+                  isOpen={isDesktop || openSections.categories}
                   onToggle={toggleSection}
                 >
                   {TAXONOMY.slice(0, 7).map((cat) => (
@@ -332,7 +334,7 @@ export const Footer: React.FC = () => {
                   id="cities"
                   title={t("footer.sectionCities")}
                   Icon={MapPin}
-                  isOpen={openSections.cities}
+                  isOpen={isDesktop || openSections.cities}
                   onToggle={toggleSection}
                 >
                   {MARKET_CONFIG.popularCities.slice(0, 7).map((city) => (
@@ -349,7 +351,7 @@ export const Footer: React.FC = () => {
                   id="professionals"
                   title="Espace professionnels"
                   Icon={Briefcase}
-                  isOpen={openSections.professionals}
+                  isOpen={isDesktop || openSections.professionals}
                   onToggle={toggleSection}
                 >
                   <FooterLink to="/solutions-pro">
@@ -372,7 +374,7 @@ export const Footer: React.FC = () => {
                   id="help"
                   title="Aide & Confiance"
                   Icon={ShieldCheck}
-                  isOpen={openSections.help}
+                  isOpen={isDesktop || openSections.help}
                   onToggle={toggleSection}
                 >
                   <FooterLink to="/aide">Centre d’aide &amp; FAQ</FooterLink>
