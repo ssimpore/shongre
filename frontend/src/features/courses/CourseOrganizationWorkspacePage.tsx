@@ -109,7 +109,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
     try {
       const next = await services.courses.inviteOrganizationMember(
         organization.id,
-        { displayName: memberName, role: memberRole },
+        { email: memberName, role: memberRole },
       );
       setWorkspace(next);
       setMemberName("");
@@ -421,8 +421,9 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
         description="L’invitation reste en attente jusqu’à l’acceptation du membre."
       >
         <form onSubmit={inviteMember} className="space-y-4">
-          <FormField label="Nom du membre" required>
+          <FormField label="Adresse e-mail du membre" required>
             <Input
+              type="email"
               value={memberName}
               onChange={(event) => setMemberName(event.target.value)}
               autoFocus

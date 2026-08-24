@@ -7,6 +7,11 @@ The Shongre frontend is a Next.js App Router application built with React 19 and
 - **Standalone Demo Mode** (`NEXT_PUBLIC_DATA_MODE=demo`): Operates with deterministic local service adapters and state stores. Backend is completely optional and does not need to run.
 - **Live HTTP API Mode** (`NEXT_PUBLIC_DATA_MODE=api`): Connects over REST HTTP to the Shongre backend API (`/api/v1/*`), with structured error handling, auth token management, and request tracing.
 
+The live wire contract is not declared by these service interfaces. Its only
+source is `backend/openapi/openapi.json`; `@shongre/contracts/openapi` provides
+generated route and operation types to every HTTP adapter. Frontend service
+contracts remain mappings for UI-oriented view models.
+
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                          FRONTEND                           │
@@ -34,6 +39,7 @@ The Shongre frontend is a Next.js App Router application built with React 19 and
 All UI components and viewmodels communicate with domain services via typed contracts in `src/api/contracts/`.
 
 ### 2.1 Contracts
+
 - `ListingsServiceContract`
 - `SearchServiceContract`
 - `AuthServiceContract`
@@ -50,6 +56,7 @@ All UI components and viewmodels communicate with domain services via typed cont
 - `ReviewsServiceContract`
 
 ### 2.2 Service Registry (`src/api/client/service-registry.ts`)
+
 The `services` registry dispatches each contract to either its `demo` adapter or its `http` adapter based on `apiClientConfig.dataMode`.
 
 ---

@@ -43,7 +43,7 @@ export interface AutoServiceContract {
   ): Promise<{ vehicleId: string; lifecycle: "pending_review" }>;
   uploadDraftMedia(
     draftId: string,
-    file: { name: string; type: string; size: number },
+    file: { name: string; type: string; size: number; body?: Blob },
   ): Promise<{ url: string }>;
   submitLead(input: AutoLeadDraft): Promise<AutoLead>;
   getDealerWorkspace(organizationId: string): Promise<DealerWorkspace>;

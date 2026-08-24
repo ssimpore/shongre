@@ -4004,7 +4004,7 @@ type error, not a silent default.
 
 ```ts
 this.addRoute('GET',  '/listings/:id', PUBLIC,                        handler);
-this.addRoute('POST', '/messaging/send', permission('message.send'),  handler);
+this.addRoute('POST', '/messaging/conversations/:id/messages', permission('message.send'), handler);
 this.addRoute('GET',  '/admin/users',  permission('user.read'),       handler);
 ```
 
@@ -4027,7 +4027,7 @@ messagingService.sendMessage(body);            // body.senderId
 paymentsService.requestSellerPayout(body.sellerId, ...);
 
 // RIGHT
-ordersService.getPurchases(resolveOwnerId(principal, params.userId));
+ordersService.getPurchases(principal.userId);
 messagingService.sendMessage({ ...body, senderId: principal.userId });
 paymentsService.requestSellerPayout(principal.userId, ...);
 ```
@@ -4389,7 +4389,10 @@ single Expo application that targets iOS and Android.
   consume its primitives and patterns when the component is technically and
   semantically shared.
 * `packages/features/` owns reusable feature presentation and interaction rules;
-  `packages/contracts/` owns stable public schemas and DTOs; `packages/shared/`
+  `packages/contracts/` publishes generated OpenAPI types and stable domain
+  schemas. `backend/openapi/openapi.json` remains authoritative for HTTP paths,
+  wire requests, wire responses, and security; package exports must not become
+  a competing handwritten HTTP contract. `packages/shared/`
   owns framework-independent formatting, validation, and business utilities;
   `packages/brand/` owns canonical brand assets and their deterministic platform
   generation.
@@ -4518,3 +4521,87 @@ Before completing tooling changes, run the relevant canonical targets,
 including `make check` and `make test-critical`; use `make check-all` when the
 change affects E2E, cross-platform propagation, or the complete developer
 workflow. Never report an unexecuted target as passing.
+
+---
+
+# 155. One canonical OpenAPI contract
+
+Shongre has exactly one authoritative HTTP API specification:
+
+```text
+backend/openapi/openapi.json
+```
+
+It is OpenAPI 3.1 and owns every business and operational HTTP operation,
+method, URL, request/response shape, security declaration, permission,
+standard error, parameter, upload phase, idempotency requirement, and API
+version. Do not create another OpenAPI/Swagger file, handwritten endpoint
+registry, router-derived specification, or client-owned wire DTO source.
+
+## Contract-first workflow
+
+API changes happen in this order:
+
+1. edit `backend/openapi/openapi.json` and reuse `components`;
+2. give every operation a unique `operationId`, explicit `security`,
+   `x-shongre-access`, and any `x-shongre-permission`;
+3. run `make openapi-generate`;
+4. implement the generated contract in `backend/src/api/v1/router.ts` and its
+   domain service;
+5. migrate Web/mobile/admin/integration consumers through HTTP adapters;
+6. add contract and integration tests;
+7. run `make openapi-check` and the relevant full workspace gates.
+
+Generated artifacts are read-only:
+
+```text
+packages/contracts/src/generated/openapi.ts
+backend/src/generated/openapi-manifest.ts
+backend/docs/generated/endpoint-inventory.md
+```
+
+Web and mobile HTTP foundations consume `@shongre/contracts/openapi`. Their
+service contracts may map transport data into UI/native view models, but must
+not define competing URLs or wire schemas. Backend router declarations are
+implementation, not specification.
+
+## Runtime and CI parity
+
+The generated backend manifest enforces method/path inventory, access rules,
+permissions, required bodies, documented success status, and primitive query
+types. Backend startup must fail for an undocumented implementation, a
+documented-but-unimplemented operation, or security drift. CI and
+`make openapi-check` must also fail for duplicate routes/operation IDs, invalid
+OpenAPI, stale generated artifacts, banned legacy aliases, or spec/router
+divergence. Pull requests compare against `OPENAPI_BASE_REF` for breaking
+changes.
+
+## Versioning, deprecation, and compatibility
+
+`/api/v1` is the only active business prefix and is fixed by the contract, not
+deployment environment. Additive compatible changes remain in v1. A breaking
+request, response, meaning, or URL change requires a new major prefix or a
+released deprecation window. Before removal, an operation must be marked
+`deprecated: true`, carry `x-sunset-at`, document its replacement, and have all
+repository consumers migrated. Compatibility routes are exceptional and
+time-boxed; they must exist in OpenAPI with an owner and sunset. Do not keep an
+undocumented alias "just in case."
+
+## Transport conventions
+
+* Use the shared `ErrorResponse`, request ID, cookie/bearer security schemes,
+  pagination parameters, and idempotency header components.
+* Identity comes from the authenticated principal. Account-owned collections
+  such as notifications, conversations, purchases, and sales do not accept a
+  caller-selected user ID in their canonical URL.
+* Money uses integer minor units and an ISO currency. Timestamps have explicit
+  semantics and timezone-aware representations.
+* Public media and private verification documents use their separate,
+  documented two-phase upload operations. Never place private material in a
+  public bucket or accept an arbitrary storage key as proof of ownership.
+* API reference documentation is generated with `make openapi-docs`. Markdown
+  may explain workflows, but must link the generated endpoint inventory rather
+  than maintain another endpoint list.
+
+The full contributor workflow is in `backend/docs/api.md`; the system diagram
+and enforcement boundaries are in `docs/architecture/openapi.md`.

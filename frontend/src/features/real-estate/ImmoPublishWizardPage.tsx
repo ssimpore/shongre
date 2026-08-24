@@ -388,7 +388,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
       for (const file of Array.from(files)) {
         const result = await services.realEstate.uploadDraftMedia(
           draftId,
-          { name: file.name, type: file.type, size: file.size },
+          { name: file.name, type: file.type, size: file.size, body: file },
           visibility,
         );
         if (result.url)

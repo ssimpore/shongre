@@ -20,14 +20,14 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
   }
 
   async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
-    return httpClient.get<TaxonomyNode[]>(`/taxonomy/${nodeId}/children`);
+    return httpClient.get<TaxonomyNode[]>(`/taxonomy/nodes/${nodeId}/children`);
   }
 
   async getAttributesForCategory(
     categoryId: string,
   ): Promise<TaxonomyAttribute[]> {
     return httpClient.get<TaxonomyAttribute[]>(
-      `/taxonomy/${categoryId}/attributes`,
+      `/taxonomy/nodes/${categoryId}/attributes`,
     );
   }
 

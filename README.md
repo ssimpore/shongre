@@ -27,6 +27,14 @@ Specialized verticals reuse that platform boundary. Shongre Immo is documented i
 
 Supabase remains canonical under `backend/supabase/`; `infrastructure/` owns cross-cutting templates and operations rather than a duplicate database stack.
 
+The single HTTP contract is the OpenAPI 3.1 document at
+[`backend/openapi/openapi.json`](backend/openapi/openapi.json). Web, mobile,
+admin, and integration consumers use its generated TypeScript paths from
+`@shongre/contracts/openapi`; the backend router is checked against the same
+contract at boot and in CI. The architecture and API change workflow are in
+[`docs/architecture/openapi.md`](docs/architecture/openapi.md) and
+[`backend/docs/api.md`](backend/docs/api.md).
+
 ## Prerequisites
 
 - Node.js 22 through 26 and npm 10 or newer (see `package.json` engines and `.nvmrc`)
@@ -139,6 +147,9 @@ make mobile-check
 make infra-check
 make ui-check
 make cross-platform-check
+
+make openapi-check       # contract lint, generated-artifact and route parity
+make openapi-docs        # build the standalone Redoc API reference
 ```
 
 `make check` validates the environment and migrations, formatting, all workspaces, tests, Web/backend builds, infrastructure configuration, tracked-secret scanning, and frontend/backend boundaries. `make test-critical` is a focused gate for authentication/RBAC, listing lifecycle and ownership, messaging, payments/escrow/finance, monetization/entitlements, verification/compliance, provider safety, and public data boundaries. `make check-all` adds the focused critical gate, cross-platform propagation, browser E2E, and the high-severity dependency audit. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
@@ -232,7 +243,7 @@ packages/ui/              shared Web/native primitive APIs
 packages/features/        shared feature presentation and interaction rules
 packages/shared/          framework-free formatting and validation
 packages/brand/           canonical brand mark and generated app assets
-packages/contracts/       stable runtime validation and DTO schemas
+packages/contracts/       generated OpenAPI types plus stable domain schemas
 infrastructure/           cross-cutting operations and association-file templates
 scripts/                  environment, process, port, health, and infrastructure tooling
 docs/                     architecture, security, operations, and current store baseline

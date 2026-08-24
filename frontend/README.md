@@ -30,6 +30,12 @@ Deterministic Fixtures  Shongre Backend API
 & StorageService        & Supabase
 ```
 
+`src/api/contracts/` owns UI-facing service/view-model interfaces, not a second
+HTTP contract. The sole wire contract is
+`backend/openapi/openapi.json`; HTTP adapters consume generated method/path
+types from `@shongre/contracts/openapi` and map responses into those frontend
+interfaces. New URLs or wire DTO registries must not be handwritten here.
+
 ---
 
 ## 2. Directory Structure
@@ -39,7 +45,7 @@ frontend/
 ├── app/                          # Next server shell, metadata, robots, sitemap, manifest
 ├── src/
 │   ├── api/                      # Service contracts, demo/http adapters, error normalizer
-│   │   ├── contracts/            # TypeScript interfaces for all marketplace domains
+│   │   ├── contracts/            # UI-facing service and view-model interfaces
 │   │   ├── adapters/demo/        # Deterministic simulation adapters (Promise<T>)
 │   │   ├── adapters/http/        # Complete HTTP client adapters targeting /api/v1/*
 │   │   ├── client/               # Service registry & DATA_MODE toggle

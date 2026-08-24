@@ -66,5 +66,8 @@ frontend/playwright-report/
 frontend/blob-report/
 frontend/.playwright/
 
+# Rebuilt locally/CI from the canonical OpenAPI document
+backend/docs/generated/openapi.html
+
 # Local staging scratch
 .stage-tmp/

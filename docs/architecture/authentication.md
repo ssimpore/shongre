@@ -113,7 +113,9 @@ metadata keys that resemble passwords, tokens, codes or secrets.
 
 Cookie-authenticated mutations require `X-CSRF-Token`; credential entry points,
 provider callbacks and native bearer requests are exempt for the reasons stated
-in `backend/src/api/v1/router.ts`.
+in the canonical `backend/openapi/openapi.json` contract and enforced in
+`backend/src/api/v1/router.ts`. The endpoint table above is explanatory; the
+OpenAPI document is authoritative.
 
 ## Provider console setup
 

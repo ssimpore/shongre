@@ -84,16 +84,16 @@ export class HttpOrdersService implements OrdersServiceContract {
     return order ? mapOrder(order) : null;
   }
 
-  async getPurchases(userId: string): Promise<Transaction[]> {
-    return (
-      await httpClient.get<BackendOrder[]>(`/orders/purchases/${userId}`)
-    ).map(mapOrder);
+  async getPurchases(_userId: string): Promise<Transaction[]> {
+    return (await httpClient.get<BackendOrder[]>("/orders/purchases")).map(
+      mapOrder,
+    );
   }
 
-  async getSales(userId: string): Promise<Transaction[]> {
-    return (
-      await httpClient.get<BackendOrder[]>(`/orders/sales/${userId}`)
-    ).map(mapOrder);
+  async getSales(_userId: string): Promise<Transaction[]> {
+    return (await httpClient.get<BackendOrder[]>("/orders/sales")).map(
+      mapOrder,
+    );
   }
 
   async quoteDirectPurchase(input: {

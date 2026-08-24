@@ -33,10 +33,9 @@ export class HttpVerificationService implements VerificationServiceContract {
   async listManualReviews(
     state?: ManualReviewState,
   ): Promise<ManualReviewCase[]> {
-    const query = state ? `?state=${encodeURIComponent(state)}` : "";
-    return httpClient.get<ManualReviewCase[]>(
-      `/admin/compliance/reviews${query}`,
-    );
+    return httpClient.get<ManualReviewCase[]>("/admin/compliance/reviews", {
+      params: { state },
+    });
   }
 
   async decideManualReview(input: {
@@ -54,9 +53,9 @@ export class HttpVerificationService implements VerificationServiceContract {
   }
 
   async listComplianceAudit(limit = 100): Promise<ComplianceAuditEvent[]> {
-    return httpClient.get<ComplianceAuditEvent[]>(
-      `/admin/compliance/audit?limit=${encodeURIComponent(limit)}`,
-    );
+    return httpClient.get<ComplianceAuditEvent[]>("/admin/compliance/audit", {
+      params: { limit },
+    });
   }
 
   async requestManualReview(input: {

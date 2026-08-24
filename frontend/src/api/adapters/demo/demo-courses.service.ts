@@ -415,8 +415,9 @@ export class DemoCoursesService implements CoursesServiceContract {
     if (organizationId !== this.organizationWorkspace.organization.id) {
       throw new Error("Espace organisme introuvable");
     }
-    const displayName = input.displayName.trim();
-    if (!displayName) throw new Error("Indiquez le nom du membre à inviter.");
+    const email = input.email.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(email))
+      throw new Error("Indiquez une adresse e-mail valide.");
     const plan = this.resolvedOrganizationPlan();
     if (
       !isCoursePlanFeatureOperational(
@@ -438,7 +439,7 @@ export class DemoCoursesService implements CoursesServiceContract {
       id: `course_member_${this.sequence++}`,
       organizationId,
       userId: `invited_user_${this.sequence++}`,
-      displayName,
+      displayName: email.split("@")[0],
       role: input.role,
       permissions:
         input.role === "tutor"

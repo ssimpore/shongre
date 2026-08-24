@@ -169,6 +169,22 @@ export class RealEstateService {
       .slice(0, 3);
   }
 
+  async getRecentlyViewed(userId: string) {
+    return (await this.repo.getRecentlyViewed(userId))
+      .filter(
+        (property) =>
+          property.lifecycle === "published" &&
+          property.moderationStatus === "approved",
+      )
+      .map(publicProperty);
+  }
+
+  async markRecentlyViewed(userId: string, propertyId: string) {
+    await this.getPublicProperty(propertyId);
+    await this.repo.markRecentlyViewed(userId, propertyId);
+    return { success: true };
+  }
+
   async getOwnPrivateDocumentAccess(
     userId: string,
     propertyId: string,
@@ -386,6 +402,19 @@ export class RealEstateService {
       });
     }
     const data = draft.data as Record<string, any>;
+    const privateDocumentKeys = Array.isArray(data.documents)
+      ? data.documents
+          .map((document: { privateStorageKey?: unknown }) =>
+            typeof document.privateStorageKey === "string"
+              ? document.privateStorageKey
+              : "",
+          )
+          .filter(Boolean)
+      : [];
+    await storageService.assertOwnedPrivateDocumentKeys(
+      userId,
+      privateDocumentKeys,
+    );
     const offer = catalog.offers.find(
       (candidate) => candidate.id === data.offerId && candidate.isActive,
     );

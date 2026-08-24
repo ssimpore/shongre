@@ -49,8 +49,8 @@ case "$EXPO_PUBLIC_DATA_MODE" in
   demo|api) ;;
   *) shongre_fail "EXPO_PUBLIC_DATA_MODE must be demo or api"; failed=1 ;;
 esac
-if [[ "${API_PREFIX:-}" != /* ]]; then
-  shongre_fail "API_PREFIX must begin with /"
+if [[ "${API_PREFIX:-}" != "/api/v1" ]]; then
+  shongre_fail "API_PREFIX is fixed at /api/v1 by the canonical OpenAPI contract"
   failed=1
 fi
 if [[ "$NEXT_PUBLIC_DATA_MODE" == "api" && -z "${NEXT_PUBLIC_API_URL:-}" ]]; then

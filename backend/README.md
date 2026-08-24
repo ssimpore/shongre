@@ -9,6 +9,7 @@ consume public contracts; they never import this implementation.
 
 ```text
 backend/
+├── openapi/                   the sole authoritative OpenAPI 3.1 contract
 ├── src/
 │   ├── app/                    configuration and server bootstrap
 │   ├── api/v1/                 versioned HTTP routing
@@ -16,7 +17,7 @@ backend/
 │   ├── infrastructure/         repositories, Supabase, payments, search, logs
 │   ├── integrations/providers/ explicit demo and external-provider boundaries
 │   ├── shared/                 errors, auth, money and backend DTOs
-│   ├── generated/              canonical generated database types
+│   ├── generated/              generated database types and OpenAPI manifest
 │   └── workers/                background entrypoints
 ├── supabase/
 │   ├── migrations/             ordered, canonical SQL migrations
@@ -27,6 +28,13 @@ backend/
 ├── tests/                      unit, contract, integration, RLS and security tests
 └── docs/                       backend-specific technical documentation
 ```
+
+Do not define a route in the router first. API changes begin in
+`openapi/openapi.json`, then `make openapi-generate` refreshes the shared client
+paths, runtime manifest, and endpoint inventory. `make openapi-check` rejects
+undocumented routes, unimplemented operations, stale output, security drift,
+duplicate operation IDs, and removed legacy aliases. The complete workflow and
+versioning policy are in [`docs/api.md`](docs/api.md).
 
 There is no second root-level Supabase tree and no compatibility `generated/`
 directory. `src/generated/database.types.ts` is the only database-type output.
@@ -63,6 +71,8 @@ make backend-test
 make backend-build
 make backend-check
 make test-critical
+make openapi-check
+make openapi-docs
 ```
 
 The full repository gate is `make check`; CI additionally enforces formatting,

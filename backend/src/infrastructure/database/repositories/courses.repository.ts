@@ -27,6 +27,7 @@ import {
   learnerRequestSchema,
   tutorProfileSchema,
 } from "@shongre/contracts/courses";
+import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 
 const NOW = "2026-08-22T10:00:00.000Z";
@@ -723,6 +724,18 @@ export interface ICoursesRepository {
   getOrganizationWorkspace(
     organizationId: string,
   ): Promise<CourseOrganizationWorkspace | null>;
+  addOrganizationMember(input: {
+    organizationId: string;
+    userId: string;
+    role: CourseOrganizationMember["role"];
+    permissions: string[];
+    invitedBy: string;
+  }): Promise<void>;
+  addOrganizationLocation(input: {
+    organizationId: string;
+    marketCode: string;
+    label: string;
+  }): Promise<void>;
 }
 
 function matchesTutor(
@@ -891,6 +904,21 @@ export class DemoCoursesRepository implements ICoursesRepository {
   private leads = new Map(
     DEMO_COURSE_LEADS.map((item) => [item.id, clone(item)]),
   );
+  private organizationMembers = clone(DEMO_COURSE_ORGANIZATION_MEMBERS);
+  private organizationLocations = [
+    {
+      id: "location_lyon_3",
+      label: "Lyon 3e",
+      isActive: true,
+      activeTutorCount: 6,
+    },
+    {
+      id: "location_villeurbanne",
+      label: "Villeurbanne",
+      isActive: true,
+      activeTutorCount: 4,
+    },
+  ];
 
   async getCatalog(
     marketCode: string,
@@ -1083,25 +1111,12 @@ export class DemoCoursesRepository implements ICoursesRepository {
       this.catalog.plans[0];
     return clone({
       organization,
-      members: DEMO_COURSE_ORGANIZATION_MEMBERS.filter(
+      members: this.organizationMembers.filter(
         (member) => member.organizationId === organization.id,
       ),
       plan,
       featureFlags: this.catalog.config.featureFlags,
-      locations: [
-        {
-          id: "location_lyon_3",
-          label: "Lyon 3e",
-          isActive: true,
-          activeTutorCount: 6,
-        },
-        {
-          id: "location_villeurbanne",
-          label: "Villeurbanne",
-          isActive: true,
-          activeTutorCount: 4,
-        },
-      ],
+      locations: this.organizationLocations,
       analytics: {
         period: "last_30_days",
         profileViews: 1834,
@@ -1109,6 +1124,37 @@ export class DemoCoursesRepository implements ICoursesRepository {
         leadsAccepted: 84,
         activeTutors: 8,
       },
+    });
+  }
+
+  async addOrganizationMember(input: {
+    organizationId: string;
+    userId: string;
+    role: CourseOrganizationMember["role"];
+    permissions: string[];
+    invitedBy: string;
+  }): Promise<void> {
+    this.organizationMembers.push({
+      id: `course_member_${randomUUID()}`,
+      organizationId: input.organizationId,
+      userId: input.userId,
+      displayName: input.userId,
+      role: input.role,
+      permissions: input.permissions,
+      status: "invited",
+    });
+  }
+
+  async addOrganizationLocation(input: {
+    organizationId: string;
+    marketCode: string;
+    label: string;
+  }): Promise<void> {
+    this.organizationLocations.push({
+      id: `course_location_${randomUUID()}`,
+      label: input.label,
+      isActive: true,
+      activeTutorCount: 0,
     });
   }
 }
@@ -1736,5 +1782,42 @@ export class PostgresCoursesRepository implements ICoursesRepository {
         activeTutors: tutors.length,
       },
     };
+  }
+
+  async addOrganizationMember(input: {
+    organizationId: string;
+    userId: string;
+    role: CourseOrganizationMember["role"];
+    permissions: string[];
+    invitedBy: string;
+  }): Promise<void> {
+    const { error } = await (getSupabaseAdminClient() as any)
+      .from("course_organization_members")
+      .insert({
+        organization_id: input.organizationId,
+        user_id: input.userId,
+        role: input.role,
+        permissions: input.permissions,
+        status: "invited",
+        invited_by: input.invitedBy,
+      });
+    if (error) throw error;
+  }
+
+  async addOrganizationLocation(input: {
+    organizationId: string;
+    marketCode: string;
+    label: string;
+  }): Promise<void> {
+    const { error } = await (getSupabaseAdminClient() as any)
+      .from("course_service_areas")
+      .insert({
+        organization_id: input.organizationId,
+        market_code: input.marketCode,
+        city_label: input.label,
+        radius_km: 0,
+        public_location_label: input.label,
+      });
+    if (error) throw error;
   }
 }

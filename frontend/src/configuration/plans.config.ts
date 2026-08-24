@@ -42,52 +42,59 @@ const entitlement = (
  * contains no independent prices or quotas and can be removed when the last
  * synchronous entitlement consumer has migrated to BusinessRulesService.
  */
-export const PRO_PLANS: ProPlan[] = BASELINE_MONETIZATION_CATALOG.products
-  .filter(
-    (product) => product.status === "active" && product.id in LEGACY_PLAN_IDS,
-  )
-  .map((product) => {
-    const monthly =
-      product.prices.find((price) => price.billingPeriod === "month") ||
-      product.prices[0];
-    const annual = product.prices.find(
-      (price) => price.billingPeriod === "year",
-    );
-    const maxListings = entitlement(product, "maxActiveListings");
-    const maxPhotos = entitlement(product, "maxPhotosPerListing");
-    const analytics = entitlement(product, "analyticsLevel");
-    return {
-      id: LEGACY_PLAN_IDS[product.id],
-      productId: product.id,
-      name: product.name,
-      tagline: product.description,
-      monthlyPrice: monthly.amount.amountMinor / 100,
-      annualPriceMonthlyEquivalent: annual
-        ? annual.amount.amountMinor / 1200
-        : 0,
-      maxActiveListings: typeof maxListings === "number" ? maxListings : 0,
-      photosPerListing: typeof maxPhotos === "number" ? maxPhotos : 0,
-      storefrontCustomization: Boolean(entitlement(product, "storeEnabled")),
-      prioritySupport: Boolean(entitlement(product, "prioritySupport")),
-      analyticsLevel:
-        analytics === "standard" ||
-        analytics === "advanced" ||
-        analytics === "enterprise"
-          ? analytics
-          : "basic",
-      verifiedBadge: Boolean(entitlement(product, "verifiedBadge")),
-      automaticRelisting: Boolean(entitlement(product, "automaticRelisting")),
-      bulkImportExport: Boolean(entitlement(product, "bulkPublish")),
-      isPopular: product.recommended,
-      features: product.entitlements
-        .filter(
-          (entry) =>
-            isCommercialEntitlementOperational(entry) &&
-            hasCommercialEntitlementValue(entry.value),
-        )
-        .map((entry) => `${entry.label} : ${String(entry.value)}`),
-    };
-  });
+export const resolveProPlans = (
+  catalog: typeof BASELINE_MONETIZATION_CATALOG,
+): ProPlan[] =>
+  catalog.products
+    .filter(
+      (product) => product.status === "active" && product.id in LEGACY_PLAN_IDS,
+    )
+    .map((product) => {
+      const monthly =
+        product.prices.find((price) => price.billingPeriod === "month") ||
+        product.prices[0];
+      const annual = product.prices.find(
+        (price) => price.billingPeriod === "year",
+      );
+      const maxListings = entitlement(product, "maxActiveListings");
+      const maxPhotos = entitlement(product, "maxPhotosPerListing");
+      const analytics = entitlement(product, "analyticsLevel");
+      return {
+        id: LEGACY_PLAN_IDS[product.id],
+        productId: product.id,
+        name: product.name,
+        tagline: product.description,
+        monthlyPrice: monthly.amount.amountMinor / 100,
+        annualPriceMonthlyEquivalent: annual
+          ? annual.amount.amountMinor / 1200
+          : 0,
+        maxActiveListings: typeof maxListings === "number" ? maxListings : 0,
+        photosPerListing: typeof maxPhotos === "number" ? maxPhotos : 0,
+        storefrontCustomization: Boolean(entitlement(product, "storeEnabled")),
+        prioritySupport: Boolean(entitlement(product, "prioritySupport")),
+        analyticsLevel:
+          analytics === "standard" ||
+          analytics === "advanced" ||
+          analytics === "enterprise"
+            ? analytics
+            : "basic",
+        verifiedBadge: Boolean(entitlement(product, "verifiedBadge")),
+        automaticRelisting: Boolean(entitlement(product, "automaticRelisting")),
+        bulkImportExport: Boolean(entitlement(product, "bulkPublish")),
+        isPopular: product.recommended,
+        features: product.entitlements
+          .filter(
+            (entry) =>
+              isCommercialEntitlementOperational(entry) &&
+              hasCommercialEntitlementValue(entry.value),
+          )
+          .map((entry) => `${entry.label} : ${String(entry.value)}`),
+      };
+    });
+
+export const PRO_PLANS: ProPlan[] = resolveProPlans(
+  BASELINE_MONETIZATION_CATALOG,
+);
 
 export interface ListingBoostOption {
   id: "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight";
@@ -108,8 +115,10 @@ const LEGACY_BOOST_IDS: Record<string, ListingBoostOption["id"]> = {
   "premium.visibility_bundle": "gallery_boost",
 };
 
-export const LISTING_BOOSTS: ListingBoostOption[] =
-  BASELINE_MONETIZATION_CATALOG.products
+export const resolveListingBoosts = (
+  catalog: typeof BASELINE_MONETIZATION_CATALOG,
+): ListingBoostOption[] =>
+  catalog.products
     .filter(
       (product) =>
         product.id in LEGACY_BOOST_IDS &&
@@ -128,3 +137,7 @@ export const LISTING_BOOSTS: ListingBoostOption[] =
         multiplierEstimate: "Visibilité payante",
       };
     });
+
+export const LISTING_BOOSTS: ListingBoostOption[] = resolveListingBoosts(
+  BASELINE_MONETIZATION_CATALOG,
+);

@@ -1,0 +1,10 @@
+extends:
+  - recommended
+
+rules:
+  # OAuth callbacks intentionally return redirects rather than a 2xx payload.
+  operation-2xx-response: off
+  operation-operationId: error
+  operation-4xx-response: error
+  security-defined: error
+  spec-strict-refs: error

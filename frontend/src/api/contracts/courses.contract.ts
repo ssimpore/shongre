@@ -31,7 +31,7 @@ export type LearnerRequestDraft = Omit<
 >;
 
 export type CourseOrganizationInviteInput = {
-  displayName: string;
+  email: string;
   role: CourseOrganizationWorkspace["members"][number]["role"];
 };
 

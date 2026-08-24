@@ -5,7 +5,7 @@ SHELL := /bin/bash
 	dev demo dev-web dev-mobile dev-all start stop stop-all restart status health smoke logs \
 	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
-	contracts-lint contracts-typecheck contracts-test contracts-check \
+	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
@@ -26,6 +26,7 @@ PRETTIER_FILES := \
 	'frontend/package.json' 'frontend/README.md' \
 	'backend/{src,scripts,tests,docs}/**/*.{ts,tsx,js,mjs,json,md}' \
 	'backend/package.json' 'backend/tsconfig.json' 'backend/README.md' \
+	'backend/openapi/**/*.{json,yml,yaml,md}' \
 	'mobile/{app,src,scripts,tests,store}/**/*.{ts,tsx,js,mjs,json,md}' \
 	'mobile/app.config.ts' 'mobile/eas.json' 'mobile/eslint.config.js' \
 	'mobile/metro.config.js' 'mobile/package.json' 'mobile/tsconfig.json' 'mobile/vitest.config.ts' \
@@ -170,6 +171,16 @@ contracts-lint contracts-typecheck:
 contracts-test:
 	@npm run test --workspace=@shongre/contracts
 contracts-check: contracts-typecheck contracts-test
+openapi-lint: ## Lint the canonical OpenAPI contract
+	@npm run openapi:lint
+openapi-generate: ## Regenerate OpenAPI TypeScript and runtime manifests
+	@npm run openapi:generate
+openapi-check: ## Reject spec, implementation, or generated-client drift
+	@npm run openapi:check
+openapi-docs: ## Build standalone API reference documentation
+	@npm run openapi:docs
+openapi-breaking-check: ## Compare the contract with OPENAPI_BASE_REF when configured
+	@npm run openapi:breaking
 
 ##@ Shared product system
 tokens-build:
@@ -309,7 +320,7 @@ free-app-ports free-ports:
 	@source scripts/env.sh && scripts/free-port.sh "$$FRONTEND_PORT" frontend && scripts/free-port.sh "$$BACKEND_PORT" backend && scripts/free-port.sh "$$EXPO_METRO_PORT" metro && scripts/free-port.sh "$$EXPO_WEB_PORT" expo-web
 
 ##@ Quality gates
-lint: ui-lint frontend-lint backend-lint mobile-lint contracts-typecheck ## Run established static and architecture linters
+lint: openapi-check ui-lint frontend-lint backend-lint mobile-lint contracts-typecheck ## Run established static and architecture linters
 lint-fix:
 	@echo 'No unsafe global autofix is configured; use package-local focused fixes.'
 format: ## Format supported source and documentation files with Prettier
@@ -337,7 +348,7 @@ taxonomy-check: ## Validate canonical taxonomy coverage and publication schemas
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests
 	@npm run test:providers --workspace=backend
 contracts: contracts-check ## Validate stable public client/backend contracts
-generate: tokens-build db-types ## Regenerate deterministic tokens and canonical database types
+generate: tokens-build db-types openapi-generate ## Regenerate deterministic tokens, database types, and API clients
 check: env env-check migrations-check format-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
 check-all: check test-critical cross-platform-check test-e2e ## Run exhaustive local validation including browsers and critical subsets

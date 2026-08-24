@@ -3,13 +3,13 @@ import { httpClient } from "./http-client";
 import { NotificationItem } from "../../../types";
 
 export class HttpNotificationsService implements NotificationsServiceContract {
-  async getUserNotifications(userId: string): Promise<NotificationItem[]> {
-    return httpClient.get<NotificationItem[]>(`/notifications/${userId}`);
+  async getUserNotifications(_userId: string): Promise<NotificationItem[]> {
+    return httpClient.get<NotificationItem[]>("/notifications");
   }
 
-  async getUnreadCount(userId: string): Promise<number> {
+  async getUnreadCount(_userId: string): Promise<number> {
     const res = await httpClient.get<{ count: number }>(
-      `/notifications/unread-count/${userId}`,
+      "/notifications/unread-count",
     );
     return res.count;
   }
@@ -18,8 +18,8 @@ export class HttpNotificationsService implements NotificationsServiceContract {
     return httpClient.post<void>(`/notifications/${notificationId}/read`);
   }
 
-  async markAllAsRead(userId: string): Promise<void> {
-    return httpClient.post<void>(`/notifications/${userId}/read-all`);
+  async markAllAsRead(_userId: string): Promise<void> {
+    return httpClient.post<void>("/notifications/read-all");
   }
 
   async deleteNotification(notificationId: string): Promise<void> {

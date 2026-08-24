@@ -37,6 +37,11 @@
     "tokens:check": "make tokens-check",
     "ui:check": "make ui-check",
     "cross-platform:check": "make cross-platform-check",
+    "openapi:lint": "redocly lint backend/openapi/openapi.json --format=stylish --max-problems=1000",
+    "openapi:generate": "openapi-typescript backend/openapi/openapi.json --output packages/contracts/src/generated/openapi.ts --immutable --alphabetize && node backend/scripts/openapi/generate-manifest.mjs && node backend/scripts/openapi/generate-inventory.mjs",
+    "openapi:check": "npm run openapi:lint && openapi-typescript backend/openapi/openapi.json --output packages/contracts/src/generated/openapi.ts --immutable --alphabetize --check && node backend/scripts/openapi/generate-manifest.mjs --check && node backend/scripts/openapi/generate-inventory.mjs --check && node backend/scripts/openapi/check-contract.mjs",
+    "openapi:docs": "redocly build-docs backend/openapi/openapi.json --output backend/docs/generated/openapi.html",
+    "openapi:breaking": "node backend/scripts/openapi/check-breaking-change.mjs",
     "preview": "npm run start --workspace=frontend"
   },
   "overrides": {
@@ -44,6 +49,8 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@redocly/cli": "^2.47.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.6.2",
     "react": "19.2.3",
     "react-dom": "19.2.3"

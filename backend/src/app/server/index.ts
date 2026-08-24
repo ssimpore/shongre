@@ -206,9 +206,9 @@ function renderBackendHomePage(
         <span class="link-name">Supported Markets</span>
         <span class="link-path">GET ${prefix}/markets</span>
       </a>
-      <a class="link-item" href="${prefix}/promotions/pro-plans" target="_blank">
-        <span class="link-name">Pro Subscription Plans</span>
-        <span class="link-path">GET ${prefix}/promotions/pro-plans</span>
+      <a class="link-item" href="${prefix}/business-rules/catalog?marketCode=FR" target="_blank">
+        <span class="link-name">Commercial Catalog</span>
+        <span class="link-path">GET ${prefix}/business-rules/catalog</span>
       </a>
       <a class="link-item" href="${prefix}/admin/stats" target="_blank">
         <span class="link-name">Admin Platform Stats</span>

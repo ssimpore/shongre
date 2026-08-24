@@ -50,7 +50,7 @@ export interface RealEstateServiceContract {
   ): Promise<{ propertyId: string; lifecycle: "pending_review" }>;
   uploadDraftMedia(
     draftId: string,
-    file: { name: string; type: string; size: number },
+    file: { name: string; type: string; size: number; body?: Blob },
     visibility: "public" | "private",
   ): Promise<{ url?: string; privateStorageKey?: string }>;
   submitLead(input: PropertyLeadDraft): Promise<PropertyLead>;

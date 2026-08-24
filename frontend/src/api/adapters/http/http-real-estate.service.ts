@@ -25,6 +25,7 @@ import type {
   RealEstateServiceContract,
 } from "../../contracts/real-estate.contract";
 import { httpClient } from "./http-client";
+import { uploadPrivateDocument, uploadPublicImage } from "./http-upload";
 
 export class HttpRealEstateService implements RealEstateServiceContract {
   getCatalog(marketCode: string) {
@@ -51,16 +52,13 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       `/real-estate/properties/${encodeURIComponent(propertyId)}/comparables`,
     );
   }
-  getRecentlyViewed(accountId: string) {
-    return httpClient.get<PropertyPublic[]>(
-      `/real-estate/accounts/${encodeURIComponent(accountId)}/recently-viewed`,
-    );
+  getRecentlyViewed(_accountId: string) {
+    return httpClient.get<PropertyPublic[]>("/real-estate/recently-viewed");
   }
-  markRecentlyViewed(accountId: string, propertyId: string) {
-    return httpClient.post<void>(
-      `/real-estate/accounts/${encodeURIComponent(accountId)}/recently-viewed`,
-      { propertyId },
-    );
+  markRecentlyViewed(_accountId: string, propertyId: string) {
+    return httpClient.post<void>("/real-estate/recently-viewed", {
+      propertyId,
+    });
   }
   async getDraft(draftId: string) {
     try {
@@ -90,15 +88,14 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       lifecycle: "pending_review";
     }>(`/real-estate/drafts/${encodeURIComponent(draftId)}/submit`);
   }
-  uploadDraftMedia(
-    draftId: string,
-    file: { name: string; type: string; size: number },
+  async uploadDraftMedia(
+    _draftId: string,
+    file: { name: string; type: string; size: number; body?: Blob },
     visibility: "public" | "private",
   ) {
-    return httpClient.post<{ url?: string; privateStorageKey?: string }>(
-      `/real-estate/drafts/${encodeURIComponent(draftId)}/media`,
-      { ...file, visibility },
-    );
+    return visibility === "private"
+      ? uploadPrivateDocument(file)
+      : uploadPublicImage(file);
   }
   submitLead(input: PropertyLeadDraft) {
     return httpClient.post<PropertyLead>("/real-estate/leads", input);

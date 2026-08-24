@@ -100,7 +100,7 @@ describe("DemoCoursesService", () => {
     );
     await expect(
       service.inviteOrganizationMember(initial.organization.id, {
-        displayName: "Nora Benali",
+        email: "nora.benali@example.fr",
         role: "tutor",
       }),
     ).rejects.toThrow(/temporairement indisponible/i);
@@ -126,14 +126,14 @@ describe("DemoCoursesService", () => {
 
     for (let index = 0; index < remaining; index += 1) {
       await service.inviteOrganizationMember(initial.organization.id, {
-        displayName: `Membre quota ${index + 1}`,
+        email: `membre-quota-${index + 1}@example.fr`,
         role: "tutor",
       });
     }
 
     await expect(
       service.inviteOrganizationMember(initial.organization.id, {
-        displayName: "Membre au-delà du quota",
+        email: "membre-hors-quota@example.fr",
         role: "tutor",
       }),
     ).rejects.toThrow(/indisponible/i);

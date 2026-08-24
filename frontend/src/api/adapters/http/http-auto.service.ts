@@ -18,6 +18,7 @@ import type {
   AutoServiceContract,
 } from "../../contracts/auto.contract";
 import { httpClient } from "./http-client";
+import { uploadPublicImage } from "./http-upload";
 
 export class HttpAutoService implements AutoServiceContract {
   getCatalog(marketCode: string) {
@@ -67,14 +68,12 @@ export class HttpAutoService implements AutoServiceContract {
       `/auto/drafts/${encodeURIComponent(draftId)}/submit`,
     );
   }
-  uploadDraftMedia(
-    draftId: string,
-    file: { name: string; type: string; size: number },
+  async uploadDraftMedia(
+    _draftId: string,
+    file: { name: string; type: string; size: number; body?: Blob },
   ) {
-    return httpClient.post<{ url: string }>(
-      `/auto/drafts/${encodeURIComponent(draftId)}/media`,
-      file,
-    );
+    const uploaded = await uploadPublicImage(file);
+    return { url: uploaded.url };
   }
   submitLead(input: AutoLeadDraft): Promise<AutoLead> {
     return httpClient.post("/auto/leads", input);

@@ -319,6 +319,7 @@ export const AutoPublishWizardPage: React.FC = () => {
         name: file.name,
         type: file.type,
         size: file.size,
+        body: file,
       });
       update("mediaUrls", [...(data.mediaUrls as string[]), uploaded.url]);
       toast.success("Photo ajoutée au brouillon.");

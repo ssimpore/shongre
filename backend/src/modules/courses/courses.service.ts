@@ -7,6 +7,7 @@ import type {
   CourseOffer,
   CoursePublicOffer,
   CourseOrganizationWorkspace,
+  CourseOrganizationMember,
   CoursePlan,
   CourseSubject,
   LearnerRequest,
@@ -28,6 +29,7 @@ import {
 } from "@shongre/contracts/courses";
 import {
   ICoursesRepository,
+  IUserRepository,
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -56,6 +58,7 @@ export class CoursesService {
   constructor(
     private readonly courseRepo: ICoursesRepository = repositories.courses,
     private readonly commercialRules: BusinessRulesService = businessRulesService,
+    private readonly users: IUserRepository = repositories.users,
   ) {}
 
   private async resolveCatalog(
@@ -251,6 +254,112 @@ export class CoursesService {
       });
     }
     return workspace;
+  }
+
+  async inviteOrganizationMember(
+    actorUserId: string,
+    organizationId: string,
+    input: { email?: string; role?: CourseOrganizationMember["role"] },
+  ): Promise<CourseOrganizationWorkspace> {
+    const workspace = await this.getOwnOrganizationWorkspace(
+      actorUserId,
+      organizationId,
+    );
+    const actor = workspace.members.find(
+      (member) => member.userId === actorUserId && member.status === "active",
+    );
+    if (!actor || !["owner", "admin", "manager"].includes(actor.role)) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Vous ne pouvez pas gérer cette équipe.",
+      });
+    }
+    const email = String(input?.email || "")
+      .trim()
+      .toLowerCase();
+    const invitedUser = email ? await this.users.findByEmail(email) : null;
+    if (!invitedUser) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Aucun compte Shongre ne correspond à cette adresse.",
+      });
+    }
+    const allowedRoles = new Set<CourseOrganizationMember["role"]>([
+      "admin",
+      "manager",
+      "tutor",
+      "lead_coordinator",
+      "billing",
+    ]);
+    if (!input.role || !allowedRoles.has(input.role)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Rôle d’équipe invalide.",
+      });
+    }
+    if (workspace.members.some((member) => member.userId === invitedUser.id)) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Ce compte appartient déjà à l’organisme.",
+      });
+    }
+    if (workspace.members.length >= workspace.plan.entitlements.teamMembers) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Le quota de membres de cette formule est atteint.",
+      });
+    }
+    const permissions =
+      input.role === "tutor"
+        ? ["offers:read", "leads:respond"]
+        : ["workspace:read"];
+    await this.courseRepo.addOrganizationMember({
+      organizationId,
+      userId: invitedUser.id,
+      role: input.role,
+      permissions,
+      invitedBy: actorUserId,
+    });
+    return (await this.courseRepo.getOrganizationWorkspace(organizationId))!;
+  }
+
+  async addOrganizationLocation(
+    actorUserId: string,
+    organizationId: string,
+    input: { label?: string },
+  ): Promise<CourseOrganizationWorkspace> {
+    const workspace = await this.getOwnOrganizationWorkspace(
+      actorUserId,
+      organizationId,
+    );
+    const actor = workspace.members.find(
+      (member) => member.userId === actorUserId && member.status === "active",
+    );
+    if (!actor || !["owner", "admin", "manager"].includes(actor.role)) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Vous ne pouvez pas gérer les lieux de cet organisme.",
+      });
+    }
+    const label = String(input?.label || "").trim();
+    if (!label || label.length > 160) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Indiquez un lieu de 160 caractères maximum.",
+      });
+    }
+    if (workspace.locations.length >= workspace.plan.entitlements.locations) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Le quota de lieux de cette formule est atteint.",
+      });
+    }
+    await this.courseRepo.addOrganizationLocation({
+      organizationId,
+      marketCode: workspace.organization.marketCode,
+      label,
+    });
+    return (await this.courseRepo.getOrganizationWorkspace(organizationId))!;
   }
 
   async respondToOwnLead(

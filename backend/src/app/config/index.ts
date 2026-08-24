@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { resolve } from "path";
+import { SHONGRE_API_PREFIX } from "@shongre/contracts/openapi";
 
 // Explicit shell values win. Direct package commands follow the same local
 // precedence as root tooling without ever loading .env.example.
@@ -22,7 +23,7 @@ export interface AppConfig {
   host: string;
   port: number;
   frontendUrl: string;
-  apiPrefix: string;
+  apiPrefix: typeof SHONGRE_API_PREFIX;
   maxRequestBodyBytes: number;
   requestTimeoutMs: number;
   shutdownGraceMs: number;
@@ -365,7 +366,7 @@ const candidateConfig: AppConfig = {
   host: requiredRuntimeValue("BACKEND_HOST"),
   port: requiredRuntimePort(),
   frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "",
-  apiPrefix: process.env.API_PREFIX || "/api/v1",
+  apiPrefix: SHONGRE_API_PREFIX,
   maxRequestBodyBytes: positiveInteger("MAX_REQUEST_BODY_BYTES", 1_048_576),
   requestTimeoutMs: positiveInteger("REQUEST_TIMEOUT_MS", 30_000),
   shutdownGraceMs: positiveInteger("SHUTDOWN_GRACE_MS", 15_000),

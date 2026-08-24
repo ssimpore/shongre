@@ -180,15 +180,17 @@ export class HttpListingsService implements ListingsServiceContract {
   }
 
   async createListingDraft(): Promise<PublicationDraftState> {
-    return httpClient.post<PublicationDraftState>("/listings/drafts");
+    return httpClient.post<PublicationDraftState>("/listing-drafts");
   }
 
   async getListingDraft(): Promise<PublicationDraftState | null> {
-    return httpClient.get<PublicationDraftState | null>("/listings/drafts/me");
+    return httpClient.get<PublicationDraftState | null>(
+      "/listing-drafts/current",
+    );
   }
 
   async saveListingDraft(draft: PublicationDraftState): Promise<void> {
-    await httpClient.put("/listings/drafts/me", draft);
+    await httpClient.put("/listing-drafts/current", draft);
   }
 
   async publishListing(draft: PublicationDraftState): Promise<Listing> {

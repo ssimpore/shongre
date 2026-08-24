@@ -5,13 +5,19 @@ import { config } from "../../app/config/index.js";
 
 const LISTING_MEDIA_MAX_BYTES = 10 * 1024 * 1024;
 const LISTING_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const PRIVATE_DOCUMENT_TYPES = new Set([
+  ...LISTING_MEDIA_TYPES,
+  "application/pdf",
+]);
 
 const extensionFor = (contentType: string) =>
   contentType === "image/jpeg"
     ? "jpg"
     : contentType === "image/png"
       ? "png"
-      : "webp";
+      : contentType === "image/webp"
+        ? "webp"
+        : "pdf";
 
 const detectedImageType = (buffer: Buffer): string | null => {
   if (
@@ -43,6 +49,186 @@ const detectedImageType = (buffer: Buffer): string | null => {
 export class StorageService {
   private readonly publicListingBucket = "listing-media";
   private readonly stagingListingBucket = "listing-media-staging";
+  private readonly privateDocumentBucket = "private-documents";
+  private readonly stagingPrivateDocumentBucket = "private-documents-staging";
+
+  async assertOwnedPrivateDocumentKeys(
+    ownerUserId: string,
+    privateStorageKeys: string[],
+  ) {
+    const keys = [...new Set(privateStorageKeys.filter(Boolean))];
+    if (!keys.length || config.dataMode === "demo") return;
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (
+      supabase.from("private_document_assets" as any) as any
+    )
+      .select("private_path")
+      .eq("owner_user_id", ownerUserId)
+      .in("private_path", keys)
+      .in("status", ["ready", "attached"]);
+    const ownedKeys = new Set(
+      (data || []).map((asset: { private_path: string }) => asset.private_path),
+    );
+    if (error || keys.some((key) => !ownedKeys.has(key))) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Un document privé n’appartient pas à ce compte.",
+        originalError: error,
+      });
+    }
+  }
+
+  async createPrivateDocumentUpload(
+    ownerUserId: string,
+    input: { fileName: string; contentType: string; sizeBytes: number },
+  ) {
+    const contentType = String(input.contentType || "").toLowerCase();
+    const sizeBytes = Number(input.sizeBytes);
+    if (
+      !ownerUserId ||
+      !input.fileName?.trim() ||
+      input.fileName.length > 255 ||
+      !PRIVATE_DOCUMENT_TYPES.has(contentType) ||
+      !Number.isSafeInteger(sizeBytes) ||
+      sizeBytes <= 0 ||
+      sizeBytes > LISTING_MEDIA_MAX_BYTES
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le document doit être une image ou un PDF de 10 Mo maximum.",
+      });
+    }
+    if (config.dataMode === "demo") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le stockage distant n’est pas actif en mode démonstration.",
+      });
+    }
+    const assetId = randomUUID();
+    const stagingPath = `${ownerUserId}/${assetId}.${extensionFor(contentType)}`;
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.storage
+      .from(this.stagingPrivateDocumentBucket)
+      .createSignedUploadUrl(stagingPath, { upsert: false });
+    if (error || !data?.signedUrl) {
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible de préparer le téléversement du document.",
+        originalError: error,
+      });
+    }
+    const { error: recordError } = await (
+      supabase.from("private_document_assets" as any) as any
+    ).insert({
+      id: assetId,
+      owner_user_id: ownerUserId,
+      staging_path: stagingPath,
+      original_file_name: input.fileName.trim(),
+      declared_content_type: contentType,
+      declared_size_bytes: sizeBytes,
+      status: "upload_pending",
+    });
+    if (recordError) {
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible d’enregistrer le téléversement du document.",
+        originalError: recordError,
+      });
+    }
+    return { assetId, signedUrl: data.signedUrl, contentType };
+  }
+
+  async completePrivateDocumentUpload(ownerUserId: string, assetId: string) {
+    const supabase = getSupabaseAdminClient();
+    const { data: asset, error: assetError } = await (
+      supabase.from("private_document_assets" as any) as any
+    )
+      .select("*")
+      .eq("id", assetId)
+      .eq("owner_user_id", ownerUserId)
+      .single();
+    if (assetError || !asset) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Téléversement privé introuvable.",
+      });
+    }
+    if (asset.status === "ready") {
+      return { assetId: asset.id, privateStorageKey: asset.private_path };
+    }
+    const { data: blob, error: downloadError } = await supabase.storage
+      .from(this.stagingPrivateDocumentBucket)
+      .download(asset.staging_path);
+    if (downloadError || !blob) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le document téléversé est introuvable ou incomplet.",
+      });
+    }
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    const detectedType =
+      buffer.subarray(0, 5).toString("ascii") === "%PDF-"
+        ? "application/pdf"
+        : detectedImageType(buffer);
+    if (
+      !detectedType ||
+      detectedType !== asset.declared_content_type ||
+      buffer.byteLength !== Number(asset.declared_size_bytes) ||
+      buffer.byteLength > LISTING_MEDIA_MAX_BYTES
+    ) {
+      await supabase.storage
+        .from(this.stagingPrivateDocumentBucket)
+        .remove([asset.staging_path]);
+      await (supabase.from("private_document_assets" as any) as any)
+        .update({ status: "rejected" })
+        .eq("id", asset.id);
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le contenu du document ne correspond pas au fichier annoncé.",
+      });
+    }
+    const privatePath = `${ownerUserId}/${asset.id}.${extensionFor(detectedType)}`;
+    const { error: uploadError } = await supabase.storage
+      .from(this.privateDocumentBucket)
+      .upload(privatePath, buffer, {
+        contentType: detectedType,
+        cacheControl: "3600",
+        upsert: false,
+      });
+    if (uploadError) {
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible de finaliser le document privé.",
+        originalError: uploadError,
+      });
+    }
+    const { error: updateError } = await (
+      supabase.from("private_document_assets" as any) as any
+    )
+      .update({
+        private_path: privatePath,
+        detected_content_type: detectedType,
+        actual_size_bytes: buffer.byteLength,
+        status: "ready",
+        completed_at: new Date().toISOString(),
+      })
+      .eq("id", asset.id)
+      .eq("owner_user_id", ownerUserId);
+    if (updateError) {
+      await supabase.storage
+        .from(this.privateDocumentBucket)
+        .remove([privatePath]);
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible d’enregistrer le document privé.",
+        originalError: updateError,
+      });
+    }
+    await supabase.storage
+      .from(this.stagingPrivateDocumentBucket)
+      .remove([asset.staging_path]);
+    return { assetId: asset.id, privateStorageKey: privatePath };
+  }
 
   async createListingMediaUpload(
     ownerUserId: string,

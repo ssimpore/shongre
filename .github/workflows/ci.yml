@@ -20,12 +20,19 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
       - name: Install and run the canonical repository gate
         run: make ci
+      - name: Reject undeclared OpenAPI breaking changes
+        if: github.event_name == 'pull_request'
+        env:
+          OPENAPI_BASE_REF: origin/${{ github.base_ref }}
+        run: make openapi-breaking-check
       - name: Reject high and critical dependency vulnerabilities
         run: npm audit --audit-level=high
       - name: Exercise the production fail-closed configuration gate

@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
+import { ZodError } from "zod";
 import {
   authService,
   usersService,
@@ -7,7 +8,6 @@ import {
   listingsService,
   ordersService,
   paymentsService,
-  monetizationService,
   businessRulesService,
   verificationService,
   messagingService,
@@ -28,6 +28,7 @@ import {
   commissionService,
   complianceService,
   providerControlPlaneService,
+  aiService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -59,6 +60,7 @@ import type {
   TrendingAdminConfig,
   TrendingTopicOverride,
 } from "../../modules/trending/trending.types.js";
+import { OPENAPI_OPERATIONS } from "../../generated/openapi-manifest.js";
 
 /**
  * Every route declares who may call it.
@@ -113,10 +115,15 @@ function publicAuthResult<T extends { user: unknown }>(
 
 interface RouteDef {
   method: string;
+  path: string;
   pattern: RegExp;
   paramNames: string[];
   access: RouteAccess;
   handler: RouteHandler;
+  operationId: string;
+  requestBodyRequired: boolean;
+  successStatus: number;
+  queryParameters: Readonly<Record<string, string>>;
 }
 
 export class ApiV1Router {
@@ -124,6 +131,25 @@ export class ApiV1Router {
 
   constructor() {
     this.registerRoutes();
+    const registered = new Set(
+      this.routes.map((route) => `${route.method} ${route.path}`),
+    );
+    const undocumentedImplementations = this.routes.filter(
+      (route) =>
+        !(OPENAPI_OPERATIONS as Readonly<Record<string, unknown>>)[
+          `${route.method} ${route.path}`
+        ],
+    );
+    const unimplementedOperations = Object.keys(OPENAPI_OPERATIONS).filter(
+      (key) => !registered.has(key),
+    );
+    if (undocumentedImplementations.length || unimplementedOperations.length) {
+      throw new Error(
+        `OpenAPI/router divergence: undocumented=${undocumentedImplementations
+          .map((route) => `${route.method} ${route.path}`)
+          .join(",")}; unimplemented=${unimplementedOperations.join(",")}`,
+      );
+    }
   }
 
   private addRoute(
@@ -132,6 +158,36 @@ export class ApiV1Router {
     access: RouteAccess,
     handler: RouteHandler,
   ) {
+    const methodName = method.toUpperCase();
+    const operation = (
+      OPENAPI_OPERATIONS as Readonly<
+        Record<
+          string,
+          {
+            operationId: string;
+            access: string;
+            permission: string | null;
+            requestBodyRequired: boolean;
+            successStatus: number;
+            queryParameters: Readonly<Record<string, string>>;
+          }
+        >
+      >
+    )[[methodName, path].join(" ")];
+    if (!operation) {
+      throw new Error(`Route ${methodName} ${path} is absent from OpenAPI.`);
+    }
+    const declaredAccess =
+      access.kind === "permission" ? "permission" : access.kind;
+    if (
+      operation.access !== declaredAccess ||
+      (access.kind === "permission" &&
+        operation.permission !== access.permission)
+    ) {
+      throw new Error(
+        `Route security diverges from OpenAPI for ${methodName} ${path}.`,
+      );
+    }
     const paramNames: string[] = [];
     const regexPath = path.replace(/:([a-zA-Z0-9_]+)/g, (_, paramName) => {
       paramNames.push(paramName);
@@ -140,23 +196,26 @@ export class ApiV1Router {
     const pattern = new RegExp(`^${regexPath}$`);
     this.routes.push({
       method: method.toUpperCase(),
+      path,
       pattern,
       paramNames,
       access,
       handler,
+      operationId: operation.operationId,
+      requestBodyRequired: operation.requestBodyRequired,
+      successStatus: operation.successStatus,
+      queryParameters: operation.queryParameters,
     });
   }
 
-  /** Canonical Education API plus the non-duplicating legacy mobile alias. */
+  /** Keeps the Education namespace explicit without registering aliases. */
   private addEducationRoute(
     method: string,
     path: string,
     access: RouteAccess,
     handler: RouteHandler,
   ) {
-    for (const basePath of ["/education", "/courses"] as const) {
-      this.addRoute(method, `${basePath}${path}`, access, handler);
-    }
+    this.addRoute(method, `/education${path}`, access, handler);
   }
 
   private registerRoutes() {
@@ -494,6 +553,22 @@ export class ApiV1Router {
     );
 
     // --------------------------------------------------------------------------
+    // AI ASSISTANCE ROUTES
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "POST",
+      "/ai/listing-assistance",
+      permission("listing.create"),
+      async ({ body }) => aiService.generateListingAssistance(body || {}),
+    );
+    this.addRoute(
+      "POST",
+      "/ai/listing-safety",
+      permission("listing.create"),
+      async ({ body }) => aiService.analyzeListingSafety(body || {}),
+    );
+
+    // --------------------------------------------------------------------------
     // USERS ROUTES
     // --------------------------------------------------------------------------
     // Public seller profiles are part of the marketplace surface.
@@ -547,25 +622,24 @@ export class ApiV1Router {
     );
     this.addRoute(
       "GET",
-      "/listings/drafts/me",
+      "/listing-drafts/current",
       permission("listing.create"),
       async ({ principal }) =>
         listingsService.getListingDraft(principal.userId),
     );
     this.addRoute(
       "POST",
-      "/listings/drafts",
+      "/listing-drafts",
       permission("listing.create"),
       async ({ principal }) =>
         listingsService.createListingDraft(principal.userId),
     );
     this.addRoute(
       "PUT",
-      "/listings/drafts/:userId",
+      "/listing-drafts/current",
       permission("listing.create"),
-      async ({ principal, params, body }) => {
-        const ownerId = resolveOwnerId(principal, params.userId);
-        await listingsService.saveListingDraft(body, ownerId);
+      async ({ principal, body }) => {
+        await listingsService.saveListingDraft(body, principal.userId);
         return { success: true };
       },
     );
@@ -582,6 +656,26 @@ export class ApiV1Router {
       permission("listing.create"),
       async ({ principal, params }) =>
         storageService.completeListingMediaUpload(principal.userId, params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/media/private-documents/uploads",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        storageService.createPrivateDocumentUpload(
+          principal.userId,
+          body || {},
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/media/private-documents/uploads/:id/complete",
+      AUTHENTICATED,
+      async ({ principal, params }) =>
+        storageService.completePrivateDocumentUpload(
+          principal.userId,
+          params.id,
+        ),
     );
     this.addRoute(
       "POST",
@@ -674,12 +768,15 @@ export class ApiV1Router {
     this.addRoute("GET", "/taxonomy/slug/:slug", PUBLIC, async ({ params }) =>
       taxonomyService.getNodeBySlug(params.slug),
     );
-    this.addRoute("GET", "/taxonomy/:id/children", PUBLIC, async ({ params }) =>
-      taxonomyService.getChildren(params.id),
+    this.addRoute(
+      "GET",
+      "/taxonomy/nodes/:id/children",
+      PUBLIC,
+      async ({ params }) => taxonomyService.getChildren(params.id),
     );
     this.addRoute(
       "GET",
-      "/taxonomy/:id/attributes",
+      "/taxonomy/nodes/:id/attributes",
       PUBLIC,
       async ({ params }) => taxonomyService.getAttributesForCategory(params.id),
     );
@@ -745,6 +842,28 @@ export class ApiV1Router {
         coursesService.getOwnOrganizationWorkspace(
           principal.userId,
           params.organizationId,
+        ),
+    );
+    this.addEducationRoute(
+      "POST",
+      "/organizations/:organizationId/members",
+      permission("course.organization.manage.own"),
+      async ({ principal, params, body }) =>
+        coursesService.inviteOrganizationMember(
+          principal.userId,
+          params.organizationId,
+          body || {},
+        ),
+    );
+    this.addEducationRoute(
+      "POST",
+      "/organizations/:organizationId/locations",
+      permission("course.organization.manage.own"),
+      async ({ principal, params, body }) =>
+        coursesService.addOrganizationLocation(
+          principal.userId,
+          params.organizationId,
+          body || {},
         ),
     );
     this.addEducationRoute(
@@ -972,6 +1091,23 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params }) =>
         realEstateService.getComparableProperties(params.id),
+    );
+    this.addRoute(
+      "GET",
+      "/real-estate/recently-viewed",
+      AUTHENTICATED,
+      async ({ principal }) =>
+        realEstateService.getRecentlyViewed(principal.userId),
+    );
+    this.addRoute(
+      "POST",
+      "/real-estate/recently-viewed",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        realEstateService.markRecentlyViewed(
+          principal.userId,
+          body?.propertyId,
+        ),
     );
     this.addRoute(
       "GET",
@@ -1416,26 +1552,24 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     this.addRoute(
       "GET",
+      "/orders/purchases",
+      permission("order.read.own"),
+      async ({ principal }) => ordersService.getPurchases(principal.userId),
+    );
+    this.addRoute(
+      "GET",
+      "/orders/sales",
+      permission("order.manage.seller"),
+      async ({ principal }) => ordersService.getSales(principal.userId),
+    );
+    this.addRoute(
+      "GET",
       "/orders/:id",
       permission("order.read.own"),
       async ({ principal, params }) => {
         const order = await ordersService.getOrderById(params.id);
         return this.assertOrderParticipant(principal, order);
       },
-    );
-    this.addRoute(
-      "GET",
-      "/orders/purchases/:userId",
-      permission("order.read.own"),
-      async ({ principal, params }) =>
-        ordersService.getPurchases(resolveOwnerId(principal, params.userId)),
-    );
-    this.addRoute(
-      "GET",
-      "/orders/sales/:userId",
-      permission("order.manage.seller"),
-      async ({ principal, params }) =>
-        ordersService.getSales(resolveOwnerId(principal, params.userId)),
     );
     this.addRoute(
       "POST",
@@ -1989,40 +2123,6 @@ export class ApiV1Router {
           reason: body?.reason,
         }),
     );
-    this.addRoute("GET", "/promotions/boosts", PUBLIC, async ({ query }) =>
-      monetizationService.getAvailableBoosts(
-        query.get("listingId") || undefined,
-      ),
-    );
-    this.addRoute("GET", "/promotions/pro-plans", PUBLIC, async () =>
-      monetizationService.getProSubscriptionPlans(),
-    );
-    this.addRoute(
-      "POST",
-      "/promotions/apply-boost",
-      permission("listing.promote"),
-      async ({ principal, body }) => {
-        await this.assertListingOwnership(principal, body?.listingId);
-        return monetizationService.beginProductCheckout({
-          accountId: principal.userId,
-          listingId: body?.listingId,
-          productId: body?.boostId,
-          idempotencyKey: body?.idempotencyKey,
-        });
-      },
-    );
-    this.addRoute(
-      "POST",
-      "/promotions/subscribe-pro",
-      permission("subscription.manage.own"),
-      async ({ principal, body }) =>
-        monetizationService.beginProductCheckout({
-          accountId: principal.userId,
-          productId: body?.planId,
-          idempotencyKey: body?.idempotencyKey,
-        }),
-    );
-
     // --------------------------------------------------------------------------
     // VERIFICATION & KYC/KYB ROUTES
     // --------------------------------------------------------------------------
@@ -2165,38 +2265,15 @@ export class ApiV1Router {
           offerPrice: body?.offerPrice,
         }),
     );
-    // Compatibility route for clients that still pass their own user id. The
-    // caller can only resolve it to their authenticated account.
     this.addRoute(
       "GET",
-      "/messaging/conversations/:userId",
-      permission("message.read.own"),
-      async ({ principal, params }) =>
-        messagingService.getUserConversations(
-          resolveOwnerId(principal, params.userId),
-        ),
-    );
-    this.addRoute(
-      "GET",
-      "/messaging/conversations/detail/:id",
+      "/messaging/conversations/:id",
       permission("message.read.own"),
       async ({ principal, params }) => {
         const conversation = await messagingService.getConversationById(
           params.id,
         );
         return this.assertConversationParticipant(principal, conversation);
-      },
-    );
-    this.addRoute(
-      "POST",
-      "/messaging/send",
-      permission("message.send"),
-      async ({ principal, body }) => {
-        await this.assertConversationAccess(principal, body?.conversationId);
-        return messagingService.sendMessage({
-          ...body,
-          senderId: principal.userId,
-        });
       },
     );
     this.addRoute(
@@ -2290,20 +2367,18 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     this.addRoute(
       "GET",
-      "/notifications/:userId",
+      "/notifications",
       AUTHENTICATED,
-      async ({ principal, params }) =>
-        notificationsService.getUserNotifications(
-          resolveOwnerId(principal, params.userId),
-        ),
+      async ({ principal }) =>
+        notificationsService.getUserNotifications(principal.userId),
     );
     this.addRoute(
       "GET",
-      "/notifications/unread-count/:userId",
+      "/notifications/unread-count",
       AUTHENTICATED,
-      async ({ principal, params }) => {
+      async ({ principal }) => {
         const count = await notificationsService.getUnreadCount(
-          resolveOwnerId(principal, params.userId),
+          principal.userId,
         );
         return { count };
       },
@@ -2320,12 +2395,10 @@ export class ApiV1Router {
     );
     this.addRoute(
       "POST",
-      "/notifications/:userId/read-all",
+      "/notifications/read-all",
       AUTHENTICATED,
-      async ({ principal, params }) => {
-        await notificationsService.markAllAsRead(
-          resolveOwnerId(principal, params.userId),
-        );
+      async ({ principal }) => {
+        await notificationsService.markAllAsRead(principal.userId);
         return { success: true };
       },
     );
@@ -2886,9 +2959,21 @@ export class ApiV1Router {
     const parsedUrl = new URL(rawUrl, "http://request.invalid");
     let pathname = parsedUrl.pathname;
 
-    if (pathname.startsWith("/api/v1")) {
-      pathname = pathname.substring(7) || "/";
+    const prefix = config.apiPrefix;
+    if (pathname !== prefix && !pathname.startsWith(`${prefix}/`)) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: {
+            code: "NOT_FOUND",
+            message: `Route ${(req.method || "GET").toUpperCase()} ${pathname} not found`,
+            statusCode: 404,
+          },
+        }),
+      );
+      return;
     }
+    pathname = pathname.substring(prefix.length) || "/";
 
     const method = (req.method || "GET").toUpperCase();
 
@@ -2906,6 +2991,30 @@ export class ApiV1Router {
         let body: any = null;
         if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
           body = await this.readRequestBody(req);
+          if (route.requestBodyRequired && body === null) {
+            throw new AppError({
+              code: "BAD_REQUEST",
+              message: "Un corps de requête est requis.",
+            });
+          }
+        }
+        for (const [name, expectedType] of Object.entries(
+          route.queryParameters,
+        )) {
+          const value = parsedUrl.searchParams.get(name);
+          if (value === null) continue;
+          const valid =
+            expectedType === "integer"
+              ? /^-?\d+$/.test(value)
+              : expectedType === "boolean"
+                ? value === "true" || value === "false"
+                : true;
+          if (!valid) {
+            throw new AppError({
+              code: "VALIDATION_ERROR",
+              message: `Paramètre de requête invalide : ${name}.`,
+            });
+          }
         }
         // Identity is resolved once per request, before the guard runs, so the
         // guard and the handler always agree on who the caller is.
@@ -2951,7 +3060,9 @@ export class ApiV1Router {
 
         if (res.writableEnded) return;
 
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(route.successStatus, {
+          "Content-Type": "application/json",
+        });
         res.end(JSON.stringify(result ?? null));
       } catch (err: any) {
         this.writeError(res, err, method, pathname);
@@ -2997,19 +3108,32 @@ export class ApiV1Router {
     method: string,
     pathname: string,
   ): void {
-    const isAppError = err instanceof AppError;
-    const statusCode = isAppError ? err.statusCode : 500;
+    const normalizedError =
+      err instanceof ZodError
+        ? new AppError({
+            code: "VALIDATION_ERROR",
+            message: "La requête ne respecte pas le contrat attendu.",
+            details: {
+              issues: err.issues.map((issue) => ({
+                path: issue.path.join("."),
+                message: issue.message,
+              })),
+            },
+          })
+        : err;
+    const isAppError = normalizedError instanceof AppError;
+    const statusCode = isAppError ? normalizedError.statusCode : 500;
 
     if (!isAppError) {
       // Unexpected failures are logged in full but never returned: provider
       // errors and stack traces routinely carry connection strings and ids.
       logger.error(
-        `Unhandled error on ${method} ${pathname}: ${err?.stack || err?.message || err}`,
+        `Unhandled error on ${method} ${pathname}: ${normalizedError?.stack || normalizedError?.message || normalizedError}`,
       );
     }
 
     const payload = isAppError
-      ? err.toJSON()
+      ? normalizedError.toJSON()
       : {
           error: {
             code: "INTERNAL_ERROR",

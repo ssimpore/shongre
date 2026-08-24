@@ -1,5 +1,6 @@
 import { mobileEnvironment } from "@/config/environment";
 import { secureStorage } from "@/services/secure-storage/secure-storage";
+import type { ApiPath } from "@shongre/contracts/openapi";
 
 const SESSION_KEY = "shongre.mobile.session.v1";
 
@@ -34,7 +35,7 @@ async function readToken(): Promise<string | null> {
 }
 
 export async function apiRequest<T>(
-  path: string,
+  path: ApiPath,
   init: RequestInit = {},
 ): Promise<T> {
   if (!mobileEnvironment.apiUrl) {

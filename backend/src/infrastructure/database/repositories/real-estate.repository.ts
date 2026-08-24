@@ -824,6 +824,8 @@ export interface IRealEstateRepository {
   ): Promise<RealEstateCatalog>;
   search(query: PropertySearchQuery): Promise<PropertySearchResult>;
   getProperty(idOrSlug: string): Promise<PropertyPrivate | null>;
+  getRecentlyViewed(accountId: string): Promise<PropertyPrivate[]>;
+  markRecentlyViewed(accountId: string, propertyId: string): Promise<void>;
   saveProperty(property: PropertyPrivate): Promise<PropertyPrivate>;
   countActiveProperties(owner: {
     ownerUserId?: string;
@@ -911,6 +913,7 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
   protected checkouts = new Map<string, VerticalCheckout>();
   protected webhookEvents = new Set<string>();
   protected analyticsEvents: RealEstateAnalyticsEvent[] = [];
+  protected recentlyViewed = new Map<string, string[]>();
 
   async getCatalog(marketCode: string, includeInactive = false) {
     const catalog = clone({
@@ -968,6 +971,21 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
         (candidate) => candidate.slug === idOrSlug,
       );
     return row ? clone(row) : null;
+  }
+  async getRecentlyViewed(accountId: string): Promise<PropertyPrivate[]> {
+    return (this.recentlyViewed.get(accountId) || [])
+      .map((id) => this.properties.get(id))
+      .filter((row): row is PropertyPrivate => Boolean(row))
+      .map(clone);
+  }
+  async markRecentlyViewed(accountId: string, propertyId: string) {
+    const next = [
+      propertyId,
+      ...(this.recentlyViewed.get(accountId) || []).filter(
+        (id) => id !== propertyId,
+      ),
+    ].slice(0, 20);
+    this.recentlyViewed.set(accountId, next);
   }
   async saveProperty(row: PropertyPrivate) {
     const parsed = propertyPrivateSchema.parse(row);
@@ -1793,6 +1811,34 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       .maybeSingle();
     if (error) throw error;
     return data ? this.mapProperty(data) : null;
+  }
+
+  override async getRecentlyViewed(accountId: string) {
+    const { data, error } = await this.db()
+      .from("real_estate_recently_viewed")
+      .select("property_id")
+      .eq("account_id", accountId)
+      .order("viewed_at", { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    const rows = await Promise.all(
+      (data || []).map((row: any) => this.getProperty(row.property_id)),
+    );
+    return rows.filter((row): row is PropertyPrivate => Boolean(row));
+  }
+
+  override async markRecentlyViewed(accountId: string, propertyId: string) {
+    const { error } = await this.db()
+      .from("real_estate_recently_viewed")
+      .upsert(
+        {
+          account_id: accountId,
+          property_id: propertyId,
+          viewed_at: new Date().toISOString(),
+        },
+        { onConflict: "account_id,property_id" },
+      );
+    if (error) throw error;
   }
 
   override async saveProperty(property: PropertyPrivate) {

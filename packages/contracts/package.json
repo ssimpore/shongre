@@ -26,7 +26,8 @@
     "./access-control": "./src/access-control.ts",
     "./monetization-catalog": "./src/fixtures/monetization-catalog.ts",
     "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts",
-    "./provider-platform": "./src/provider-platform.ts"
+    "./provider-platform": "./src/provider-platform.ts",
+    "./openapi": "./src/openapi.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

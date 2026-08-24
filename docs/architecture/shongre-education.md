@@ -13,7 +13,7 @@ React page
   → CoursesServiceContract
     → DemoCoursesService (current NEXT_PUBLIC_DATA_MODE=demo)
     → HttpCoursesService (future API mode)
-      → /api/v1/education/* (`/api/v1/courses/*` compatibility alias)
+      → /api/v1/education/* (sole canonical OpenAPI namespace)
         → CoursesService
           → ICoursesRepository
             → DemoCoursesRepository or PostgresCoursesRepository

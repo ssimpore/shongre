@@ -1,58 +1,85 @@
-# Shongre REST API v1 Specification
+# Shongre API contract
 
-Base URL: `${BACKEND_ORIGIN}${API_PREFIX}`. Local values are derived from the root environment; run `make info` to print the active URL.
+Shongre has one authoritative HTTP contract:
+[`backend/openapi/openapi.json`](../openapi/openapi.json). It is an OpenAPI
+3.1 document and is the source for routes, security declarations, request and
+response shapes, generated TypeScript, runtime route metadata, and API
+reference documentation. This page is a workflow guide, not a second endpoint
+catalog.
 
----
+The versioned business API is rooted at `/api/v1`. The unversioned `/health`,
+`/livez`, and `/readyz` operational probes are also documented in the same
+specification with operation-level server overrides. The generated, exhaustive
+inventory is [`generated/endpoint-inventory.md`](generated/endpoint-inventory.md).
 
-## 1. Authentication (`/api/v1/auth`)
+## Change workflow
 
-- `POST /auth/login`: Authenticate with email/password.
-- `POST /auth/register`: Create a new user account.
-- `GET /auth/me`: Get current authenticated user profile.
-- `POST /auth/logout`: Invalidate session.
-- `POST /auth/switch-role`: Switch active platform role.
-- `POST /auth/verify-phone`: Verify phone OTP.
-- `POST /auth/verify-email`: Verify email confirmation token.
+1. Edit `backend/openapi/openapi.json` first. Reuse schemas, parameters,
+   responses, and security schemes from `components`.
+2. Assign a unique `operationId`, explicit `security`, `x-shongre-access`, and,
+   for permission-protected operations, `x-shongre-permission`.
+3. Run `make openapi-generate` to regenerate the shared TypeScript paths,
+   backend runtime manifest, and endpoint inventory.
+4. Implement the route in `backend/src/api/v1/router.ts`. The router refuses to
+   boot if its method, path, access rule, or permission diverges from OpenAPI.
+5. Consume it through a Web or mobile HTTP adapter. Import path types from
+   `@shongre/contracts/openapi`; do not duplicate endpoint unions or wire DTOs.
+6. Add contract and integration coverage, then run `make openapi-check` and the
+   relevant workspace tests.
 
----
+Generated files are read-only:
 
-## 2. Listings & Search (`/api/v1/listings`, `/api/v1/search`)
+- `packages/contracts/src/generated/openapi.ts`
+- `backend/src/generated/openapi-manifest.ts`
+- `backend/docs/generated/endpoint-inventory.md`
 
-- `GET /listings`: Paginated search with filtering query params.
-- `GET /listings/:id`: Detailed listing info.
-- `POST /listings/search`: Advanced structured search payload.
-- `POST /listings/publish`: Publish a draft listing after AI safety screening.
-- `PUT /listings/:id`: Update listing fields.
-- `DELETE /listings/:id`: Delete a listing.
-- `POST /listings/:id/favorite`: Toggle favorite listing for active user.
-- `GET /favorites`: Get favorite listing IDs.
+## Commands and enforcement
 
----
+```bash
+make openapi-lint             # OpenAPI structural/style validation
+make openapi-generate         # regenerate all committed artifacts
+make openapi-check            # lint + stale output + route/spec parity
+make openapi-docs             # standalone Redoc HTML reference
+OPENAPI_BASE_REF=origin/main make openapi-breaking-check
+```
 
-## 3. Orders & Escrow (`/api/v1/orders`)
+`make lint`, `make check`, and CI include `openapi-check`. Pull requests also
+compare the specification with the base branch. CI fails for an undocumented
+route, documented-but-unimplemented route, duplicate route or operation ID,
+stale generated artifact, missing access declaration, reintroduced legacy
+alias, or undeclared operation removal.
 
-- `GET /orders/:id`: Order details and escrow state.
-- `POST /orders/direct-purchase`: Create direct purchase with full escrow calculation.
-- `POST /orders/reservation`: Create reservation with deposit escrow hold.
-- `POST /orders/:id/confirm-pin`: Verify 4-digit handover PIN to release escrow funds.
-- `POST /orders/:id/confirm-delivery`: Confirm delivery receipt.
-- `POST /orders/:id/dispute`: Open an order dispute.
+## Compatibility and versions
 
----
+Additive changes remain in `/api/v1`. Removing or changing an established
+request/response requires either a new major prefix or a staged deprecation.
+A staged removal must set `deprecated: true` and `x-sunset-at` in a released
+contract, publish a migration path, migrate all repository consumers, and only
+then remove the operation. Compatibility aliases are exceptional, time-boxed,
+documented in OpenAPI, and have an owner and sunset date.
 
-## 4. Monetization & Boosts (`/api/v1/promotions`)
+The API prefix is fixed at `/api/v1`; it is not a deploy-time variation. The
+OpenAPI `info.version` uses semantic versions for contract releases while the
+URL major communicates wire compatibility.
 
-- `GET /promotions/boosts`: Available boosts (`urgent`, `search_bump`, `featured`).
-- `GET /promotions/pro-plans`: Pro subscription plans (`starter`, `pro`, `enterprise`).
-- `POST /promotions/apply-boost`: Apply boost to a listing.
-- `POST /promotions/subscribe-pro`: Subscribe to a Pro plan.
+## Cross-cutting conventions
 
----
+- Browser authentication uses secure HttpOnly cookies; native clients use the
+  bearer scheme. Every operation declares its accepted security explicitly.
+- Authorization derives ownership from the authenticated principal. Owner IDs
+  are not accepted in collection URLs such as notifications and purchases.
+- Errors use the shared `ErrorResponse` envelope and a request correlation ID.
+- Monetary amounts use integer minor units plus ISO currency codes.
+- Collection operations declare cursor or page semantics in OpenAPI rather
+  than assuming all records are in memory.
+- Mutations that can create money, orders, uploads, or subscriptions declare an
+  idempotency key when replay safety is required.
+- Public listing images and private verification documents use the documented
+  two-phase upload operations. Private documents never use public buckets.
 
-## 5. Verification & KYB/KYC (`/api/v1/verification`)
+## Ownership
 
-- `GET /verification/status/:userId`: Progressive verification tier summary.
-- `POST /verification/identity`: Submit identity document.
-- `GET /verification/siret-lookup/:siret`: Validate French SIRET / EU company.
-- `POST /verification/business-registration`: Submit professional registration.
-- `POST /verification/bank-coordinates`: Submit IBAN/BIC payout information.
+The backend API owners maintain the canonical specification and implementation.
+Domain owners maintain their schemas and tests inside that contract. Web,
+mobile, admin, and integration owners consume generated contract artifacts and
+must not introduce another OpenAPI file or handwritten endpoint registry.

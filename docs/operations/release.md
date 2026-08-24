@@ -8,7 +8,9 @@ process production data or money.
 
 1. Freeze the release commit. CI must pass quality/builds, secret scanning,
    browser E2E on Chromium/Firefox/WebKit, clean-database migrations, and both
-   container builds.
+   container builds. `make openapi-check` must prove generated artifacts and
+   implementation parity; the pull-request breaking check must compare the
+   contract with the release base ref.
 2. Build API/worker once from `backend/Dockerfile`. Build the web image from
    `frontend/Dockerfile` with production public values. Sign images, generate an
    SBOM in the delivery platform, scan them, and promote immutable digests—not
@@ -29,7 +31,8 @@ process production data or money.
 2. Apply forward-only migrations from the release artifact. The migrator checks
    SHA-256 history and refuses an edited applied migration. Do not run `db-seed`.
 3. Deploy API pods with zero unavailable capacity. Wait for `/readyz`; perform
-   read-only smoke checks while old workers remain active.
+   read-only smoke checks from the released OpenAPI contract while old workers
+   remain active.
 4. Roll worker pods using the same backend image. Database leases prevent two
    replicas from owning the same scheduled job.
 5. Deploy web pods, purge only the intended CDN release paths, then shift a small

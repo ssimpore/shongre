@@ -1,5 +1,6 @@
 import { apiClientConfig } from "../../client/api-client.config";
 import { AppError, AppErrorCode } from "../../errors/app-error";
+import type { ApiPath, ApiPathForMethod } from "@shongre/contracts/openapi";
 
 export interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -47,7 +48,7 @@ export class HttpClient {
   }
 
   async request<T>(
-    endpoint: string,
+    endpoint: ApiPath,
     options: HttpRequestOptions = {},
   ): Promise<T> {
     const {
@@ -163,12 +164,15 @@ export class HttpClient {
     }
   }
 
-  get<T>(endpoint: string, options?: HttpRequestOptions): Promise<T> {
+  get<T>(
+    endpoint: ApiPathForMethod<"get">,
+    options?: HttpRequestOptions,
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
   post<T>(
-    endpoint: string,
+    endpoint: ApiPathForMethod<"post">,
     body?: unknown,
     options?: HttpRequestOptions,
   ): Promise<T> {
@@ -180,7 +184,7 @@ export class HttpClient {
   }
 
   put<T>(
-    endpoint: string,
+    endpoint: ApiPathForMethod<"put">,
     body?: unknown,
     options?: HttpRequestOptions,
   ): Promise<T> {
@@ -192,7 +196,7 @@ export class HttpClient {
   }
 
   patch<T>(
-    endpoint: string,
+    endpoint: ApiPathForMethod<"patch">,
     body?: unknown,
     options?: HttpRequestOptions,
   ): Promise<T> {
@@ -203,7 +207,10 @@ export class HttpClient {
     });
   }
 
-  delete<T>(endpoint: string, options?: HttpRequestOptions): Promise<T> {
+  delete<T>(
+    endpoint: ApiPathForMethod<"delete">,
+    options?: HttpRequestOptions,
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 }

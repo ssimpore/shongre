@@ -34,6 +34,15 @@ Shongre is an enterprise-grade C2C & B2C marketplace designed for European multi
 
 ## 2. Dual-Mode Repository & Provider Architecture
 
+### 2.0 OpenAPI transport boundary
+
+`backend/openapi/openapi.json` is the only HTTP contract. The router implements
+its generated runtime manifest, while Web and mobile consume generated path and
+operation types from `@shongre/contracts/openapi`. Domain services do not own
+URLs, and repository/database models are never exported as the wire contract.
+See [`../docs/api.md`](api.md) and
+[`../../docs/architecture/openapi.md`](../../docs/architecture/openapi.md).
+
 ### 2.1 Central Configuration (`BACKEND_DATA_MODE`)
 
 - `BACKEND_DATA_MODE=demo` (Default): Domain services consume `Demo*Repository` implementations backed by deterministic in-memory collections.

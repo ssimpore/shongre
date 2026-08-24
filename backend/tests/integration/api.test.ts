@@ -123,16 +123,20 @@ describe("API v1 Endpoints Integration", () => {
     expect(markets.some((m: any) => m.code === "FR")).toBe(true);
   });
 
-  it("serves one Education catalog through canonical and legacy API routes", async () => {
-    const [canonicalResponse, legacyResponse] = await Promise.all([
+  it("rejects the removed unversioned API shadow", async () => {
+    const res = await fetch(`${baseUrl}/listings`);
+    expect(res.status).toBe(404);
+    expect((await res.json()).error.code).toBe("NOT_FOUND");
+  });
+
+  it("serves Education only through the canonical API route", async () => {
+    const [canonicalResponse, removedAliasResponse] = await Promise.all([
       fetch(`${baseUrl}/api/v1/education/catalog?market=FR`),
       fetch(`${baseUrl}/api/v1/courses/catalog?market=FR`),
     ]);
     expect(canonicalResponse.status).toBe(200);
-    expect(legacyResponse.status).toBe(200);
+    expect(removedAliasResponse.status).toBe(404);
     const canonical = await canonicalResponse.json();
-    const legacy = await legacyResponse.json();
-    expect(legacy).toEqual(canonical);
     expect(canonical.config.vertical).toBe("tutoring");
   });
 
@@ -190,12 +194,30 @@ describe("API v1 Endpoints Integration", () => {
     expect(Array.isArray(data.items)).toBe(true);
   });
 
-  it("GET /api/v1/promotions/boosts returns boost offers", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/promotions/boosts`);
+  it("returns the standard validation envelope for an invalid domain request", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/real-estate/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ marketCode: "not-a-market" }),
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        statusCode: 400,
+      },
+    });
+  });
+
+  it("GET /api/v1/business-rules/catalog returns the canonical monetization catalog", async () => {
+    const res = await fetch(
+      `${baseUrl}/api/v1/business-rules/catalog?marketCode=FR`,
+    );
     expect(res.status).toBe(200);
-    const boosts = await res.json();
-    expect(Array.isArray(boosts)).toBe(true);
-    expect(boosts.length).toBeGreaterThanOrEqual(3);
+    const catalog = await res.json();
+    expect(catalog.marketCode).toBe("FR");
+    expect(Array.isArray(catalog.products)).toBe(true);
+    expect(Array.isArray(catalog.promotions)).toBe(true);
   });
 
   it("serves the public Immo catalog, spatial-shaped search, and privacy-safe property projection", async () => {
@@ -445,9 +467,9 @@ describe("API v1 Endpoints Integration", () => {
       ["/api/v1/favorites", {}],
       ["/api/v1/compliance/status", {}],
       ["/api/v1/verification/status/user_thomas", {}],
-      ["/api/v1/orders/purchases/user_thomas", {}],
-      ["/api/v1/messaging/conversations/user_camille", {}],
-      ["/api/v1/notifications/user_camille", {}],
+      ["/api/v1/orders/purchases", {}],
+      ["/api/v1/messaging/conversations", {}],
+      ["/api/v1/notifications", {}],
       ["/api/v1/payments/balance/user_camille", {}],
       ["/api/v1/workspace/summary/user_thomas", {}],
       ["/api/v1/real-estate/drafts/draft-private", {}],
@@ -807,11 +829,10 @@ describe("API v1 Endpoints Integration", () => {
     expect(res.status).toBe(404);
   });
 
-  it("refuses to return another user's notifications and orders", async () => {
+  it("keeps removed owner-addressed routes unavailable", async () => {
     for (const path of [
       "/api/v1/notifications/user_camille",
       "/api/v1/orders/purchases/user_camille",
-      "/api/v1/workspace/summary/user_camille",
     ]) {
       const res = await fetch(`${baseUrl}${path}`, {
         headers: auth(buyerToken),
@@ -820,21 +841,25 @@ describe("API v1 Endpoints Integration", () => {
     }
   });
 
-  it("scopes owner-addressed routes to the caller", async () => {
-    const byId = await fetch(`${baseUrl}/api/v1/notifications/user_thomas`, {
+  it("derives notification and order ownership from the authenticated caller", async () => {
+    const notifications = await fetch(`${baseUrl}/api/v1/notifications`, {
       headers: auth(buyerToken),
     });
-    expect(byId.status).toBe(200);
+    expect(notifications.status).toBe(200);
 
-    const byAlias = await fetch(`${baseUrl}/api/v1/notifications/me`, {
+    const purchases = await fetch(`${baseUrl}/api/v1/orders/purchases`, {
       headers: auth(buyerToken),
     });
-    expect(byAlias.status).toBe(200);
+    expect(purchases.status).toBe(200);
 
-    // Compare identity rather than the whole payload: the demo repository
-    // stamps createdAt at call time, so two reads differ by milliseconds.
-    const idsOf = (rows: any[]) => rows.map((r) => `${r.id}:${r.userId}`);
-    expect(idsOf(await byAlias.json())).toEqual(idsOf(await byId.json()));
+    const notificationRows = await notifications.json();
+    expect(
+      notificationRows.every((row: any) => row.userId === "user_thomas"),
+    ).toBe(true);
+    const purchaseRows = await purchases.json();
+    expect(
+      purchaseRows.every((row: any) => row.buyerId === "user_thomas"),
+    ).toBe(true);
   });
 
   it("ignores a body-supplied identity and uses the authenticated caller", async () => {
@@ -1056,14 +1081,16 @@ describe("API v1 Endpoints Integration", () => {
     });
     expect(block.status).toBe(200);
 
-    const refused = await fetch(`${baseUrl}/api/v1/messaging/send`, {
-      method: "POST",
-      headers: auth(sellerToken),
-      body: JSON.stringify({
-        conversationId: "conv_1",
-        text: "Ce message doit être refusé.",
-      }),
-    });
+    const refused = await fetch(
+      `${baseUrl}/api/v1/messaging/conversations/conv_1/messages`,
+      {
+        method: "POST",
+        headers: auth(sellerToken),
+        body: JSON.stringify({
+          text: "Ce message doit être refusé.",
+        }),
+      },
+    );
     expect(refused.status).toBe(403);
 
     const unblock = await fetch(`${baseUrl}/api/v1/messaging/unblock`, {

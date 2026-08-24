@@ -12,7 +12,10 @@ The tutoring vertical is implemented incrementally in the existing React/TypeScr
 
 - `CoursesService` owns profile/offer authorization, quota enforcement, minor validation, request routing, contact release, organization membership checks, admin configuration, and Phase 2 gates.
 - Demo and PostgreSQL repositories implement one interface.
-- `/api/v1/education/*` exposes public discovery, protected learner/tutor/organization actions, Phase 2 booking rejection, and protected administration. `/api/v1/courses/*` remains a compatibility alias over the same handlers.
+- `/api/v1/education/*` is the sole canonical namespace for public discovery,
+  protected learner/tutor/organization actions, Phase 2 booking rejection, and
+  protected administration. The former `/api/v1/courses/*` compatibility alias
+  was removed after all consumers migrated.
 - The RBAC matrix includes nine course permissions and assigns them by platform role.
 - Migration `00011_courses_vertical.sql` adds the normalized schema, indexes, constraints, RLS, privacy-safe search view, review enforcement, audit, and Phase 2 tables.
 - `seed/courses.sql` creates the France catalog, 15 subjects, levels, four plans, and add-ons with regulated feature flags off.

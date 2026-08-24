@@ -96,9 +96,9 @@ export class HttpAdminService implements AdminServiceContract {
   }
 
   async getTrendingConfig(marketCode = "FR"): Promise<TrendingAdminConfig> {
-    return httpClient.get<TrendingAdminConfig>(
-      `/admin/trending/config?market=${encodeURIComponent(marketCode)}`,
-    );
+    return httpClient.get<TrendingAdminConfig>("/admin/trending/config", {
+      params: { market: marketCode },
+    });
   }
 
   async updateTrendingConfig(
@@ -106,8 +106,9 @@ export class HttpAdminService implements AdminServiceContract {
     marketCode = "FR",
   ): Promise<TrendingAdminConfig> {
     return httpClient.put<TrendingAdminConfig>(
-      `/admin/trending/config?market=${encodeURIComponent(marketCode)}`,
+      "/admin/trending/config",
       updates,
+      { params: { market: marketCode } },
     );
   }
 
@@ -122,14 +123,15 @@ export class HttpAdminService implements AdminServiceContract {
 
   async getDiscoveryConfiguration(marketCode = "FR") {
     return httpClient.get<DiscoveryConfiguration>(
-      `/admin/discovery/configuration?marketCode=${encodeURIComponent(marketCode)}`,
+      "/admin/discovery/configuration",
+      { params: { marketCode } },
     );
   }
 
   async getDiscoveryMetrics(marketCode = "FR") {
-    return httpClient.get<DiscoveryMetrics>(
-      `/admin/discovery/metrics?marketCode=${encodeURIComponent(marketCode)}`,
-    );
+    return httpClient.get<DiscoveryMetrics>("/admin/discovery/metrics", {
+      params: { marketCode },
+    });
   }
 
   async saveDiscoveryConfiguration(

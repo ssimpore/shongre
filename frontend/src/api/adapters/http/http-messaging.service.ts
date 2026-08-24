@@ -118,7 +118,7 @@ export class HttpMessagingService implements MessagingServiceContract {
 
   async getConversationById(id: string): Promise<Conversation | null> {
     const conversation = await httpClient.get<BackendConversation>(
-      `/messaging/conversations/detail/${id}`,
+      `/messaging/conversations/${id}`,
     );
     const messages = await this.getMessages(id);
     return { ...mapConversation(conversation), messages };

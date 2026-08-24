@@ -4,6 +4,11 @@
 
 The mobile UI consumes typed services. `EXPO_PUBLIC_DATA_MODE=demo` selects deterministic, asynchronous adapters and requires no backend. `api` selects HTTP adapters using `EXPO_PUBLIC_API_URL`. Components do not branch on data mode and never import backend implementation. Cross-client DTO primitives that are genuinely stable live in `packages/contracts/`.
 
+Connected services accept only paths generated from the sole OpenAPI contract
+at `backend/openapi/openapi.json`. Mobile does not maintain an endpoint registry
+or a separate API specification; adapters import `ApiPath` from
+`@shongre/contracts/openapi` and map transport data to native view models.
+
 Authentication tokens use `expo-secure-store`; web fallback is process memory, never localStorage. Permissions are requested from the feature that needs them. Selected photos and notifications are the only declared user-facing mobile permissions. Camera, location, motion, microphone, contacts, and overlay permissions are blocked because no reachable feature needs them.
 
 Expo config is environment-driven through `mobile/app.config.ts`. Run `make mobile-prebuild-clean` after native configuration changes and review generated manifests before release.
