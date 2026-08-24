@@ -1,13 +1,7 @@
 import { isProSeller } from "../../../domains/user/user.domain";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import {
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Truck,
-  ShieldCheck,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Truck } from "lucide-react";
 import { Listing } from "../../../types";
 import { FavoriteButton } from "../../../design-system/primitives/FavoriteButton";
 import { IconButton } from "../../../design-system/primitives/IconButton";
@@ -295,31 +289,6 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
         </div>
       </div>
 
-      <Link
-        to="/securite"
-        className="group mt-3 flex min-h-6 min-w-0 items-center gap-2 px-1 text-xs text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:text-sm"
-        aria-label={`${t("home.heroBoostedScroll.annoncesControlees")}. ${t("home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees")} ${t("home.heroBoostedScroll.enSavoirPlus")}`}
-      >
-        <ShieldCheck
-          className="h-icon-lg w-icon-lg shrink-0 text-success"
-          aria-hidden="true"
-        />
-        <span className="min-w-0 flex-1 truncate">
-          <span className="font-bold text-stone-800 group-hover:text-primary">
-            {t("home.heroBoostedScroll.annoncesControlees")}
-          </span>
-          <span className="hidden font-medium sm:inline">
-            · {t("home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees")}
-          </span>
-        </span>
-        <span className="inline-flex shrink-0 items-center gap-1 font-bold text-primary">
-          <span>{t("home.heroBoostedScroll.enSavoirPlus")}</span>
-          <ChevronRight
-            className="h-icon-sm w-icon-sm transition-transform duration-fast group-hover:translate-x-0.5"
-            aria-hidden="true"
-          />
-        </span>
-      </Link>
       <span className="sr-only" aria-live="polite">
         {activeIndex + 1} / {scrollSequence.length}
       </span>

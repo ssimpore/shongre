@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Search,
   ArrowRight,
   ScanSearch,
   PlusCircle,
   ShieldCheck,
-  Truck,
-  BadgeCheck,
   RefreshCw,
 } from "lucide-react";
 import { listingRepository } from "../../repositories/listing.repository";
@@ -25,8 +24,7 @@ import {
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { HeroBoostedScroll } from "./components/HeroBoostedScroll";
 import { HomeRecentSearches } from "./components/HomeRecentSearches";
-import { TrendingNowSection } from "./components/TrendingNowSection";
-import { HomeCollectionsSection } from "./components/HomeCollectionsSection";
+import { HomeCategoryExplorer } from "./components/HomeCategoryExplorer";
 import { usePublishCta } from "../../security/usePublishCta";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -42,7 +40,7 @@ import { HomeSectionHeading } from "./components/HomeSectionHeading";
  * dense ones.
  */
 const RECENT_COUNT = 12;
-const DEALS_COUNT = 8;
+const DEALS_COUNT = 6;
 
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
@@ -173,33 +171,6 @@ export const HomePage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-
-                <ul
-                  className="mt-6 flex min-h-6 flex-wrap items-center gap-x-4 gap-y-3 border-t border-border-subtle pt-4 text-xs font-medium text-stone-700 sm:mt-7 sm:text-sm"
-                  aria-label={t("home.homePage.garantiesShongre")}
-                >
-                  <li className="inline-flex items-center gap-2">
-                    <ShieldCheck
-                      className="h-icon-lg w-icon-lg shrink-0 text-primary"
-                      aria-hidden="true"
-                    />
-                    {t("home.homePage.paiementsSecurises")}
-                  </li>
-                  <li className="inline-flex items-center gap-2 sm:border-l sm:border-border-base sm:pl-4">
-                    <Truck
-                      className="h-icon-lg w-icon-lg shrink-0 text-primary"
-                      aria-hidden="true"
-                    />
-                    {t("home.homePage.livraisonIntegree")}
-                  </li>
-                  <li className="inline-flex items-center gap-2 sm:border-l sm:border-border-base sm:pl-4">
-                    <BadgeCheck
-                      className="h-icon-lg w-icon-lg shrink-0 text-primary"
-                      aria-hidden="true"
-                    />
-                    {t("home.homePage.vendeursVerifies")}
-                  </li>
-                </ul>
               </div>
 
               {/* Column 2: Boosted & Promoted Listings Auto-Scrolling.
@@ -209,6 +180,29 @@ export const HomePage: React.FC = () => {
                 <HeroBoostedScroll />
               </div>
             </div>
+
+            <Link
+              to="/securite"
+              className="group mt-5 flex min-h-8 min-w-0 items-center gap-2 border-t border-border-subtle pt-4 text-xs font-medium text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:mt-6 sm:text-sm"
+              aria-label={`${t("home.homePage.trustSummary")}. ${t("home.heroBoostedScroll.enSavoirPlus")}`}
+            >
+              <ShieldCheck
+                className="h-icon-lg w-icon-lg shrink-0 text-success"
+                aria-hidden="true"
+              />
+              <span className="min-w-0 flex-1 truncate">
+                {t("home.homePage.trustSummary")}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1 font-bold text-primary">
+                <span className="hidden sm:inline">
+                  {t("home.heroBoostedScroll.enSavoirPlus")}
+                </span>
+                <ArrowRight
+                  className="h-icon-sm w-icon-sm transition-transform duration-fast group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </span>
+            </Link>
           </div>
         </Container>
       </section>
@@ -313,72 +307,67 @@ export const HomePage: React.FC = () => {
 
       {/* 4. Deals & price drops */}
       {dealsListings.length > 0 && (
-        <Container as="section">
-          <div className="bg-gradient-to-br from-warning-surface/70 via-stone-50/50 to-white rounded-3xl border border-warning-border p-4 sm:p-8 shadow-xs">
-            <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
-              <div className="min-w-0 space-y-1">
-                <HomeSectionHeading>
-                  {t("home.homePage.meilleuresOffres")}
-                </HomeSectionHeading>
-                <p className="text-xs sm:text-sm text-stone-600 mt-0.5 hidden sm:block font-medium">
-                  {t("home.homePage.desReductionsJusquA50")}
-                </p>
-              </div>
-              <Button
-                to="/bons-plans"
-                variant="secondary"
-                size="sm"
-                rightIcon={
-                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600" />
-                }
-                className="shrink-0 border-warning-border hover:border-warning hover:bg-warning-surface"
-              >
-                <span className="hidden sm:inline">
-                  {t("home.homePage.toutesLesOffres")}
-                </span>
-                <span className="sm:hidden">{t("home.homePage.voirTout")}</span>
-              </Button>
+        <Container
+          as="section"
+          aria-labelledby="home-deals-title"
+          data-testid="home-deals"
+        >
+          <div className="mb-5 flex items-end justify-between gap-3 sm:mb-6">
+            <div className="min-w-0">
+              <HomeSectionHeading id="home-deals-title">
+                {t("home.homePage.meilleuresOffres")}
+              </HomeSectionHeading>
+              <p className="mt-1 hidden text-sm font-medium text-stone-500 sm:block">
+                {t("home.homePage.desReductionsJusquA50")}
+              </p>
             </div>
 
-            <ListingRail label={t("home.homePage.meilleuresOffres")}>
-              {dealsListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </ListingRail>
+            <Button
+              to="/bons-plans"
+              variant="secondary"
+              size="sm"
+              rightIcon={
+                <ArrowRight
+                  className="h-icon-sm w-icon-sm text-stone-600"
+                  aria-hidden="true"
+                />
+              }
+              className="shrink-0"
+            >
+              <span className="hidden sm:inline">
+                {t("home.homePage.toutesLesOffres")}
+              </span>
+              <span className="sm:hidden">{t("home.homePage.voirTout")}</span>
+            </Button>
           </div>
+
+          <ListingRail label={t("home.homePage.meilleuresOffres")}>
+            {dealsListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </ListingRail>
         </Container>
       )}
 
-      {/* 5. Dynamic marketplace discovery — placed after the commercial offer
-          so the page flows from inventory to deals, then inspiration. */}
-      <TrendingNowSection />
+      {/* 5. One compact, taxonomy-driven discovery surface replaces the former
+          repeated topic rails and the separate editorial collection rail. */}
+      <HomeCategoryExplorer />
 
-      {/* 6. Editorial collections — retained as a complementary browse surface */}
-      <HomeCollectionsSection />
-
-      {/* 7. Pro banner CTA */}
-      <Container as="section">
+      {/* 6. Pro banner CTA */}
+      <Container as="section" aria-labelledby="home-pro-title">
         <div className="bg-bg-base border border-border-base rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
-            <h3 className="text-xl sm:text-2xl font-black text-stone-900">
+            <HomeSectionHeading id="home-pro-title">
               {t("home.homePage.vousEtesCommercantArtisanOu")}
-            </h3>
+            </HomeSectionHeading>
             <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
               {t("home.homePage.ouvrezVotreVitrineOfficielleEn")}
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
+          <div className="shrink-0 w-full md:w-auto">
             <Button to="/solutions-pro" variant="pro" size="md" fullWidth>
               {t("home.homePage.decouvrirLesForfaitsPro")}
-            </Button>
-            <Button
-              to="/inscription/professionnel"
-              variant="primary"
-              size="md"
-              fullWidth
-            >
-              {t("home.homePage.creerMonComptePro")}
             </Button>
           </div>
         </div>

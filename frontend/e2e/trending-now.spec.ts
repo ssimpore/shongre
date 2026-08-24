@@ -2,37 +2,87 @@ import { test, expect } from "@playwright/test";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
-test.describe("En ce moment sur Shongre", () => {
-  test("renders every configured topic as its own subsection", async ({
+test.describe("Homepage discovery simplification", () => {
+  test("keeps recent listings primary, then a short deals rail and category tiles", async ({
     page,
   }) => {
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const section = page.getByRole("region", {
-      name: "En ce moment sur Shongre",
-    });
-    await expect(section).toBeVisible();
+    const recentListings = page
+      .locator("section")
+      .filter({
+        has: page.getByRole("heading", {
+          name: "Annonces récentes",
+          exact: true,
+        }),
+      })
+      .first();
+    const deals = page.getByTestId("home-deals");
+    const categories = page.getByTestId("home-category-explorer");
 
-    await expect(section.getByRole("tablist")).toHaveCount(0);
-    const topicSections = section.locator("[data-topic-id]");
-    await expect(topicSections).toHaveCount(8);
+    await expect(recentListings).toBeVisible();
+    await expect(recentListings.locator("article")).toHaveCount(12);
+    await expect(deals).toBeVisible();
+    await expect(deals.locator("article")).toHaveCount(6);
+    await expect(categories).toBeVisible();
     await expect(
-      section.locator('h3[id^="trending-topic-heading-"]'),
+      categories.getByRole("link", { name: /^Explorer / }),
     ).toHaveCount(8);
-    await expect(
-      topicSections.first().getByRole("link", { name: /Voir tout/ }),
-    ).toBeVisible();
 
-    await topicSections
-      .first()
-      .getByRole("link", { name: /Voir tout/ })
-      .click();
+    await expect(
+      page.getByRole("heading", {
+        name: "En ce moment sur Shongre",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", {
+        name: "Tendance en ce moment",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+
+    const dealsFollowRecentListings = await recentListings.evaluate(
+      (recentSection, dealsSection) =>
+        Boolean(
+          dealsSection &&
+          recentSection.compareDocumentPosition(dealsSection) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        ),
+      await deals.elementHandle(),
+    );
+    const categoriesFollowDeals = await deals.evaluate(
+      (dealsSection, categoriesSection) =>
+        Boolean(
+          categoriesSection &&
+          dealsSection.compareDocumentPosition(categoriesSection) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        ),
+      await categories.elementHandle(),
+    );
+
+    expect(dealsFollowRecentListings).toBe(true);
+    expect(categoriesFollowDeals).toBe(true);
+  });
+
+  test("opens a category from the compact discovery grid", async ({ page }) => {
+    await usePersona(page, "guest");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const firstCategory = page
+      .getByTestId("home-category-explorer")
+      .getByRole("link", { name: /^Explorer / })
+      .first();
+    await expect(firstCategory).toBeVisible();
+    await firstCategory.click();
+
     await expect(page).toHaveURL(/\/categorie\//);
   });
 
-  test("keeps stacked topic subsections usable on mobile without page overflow", async ({
+  test("uses a two-column category grid on mobile without page overflow", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -40,192 +90,67 @@ test.describe("En ce moment sur Shongre", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const section = page.getByRole("region", {
-      name: "En ce moment sur Shongre",
-    });
-    const topicSections = section.locator("[data-topic-id]");
-    await expect(topicSections).toHaveCount(8);
-    await expect(section.getByRole("tab")).toHaveCount(0);
-    await expect(
-      topicSections.first().locator('h3[id^="trending-topic-heading-"]'),
-    ).toBeVisible();
-    const pageOverflows = await page.evaluate(
-      () =>
-        document.documentElement.scrollWidth >
-        document.documentElement.clientWidth,
+    const tiles = page
+      .getByTestId("home-category-explorer")
+      .getByRole("link", { name: /^Explorer / });
+    await expect(tiles).toHaveCount(8);
+
+    const positions = await tiles.evaluateAll((elements) =>
+      elements.slice(0, 3).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { top: Math.round(rect.top), left: Math.round(rect.left) };
+      }),
     );
 
-    expect(pageOverflows).toBe(false);
+    expect(positions[0].top).toBe(positions[1].top);
+    expect(positions[0].left).toBeLessThan(positions[1].left);
+    expect(positions[2].top).toBeGreaterThan(positions[0].top);
+    await expectNoHorizontalOverflow(page, "homepage category grid");
   });
 
-  test("lets an administrator control the number of homepage subsections", async ({
-    page,
-  }) => {
-    await usePersona(page, "admin");
-    await page.goto("/admin/tendances", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const maxTopics = page.getByLabel("Maximum de sous-sections");
-    await expect(maxTopics).toHaveValue("8");
-    await maxTopics.fill("5");
-    await page.getByRole("button", { name: "Enregistrer" }).click();
-    await expect(
-      page.getByText("5 sous-sections affichées", { exact: true }),
-    ).toBeVisible();
-
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-    await expect(
-      page
-        .getByRole("region", { name: "En ce moment sur Shongre" })
-        .locator("[data-topic-id]"),
-    ).toHaveCount(5);
-  });
-
-  test("lets an administrator pin and hide a topic from the preview", async ({
-    page,
-  }) => {
-    await usePersona(page, "admin");
-    await page.goto("/admin/tendances", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    await expect(
-      page.getByRole("heading", { name: "En ce moment sur Shongre" }),
-    ).toBeVisible();
-    const pinButton = page.getByRole("button", { name: /^Épingler / }).first();
-    const firstRow = pinButton.locator("..");
-    await expect(firstRow).toBeVisible();
-
-    const topicName = await firstRow
-      .locator("div")
-      .first()
-      .locator("div")
-      .first()
-      .innerText();
-    await pinButton.click();
-    await expect(page.getByText("Épinglé", { exact: true })).toBeVisible();
-
-    const currentRow = page
-      .getByText(topicName, { exact: true })
-      .locator("..")
-      .locator("..");
-    await currentRow.getByRole("button", { name: /Masquer/ }).click();
-    await expect(page.getByText(topicName, { exact: true })).toHaveCount(0);
-  });
-
-  test("keeps editorial collections after the deals section", async ({
+  test("keeps one Pro action and routes it to the Pro information page", async ({
     page,
   }) => {
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const dealsHeading = page.getByRole("heading", {
-      name: "Meilleures offres",
-      exact: true,
-    });
-    const trendingSection = page.getByRole("region", {
-      name: "En ce moment sur Shongre",
-    });
-    const collectionsHeading = page.getByRole("heading", {
-      name: "Tendance en ce moment",
-      exact: true,
-    });
-    await expect(dealsHeading).toBeVisible();
-    await expect(trendingSection).toBeVisible();
-    await expect(collectionsHeading).toBeVisible();
-
-    const order = await dealsHeading.evaluate(
-      (deals, nodes) => {
-        const [trending, collections] = nodes as [
-          HTMLElement | null,
-          HTMLElement | null,
-        ];
-        return {
-          trendingAfterDeals: Boolean(
-            trending &&
-            deals.compareDocumentPosition(trending) &
-              Node.DOCUMENT_POSITION_FOLLOWING,
-          ),
-          collectionsAfterTrending: Boolean(
-            trending &&
-            collections &&
-            trending.compareDocumentPosition(collections) &
-              Node.DOCUMENT_POSITION_FOLLOWING,
-          ),
-        };
-      },
-      [
-        await trendingSection.elementHandle(),
-        await collectionsHeading.elementHandle(),
-      ],
+    const proSection = page.locator(
+      'section[aria-labelledby="home-pro-title"]',
     );
+    await expect(proSection).toBeVisible();
+    await expect(proSection.getByRole("link")).toHaveCount(1);
 
-    expect(order).toEqual({
-      trendingAfterDeals: true,
-      collectionsAfterTrending: true,
-    });
+    await proSection
+      .getByRole("link", { name: "Découvrir les forfaits Pro" })
+      .click();
+    await expect(page).toHaveURL("/solutions-pro");
   });
 
-  test("keeps collection cards linked and replaces failed artwork with a visible fallback", async ({
-    page,
-  }) => {
+  test("removes duplicate and inactive footer promotions", async ({ page }) => {
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const section = page.getByRole("region", { name: "Tendance en ce moment" });
-    const cards = section.locator("[data-collection-id]");
-    await expect(cards).toHaveCount(5);
-    await expect(section.locator("[data-collection-artwork]")).toHaveCount(5);
+    const footer = page.locator("footer");
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer).toBeVisible();
+    await expect(
+      footer.getByRole("complementary", { name: "Newsletter Shongre" }),
+    ).toBeVisible();
+    await expect(
+      footer.getByRole("button", { name: "Gestion des cookies" }),
+    ).toBeVisible();
 
-    const cardLinks = await cards.evaluateAll((elements) =>
-      elements.map((element) =>
-        (element as HTMLAnchorElement).getAttribute("href"),
-      ),
+    await expect(
+      footer.getByRole("region", { name: "Garanties Shongre" }),
+    ).toHaveCount(0);
+    await expect(
+      footer.getByRole("region", { name: "Applications mobiles Shongre" }),
+    ).toHaveCount(0);
+    await expect(footer.getByText("Suivez-nous", { exact: true })).toHaveCount(
+      0,
     );
-    expect(cardLinks).toEqual([
-      "/recherche?query=jante+roue+pi%C3%A8ce+auto",
-      "/recherche?category=velos",
-      "/recherche?category=maison-deco",
-      "/recherche?query=piscine+bou%C3%A9e+%C3%A9t%C3%A9",
-      "/recherche?query=ventilateur+climatiseur",
-    ]);
-
-    const brokenImages = await section
-      .locator("img")
-      .evaluateAll(
-        (images) =>
-          images.filter(
-            (image): image is HTMLImageElement =>
-              image instanceof HTMLImageElement &&
-              image.complete &&
-              image.naturalWidth === 0,
-          ).length,
-      );
-    expect(brokenImages).toBe(0);
-    await cards.nth(2).click();
-    await expect(page).toHaveURL("/recherche?category=maison-deco");
-  });
-
-  test("keeps the collection rail usable on mobile without page overflow", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await usePersona(page, "guest");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const section = page.getByRole("region", { name: "Tendance en ce moment" });
-    const rail = section.locator('[role="region"]').first();
-    await expect(rail).toBeVisible();
-    await expect(section.locator("[data-collection-id]")).toHaveCount(5);
-
-    const railMetrics = await rail.evaluate((element) => ({
-      scrollWidth: element.scrollWidth,
-      clientWidth: element.clientWidth,
-    }));
-    expect(railMetrics.scrollWidth).toBeGreaterThan(railMetrics.clientWidth);
-    await expectNoHorizontalOverflow(page, "collections mobile rail");
+    await expect(footer.getByText(/bientôt disponible/)).toHaveCount(0);
   });
 });

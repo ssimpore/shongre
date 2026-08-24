@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
   RECENT_SEARCH_ITEMS_CHANGED_EVENT,
   storageService,
 } from "../../../services/storage.service";
 import { RecentSearch } from "../../../types";
-import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 import { Container } from "../../../design-system/primitives/Layout";
 import { IconButton } from "../../../design-system/primitives/IconButton";
 import { useTranslation } from "../../../i18n/I18nProvider";
@@ -62,72 +61,49 @@ export const HomeRecentSearches: React.FC = () => {
   return (
     <Container as="section" aria-labelledby="home-recent-searches-title">
       {/* Section Header */}
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-3 sm:mb-4">
         <HomeSectionHeading id="home-recent-searches-title">
           {t("home.homeRecentSearches.recherchesRecentes")}
         </HomeSectionHeading>
       </div>
 
-      {/* Recent Searches Cards Rail / Grid */}
-      <ScrollRail
-        label={t("home.homeRecentSearches.recherchesRecentes")}
-        snap
-        className="-mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible"
+      <div
+        className="flex flex-wrap gap-2.5"
+        data-testid="home-recent-searches"
       >
-        <div className="flex gap-3 sm:gap-4 md:grid md:grid-cols-3 min-w-max md:min-w-0">
-          {visibleRecentSearches.map((item) => (
-            <div
-              key={item.id}
-              className="group relative w-recent-search-card shrink-0 snap-start overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md sm:w-recent-search-card-wide md:w-auto"
+        {visibleRecentSearches.map((item) => (
+          <div
+            key={item.id}
+            data-testid="home-recent-search-chip"
+            className="group flex max-w-full items-center rounded-pill border border-border-base bg-bg-surface shadow-xs motion-surface hover:border-primary-border hover:shadow-sm"
+          >
+            {/* The destination and delete action remain siblings so the chip
+                exposes two valid, non-overlapping controls. */}
+            <Link
+              to={item.to}
+              className="flex min-w-0 items-center gap-2 rounded-l-pill py-2 pl-3 pr-1 text-sm font-bold text-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus group-hover:text-primary"
             >
-              <span
+              <Search
+                className="h-icon-md w-icon-md shrink-0 text-primary"
                 aria-hidden="true"
-                className="absolute inset-y-3 left-0 w-0.5 rounded-r-full bg-primary opacity-0 transition-opacity duration-fast group-hover:opacity-100 group-focus-within:opacity-100"
               />
+              <span className="max-w-52 truncate sm:max-w-64">
+                {item.title}
+              </span>
+            </Link>
 
-              {/* The destination and delete action are siblings. The former
-                  implementation made the whole card a role=button and nested
-                  the delete button inside it, which creates two overlapping
-                  controls and fails WCAG 4.1.2. */}
-              <Link
-                to={item.to}
-                className="flex min-h-24 items-center gap-3.5 rounded-card p-4 pr-12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:min-h-recent-search-card-min sm:gap-4 sm:p-5 sm:pr-14"
-              >
-                <span className="flex h-control-md w-control-md shrink-0 items-center justify-center rounded-control bg-primary-light text-primary motion-interactive group-hover:bg-primary group-hover:text-white group-focus-within:bg-primary group-focus-within:text-white">
-                  <Search className="h-icon-lg w-icon-lg" aria-hidden="true" />
-                </span>
-
-                <span className="min-w-0 flex-1">
-                  <h3 className="line-clamp-2 text-sm font-bold leading-snug text-stone-900 motion-interactive group-hover:text-primary sm:text-base">
-                    {item.title}
-                  </h3>
-
-                  <span className="mt-2 flex items-center gap-1.5 text-xs font-medium text-stone-500">
-                    <MapPin
-                      className="h-icon-sm w-icon-sm shrink-0 text-stone-400"
-                      aria-hidden="true"
-                    />
-                    <span className="truncate">
-                      {item.locationLabel ||
-                        t("home.homeRecentSearches.touteLaFrance")}
-                    </span>
-                  </span>
-                </span>
-              </Link>
-
-              <IconButton
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDelete(item.id)}
-                ariaLabel={`${t("home.homeRecentSearches.supprimerCetteRecherche")} : ${item.title}`}
-                className="absolute right-2 top-2 z-raised rounded-full text-stone-400 hover:bg-primary-light hover:text-primary sm:right-2.5 sm:top-2.5"
-              >
-                <X className="h-icon-md w-icon-md" />
-              </IconButton>
-            </div>
-          ))}
-        </div>
-      </ScrollRail>
+            <IconButton
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(item.id)}
+              ariaLabel={`${t("home.homeRecentSearches.supprimerCetteRecherche")} : ${item.title}`}
+              className="mr-1 shrink-0 rounded-full text-stone-400 hover:bg-primary-light hover:text-primary"
+            >
+              <X className="h-icon-sm w-icon-sm" aria-hidden="true" />
+            </IconButton>
+          </div>
+        ))}
+      </div>
     </Container>
   );
 };

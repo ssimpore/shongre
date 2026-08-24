@@ -96,6 +96,12 @@ export const messagesEn: MessageCatalogue = {
   "footer.accessibility": "Accessibility (WCAG 2.2 AA)",
   "footer.copyright": "© {year} Shongre SAS. All rights reserved.",
   "footer.sectionCategories": "Top categories",
+  "footer.sectionProfessionals": "For professionals",
+  "footer.sectionHelp": "Help & trust",
+  "footer.proSolutions": "Pro solutions & pricing",
+  "footer.helpCenter": "Help center & FAQ",
+  "footer.newsletterHeading": "Shongre newsletter",
+  "footer.marketLabel": "{market} market",
   "footer.sectionCities": "Cities & regions",
   "footer.createProAccount": "Create a Pro account",
   "footer.storeDirectory": "Store directory",
@@ -2073,6 +2079,8 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.paiementsSecurises": "Secure payments",
   "home.homePage.livraisonIntegree": "Clear handover and shipping",
   "home.homePage.vendeursVerifies": "Explicit seller statuses",
+  "home.homePage.trustSummary":
+    "Tracked payments · Clear handover · Explicit seller statuses",
   "home.homePage.annoncesRecentes": "Recent listings",
   "home.homePage.lesDernieresOffresPublieesPres":
     "The latest listings posted near you",

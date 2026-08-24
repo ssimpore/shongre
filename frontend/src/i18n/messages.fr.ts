@@ -101,6 +101,12 @@ export const messagesFr = {
   "footer.accessibility": "Accessibilité (WCAG 2.2 AA)",
   "footer.copyright": "© {year} Shongre SAS. Tous droits réservés.",
   "footer.sectionCategories": "Catégories phares",
+  "footer.sectionProfessionals": "Espace professionnels",
+  "footer.sectionHelp": "Aide & Confiance",
+  "footer.proSolutions": "Solutions & Tarifs Pro",
+  "footer.helpCenter": "Centre d’aide & FAQ",
+  "footer.newsletterHeading": "Newsletter Shongre",
+  "footer.marketLabel": "Marché {market}",
   "footer.sectionCities": "Villes & Régions",
   "footer.createProAccount": "Créer un compte Pro",
   "footer.storeDirectory": "Annuaire des boutiques",
@@ -2576,6 +2582,8 @@ export const messagesFr = {
   "home.homePage.paiementsSecurises": "Paiements sécurisés",
   "home.homePage.livraisonIntegree": "Remise et expédition claires",
   "home.homePage.vendeursVerifies": "Statuts vendeur explicites",
+  "home.homePage.trustSummary":
+    "Paiement suivi · Remise claire · Statuts vendeur explicites",
   "home.homePage.annoncesRecentes": "Annonces récentes",
   "home.homePage.lesDernieresOffresPublieesPres":
     "Les dernières offres publiées près de chez vous",
