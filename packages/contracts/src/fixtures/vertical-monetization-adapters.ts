@@ -4,6 +4,10 @@ import type {
   MonetizationCatalog,
   MonetizationProduct,
 } from "../schemas/monetization";
+import {
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
+} from "../schemas/monetization";
 import type { RealEstateCatalog } from "../schemas/real-estate";
 import type { EmploymentCatalog } from "../schemas/employment";
 
@@ -22,6 +26,20 @@ const COURSE_PRODUCTS: Record<string, string> = {
   school_organization: "course.school.organization",
 };
 
+export function isCoursePlanFeatureOperational(
+  commercial: MonetizationCatalog,
+  planId: string,
+  entitlementKey: string,
+) {
+  const productId = COURSE_PRODUCTS[planId];
+  const entitlement = commercial.products
+    .find((product) => product.id === productId)
+    ?.entitlements.find((entry) => entry.key === entitlementKey);
+  return Boolean(
+    entitlement && isCommercialEntitlementOperational(entitlement),
+  );
+}
+
 const IMMO_PRODUCTS: Record<string, string> = {
   immo_owner_free: "immo.owner.free",
   immo_owner_visibility: "immo.owner.visibility",
@@ -30,10 +48,35 @@ const IMMO_PRODUCTS: Record<string, string> = {
   immo_agency_network: "immo.agency.network",
 };
 
-const active = (product: MonetizationProduct) => product.status === "active";
+const active = (product: MonetizationProduct) =>
+  isCommercialProductPurchasable(product);
+const unavailableValue = (
+  key: string,
+  value: MonetizationProduct["entitlements"][number]["value"],
+) =>
+  typeof value === "boolean"
+    ? false
+    : typeof value === "number"
+      ? [
+          "maxTeamMembers",
+          "maxRecruiterSeats",
+          "teamMembers",
+          "maxLocations",
+          "locations",
+        ].includes(key) && value > 0
+        ? 1
+        : 0
+      : Array.isArray(value)
+        ? []
+        : value;
 const entitlementObject = (product: MonetizationProduct) =>
   Object.fromEntries(
-    product.entitlements.map((entry) => [entry.key, entry.value]),
+    product.entitlements.map((entry) => [
+      entry.key,
+      isCommercialEntitlementOperational(entry)
+        ? entry.value
+        : unavailableValue(entry.key, entry.value),
+    ]),
   );
 const price = (
   product: MonetizationProduct,

@@ -143,6 +143,17 @@ describe("BusinessRulesService quotes", () => {
     expect(second).toEqual(first);
   });
 
+  it("rejects a configured paid product whose fulfillment is suspended", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    await expect(
+      service.createQuote("individual_quote_test", {
+        productIds: ["premium.visibility_bundle"],
+        marketCode: "FR",
+        idempotencyKey: "quote-test-suspended-pack-0001",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+  });
+
   it("rejects a quote whose persisted pricing snapshot was tampered with", async () => {
     class TamperingRepository extends DemoBusinessRulesRepository {
       override async getQuote(quoteId: string) {

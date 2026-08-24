@@ -3,10 +3,15 @@ import type {
   BusinessVertical,
   CommercialConfigurationVersion,
   MonetizationAdminOverview,
+  MonetizationEntitlement,
   MonetizationProduct,
   Promotion,
   CommercialRuleOutcome,
   RuleEvaluationResult,
+} from "@shongre/contracts/monetization";
+import {
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import {
@@ -91,6 +96,27 @@ function formatMinor(amountMinor: number, currency = "EUR") {
     currency,
     maximumFractionDigits: 2,
   }).format(amountMinor / 100);
+}
+
+function entitlementReadiness(
+  entitlement: MonetizationEntitlement,
+): { label: string; variant: "success" | "warning" | "neutral" } {
+  if (isCommercialEntitlementOperational(entitlement)) {
+    return entitlement.availability === "beta"
+      ? { label: "Bêta", variant: "warning" }
+      : { label: "Opérationnel", variant: "success" };
+  }
+  if (entitlement.implementationStatus === "external_dependency") {
+    return { label: "Dépendance externe", variant: "warning" };
+  }
+  if (entitlement.implementationStatus === "incomplete") {
+    return { label: "Incomplet", variant: "warning" };
+  }
+  return {
+    label:
+      entitlement.availability === "disabled" ? "Désactivé" : "Maintenance",
+    variant: entitlement.availability === "disabled" ? "neutral" : "warning",
+  };
 }
 
 function statusLabel(status: CommercialConfigurationVersion["status"]) {
@@ -816,6 +842,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 {products.map((product) => {
                   const price = product.prices[0];
                   const selected = product.id === selectedProductId;
+                  const purchasable = isCommercialProductPurchasable(product);
                   return (
                     <button
                       key={product.id}
@@ -855,12 +882,18 @@ export const AdminMonetizationPage: React.FC = () => {
                       <span className="ml-3 md:ml-0">
                         <Badge
                           variant={
-                            product.status === "active" ? "success" : "neutral"
+                            product.status === "active" && purchasable
+                              ? "success"
+                              : product.status === "active"
+                                ? "warning"
+                                : "neutral"
                           }
                         >
-                          {product.status === "active"
+                          {product.status === "active" && purchasable
                             ? "Actif"
-                            : statusLabel(product.status)}
+                            : product.status === "active"
+                              ? "Suspendu"
+                              : statusLabel(product.status)}
                         </Badge>
                       </span>
                       <ChevronRight className="hidden md:block w-4 h-4 text-stone-400" />
@@ -1865,17 +1898,23 @@ export const AdminMonetizationPage: React.FC = () => {
                     </dl>
                   )}
                   <dl className="mt-3 space-y-2 border-t border-border-subtle pt-3">
-                    {selectedProduct.entitlements.slice(0, 5).map((entry) => (
-                      <div
-                        key={entry.key}
-                        className="flex justify-between gap-3 text-micro"
-                      >
-                        <dt className="text-stone-500">{entry.label}</dt>
-                        <dd className="font-bold text-stone-800">
-                          {String(entry.value)}
-                        </dd>
-                      </div>
-                    ))}
+                    {selectedProduct.entitlements.slice(0, 8).map((entry) => {
+                      const readiness = entitlementReadiness(entry);
+                      return (
+                        <div
+                          key={entry.key}
+                          className="flex items-start justify-between gap-3 text-micro"
+                        >
+                          <dt className="text-stone-500">{entry.label}</dt>
+                          <dd className="flex flex-wrap items-center justify-end gap-1 font-bold text-stone-800">
+                            <span>{String(entry.value)}</span>
+                            <Badge variant={readiness.variant}>
+                              {readiness.label}
+                            </Badge>
+                          </dd>
+                        </div>
+                      );
+                    })}
                   </dl>
                   {selectedProduct.kind === "subscription" && (
                     <div className="mt-3 border-t border-border-subtle pt-3 text-micro">

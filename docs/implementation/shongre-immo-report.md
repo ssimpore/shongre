@@ -16,6 +16,10 @@
 
 The frontend remains standalone in deterministic demo mode and works with the backend stopped. No browser call to Supabase, Stripe, KYC, or production APIs was added. The PostgreSQL and HTTP path is implemented for controlled staging, but enabling it remains subject to `docs/operations/shongre-immo-launch.md`.
 
+Import preview/job records are not a completed ingestion product: storage,
+parser and worker fulfillment remain absent. CSV/XML/API entitlements and the
+corresponding add-ons are therefore commercially suspended and fail closed.
+
 ## Architectural decisions
 
 - The repository’s existing backend is a TypeScript modular monolith, so Immo extends that runtime instead of introducing a parallel Django/DRF application and a second authorization/business-logic stack.

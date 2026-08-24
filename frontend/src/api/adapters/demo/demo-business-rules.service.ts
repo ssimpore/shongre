@@ -21,7 +21,11 @@ import type {
   RuleEvaluationContext,
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
-import { isCommercialAudienceCompatible } from "@shongre/contracts/monetization";
+import {
+  isCommercialAudienceCompatible,
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
+} from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { colors, palette } from "@shongre/design-tokens";
 import {
@@ -144,82 +148,89 @@ function replaceSubscriptionEntitlements(
     ).toISOString();
   });
 
-  targetProduct.entitlements.forEach((definition) => {
-    const existing = activeEntitlements.find(
-      (entitlement) =>
-        entitlement.sourceOrderId === subscription.sourceOrderId &&
-        entitlement.productId === targetProduct.id &&
-        entitlement.key === definition.key,
-    );
-    const next: ActiveEntitlement = {
-      id:
-        existing?.id ||
-        `ent_${digest(`${subscription.sourceOrderId}:${targetProduct.id}:${definition.key}`).slice(0, 24)}`,
-      accountId: subscription.accountId,
-      productId: targetProduct.id,
-      key: definition.key,
-      value: definition.value,
-      sourceOrderId: subscription.sourceOrderId,
-      startsAt: changedAt,
-      endsAt: subscription.currentPeriodEnd,
-      status: "active",
-      verticalId:
-        definition.verticalId || targetProduct.commercialProfile.verticalId,
-      mergePolicy: definition.mergePolicy,
-    };
-    if (existing) Object.assign(existing, next);
-    else activeEntitlements.push(next);
-  });
+  targetProduct.entitlements
+    .filter(isCommercialEntitlementOperational)
+    .forEach((definition) => {
+      const existing = activeEntitlements.find(
+        (entitlement) =>
+          entitlement.sourceOrderId === subscription.sourceOrderId &&
+          entitlement.productId === targetProduct.id &&
+          entitlement.key === definition.key,
+      );
+      const next: ActiveEntitlement = {
+        id:
+          existing?.id ||
+          `ent_${digest(`${subscription.sourceOrderId}:${targetProduct.id}:${definition.key}`).slice(0, 24)}`,
+        accountId: subscription.accountId,
+        productId: targetProduct.id,
+        key: definition.key,
+        value: definition.value,
+        sourceOrderId: subscription.sourceOrderId,
+        startsAt: changedAt,
+        endsAt: subscription.currentPeriodEnd,
+        status: "active",
+        verticalId:
+          definition.verticalId || targetProduct.commercialProfile.verticalId,
+        mergePolicy: definition.mergePolicy,
+      };
+      if (existing) Object.assign(existing, next);
+      else activeEntitlements.push(next);
+    });
 }
 
 function grantDemoRecurringCredits(
   subscription: MonetizationSubscription,
   definitions: MonetizationCatalog["products"][number]["entitlements"],
 ) {
-  definitions.forEach((definition) => {
-    const recurring = definition.recurringGrant;
-    if (!recurring) return;
-    const idempotencyKey = `subscription-credit:${subscription.id}:${recurring.creditType}:${subscription.currentPeriodStart}`;
-    let balance = creditBalances.find(
-      (entry) =>
-        entry.accountId === subscription.accountId &&
-        entry.creditType === recurring.creditType,
-    );
-    if (
-      balance?.transactions.some(
-        (transaction) => transaction.idempotencyKey === idempotencyKey,
+  definitions
+    .filter(isCommercialEntitlementOperational)
+    .forEach((definition) => {
+      const recurring = definition.recurringGrant;
+      if (!recurring) return;
+      const idempotencyKey = `subscription-credit:${subscription.id}:${recurring.creditType}:${subscription.currentPeriodStart}`;
+      let balance = creditBalances.find(
+        (entry) =>
+          entry.accountId === subscription.accountId &&
+          entry.creditType === recurring.creditType,
+      );
+      if (
+        balance?.transactions.some(
+          (transaction) => transaction.idempotencyKey === idempotencyKey,
+        )
       )
-    )
-      return;
-    const transaction = {
-      id: `credit_${digest(idempotencyKey).slice(0, 24)}`,
-      accountId: subscription.accountId,
-      creditType: recurring.creditType,
-      quantity: recurring.quantity,
-      reason: "Allocation récurrente du forfait",
-      sourceType: "subscription" as const,
-      sourceId: subscription.id,
-      expiresAt: subscription.currentPeriodEnd,
-      idempotencyKey,
-      createdAt: subscription.currentPeriodStart,
-    };
-    if (!balance) {
-      balance = {
+        return;
+      const transaction = {
+        id: `credit_${digest(idempotencyKey).slice(0, 24)}`,
         accountId: subscription.accountId,
         creditType: recurring.creditType,
-        available: 0,
-        reserved: 0,
-        nextExpiryAt: subscription.currentPeriodEnd,
-        transactions: [],
+        quantity: recurring.quantity,
+        reason: "Allocation récurrente du forfait",
+        sourceType: "subscription" as const,
+        sourceId: subscription.id,
+        expiresAt: subscription.currentPeriodEnd,
+        idempotencyKey,
+        createdAt: subscription.currentPeriodStart,
       };
-      creditBalances.push(balance);
-    }
-    balance.available += recurring.quantity;
-    balance.nextExpiryAt = [balance.nextExpiryAt, subscription.currentPeriodEnd]
-      .filter((value): value is string => Boolean(value))
-      .sort()[0];
-    balance.transactions.unshift(transaction);
-  });
+      if (!balance) {
+        balance = {
+          accountId: subscription.accountId,
+          creditType: recurring.creditType,
+          available: 0,
+          reserved: 0,
+          nextExpiryAt: subscription.currentPeriodEnd,
+          transactions: [],
+        };
+        creditBalances.push(balance);
+      }
+      balance.available += recurring.quantity;
+      balance.nextExpiryAt = [
+        balance.nextExpiryAt,
+        subscription.currentPeriodEnd,
+      ]
+        .filter((value): value is string => Boolean(value))
+        .sort()[0];
+      balance.transactions.unshift(transaction);
+    });
 }
 
 function ensureSeededBilling(accountId: string) {
@@ -274,22 +285,24 @@ function ensureSeededBilling(accountId: string) {
     createdAt: periodStart,
     updatedAt: periodStart,
   });
-  product.entitlements.forEach((entitlement) => {
-    activeEntitlements.push({
-      id: `seed_ent_${digest(`${accountId}:${entitlement.key}`).slice(0, 20)}`,
-      accountId,
-      productId,
-      key: entitlement.key,
-      value: entitlement.value,
-      sourceOrderId: orderId,
-      startsAt: periodStart,
-      endsAt: periodEnd,
-      status: "active",
-      verticalId:
-        entitlement.verticalId || product.commercialProfile.verticalId,
-      mergePolicy: entitlement.mergePolicy,
+  product.entitlements
+    .filter(isCommercialEntitlementOperational)
+    .forEach((entitlement) => {
+      activeEntitlements.push({
+        id: `seed_ent_${digest(`${accountId}:${entitlement.key}`).slice(0, 20)}`,
+        accountId,
+        productId,
+        key: entitlement.key,
+        value: entitlement.value,
+        sourceOrderId: orderId,
+        startsAt: periodStart,
+        endsAt: periodEnd,
+        status: "active",
+        verticalId:
+          entitlement.verticalId || product.commercialProfile.verticalId,
+        mergePolicy: entitlement.mergePolicy,
+      });
     });
-  });
   const invoiceId = `seed_inv_${digest(accountId).slice(0, 16)}`;
   invoices.push({
     id: invoiceId,
@@ -446,7 +459,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       : undefined;
     const selectedProducts = request.productIds.map((id) => {
       const product = catalog.products.find((entry) => entry.id === id);
-      if (!product) throw new Error("Produit indisponible");
+      if (!product || !isCommercialProductPurchasable(product))
+        throw new Error("Produit indisponible");
       return product;
     });
     const selectedSubscriptions = selectedProducts.filter(
@@ -557,7 +571,9 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         taxMinor,
         totalMinor: taxableMinor + taxMinor,
         taxRateBps: price.taxRateBps,
-        entitlementSnapshot: structuredClone(product.entitlements),
+        entitlementSnapshot: structuredClone(
+          product.entitlements.filter(isCommercialEntitlementOperational),
+        ),
         verticalId: product.commercialProfile.verticalId,
         trialDays: product.id === trialProduct?.id ? trialDays : undefined,
       };
@@ -661,23 +677,25 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         : line.billingPeriod === "once"
           ? undefined
           : periodEnd.toISOString();
-      line.entitlementSnapshot.forEach((entitlement) => {
-        const id = `ent_${digest(`${order.id}:${line.productId}:${entitlement.key}`).slice(0, 24)}`;
-        if (activeEntitlements.some((entry) => entry.id === id)) return;
-        activeEntitlements.push({
-          id,
-          accountId: quote.accountId,
-          productId: line.productId,
-          key: entitlement.key,
-          value: entitlement.value,
-          sourceOrderId: order.id,
-          startsAt: now,
-          endsAt,
-          status: "active",
-          verticalId: entitlement.verticalId || line.verticalId,
-          mergePolicy: entitlement.mergePolicy,
+      line.entitlementSnapshot
+        .filter(isCommercialEntitlementOperational)
+        .forEach((entitlement) => {
+          const id = `ent_${digest(`${order.id}:${line.productId}:${entitlement.key}`).slice(0, 24)}`;
+          if (activeEntitlements.some((entry) => entry.id === id)) return;
+          activeEntitlements.push({
+            id,
+            accountId: quote.accountId,
+            productId: line.productId,
+            key: entitlement.key,
+            value: entitlement.value,
+            sourceOrderId: order.id,
+            startsAt: now,
+            endsAt,
+            status: "active",
+            verticalId: entitlement.verticalId || line.verticalId,
+            mergePolicy: entitlement.mergePolicy,
+          });
         });
-      });
       if (product?.kind === "subscription") {
         const id = `sub_${digest(`${order.id}:${line.productId}`).slice(0, 24)}`;
         if (!subscriptions.some((entry) => entry.id === id)) {
@@ -1229,23 +1247,25 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         (candidate) => candidate.versionId === request.productVersionId,
       );
       if (!product) throw new Error("Version de forfait introuvable");
-      product.entitlements.forEach((definition) => {
-        const id = `complimentary_entitlement_${digest(`${grantId}:${definition.key}`).slice(0, 20)}`;
-        activeEntitlements.push({
-          id,
-          accountId: request.accountId,
-          productId: product.id,
-          key: definition.key,
-          value: definition.value,
-          startsAt: request.startsAt,
-          endsAt: request.endsAt,
-          status:
-            new Date(request.startsAt) <= new Date() ? "active" : "scheduled",
-          verticalId:
-            definition.verticalId || product.commercialProfile.verticalId,
-          mergePolicy: definition.mergePolicy,
+      product.entitlements
+        .filter(isCommercialEntitlementOperational)
+        .forEach((definition) => {
+          const id = `complimentary_entitlement_${digest(`${grantId}:${definition.key}`).slice(0, 20)}`;
+          activeEntitlements.push({
+            id,
+            accountId: request.accountId,
+            productId: product.id,
+            key: definition.key,
+            value: definition.value,
+            startsAt: request.startsAt,
+            endsAt: request.endsAt,
+            status:
+              new Date(request.startsAt) <= new Date() ? "active" : "scheduled",
+            verticalId:
+              definition.verticalId || product.commercialProfile.verticalId,
+            mergePolicy: definition.mergePolicy,
+          });
         });
-      });
     }
     return structuredClone(result);
   }

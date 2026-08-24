@@ -1458,8 +1458,24 @@ export interface Database {
         product_version_id: string;
         entitlement_key: string;
         label: string;
+        description: string;
         entitlement_value: Json;
         unit: string | null;
+        feature_type:
+          | "boolean"
+          | "integer_quota"
+          | "additive_quota"
+          | "level"
+          | "monetary_credit"
+          | "scoped_permission";
+        availability: "enabled" | "beta" | "maintenance" | "disabled";
+        implementation_status: "ready" | "incomplete" | "external_dependency";
+        dependencies: string[];
+        admin_help_text: string;
+        merge_policy: "boolean_or" | "max" | "additive" | "override";
+        vertical_id: string | null;
+        category_ids: string[];
+        recurring_grant: Json | null;
         created_at: string;
       }>;
       monetization_promotions: GeneratedTable<{

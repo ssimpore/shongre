@@ -4,6 +4,8 @@ import {
   ListingBoostOption,
   ProPlan,
 } from "../../../configuration/plans.config";
+import type { MonetizationOrder } from "@shongre/contracts/monetization";
+import type { PromotionActivationResult } from "../../contracts/promotions.contract";
 
 export class HttpPromotionsService implements PromotionsServiceContract {
   async getAvailableBoosts(listingId?: string): Promise<ListingBoostOption[]> {
@@ -18,13 +20,22 @@ export class HttpPromotionsService implements PromotionsServiceContract {
 
   async applyBoost(
     listingId: string,
-    boostId: string,
-    paymentMethod: string,
-  ): Promise<{ success: boolean; expiresAt: string }> {
-    return httpClient.post<{ success: boolean; expiresAt: string }>(
+    productId: string,
+    input: { paymentMethod: string; idempotencyKey: string },
+  ): Promise<PromotionActivationResult> {
+    const order = await httpClient.post<MonetizationOrder>(
       "/promotions/apply-boost",
-      { listingId, boostId, paymentMethod },
+      {
+        listingId,
+        boostId: productId,
+        paymentMethod: input.paymentMethod,
+        idempotencyKey: input.idempotencyKey,
+      },
     );
+    return {
+      success: order.status === "paid",
+      providerCheckoutUrl: order.providerCheckoutUrl,
+    };
   }
 
   async subscribeToProPlan(

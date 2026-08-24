@@ -170,7 +170,7 @@ describe("Shongre Auto domain service", () => {
     ).rejects.toThrow(/quota/i);
   });
 
-  it("enforces dealer membership, import entitlements and import idempotency", async () => {
+  it("enforces dealer membership and suspends imports without a worker", async () => {
     const { service } = createService();
     await expect(
       service.getOwnDealerWorkspace(
@@ -199,22 +199,15 @@ describe("Shongre Auto domain service", () => {
       ),
     ).rejects.toThrow(/pas inclus|pas activé/i);
 
-    const first = await service.requestInventoryImport(
-      "user_dealer_owner",
-      "dealer_auto_select_lyon",
-      "csv",
-      "stock.csv",
-      "request-auto-csv-001",
-    );
-    const retry = await service.requestInventoryImport(
-      "user_dealer_owner",
-      "dealer_auto_select_lyon",
-      "csv",
-      "stock.csv",
-      "request-auto-csv-001",
-    );
-    expect(first.status).toBe("queued");
-    expect(retry.id).toBe(first.id);
+    await expect(
+      service.requestInventoryImport(
+        "user_dealer_owner",
+        "dealer_auto_select_lyon",
+        "csv",
+        "stock.csv",
+        "request-auto-csv-001",
+      ),
+    ).rejects.toThrow(/pas inclus|pas activé/i);
   });
 
   it("preserves media after a downgrade while blocking only additional photos", async () => {

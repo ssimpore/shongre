@@ -33,6 +33,8 @@ import {
   subscriptionChangeRequestSchema,
   subscriptionChangePreviewSchema,
   isCommercialAudienceCompatible,
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { resolveAllEffectiveEntitlements } from "@shongre/shared";
@@ -575,7 +577,11 @@ export class BusinessRulesService {
     const products = request.productIds.map((id) =>
       catalog.products.find((product) => product.id === id),
     );
-    if (products.some((product) => !product || product.status !== "active")) {
+    if (
+      products.some(
+        (product) => !product || !isCommercialProductPurchasable(product),
+      )
+    ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Un produit demandé est indisponible.",
@@ -769,7 +775,9 @@ export class BusinessRulesService {
         taxMinor,
         totalMinor: taxableMinor + taxMinor,
         taxRateBps: price.taxRateBps,
-        entitlementSnapshot: structuredClone(product.entitlements),
+        entitlementSnapshot: structuredClone(
+          product.entitlements.filter(isCommercialEntitlementOperational),
+        ),
         verticalId: product.commercialProfile.verticalId,
         trialDays: product.id === trialProduct?.id ? trialDays : undefined,
       };

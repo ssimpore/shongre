@@ -18,6 +18,11 @@ Shongre Auto extends the existing React/TypeScript, modular Node, and Supabase/P
 
 The intended runtime remains standalone demo mode. No frontend business-table, Supabase, Stripe, KYC, or partner call is introduced. Paid offers, secure sale, dealer API synchronization, boats, and all partner referrals are visibly gated. The HTTP adapter is present for the later controlled connection, but selecting API mode still requires the launch checklist in `docs/operations/shongre-auto-launch.md`.
 
+CSV/XML/API import records and idempotency remain useful scaffolding, but the
+upload/parser/worker path is not present. The canonical commercial catalog now
+marks those promises unavailable, so plan pages, vertical projections and
+checkout cannot advertise or grant them.
+
 ## Verification commands
 
 ```bash

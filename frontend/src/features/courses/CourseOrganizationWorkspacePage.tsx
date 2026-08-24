@@ -13,6 +13,8 @@ import {
   Users,
 } from "lucide-react";
 import type { CourseOrganizationWorkspace } from "@shongre/contracts/courses";
+import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { isCoursePlanFeatureOperational } from "@shongre/contracts/vertical-monetization-adapters";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import { routes } from "../../configuration/routes";
@@ -79,6 +81,21 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
   if (!workspace) return <Skeleton className="h-[40rem] w-full rounded-card" />;
 
   const { organization, analytics, plan } = workspace;
+  const teamManagementAvailable = isCoursePlanFeatureOperational(
+    BASELINE_MONETIZATION_CATALOG,
+    plan.id,
+    "teamMembers",
+  );
+  const locationManagementAvailable = isCoursePlanFeatureOperational(
+    BASELINE_MONETIZATION_CATALOG,
+    plan.id,
+    "locations",
+  );
+  const centralInboxAvailable = isCoursePlanFeatureOperational(
+    BASELINE_MONETIZATION_CATALOG,
+    plan.id,
+    "centralLeadInbox",
+  );
 
   const inviteMember = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -144,11 +161,14 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <Button
             onClick={() => setInviteOpen(true)}
+            disabled={!teamManagementAvailable}
             variant="outline"
             size="compact"
             leftIcon={<UserPlus className="h-icon-sm w-icon-sm" />}
           >
-            Inviter un membre
+            {teamManagementAvailable
+              ? "Inviter un membre"
+              : "Invitations indisponibles"}
           </Button>
           <Button
             to={routes.courses.publish()}
@@ -206,6 +226,12 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                 {organization.memberCount} membres
               </Badge>
             </div>
+            {!teamManagementAvailable && (
+              <p className="border-b border-warning-border bg-warning-surface px-4 py-3 text-xs text-warning">
+                Consultation uniquement : les invitations restent suspendues
+                jusqu’à la disponibilité du parcours de production.
+              </p>
+            )}
             <ScrollableRegion aria-label="Tableau des membres de l’organisme">
               <table className="w-full min-w-[42rem] text-left text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-secondary">
@@ -257,11 +283,14 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
               </h2>
               <Button
                 onClick={() => setLocationOpen(true)}
+                disabled={!locationManagementAvailable}
                 variant="ghost"
                 size="sm"
                 leftIcon={<Plus className="h-icon-xs w-icon-xs" />}
               >
-                Ajouter un lieu
+                {locationManagementAvailable
+                  ? "Ajouter un lieu"
+                  : "Ajout indisponible"}
               </Button>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -289,19 +318,28 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                   Boîte de réception centralisée
                 </h2>
                 <p className="mt-0.5 text-micro text-text-muted">
-                  Affectez les demandes par matière, niveau, lieu et
-                  disponibilité.
+                  L’affectation par matière, niveau, lieu et disponibilité
+                  reste suspendue.
                 </p>
               </div>
               <Badge variant="primary">
-                {analytics.leadsReceived - analytics.leadsAccepted} à traiter
+                {centralInboxAvailable
+                  ? `${analytics.leadsReceived - analytics.leadsAccepted} à traiter`
+                  : "Indisponible"}
               </Badge>
             </div>
-            <div className="mt-4 rounded-card border border-info-border bg-info-surface p-4 text-xs text-text-secondary">
-              Les coordonnées sont retenues jusqu’à l’acceptation de la demande
-              par un membre autorisé. Les refus et contestations de lead restent
-              auditables.
-            </div>
+            {centralInboxAvailable ? (
+              <div className="mt-4 rounded-card border border-info-border bg-info-surface p-4 text-xs text-text-secondary">
+                Les coordonnées sont retenues jusqu’à l’acceptation de la
+                demande par un membre autorisé. Les refus et contestations de
+                lead restent auditables.
+              </div>
+            ) : (
+              <div className="mt-4 rounded-card border border-warning-border bg-warning-surface p-4 text-xs text-warning">
+                La boîte centralisée n’est pas incluse tant que son parcours de
+                production reste suspendu.
+              </div>
+            )}
           </section>
         </main>
 
@@ -318,13 +356,17 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
               <div className="flex justify-between">
                 <dt className="text-text-muted">Membres</dt>
                 <dd className="font-bold">
-                  {organization.memberCount} / {plan.entitlements.teamMembers}
+                  {teamManagementAvailable
+                    ? `${organization.memberCount} / ${plan.entitlements.teamMembers}`
+                    : `${organization.memberCount} · lecture seule`}
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-text-muted">Lieux</dt>
                 <dd className="font-bold">
-                  {workspace.locations.length} / {plan.entitlements.locations}
+                  {locationManagementAvailable
+                    ? `${workspace.locations.length} / ${plan.entitlements.locations}`
+                    : `${workspace.locations.length} · lecture seule`}
                 </dd>
               </div>
               <div className="flex justify-between">

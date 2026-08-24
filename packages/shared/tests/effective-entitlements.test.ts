@@ -41,8 +41,12 @@ describe("effective entitlement resolution", () => {
       at: NOW,
     });
 
-    expect(resolved.find((entry) => entry.key === "maxActiveVehicles")).toBeUndefined();
-    expect(resolved.find((entry) => entry.key === "maxActiveListings")?.value).toBe(25);
+    expect(
+      resolved.find((entry) => entry.key === "maxActiveVehicles"),
+    ).toBeUndefined();
+    expect(
+      resolved.find((entry) => entry.key === "maxActiveListings")?.value,
+    ).toBe(25);
   });
 
   it("composes generic and scoped quotas with max semantics", () => {
@@ -56,24 +60,58 @@ describe("effective entitlement resolution", () => {
       at: NOW,
     });
 
-    expect(resolved.find((entry) => entry.key === "teamMembers")?.value).toBe(12);
+    expect(resolved.find((entry) => entry.key === "teamMembers")?.value).toBe(
+      12,
+    );
   });
 
   it("adds scoped add-on quantities and ORs feature flags", () => {
     const resolved = resolveEffectiveEntitlementsForVertical({
       catalog: BASELINE_MONETIZATION_CATALOG,
       entitlements: [
-        grant("seat_1", "employment.addon.seat", "additionalRecruiterSeats", 1, "emploi", "additive"),
-        grant("seat_2", "employment.addon.seat", "additionalRecruiterSeats", 2, "emploi", "additive"),
-        grant("base", "employment.employer.starter", "advancedAnalytics", false, "emploi", "boolean_or"),
-        grant("addon", "employment.addon.analytics", "advancedAnalytics", true, "emploi", "boolean_or"),
+        grant(
+          "seat_1",
+          "test.employment.seat",
+          "additionalRecruiterSeats",
+          1,
+          "emploi",
+          "additive",
+        ),
+        grant(
+          "seat_2",
+          "test.employment.seat",
+          "additionalRecruiterSeats",
+          2,
+          "emploi",
+          "additive",
+        ),
+        grant(
+          "base",
+          "employment.employer.starter",
+          "advancedAnalytics",
+          false,
+          "emploi",
+          "boolean_or",
+        ),
+        grant(
+          "addon",
+          "test.employment.analytics",
+          "advancedAnalytics",
+          true,
+          "emploi",
+          "boolean_or",
+        ),
       ],
       verticalId: "emploi",
       at: NOW,
     });
 
-    expect(resolved.find((entry) => entry.key === "additionalRecruiterSeats")?.value).toBe(3);
-    expect(resolved.find((entry) => entry.key === "advancedAnalytics")?.value).toBe(true);
+    expect(
+      resolved.find((entry) => entry.key === "additionalRecruiterSeats")?.value,
+    ).toBe(3);
+    expect(
+      resolved.find((entry) => entry.key === "advancedAnalytics")?.value,
+    ).toBe(true);
   });
 
   it("returns distinct composed views for each purchased vertical", () => {
@@ -87,7 +125,38 @@ describe("effective entitlement resolution", () => {
       at: NOW,
     });
 
-    expect(resolved.some((entry) => entry.verticalId === "auto" && entry.key === "teamMembers")).toBe(true);
-    expect(resolved.some((entry) => entry.verticalId === "immo" && entry.key === "maxActiveVehicles")).toBe(false);
+    expect(
+      resolved.some(
+        (entry) => entry.verticalId === "auto" && entry.key === "teamMembers",
+      ),
+    ).toBe(true);
+    expect(
+      resolved.some(
+        (entry) =>
+          entry.verticalId === "immo" && entry.key === "maxActiveVehicles",
+      ),
+    ).toBe(false);
+  });
+
+  it("does not resolve a legacy grant for a commercially suspended feature", () => {
+    const resolved = resolveEffectiveEntitlementsForVertical({
+      catalog: BASELINE_MONETIZATION_CATALOG,
+      entitlements: [
+        grant(
+          "legacy-import",
+          "auto.dealer.growth",
+          "inventoryCsvImport",
+          true,
+          "auto",
+          "boolean_or",
+        ),
+      ],
+      verticalId: "auto",
+      at: NOW,
+    });
+
+    expect(
+      resolved.find((entry) => entry.key === "inventoryCsvImport"),
+    ).toBeUndefined();
   });
 });

@@ -1,4 +1,9 @@
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import {
+  hasCommercialEntitlementValue,
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
+} from "@shongre/contracts/monetization";
 
 export interface ProPlan {
   id: "free" | "pro_starter" | "pro_business" | "pro_enterprise";
@@ -27,7 +32,10 @@ const LEGACY_PLAN_IDS: Record<string, ProPlan["id"]> = {
 const entitlement = (
   product: (typeof BASELINE_MONETIZATION_CATALOG.products)[number],
   key: string,
-) => product.entitlements.find((entry) => entry.key === key)?.value;
+) =>
+  product.entitlements.find(
+    (entry) => entry.key === key && isCommercialEntitlementOperational(entry),
+  )?.value;
 
 /**
  * Compatibility presentation derived from the canonical demo catalog. It
@@ -71,14 +79,18 @@ export const PRO_PLANS: ProPlan[] = BASELINE_MONETIZATION_CATALOG.products
       automaticRelisting: Boolean(entitlement(product, "automaticRelisting")),
       bulkImportExport: Boolean(entitlement(product, "bulkPublish")),
       isPopular: product.recommended,
-      features: product.entitlements.map(
-        (entry) => `${entry.label} : ${String(entry.value)}`,
-      ),
+      features: product.entitlements
+        .filter(
+          (entry) =>
+            isCommercialEntitlementOperational(entry) &&
+            hasCommercialEntitlementValue(entry.value),
+        )
+        .map((entry) => `${entry.label} : ${String(entry.value)}`),
     };
   });
 
 export interface ListingBoostOption {
-  id: "urgent" | "highlight" | "top_of_list" | "gallery_boost";
+  id: "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight";
   productId: string;
   name: string;
   description: string;
@@ -91,13 +103,18 @@ export interface ListingBoostOption {
 const LEGACY_BOOST_IDS: Record<string, ListingBoostOption["id"]> = {
   "premium.urgent": "urgent",
   "premium.search_bump": "top_of_list",
-  "premium.highlight": "highlight",
+  "premium.highlight": "spotlight",
+  "premium.spotlight": "highlight",
   "premium.visibility_bundle": "gallery_boost",
 };
 
 export const LISTING_BOOSTS: ListingBoostOption[] =
   BASELINE_MONETIZATION_CATALOG.products
-    .filter((product) => product.id in LEGACY_BOOST_IDS)
+    .filter(
+      (product) =>
+        product.id in LEGACY_BOOST_IDS &&
+        isCommercialProductPurchasable(product),
+    )
     .map((product) => {
       const price = product.prices[0];
       return {

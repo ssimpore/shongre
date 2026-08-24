@@ -551,8 +551,10 @@ export class PublicationService {
       marketPublications,
       currency:
         draft.pricing.currency || (primaryMarket === "CH" ? "CHF" : "EUR"),
-      isBoosted: !!draft.boostPackage,
-      boostType: draft.boostPackage as any,
+      // Paid prominence is activated only after the listing exists and the
+      // PromotionsService confirms checkout. A stale draft choice can never
+      // manufacture a paid placement.
+      isBoosted: false,
     };
 
     // Save to listing repository

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { MonetizationProduct } from "../schemas/monetization";
-import { isCommercialAudienceCompatible } from "../schemas/monetization";
+import {
+  isCommercialAudienceCompatible,
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
+} from "../schemas/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "./monetization-catalog";
 
 const catalog = BASELINE_MONETIZATION_CATALOG;
@@ -280,5 +284,57 @@ describe("commercial-fr-v2 default catalog", () => {
     ] as const) {
       expectOneTimePrice(id, amount);
     }
+  });
+
+  it("keeps incomplete paid promises configured but commercially suspended", () => {
+    const csvImport = product("auto.dealer.growth").entitlements.find(
+      (entry) => entry.key === "inventoryCsvImport",
+    );
+
+    expect(csvImport).toMatchObject({
+      availability: "maintenance",
+      implementationStatus: "incomplete",
+      dependencies: [],
+    });
+    expect(isCommercialEntitlementOperational(csvImport!)).toBe(false);
+    expect(
+      catalog.products
+        .filter((entry) => entry.status === "active")
+        .flatMap((entry) => entry.entitlements)
+        .some(
+          (entry) =>
+            entry.implementationStatus !== "ready" &&
+            ["enabled", "beta"].includes(entry.availability),
+        ),
+    ).toBe(false);
+    expect(
+      isCommercialProductPurchasable(product("premium.visibility_bundle")),
+    ).toBe(false);
+    expect(isCommercialProductPurchasable(product("premium.urgent"))).toBe(
+      true,
+    );
+    expect(isCommercialProductPurchasable(product("auto.dealer.growth"))).toBe(
+      true,
+    );
+  });
+
+  it("does not advertise suspended capabilities in active plan descriptions", () => {
+    const forbiddenCopy: Record<string, RegExp> = {
+      "auto.dealer.growth": /\béquipe\b|\bimports?\b/i,
+      "auto.dealer.network": /multi-sites|synchronisation|\bexports?\b|\bapi\b/i,
+      "immo.agency.growth": /\béquipe\b|\bimports?\b/i,
+      "immo.agency.network": /multi-agences|\bflux\b|reporting|\bapi\b/i,
+      "course.tutor.premium": /catalogue|\béquipe\b/i,
+      "course.school.organization": /catalogue|\béquipe\b|\bimports?\b|reporting|\bapi\b/i,
+    };
+
+    for (const [productId, forbidden] of Object.entries(forbiddenCopy)) {
+      expect(product(productId).description).not.toMatch(forbidden);
+    }
+    expect(
+      product("auto.dealer.network").entitlements.find(
+        (entry) => entry.key === "publicStorefront",
+      )?.label,
+    ).toBe("Vitrine concession");
   });
 });

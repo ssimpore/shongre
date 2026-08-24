@@ -86,6 +86,35 @@ export type EntitlementMergePolicy = z.infer<
   typeof entitlementMergePolicySchema
 >;
 
+export const commercialFeatureAvailabilitySchema = z.enum([
+  "enabled",
+  "beta",
+  "maintenance",
+  "disabled",
+]);
+export type CommercialFeatureAvailability = z.infer<
+  typeof commercialFeatureAvailabilitySchema
+>;
+
+export const commercialFeatureTypeSchema = z.enum([
+  "boolean",
+  "integer_quota",
+  "additive_quota",
+  "level",
+  "monetary_credit",
+  "scoped_permission",
+]);
+export type CommercialFeatureType = z.infer<typeof commercialFeatureTypeSchema>;
+
+export const commercialFeatureImplementationStatusSchema = z.enum([
+  "ready",
+  "incomplete",
+  "external_dependency",
+]);
+export type CommercialFeatureImplementationStatus = z.infer<
+  typeof commercialFeatureImplementationStatusSchema
+>;
+
 export const trialPolicySchema = z.object({
   enabled: z.boolean(),
   durationDays: z.number().int().positive().optional(),
@@ -261,8 +290,15 @@ export type MonetizationPrice = z.infer<typeof monetizationPriceSchema>;
 export const monetizationEntitlementSchema = z.object({
   key: z.string().min(1),
   label: z.string().min(1),
+  description: z.string().default(""),
   value: z.union([commercialScalarSchema, z.array(z.string())]),
   unit: z.string().optional(),
+  featureType: commercialFeatureTypeSchema.default("scoped_permission"),
+  availability: commercialFeatureAvailabilitySchema.default("enabled"),
+  implementationStatus:
+    commercialFeatureImplementationStatusSchema.default("ready"),
+  dependencies: z.array(z.string().min(1)).default([]),
+  adminHelpText: z.string().default(""),
   mergePolicy: entitlementMergePolicySchema,
   verticalId: businessVerticalCodeSchema.optional(),
   categoryIds: z.array(z.string().min(1)),
@@ -277,6 +313,31 @@ export const monetizationEntitlementSchema = z.object({
 export type MonetizationEntitlement = z.infer<
   typeof monetizationEntitlementSchema
 >;
+
+/**
+ * Only enabled and explicitly-labelled beta capabilities can be granted or
+ * advertised. Maintenance and disabled definitions remain in versioned
+ * configuration for history and safe operational recovery.
+ */
+export function isCommercialEntitlementOperational(
+  entitlement: Pick<
+    MonetizationEntitlement,
+    "availability" | "implementationStatus"
+  >,
+) {
+  return (
+    entitlement.implementationStatus === "ready" &&
+    (entitlement.availability === "enabled" ||
+      entitlement.availability === "beta")
+  );
+}
+
+export function hasCommercialEntitlementValue(
+  value: MonetizationEntitlement["value"],
+) {
+  if (value === false || value === 0 || value === "") return false;
+  return !Array.isArray(value) || value.length > 0;
+}
 
 export const monetizationProductSchema = z.object({
   id: z.string().min(1),
@@ -302,6 +363,25 @@ export const monetizationProductSchema = z.object({
   commercialProfile: commercialPlanProfileSchema,
 });
 export type MonetizationProduct = z.infer<typeof monetizationProductSchema>;
+
+/**
+ * An active product whose paid outcomes are all suspended must not enter a
+ * catalog or checkout. Products without entitlements, such as a pure delivery
+ * fee, remain purchasable because the service itself is the priced outcome.
+ */
+export function isCommercialProductPurchasable(
+  product: Pick<MonetizationProduct, "status" | "entitlements">,
+) {
+  return (
+    product.status === "active" &&
+    (product.entitlements.length === 0 ||
+      product.entitlements.some(
+        (entitlement) =>
+          isCommercialEntitlementOperational(entitlement) &&
+          hasCommercialEntitlementValue(entitlement.value),
+      ))
+  );
+}
 
 export const promotionSchema = z.object({
   id: z.string().min(1),
@@ -384,6 +464,437 @@ export const ruleEvaluationResultSchema = z.object({
 });
 export type RuleEvaluationResult = z.infer<typeof ruleEvaluationResultSchema>;
 
+/**
+ * Canonical platform-commission vocabulary.
+ *
+ * Commission policies live in the same immutable commercial catalogue as
+ * products, promotions and entitlements. This avoids a second source of truth
+ * while keeping rich transaction-fee semantics out of the generic rule
+ * outcome bag above.
+ */
+export const commissionTransactionTypeSchema = z.enum([
+  "marketplace_order",
+  "course_booking",
+  "service_booking",
+  "vehicle_transaction",
+  "property_service",
+  "employment_service",
+]);
+export type CommissionTransactionType = z.infer<
+  typeof commissionTransactionTypeSchema
+>;
+
+export const commissionEarningEventSchema = z.enum([
+  "payment_succeeded",
+  "order_completed",
+  "service_completed",
+  "payout_released",
+]);
+export type CommissionEarningEvent = z.infer<
+  typeof commissionEarningEventSchema
+>;
+
+export const commissionBaseSchema = z.enum([
+  "item_subtotal",
+  "subtotal_after_discount",
+  "total_excluding_tax",
+  "total_including_tax",
+  "platform_collected_amount",
+]);
+export type CommissionBase = z.infer<typeof commissionBaseSchema>;
+
+export const commissionRoundingModeSchema = z.enum([
+  "half_up",
+  "half_even",
+  "down",
+  "up",
+]);
+export type CommissionRoundingMode = z.infer<
+  typeof commissionRoundingModeSchema
+>;
+
+export const commissionTaxTreatmentSchema = z.object({
+  mode: z.enum(["exclusive", "inclusive", "exempt"]),
+  rateBps: z.number().int().min(0).max(10_000),
+});
+export type CommissionTaxTreatment = z.infer<
+  typeof commissionTaxTreatmentSchema
+>;
+
+export const commissionAllocationSchema = z
+  .object({
+    sellerBps: z.number().int().min(0).max(10_000),
+    buyerBps: z.number().int().min(0).max(10_000),
+    platformAbsorbedBps: z.number().int().min(0).max(10_000),
+  })
+  .superRefine((allocation, context) => {
+    if (
+      allocation.sellerBps +
+        allocation.buyerBps +
+        allocation.platformAbsorbedBps !==
+      10_000
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Commission allocation must total exactly 10,000 bps.",
+      });
+    }
+  });
+export type CommissionAllocation = z.infer<
+  typeof commissionAllocationSchema
+>;
+
+const commissionModelBounds = {
+  minimumMinor: z.number().int().nonnegative().optional(),
+  maximumMinor: z.number().int().nonnegative().optional(),
+};
+
+export const commissionTierSchema = z.object({
+  fromMinor: z.number().int().nonnegative(),
+  toMinor: z.number().int().positive().optional(),
+  rateBps: z.number().int().min(0).max(10_000),
+  fixedMinor: z.number().int().nonnegative().default(0),
+});
+export type CommissionTier = z.infer<typeof commissionTierSchema>;
+
+export const commissionModelSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("percentage"),
+    rateBps: z.number().int().min(0).max(10_000),
+    ...commissionModelBounds,
+  }),
+  z.object({
+    type: z.literal("fixed"),
+    fixedMinor: z.number().int().nonnegative(),
+    ...commissionModelBounds,
+  }),
+  z.object({
+    type: z.literal("combined"),
+    rateBps: z.number().int().min(0).max(10_000),
+    fixedMinor: z.number().int().nonnegative(),
+    ...commissionModelBounds,
+  }),
+  z.object({
+    type: z.literal("tiered"),
+    tierMode: z.enum(["progressive", "cliff"]),
+    tiers: z.array(commissionTierSchema).min(1),
+    ...commissionModelBounds,
+  }),
+  z.object({
+    type: z.literal("threshold"),
+    thresholdMinor: z.number().int().nonnegative(),
+    appliesWhen: z.enum(["at_or_above", "above", "below"]),
+    rateBps: z.number().int().min(0).max(10_000).default(0),
+    fixedMinor: z.number().int().nonnegative().default(0),
+    ...commissionModelBounds,
+  }),
+  z.object({
+    type: z.literal("flat_category"),
+    fixedMinor: z.number().int().nonnegative(),
+    ...commissionModelBounds,
+  }),
+]);
+export type CommissionModel = z.infer<typeof commissionModelSchema>;
+
+export const commissionAdjustmentSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("percentage_discount"),
+    discountBps: z.number().int().min(0).max(10_000),
+  }),
+  z.object({
+    type: z.literal("fixed_discount"),
+    amountMinor: z.number().int().nonnegative(),
+  }),
+  z.object({ type: z.literal("full_waiver") }),
+  z.object({
+    type: z.literal("rate_override"),
+    rateBps: z.number().int().min(0).max(10_000),
+  }),
+  z.object({
+    type: z.literal("fixed_override"),
+    amountMinor: z.number().int().nonnegative(),
+  }),
+]);
+export type CommissionAdjustment = z.infer<
+  typeof commissionAdjustmentSchema
+>;
+
+export const commissionScopeSchema = z.object({
+  countryCodes: z.array(z.string().length(2)).default([]),
+  marketCodes: z.array(marketCodeSchema).default([]),
+  currencies: z.array(z.string().length(3)).default([]),
+  verticalIds: z.array(businessVerticalCodeSchema).default([]),
+  categoryIds: z.array(z.string().min(1)).default([]),
+  subcategoryIds: z.array(z.string().min(1)).default([]),
+  transactionTypes: z.array(commissionTransactionTypeSchema).default([]),
+  sellerTypes: z
+    .array(z.enum(["individual", "professional", "organization"]))
+    .default([]),
+  sellerSegments: z.array(z.string().min(1)).default([]),
+  planIds: z.array(z.string().min(1)).default([]),
+  organizationIds: z.array(z.string().min(1)).default([]),
+  accountIds: z.array(z.string().min(1)).default([]),
+  campaignIds: z.array(z.string().min(1)).default([]),
+  paymentMethods: z.array(z.string().min(1)).default([]),
+});
+export type CommissionScope = z.infer<typeof commissionScopeSchema>;
+
+const commissionEffectSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("commission"),
+    base: commissionBaseSchema,
+    model: commissionModelSchema,
+    allocation: commissionAllocationSchema,
+    tax: commissionTaxTreatmentSchema,
+    roundingMode: commissionRoundingModeSchema.default("half_up"),
+    earningEvent: commissionEarningEventSchema,
+    refundPolicy: z.enum([
+      "proportional",
+      "full_only",
+      "non_refundable",
+      "manual_review",
+    ]),
+  }),
+  z.object({
+    kind: z.literal("adjustment"),
+    adjustment: commissionAdjustmentSchema,
+    stackingPolicy: z.enum(["exclusive", "best_price", "stackable"]),
+    promotionId: z.string().min(1).optional(),
+  }),
+]);
+export type CommissionEffect = z.infer<typeof commissionEffectSchema>;
+
+export const commissionRuleSchema = z
+  .object({
+    id: z.string().min(1),
+    policyId: z.string().min(1),
+    versionId: z.string().min(1),
+    name: z.string().min(1),
+    description: z.string().default(""),
+    priority: z.number().int().min(0).max(100_000).default(0),
+    scope: commissionScopeSchema,
+    effect: commissionEffectSchema,
+    effectiveFrom: z.string().datetime().optional(),
+    effectiveUntil: z.string().datetime().optional(),
+  })
+  .superRefine((rule, context) => {
+    if (
+      rule.effectiveFrom &&
+      rule.effectiveUntil &&
+      new Date(rule.effectiveFrom) >= new Date(rule.effectiveUntil)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Commission rule effectiveUntil must be after effectiveFrom.",
+      });
+    }
+    if (rule.effect.kind === "commission") {
+      const { minimumMinor, maximumMinor } = rule.effect.model;
+      if (
+        minimumMinor !== undefined &&
+        maximumMinor !== undefined &&
+        minimumMinor > maximumMinor
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Commission minimum cannot exceed maximum.",
+        });
+      }
+      if (rule.effect.model.type === "tiered") {
+        const tiers = rule.effect.model.tiers;
+        let previousEnd = 0;
+        tiers.forEach((tier, index) => {
+          if (tier.fromMinor !== previousEnd) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Commission tiers must be contiguous and start at zero.",
+              path: ["effect", "model", "tiers", index, "fromMinor"],
+            });
+          }
+          if (tier.toMinor !== undefined && tier.toMinor <= tier.fromMinor) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Commission tier upper bound must exceed its lower bound.",
+              path: ["effect", "model", "tiers", index, "toMinor"],
+            });
+          }
+          previousEnd = tier.toMinor ?? previousEnd;
+          if (tier.toMinor === undefined && index !== tiers.length - 1) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Only the final commission tier may be open-ended.",
+              path: ["effect", "model", "tiers", index, "toMinor"],
+            });
+          }
+        });
+      }
+    }
+  });
+export type CommissionRule = z.infer<typeof commissionRuleSchema>;
+
+export const commissionPolicySchema = z
+  .object({
+    id: z.string().min(1),
+    code: z.string().regex(/^[a-z0-9_.-]+$/),
+    versionId: z.string().min(1),
+    versionNumber: z.number().int().positive(),
+    name: z.string().min(1),
+    description: z.string().default(""),
+    policyType: z.enum(["base", "adjustment"]),
+    status: commercialConfigurationStatusSchema,
+    effectiveFrom: z.string().datetime().optional(),
+    effectiveUntil: z.string().datetime().optional(),
+    rolloutBps: z.number().int().min(0).max(10_000).default(10_000),
+    rules: z.array(commissionRuleSchema).min(1),
+  })
+  .superRefine((policy, context) => {
+    if (
+      policy.effectiveFrom &&
+      policy.effectiveUntil &&
+      new Date(policy.effectiveFrom) >= new Date(policy.effectiveUntil)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Commission policy effectiveUntil must be after effectiveFrom.",
+      });
+    }
+    policy.rules.forEach((rule, index) => {
+      if (rule.policyId !== policy.id || rule.versionId !== policy.versionId) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Commission rule must reference its containing policy/version.",
+          path: ["rules", index],
+        });
+      }
+      const expectedKind = policy.policyType === "base" ? "commission" : "adjustment";
+      if (rule.effect.kind !== expectedKind) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `A ${policy.policyType} policy cannot contain a ${rule.effect.kind} rule.`,
+          path: ["rules", index, "effect"],
+        });
+      }
+    });
+  });
+export type CommissionPolicy = z.infer<typeof commissionPolicySchema>;
+
+export const commissionCalculationInputSchema = z.object({
+  idempotencyKey: z.string().min(8).max(200).optional(),
+  transactionId: z.string().min(1).optional(),
+  orderId: z.string().min(1).optional(),
+  eligibleCommercialEvent: z.boolean().default(false),
+  earningEvent: commissionEarningEventSchema,
+  effectiveAt: z.string().datetime(),
+  quoteExpiresAt: z.string().datetime().optional(),
+  marketCode: marketCodeSchema,
+  countryCode: z.string().length(2),
+  currency: z.string().length(3),
+  verticalId: businessVerticalCodeSchema.optional(),
+  categoryId: z.string().min(1).optional(),
+  subcategoryId: z.string().min(1).optional(),
+  transactionType: commissionTransactionTypeSchema,
+  sellerType: z.enum(["individual", "professional", "organization"]),
+  sellerSegment: z.string().min(1).optional(),
+  sellerAccountId: z.string().min(1).optional(),
+  organizationId: z.string().min(1).optional(),
+  planId: z.string().min(1).optional(),
+  campaignIds: z.array(z.string().min(1)).default([]),
+  paymentMethod: z.string().min(1).optional(),
+  itemSubtotalMinor: z.number().int().nonnegative(),
+  discountMinor: z.number().int().nonnegative().default(0),
+  shippingMinor: z.number().int().nonnegative().default(0),
+  taxMinor: z.number().int().nonnegative().default(0),
+  buyerFeesMinor: z.number().int().nonnegative().default(0),
+  totalMinor: z.number().int().nonnegative(),
+  platformCollectedMinor: z.number().int().nonnegative().default(0),
+  historicalVolumeMinor: z.number().int().nonnegative().default(0),
+});
+export type CommissionCalculationInput = z.infer<
+  typeof commissionCalculationInputSchema
+>;
+
+export const commissionResolutionExplanationSchema = z.object({
+  policyId: z.string(),
+  ruleId: z.string(),
+  policyName: z.string(),
+  ruleName: z.string(),
+  matched: z.boolean(),
+  precedence: z.number().int(),
+  reasonCode: z.string(),
+});
+export type CommissionResolutionExplanation = z.infer<
+  typeof commissionResolutionExplanationSchema
+>;
+
+export const commissionCalculationSchema = z.object({
+  id: z.string().min(1),
+  idempotencyKey: z.string().optional(),
+  configurationVersionId: z.string().min(1),
+  transactionId: z.string().optional(),
+  orderId: z.string().optional(),
+  state: z.enum([
+    "quoted",
+    "earned",
+    "partially_reversed",
+    "reversed",
+    "cancelled",
+  ]),
+  eligible: z.boolean(),
+  reasonCode: z.string(),
+  currency: z.string().length(3),
+  baseAmountMinor: z.number().int().nonnegative(),
+  grossCommissionMinor: z.number().int().nonnegative(),
+  adjustmentMinor: z.number().int().nonnegative(),
+  netCommissionExcludingTaxMinor: z.number().int().nonnegative(),
+  commissionTaxMinor: z.number().int().nonnegative(),
+  totalCommissionMinor: z.number().int().nonnegative(),
+  sellerChargeMinor: z.number().int().nonnegative(),
+  buyerChargeMinor: z.number().int().nonnegative(),
+  platformAbsorbedMinor: z.number().int().nonnegative(),
+  platformRevenueMinor: z.number().int().nonnegative(),
+  sellerPayableMinor: z.number().int().nonnegative(),
+  buyerTotalMinor: z.number().int().nonnegative(),
+  appliedPolicyId: z.string().optional(),
+  appliedPolicyVersionId: z.string().optional(),
+  appliedRuleId: z.string().optional(),
+  appliedAdjustmentRuleIds: z.array(z.string()),
+  effectSnapshot: commissionEffectSchema.optional(),
+  inputSnapshot: commissionCalculationInputSchema,
+  explanation: z.array(commissionResolutionExplanationSchema),
+  calculatedAt: z.string().datetime(),
+  expiresAt: z.string().datetime().optional(),
+  snapshotHash: z.string().min(16),
+});
+export type CommissionCalculation = z.infer<
+  typeof commissionCalculationSchema
+>;
+
+export const commissionRefundRequestSchema = z.object({
+  calculation: commissionCalculationSchema,
+  refundBaseMinor: z.number().int().nonnegative(),
+  idempotencyKey: z.string().min(8).max(200),
+  occurredAt: z.string().datetime(),
+});
+export type CommissionRefundRequest = z.infer<
+  typeof commissionRefundRequestSchema
+>;
+
+export const commissionReversalSchema = z.object({
+  id: z.string().min(1),
+  calculationId: z.string().min(1),
+  idempotencyKey: z.string().min(8),
+  reversedBaseMinor: z.number().int().nonnegative(),
+  reversedCommissionMinor: z.number().int().nonnegative(),
+  reversedTaxMinor: z.number().int().nonnegative(),
+  sellerCreditMinor: z.number().int().nonnegative(),
+  buyerCreditMinor: z.number().int().nonnegative(),
+  platformRevenueReversalMinor: z.number().int().nonnegative(),
+  state: z.enum(["partially_reversed", "reversed", "manual_review"]),
+  occurredAt: z.string().datetime(),
+  snapshotHash: z.string().min(16),
+});
+export type CommissionReversal = z.infer<typeof commissionReversalSchema>;
+
 export const monetizationCatalogSchema = z.object({
   configurationVersionId: z.string(),
   versionNumber: z.number().int().positive(),
@@ -394,6 +905,7 @@ export const monetizationCatalogSchema = z.object({
   products: z.array(monetizationProductSchema),
   promotions: z.array(promotionSchema),
   rules: z.array(commercialRuleSchema),
+  commissionPolicies: z.array(commissionPolicySchema).default([]),
   stale: z.boolean().default(false),
 });
 export type MonetizationCatalog = z.infer<typeof monetizationCatalogSchema>;
@@ -964,6 +1476,7 @@ export const commercialDraftPatchSchema = z.object({
   verticals: z.array(businessVerticalSchema).optional(),
   products: z.array(monetizationProductSchema).optional(),
   rules: z.array(commercialRuleSchema).optional(),
+  commissionPolicies: z.array(commissionPolicySchema).optional(),
   promotions: z.array(promotionSchema).optional(),
 });
 export type CommercialDraftPatch = z.infer<typeof commercialDraftPatchSchema>;

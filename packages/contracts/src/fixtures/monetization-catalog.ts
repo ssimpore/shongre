@@ -2,6 +2,7 @@ import type {
   BusinessVertical,
   BusinessVerticalCode,
   CommercialPlanProfile,
+  CommissionPolicy,
   CommercialRule,
   MonetizationCatalog,
   MonetizationEntitlement,
@@ -41,7 +42,7 @@ export const BASELINE_BUSINESS_VERTICALS: BusinessVertical[] = [
   {
     id: "immo",
     name: "Immo",
-    description: "Portefeuille, agents et opérations d’agence.",
+    description: "Portefeuille, demandes et opérations d’agence.",
     categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     capabilityKeys: ["immo.agency.manage.own", "immo.inventory.import.own"],
     status: "active",
@@ -62,7 +63,7 @@ export const BASELINE_BUSINESS_VERTICALS: BusinessVertical[] = [
   {
     id: "cours",
     name: "Cours",
-    description: "Catalogue de formations, instructeurs et demandes.",
+    description: "Cours, profils enseignants et gestion des demandes.",
     categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
     capabilityKeys: [
       "course.offer.manage.own",
@@ -290,8 +291,22 @@ const entitlement = (
 ): MonetizationEntitlement => ({
   key,
   label,
+  description: `Droit commercial « ${label} » contrôlé par le catalogue Shongre.`,
   value,
   unit,
+  featureType:
+    typeof value === "boolean"
+      ? "boolean"
+      : typeof value === "number"
+        ? recurringGrant
+          ? "monetary_credit"
+          : "integer_quota"
+        : "level",
+  availability: "enabled",
+  implementationStatus: "ready",
+  dependencies: [],
+  adminHelpText:
+    "Modifiez cette valeur dans un brouillon, puis validez et publiez la version commerciale.",
   mergePolicy:
     typeof value === "boolean"
       ? "boolean_or"
@@ -301,6 +316,175 @@ const entitlement = (
   categoryIds: [],
   recurringGrant,
 });
+
+const FEATURE_DEPENDENCIES: Record<string, string[]> = {
+  inventoryXmlImport: ["inventoryCsvImport"],
+  xmlImport: ["csvImport"],
+  apiSync: ["csvImport"],
+  branchPermissions: ["maxLocations", "maxTeamMembers"],
+  teamPermissions: ["maxTeamMembers"],
+  bulkCourseManagement: ["courseCatalog"],
+};
+
+/**
+ * Engineering readiness is deliberately separate from commercial activation.
+ * Admin may disable, maintain or beta-label a ready feature, but cannot turn an
+ * incomplete implementation into a paid promise through configuration alone.
+ */
+const INCOMPLETE_FEATURES_BY_PRODUCT: Record<string, Set<string>> = {
+  "premium.visibility_bundle": new Set(["searchBumpCredits"]),
+  "auto.dealer.starter": new Set(["savedTemplates"]),
+  "auto.dealer.growth": new Set([
+    "maxTeamMembers",
+    "maxLocations",
+    "savedTemplates",
+    "duplicateListings",
+    "bulkActions",
+    "inventoryCsvImport",
+    "inventoryXmlImport",
+    "prioritySupport",
+  ]),
+  "auto.dealer.network": new Set([
+    "maxTeamMembers",
+    "maxLocations",
+    "inventoryCsvImport",
+    "inventoryXmlImport",
+    "inventoryApiSync",
+    "exportTools",
+    "branchPermissions",
+    "apiAccess",
+    "prioritySupport",
+  ]),
+  auto_addon_secure_sale: new Set(["secureSale"]),
+  auto_addon_urgent: new Set(["urgent"]),
+  auto_addon_bump: new Set(["searchBumpCredits"]),
+  auto_addon_featured: new Set(["featured"]),
+  auto_addon_featured_30d: new Set(["featured"]),
+  auto_addon_bump_pack_10: new Set(["searchBumpCredits"]),
+  auto_addon_homepage: new Set(["homepageSpotlight"]),
+  auto_addon_category: new Set(["categorySpotlight"]),
+  auto_addon_qualified_lead: new Set(["qualifiedLeadCredits"]),
+  auto_addon_sponsored_dealer: new Set(["sponsoredDealer"]),
+  "immo.agency.starter": new Set(["savedTemplates"]),
+  "immo.agency.growth": new Set([
+    "maxTeamMembers",
+    "maxLocations",
+    "bulkActions",
+    "csvImport",
+    "xmlImport",
+    "savedTemplates",
+    "duplicateListings",
+    "prioritySupport",
+  ]),
+  "immo.agency.network": new Set([
+    "maxTeamMembers",
+    "maxLocations",
+    "agencyGroups",
+    "csvImport",
+    "xmlImport",
+    "inventoryApiSync",
+    "teamPermissions",
+    "apiAccess",
+    "prioritySupport",
+  ]),
+  immo_urgent: new Set(["urgent"]),
+  immo_bump: new Set(["searchBumpCredits"]),
+  immo_featured: new Set(["featured"]),
+  immo_featured_30d: new Set(["featured"]),
+  immo_bump_pack_10: new Set(["searchBumpCredits"]),
+  immo_home_spotlight: new Set(["homepageSpotlight"]),
+  immo_local_spotlight: new Set(["localSpotlight"]),
+  immo_qualified_lead: new Set(["qualifiedLeadCredits"]),
+  immo_sponsored_agency: new Set(["sponsoredAgency"]),
+  "employment.visibility.pack": new Set([
+    "urgentHiringBadge",
+    "scheduledSearchBumps",
+    "featuredPlacementDays",
+    "advancedAnalytics",
+  ]),
+  "employment.employer.starter": new Set([
+    "maxRecruiterSeats",
+    "reusableTemplates",
+  ]),
+  "employment.employer.growth": new Set([
+    "maxRecruiterSeats",
+    "reusableTemplates",
+  ]),
+  "employment.agency": new Set([
+    "maxRecruiterSeats",
+    "reusableTemplates",
+    "csvImport",
+    "apiSync",
+  ]),
+  "employment.addon.urgent": new Set(["urgentHiringBadge"]),
+  "employment.addon.bump": new Set(["scheduledSearchBumps"]),
+  "employment.addon.featured": new Set(["featuredPlacement"]),
+  "employment.addon.local": new Set(["localSpotlight"]),
+  "employment.addon.seat": new Set(["additionalRecruiterSeats"]),
+  "employment.addon.job-credit": new Set(["additionalActiveJobs"]),
+  "employment.addon.analytics": new Set(["advancedAnalytics"]),
+  "employment.addon.distribution": new Set(["distributionIntegration"]),
+  addon_featured_subject: new Set(["featuredSubject"]),
+  addon_local_spotlight: new Set(["localSpotlight"]),
+  addon_search_bump: new Set(["searchBumpCredits"]),
+  addon_qualified_lead: new Set(["qualifiedLeadCredits"]),
+  addon_verification: new Set(["documentVerification"]),
+  "course.tutor.premium": new Set([
+    "teamMembers",
+    "locations",
+    "organizationStorefront",
+    "courseCatalog",
+    "bulkCourseManagement",
+  ]),
+  "course.school.organization": new Set([
+    "teamMembers",
+    "locations",
+    "organizationStorefront",
+    "courseCatalog",
+    "csvImport",
+    "apiAccess",
+    "centralLeadInbox",
+    "bulkCourseManagement",
+    "reporting",
+  ]),
+};
+
+const EXTERNAL_DEPENDENCY_FEATURES_BY_PRODUCT: Record<string, Set<string>> = {
+  "auto.dealer.network": new Set(["inventoryApiSync", "apiAccess"]),
+  auto_addon_secure_sale: new Set(["secureSale"]),
+  "immo.agency.network": new Set(["inventoryApiSync", "apiAccess"]),
+  "employment.agency": new Set(["apiSync"]),
+  "employment.addon.distribution": new Set(["distributionIntegration"]),
+  "course.school.organization": new Set(["apiAccess"]),
+};
+
+function withFeatureReadiness(
+  productId: string,
+  entry: MonetizationEntitlement,
+): MonetizationEntitlement {
+  const incomplete = INCOMPLETE_FEATURES_BY_PRODUCT[productId]?.has(entry.key);
+  const externalDependency = EXTERNAL_DEPENDENCY_FEATURES_BY_PRODUCT[
+    productId
+  ]?.has(entry.key);
+  const implementationStatus = externalDependency
+    ? "external_dependency"
+    : incomplete
+      ? "incomplete"
+      : "ready";
+  return {
+    ...entry,
+    dependencies: FEATURE_DEPENDENCIES[entry.key] || entry.dependencies,
+    availability:
+      implementationStatus === "ready" ? entry.availability : "maintenance",
+    implementationStatus,
+    adminHelpText:
+      implementationStatus === "external_dependency"
+        ? "Promesse commerciale suspendue : configurez, déployez et validez la dépendance externe avant réactivation."
+        : implementationStatus === "incomplete"
+          ? "Promesse commerciale suspendue : le parcours de production complet doit être livré et validé avant réactivation."
+          : entry.adminHelpText,
+  };
+}
 
 function verticalForCategories(
   categoryIds: string[] = [],
@@ -366,15 +550,18 @@ const product = (input: {
           },
         ]),
   ],
-  entitlements: (input.entitlements || []).map((entry) => ({
-    ...entry,
-    mergePolicy:
-      input.kind === "credit_pack" && typeof entry.value === "number"
-        ? "additive"
-        : entry.mergePolicy,
-    verticalId: verticalForCategories(input.categoryIds),
-    categoryIds: input.categoryIds || [],
-  })),
+  entitlements: (input.entitlements || []).map((source) => {
+    const entry = withFeatureReadiness(input.id, source);
+    return {
+      ...entry,
+      mergePolicy:
+        input.kind === "credit_pack" && typeof entry.value === "number"
+          ? "additive"
+          : entry.mergePolicy,
+      verticalId: verticalForCategories(input.categoryIds),
+      categoryIds: input.categoryIds || [],
+    };
+  }),
   compatibility: {
     requiresProductIds: [],
     excludesProductIds: [],
@@ -752,7 +939,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     kind: "subscription",
     name: "Shongre Auto Business",
     description:
-      "Gestion de stock avancée, équipe, imports et suivi des leads.",
+      "Capacité de stock étendue, suivi des leads et statistiques avancées.",
     audience: "professional",
     categoryIds: [CANONICAL_TAXONOMY_IDS.vehicles],
     amountMinor: 5990,
@@ -800,7 +987,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     kind: "subscription",
     name: "Shongre Auto Scale",
     description:
-      "Pilotage multi-sites, synchronisation de stock et reporting réseau.",
+      "Capacité de stock étendue, gestion avancée des leads et statistiques réseau.",
     audience: "organization",
     categoryIds: [CANONICAL_TAXONOMY_IDS.vehicles],
     amountMinor: 11990,
@@ -814,7 +1001,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
       entitlement("maxVideosPerVehicle", "Vidéos par véhicule", 3),
       entitlement("maxTeamMembers", "Utilisateurs professionnels", 10),
       entitlement("maxLocations", "Concessions", 5),
-      entitlement("publicStorefront", "Vitrine multi-sites", true),
+      entitlement("publicStorefront", "Vitrine concession", true),
       entitlement("inventoryCsvImport", "Import CSV", true),
       entitlement("inventoryXmlImport", "Import XML / flux", true),
       entitlement("inventoryApiSync", "Synchronisation API", true),
@@ -1036,7 +1223,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     kind: "subscription",
     name: "Shongre Cours Studio",
     description:
-      "Catalogue, équipe d’instructeurs et CRM avancé pour un studio.",
+      "Capacité étendue, CRM avancé et statistiques pour une activité de cours.",
     audience: "organization",
     categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
     amountMinor: 2490,
@@ -1074,7 +1261,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     kind: "subscription",
     name: "Shongre Cours Organisme",
     description:
-      "Catalogue étendu, équipe, imports et reporting pour un organisme de formation.",
+      "Volumes élevés de cours et demandes, CRM et statistiques avancées.",
     audience: "organization",
     categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
     amountMinor: 5990,
@@ -1252,7 +1439,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     kind: "subscription",
     name: "Shongre Immo Business",
     description:
-      "Équipe, leads, imports et statistiques avancées pour une agence en croissance.",
+      "Portefeuille étendu, attribution des demandes et statistiques avancées.",
     audience: "professional",
     categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     amountMinor: 6990,
@@ -1301,7 +1488,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     kind: "subscription",
     name: "Shongre Immo Agency+",
     description:
-      "Multi-agences, flux avancés, attribution et reporting de portefeuille.",
+      "Portefeuille grande capacité, attribution avancée et statistiques de portefeuille.",
     audience: "organization",
     categoryIds: [CANONICAL_TAXONOMY_IDS.realEstate],
     amountMinor: 12990,
@@ -1916,27 +2103,6 @@ export const BASELINE_COMMERCIAL_RULES: CommercialRule[] = [
       },
     ),
   ),
-  rule(
-    "commission.seller.individual",
-    "Commission vendeur particulier",
-    400,
-    ruleScope(["FR"], ["individual"]),
-    { commissionRateBps: 0, reasonCode: "INDIVIDUAL_COMMISSION" },
-  ),
-  rule(
-    "commission.seller.professional",
-    "Commission vendeur professionnel",
-    400,
-    ruleScope(["FR"], ["professional"]),
-    { commissionRateBps: 300, reasonCode: "PRO_COMMISSION" },
-  ),
-  rule(
-    "commission.courses.fr",
-    "Commission Cours France",
-    650,
-    ruleScope(["FR"], [], [CANONICAL_TAXONOMY_IDS.courses]),
-    { commissionRateBps: 1200, reasonCode: "COURSE_COMMISSION" },
-  ),
   ...[
     ["FR", 2000],
     ["BE", 2100],
@@ -1975,6 +2141,127 @@ export const BASELINE_COMMERCIAL_RULES: CommercialRule[] = [
       reasonCode: "INSTANT_PAYOUT_FEE",
     },
   ),
+];
+
+const emptyCommissionScope = {
+  countryCodes: [],
+  marketCodes: [],
+  currencies: [],
+  verticalIds: [],
+  categoryIds: [],
+  subcategoryIds: [],
+  transactionTypes: [],
+  sellerTypes: [],
+  sellerSegments: [],
+  planIds: [],
+  organizationIds: [],
+  accountIds: [],
+  campaignIds: [],
+  paymentMethods: [],
+};
+
+/**
+ * Migrated canonical commission policies.
+ *
+ * There is intentionally no zero-percent individual rule: the engine's safe
+ * default is zero when no active eligible policy exists. The Courses policy is
+ * retained as disabled configuration until its payment/booking/payout chain is
+ * operational; merely publishing a course must never earn a commission.
+ */
+export const BASELINE_COMMISSION_POLICIES: CommissionPolicy[] = [
+  {
+    id: "commission-policy-marketplace-pro-fr",
+    code: "marketplace.professional.fr",
+    versionId: VERSION_ID,
+    versionNumber: VERSION_NUMBER,
+    name: "Transactions marketplace professionnelles — France",
+    description:
+      "Commission acquise uniquement après réussite du paiement d’une commande marketplace éligible.",
+    policyType: "base",
+    status: "active",
+    effectiveFrom: PUBLISHED_AT,
+    rolloutBps: 10_000,
+    rules: [
+      {
+        id: "commission-rule-marketplace-pro-fr",
+        policyId: "commission-policy-marketplace-pro-fr",
+        versionId: VERSION_ID,
+        name: "Professionnel marketplace France",
+        description: "Taux historique migré de 3 % sur le sous-total article.",
+        priority: 400,
+        scope: {
+          ...emptyCommissionScope,
+          countryCodes: ["FR"],
+          marketCodes: ["FR"],
+          currencies: ["EUR"],
+          transactionTypes: ["marketplace_order"],
+          sellerTypes: ["professional", "organization"],
+        },
+        effect: {
+          kind: "commission",
+          base: "item_subtotal",
+          model: { type: "percentage", rateBps: 300 },
+          allocation: {
+            sellerBps: 10_000,
+            buyerBps: 0,
+            platformAbsorbedBps: 0,
+          },
+          tax: { mode: "inclusive", rateBps: 2_000 },
+          roundingMode: "half_up",
+          earningEvent: "payment_succeeded",
+          refundPolicy: "proportional",
+        },
+        effectiveFrom: PUBLISHED_AT,
+      },
+    ],
+  },
+  {
+    id: "commission-policy-courses-fr",
+    code: "courses.booking.fr",
+    versionId: VERSION_ID,
+    versionNumber: VERSION_NUMBER,
+    name: "Réservations Cours — France",
+    description:
+      "Taux historique conservé mais désactivé tant que booking, paiement et payout ne sont pas opérationnels.",
+    policyType: "base",
+    status: "disabled",
+    effectiveFrom: PUBLISHED_AT,
+    rolloutBps: 0,
+    rules: [
+      {
+        id: "commission-rule-courses-fr",
+        policyId: "commission-policy-courses-fr",
+        versionId: VERSION_ID,
+        name: "Réservation Cours France",
+        description: "Commission de 12 % sur réservation de cours finalisée.",
+        priority: 650,
+        scope: {
+          ...emptyCommissionScope,
+          countryCodes: ["FR"],
+          marketCodes: ["FR"],
+          currencies: ["EUR"],
+          verticalIds: ["cours"],
+          categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
+          transactionTypes: ["course_booking"],
+        },
+        effect: {
+          kind: "commission",
+          base: "subtotal_after_discount",
+          model: { type: "percentage", rateBps: 1_200 },
+          allocation: {
+            sellerBps: 10_000,
+            buyerBps: 0,
+            platformAbsorbedBps: 0,
+          },
+          tax: { mode: "inclusive", rateBps: 2_000 },
+          roundingMode: "half_up",
+          earningEvent: "service_completed",
+          refundPolicy: "proportional",
+        },
+        effectiveFrom: PUBLISHED_AT,
+      },
+    ],
+  },
 ];
 
 export const BASELINE_MONETIZATION_CATALOG: MonetizationCatalog =
@@ -2035,6 +2322,7 @@ export const BASELINE_MONETIZATION_CATALOG: MonetizationCatalog =
       },
     ],
     rules: BASELINE_COMMERCIAL_RULES,
+    commissionPolicies: BASELINE_COMMISSION_POLICIES,
     stale: false,
   });
 

@@ -3,10 +3,18 @@ import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-c
 import { validateCommercialConfiguration } from "../../../src/modules/business-rules/configuration-validator.js";
 
 describe("commercial configuration validation", () => {
-  it("accepts the audited baseline without conflicts", () => {
+  it("accepts the audited baseline without blocking conflicts", () => {
+    const conflicts = validateCommercialConfiguration(
+      BASELINE_MONETIZATION_CATALOG,
+    );
     expect(
-      validateCommercialConfiguration(BASELINE_MONETIZATION_CATALOG),
+      conflicts.filter((conflict) => conflict.severity === "blocking"),
     ).toEqual([]);
+    expect(
+      conflicts.some(
+        (conflict) => conflict.code === "FEATURE_COMMERCIAL_PROMISE_SUSPENDED",
+      ),
+    ).toBe(true);
   });
 
   it("blocks ambiguous rules with identical precedence and divergent outcomes", () => {
@@ -39,6 +47,41 @@ describe("commercial configuration validation", () => {
         "UNKNOWN_PRODUCT_REFERENCE",
         "INVALID_PERCENTAGE_DISCOUNT",
       ]),
+    );
+  });
+
+  it("blocks an incomplete feature from being commercially re-enabled", () => {
+    const catalog = structuredClone(BASELINE_MONETIZATION_CATALOG);
+    const feature = catalog.products
+      .find((product) => product.id === "auto.dealer.growth")!
+      .entitlements.find(
+        (entitlement) => entitlement.key === "inventoryCsvImport",
+      )!;
+    feature.availability = "enabled";
+
+    expect(validateCommercialConfiguration(catalog)).toContainEqual(
+      expect.objectContaining({
+        code: "FEATURE_NOT_IMPLEMENTED",
+        severity: "blocking",
+      }),
+    );
+  });
+
+  it("blocks an operational feature whose declared dependency is unavailable", () => {
+    const catalog = structuredClone(BASELINE_MONETIZATION_CATALOG);
+    const product = catalog.products.find(
+      (entry) => entry.id === "auto.dealer.growth",
+    )!;
+    const feature = product.entitlements.find(
+      (entitlement) => entitlement.key === "maxActiveVehicles",
+    )!;
+    feature.dependencies = ["inventoryCsvImport"];
+
+    expect(validateCommercialConfiguration(catalog)).toContainEqual(
+      expect.objectContaining({
+        code: "FEATURE_DEPENDENCY_MISSING",
+        severity: "blocking",
+      }),
     );
   });
 });

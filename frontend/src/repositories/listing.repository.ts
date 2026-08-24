@@ -40,11 +40,6 @@ export interface IListingRepository {
     marketPublications?: any[],
   ): Promise<Listing>;
   getListingsByMarket(marketCode: string): Promise<Listing[]>;
-  boostListing(
-    id: string,
-    boostType:
-      "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight",
-  ): Promise<Listing>;
   moderateListing(
     id: string,
     action: "hide" | "approve" | "delete",
@@ -458,27 +453,6 @@ export class MockListingRepository implements IListingRepository {
     status: ListingStatus,
   ): Promise<Listing> {
     return this.updateListing(id, { status });
-  }
-
-  async boostListing(
-    id: string,
-    boostType:
-      "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight",
-  ): Promise<Listing> {
-    const listing = await this.getListingById(id);
-    if (!listing) throw new Error("Annonce non trouvée");
-
-    const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, "listing.promote", listing);
-
-    const boostExpiresAt = new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000,
-    ).toISOString();
-    return this.updateListing(id, {
-      isBoosted: true,
-      boostType,
-      boostExpiresAt,
-    });
   }
 
   async moderateListing(

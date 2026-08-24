@@ -13,7 +13,10 @@ import type {
   TutorSearchResponse,
   TutorWorkspace,
 } from "@shongre/contracts/courses";
-import { applyMonetizationToCourseCatalog } from "@shongre/contracts/vertical-monetization-adapters";
+import {
+  applyMonetizationToCourseCatalog,
+  isCoursePlanFeatureOperational,
+} from "@shongre/contracts/vertical-monetization-adapters";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type {
@@ -416,6 +419,15 @@ export class DemoCoursesService implements CoursesServiceContract {
     if (!displayName) throw new Error("Indiquez le nom du membre à inviter.");
     const plan = this.resolvedOrganizationPlan();
     if (
+      !isCoursePlanFeatureOperational(
+        BASELINE_MONETIZATION_CATALOG,
+        plan.id,
+        "teamMembers",
+      )
+    ) {
+      throw new Error("Fonction temporairement indisponible.");
+    }
+    if (
       this.organizationWorkspace.members.length >= plan.entitlements.teamMembers
     ) {
       throw new Error(
@@ -450,6 +462,15 @@ export class DemoCoursesService implements CoursesServiceContract {
     const label = input.label.trim();
     if (!label) throw new Error("Indiquez un lieu d’enseignement.");
     const plan = this.resolvedOrganizationPlan();
+    if (
+      !isCoursePlanFeatureOperational(
+        BASELINE_MONETIZATION_CATALOG,
+        plan.id,
+        "locations",
+      )
+    ) {
+      throw new Error("Fonction temporairement indisponible.");
+    }
     const locationLimit = plan.entitlements.locations;
     if (this.organizationWorkspace.locations.length >= locationLimit) {
       throw new Error("Le quota de lieux de cette formule est atteint.");

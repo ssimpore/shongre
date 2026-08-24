@@ -3,6 +3,10 @@ import type {
   ConfigurationConflict,
   MonetizationCatalog,
 } from "@shongre/contracts/monetization";
+import {
+  hasCommercialEntitlementValue,
+  isCommercialEntitlementOperational,
+} from "@shongre/contracts/monetization";
 
 const canonical = (value: unknown) =>
   JSON.stringify(value, (_key, child) => {
@@ -64,6 +68,69 @@ export function validateCommercialConfiguration(
   }
 
   for (const product of catalog.products) {
+    const entitlementKeys = product.entitlements.map((entry) => entry.key);
+    const duplicateEntitlements = [
+      ...new Set(
+        entitlementKeys.filter(
+          (key, index) => entitlementKeys.indexOf(key) !== index,
+        ),
+      ),
+    ];
+    if (duplicateEntitlements.length) {
+      conflicts.push({
+        code: "DUPLICATE_ENTITLEMENT",
+        severity: "blocking",
+        entityIds: [product.id, ...duplicateEntitlements],
+        message: `${product.name} contient des fonctionnalités dupliquées : ${duplicateEntitlements.join(", ")}.`,
+      });
+    }
+    for (const entitlement of product.entitlements) {
+      const carriesValue = hasCommercialEntitlementValue(entitlement.value);
+      const commerciallyAvailable =
+        entitlement.availability === "enabled" ||
+        entitlement.availability === "beta";
+      if (
+        carriesValue &&
+        commerciallyAvailable &&
+        entitlement.implementationStatus !== "ready"
+      ) {
+        conflicts.push({
+          code: "FEATURE_NOT_IMPLEMENTED",
+          severity: "blocking",
+          entityIds: [product.id, entitlement.key],
+          message: `${product.name} ne peut pas activer ${entitlement.label} : son parcours de production est ${entitlement.implementationStatus === "external_dependency" ? "bloqué par une dépendance externe" : "incomplet"}.`,
+        });
+      } else if (carriesValue && entitlement.implementationStatus !== "ready") {
+        conflicts.push({
+          code: "FEATURE_COMMERCIAL_PROMISE_SUSPENDED",
+          severity: "warning",
+          entityIds: [product.id, entitlement.key],
+          message: `${entitlement.label} reste configuré dans ${product.name}, mais est exclu des droits et des surfaces commerciales.`,
+        });
+      }
+      if (!carriesValue || !isCommercialEntitlementOperational(entitlement))
+        continue;
+      const missingDependencies = entitlement.dependencies.filter(
+        (dependencyKey) => {
+          const dependency = product.entitlements.find(
+            (candidate) => candidate.key === dependencyKey,
+          );
+          return (
+            !dependency ||
+            !hasCommercialEntitlementValue(dependency.value) ||
+            !isCommercialEntitlementOperational(dependency)
+          );
+        },
+      );
+      if (missingDependencies.length) {
+        conflicts.push({
+          code: "FEATURE_DEPENDENCY_MISSING",
+          severity: "blocking",
+          entityIds: [product.id, entitlement.key, ...missingDependencies],
+          message: `${entitlement.label} requiert ${missingDependencies.join(", ")} dans ${product.name}.`,
+        });
+      }
+    }
     const missingDependencies = product.compatibility.requiresProductIds.filter(
       (id) => !productIds.has(id),
     );

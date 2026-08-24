@@ -25,7 +25,7 @@ The tutoring vertical is implemented incrementally in the existing React/TypeScr
 - The guided request captures goals, schedule, mode, area, budget, start date, context, age band, and guardian consent.
 - Tutor onboarding adapts between individual and organization, saves only a non-sensitive local draft, and publishes through the service contract.
 - Tutor workspace covers profile completion, moderation, offers, availability, leads, analytics, plan/credits, verification, qualifications, conditional tax wording, and Phase 2 state.
-- Organization workspace covers team roles/permissions, locations, centralized leads, plan capacity, verification, and Phase 2 state.
+- Organization workspace preserves read-only team/location history and plan capacity. Invitations, new locations, organization storefront/catalog, bulk actions and the centralized inbox are visibly suspended until the production mutation path exists.
 - Admin Cours covers metrics, taxonomy status, plan entitlements, add-ons, request/lead settings, commission configuration, safety, and feature gates.
 - The protected admin catalog includes inactive subjects, levels, plans, and add-ons so an operator can disable and later re-enable the same record; the public catalog exposes active records only.
 - Navigation, account workspace, admin navigation, footer, page metadata, and canonical routes are integrated.

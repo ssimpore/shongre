@@ -95,7 +95,7 @@ describe("Service Registry & API Adapter Boundary", () => {
 
     const boosts = await services.promotions.getAvailableBoosts();
     expect(Array.isArray(boosts)).toBe(true);
-    expect(boosts.length).toBeGreaterThan(0);
+    expect(boosts).toHaveLength(0);
 
     const proPlans = await services.promotions.getProSubscriptionPlans();
     expect(Array.isArray(proPlans)).toBe(true);

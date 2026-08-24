@@ -145,7 +145,7 @@ describe("DemoAutoService", () => {
         "stock.csv",
         "request-csv-demo-001",
       ),
-    ).resolves.toMatchObject({ status: "queued", type: "csv" });
+    ).rejects.toThrow(/pas activé/i);
   });
 
   it("keeps paid offers and boats behind explicit market gates", async () => {

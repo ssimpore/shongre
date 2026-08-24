@@ -1,5 +1,8 @@
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
-import { isCommercialAudienceCompatible } from "@shongre/contracts/monetization";
+import {
+  isCommercialAudienceCompatible,
+  isCommercialEntitlementOperational,
+} from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 export type DemoCommercialCategory =
@@ -65,7 +68,9 @@ export function getDemoDeliveryAmountMinor(
     (candidate) => candidate.id === `delivery.${delivery}`,
   );
   const tierAmount = product?.entitlements.find(
-    (entry) => entry.key === `tier.${tier}.amountMinor`,
+    (entry) =>
+      entry.key === `tier.${tier}.amountMinor` &&
+      isCommercialEntitlementOperational(entry),
   )?.value;
   return typeof tierAmount === "number"
     ? tierAmount
@@ -164,7 +169,9 @@ export function getDemoPublicationPolicy(input: {
     (candidate) => candidate.id === planProductId,
   );
   const productQuota = planProduct?.entitlements.find(
-    (candidate) => candidate.key === "maxActiveListings",
+    (candidate) =>
+      candidate.key === "maxActiveListings" &&
+      isCommercialEntitlementOperational(candidate),
   )?.value;
   const ruleQuota = resolvedRule?.outcome.quotaLimit;
   const categorySpecific = !!resolvedRule?.scope.categoryIds.length;

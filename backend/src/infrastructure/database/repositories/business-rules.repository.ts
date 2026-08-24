@@ -12,6 +12,7 @@ import type {
   SubscriptionChangePreview,
   SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
+import { isCommercialEntitlementOperational } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { getBillingUsagePresentation } from "@shongre/shared";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
@@ -500,7 +501,9 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
           ).toISOString();
         }
       }
-      for (const definition of targetProduct.entitlements) {
+      for (const definition of targetProduct.entitlements.filter(
+        isCommercialEntitlementOperational,
+      )) {
         const entitlementId = deterministicMemoryId(
           `${subscription.sourceOrderId}:${targetProduct.id}:${definition.key}`,
         );

@@ -9,9 +9,14 @@ import { listingRepository } from "../../../repositories/listing.repository";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoPromotionsService implements PromotionsServiceContract {
-  async getAvailableBoosts(_listingId?: string): Promise<ListingBoostOption[]> {
+  private readonly activations = new Map<
+    string,
+    { success: boolean; expiresAt: string }
+  >();
+
+  async getAvailableBoosts(listingId?: string): Promise<ListingBoostOption[]> {
     await simulateNetworkDelay();
-    return LISTING_BOOSTS;
+    return listingId ? LISTING_BOOSTS : [];
   }
 
   async getProSubscriptionPlans(): Promise<ProPlan[]> {
@@ -21,11 +26,14 @@ export class DemoPromotionsService implements PromotionsServiceContract {
 
   async applyBoost(
     listingId: string,
-    boostId: string,
-    _paymentMethod: string,
+    productId: string,
+    input: { paymentMethod: string; idempotencyKey: string },
   ): Promise<{ success: boolean; expiresAt: string }> {
     await simulateNetworkDelay();
-    const boost = LISTING_BOOSTS.find((b) => b.id === boostId);
+    const replay = this.activations.get(input.idempotencyKey);
+    if (replay) return replay;
+    if (!input.paymentMethod) throw new Error("Mode de paiement requis.");
+    const boost = LISTING_BOOSTS.find((b) => b.productId === productId);
     if (!boost) throw new Error("Option de visibilité introuvable.");
 
     const expiresAt = new Date(
@@ -37,6 +45,7 @@ export class DemoPromotionsService implements PromotionsServiceContract {
       top_of_list: "search_bump",
       highlight: "featured",
       gallery_boost: "featured",
+      spotlight: "featured",
     }[boost.id] as "urgent_badge" | "search_bump" | "featured";
     await listingRepository.updateListing(listingId, {
       isBoosted: true,
@@ -52,10 +61,12 @@ export class DemoPromotionsService implements PromotionsServiceContract {
       promotedAt: startsAt,
     });
 
-    return {
+    const result = {
       success: true,
       expiresAt,
     };
+    this.activations.set(input.idempotencyKey, result);
+    return result;
   }
 
   async subscribeToProPlan(

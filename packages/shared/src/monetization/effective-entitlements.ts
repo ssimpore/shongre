@@ -5,6 +5,7 @@ import type {
   EntitlementMergePolicy,
   MonetizationCatalog,
 } from "@shongre/contracts";
+import { isCommercialEntitlementOperational } from "@shongre/contracts";
 
 type EffectiveEntitlement = BillingOverview["effectiveEntitlements"][number];
 
@@ -13,21 +14,31 @@ type Candidate = {
   label: string;
   mergePolicy: EntitlementMergePolicy;
   verticalId?: BusinessVerticalCode;
+  operational: boolean;
 };
 
 function catalogCandidate(
   catalog: MonetizationCatalog,
   entry: ActiveEntitlement,
 ): Candidate {
-  const product = catalog.products.find((candidate) => candidate.id === entry.productId);
-  const definition = product?.entitlements.find((candidate) => candidate.key === entry.key);
+  const product = catalog.products.find(
+    (candidate) => candidate.id === entry.productId,
+  );
+  const definition = product?.entitlements.find(
+    (candidate) => candidate.key === entry.key,
+  );
   const verticalId =
-    entry.verticalId || definition?.verticalId || product?.commercialProfile.verticalId;
+    entry.verticalId ||
+    definition?.verticalId ||
+    product?.commercialProfile.verticalId;
 
   return {
     entry,
     label: definition?.label || entry.key,
     mergePolicy: entry.mergePolicy || definition?.mergePolicy || "override",
+    operational: definition
+      ? isCommercialEntitlementOperational(definition)
+      : true,
     ...(verticalId && verticalId !== "general" ? { verticalId } : {}),
   };
 }
@@ -42,14 +53,18 @@ function mergeValues(
     return values.some((value) => value === true);
   }
   if (policy === "max") {
-    const numbers = values.filter((value): value is number => typeof value === "number");
-    return numbers.length > 0 ? Math.max(...numbers) : values.at(-1) ?? false;
+    const numbers = values.filter(
+      (value): value is number => typeof value === "number",
+    );
+    return numbers.length > 0 ? Math.max(...numbers) : (values.at(-1) ?? false);
   }
   if (policy === "additive") {
-    const numbers = values.filter((value): value is number => typeof value === "number");
+    const numbers = values.filter(
+      (value): value is number => typeof value === "number",
+    );
     return numbers.length > 0
       ? numbers.reduce((total, value) => total + value, 0)
-      : values.at(-1) ?? false;
+      : (values.at(-1) ?? false);
   }
   return values.at(-1) ?? false;
 }
@@ -73,6 +88,7 @@ export function resolveEffectiveEntitlementsForVertical(input: {
         (!entry.endsAt || new Date(entry.endsAt).getTime() > now),
     )
     .map((entry) => catalogCandidate(input.catalog, entry))
+    .filter((candidate) => candidate.operational)
     .filter(
       (candidate) =>
         !candidate.verticalId || candidate.verticalId === input.verticalId,
@@ -92,8 +108,11 @@ export function resolveEffectiveEntitlementsForVertical(input: {
 
   return [...byKey.entries()]
     .map(([key, grouped]): EffectiveEntitlement => {
-      const scoped = [...grouped].reverse().find((candidate) => candidate.verticalId);
-      const policy = scoped?.mergePolicy || grouped.at(-1)?.mergePolicy || "override";
+      const scoped = [...grouped]
+        .reverse()
+        .find((candidate) => candidate.verticalId);
+      const policy =
+        scoped?.mergePolicy || grouped.at(-1)?.mergePolicy || "override";
       return {
         key,
         label: scoped?.label || grouped.at(-1)?.label || key,
@@ -102,7 +121,9 @@ export function resolveEffectiveEntitlementsForVertical(input: {
           ? { verticalId: input.verticalId }
           : {}),
         mergePolicy: policy,
-        sourceProductIds: [...new Set(grouped.map(({ entry }) => entry.productId))],
+        sourceProductIds: [
+          ...new Set(grouped.map(({ entry }) => entry.productId)),
+        ],
       };
     })
     .sort((left, right) => left.label.localeCompare(right.label, "fr"));
@@ -121,7 +142,9 @@ export function resolveAllEffectiveEntitlements(input: {
     ...new Set(
       candidates
         .map((candidate) => candidate.verticalId)
-        .filter((verticalId): verticalId is BusinessVerticalCode => Boolean(verticalId)),
+        .filter((verticalId): verticalId is BusinessVerticalCode =>
+          Boolean(verticalId),
+        ),
     ),
   ];
 

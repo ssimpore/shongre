@@ -1,4 +1,9 @@
 import type { MonetizationOrder } from "@shongre/contracts/monetization";
+import {
+  hasCommercialEntitlementValue,
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
+} from "@shongre/contracts/monetization";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
   businessRulesService,
@@ -37,8 +42,14 @@ export interface ProPlan {
 const BOOST_TYPE: Record<string, ListingBoostOption["type"]> = {
   "premium.urgent": "urgent",
   "premium.search_bump": "search_bump",
-  "premium.featured": "featured",
-  "premium.featured_month": "featured",
+  "premium.highlight": "featured",
+  "premium.spotlight": "featured",
+};
+const PUBLIC_BOOST_IDS: Record<string, string> = {
+  "premium.urgent": "urgent",
+  "premium.search_bump": "top_of_list",
+  "premium.spotlight": "highlight",
+  "premium.highlight": "spotlight",
 };
 const LEGACY_PLAN_IDS: Record<string, string> = {
   "plan.pro.free": "free",
@@ -53,7 +64,7 @@ const CENTRAL_PRODUCT_IDS: Record<string, string> = {
   enterprise: "plan.pro.enterprise",
   boost_urgent_7d: "premium.urgent",
   boost_bump_7d: "premium.search_bump",
-  boost_featured_7d: "premium.highlight",
+  boost_featured_7d: "premium.spotlight",
 };
 
 /** Compatibility view over the centralized catalog for existing clients. */
@@ -69,7 +80,8 @@ export class MonetizationService {
     return catalog.products
       .filter(
         (product) =>
-          product.kind === "premium_option" && product.status === "active",
+          ["premium_option", "sponsored_placement"].includes(product.kind) &&
+          isCommercialProductPurchasable(product),
       )
       .map((product) => {
         const price =
@@ -77,7 +89,7 @@ export class MonetizationService {
             (candidate) => candidate.billingPeriod === "once",
           ) || product.prices[0];
         return {
-          id: product.id,
+          id: PUBLIC_BOOST_IDS[product.id] || product.id,
           name: product.name,
           type: BOOST_TYPE[product.id] || "featured",
           durationDays: price.durationDays || 1,
@@ -99,13 +111,18 @@ export class MonetizationService {
           product.status === "active",
       )
       .map((product) => {
+        const operationalEntitlements = product.entitlements.filter(
+          (entitlement) =>
+            isCommercialEntitlementOperational(entitlement) &&
+            hasCommercialEntitlementValue(entitlement.value),
+        );
         const monthly = product.prices.find(
           (price) => price.billingPeriod === "month",
         );
         const yearly = product.prices.find(
           (price) => price.billingPeriod === "year",
         );
-        const maxListings = product.entitlements.find(
+        const maxListings = operationalEntitlements.find(
           (entry) => entry.key === "maxActiveListings",
         )?.value;
         return {
@@ -113,7 +130,7 @@ export class MonetizationService {
           name: product.name,
           priceMonthly: (monthly?.amount.amountMinor || 0) / 100,
           priceYearly: (yearly?.amount.amountMinor || 0) / 100,
-          features: product.entitlements.map(
+          features: operationalEntitlements.map(
             (entry) => `${entry.label} : ${String(entry.value)}`,
           ),
           maxListings: typeof maxListings === "number" ? maxListings : 0,

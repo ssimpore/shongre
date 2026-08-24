@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import type { MonetizationProduct } from "@shongre/contracts/monetization";
+import {
+  hasCommercialEntitlementValue,
+  isCommercialEntitlementOperational,
+} from "@shongre/contracts/monetization";
 import { Button } from "../../design-system/primitives/Button";
 import {
   FormField,
@@ -29,6 +33,11 @@ const parseCsv = (value: string) =>
 const localDateTime = (value?: string) => value?.slice(0, 16) || "";
 const optionalIso = (value: string) =>
   value ? new Date(value).toISOString() : undefined;
+const formatMinor = (amountMinor: number, currency: string) =>
+  new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency,
+  }).format(amountMinor / 100);
 
 export function AdminPlanDraftModal({
   product,
@@ -93,6 +102,71 @@ export function AdminPlanDraftModal({
         <div className="rounded-control border border-border-base bg-bg-subtle p-3 text-xs">
           <strong>{product.name}</strong> · version cible v{targetVersion}
         </div>
+
+        <section
+          className="rounded-card border border-primary-border bg-primary-light p-4"
+          aria-labelledby="plan-preview-heading"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="text-micro font-black uppercase tracking-wide text-primary">
+                Aperçu avant publication
+              </div>
+              <h3
+                id="plan-preview-heading"
+                className="mt-1 text-base font-black"
+              >
+                {draft.name}
+              </h3>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-secondary">
+                {draft.description}
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              {draft.prices.map((price) => (
+                <div
+                  key={price.id}
+                  className="text-xs font-black text-text-main"
+                >
+                  {formatMinor(price.amount.amountMinor, price.amount.currency)}
+                  {price.billingPeriod === "month"
+                    ? " / mois"
+                    : price.billingPeriod === "year"
+                      ? " / an"
+                      : ""}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {draft.entitlements
+              .filter(
+                (entitlement) =>
+                  isCommercialEntitlementOperational(entitlement) &&
+                  hasCommercialEntitlementValue(entitlement.value),
+              )
+              .slice(0, 8)
+              .map((entitlement) => (
+                <span
+                  key={entitlement.key}
+                  className="rounded-full border border-primary-border bg-bg-surface px-2 py-1 text-micro font-bold text-text-secondary"
+                >
+                  {entitlement.label}
+                  {entitlement.availability === "beta" ? " · Bêta" : ""}
+                </span>
+              ))}
+          </div>
+          {draft.entitlements.some(
+            (entitlement) =>
+              !isCommercialEntitlementOperational(entitlement) &&
+              hasCommercialEntitlementValue(entitlement.value),
+          ) ? (
+            <p className="mt-3 text-xs font-bold text-warning">
+              Les fonctionnalités incomplètes ou en maintenance sont exclues de
+              cet aperçu et ne seront pas accordées.
+            </p>
+          ) : null}
+        </section>
 
         <section className="space-y-3" aria-labelledby="plan-identity-heading">
           <h3 id="plan-identity-heading" className="text-sm font-black">
@@ -312,8 +386,67 @@ export function AdminPlanDraftModal({
                 key={entitlement.key}
                 className="rounded-control border border-border-base p-3"
               >
-                <div className="text-micro font-bold text-text-muted">
-                  {entitlement.key}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-micro font-bold text-text-muted">
+                    {entitlement.key}
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-micro font-bold ${
+                      entitlement.implementationStatus === "ready"
+                        ? "bg-success-surface text-success"
+                        : "bg-warning-surface text-warning"
+                    }`}
+                  >
+                    {entitlement.implementationStatus === "ready"
+                      ? "Implémenté"
+                      : entitlement.implementationStatus ===
+                          "external_dependency"
+                        ? "Dépendance externe"
+                        : "Incomplet"}
+                  </span>
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <FormField label="Disponibilité">
+                    <select
+                      value={entitlement.availability}
+                      disabled={entitlement.implementationStatus !== "ready"}
+                      onChange={(event) =>
+                        updateEntitlement(entitlement.key, (current) => ({
+                          ...current,
+                          availability: event.target
+                            .value as MonetizationProduct["entitlements"][number]["availability"],
+                        }))
+                      }
+                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm disabled:cursor-not-allowed disabled:bg-bg-subtle"
+                    >
+                      <option value="enabled">Activé</option>
+                      <option value="beta">Bêta</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="disabled">Désactivé</option>
+                    </select>
+                  </FormField>
+                  <FormField label="Type">
+                    <select
+                      value={entitlement.featureType}
+                      onChange={(event) =>
+                        updateEntitlement(entitlement.key, (current) => ({
+                          ...current,
+                          featureType: event.target
+                            .value as MonetizationProduct["entitlements"][number]["featureType"],
+                        }))
+                      }
+                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
+                    >
+                      <option value="boolean">Booléen</option>
+                      <option value="integer_quota">Quota entier</option>
+                      <option value="additive_quota">Quota additionnel</option>
+                      <option value="level">Niveau</option>
+                      <option value="monetary_credit">Crédit</option>
+                      <option value="scoped_permission">
+                        Permission ciblée
+                      </option>
+                    </select>
+                  </FormField>
                 </div>
                 <FormField label={entitlement.label} className="mt-2">
                   {typeof entitlement.value === "boolean" ? (
@@ -358,6 +491,36 @@ export function AdminPlanDraftModal({
                     />
                   )}
                 </FormField>
+                <FormField label="Description interne" className="mt-2">
+                  <Textarea
+                    rows={2}
+                    value={entitlement.description}
+                    onChange={(event) =>
+                      updateEntitlement(entitlement.key, (current) => ({
+                        ...current,
+                        description: event.target.value,
+                      }))
+                    }
+                  />
+                </FormField>
+                <FormField
+                  label="Dépendances"
+                  hint="Codes séparés par des virgules."
+                  className="mt-2"
+                >
+                  <Input
+                    value={csv(entitlement.dependencies)}
+                    onChange={(event) =>
+                      updateEntitlement(entitlement.key, (current) => ({
+                        ...current,
+                        dependencies: parseCsv(event.target.value),
+                      }))
+                    }
+                  />
+                </FormField>
+                <p className="mt-2 text-micro leading-relaxed text-text-muted">
+                  {entitlement.adminHelpText}
+                </p>
               </div>
             ))}
           </div>

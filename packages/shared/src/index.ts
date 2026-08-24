@@ -4,5 +4,6 @@ export * from "./validation/search";
 export * from "./presentation/listing";
 export * from "./discovery/unified-discovery";
 export * from "./finance/ledger";
+export * from "./finance/commission-engine";
 export * from "./monetization/effective-entitlements";
 export * from "./monetization/billing-usage";

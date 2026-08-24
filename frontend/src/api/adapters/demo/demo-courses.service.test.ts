@@ -93,33 +93,30 @@ describe("DemoCoursesService", () => {
     expect(accepted.state).toBe("accepted");
   });
 
-  it("persists organization invitations and locations in the demo adapter", async () => {
+  it("preserves organization data while suspended mutations fail closed", async () => {
     const service = new DemoCoursesService();
     const initial = await service.getOrganizationWorkspace(
       "org_college_lumiere",
     );
-    const invited = await service.inviteOrganizationMember(
-      initial.organization.id,
-      { displayName: "Nora Benali", role: "tutor" },
-    );
-    expect(invited.members).toContainEqual(
-      expect.objectContaining({
+    await expect(
+      service.inviteOrganizationMember(initial.organization.id, {
         displayName: "Nora Benali",
         role: "tutor",
-        status: "invited",
       }),
-    );
-
-    const withLocation = await service.addOrganizationLocation(
+    ).rejects.toThrow(/temporairement indisponible/i);
+    await expect(
+      service.addOrganizationLocation(initial.organization.id, {
+        label: "Lyon 6e",
+      }),
+    ).rejects.toThrow(/temporairement indisponible/i);
+    const unchanged = await service.getOrganizationWorkspace(
       initial.organization.id,
-      { label: "Lyon 6e" },
     );
-    expect(withLocation.locations).toContainEqual(
-      expect.objectContaining({ label: "Lyon 6e", isActive: true }),
-    );
+    expect(unchanged.members).toEqual(initial.members);
+    expect(unchanged.locations).toEqual(initial.locations);
   });
 
-  it("enforces the canonical organization seat limit", async () => {
+  it("does not let the demo quota bypass commercial readiness", async () => {
     const service = new DemoCoursesService();
     const initial = await service.getOrganizationWorkspace(
       "org_college_lumiere",
@@ -139,6 +136,6 @@ describe("DemoCoursesService", () => {
         displayName: "Membre au-delà du quota",
         role: "tutor",
       }),
-    ).rejects.toThrow(/quota/i);
+    ).rejects.toThrow(/indisponible/i);
   });
 });

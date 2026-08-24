@@ -5,6 +5,7 @@ import type {
   ListingPromotionState,
   MonetizationProduct,
 } from "@shongre/contracts";
+import { isCommercialProductPurchasable } from "@shongre/contracts";
 import { resolveEffectiveEntitlementsForVertical } from "@shongre/shared";
 import type { Listing, UserProfile } from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -474,7 +475,10 @@ export class PublisherEntitlementsService {
     if (!(await this.canManageListing(actorUserId, listing))) {
       return { allowed: false, reasonCode: "ORGANIZATION_PERMISSION_REQUIRED" };
     }
-    if (listing.status !== "published" || product.status !== "active") {
+    if (
+      listing.status !== "published" ||
+      !isCommercialProductPurchasable(product)
+    ) {
       return { allowed: false, reasonCode: "PROMOTION_NOT_AVAILABLE" };
     }
     if (

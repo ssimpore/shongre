@@ -15,7 +15,7 @@ describe("legacy plan presentation adapter", () => {
     });
   });
 
-  it("projects required visibility prices from the same published catalog", () => {
+  it("projects only visibility products with a complete activation path", () => {
     expect(
       Object.fromEntries(
         LISTING_BOOSTS.map((boost) => [boost.id, boost.priceEur]),
@@ -23,8 +23,8 @@ describe("legacy plan presentation adapter", () => {
     ).toEqual({
       urgent: 3.9,
       top_of_list: 1.9,
-      highlight: 19.9,
-      gallery_boost: 14.9,
+      highlight: 7.9,
+      spotlight: 19.9,
     });
   });
 });

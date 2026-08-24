@@ -32,4 +32,10 @@ Les offres et options réutilisent le catalogue de monétisation et le fournisse
 
 Les index couvrent publication active, profession, secteur, lieu, organisation du travail, contrat, rémunération, dates, employeur, état de candidature, affectation, alertes et sources d’import. Les exports candidat sont bornés à son identité. Les imports ont aperçu, validation, quota, limitation de débit, source et journal de synchronisation.
 
+Ces enregistrements d’import et de synchronisation sont une fondation
+opérationnelle, pas encore un produit d’ingestion complet : le stockage du
+fichier, le parseur, le worker et la réconciliation externe ne sont pas livrés.
+Les droits CSV/ATS/API et les options associées restent donc suspendus dans le
+catalogue commercial jusqu’à livraison de cette chaîne.
+
 Voir aussi `employment-migration-rollback.md` et `employment-integrations.md`.

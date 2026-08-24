@@ -197,7 +197,7 @@ describe("RealEstateService", () => {
     ).rejects.toThrow(/accord/i);
   });
 
-  it("enforces agency membership and import entitlements with idempotency", async () => {
+  it("enforces agency membership and suspends imports without a worker", async () => {
     const { service } = setup();
     await expect(
       service.getOwnAgencyWorkspace("member_clara", "agency_canopee"),
@@ -205,21 +205,15 @@ describe("RealEstateService", () => {
     await expect(
       service.getOwnAgencyWorkspace("outsider", "agency_canopee"),
     ).rejects.toThrow(/introuvable/i);
-    const first = await service.requestImport(
-      "member_clara",
-      "agency_canopee",
-      "csv",
-      "stock.csv",
-      "immo-import-test-001",
-    );
-    const retry = await service.requestImport(
-      "member_clara",
-      "agency_canopee",
-      "csv",
-      "stock.csv",
-      "immo-import-test-001",
-    );
-    expect(retry.id).toBe(first.id);
+    await expect(
+      service.requestImport(
+        "member_clara",
+        "agency_canopee",
+        "csv",
+        "stock.csv",
+        "immo-import-test-001",
+      ),
+    ).rejects.toThrow(/formule/i);
     await expect(
       service.requestImport(
         "member_clara",

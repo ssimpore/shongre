@@ -2,6 +2,10 @@ import { Market, MarketConfiguration } from "./market.types";
 import { RECENT_SEARCHES_LIMIT_DEFAULT } from "./market.constants";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import {
+  isCommercialEntitlementOperational,
+  isCommercialProductPurchasable,
+} from "@shongre/contracts/monetization";
+import {
   getDemoDeliveryAmountMinor,
   getDemoTaxRateBps,
   getDemoTransactionCommercials,
@@ -14,6 +18,7 @@ const productPrice = (
   period: "once" | "month" | "year" = "once",
 ) => {
   const product = commercialProduct(id);
+  if (!isCommercialProductPurchasable(product)) return 0;
   return (
     (
       product.prices.find((price) => price.billingPeriod === period) ||
@@ -22,7 +27,9 @@ const productPrice = (
   );
 };
 const productEntitlement = (id: string, key: string) =>
-  commercialProduct(id).entitlements.find((entry) => entry.key === key)?.value;
+  commercialProduct(id).entitlements.find(
+    (entry) => entry.key === key && isCommercialEntitlementOperational(entry),
+  )?.value;
 const planNumber = (id: string, key: string) => {
   const value = productEntitlement(id, key);
   return typeof value === "number" ? value : 0;
@@ -143,10 +150,10 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     payoutInstantFixedFee: FR_PRO_COMMERCIALS.instantPayoutFixedMinor / 100,
     boostPricing: {
       urgent: productPrice("premium.urgent"),
-      highlight: productPrice("premium.highlight"),
+      highlight: productPrice("premium.spotlight"),
       top_of_list: productPrice("premium.search_bump"),
       gallery_boost: productPrice("premium.visibility_bundle"),
-      spotlight: productPrice("premium.spotlight"),
+      spotlight: productPrice("premium.highlight"),
     },
     plans: {
       free: {

@@ -2,6 +2,12 @@
 
 This report describes configuration version `commercial-fr-v2` and the code that consumes it. It is intentionally limited to behavior present in this repository; a catalog entry by itself is not counted as an implemented feature.
 
+The current feature-by-feature commercial acceptance result is maintained in
+[`professional-plan-acceptance-audit.md`](./professional-plan-acceptance-audit.md).
+Where a configured catalog value below is marked `maintenance` or has a
+non-ready implementation status, that audit takes precedence: the value is
+retained for history but is not advertised, granted or purchasable.
+
 ## Audit
 
 The repository already contained a strong monetization foundation:
@@ -99,20 +105,24 @@ Prices are EUR, tax-inclusive catalog amounts. Annual prices implement the confi
 
 Immo also limits virtual tours to 1, 2 and 3 respectively. Monthly lead limits for Cours are 30, 150 and 500 on paid tiers.
 
+Seat and location amounts above are configured target values. Paid expansion
+beyond the safe baseline is commercially suspended until the shared production
+membership/location mutation service is transactional and fully tested.
+
 ## Entitlement and feature matrix
 
-| Capability                  | General           | Auto                      | Immo                        | Emploi             | Cours                 | Enforcement status                                                                       |
-| --------------------------- | ----------------- | ------------------------- | --------------------------- | ------------------ | --------------------- | ---------------------------------------------------------------------------------------- |
-| Active capacity             | yes               | yes                       | yes                         | yes                | yes                   | backend publication/vertical services                                                    |
-| Monthly publications        | Pro               | yes                       | yes                         | yes                | not configured        | backend usage records                                                                    |
-| Media limits                | yes               | photos/video              | media/video/tour            | n/a                | photos                | backend; demo upload pre-checks where applicable                                         |
-| Storefront/profile          | paid/free by plan | yes                       | yes                         | yes                | yes                   | entitlement-projected UI                                                                 |
-| Lead workflow               | —                 | assignment/reminders      | management/attribution      | candidate pipeline | lead management/inbox | vertical services                                                                        |
-| Bulk operations             | —                 | Business+                 | Business+                   | templates/pipeline | Studio+               | entitlement-gated vertical actions                                                       |
-| CSV/XML/API                 | —                 | tiered                    | tiered                      | Scale              | Organisme             | request/API gating; see limitations for file workers                                     |
-| Analytics                   | basic/standard    | standard/detailed/network | standard/advanced/portfolio | basic/advanced     | detailed/reporting    | vertical event aggregation and entitlement-gated views                                   |
-| Recurring promotion credits | Pro               | all paid tiers            | all paid tiers              | paid tiers         | paid tiers            | idempotent ledger grants and consumption                                                 |
-| Team/location capacity      | limited           | configured                | configured                  | recruiter seats    | configured            | Cours demo mutations; database-level generic invitation enforcement remains a limitation |
+| Capability                  | General           | Auto                      | Immo                        | Emploi                              | Cours                    | Enforcement status                                                                 |
+| --------------------------- | ----------------- | ------------------------- | --------------------------- | ----------------------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| Active capacity             | yes               | yes                       | yes                         | yes                                 | yes                      | backend publication/vertical services                                              |
+| Monthly publications        | Pro               | yes                       | yes                         | yes                                 | not configured           | backend usage records                                                              |
+| Media limits                | yes               | photos/video              | media/video/tour            | n/a                                 | photos                   | backend; demo upload pre-checks where applicable                                   |
+| Storefront/profile          | paid/free by plan | yes                       | yes                         | yes                                 | yes                      | entitlement-projected UI                                                           |
+| Lead workflow               | —                 | assignment/reminders      | management/attribution      | candidate pipeline                  | lead management/inbox    | vertical services                                                                  |
+| Bulk operations             | —                 | suspended                 | suspended                   | pipeline ready; templates suspended | suspended                | excluded from commercial rights until full mutation paths exist                    |
+| CSV/XML/API                 | —                 | suspended                 | suspended                   | suspended                           | suspended                | job scaffolding retained; no offer is advertised without parser/worker fulfillment |
+| Analytics                   | basic/standard    | standard/detailed/network | standard/advanced/portfolio | basic/advanced                      | detailed/reporting       | vertical event aggregation and entitlement-gated views                             |
+| Recurring promotion credits | Pro               | all paid tiers            | all paid tiers              | paid tiers                          | paid tiers               | idempotent ledger grants and consumption                                           |
+| Team/location capacity      | owner baseline    | paid expansion suspended  | paid expansion suspended    | paid expansion suspended            | paid expansion suspended | historical data remains readable; unsupported mutations fail closed                |
 
 ## Trial configuration
 

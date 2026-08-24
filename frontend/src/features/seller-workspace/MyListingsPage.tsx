@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   PlusCircle,
@@ -27,59 +27,43 @@ import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import { services } from "../../api/client/service-registry";
+import type { ListingBoostOption } from "../../configuration/plans.config";
 
-type BoostPack =
-  "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight";
-
-/**
- * The paid visibility options, and the swatch that previews each one.
- *
- * The swatch is a promise about what the listing will look like once the seller
- * pays, so it has to match the badge they actually get. "Urgent" advertised a
- * red badge in its copy while showing an amber chip — amber that was also
- * `bg-amber-500` under white text, 2.13:1 and the worst contrast on the
- * platform. It now shows the `danger` red the buyer will really see.
- */
-const BOOST_OPTIONS: ReadonlyArray<{
-  id: BoostPack;
-  label: string;
-  price: string;
-  description: string;
-  swatchClass: string;
-  hoverClass: string;
-  spanClass: string;
-}> = [
+const BOOST_STYLES: Record<
+  ListingBoostOption["id"],
   {
-    id: "urgent",
-    label: "⚡ Urgent",
-    price: "2,99 €",
-    description:
-      "Ajoute le badge rouge Urgent pour attirer immédiatement l'attention des acheteurs.",
+    swatchClass: string;
+    hoverClass: string;
+    spanClass: string;
+  }
+> = {
+  urgent: {
     swatchClass: "bg-danger text-white",
     hoverClass: "hover:border-danger hover:bg-danger-surface",
     spanClass: "",
   },
-  {
-    id: "top_of_list",
-    label: "📈 Remonter",
-    price: "1,99 €",
-    description:
-      "Repositionne instantanément votre annonce en tête des résultats de recherche.",
+  top_of_list: {
     swatchClass: "bg-primary text-white",
     hoverClass: "hover:border-primary hover:bg-primary-light",
     spanClass: "",
   },
-  {
-    id: "highlight",
-    label: "🌟 À la une (7 jours)",
-    price: "7,99 €",
-    description:
-      "Affichage garanti dans le carrousel vedette de la page d'accueil et en tête de sa catégorie.",
+  highlight: {
     swatchClass: "bg-indigo-600 text-white",
     hoverClass: "hover:border-indigo-500 hover:bg-indigo-50",
     spanClass: "sm:col-span-2",
   },
-];
+  gallery_boost: {
+    swatchClass: "bg-indigo-600 text-white",
+    hoverClass: "hover:border-indigo-500 hover:bg-indigo-50",
+    spanClass: "sm:col-span-2",
+  },
+  spotlight: {
+    swatchClass: "bg-indigo-700 text-white",
+    hoverClass: "hover:border-indigo-600 hover:bg-indigo-50",
+    spanClass: "sm:col-span-2",
+  },
+};
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === "string") return photo;
@@ -105,6 +89,12 @@ export const MyListingsPage: React.FC = () => {
   const [boostModalListing, setBoostModalListing] = useState<Listing | null>(
     null,
   );
+  const [boostOffers, setBoostOffers] = useState<ListingBoostOption[]>([]);
+  const [boostOffersState, setBoostOffersState] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [activatingBoostId, setActivatingBoostId] = useState<string>();
+  const promotionSequence = useRef(0);
   const [marketsModalListing, setMarketsModalListing] =
     useState<Listing | null>(null);
   const [selectedMarketsInModal, setSelectedMarketsInModal] = useState<
@@ -154,15 +144,52 @@ export const MyListingsPage: React.FC = () => {
     await fetchListings();
   };
 
+  const openBoostModal = async (listing: Listing) => {
+    setBoostModalListing(listing);
+    setBoostOffers([]);
+    setBoostOffersState("loading");
+    try {
+      const offers = await services.promotions.getAvailableBoosts(listing.id);
+      setBoostOffers(offers);
+      setBoostOffersState("ready");
+    } catch {
+      setBoostOffersState("error");
+    }
+  };
+
   const handleApplyBoost = async (
     listingId: string,
-    pack:
-      "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight",
+    offer: ListingBoostOption,
   ) => {
-    await listingRepository.boostListing(listingId, pack);
-    toast.success("Option de visibilité activée avec succès !");
-    setBoostModalListing(null);
-    await fetchListings();
+    setActivatingBoostId(offer.id);
+    promotionSequence.current += 1;
+    try {
+      const result = await services.promotions.applyBoost(
+        listingId,
+        offer.productId,
+        {
+          paymentMethod: "card",
+          idempotencyKey: `listing-promotion:${listingId}:${offer.productId}:${promotionSequence.current}`,
+        },
+      );
+      if (result.providerCheckoutUrl) {
+        window.location.assign(result.providerCheckoutUrl);
+        return;
+      }
+      if (!result.success)
+        throw new Error("Le paiement doit être confirmé avant l’activation.");
+      toast.success("Option de visibilité activée avec succès !");
+      setBoostModalListing(null);
+      await fetchListings();
+    } catch (cause) {
+      toast.error(
+        cause instanceof Error
+          ? cause.message
+          : "L’option de visibilité n’a pas pu être activée.",
+      );
+    } finally {
+      setActivatingBoostId(undefined);
+    }
   };
 
   const handleExportCsv = () => {
@@ -459,7 +486,7 @@ export const MyListingsPage: React.FC = () => {
                         <>
                           <button
                             type="button"
-                            onClick={() => setBoostModalListing(listing)}
+                            onClick={() => openBoostModal(listing)}
                             className="px-2.5 py-1 rounded-lg bg-warning-surface hover:bg-warning-surface border border-warning-border text-warning font-bold text-xs flex items-center gap-1 transition-colors"
                             title={t(
                               "sellerworkspace.myListingsPage.boosterLAnnonce",
@@ -514,32 +541,50 @@ export const MyListingsPage: React.FC = () => {
               )}
             </p>
 
-            {/* Each option is a real <button>: these are paid actions, and as
-                plain clickable <div>s they could not be reached by keyboard or
-                announced as controls at all. */}
+            {boostOffersState === "loading" && (
+              <p className="text-xs text-text-muted" role="status">
+                Chargement des options disponibles…
+              </p>
+            )}
+            {boostOffersState === "error" && (
+              <p className="rounded-card border border-warning-border bg-warning-surface p-3 text-xs text-warning">
+                Les options de visibilité sont temporairement indisponibles.
+              </p>
+            )}
+            {boostOffersState === "ready" && boostOffers.length === 0 && (
+              <p className="rounded-card border border-border-base bg-bg-subtle p-3 text-xs text-text-secondary">
+                Aucune option de visibilité n’est disponible pour cette annonce.
+              </p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {BOOST_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() =>
-                    handleApplyBoost(boostModalListing.id, option.id)
-                  }
-                  className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer transition-all duration-fast space-y-2 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${option.hoverClass} ${option.spanClass}`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`px-2 py-0.5 rounded-full font-black text-micro uppercase tracking-wider ${option.swatchClass}`}
-                    >
-                      {option.label}
-                    </span>
-                    <span className="font-black text-sm text-stone-900 shrink-0">
-                      {option.price}
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-600">{option.description}</p>
-                </button>
-              ))}
+              {boostOffers.map((offer) => {
+                const style = BOOST_STYLES[offer.id];
+                return (
+                  <button
+                    key={offer.productId}
+                    type="button"
+                    onClick={() =>
+                      handleApplyBoost(boostModalListing.id, offer)
+                    }
+                    disabled={Boolean(activatingBoostId)}
+                    className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer transition-all duration-fast space-y-2 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 ${style.hoverClass} ${style.spanClass}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-black text-micro uppercase tracking-wider ${style.swatchClass}`}
+                      >
+                        {offer.badgeLabel}
+                      </span>
+                      <span className="font-black text-sm text-stone-900 shrink-0">
+                        {formatPrice(offer.priceEur)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-600">
+                      {offer.description}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </Modal>
