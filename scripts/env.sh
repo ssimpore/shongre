@@ -54,6 +54,9 @@ shongre_load_env_file "$SHONGRE_ROOT/.env"
 
 # Derived URLs track port overrides. They are not persisted and contain no
 # secrets. Production builds use the explicit PRODUCTION_* values instead.
+if [[ -z "${E2E_FRONTEND_PORT:-}" && "${FRONTEND_PORT:-}" =~ ^[0-9]+$ ]]; then
+  export E2E_FRONTEND_PORT="$((FRONTEND_PORT + 110))"
+fi
 if [[ -z "${VITE_API_URL:-}" && -n "${BACKEND_HOST:-}" && -n "${BACKEND_PORT:-}" ]]; then
   export VITE_API_URL="http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX:-/api/v1}"
 fi

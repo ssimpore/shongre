@@ -55,12 +55,14 @@ Run commands from the repository root so environment precedence and ports stay
 consistent:
 
 ```bash
-make env-init
-make backend-dev
+make env
+make backend
+make worker
 make backend-typecheck
 make backend-test
 make backend-build
 make backend-check
+make test-critical
 ```
 
 The full repository gate is `make check`; CI additionally enforces formatting,
@@ -73,28 +75,31 @@ All schema changes are additive, ordered SQL files under
 
 ```bash
 make infra-start
+make migrations-check
 make db-migrate
 make db-seed
 make db-types
 make infra-stop
 ```
 
-`make db-migrate` always validates every migration file name, uniqueness and
-non-empty SQL. If
-`DATABASE_URL` is set it applies unapplied migrations with `psql`, transaction
-failure-on-error semantics and the Supabase-compatible migration ledger. With
-no URL it is an explicit validation-only command and says so.
+`make migrations-check` always validates every migration file name, uniqueness
+and non-empty SQL without connecting to a database. `make db-migrate` applies
+unapplied migrations with `psql`, transaction failure-on-error semantics and
+the Supabase-compatible migration ledger only after proving that the configured
+development database is loopback and has an allowed local name.
 
-`make db-seed` follows the same safety model: without `DATABASE_URL` it validates
-the canonical seed entrypoint; with a URL it applies the idempotent reference
-data in one transaction and stops on the first SQL error.
+`make db-seed` follows the same safety model and applies the idempotent reference
+data in one transaction. Without an explicit safe local URL it discovers the
+running local Supabase endpoint; it never treats a remote database as a
+development fallback.
 
 `make db-types` requires the Supabase CLI plus either `DATABASE_URL` or
 `SUPABASE_PROJECT_REF`; it writes directly to
 `backend/src/generated/database.types.ts` and refuses placeholder output.
 
 Use `make db-reset` only for disposable local development data. The root target
-refuses to reset outside `APP_ENV=development`.
+requires `APP_ENV=development`, a loopback Supabase host, the local CLI workdir,
+and an available Docker daemon.
 
 ## Security invariants
 

@@ -3,7 +3,11 @@ import { Skeleton } from "../../design-system";
 
 export const PageSuspense: React.FC = () => {
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 w-full max-w-7xl mx-auto animate-in fade-in duration-normal">
+    <div
+      role="status"
+      aria-label="Chargement de la page"
+      className="min-h-[70vh] flex flex-col items-center justify-center p-8 w-full max-w-7xl mx-auto animate-in fade-in duration-normal"
+    >
       {/* Brand Icon Spinner */}
       <div className="relative flex items-center justify-center mb-6">
         <div className="w-14 h-14 rounded-2xl bg-primary-light border border-primary/20 flex items-center justify-center animate-pulse">

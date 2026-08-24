@@ -12,6 +12,7 @@
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:critical": "vitest run src/finance src/monetization tests/finance-ledger.test.ts tests/effective-entitlements.test.ts",
     "build": "tsc --noEmit",
     "check": "npm run typecheck && npm run test"
   },

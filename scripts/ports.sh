@@ -19,6 +19,7 @@ print_port() {
 }
 
 print_port Frontend "$FRONTEND_PORT"
+print_port Playwright "$E2E_FRONTEND_PORT"
 print_port Backend "$BACKEND_PORT"
 print_port Metro "$EXPO_METRO_PORT"
 print_port Expo-Web "$EXPO_WEB_PORT"
@@ -26,4 +27,3 @@ print_port Storybook "$STORYBOOK_PORT"
 print_port Supabase-API "$SUPABASE_API_PORT"
 print_port Supabase-DB "$SUPABASE_DB_PORT"
 print_port Supabase-Studio "$SUPABASE_STUDIO_PORT"
-

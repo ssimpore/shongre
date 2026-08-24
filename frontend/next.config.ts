@@ -23,6 +23,8 @@ try {
 }
 const isProduction = process.env.NODE_ENV === "production";
 const isProductionRelease = process.env.APP_ENV === "production";
+const allowHttpInE2E =
+  process.env.SHONGRE_E2E_ALLOW_HTTP === "1" && !isProductionRelease;
 
 if (isProductionRelease) {
   const releaseErrors: string[] = [];
@@ -32,7 +34,11 @@ if (isProductionRelease) {
     releaseErrors.push("NEXT_PUBLIC_API_URL must use HTTPS");
   if (process.env.NEXT_PUBLIC_ENABLE_MOCK_STORAGE !== "false")
     releaseErrors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
-  if (!/^pk_live_[A-Za-z0-9]+$/.test(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""))
+  if (
+    !/^pk_live_[A-Za-z0-9]+$/.test(
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
+    )
+  )
     releaseErrors.push("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_…");
   if (releaseErrors.length > 0) {
     throw new Error(
@@ -67,7 +73,7 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  ...(isProduction ? ["upgrade-insecure-requests"] : []),
+  ...(isProduction && !allowHttpInE2E ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -122,7 +128,7 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
-      ...(!isProduction
+      ...(!isProduction && process.env.SHONGRE_DISABLE_DEV_ASSET_HEADERS !== "1"
         ? [
             {
               source: "/_next/:path*",

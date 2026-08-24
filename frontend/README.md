@@ -1,8 +1,9 @@
 # Shongre Frontend — Architecture & Developer Guide
 
-The Shongre frontend is a Next.js App Router marketplace interface supporting both individual (*Particuliers*) and professional sellers (*Professionnels*).
+The Shongre frontend is a Next.js App Router marketplace interface supporting both individual (_Particuliers_) and professional sellers (_Professionnels_).
 
 It features a dual-mode service architecture that allows running either:
+
 1. **Standalone Demo Mode** (`NEXT_PUBLIC_DATA_MODE=demo`): Fully deterministic, in-memory local fixtures, no backend or database required.
 2. **Live HTTP API Mode** (`NEXT_PUBLIC_DATA_MODE=api`): Connects over HTTP REST to the environment-defined backend URL.
 
@@ -61,11 +62,13 @@ frontend/
 ## 3. Environment & Data Mode Configuration
 
 Initialize the repository environment from the root:
+
 ```bash
-make env-init
+make env
+make frontend
 ```
 
-The application runtime mode is configured centrally in `src/api/client/api-client.config.ts` and `frontend/.env`:
+The application runtime mode is configured centrally in `src/api/client/api-client.config.ts` and the root ignored `.env`:
 
 ```env
 # Central Data Mode: "demo" (default) | "api"
@@ -82,7 +85,7 @@ NEXT_PUBLIC_API_URL=<environment-defined API origin and prefix>
 
 ---
 
-## 4. Available Scripts
+## 4. Package-local scripts
 
 From `/frontend`:
 
@@ -93,13 +96,19 @@ npm install
 # Start local Next.js development server
 npm run dev
 
-# Run TypeScript typecheck
+# Run TypeScript typecheck and frontend architecture lint
+npm run typecheck
 npm run lint
 
 # Run all Vitest tests
 npm test
 
+# Run Playwright through the root CLI and its isolated production server
+cd ..
+make test-e2e
+
 # Build production bundle
+cd frontend
 npm run build
 
 # Run end-to-end check (lint + test + build)
@@ -108,13 +117,14 @@ npm run check
 
 ---
 
-## 5. Definition of Done (`make check`)
+## 5. Definition of Done
 
-All contributions must pass the continuous verification pipeline:
-1. `npm run lint` (`tsc --noEmit` — 0 type errors).
-2. `npm test` (`vitest run` — 100% test suites passing).
-3. `npm run build` (`next build` — server metadata and production bundle).
-4. `make check-boundary` (0 server secrets leaked into frontend).
+The package-local checks remain available for focused work, but every
+contribution must finish with root `make check`. That gate validates formatting,
+types and tests across all workspaces, migration ordering, Web/backend builds,
+infrastructure configuration, tracked secrets, and frontend/backend boundaries.
+Use `make test-critical` for the focused marketplace-integrity subset and
+`make check-all` when browser or cross-platform behavior is affected.
 
 The shared UI and token architecture is documented in
 `docs/architecture/cross-platform-ui.md`. Run `make ui-check` after changing a

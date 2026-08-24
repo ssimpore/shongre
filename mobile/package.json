@@ -8,11 +8,11 @@
     "ios": "expo run:ios",
     "android": "expo run:android",
     "web": "expo start --web",
-    "lint": "expo lint && tsc --noEmit",
+    "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "dead-code": "node scripts/dead-code-check.mjs",
-    "check": "npm run lint && npm run test && npm run dead-code"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run dead-code"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

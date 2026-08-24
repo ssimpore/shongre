@@ -3,6 +3,7 @@
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env.sh"
 source "$SHONGRE_ROOT/scripts/utils.sh"
+cd "$SHONGRE_ROOT"
 
 action="${1:-}"
 service_name="${2:-}"
@@ -20,6 +21,8 @@ if [[ "$port" == "auto" || -z "$port" ]]; then
     exit 2
   }
 fi
+uses_port=1
+[[ "$port" == "none" ]] && uses_port=0
 
 stop_service() {
   if [[ ! -f "$pid_file" ]]; then
@@ -47,7 +50,9 @@ case "$action" in
       shongre_info "stopping the existing tracked $service_name process tree"
       stop_service
     fi
-    "$SHONGRE_ROOT/scripts/free-port.sh" "$port" "$service_name"
+    if (( uses_port )); then
+      "$SHONGRE_ROOT/scripts/free-port.sh" "$port" "$service_name"
+    fi
     child_pid=''
     cleanup() {
       if [[ -n "$child_pid" ]] && shongre_pid_is_running "$child_pid"; then
@@ -59,13 +64,22 @@ case "$action" in
     "$@" &
     child_pid=$!
     printf '%s\n' "$child_pid" > "$pid_file"
-    shongre_pass "$service_name started on port $port (PID $child_pid)"
+    if (( uses_port )); then
+      shongre_pass "$service_name started on port $port (PID $child_pid)"
+    else
+      shongre_pass "$service_name started (PID $child_pid)"
+    fi
     wait "$child_pid"
     ;;
   start)
     [[ $# -gt 0 ]] || { shongre_fail "no command supplied for $service_name"; exit 2; }
     if [[ -f "$pid_file" ]] && shongre_pid_is_running "$(tr -dc '0-9' < "$pid_file")"; then
-      shongre_info "$service_name is already running"
+      tracked_pid="$(tr -dc '0-9' < "$pid_file")"
+      if ! shongre_pid_belongs_to_project "$tracked_pid" "$service_name"; then
+        shongre_fail "$service_name PID file points to an unrelated live process; refusing startup"
+        exit 1
+      fi
+      shongre_info "$service_name is already running (PID $tracked_pid)"
       exit 0
     fi
     nohup "$SHONGRE_ROOT/scripts/service.sh" foreground "$service_name" "$port" -- "$@" > "$log_file" 2>&1 &
@@ -88,6 +102,10 @@ case "$action" in
     if [[ -f "$pid_file" ]]; then
       tracked_pid="$(tr -dc '0-9' < "$pid_file")"
       if shongre_pid_is_running "$tracked_pid"; then
+        if ! shongre_pid_belongs_to_project "$tracked_pid" "$service_name"; then
+          printf 'INVALID %s\n' "$tracked_pid"
+          exit 1
+        fi
         printf 'RUNNING %s\n' "$tracked_pid"
         exit 0
       fi

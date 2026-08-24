@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { waitForStableLayout } from "./overflow";
 
 const VEHICLE_DETAIL_URL =
   "/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019";
@@ -138,7 +139,7 @@ async function selectPersona(page: Page, persona: Persona): Promise<void> {
   }
 }
 
-test("switches all 17 demo personas as real account sessions", async ({
+test("switches all 17 demo personas as real account sessions @serial", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -154,6 +155,7 @@ test("switches all 17 demo personas as real account sessions", async ({
   ).toHaveCount(0);
 
   await page.reload({ waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
   await expect(
     page.locator('button[aria-controls="demo-persona-menu"]'),
   ).toContainText(PERSONA_STORAGE.guest.label);
@@ -196,6 +198,7 @@ test("switches all 17 demo personas as real account sessions", async ({
   await expect(page).toHaveURL(/\/compte\/emploi\/recruteur$/);
 
   await page.reload({ waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
   await expect(
     page.locator('button[aria-controls="demo-persona-menu"]'),
   ).toContainText(PERSONA_STORAGE.employment.label);

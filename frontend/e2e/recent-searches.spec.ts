@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { usePersona } from './personas';
 
-async function recordRecentSearch(
-  page: import('@playwright/test').Page,
-  query: string,
-): Promise<void> {
+async function recordRecentSearch(page: import('@playwright/test').Page, query: string): Promise<void> {
   await page.goto(`/recherche?query=${encodeURIComponent(query)}`, {
     waitUntil: 'domcontentloaded',
   });
@@ -14,9 +11,7 @@ async function recordRecentSearch(
   await page.waitForFunction((expectedQuery) => {
     const raw = window.localStorage.getItem('shongre_recent_search_items_v1');
     if (!raw) return false;
-    return JSON.parse(raw).some(
-      (item: { title?: string }) => item.title === expectedQuery,
-    );
+    return JSON.parse(raw).some((item: { title?: string }) => item.title === expectedQuery);
   }, query);
 }
 
@@ -28,7 +23,9 @@ test('records, resumes and removes a recent search on the homepage', async ({ pa
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const recentSection = page.locator('section[aria-labelledby="home-recent-searches-title"]');
-  const recentCard = recentSection.getByRole('link', { name: new RegExp(query) });
+  const recentCard = recentSection.getByRole('link', {
+    name: new RegExp(query),
+  });
   await expect(recentCard).toBeVisible();
 
   await recentCard.click();
@@ -36,7 +33,9 @@ test('records, resumes and removes a recent search on the homepage', async ({ pa
 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page
-    .getByRole('button', { name: new RegExp(`Supprimer cette recherche.*${query}`) })
+    .getByRole('button', {
+      name: new RegExp(`Supprimer cette recherche.*${query}`),
+    })
     .click();
   await expect(recentSection.getByRole('link', { name: new RegExp(query) })).toHaveCount(0);
 });
@@ -54,7 +53,7 @@ test('shows at most six recent searches by default', async ({ page }) => {
   await expect(recentSection.getByRole('link')).toHaveCount(6);
 });
 
-test('lets an admin change the recent-search display limit for the homepage', async ({ page }) => {
+test('lets an admin change the recent-search display limit for the homepage @serial', async ({ page }) => {
   // This journey configures an admin override and then performs a five-route
   // write/read sweep. Keep the global single-route budget strict and widen only
   // this intentionally multi-navigation contract.
@@ -64,7 +63,7 @@ test('lets an admin change the recent-search display limit for the homepage', as
 
   // The France card is the canonical configuration source. Editing it keeps
   // the setting inherited by markets that do not define a local override.
-  await page.getByRole('button', { name: 'Configurer' }).first().click();
+  await page.getByRole('button', { name: 'Configurer le marché France' }).click();
   await page.getByRole('button', { name: 'Fonctionnalités' }).click();
 
   const setting = page.getByText('Recherches récentes affichées').locator('..').locator('..').locator('..');

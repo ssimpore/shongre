@@ -29,9 +29,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list']] : [['list']],
   timeout: 45_000,
   expect: { timeout: 10_000 },
-  // Next's development compiler is part of this test boundary. More than two
-  // concurrent cold-route navigations can starve `networkidle` without making
-  // the product faster or increasing browser coverage.
+  // Two browser workers keep the matrix bounded on developer laptops and CI.
+  // The root runner builds first, so route compilation never happens inside a
+  // test timeout.
   workers: 2,
 
   use: {
@@ -46,17 +46,31 @@ export default defineConfig({
     // Blink, which is exactly where the mobile chrome and messaging surfaces
     // are most fragile — so the journey suite is checked on all three engines.
     ...(firefoxCanLaunch
-      ? [{ name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: /responsive\.spec\.ts/ }]
+      ? [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+            testIgnore: /responsive\.spec\.ts/,
+          },
+        ]
       : []),
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: /responsive\.spec\.ts/ },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testIgnore: /responsive\.spec\.ts/,
+    },
   ],
 
   webServer: {
-    // Webpack keeps E2E cache usage bounded on constrained CI/dev volumes;
-    // production still validates the default Next/Turbopack build.
-    command: 'npm run dev -- --webpack',
+    // The root runner starts its own isolated standalone server and explicitly
+    // allows Playwright to reuse that process. The fallback remains useful when
+    // invoking Playwright directly in a dedicated frontend checkout.
+    command: process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'npm run dev -- --webpack',
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // The root CLI gives Playwright a dedicated port. It only enables reuse
+    // after starting and tracking its own server; an interactive developer
+    // server is therefore never adopted accidentally.
+    reuseExistingServer: process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === '1',
+    timeout: 300_000,
   },
 });

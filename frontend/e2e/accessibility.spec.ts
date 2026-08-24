@@ -21,12 +21,25 @@ test.describe('accessibility', () => {
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
+      // Demo OAuth availability resolves asynchronously after the auth page
+      // mounts. Scanning the deliberately disabled placeholder state measures
+      // its opacity blend instead of the interactive control's real contrast.
+      const socialButtons = page.getByRole('button', {
+        name: /^Continuer avec /i,
+      });
+      if ((await socialButtons.count()) > 0) {
+        await expect(socialButtons.first()).toBeEnabled();
+      }
+
       const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
       const blocking = results.violations.filter((v) => BLOCKING_IMPACTS.has(v.impact || ''));
 
       const report = blocking
         .map((v) => {
-          const nodes = v.nodes.slice(0, 3).map((n) => `        ${n.html.slice(0, 140)}`).join('\n');
+          const nodes = v.nodes
+            .slice(0, 3)
+            .map((n) => `        ${n.html.slice(0, 140)}`)
+            .join('\n');
           return `    [${v.impact}] ${v.id}: ${v.help}\n${nodes}`;
         })
         .join('\n');
@@ -83,7 +96,10 @@ test.describe('accessible names at phone width', () => {
 
           const labels = (el as HTMLInputElement).labels;
           if (labels?.length) {
-            const text = [...labels].map((l) => l.textContent ?? '').join(' ').trim();
+            const text = [...labels]
+              .map((l) => l.textContent ?? '')
+              .join(' ')
+              .trim();
             if (text) return text;
           }
 
@@ -99,16 +115,14 @@ test.describe('accessible names at phone width', () => {
         };
 
         const offenders: string[] = [];
-        document
-          .querySelectorAll('a[href], button, [role="button"]')
-          .forEach((el) => {
-            const rect = el.getBoundingClientRect();
-            if (rect.width === 0 && rect.height === 0) return;
-            if (getComputedStyle(el).visibility === 'hidden') return;
-            if (!nameOf(el)) {
-              offenders.push(`${el.tagName} .${(el.className || '').toString().slice(0, 70)}`);
-            }
-          });
+        document.querySelectorAll('a[href], button, [role="button"]').forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width === 0 && rect.height === 0) return;
+          if (getComputedStyle(el).visibility === 'hidden') return;
+          if (!nameOf(el)) {
+            offenders.push(`${el.tagName} .${(el.className || '').toString().slice(0, 70)}`);
+          }
+        });
         return offenders;
       });
 
@@ -156,18 +170,15 @@ test.describe('keyboard and focus', () => {
            The ring now has to be opaque enough and wide enough to see. */
         const paintsFocus = (node: Element) => {
           const style = getComputedStyle(node);
-          const hasOutline =
-            style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
+          const hasOutline = style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
 
-          const hasRing = style.boxShadow
-            .split(/,(?![^(]*\))/)
-            .some((shadow) => {
-              const alpha = shadow.match(/rgba?\([^)]*?,\s*([\d.]+)\s*\)/);
-              if (alpha && parseFloat(alpha[1]) < 0.25) return false;
-              // Spread or blur has to be big enough to register as a ring.
-              const lengths = shadow.match(/-?[\d.]+px/g) ?? [];
-              return lengths.some((l) => Math.abs(parseFloat(l)) >= 1);
-            });
+          const hasRing = style.boxShadow.split(/,(?![^(]*\))/).some((shadow) => {
+            const alpha = shadow.match(/rgba?\([^)]*?,\s*([\d.]+)\s*\)/);
+            if (alpha && parseFloat(alpha[1]) < 0.25) return false;
+            // Spread or blur has to be big enough to register as a ring.
+            const lengths = shadow.match(/-?[\d.]+px/g) ?? [];
+            return lengths.some((l) => Math.abs(parseFloat(l)) >= 1);
+          });
 
           return hasOutline || hasRing;
         };
@@ -176,7 +187,10 @@ test.describe('keyboard and focus', () => {
         let depth = 0;
         let visible = false;
         while (node && depth < 3) {
-          if (paintsFocus(node)) { visible = true; break; }
+          if (paintsFocus(node)) {
+            visible = true;
+            break;
+          }
           node = node.parentElement;
           depth += 1;
         }

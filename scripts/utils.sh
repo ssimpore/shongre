@@ -111,6 +111,7 @@ shongre_service_port() {
   case "$1" in
     frontend) printf '%s' "${FRONTEND_PORT:-}" ;;
     backend) printf '%s' "${BACKEND_PORT:-}" ;;
+    worker) printf '%s' 'none' ;;
     metro) printf '%s' "${EXPO_METRO_PORT:-}" ;;
     expo-web) printf '%s' "${EXPO_WEB_PORT:-}" ;;
     storybook) printf '%s' "${STORYBOOK_PORT:-}" ;;

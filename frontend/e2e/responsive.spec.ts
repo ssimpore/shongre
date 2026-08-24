@@ -13,9 +13,7 @@ import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
  * full matrix.
  */
 const CRITICAL_WIDTHS = VIEWPORTS.filter((v) =>
-  ["320-small-phone", "787-awkward-gap", "1024-lg-breakpoint"].includes(
-    v.name,
-  ),
+  ["320-small-phone", "787-awkward-gap", "1024-lg-breakpoint"].includes(v.name),
 );
 
 test.describe("horizontal overflow", () => {
@@ -43,7 +41,7 @@ test.describe("horizontal overflow", () => {
   // The public surfaces carry the most layout variety, so they get the full
   // matrix rather than the three representative widths.
   for (const viewport of VIEWPORTS) {
-    test(`public routes hold at ${viewport.name}`, async ({ page }) => {
+    test(`public routes hold at ${viewport.name} @serial`, async ({ page }) => {
       // This one test intentionally performs a complete public-route sweep.
       // Keep the global single-route budget strict and widen only this audit.
       test.setTimeout(90_000);
@@ -53,12 +51,14 @@ test.describe("horizontal overflow", () => {
       });
       await usePersona(page, "guest");
       for (const route of PUBLIC_ROUTES) {
-        await page.goto(route.path, { waitUntil: "domcontentloaded" });
-        await waitForStableLayout(page);
-        await expectNoHorizontalOverflow(
-          page,
-          `${route.name} @ ${viewport.width}px`,
-        );
+        await test.step(`${route.name} (${route.path})`, async () => {
+          await page.goto(route.path, { waitUntil: "domcontentloaded" });
+          await waitForStableLayout(page);
+          await expectNoHorizontalOverflow(
+            page,
+            `${route.name} @ ${viewport.width}px`,
+          );
+        });
       }
     });
   }

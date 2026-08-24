@@ -89,7 +89,9 @@ export async function measureOverflow(page: Page): Promise<OverflowReport> {
       viewportWidth,
       documentWidth,
       overflow: documentWidth - viewportWidth,
-      offenders: Array.from(widest.values()).sort((a, b) => b.right - a.right).slice(0, 5),
+      offenders: Array.from(widest.values())
+        .sort((a, b) => b.right - a.right)
+        .slice(0, 5),
     };
   });
 }
@@ -111,18 +113,22 @@ export async function waitForStableLayout(page: Page, timeoutMs = 10_000): Promi
     .waitForLoadState('networkidle', { timeout: Math.min(timeoutMs, 3_000) })
     .catch(() => undefined);
 
-  // A stable loading shell is not a stable application. Next's client boundary
-  // can remain visible while a route chunk compiles in development, especially
-  // when the responsive matrix runs several browsers in parallel.
+  // Waiting only for the loading status to be detached has a cold-start race:
+  // immediately after DOMContentLoaded the status may not have mounted yet, so
+  // "detached" succeeds before the lazy client application renders. Require
+  // the application shell's main content or banner as a positive ready signal,
+  // then make sure both framework and route-level suspense states have gone.
   await page
-    .getByRole('status', { name: /Chargement de Shongre/i })
+    .locator('#main-content, [role="banner"]')
+    .first()
+    .waitFor({ state: 'attached', timeout: timeoutMs });
+  await page
+    .getByRole('status', { name: /Chargement (?:de Shongre|de la page)/i })
     .waitFor({ state: 'detached', timeout: timeoutMs });
 
   await page.evaluate(async (budget) => {
-    const readWidth = () => Math.max(
-      document.documentElement.scrollWidth,
-      document.body.scrollWidth,
-    );
+    const readWidth = () =>
+      Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
     const started = Date.now();
     let previous = -1;
     let steadyFrames = 0;

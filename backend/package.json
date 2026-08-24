@@ -6,6 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/app/server/index.ts",
+    "dev:worker": "tsx watch src/app/worker/index.ts",
     "build": "tsc --noEmit && node scripts/build/build.mjs",
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
@@ -17,6 +18,8 @@
     "test:integration": "vitest run tests/integration",
     "test:rls": "vitest run tests/rls",
     "test:security": "vitest run tests/security",
+    "test:critical": "vitest run tests/security tests/contracts tests/integration/api.test.ts tests/unit/auth-*.test.ts tests/unit/listing-lifecycle.test.ts tests/unit/messaging.test.ts tests/unit/monetization.test.ts tests/unit/commission.test.ts tests/unit/finance.test.ts tests/unit/escrow.test.ts tests/unit/publisher-entitlements.test.ts tests/unit/verification.test.ts tests/unit/order-checkout-reconciliation.test.ts tests/unit/business-rules tests/unit/compliance tests/unit/provider-safety.test.ts",
+    "test:providers": "vitest run tests/unit/live-provider-adapters.test.ts tests/unit/provider-control-plane.test.ts tests/unit/provider-execution.test.ts tests/unit/provider-safety.test.ts tests/unit/compliance/compliance-webhook-signature.test.ts",
     "test:watch": "vitest",
     "benchmark": "tsx scripts/benchmark/benchmark.ts",
     "db:migrate": "tsx scripts/database/migrate.ts",

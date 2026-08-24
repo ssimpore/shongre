@@ -4457,12 +4457,15 @@ consumer checks merely to make a local implementation pass.
 When the generated design-token contract version changes, update its runtime
 contract assertion in the same shared-system change.
 
-Browser matrices run against the real Next.js development compiler. Keep their
-default concurrency bounded to two workers so concurrent cold-route compilation
-does not turn `networkidle` into a false product failure. A test that deliberately
-sweeps many routes or performs a multi-navigation configuration journey may
-declare its own larger, still-bounded timeout; do not raise the global
-single-route budget to hide a slow or unstable surface.
+Browser matrices run against an isolated Webpack production build and its
+standalone Next.js server. Keep their default concurrency bounded to two workers
+to control browser resource pressure. A test that deliberately sweeps many routes
+or performs a multi-navigation configuration journey may declare its own larger,
+still-bounded timeout; do not raise the global single-route budget to hide a slow
+or unstable surface.
+Tag route-wide or persona-wide journeys with `@serial`; the root E2E runner
+executes them in its second one-worker phase so they cannot starve ordinary
+single-route checks.
 After navigating to a client-routed compatibility surface, wait for the shared
 Next loading status to detach before asserting its DOM; `networkidle` alone does
 not mean the lazy application boundary has committed.
@@ -4474,3 +4477,44 @@ Playwright Firefox r1538 cannot launch on macOS 27 because the host denies its
 retain `FORCE_FIREFOX_E2E=1` as the explicit probe for a future fixed browser.
 Do not translate a browser-launch failure into skipped product assertions on a
 host where the engine can launch.
+
+---
+
+# 154. Canonical developer CLI
+
+The root `Makefile` is the single human-facing developer workflow. Before
+inventing a shell command or package-level wrapper, run `make help` and reuse or
+improve the canonical target. Compatibility aliases may remain for existing
+callers, but documentation and CI use the canonical names.
+
+Normal work starts with:
+
+```bash
+make setup
+make dev
+make check
+```
+
+Use `make doctor` for tool, version, environment, port, and configured-mode
+diagnostics. Use `make migrations-check` for connection-free schema validation;
+never replace it with a mutating database command in a static quality job.
+`make db-migrate`, `make db-seed`, `make db-shell`, and `make db-reset` are
+local-development operations and must retain their loopback/database-name and
+`APP_ENV=development` guards. Remote operational work requires a separate,
+explicitly protected workflow.
+
+`make test-e2e` builds a separate Webpack production checkout, owns its standalone
+server on `E2E_FRONTEND_PORT`, and removes both on exit. It must not reuse the
+interactive Next.js server: mixing the all-routes browser audit with a developer's
+Turbopack process creates false loading-shell timeouts and makes teardown ambiguous.
+
+`make dev` owns the API, scheduled worker, and selected client processes it
+starts. It may reuse an already tracked Shongre process, but must not stop that
+reused process when the current session exits. Keep PID ownership validation,
+leaf-to-root cleanup, configured-port forwarding, and unrelated-listener refusal
+intact.
+
+Before completing tooling changes, run the relevant canonical targets,
+including `make check` and `make test-critical`; use `make check-all` when the
+change affects E2E, cross-platform propagation, or the complete developer
+workflow. Never report an unexecuted target as passing.

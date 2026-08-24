@@ -29,7 +29,7 @@ Supabase remains canonical under `backend/supabase/`; `infrastructure/` owns cro
 
 ## Prerequisites
 
-- Node.js 22 or newer and npm 10 or newer
+- Node.js 22 through 26 and npm 10 or newer (see `package.json` engines and `.nvmrc`)
 - Docker plus the Supabase CLI for local database mode
 - Expo-compatible iOS/Android tooling for local native runs
 - macOS and current Xcode for local iOS builds; EAS may build remotely
@@ -40,10 +40,18 @@ Run `make doctor` for an evidence-based local tool report. Missing optional nati
 
 ```bash
 make setup
-make info
+make dev
 ```
 
 `make setup` creates an ignored `.env` from `.env.example`, installs the npm workspace, renders local Supabase configuration, and runs diagnostics. Keep secrets in ignored `.env.local` or secure CI/EAS variables.
+
+The complete everyday workflow is intentionally small:
+
+```bash
+make help       # discover generated command documentation
+make doctor     # diagnose the machine and configured modes
+make check      # deterministic pre-commit/pre-PR gate
+```
 
 Environment precedence is:
 
@@ -56,16 +64,21 @@ All host ports and runtime URLs come from that configuration. `scripts/env.sh` d
 ## Development
 
 ```bash
-make dev          # backend + web
-make dev-mobile   # backend + one Expo Metro server
-make dev-all      # backend + web + one Expo Metro server
+make dev          # backend API + scheduled worker + web
+make dev-mobile   # backend API + scheduled worker + one Expo Metro server
+make dev-all      # backend API + scheduled worker + web + Expo Metro
+
+make frontend     # standalone demo Web, backend stopped
+make backend      # backend API only
+make worker       # scheduled worker only
 
 make ios
 make android
 make mobile-web
 
 make status
-make health
+make health       # fails unless the complete Web stack is healthy
+make smoke        # health plus anonymous listings request
 make logs
 make stop-all
 ```
@@ -75,12 +88,13 @@ Processes launched through the root tooling are recorded under ignored `.runtime
 To override a port for one invocation, export it on that command:
 
 ```bash
-FRONTEND_PORT=3310 make frontend-dev
-BACKEND_PORT=4410 make backend-dev
+FRONTEND_PORT=3310 make frontend
+BACKEND_PORT=4410 make backend
 EXPO_METRO_PORT=8181 make mobile
+E2E_FRONTEND_PORT=3110 make test-e2e
 ```
 
-Use `make ports` to see configured values and current owners. `make free-port PORT=…` refuses to kill an unrelated process.
+Use `make ports` to see configured values and current owners. `make free-port PORT=…` refuses to kill an unrelated process. Playwright builds one isolated Webpack production checkout, starts its standalone server on `E2E_FRONTEND_PORT`, and removes both afterward; it never borrows the interactive Next.js process.
 
 ## Data modes
 
@@ -98,13 +112,15 @@ Demo is the default. There is no silent fallback to Supabase or production HTTP.
 make infra-start
 make infra-status
 make infra-health
+make migrations-check
 make db-migrate
 make db-seed
+make db-reset
 make db-types
 make infra-stop
 ```
 
-Schema changes belong in `backend/supabase/migrations/`. `make db-reset` refuses to run unless `APP_ENV=development`. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
+Schema changes belong in `backend/supabase/migrations/`. `make migrations-check` validates ordering and contents without connecting to PostgreSQL. Mutating database commands require `APP_ENV=development` and prove that the target host and database name are local; `make db-reset` additionally invokes only the local `backend/supabase` workdir. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
 
 ## Quality
 
@@ -112,7 +128,10 @@ Schema changes belong in `backend/supabase/migrations/`. `make db-reset` refuses
 make lint
 make typecheck
 make test
+make test-critical
+make test-e2e
 make check
+make check-all
 
 make frontend-build
 make backend-build
@@ -122,7 +141,7 @@ make ui-check
 make cross-platform-check
 ```
 
-`make check` covers all workspaces, builds web/backend, checks infrastructure, and enforces frontend/backend boundaries. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
+`make check` validates the environment and migrations, formatting, all workspaces, tests, Web/backend builds, infrastructure configuration, tracked-secret scanning, and frontend/backend boundaries. `make test-critical` is a focused gate for authentication/RBAC, listing lifecycle and ownership, messaging, payments/escrow/finance, monetization/entitlements, verification/compliance, provider safety, and public data boundaries. `make check-all` adds the focused critical gate, cross-platform propagation, browser E2E, and the high-severity dependency audit. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
 
 ## Mobile and store readiness
 

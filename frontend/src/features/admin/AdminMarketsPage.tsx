@@ -575,6 +575,7 @@ export const AdminMarketsPage: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="w-full text-xs"
+                      aria-label={`Configurer le marché ${m.name}`}
                       onClick={() => {
                         setSelectedMarketCode(m.code);
                         setActiveTab("editor");

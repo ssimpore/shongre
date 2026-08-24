@@ -17,7 +17,7 @@ const seedConsentDecision = async (page: Page) => {
   });
 };
 
-test.describe('design-token runtime contracts', () => {
+test.describe('design-token runtime contracts @serial', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1408, height: 749 });
     await usePersona(page, 'guest');
@@ -36,12 +36,10 @@ test.describe('design-token runtime contracts', () => {
       const scrollerRect = firstScroller?.getBoundingClientRect();
       const fullyVisibleCards =
         firstTrack && scrollerRect
-          ? [...firstTrack.querySelectorAll<HTMLElement>('.listing-rail-cell')].filter(
-              (cell) => {
-                const rect = cell.getBoundingClientRect();
-                return rect.left >= scrollerRect.left - 1 && rect.right <= scrollerRect.right + 1;
-              },
-            ).length
+          ? [...firstTrack.querySelectorAll<HTMLElement>('.listing-rail-cell')].filter((cell) => {
+              const rect = cell.getBoundingClientRect();
+              return rect.left >= scrollerRect.left - 1 && rect.right <= scrollerRect.right + 1;
+            }).length
           : 0;
 
       return {
@@ -83,8 +81,11 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('packs available desktop search cards into shared dense columns', async ({ page }) => {
-    await page.goto('/recherche?category=vehicules&maxPrice=100000', { waitUntil: 'domcontentloaded' });
+    await page.goto('/recherche?category=vehicules&maxPrice=100000', {
+      waitUntil: 'domcontentloaded',
+    });
     await waitForStableLayout(page);
+    await expect(page.locator('.listing-grid article.listing-card-standard')).toHaveCount(6);
 
     const contract = await page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
@@ -128,8 +129,11 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('keeps a sparse result card on one shared dense grid track', async ({ page }) => {
-    await page.goto('/recherche?category=mode-accessoires', { waitUntil: 'domcontentloaded' });
+    await page.goto('/recherche?category=mode-accessoires', {
+      waitUntil: 'domcontentloaded',
+    });
     await waitForStableLayout(page);
+    await expect(page.locator('.listing-grid article.listing-card-standard')).toHaveCount(1);
 
     const contract = await page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
@@ -180,9 +184,7 @@ test.describe('design-token runtime contracts', () => {
         const track = document.querySelector<HTMLElement>('.listing-rail-track');
         const scroller = track?.parentElement;
         const scrollerRect = scroller?.getBoundingClientRect();
-        const cells = track
-          ? [...track.querySelectorAll<HTMLElement>('.listing-rail-cell')]
-          : [];
+        const cells = track ? [...track.querySelectorAll<HTMLElement>('.listing-rail-cell')] : [];
 
         return {
           tokenWidth: root.getPropertyValue('--spacing-listing-card').trim(),
@@ -211,7 +213,9 @@ test.describe('design-token runtime contracts', () => {
       await expectNoHorizontalOverflow(page, `listing rail at ${viewport.name}`);
     }
 
-    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'domcontentloaded' });
+    await page.goto('/recherche?category=bebe-puericulture-enfants', {
+      waitUntil: 'domcontentloaded',
+    });
 
     for (const viewport of VIEWPORTS) {
       await page.setViewportSize(viewport);
@@ -219,9 +223,7 @@ test.describe('design-token runtime contracts', () => {
 
       const grid = await page.evaluate(() => {
         const element = document.querySelector<HTMLElement>('.listing-grid');
-        const cards = element
-          ? [...element.querySelectorAll<HTMLElement>('article.listing-card-standard')]
-          : [];
+        const cards = element ? [...element.querySelectorAll<HTMLElement>('article.listing-card-standard')] : [];
         const columns = element
           ? getComputedStyle(element)
               .gridTemplateColumns.split(' ')
@@ -267,7 +269,8 @@ test.describe('design-token runtime contracts', () => {
         tokenImage: root.getPropertyValue('--spacing-listing-card-list-image-lg').trim(),
         cards: cards.map((card) => ({
           height: card.getBoundingClientRect().height,
-          imageWidth: card.querySelector<HTMLElement>('.listing-card-list-image')?.getBoundingClientRect().width ?? null,
+          imageWidth:
+            card.querySelector<HTMLElement>('.listing-card-list-image')?.getBoundingClientRect().width ?? null,
         })),
       };
     });
@@ -303,6 +306,7 @@ test.describe('design-token runtime contracts', () => {
   test('keeps listing metadata readable without horizontal truncation', async ({ page }) => {
     await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
+    await expect(page.locator('article.min-w-0 .border-t').first()).toBeVisible();
 
     const metadata = await page.locator('article.min-w-0 .border-t').evaluateAll((rows) =>
       rows.map((row) => ({
@@ -320,13 +324,13 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('fits the active view toggle corner to its segmented container', async ({ page }) => {
-    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'domcontentloaded' });
+    await page.goto('/recherche?category=bebe-puericulture-enfants', {
+      waitUntil: 'domcontentloaded',
+    });
     await waitForStableLayout(page);
 
     const geometry = await page.evaluate(() => {
-      const group = document.querySelector<HTMLElement>(
-        '[role="group"][aria-label="Mode d\'affichage des annonces"]',
-      );
+      const group = document.querySelector<HTMLElement>('[role="group"][aria-label="Mode d\'affichage des annonces"]');
       const active = group?.querySelector<HTMLElement>('[aria-pressed="true"]');
       if (!group || !active) return null;
 
@@ -440,46 +444,59 @@ test.describe('design-token runtime contracts', () => {
     // remaining bounded in CI.
     test.setTimeout(240_000);
     for (const route of ALL_ROUTES) {
-      await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
-      await waitForStableLayout(page);
+      await test.step(`${route.name} (${route.path})`, async () => {
+        await usePersona(page, route.persona);
+        await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+        await waitForStableLayout(page, 20_000);
 
-      const audit = await page.evaluate(() => {
-        const arbitraryTypography = [...document.querySelectorAll<HTMLElement>('[class]')]
-          .flatMap((element) => String(element.className).split(/\s+/))
-          .filter((className) => /^(?:[a-z-]+:)*(?:text|leading|tracking|font)-\[[^\]]+\]$/.test(className));
-        const inlineTypography = [...document.querySelectorAll<HTMLElement>('[style]')]
-          .filter((element) => /(?:font-family|font-size|font-weight|line-height|letter-spacing)/i.test(element.getAttribute('style') || ''))
-          .map((element) => element.outerHTML.slice(0, 180));
-        const body = getComputedStyle(document.body);
-        return {
-          arbitraryTypography,
-          inlineTypography,
-          bodyFontFamily: body.fontFamily,
-          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-        };
+        const audit = await page.evaluate(() => {
+          const arbitraryTypography = [...document.querySelectorAll<HTMLElement>('[class]')]
+            .flatMap((element) => String(element.className).split(/\s+/))
+            .filter((className) => /^(?:[a-z-]+:)*(?:text|leading|tracking|font)-\[[^\]]+\]$/.test(className));
+          const inlineTypography = [...document.querySelectorAll<HTMLElement>('[style]')]
+            .filter((element) =>
+              /(?:font-family|font-size|font-weight|line-height|letter-spacing)/i.test(
+                element.getAttribute('style') || '',
+              ),
+            )
+            .map((element) => element.outerHTML.slice(0, 180));
+          const body = getComputedStyle(document.body);
+          return {
+            arbitraryTypography,
+            inlineTypography,
+            bodyFontFamily: body.fontFamily,
+            overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          };
+        });
+
+        expect(audit.arbitraryTypography, `${route.name} contains arbitrary typography`).toEqual([]);
+        expect(audit.inlineTypography, `${route.name} contains inline typography`).toEqual([]);
+        expect(audit.bodyFontFamily, `${route.name} lost the bundled UI font`).toContain('Inter Variable');
+        expect(audit.overflow, `${route.name} overflows horizontally`).toBe(false);
       });
-
-      expect(audit.arbitraryTypography, `${route.name} contains arbitrary typography`).toEqual([]);
-      expect(audit.inlineTypography, `${route.name} contains inline typography`).toEqual([]);
-      expect(audit.bodyFontFamily, `${route.name} lost the bundled UI font`).toContain('Inter Variable');
-      expect(audit.overflow, `${route.name} overflows horizontally`).toBe(false);
     }
   });
 
   test('keeps native registration fields on the touch size and control radius', async ({ page }) => {
-    await page.goto('/inscription/particulier', { waitUntil: 'domcontentloaded' });
+    await page.goto('/inscription/particulier', {
+      waitUntil: 'domcontentloaded',
+    });
     await waitForStableLayout(page);
 
     const fields = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-        'main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), main select',
-      )]
+      [
+        ...document.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+          'main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), main select',
+        ),
+      ]
         .filter((field) => field.getBoundingClientRect().height > 0)
         .map((field) => {
           const rect = field.getBoundingClientRect();
           const computed = getComputedStyle(field);
-          return { height: Math.round(rect.height), radius: computed.borderRadius };
+          return {
+            height: Math.round(rect.height),
+            radius: computed.borderRadius,
+          };
         }),
     );
 
@@ -509,7 +526,10 @@ test.describe('design-token runtime contracts', () => {
       const metric = await action.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const computed = getComputedStyle(element);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
 
       expect(metric, path).toEqual({ height: 44, radius: '10px' });
@@ -530,7 +550,10 @@ test.describe('design-token runtime contracts', () => {
       const metric = await action.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const computed = getComputedStyle(element);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
       expect(metric, path).toEqual({ height: 44, radius: '10px' });
     }
@@ -553,7 +576,10 @@ test.describe('design-token runtime contracts', () => {
       return candidates.map((action) => {
         const rect = action.getBoundingClientRect();
         const computed = getComputedStyle(action);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
     });
 
@@ -564,7 +590,10 @@ test.describe('design-token runtime contracts', () => {
 
   test('keeps the category navigation compact at every viewport', async ({ page }) => {
     const categoryNav = page.locator('header nav[aria-label="Filtres par catégorie"]');
-    const categoryLink = categoryNav.getByRole('link', { name: 'Immobilier', exact: true });
+    const categoryLink = categoryNav.getByRole('link', {
+      name: 'Immobilier',
+      exact: true,
+    });
 
     await expect(categoryLink).toBeVisible();
 
@@ -572,7 +601,10 @@ test.describe('design-token runtime contracts', () => {
       categoryLink.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const computed = getComputedStyle(element);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
 
     expect(await readMetric()).toEqual({ height: 40, radius: '10px' });
@@ -589,28 +621,55 @@ test.describe('design-token runtime contracts', () => {
       locator.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const computed = getComputedStyle(element);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
 
     const main = page.getByRole('main');
-    const heroPublish = main.getByRole('link', { name: 'Déposer une annonce', exact: true });
-    const heroExplore = main.getByRole('link', { name: 'Explorer le catalogue', exact: true });
-    const proDiscovery = main.getByRole('link', { name: 'Découvrir les forfaits Pro', exact: true });
+    const heroPublish = main.getByRole('link', {
+      name: 'Déposer une annonce',
+      exact: true,
+    });
+    const heroExplore = main.getByRole('link', {
+      name: 'Explorer le catalogue',
+      exact: true,
+    });
+    const proDiscovery = main.getByRole('link', {
+      name: 'Découvrir les forfaits Pro',
+      exact: true,
+    });
 
     await expect(heroPublish).toBeVisible();
     await expect(heroExplore).toBeVisible();
     await expect(proDiscovery).toBeVisible();
 
-    expect(await readMetric(proDiscovery)).toEqual({ height: 44, radius: '10px' });
-    expect(await readMetric(heroPublish)).toEqual({ height: 44, radius: '10px' });
-    expect(await readMetric(heroExplore)).toEqual({ height: 44, radius: '10px' });
+    expect(await readMetric(proDiscovery)).toEqual({
+      height: 44,
+      radius: '10px',
+    });
+    expect(await readMetric(heroPublish)).toEqual({
+      height: 44,
+      radius: '10px',
+    });
+    expect(await readMetric(heroExplore)).toEqual({
+      height: 44,
+      radius: '10px',
+    });
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(heroPublish).toBeVisible();
     await expect(heroExplore).toBeVisible();
     await expectNoHorizontalOverflow(page, 'mobile homepage hero actions');
-    expect(await readMetric(heroPublish)).toEqual({ height: 44, radius: '10px' });
-    expect(await readMetric(heroExplore)).toEqual({ height: 44, radius: '10px' });
+    expect(await readMetric(heroPublish)).toEqual({
+      height: 44,
+      radius: '10px',
+    });
+    expect(await readMetric(heroExplore)).toEqual({
+      height: 44,
+      radius: '10px',
+    });
   });
 
   test('aligns footer newsletter controls with the Pro discovery control', async ({ page }) => {
@@ -618,18 +677,32 @@ test.describe('design-token runtime contracts', () => {
       locator.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const computed = getComputedStyle(element);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
 
     const main = page.getByRole('main');
-    const proDiscovery = main.getByRole('link', { name: 'Découvrir les forfaits Pro', exact: true });
-    const newsletter = page.getByRole('complementary', { name: 'Newsletter Shongre' });
+    const proDiscovery = main.getByRole('link', {
+      name: 'Découvrir les forfaits Pro',
+      exact: true,
+    });
+    const newsletter = page.getByRole('complementary', {
+      name: 'Newsletter Shongre',
+    });
     const email = newsletter.getByRole('textbox', { name: /adresse email/i });
-    const submit = newsletter.getByRole('button', { name: "S'inscrire", exact: true });
+    const submit = newsletter.getByRole('button', {
+      name: "S'inscrire",
+      exact: true,
+    });
 
     await expect(email).toBeVisible();
     await expect(submit).toBeVisible();
-    expect(await readMetric(proDiscovery)).toEqual({ height: 44, radius: '10px' });
+    expect(await readMetric(proDiscovery)).toEqual({
+      height: 44,
+      radius: '10px',
+    });
     expect(await readMetric(email)).toEqual({ height: 44, radius: '10px' });
     expect(await readMetric(submit)).toEqual({ height: 44, radius: '10px' });
 
@@ -646,7 +719,10 @@ test.describe('design-token runtime contracts', () => {
       locator.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const computed = getComputedStyle(element);
-        return { height: Math.round(rect.height), radius: computed.borderRadius };
+        return {
+          height: Math.round(rect.height),
+          radius: computed.borderRadius,
+        };
       });
 
     await page.goto('/annonce/list-108', { waitUntil: 'domcontentloaded' });
@@ -667,7 +743,10 @@ test.describe('design-token runtime contracts', () => {
       await expect(mobileActions.first(), `missing listing actions at ${width}px`).toBeVisible();
       expect(await mobileActions.count()).toBeGreaterThanOrEqual(2);
       for (const action of await mobileActions.all()) {
-        expect(await readMetric(action), `${width}px`).toEqual({ height: 44, radius: '10px' });
+        expect(await readMetric(action), `${width}px`).toEqual({
+          height: 44,
+          radius: '10px',
+        });
       }
       await expectNoHorizontalOverflow(page, `listing transaction actions at ${width}px`);
     }

@@ -26,8 +26,6 @@ jobs:
           cache: npm
       - name: Install and run the canonical repository gate
         run: make ci
-      - name: Validate ordered migrations without changing a database
-        run: npm run db:migrate --workspace=backend
       - name: Reject high and critical dependency vulnerabilities
         run: npm audit --audit-level=high
       - name: Exercise the production fail-closed configuration gate
@@ -81,7 +79,7 @@ jobs:
         with:
           version: 2.115.0
       - run: npm ci
-      - run: make env-init
+      - run: make env
       - name: Apply every migration to a clean local database
         run: |
           supabase start --workdir backend
@@ -90,8 +88,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: |
-          npm run db:migrate --workspace=backend
-          npm run db:migrate --workspace=backend
+          make db-migrate
+          make db-migrate
           test "$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -qAtc "SELECT count(*) FROM public.profiles WHERE id IN ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004');")" = "0"
       - name: Prove production demo seeding is refused
         env:
@@ -166,13 +164,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: make env-init
+      - run: make env
       - name: Install browser runtime
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Run demo-only journeys
-        run: |
-          source scripts/env.sh
-          npm run test:e2e --workspace=frontend -- --project=${{ matrix.browser }}
+        run: make frontend-test-e2e E2E_ARGS=--project=${{ matrix.browser }}
       - name: Upload failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
