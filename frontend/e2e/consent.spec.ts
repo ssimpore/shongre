@@ -29,7 +29,7 @@ async function freshVisitor(page: import('@playwright/test').Page) {
   await usePersona(page, 'guest');
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.evaluate((key) => window.localStorage.removeItem(key), CONSENT_KEY);
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await waitForStableLayout(page);
 }
 
@@ -78,7 +78,7 @@ test.describe('cookie consent', () => {
       marketing: false,
     });
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
     await expect(banner(page), 'a decided visitor must not be asked again').toBeHidden();
   });

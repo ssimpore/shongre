@@ -20,6 +20,7 @@ import {
 } from "../publication/publication.types";
 import { Listing } from "../../types";
 import {
+  calculateDemoMarketplaceCommission,
   getDemoDeliveryAmountMinor,
   getDemoTransactionCommercials,
 } from "../monetization/demo-commercial-catalog";
@@ -359,8 +360,11 @@ export class FulfillmentResolver {
     }
 
     const sellerCommission =
-      Math.round(itemSubtotalMinor * (commercials.commissionRateBps / 10_000)) /
-      100;
+      calculateDemoMarketplaceCommission(
+        itemSubtotalMinor,
+        marketCode,
+        listing.sellerType === "pro" ? "pro" : "individual",
+      ).totalCommissionMinor / 100;
 
     const discount = 0;
     const tax = 0; // VAT included in prices for consumers

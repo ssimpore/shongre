@@ -91,7 +91,7 @@ export class DemoVerticalDiscoveryStore {
     const subjectLabel =
       DEMO_COURSE_CATALOG.subjects.find(
         (subject) => subject.id === offer.subjectId,
-      )?.label || "Cours & Formation";
+      )?.label || "Éducation & Formation";
     return this.upsert(
       "tutoring",
       offer.id,

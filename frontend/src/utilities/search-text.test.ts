@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSearchText, searchTextIncludes } from "./search-text";
+import {
+  expandSearchQuery,
+  normalizeSearchText,
+  searchTextIncludes,
+} from "./search-text";
 
 describe("normalizeSearchText", () => {
   it("folds the accents a French keyboard makes optional", () => {
@@ -56,5 +60,16 @@ describe("searchTextIncludes", () => {
 
   it("does not throw on absent content", () => {
     expect(searchTextIncludes(null, normalizeSearchText("velo"))).toBe(false);
+  });
+});
+
+describe("expandSearchQuery", () => {
+  it("keeps Education and legacy course vocabulary in one search surface", () => {
+    expect(expandSearchQuery("Éducation")).toEqual([
+      "education",
+      "cours",
+      "formation",
+    ]);
+    expect(expandSearchQuery("cours de maths")).toContain("mathematiques");
   });
 });

@@ -73,6 +73,10 @@ export const AdminLayout: React.FC = () => {
   const staffRoleMeta = currentUser?.staffRole
     ? STAFF_ROLE_PRESENTATION[currentUser.staffRole]
     : roleMeta;
+  const accountName = (currentUser?.name || "Agent Shongre").replace(
+    /\s+\([^)]*\)\s*$/,
+    "",
+  );
   const marketScope = currentUser?.marketScope?.countries || ["FR"];
   const marketLabel = marketScope.includes("*")
     ? "Portée Globale (*)"
@@ -93,8 +97,8 @@ export const AdminLayout: React.FC = () => {
       show: canAccessRoute("adminCrm"),
     },
     {
-      to: "/admin/cours",
-      label: "Shongre Cours",
+      to: "/admin/education",
+      label: t("verticals.education.brand"),
       icon: GraduationCap,
       show: canAccessRoute("adminCourse"),
     },
@@ -249,13 +253,13 @@ export const AdminLayout: React.FC = () => {
                   currentUser?.avatarUrl ||
                   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"
                 }
-                alt={currentUser?.name || "Staff"}
+                alt={accountName}
                 sizes="28px"
                 className="w-7 h-7 rounded-full object-cover border border-stone-700 shrink-0"
               />
               <div className="hidden lg:flex flex-col text-right">
                 <span className="text-xs font-bold text-stone-100 leading-tight">
-                  {currentUser?.name || "Agent Shongre"}
+                  {accountName}
                 </span>
                 <span className="text-micro text-stone-400 font-medium">
                   {staffRoleMeta.title}
@@ -264,9 +268,12 @@ export const AdminLayout: React.FC = () => {
             </div>
 
             <span
-              className={`hidden sm:inline text-micro font-bold px-2 py-1 rounded-full border shrink-0 ${roleMeta.badgeColor}`}
+              role="img"
+              aria-label={staffRoleMeta.shortLabel}
+              title={staffRoleMeta.shortLabel}
+              className={`hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border sm:inline-flex ${roleMeta.badgeColor}`}
             >
-              {staffRoleMeta.shortLabel}
+              <Shield className="h-icon-xs w-icon-xs" aria-hidden="true" />
             </span>
 
             {/* Back to public marketplace. A styled Link rather than a Button

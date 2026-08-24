@@ -38,6 +38,7 @@ export interface MarketCoverageRow {
       isAvailable: boolean;
       isInherited: boolean;
       health: ProviderHealthStatus;
+      mode: "live" | "demo" | "unverified" | "missing";
     }
   >;
 }
@@ -173,12 +174,22 @@ export class ProviderService {
       marketCodes.forEach((mCode) => {
         const resolution = this.resolveEffectiveProviders(cap, mCode);
         const active = resolution.primaryProvider;
+        const activeConfig = resolution.primaryConfig;
+        const mode: MarketCoverageRow["markets"][string]["mode"] = !active
+          ? "missing"
+          : activeConfig?.environment === "demo"
+            ? "demo"
+            : activeConfig?.health === "healthy" &&
+                activeConfig.healthLastCheckedAt
+              ? "live"
+              : "unverified";
         rowMarkets[mCode] = {
           activeProviderName: active?.name || "Désactivé / Inexistant",
           activeProviderId: active?.id || "",
           isAvailable: resolution.isAvailable,
           isInherited: resolution.isInheritedFromFrance,
           health: resolution.effectiveHealth,
+          mode,
         };
       });
 

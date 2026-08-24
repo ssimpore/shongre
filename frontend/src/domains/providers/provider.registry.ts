@@ -4,14 +4,18 @@
  * supported capabilities, configuration schemas, documentation links, and market scope.
  */
 
+import {
+  getProviderOperationalDefinition,
+  type ProviderAdapterStatus,
+} from "@shongre/contracts/provider-platform";
 import { Provider } from "./provider.types";
 
-export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
+const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
   // 1. MangoPay Escrow & Payments
   {
     id: "mangopay",
     code: "MANGOPAY_ESCROW",
-    name: "MangoPay Escrow & Marketplace Payments",
+    name: "MANGOPAY (candidat marketplace)",
     category: "PAYMENT",
     capabilities: [
       "payment.card",
@@ -80,7 +84,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "stripe",
     code: "STRIPE_CONNECT",
-    name: "Stripe Payments & Connect",
+    name: "Stripe Checkout / Billing",
     category: "PAYMENT",
     capabilities: [
       "payment.card",
@@ -402,7 +406,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "resend",
     code: "RESEND_EMAIL",
-    name: "Resend Transactional Email API",
+    name: "Resend (candidat email)",
     category: "EMAIL",
     capabilities: ["email.transactional"],
     supportedMarkets: ["*"],
@@ -442,7 +446,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "brevo",
     code: "BREVO_MARKETING",
-    name: "Brevo (ex-Sendinblue) Email & Newsletter",
+    name: "Brevo (candidat email/marketing)",
     category: "EMAIL",
     capabilities: [
       "email.marketing",
@@ -486,7 +490,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "twilio",
     code: "TWILIO_SMS",
-    name: "Twilio SMS & Verify OTP",
+    name: "Twilio (candidat SMS/OTP)",
     category: "SMS",
     capabilities: ["sms.otp", "sms.transactional"],
     supportedMarkets: ["*"],
@@ -526,7 +530,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "google_gemini",
     code: "GOOGLE_GEMINI",
-    name: "Google Gemini AI (2.5 Flash & Pro)",
+    name: "Google Gemini (démo uniquement)",
     category: "AI",
     capabilities: [
       "ai.listing_assistance",
@@ -580,7 +584,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "openai",
     code: "OPENAI",
-    name: "OpenAI (GPT-4o & GPT-4o-mini)",
+    name: "OpenAI (candidat IA)",
     category: "AI",
     capabilities: [
       "ai.listing_assistance",
@@ -627,7 +631,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "tavily",
     code: "TAVILY_SEARCH",
-    name: "Tavily AI Web Search (Recherche Publique CRM)",
+    name: "Tavily (candidat recherche web)",
     category: "SEARCH",
     capabilities: ["search.public_web"],
     supportedMarkets: ["*"],
@@ -660,7 +664,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "meilisearch",
     code: "MEILISEARCH",
-    name: "Meilisearch (Moteur de Recherche Interne)",
+    name: "Meilisearch (non requis actuellement)",
     category: "SEARCH",
     capabilities: ["search.marketplace"],
     supportedMarkets: ["*"],
@@ -699,7 +703,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "osm_nominatim",
     code: "OSM_NOMINATIM",
-    name: "OpenStreetMap & Base Adresse Nationale (BAN)",
+    name: "OpenStreetMap tiles / BAN (partiel)",
     category: "GEOCODING",
     capabilities: [
       "maps.display",
@@ -743,7 +747,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "insee_sirene",
     code: "INSEE_SIRENE",
-    name: "INSEE SIRENE & Pappers API (Vérification KYB)",
+    name: "Registre entreprise France (démo uniquement)",
     category: "BUSINESS_VERIFICATION",
     capabilities: ["verification.business", "verification.vat"],
     supportedMarkets: ["FR"],
@@ -776,7 +780,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "veriff",
     code: "VERIFF_KYC",
-    name: "Veriff Identity Verification (KYC)",
+    name: "Veriff (candidat KYC)",
     category: "IDENTITY_VERIFICATION",
     capabilities: ["verification.identity"],
     supportedMarkets: ["*"],
@@ -816,7 +820,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "cloudflare_r2",
     code: "CLOUDFLARE_R2",
-    name: "Cloudflare R2 Object Storage & Image CDN",
+    name: "Cloudflare R2 (non requis actuellement)",
     category: "STORAGE",
     capabilities: [
       "storage.media",
@@ -868,7 +872,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "plausible",
     code: "PLAUSIBLE",
-    name: "Plausible Analytics (Conforme RGPD / Sans Cookie)",
+    name: "Plausible (candidat analytics)",
     category: "ANALYTICS",
     capabilities: ["analytics.product"],
     supportedMarkets: ["*"],
@@ -906,7 +910,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "sentry",
     code: "SENTRY",
-    name: "Sentry Error & Performance Tracking",
+    name: "Sentry (candidat observabilité)",
     category: "ERROR_MONITORING",
     capabilities: ["monitoring.error_tracking"],
     supportedMarkets: ["*"],
@@ -944,7 +948,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "cloudflare_turnstile",
     code: "CLOUDFLARE_TURNSTILE",
-    name: "Cloudflare Turnstile (Protection Anti-Bot Invisible)",
+    name: "Cloudflare Turnstile (candidat anti-bot)",
     category: "CAPTCHA",
     capabilities: ["security.captcha"],
     supportedMarkets: ["*"],
@@ -984,7 +988,7 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
   {
     id: "pennylane",
     code: "PENNYLANE",
-    name: "Pennylane (Comptabilité & Facturation Électronique Factur-X)",
+    name: "Pennylane (candidat facturation)",
     category: "INVOICING",
     capabilities: ["invoicing.electronic"],
     supportedMarkets: ["FR"],
@@ -1020,6 +1024,33 @@ export const CANONICAL_PROVIDER_REGISTRY: Provider[] = [
     },
   },
 ];
+
+const readinessFor = (
+  adapterStatus: ProviderAdapterStatus,
+): Provider["integrationReadiness"] => {
+  if (adapterStatus === "NONE") return "not_implemented";
+  if (adapterStatus === "DEMO_ONLY") return "demo_only";
+  return "implemented_unverified";
+};
+
+/**
+ * Presentation metadata is enriched from the shared code-audited manifest.
+ * A missing definition is a build-time error instead of a decorative card.
+ */
+export const CANONICAL_PROVIDER_REGISTRY: Provider[] =
+  PROVIDER_PRESENTATION_REGISTRY.map((provider) => {
+    const operational = getProviderOperationalDefinition(provider.id);
+    if (!operational) {
+      throw new Error(
+        `Provider ${provider.id} is missing from the canonical operational registry.`,
+      );
+    }
+    return {
+      ...provider,
+      integrationReadiness: readinessFor(operational.adapterStatus),
+      operational,
+    };
+  });
 
 export function getProviderById(id: string): Provider | undefined {
   return CANONICAL_PROVIDER_REGISTRY.find((p) => p.id === id);

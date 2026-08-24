@@ -28,7 +28,7 @@ test.describe("horizontal overflow", () => {
             height: viewport.height,
           });
           await usePersona(page, route.persona);
-          await page.goto(route.path, { waitUntil: "networkidle" });
+          await page.goto(route.path, { waitUntil: "domcontentloaded" });
           await waitForStableLayout(page);
           if (route.settleMs) await page.waitForTimeout(route.settleMs);
           await expectNoHorizontalOverflow(
@@ -53,7 +53,7 @@ test.describe("horizontal overflow", () => {
       });
       await usePersona(page, "guest");
       for (const route of PUBLIC_ROUTES) {
-        await page.goto(route.path, { waitUntil: "networkidle" });
+        await page.goto(route.path, { waitUntil: "domcontentloaded" });
         await waitForStableLayout(page);
         await expectNoHorizontalOverflow(
           page,
@@ -98,7 +98,7 @@ test.describe("open dropdowns stay on screen", () => {
           }),
         );
       });
-      await page.goto("/", { waitUntil: "networkidle" });
+      await page.goto("/", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       const trigger = page.locator("#footer-lang-button");
@@ -146,7 +146,7 @@ test.describe("toolbar controls align", () => {
   }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await usePersona(page, "individual_seller");
-    await page.goto("/compte/annonces", { waitUntil: "networkidle" });
+    await page.goto("/compte/annonces", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     const toolbar = page
@@ -200,7 +200,7 @@ test.describe("toolbar controls align", () => {
     test(`${name} toolbar shares one control height`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await usePersona(page, "guest");
-      await page.goto(path, { waitUntil: "networkidle" });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       const row = await page.evaluate(() => {
@@ -258,7 +258,7 @@ test.describe("app store badges", () => {
         height: viewport.height,
       });
       await usePersona(page, "guest");
-      await page.goto("/", { waitUntil: "networkidle" });
+      await page.goto("/", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       const badges = await page.evaluate(() =>
@@ -312,7 +312,7 @@ test.describe("list view cards", () => {
     test(`are horizontal and fit at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 812 });
       await usePersona(page, "guest");
-      await page.goto("/recherche", { waitUntil: "networkidle" });
+      await page.goto("/recherche", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       await page
@@ -357,7 +357,7 @@ test.describe("collections rail", () => {
   test("an arrow advances one card and leaves it flush", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await usePersona(page, "guest");
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     const heading = page.getByRole("heading", {

@@ -3,6 +3,7 @@ import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { AccountLayout } from "../layouts/AccountLayout";
@@ -498,6 +499,19 @@ const OrganizationFinancePage: React.FC = () => (
   <AccountFinancePage scope="organization" />
 );
 
+/** Client-side fallback for old deep links; Next serves the permanent redirects. */
+const LegacyEducationRedirect: React.FC = () => {
+  const location = useLocation();
+  const pathname = location.pathname
+    .replace(/^\/cours(?=\/|$)/, "/education")
+    .replace(/^\/deposer\/cours(?=\/|$)/, "/deposer/education")
+    .replace(/^\/compte\/cours(?=\/|$)/, "/compte/education")
+    .replace(/^\/admin\/cours(?=\/|$)/, "/admin/education");
+  return (
+    <Navigate to={`${pathname}${location.search}${location.hash}`} replace />
+  );
+};
+
 export const router = createBrowserRouter([
   // Task-completion flows get a focused shell rather than the marketplace one.
   {
@@ -513,13 +527,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "deposer/cours",
+        path: "deposer/education",
         element: (
           <RequireRoutePolicy policyId="publishCourse">
             {withSuspense(CourseTutorOnboardingPage)}
           </RequireRoutePolicy>
         ),
       },
+      { path: "deposer/cours", element: <LegacyEducationRedirect /> },
       {
         path: "deposer/auto",
         element: (
@@ -632,19 +647,21 @@ export const router = createBrowserRouter([
           </RequireRoutePolicy>
         ),
       },
-      { path: "cours", element: withSuspense(CoursesSearchPage) },
+      { path: "education", element: withSuspense(CoursesSearchPage) },
       {
-        path: "cours/professeur/:slug",
+        path: "education/professeur/:slug",
         element: withSuspense(CourseTutorProfilePage),
       },
       {
-        path: "cours/demande",
+        path: "education/demande",
         element: (
           <RequireRoutePolicy policyId="requestCourse">
             {withSuspense(CourseLearnerRequestPage)}
           </RequireRoutePolicy>
         ),
       },
+      { path: "cours/*", element: <LegacyEducationRedirect /> },
+      { path: "cours", element: <LegacyEducationRedirect /> },
       {
         path: "publier",
         element: <Navigate to="/deposer" replace />,
@@ -820,7 +837,7 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: "cours",
+            path: "education",
             element: (
               <RequireRoutePolicy policyId="accountCourse">
                 {withSuspense(CourseTutorWorkspacePage)}
@@ -828,13 +845,15 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: "cours/organisation",
+            path: "education/organisation",
             element: (
               <RequireRoutePolicy policyId="accountCourseOrganization">
                 {withSuspense(CourseOrganizationWorkspacePage)}
               </RequireRoutePolicy>
             ),
           },
+          { path: "cours/*", element: <LegacyEducationRedirect /> },
+          { path: "cours", element: <LegacyEducationRedirect /> },
           {
             path: "auto",
             element: (
@@ -1032,13 +1051,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "cours",
+        path: "education",
         element: (
           <RequireRoutePolicy policyId="adminCourse">
             {withSuspense(AdminCoursesPage)}
           </RequireRoutePolicy>
         ),
       },
+      { path: "cours", element: <LegacyEducationRedirect /> },
       {
         path: "auto",
         element: (

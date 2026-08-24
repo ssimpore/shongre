@@ -21,7 +21,6 @@ export const DEMO_COURSE_CATALOG: CourseCatalog = {
     learnerRequestValidityDays: 14,
     leadValidityHours: 72,
     defaultLeadCreditCost: 1,
-    commissionRateBps: 1200,
     cancellationWindowHours: 24,
     featureFlags: {
       learnerRequestsEnabled: true,

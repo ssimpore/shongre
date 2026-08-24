@@ -33,6 +33,7 @@ import {
 } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 function requestForLead(
   lead: CourseLead,
@@ -49,6 +50,7 @@ const euro = (amountMinor: number) =>
   }).format(amountMinor / 100);
 
 export const CourseTutorWorkspacePage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [workspace, setWorkspace] = useState<TutorWorkspace | null>(null);
@@ -57,10 +59,10 @@ export const CourseTutorWorkspacePage: React.FC = () => {
   const [activeLeadTab, setActiveLeadTab] = useState<"new" | "history">("new");
 
   usePageMeta({
-    title: "Espace Cours",
+    title: t("verticals.education.workspace"),
     description:
       "Gérez votre profil professeur, vos cours, disponibilités et demandes d’élèves.",
-    canonicalPath: "/compte/cours",
+    canonicalPath: "/compte/education",
     noIndex: true,
   });
 
@@ -127,10 +129,10 @@ export const CourseTutorWorkspacePage: React.FC = () => {
   if (error || !workspace) {
     return (
       <StatePanel
-        title="Espace Cours indisponible"
+        title={t("verticals.education.workspaceUnavailable")}
         description="Ce compte n’a pas de profil professeur accessible ou le service est momentanément indisponible."
         action={
-          <Button to="/deposer/cours">Créer mon profil professeur</Button>
+          <Button to="/deposer/education">Créer mon profil professeur</Button>
         }
       />
     );
@@ -147,7 +149,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-black text-text-main sm:text-2xl">
-              Espace Cours
+              {t("verticals.education.workspace")}
             </h1>
             {tutor.organizationId && (
               <Badge variant="pro" icon>
@@ -162,14 +164,14 @@ export const CourseTutorWorkspacePage: React.FC = () => {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
-            to="/deposer/cours"
+            to="/deposer/education"
             variant="outline"
             size="compact"
             leftIcon={<Plus className="h-icon-sm w-icon-sm" />}
           >
             Créer un cours
           </Button>
-          <Button to={`/cours/professeur/${tutor.slug}`} size="compact">
+          <Button to={`/education/professeur/${tutor.slug}`} size="compact">
             Voir mon profil public
           </Button>
         </div>
@@ -203,7 +205,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 <span className="flex h-12 w-12 items-center justify-center rounded-pill border-4 border-primary text-xs font-black text-text-main">
                   {tutor.profileCompletionPercent}%
                 </span>
-                <Button to="/deposer/cours?mode=profile" size="sm">
+                <Button to="/deposer/education?mode=profile" size="sm">
                   Compléter mon profil
                 </Button>
               </div>
@@ -292,7 +294,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   {workspace.offers.length > 1 ? "s" : ""}
                 </p>
               </div>
-              <Button to="/deposer/cours" variant="ghost" size="sm">
+              <Button to="/deposer/education" variant="ghost" size="sm">
                 Voir tous mes cours
               </Button>
             </div>
@@ -743,7 +745,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 </div>
               </dl>
               <Button
-                to="/compte/cours/organisation"
+                to="/compte/education/organisation"
                 variant="ghost"
                 size="sm"
                 className="mt-3"

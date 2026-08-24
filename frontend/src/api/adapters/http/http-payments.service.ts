@@ -20,12 +20,11 @@ export class HttpPaymentsService implements PaymentsServiceContract {
   async requestSellerPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
     return httpClient.post<{
       payoutId: string;
       status: "completed" | "processing";
-    }>("/payments/payout", { sellerId, amount, iban });
+    }>("/payments/payout", { sellerId, amount });
   }
 
   async getSellerBalance(

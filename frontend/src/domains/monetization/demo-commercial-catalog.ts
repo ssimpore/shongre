@@ -4,6 +4,7 @@ import {
   isCommercialEntitlementOperational,
 } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
+import { calculateCommission } from "@shongre/shared";
 
 export type DemoCommercialCategory =
   | typeof CANONICAL_TAXONOMY_IDS.vehicles
@@ -29,16 +30,10 @@ function rule(key: string, marketCode = "FR") {
 
 export function getDemoTransactionCommercials(
   marketCode: string,
-  sellerType: "individual" | "pro",
+  _sellerType: "individual" | "pro",
 ) {
   const protection = rule(
     `fees.buyer_protection.${marketCode.toLowerCase()}`,
-    marketCode,
-  );
-  const commission = rule(
-    sellerType === "pro"
-      ? "commission.seller.professional"
-      : "commission.seller.individual",
     marketCode,
   );
   const range = rule("transaction.range.fr", marketCode);
@@ -46,12 +41,48 @@ export function getDemoTransactionCommercials(
   return {
     protectionRateBps: protection?.outcome.feeRateBps || 0,
     protectionFixedMinor: protection?.outcome.fixedFeeMinor || 0,
-    commissionRateBps: commission?.outcome.commissionRateBps || 0,
     minimumAmountMinor: range?.outcome.minimumAmountMinor || 0,
     maximumAmountMinor: range?.outcome.maximumAmountMinor,
     instantPayoutRateBps: instantPayout?.outcome.feeRateBps || 0,
     instantPayoutFixedMinor: instantPayout?.outcome.fixedFeeMinor || 0,
   };
+}
+
+/** One deterministic calculator for every standalone-demo transaction view. */
+export function calculateDemoMarketplaceCommission(
+  itemSubtotalMinor: number,
+  marketCode: string,
+  sellerType: "individual" | "pro",
+) {
+  const currency =
+    BASELINE_MONETIZATION_CATALOG.marketCode === marketCode
+      ? BASELINE_MONETIZATION_CATALOG.currency
+      : "EUR";
+  return calculateCommission({
+    configurationVersionId:
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+    policies: BASELINE_MONETIZATION_CATALOG.commissionPolicies,
+    input: {
+      eligibleCommercialEvent: true,
+      earningEvent: "payment_succeeded",
+      effectiveAt: "2026-08-24T12:00:00.000Z",
+      marketCode,
+      countryCode: marketCode,
+      currency,
+      transactionType: "marketplace_order",
+      sellerType: sellerType === "pro" ? "professional" : "individual",
+      campaignIds: [],
+      itemSubtotalMinor,
+      discountMinor: 0,
+      shippingMinor: 0,
+      taxMinor: 0,
+      buyerFeesMinor: 0,
+      totalMinor: itemSubtotalMinor,
+      platformCollectedMinor: itemSubtotalMinor,
+      historicalVolumeMinor: 0,
+    },
+    calculatedAt: "2026-08-24T12:00:00.000Z",
+  });
 }
 
 export function getDemoDeliveryAmountMinor(

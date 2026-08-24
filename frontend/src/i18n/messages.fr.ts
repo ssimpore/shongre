@@ -31,6 +31,37 @@ export const messagesFr = {
   "common.reviewCount_one": "{count} avis",
   "common.reviewCount_other": "{count} avis",
 
+  // --- Business verticals --------------------------------------------------
+  "verticals.education.name": "Éducation",
+  "verticals.education.brand": "Shongre Éducation",
+  "verticals.education.workspace": "Espace Éducation",
+  "verticals.education.training": "Éducation & Formation",
+  "verticals.education.adminTitle": "Administration Shongre Éducation",
+  "verticals.education.adminSections": "Sections Shongre Éducation",
+  "verticals.education.searchTitle":
+    "Trouver un professeur — Shongre Éducation",
+  "verticals.education.requestTitle": "Décrire mon besoin — Shongre Éducation",
+  "verticals.education.onboardingTitle":
+    "Devenir professeur sur Shongre Éducation",
+  "verticals.education.organizationTitle": "Organisme — Shongre Éducation",
+  "verticals.education.unavailable": "Shongre Éducation est indisponible",
+  "verticals.education.workspaceUnavailable": "Espace Éducation indisponible",
+  "verticals.education.filters": "Filtres Éducation",
+  "verticals.education.demoPersona":
+    "7. Pro Éducation (Sophie · Collège Lumière)",
+  "verticals.education.organizationWorkspace": "Organisme Éducation",
+  "verticals.education.openWorkspace": "Ouvrir mon espace Éducation",
+  "verticals.education.adminCategory": "Éducation",
+  "verticals.education.adminDescription":
+    "Pilotage du marché, de la taxonomie, des formules et de la sécurité Éducation.",
+  "verticals.education.adminLoadError":
+    "Impossible de charger la configuration Éducation.",
+  "verticals.education.adminSaved":
+    "Configuration Éducation enregistrée et auditée.",
+  "verticals.education.catalogUnavailable":
+    "Le catalogue Éducation est momentanément indisponible.",
+  "verticals.education.returnToWorkspace": "Retour à mon espace Éducation",
+
   // --- Primary navigation ---------------------------------------------------
   "nav.home": "Accueil",
   "nav.search": "Recherche",
@@ -54,7 +85,7 @@ export const messagesFr = {
   "nav.category.electronique": "Électronique",
   "nav.category.loisirs": "Loisirs",
   "nav.category.autres": "Autres",
-  "nav.category.cours": "Cours",
+  "nav.category.cours": "Éducation",
   "nav.category.bonsPlans": "Bons plans !",
   "nav.unreadMessages_one": "{count} message non lu",
   "nav.unreadMessages_other": "{count} messages non lus",
@@ -1865,8 +1896,11 @@ export const messagesFr = {
 
   // --- shell.demoRoleSwitcher ---
   "shell.demoRoleSwitcher.modeDemo": "Mode Démo",
-  "shell.demoRoleSwitcher.testerLes10ProfilsEt":
-    "Tester les 15 profils et parcours sans mot de passe :",
+  "shell.demoRoleSwitcher.testerLesProfilsEtParcours":
+    "Tester les 17 profils et parcours sans mot de passe :",
+  "shell.demoRoleSwitcher.commercialLabel": "15. Commercial Shongre (Léa)",
+  "shell.demoRoleSwitcher.commercialDescription":
+    "Prospects, opportunités, relances et relation partenaires",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
     "Changer de profil utilisateur pour tester",
   "shell.demoRoleSwitcher.sessionUpdated":

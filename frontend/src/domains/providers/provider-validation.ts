@@ -54,7 +54,7 @@ export class ProviderValidator {
 
         if (field.required) {
           // If enabled, required fields must be filled or marked as configured
-          if (config.enabled) {
+          if (config.enabled && config.environment !== "demo") {
             if (isSecret) {
               if (
                 config.credentialStatus === "not_configured" ||
@@ -162,6 +162,12 @@ export class ProviderValidator {
       errors.push(
         `Le prestataire primaire ${primary.name} ne supporte pas la capacité "${rule.capability}".`,
       );
+    } else if (
+      !primary.operational.implementedCapabilities.includes(rule.capability)
+    ) {
+      errors.push(
+        `${primary.name} annonce la capacité "${rule.capability}" mais aucun adaptateur de production ne l'implémente.`,
+      );
     }
 
     if (rule.fallbackProviderId) {
@@ -178,6 +184,14 @@ export class ProviderValidator {
         } else if (!fallback.capabilities.includes(rule.capability)) {
           errors.push(
             `Le prestataire de secours ${fallback.name} ne supporte pas la capacité "${rule.capability}".`,
+          );
+        } else if (
+          !fallback.operational.implementedCapabilities.includes(
+            rule.capability,
+          )
+        ) {
+          errors.push(
+            `Le secours ${fallback.name} n'est pas compatible : aucun adaptateur de production n'implémente "${rule.capability}".`,
           );
         }
       }

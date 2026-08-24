@@ -6,6 +6,10 @@ import type {
   MonetizationCatalog,
 } from "@shongre/contracts";
 import { isCommercialEntitlementOperational } from "@shongre/contracts";
+import {
+  normalizeBusinessVerticalCode,
+  normalizeEducationEntitlementKey,
+} from "@shongre/contracts/business-verticals";
 
 type EffectiveEntitlement = BillingOverview["effectiveEntitlements"][number];
 
@@ -24,17 +28,20 @@ function catalogCandidate(
   const product = catalog.products.find(
     (candidate) => candidate.id === entry.productId,
   );
+  const canonicalKey = normalizeEducationEntitlementKey(entry.key);
   const definition = product?.entitlements.find(
-    (candidate) => candidate.key === entry.key,
+    (candidate) =>
+      normalizeEducationEntitlementKey(candidate.key) === canonicalKey,
   );
-  const verticalId =
+  const verticalId = normalizeBusinessVerticalCode(
     entry.verticalId ||
-    definition?.verticalId ||
-    product?.commercialProfile.verticalId;
+      definition?.verticalId ||
+      product?.commercialProfile.verticalId,
+  );
 
   return {
-    entry,
-    label: definition?.label || entry.key,
+    entry: { ...entry, key: canonicalKey },
+    label: definition?.label || canonicalKey,
     mergePolicy: entry.mergePolicy || definition?.mergePolicy || "override",
     operational: definition
       ? isCommercialEntitlementOperational(definition)
@@ -91,7 +98,9 @@ export function resolveEffectiveEntitlementsForVertical(input: {
     .filter((candidate) => candidate.operational)
     .filter(
       (candidate) =>
-        !candidate.verticalId || candidate.verticalId === input.verticalId,
+        !candidate.verticalId ||
+        candidate.verticalId ===
+          normalizeBusinessVerticalCode(input.verticalId),
     )
     .sort(
       (left, right) =>
@@ -118,7 +127,7 @@ export function resolveEffectiveEntitlementsForVertical(input: {
         label: scoped?.label || grouped.at(-1)?.label || key,
         value: mergeValues(grouped, policy),
         ...(input.verticalId && input.verticalId !== "general"
-          ? { verticalId: input.verticalId }
+          ? { verticalId: normalizeBusinessVerticalCode(input.verticalId) }
           : {}),
         mergePolicy: policy,
         sourceProductIds: [

@@ -1,5 +1,6 @@
 import { config } from "../../app/config/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { providerExecutionGuard } from "../../integrations/providers/provider-execution.js";
 
 const STRIPE_API_VERSION = "2026-02-25.clover";
 
@@ -55,19 +56,34 @@ export class StripeCheckoutAdapter {
         message: "Le prestataire de paiement n’est pas configuré.",
       });
     }
-    const response = await fetch(`https://api.stripe.com${path}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${config.stripeSecretKey}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Idempotency-Key": idempotencyKey,
-        "Stripe-Version": STRIPE_API_VERSION,
+    return providerExecutionGuard.execute({
+      providerId: "stripe",
+      capability: "payment.checkout",
+      marketCode: "*",
+      mutating: true,
+      idempotencyKey,
+      maxAttempts: 2,
+      isRetryable: (error) =>
+        error instanceof AppError
+          ? error.code === "RATE_LIMITED" || error.statusCode >= 500
+          : true,
+      operation: async () => {
+        const response = await fetch(`https://api.stripe.com${path}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${config.stripeSecretKey}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Idempotency-Key": idempotencyKey,
+            "Stripe-Version": STRIPE_API_VERSION,
+          },
+          body,
+          signal: AbortSignal.timeout(10_000),
+        });
+        const payload: unknown = await response.json();
+        if (!response.ok) throw stripeError(response.status, payload);
+        return payload as Record<string, unknown>;
       },
-      body,
     });
-    const payload: unknown = await response.json();
-    if (!response.ok) throw stripeError(response.status, payload);
-    return payload as Record<string, unknown>;
   }
 
   async createSession(input: StripeCheckoutSessionInput) {

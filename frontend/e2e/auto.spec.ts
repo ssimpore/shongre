@@ -23,7 +23,7 @@ test.describe("Shongre Auto", () => {
     page,
   }) => {
     await usePersona(page, "guest");
-    await page.goto("/auto", { waitUntil: "networkidle" });
+    await page.goto("/auto", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     await expect(
@@ -54,7 +54,7 @@ test.describe("Shongre Auto", () => {
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/auto", { waitUntil: "networkidle" });
+    await page.goto("/auto", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     expect(
@@ -88,7 +88,7 @@ test.describe("Shongre Auto", () => {
   }) => {
     await usePersona(page, "guest");
     await page.goto("/auto/vehicule/peugeot-3008-puretech-130-gt-line-2020", {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
 
@@ -111,7 +111,7 @@ test.describe("Shongre Auto", () => {
   }) => {
     await usePersona(page, "individual_seller");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/deposer/auto", { waitUntil: "networkidle" });
+    await page.goto("/deposer/auto", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     await expect(
@@ -136,18 +136,25 @@ test.describe("Shongre Auto", () => {
     page,
   }) => {
     await usePersona(page, "pro_auto");
-    await page.goto("/compte/auto", { waitUntil: "networkidle" });
+    await page.goto("/compte/auto", { waitUntil: "domcontentloaded" });
     await expect(
       page.getByRole("heading", { level: 1, name: "Espace Auto" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Imports", exact: true }).click();
     await expect(page.getByText("Imports & synchronisation")).toBeVisible();
-    await page.getByRole("button", { name: "Importer un CSV" }).click();
-    await expect(page.getByText("stock_auto_demo.csv")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Les imports historiques restent consultables. Les nouveaux imports CSV et XML sont temporairement indisponibles.",
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Importer un CSV" }),
+    ).toBeDisabled();
+    await expect(page.getByText("stock_auto_demo.csv")).toHaveCount(0);
 
     const adminPage = await page.context().newPage();
     await usePersona(adminPage, "admin");
-    await adminPage.goto("/admin/auto", { waitUntil: "networkidle" });
+    await adminPage.goto("/admin/auto", { waitUntil: "domcontentloaded" });
     await expect(
       adminPage.getByRole("heading", {
         level: 1,

@@ -43,7 +43,7 @@ describe("TransactionService - Escrow & Fee Calculations", () => {
     // itemSubtotalMinor: 30000
     // shippingFeeMinor: 690
     // buyerProtectionFeeMinor: 30000 * 0.04 (1200) + 70 = 1270
-    // platformCommissionMinor: 30000 * 0.03 = 900
+    // The active canonical professional policy resolves to 900 minor units.
     // totalAmountMinor: 30000 + 690 + 1270 = 31960
     // sellerPayoutAmountMinor: 30000 - 900 = 29100
 
@@ -83,7 +83,7 @@ describe("TransactionService - Escrow & Fee Calculations", () => {
       "pro",
     );
 
-    // Commission rate is 3% for pro in transaction config (200 * 0.03 = 6 EUR)
+    // The canonical engine resolves a 6 EUR professional commission here.
     expect(amounts.platformCommission).toBe(6);
     expect(amounts.sellerPayoutAmount).toBe(194); // 200 - 6 = 194 EUR
   });

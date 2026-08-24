@@ -75,15 +75,15 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-success" />
-          <span>{t("admin.providerMarketMatrix.referenceFranceActive")}</span>
+          <span>Preuve live vérifiée</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-stone-400" />
-          <span>{t("admin.providerMarketMatrix.heriteDeFrance")}</span>
+          <span>Non vérifié / hérité</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-info" />
-          <span>{t("admin.providerMarketMatrix.personnaliseSurcharge")}</span>
+          <span>Simulation démo</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-danger" />
@@ -172,51 +172,38 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                               : ""
                           }`}
                         >
-                          {isDefaultMarket ? (
-                            cell.isAvailable ? (
-                              <Link
-                                to={`/admin/fournisseurs/${cell.activeProviderId}`}
-                                className="inline-flex flex-col items-center p-1.5 rounded-lg bg-success-surface text-success border border-success-border hover:border-emerald-400 transition-colors max-w-[130px]"
-                              >
-                                <span className="font-bold text-micro truncate max-w-[120px]">
-                                  {cell.activeProviderName}
-                                </span>
-                                <span className="text-micro text-success font-medium">
-                                  {t(
-                                    "admin.providerMarketMatrix.referenceActive",
-                                  )}
-                                </span>
-                              </Link>
-                            ) : (
-                              <span className="inline-block text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-1 rounded">
-                                {t("admin.providerMarketMatrix.nonConfigure")}
-                              </span>
-                            )
-                          ) : isInherited ? (
-                            <div className="inline-flex flex-col items-center p-1.5 rounded-lg bg-stone-100 text-stone-600 border border-stone-200/80 max-w-[130px]">
-                              <span className="font-semibold text-micro truncate max-w-[120px]">
-                                {cell.activeProviderName}
-                              </span>
-                              <span className="text-micro text-stone-500 font-normal">
-                                {t("admin.providerMarketMatrix.heriteDeFr")}
-                              </span>
-                            </div>
-                          ) : isCustomized ? (
+                          {cell.mode === "missing" ? (
+                            <span className="inline-block text-micro font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded">
+                              Aucun adaptateur
+                            </span>
+                          ) : (
                             <Link
                               to={`/admin/fournisseurs/${cell.activeProviderId}`}
-                              className="inline-flex flex-col items-center p-1.5 rounded-lg bg-info-surface text-info border border-info-border hover:border-blue-400 transition-colors max-w-[130px]"
+                              className={`inline-flex flex-col items-center p-1.5 rounded-lg border transition-colors max-w-[130px] ${
+                                cell.mode === "live"
+                                  ? "bg-success-surface text-success border-success-border"
+                                  : cell.mode === "demo"
+                                    ? "bg-info-surface text-info border-info-border"
+                                    : "bg-stone-100 text-stone-700 border-stone-200"
+                              }`}
                             >
                               <span className="font-bold text-micro truncate max-w-[120px]">
                                 {cell.activeProviderName}
                               </span>
-                              <span className="text-micro text-info font-bold">
-                                {t("admin.providerMarketMatrix.personnalise")}
+                              <span className="text-micro font-medium">
+                                {cell.mode === "live"
+                                  ? "Live vérifié"
+                                  : cell.mode === "demo"
+                                    ? "Démo uniquement"
+                                    : isCustomized
+                                      ? "Surcharge non vérifiée"
+                                      : isInherited
+                                        ? "Hérité · non vérifié"
+                                        : isDefaultMarket
+                                          ? "Référence · non vérifiée"
+                                          : "Non vérifié"}
                               </span>
                             </Link>
-                          ) : (
-                            <span className="inline-block text-micro font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded">
-                              {t("admin.providerMarketMatrix.desactive")}
-                            </span>
                           )}
                         </td>
                       );

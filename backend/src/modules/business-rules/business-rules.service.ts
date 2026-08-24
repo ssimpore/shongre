@@ -37,6 +37,11 @@ import {
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import {
+  isSameBusinessVertical,
+  normalizeBusinessVerticalCode,
+  normalizeEducationMonetizationCatalog,
+} from "@shongre/contracts/business-verticals";
 import { resolveAllEffectiveEntitlements } from "@shongre/shared";
 import { config } from "../../app/config/index.js";
 import {
@@ -69,7 +74,7 @@ function currentUtcMonth() {
 }
 
 function entitlementQuotaKey(verticalId: string, entitlementKey: string) {
-  return `entitlement.${verticalId}.${entitlementKey}`;
+  return `entitlement.${normalizeBusinessVerticalCode(verticalId)}.${entitlementKey}`;
 }
 
 function stableValue(value: unknown): unknown {
@@ -194,7 +199,9 @@ export class BusinessRulesService {
       const loaded = await this.repository.getActiveCatalog(marketCode);
       if (!loaded)
         throw new Error(`No active commercial version for ${marketCode}`);
-      const catalog = monetizationCatalogSchema.parse(loaded);
+      const catalog = normalizeEducationMonetizationCatalog(
+        monetizationCatalogSchema.parse(loaded),
+      );
       this.lastKnownValid.set(marketCode, catalog);
       this.cache.set(marketCode, {
         catalog,
@@ -309,7 +316,12 @@ export class BusinessRulesService {
       applicableProducts.some(
         (product) =>
           !product.commercialProfile.verticalId ||
-          !promotion.verticalIds.includes(product.commercialProfile.verticalId),
+          !promotion.verticalIds.some((verticalId) =>
+            isSameBusinessVertical(
+              verticalId,
+              product.commercialProfile.verticalId,
+            ),
+          ),
       )
     ) {
       return invalid("PROMOTION_VERTICAL_MISMATCH");
@@ -1541,6 +1553,19 @@ export class BusinessRulesService {
         versionId: id,
         status: rule.status === "active" ? "draft" : rule.status,
       })),
+      commissionPolicies: (
+        patch.commissionPolicies || current.commissionPolicies
+      ).map((policy) => ({
+        ...policy,
+        versionId: id,
+        versionNumber,
+        status: policy.status === "active" ? "draft" : policy.status,
+        rules: policy.rules.map((rule) => ({
+          ...rule,
+          policyId: policy.id,
+          versionId: id,
+        })),
+      })),
       promotions: (patch.promotions || current.promotions).map((promotion) => ({
         ...promotion,
         id: `${id}:${promotion.code.toLowerCase()}`,
@@ -1584,7 +1609,12 @@ export class BusinessRulesService {
       createdBy: actorId,
       createdAt,
       productCount: catalog.products.length,
-      ruleCount: catalog.rules.length,
+      ruleCount:
+        catalog.rules.length +
+        catalog.commissionPolicies.reduce(
+          (count, policy) => count + policy.rules.length,
+          0,
+        ),
       conflicts,
     };
     await this.repository.saveVersion(version, catalog);
@@ -1661,6 +1691,10 @@ export class BusinessRulesService {
         ...rule,
         status: rule.status === "draft" ? "active" : rule.status,
       }));
+      catalog.commissionPolicies = catalog.commissionPolicies.map((policy) => ({
+        ...policy,
+        status: policy.status === "draft" ? "active" : policy.status,
+      }));
       catalog.promotions = catalog.promotions.map((promotion) => ({
         ...promotion,
         status: promotion.status === "draft" ? "active" : promotion.status,
@@ -1672,14 +1706,15 @@ export class BusinessRulesService {
       const versionNumber =
         Math.max(...versions.map((candidate) => candidate.versionNumber), 0) +
         1;
+      const rollbackSource = normalizeEducationMonetizationCatalog(catalog);
       const rollbackId = `commercial-${catalog.marketCode.toLowerCase()}-v${versionNumber}`;
       const createdAt = new Date().toISOString();
       const rollbackCatalog = monetizationCatalogSchema.parse({
-        ...catalog,
+        ...rollbackSource,
         configurationVersionId: rollbackId,
         versionNumber,
         generatedAt: createdAt,
-        products: catalog.products.map((product) => ({
+        products: rollbackSource.products.map((product) => ({
           ...product,
           versionId: `${rollbackId}:${product.id}`,
           prices: product.prices.map((price) => ({
@@ -1688,12 +1723,23 @@ export class BusinessRulesService {
           })),
           status: product.status === "disabled" ? "disabled" : "draft",
         })),
-        rules: catalog.rules.map((rule) => ({
+        rules: rollbackSource.rules.map((rule) => ({
           ...rule,
           versionId: rollbackId,
           status: rule.status === "disabled" ? "disabled" : "draft",
         })),
-        promotions: catalog.promotions.map((promotion) => ({
+        commissionPolicies: rollbackSource.commissionPolicies.map((policy) => ({
+          ...policy,
+          versionId: rollbackId,
+          versionNumber,
+          status: policy.status === "disabled" ? "disabled" : "draft",
+          rules: policy.rules.map((rule) => ({
+            ...rule,
+            policyId: policy.id,
+            versionId: rollbackId,
+          })),
+        })),
+        promotions: rollbackSource.promotions.map((promotion) => ({
           ...promotion,
           id: `${rollbackId}:${promotion.code.toLowerCase()}`,
           status: promotion.status === "disabled" ? "disabled" : "draft",
@@ -1710,7 +1756,12 @@ export class BusinessRulesService {
         createdBy: input.actorId,
         createdAt,
         productCount: rollbackCatalog.products.length,
-        ruleCount: rollbackCatalog.rules.length,
+        ruleCount:
+          rollbackCatalog.rules.length +
+          rollbackCatalog.commissionPolicies.reduce(
+            (count, policy) => count + policy.rules.length,
+            0,
+          ),
         conflicts: [],
       };
       await this.repository.saveVersion(rollbackVersion, rollbackCatalog);

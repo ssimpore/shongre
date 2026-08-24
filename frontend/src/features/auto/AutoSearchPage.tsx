@@ -637,7 +637,7 @@ export const AutoSearchPage: React.FC = () => {
       </form>
 
       <div
-        className={`grid min-w-0 gap-6 ${compared.length ? "xl:grid-cols-[16rem_minmax(0,1fr)_17rem]" : "lg:grid-cols-[16rem_minmax(0,1fr)]"}`}
+        className={`grid min-w-0 gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] ${compared.length ? "xl:grid-cols-[16rem_minmax(0,1fr)_17rem]" : ""}`}
       >
         {catalog && (
           <aside

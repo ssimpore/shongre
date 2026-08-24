@@ -27,10 +27,14 @@ const expectUnavailable = async (operation: Promise<unknown>) => {
 describe("provider safety boundaries", () => {
   it("keeps demo KYC deterministic and rejects arbitrary six-digit codes", async () => {
     const provider = new DemoKYCProvider();
-    const input = ["user-1", "identity", "demo://identity"] as const;
+    const input = {
+      userId: "user-1",
+      dimension: "identity" as const,
+      returnUrl: "https://shongre.example/compte/verification",
+    };
 
-    await expect(provider.submitDocument(...input)).resolves.toEqual(
-      await provider.submitDocument(...input),
+    await expect(provider.createSession(input)).resolves.toEqual(
+      await provider.createSession(input),
     );
     await expect(
       provider.verifyPhoneOtp("+33600000000", "654321"),
@@ -43,11 +47,11 @@ describe("provider safety boundaries", () => {
   it("fails closed when live KYC has no real adapter", async () => {
     const provider = new LiveKYCProvider();
     await expectUnavailable(
-      provider.submitDocument(
-        "user-1",
-        "identity",
-        "https://example.test/document",
-      ),
+      provider.createSession({
+        userId: "user-1",
+        dimension: "identity",
+        returnUrl: "https://shongre.example/compte/verification",
+      }),
     );
     await expectUnavailable(provider.verifyPhoneOtp("+33600000000", "123456"));
   });

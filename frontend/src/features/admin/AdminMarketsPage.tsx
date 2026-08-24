@@ -1226,20 +1226,6 @@ export const AdminMarketsPage: React.FC = () => {
             {activeDomainTab === "monetization" && (
               <>
                 {renderSettingRow(
-                  "monetization.proCommissionRate",
-                  "Commission Ventes Pros (%)",
-                  "Commission prélevée sur les ventes des professionnels",
-                  "number",
-                  (v) => `${(v * 100).toFixed(1)} %`,
-                )}
-                {renderSettingRow(
-                  "monetization.individualCommissionRate",
-                  "Commission Particuliers (%)",
-                  "Commission sur les ventes entre particuliers",
-                  "number",
-                  (v) => `${(v * 100).toFixed(1)} %`,
-                )}
-                {renderSettingRow(
                   "monetization.payoutInstantFeePercent",
                   "Taux Virement Instantané (%)",
                   "Frais variables pour virement bancaire instantané",

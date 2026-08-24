@@ -15,7 +15,7 @@ The same person must not create and approve a version.
 2. Select the market and the product or rule.
 3. Use **Pourquoi ce résultat ?** to simulate representative account, category, channel, verification, plan, and usage contexts.
 4. Create a draft. Enter the price in minor units, an operational reason of at least eight characters, and an optional timezone-aware activation date.
-5. Review the version diff and every blocking conflict. Check all `sourceConsumers`, especially generic publication, Auto, Cours, Immo, transaction checkout, Pro workspace, and mobile.
+5. Review the version diff and every blocking conflict. Check all `sourceConsumers`, especially generic publication, Auto, Education, Immo, transaction checkout, Pro workspace, and mobile.
 6. Submit for approval. The approver verifies scope, currency, VAT, duration, trials, entitlements, stacking, start/end dates, and customer-facing copy.
 7. Approve with a reason. Publish immediately only inside the agreed window; otherwise set an effective date and schedule it.
 8. After publication, run catalog, evaluator, quote, and checkout smoke tests. Compare a new quote to the expected version id. Existing quotes and paid orders must retain the previous snapshot.

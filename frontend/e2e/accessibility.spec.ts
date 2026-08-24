@@ -18,7 +18,7 @@ test.describe('accessibility', () => {
   for (const route of ALL_ROUTES) {
     test(`${route.name} has no critical or serious violations`, async ({ page }) => {
       await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: 'networkidle' });
+      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
@@ -63,7 +63,7 @@ test.describe('accessible names at phone width', () => {
     test(`${route.path} names every control at ${PHONE.width}px`, async ({ page }) => {
       await usePersona(page, route.persona);
       await page.setViewportSize(PHONE);
-      await page.goto(route.path, { waitUntil: 'networkidle' });
+      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       const unnamed = await page.evaluate(() => {
@@ -121,7 +121,8 @@ test.describe('keyboard and focus', () => {
   test('every interactive control in the header is reachable and shows focus', async ({ page }) => {
     await usePersona(page, 'individual_buyer');
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForStableLayout(page);
 
     // Walk the first stretch of the tab order and confirm each stop paints a
     // visible focus indicator rather than relying on the browser default that
@@ -131,7 +132,8 @@ test.describe('keyboard and focus', () => {
     // its wrapper with `focus-within:ring`, so the ring the user sees is drawn
     // around the whole segmented control rather than the bare input.
     const missingIndicator: string[] = [];
-    for (let i = 0; i < 15; i += 1) {
+    let checkedControls = 0;
+    for (let attempt = 0; attempt < 25 && checkedControls < 15; attempt += 1) {
       await page.keyboard.press('Tab');
       /* `motion-interactive` transitions box-shadow over 150ms, so reading the
          computed style immediately catches the ring part-way in — around 0.35px
@@ -140,6 +142,9 @@ test.describe('keyboard and focus', () => {
       const info = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
         if (!el || el === document.body) return null;
+        if (el.tagName === 'NEXTJS-PORTAL' || el.closest('nextjs-portal')) {
+          return { skip: true, visible: true, label: '', tag: el.tagName };
+        }
 
         /* Both of the loose checks here used to pass a control that painted
            nothing at all:
@@ -177,18 +182,21 @@ test.describe('keyboard and focus', () => {
         }
 
         const label = (el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 40);
-        return { visible, label, tag: el.tagName };
+        return { skip: false, visible, label, tag: el.tagName };
       });
-      if (info && !info.visible) missingIndicator.push(`${info.tag} "${info.label}"`);
+      if (!info || info.skip) continue;
+      checkedControls += 1;
+      if (!info.visible) missingIndicator.push(`${info.tag} "${info.label}"`);
     }
 
+    expect(checkedControls).toBe(15);
     expect(missingIndicator, `controls without a visible focus indicator:\n  ${missingIndicator.join('\n  ')}`).toEqual([]);
   });
 
   test('the mobile drawer traps focus and closes on Escape', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     const burger = page.getByRole('button', { name: /ouvrir le menu/i });
     await burger.click();

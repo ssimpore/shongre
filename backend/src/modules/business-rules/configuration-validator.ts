@@ -1,4 +1,5 @@
 import type {
+  CommissionRule,
   CommercialRule,
   ConfigurationConflict,
   MonetizationCatalog,
@@ -40,6 +41,15 @@ function conflictingOutcomeKeys(left: CommercialRule, right: CommercialRule) {
   );
 }
 
+function commissionRuleSignature(rule: CommissionRule) {
+  return canonical({
+    priority: rule.priority,
+    scope: rule.scope,
+    effectiveFrom: rule.effectiveFrom,
+    effectiveUntil: rule.effectiveUntil,
+  });
+}
+
 export function validateCommercialConfiguration(
   catalog: MonetizationCatalog,
 ): ConfigurationConflict[] {
@@ -50,6 +60,14 @@ export function validateCommercialConfiguration(
     ["product id", catalog.products.map((product) => product.id)],
     ["product code", catalog.products.map((product) => product.code)],
     ["rule key", catalog.rules.map((rule) => rule.key)],
+    ["commission policy id", catalog.commissionPolicies.map((policy) => policy.id)],
+    ["commission policy code", catalog.commissionPolicies.map((policy) => policy.code)],
+    [
+      "commission rule id",
+      catalog.commissionPolicies.flatMap((policy) =>
+        policy.rules.map((rule) => rule.id),
+      ),
+    ],
     ["promotion code", catalog.promotions.map((promotion) => promotion.code)],
   ] as const) {
     const duplicates = [
@@ -63,6 +81,74 @@ export function validateCommercialConfiguration(
         severity: "blocking",
         entityIds: duplicates,
         message: `${field} dupliqué : ${duplicates.join(", ")}.`,
+      });
+    }
+  }
+
+  const commissionRules = catalog.commissionPolicies.flatMap((policy) =>
+    policy.rules.map((rule) => ({ policy, rule })),
+  );
+  for (let leftIndex = 0; leftIndex < commissionRules.length; leftIndex += 1) {
+    const left = commissionRules[leftIndex];
+    if (
+      left.rule.scope.currencies.length > 0 &&
+      !left.rule.scope.currencies.includes(catalog.currency)
+    ) {
+      conflicts.push({
+        code: "COMMISSION_CURRENCY_MISMATCH",
+        severity: "blocking",
+        entityIds: [left.policy.id, left.rule.id],
+        message: `${left.rule.name} ne s’applique pas à la devise ${catalog.currency} du catalogue.`,
+      });
+    }
+    if (
+      left.policy.status === "active" &&
+      left.rule.effect.kind === "commission" &&
+      (("rateBps" in left.rule.effect.model &&
+        left.rule.effect.model.rateBps >= 5_000) ||
+        (left.rule.effect.model.type === "tiered" &&
+          left.rule.effect.model.tiers.some((tier) => tier.rateBps >= 5_000)))
+    ) {
+      conflicts.push({
+        code: "HIGH_COMMISSION_RATE_REQUIRES_REVIEW",
+        severity: "warning",
+        entityIds: [left.policy.id, left.rule.id],
+        message: `${left.rule.name} applique un taux d’au moins 50 % et nécessite une revue financière explicite.`,
+      });
+    }
+    const adjustmentEffect =
+      left.rule.effect.kind === "adjustment" ? left.rule.effect : undefined;
+    if (
+      adjustmentEffect?.promotionId &&
+      !catalog.promotions.some(
+        (promotion) => promotion.id === adjustmentEffect.promotionId,
+      )
+    ) {
+      conflicts.push({
+        code: "COMMISSION_PROMOTION_UNKNOWN",
+        severity: "blocking",
+        entityIds: [left.policy.id, left.rule.id, adjustmentEffect.promotionId],
+        message: `${left.rule.name} référence une promotion absente du catalogue canonique.`,
+      });
+    }
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < commissionRules.length;
+      rightIndex += 1
+    ) {
+      const right = commissionRules[rightIndex];
+      if (left.rule.effect.kind !== right.rule.effect.kind) continue;
+      if (
+        commissionRuleSignature(left.rule) !==
+        commissionRuleSignature(right.rule)
+      )
+        continue;
+      if (canonical(left.rule.effect) === canonical(right.rule.effect)) continue;
+      conflicts.push({
+        code: "AMBIGUOUS_COMMISSION_PRECEDENCE",
+        severity: "blocking",
+        entityIds: [left.rule.id, right.rule.id],
+        message: `${left.rule.name} et ${right.rule.name} ont la même portée, priorité et période mais des calculs divergents.`,
       });
     }
   }

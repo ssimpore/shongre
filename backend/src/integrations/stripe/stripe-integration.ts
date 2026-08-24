@@ -9,8 +9,8 @@ export class StripeIntegration {
     });
   }
 
-  async payoutSeller(sellerId: string, amount: number, iban: string) {
-    return stripeAdapter.createPayout(sellerId, amount, iban);
+  async payoutSeller(sellerId: string, amount: number) {
+    return stripeAdapter.createPayout(sellerId, amount);
   }
 }
 

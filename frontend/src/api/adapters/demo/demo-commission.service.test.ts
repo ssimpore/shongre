@@ -1,0 +1,49 @@
+import { describe, expect, it } from "vitest";
+import { DemoCommissionService } from "./demo-commission.service";
+
+const input = {
+  eligibleCommercialEvent: true,
+  earningEvent: "payment_succeeded" as const,
+  effectiveAt: "2026-08-24T12:00:00.000Z",
+  marketCode: "FR" as const,
+  countryCode: "FR",
+  currency: "EUR",
+  transactionType: "marketplace_order" as const,
+  sellerType: "professional" as const,
+  campaignIds: [],
+  itemSubtotalMinor: 20_000,
+  discountMinor: 0,
+  shippingMinor: 0,
+  taxMinor: 0,
+  buyerFeesMinor: 0,
+  totalMinor: 20_000,
+  platformCollectedMinor: 20_000,
+  historicalVolumeMinor: 0,
+};
+
+describe("DemoCommissionService", () => {
+  it("returns the same server-shaped deterministic preview", async () => {
+    const service = new DemoCommissionService();
+    const first = await service.preview(input);
+    const second = await service.preview(input);
+    expect(second).toEqual(first);
+    expect(first).toMatchObject({
+      state: "quoted",
+      totalCommissionMinor: 600,
+      sellerPayableMinor: 19_400,
+      appliedPolicyId: "commission-policy-marketplace-pro-fr",
+    });
+  });
+
+  it("uses the safe zero default for individual sellers", async () => {
+    const result = await new DemoCommissionService().preview({
+      ...input,
+      sellerType: "individual",
+    });
+    expect(result).toMatchObject({
+      eligible: false,
+      totalCommissionMinor: 0,
+      reasonCode: "NO_ACTIVE_ELIGIBLE_POLICY",
+    });
+  });
+});

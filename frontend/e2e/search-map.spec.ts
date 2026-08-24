@@ -19,7 +19,7 @@ test.describe('search map selection', () => {
   test('renders the selected listing below the map instead of over it', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/recherche?view=map', { waitUntil: 'networkidle' });
+    await page.goto('/recherche?view=map', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const map = page.locator('.leaflet-container');
@@ -44,7 +44,7 @@ test.describe('search map selection', () => {
   test('keeps the selected listing usable below the map on mobile', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/recherche?view=map', { waitUntil: 'networkidle' });
+    await page.goto('/recherche?view=map', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const map = page.locator('.leaflet-container');

@@ -8,6 +8,19 @@ import { DEMO_USERS, INITIAL_REVIEWS } from "../mocks/initialDemoData";
 import { authorizationService } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
 
+/**
+ * Demo storage accepts both stable fixture keys (`seller_camille`) and user ids
+ * (`user_camille`) so older sessions and direct lookups keep working. A saved
+ * profile can therefore be reachable through both keys; list projections must
+ * collapse those aliases or React tables render the same account twice.
+ */
+const getUniqueStoredUsers = (): UserProfile[] =>
+  Array.from(
+    new Map(
+      Object.values(storageService.getUsers()).map((user) => [user.id, user]),
+    ).values(),
+  );
+
 export interface IUserRepository {
   getCurrentUser(): Promise<UserProfile | null>;
   getAllUsers(): Promise<UserProfile[]>;
@@ -50,23 +63,22 @@ export class MockUserRepository implements IUserRepository {
   }
 
   async getAllUsers(): Promise<UserProfile[]> {
-    const usersMap = storageService.getUsers();
-    return Object.values(usersMap);
+    return getUniqueStoredUsers();
   }
 
   async getUserById(id: string): Promise<UserProfile | null> {
-    const all = Object.values(storageService.getUsers());
+    const all = getUniqueStoredUsers();
     return all.find((u) => u.id === id) || null;
   }
 
   async getUserByStoreSlug(slug: string): Promise<UserProfile | null> {
-    const all = Object.values(storageService.getUsers());
+    const all = getUniqueStoredUsers();
     const clean = slug.toLowerCase().trim();
     return all.find((u) => u.storeSlug?.toLowerCase() === clean) || null;
   }
 
   async getUserBySlug(slug: string): Promise<UserProfile | null> {
-    const all = Object.values(storageService.getUsers());
+    const all = getUniqueStoredUsers();
     const clean = slug.toLowerCase().trim();
     return (
       all.find(
@@ -88,7 +100,7 @@ export class MockUserRepository implements IUserRepository {
   async getUserBySlugOrId(slugOrId: string): Promise<UserProfile | null> {
     if (!slugOrId) return null;
     const clean = slugOrId.toLowerCase().trim();
-    const all = Object.values(storageService.getUsers());
+    const all = getUniqueStoredUsers();
 
     // 1. Direct ID match
     const byId = all.find((u) => u.id.toLowerCase() === clean);
@@ -345,7 +357,7 @@ export class MockUserRepository implements IUserRepository {
    * rather than reusing the account-type check.
    */
   async getAllProSellers(): Promise<UserProfile[]> {
-    const all = Object.values(storageService.getUsers());
+    const all = getUniqueStoredUsers();
     return all.filter((u) => isPubliclyListableProSeller(u));
   }
 

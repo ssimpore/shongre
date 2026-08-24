@@ -14,11 +14,11 @@ import {
   monetizationCatalogSchema,
 } from "../schemas/monetization";
 
-// Commercial terms are immutable once published. This is a new catalog
-// version rather than an in-place rewrite of the contracts created from v1.
-const VERSION_ID = "commercial-fr-v2";
-const VERSION_NUMBER = 2;
-const PUBLISHED_AT = "2026-08-23T00:00:00.000Z";
+// Commercial terms are immutable once published. Education is published as a
+// new version; v1/v2 subscriptions and financial snapshots keep their IDs.
+const VERSION_ID = "commercial-fr-v3";
+const VERSION_NUMBER = 3;
+const PUBLISHED_AT = "2026-08-24T00:00:00.000Z";
 
 export const BASELINE_BUSINESS_VERTICALS: BusinessVertical[] = [
   {
@@ -61,8 +61,8 @@ export const BASELINE_BUSINESS_VERTICALS: BusinessVertical[] = [
     sortOrder: 30,
   },
   {
-    id: "cours",
-    name: "Cours",
+    id: "education",
+    name: "Éducation",
     description: "Cours, profils enseignants et gestion des demandes.",
     categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
     capabilityKeys: [
@@ -214,49 +214,49 @@ const PLAN_PROFILE_CONFIG: Record<
     displayOrder: 100,
   },
   "course.tutor.free": {
-    familyId: "vertical.cours",
+    familyId: "vertical.education",
     tier: "free",
     upgradeProductIds: ["course.tutor.pro"],
     downgradeProductIds: [],
     displayOrder: 0,
   },
   "course.tutor.pro": {
-    familyId: "vertical.cours",
+    familyId: "vertical.education",
     tier: "essential",
     upgradeProductIds: ["course.tutor.premium"],
     downgradeProductIds: ["course.tutor.free", "plan.pro.business"],
     displayOrder: 10,
   },
   "course.tutor.premium": {
-    familyId: "vertical.cours",
+    familyId: "vertical.education",
     tier: "business",
     upgradeProductIds: ["course.school.organization"],
     downgradeProductIds: ["course.tutor.pro"],
     displayOrder: 20,
   },
   "course.school.organization": {
-    familyId: "vertical.cours",
+    familyId: "vertical.education",
     tier: "premium",
     upgradeProductIds: [],
     downgradeProductIds: ["course.tutor.premium", "course.tutor.pro"],
     displayOrder: 30,
   },
   "course.training.essential": {
-    familyId: "vertical.cours.legacy",
+    familyId: "vertical.education.legacy",
     tier: "essential",
     upgradeProductIds: [],
     downgradeProductIds: [],
     displayOrder: 100,
   },
   "course.training.business": {
-    familyId: "vertical.cours.legacy",
+    familyId: "vertical.education.legacy",
     tier: "business",
     upgradeProductIds: [],
     downgradeProductIds: [],
     displayOrder: 110,
   },
   "course.training.premium": {
-    familyId: "vertical.cours.legacy",
+    familyId: "vertical.education.legacy",
     tier: "premium",
     upgradeProductIds: [],
     downgradeProductIds: [],
@@ -492,7 +492,7 @@ function verticalForCategories(
   if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.vehicles)) return "auto";
   if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.realEstate)) return "immo";
   if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.jobs)) return "emploi";
-  if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.courses)) return "cours";
+  if (categoryIds.includes(CANONICAL_TAXONOMY_IDS.courses)) return "education";
   return undefined;
 }
 
@@ -593,8 +593,8 @@ const product = (input: {
           ? "immo_subscription"
           : verticalId === "emploi"
             ? "employment_subscription"
-            : verticalId === "cours"
-              ? "courses_subscription"
+            : verticalId === "education"
+              ? "education_subscription"
               : "generic_subscription"
       : ["premium_option", "sponsored_placement"].includes(input.kind)
         ? "promotion"
@@ -1164,7 +1164,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "course.tutor.free",
     kind: "subscription",
-    name: "Shongre Cours Free",
+    name: "Shongre Education Free",
     description:
       "Profil enseignant et gestion de demandes pour démarrer gratuitement.",
     audience: "professional",
@@ -1182,7 +1182,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "course.tutor.pro",
     kind: "subscription",
-    name: "Shongre Cours Pro",
+    name: "Shongre Education Pro",
     description:
       "Présentation enrichie, demandes et statistiques pour un enseignant professionnel.",
     audience: "professional",
@@ -1221,7 +1221,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "course.tutor.premium",
     kind: "subscription",
-    name: "Shongre Cours Studio",
+    name: "Shongre Education Studio",
     description:
       "Capacité étendue, CRM avancé et statistiques pour une activité de cours.",
     audience: "organization",
@@ -1259,7 +1259,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
   product({
     id: "course.school.organization",
     kind: "subscription",
-    name: "Shongre Cours Organisme",
+    name: "Shongre Education Organisme",
     description:
       "Volumes élevés de cours et demandes, CRM et statistiques avancées.",
     audience: "organization",
@@ -1308,7 +1308,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
     [
       "addon_local_spotlight",
       "sponsored_placement",
-      "Visibilité locale Cours",
+      "Visibilité locale Éducation",
       790,
       7,
       "localSpotlight",
@@ -1342,7 +1342,7 @@ export const BASELINE_MONETIZATION_PRODUCTS: MonetizationProduct[] = [
       id: String(id),
       kind: kind as MonetizationProduct["kind"],
       name: String(name),
-      description: "Option commerciale Cours configurable par marché.",
+      description: "Option commerciale Éducation configurable par marché.",
       categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
       amountMinor: Number(amountMinor),
       taxRateBps: 2000,
@@ -2220,7 +2220,7 @@ export const BASELINE_COMMISSION_POLICIES: CommissionPolicy[] = [
     code: "courses.booking.fr",
     versionId: VERSION_ID,
     versionNumber: VERSION_NUMBER,
-    name: "Réservations Cours — France",
+    name: "Réservations Education — France",
     description:
       "Taux historique conservé mais désactivé tant que booking, paiement et payout ne sont pas opérationnels.",
     policyType: "base",
@@ -2232,7 +2232,7 @@ export const BASELINE_COMMISSION_POLICIES: CommissionPolicy[] = [
         id: "commission-rule-courses-fr",
         policyId: "commission-policy-courses-fr",
         versionId: VERSION_ID,
-        name: "Réservation Cours France",
+        name: "Réservation Education France",
         description: "Commission de 12 % sur réservation de cours finalisée.",
         priority: 650,
         scope: {
@@ -2240,7 +2240,7 @@ export const BASELINE_COMMISSION_POLICIES: CommissionPolicy[] = [
           countryCodes: ["FR"],
           marketCodes: ["FR"],
           currencies: ["EUR"],
-          verticalIds: ["cours"],
+          verticalIds: ["education"],
           categoryIds: [CANONICAL_TAXONOMY_IDS.courses],
           transactionTypes: ["course_booking"],
         },
@@ -2357,8 +2357,8 @@ export const COMMERCIAL_REASON_MESSAGES = {
     en: "One Real Estate listing is included for individuals.",
   },
   COURSE_INDIVIDUAL_INCLUDED: {
-    fr: "Une annonce Cours est incluse pour les particuliers.",
-    en: "One Courses listing is included for individuals.",
+    fr: "Une annonce Éducation est incluse pour les particuliers.",
+    en: "One Education listing is included for individuals.",
   },
   EMPLOYMENT_INDIVIDUAL_INCLUDED: {
     fr: "Une offre d’emploi standard est incluse pour les particuliers éligibles.",

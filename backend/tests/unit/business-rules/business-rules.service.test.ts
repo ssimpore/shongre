@@ -11,11 +11,11 @@ describe("BusinessRulesService quotes", () => {
       "auto",
       "immo",
       "emploi",
-      "cours",
+      "education",
     ]);
     expect(
       catalog.plans.some(
-        (plan) => plan.commercialProfile.familyId === "vertical.cours",
+        (plan) => plan.commercialProfile.familyId === "vertical.education",
       ),
     ).toBe(true);
     expect(
@@ -122,7 +122,7 @@ describe("BusinessRulesService quotes", () => {
       marketCode: "FR",
       idempotencyKey: "quote-test-urgent-0001",
     });
-    expect(quote.configurationVersionId).toBe("commercial-fr-v2");
+    expect(quote.configurationVersionId).toBe("commercial-fr-v3");
     expect(quote.lines).toHaveLength(1);
     expect(quote.lines[0].unitAmountMinor).toBeGreaterThan(0);
     expect(quote.totalMinor).toBe(
@@ -496,18 +496,18 @@ describe("BusinessRulesService quotes", () => {
     const overview = await service.getAdminOverview("FR");
     expect(overview.publishedVersion.id).toBe(draft.id);
     expect(
-      overview.versions.find((version) => version.id === "commercial-fr-v2")
+      overview.versions.find((version) => version.id === "commercial-fr-v3")
         ?.status,
     ).toBe("archived");
 
     const rollback = await service.transitionVersion({
-      versionId: "commercial-fr-v2",
+      versionId: "commercial-fr-v3",
       action: "rollback",
       actorId: "rollback-admin",
       reason: "Préparation contrôlée du retour à la version initiale",
     });
     expect(rollback.status).toBe("draft");
-    expect(rollback.id).not.toBe("commercial-fr-v2");
+    expect(rollback.id).not.toBe("commercial-fr-v3");
     const rollbackCatalog = await repository.getCatalogVersion(rollback.id);
     expect(
       rollbackCatalog?.products.every((product) =>
@@ -516,7 +516,7 @@ describe("BusinessRulesService quotes", () => {
     ).toBe(true);
     expect(
       (await service.getAdminOverview("FR")).versions.find(
-        (entry) => entry.id === "commercial-fr-v2",
+        (entry) => entry.id === "commercial-fr-v3",
       )?.status,
     ).toBe("archived");
   });

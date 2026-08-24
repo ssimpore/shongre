@@ -17,6 +17,7 @@ import {
   HttpAdminService,
   HttpReviewsService,
   HttpBusinessRulesService,
+  HttpCommissionService,
 } from "../adapters/http";
 import {
   DemoListingsService,
@@ -34,6 +35,7 @@ import {
   DemoAdminService,
   DemoReviewsService,
   DemoBusinessRulesService,
+  DemoCommissionService,
 } from "../adapters/demo";
 
 describe("Service Registry & API Adapter Boundary", () => {
@@ -60,6 +62,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(registry.businessRules instanceof DemoBusinessRulesService).toBe(
       true,
     );
+    expect(registry.commissions instanceof DemoCommissionService).toBe(true);
   });
 
   it("instantiates the service registry in api mode when configured", () => {
@@ -86,6 +89,9 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(apiRegistry.businessRules instanceof HttpBusinessRulesService).toBe(
       true,
     );
+    expect(apiRegistry.commissions instanceof HttpCommissionService).toBe(
+      true,
+    );
   });
 
   it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {
@@ -104,6 +110,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     const catalog = await services.businessRules.getCatalog("FR");
     expect(catalog.products.length).toBeGreaterThan(0);
     expect(catalog.rules.length).toBeGreaterThan(0);
+    expect(catalog.commissionPolicies.length).toBeGreaterThan(0);
   });
 
   it("provides deterministic demo verification status without backend calls", async () => {

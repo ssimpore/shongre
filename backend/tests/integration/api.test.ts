@@ -14,6 +14,7 @@ describe("API v1 Endpoints Integration", () => {
   let adminToken: string;
   let moderatorToken: string;
   let trustToken: string;
+  let complianceToken: string;
   let financeToken: string;
 
   async function login(email: string): Promise<string> {
@@ -56,6 +57,7 @@ describe("API v1 Endpoints Integration", () => {
     adminToken = await login("admin@shongre.com");
     moderatorToken = await login("moderation@shongre.com");
     trustToken = await login("trust@shongre.com");
+    complianceToken = await login("compliance@shongre.com");
     financeToken = await login("finance@shongre.com");
   });
 
@@ -81,6 +83,19 @@ describe("API v1 Endpoints Integration", () => {
     const markets = await res.json();
     expect(Array.isArray(markets)).toBe(true);
     expect(markets.some((m: any) => m.code === "FR")).toBe(true);
+  });
+
+  it("serves one Education catalog through canonical and legacy API routes", async () => {
+    const [canonicalResponse, legacyResponse] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/education/catalog?market=FR`),
+      fetch(`${baseUrl}/api/v1/courses/catalog?market=FR`),
+    ]);
+    expect(canonicalResponse.status).toBe(200);
+    expect(legacyResponse.status).toBe(200);
+    const canonical = await canonicalResponse.json();
+    const legacy = await legacyResponse.json();
+    expect(legacy).toEqual(canonical);
+    expect(canonical.config.vertical).toBe("tutoring");
   });
 
   it("GET /api/v1/taxonomy/root returns categories", async () => {
@@ -372,6 +387,7 @@ describe("API v1 Endpoints Integration", () => {
       ["/api/v1/admin/users", {}],
       ["/api/v1/admin/audit-logs", {}],
       ["/api/v1/favorites", {}],
+      ["/api/v1/compliance/status", {}],
       ["/api/v1/verification/status/user_thomas", {}],
       ["/api/v1/orders/purchases/user_thomas", {}],
       ["/api/v1/messaging/conversations/user_camille", {}],
@@ -521,55 +537,142 @@ describe("API v1 Endpoints Integration", () => {
   });
 
   it("enforces account, organization, platform and reconciliation finance scopes", async () => {
-    const ownAccount = await fetch(`${baseUrl}/api/v1/finance/account/overview`, {
-      headers: auth(buyerToken),
-    });
+    const ownAccount = await fetch(
+      `${baseUrl}/api/v1/finance/account/overview`,
+      {
+        headers: auth(buyerToken),
+      },
+    );
     expect(ownAccount.status).toBe(200);
     expect((await ownAccount.json()).accountKind).toBe("individual");
 
-    const buyerPlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview`, {
-      headers: auth(buyerToken),
-    });
+    const buyerPlatform = await fetch(
+      `${baseUrl}/api/v1/finance/platform/overview`,
+      {
+        headers: auth(buyerToken),
+      },
+    );
     expect(buyerPlatform.status).toBe(403);
 
-    const buyerOrganization = await fetch(`${baseUrl}/api/v1/finance/organization/overview`, {
-      headers: auth(buyerToken),
-    });
+    const buyerOrganization = await fetch(
+      `${baseUrl}/api/v1/finance/organization/overview`,
+      {
+        headers: auth(buyerToken),
+      },
+    );
     expect(buyerOrganization.status).toBe(403);
 
-    const proOrganization = await fetch(`${baseUrl}/api/v1/finance/organization/overview`, {
-      headers: auth(proToken),
-    });
+    const proOrganization = await fetch(
+      `${baseUrl}/api/v1/finance/organization/overview`,
+      {
+        headers: auth(proToken),
+      },
+    );
     expect(proOrganization.status).toBe(200);
     expect((await proOrganization.json()).accountKind).toBe("professional");
 
-    const financePlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview?period=30d&marketCode=FR&currency=EUR`, {
-      headers: auth(financeToken),
-    });
+    const financePlatform = await fetch(
+      `${baseUrl}/api/v1/finance/platform/overview?period=30d&marketCode=FR&currency=EUR`,
+      {
+        headers: auth(financeToken),
+      },
+    );
     expect(financePlatform.status).toBe(200);
     const overview = await financePlatform.json();
     expect(overview.metrics.platformRevenue.amount.amountMinor).not.toBe(
       overview.metrics.grossCollected.amount.amountMinor,
     );
 
-    const financeReconciliation = await fetch(`${baseUrl}/api/v1/finance/platform/reconciliation`, {
-      headers: auth(financeToken),
-    });
+    const financeReconciliation = await fetch(
+      `${baseUrl}/api/v1/finance/platform/reconciliation`,
+      {
+        headers: auth(financeToken),
+      },
+    );
     expect(financeReconciliation.status).toBe(200);
 
-    const adminPlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview`, {
-      headers: auth(adminToken),
-    });
+    const adminPlatform = await fetch(
+      `${baseUrl}/api/v1/finance/platform/overview`,
+      {
+        headers: auth(adminToken),
+      },
+    );
     expect(adminPlatform.status).toBe(200);
-    const adminReconciliation = await fetch(`${baseUrl}/api/v1/finance/platform/reconciliation`, {
-      headers: auth(adminToken),
-    });
+    const adminReconciliation = await fetch(
+      `${baseUrl}/api/v1/finance/platform/reconciliation`,
+      {
+        headers: auth(adminToken),
+      },
+    );
     expect(adminReconciliation.status).toBe(403);
 
-    const moderatorPlatform = await fetch(`${baseUrl}/api/v1/finance/platform/overview`, {
-      headers: auth(moderatorToken),
-    });
+    const moderatorPlatform = await fetch(
+      `${baseUrl}/api/v1/finance/platform/overview`,
+      {
+        headers: auth(moderatorToken),
+      },
+    );
     expect(moderatorPlatform.status).toBe(403);
+  });
+
+  it("scopes the exact commission simulator and analytics to authorized staff", async () => {
+    const payload = {
+      eligibleCommercialEvent: true,
+      earningEvent: "payment_succeeded",
+      effectiveAt: "2026-08-24T12:00:00.000Z",
+      marketCode: "FR",
+      countryCode: "FR",
+      currency: "EUR",
+      transactionType: "marketplace_order",
+      sellerType: "professional",
+      campaignIds: [],
+      itemSubtotalMinor: 10_000,
+      discountMinor: 0,
+      shippingMinor: 0,
+      taxMinor: 0,
+      buyerFeesMinor: 0,
+      totalMinor: 10_000,
+      platformCollectedMinor: 10_000,
+      historicalVolumeMinor: 0,
+    };
+    const buyer = await fetch(`${baseUrl}/api/v1/admin/commissions/simulate`, {
+      method: "POST",
+      headers: auth(buyerToken),
+      body: JSON.stringify(payload),
+    });
+    expect(buyer.status).toBe(403);
+
+    const finance = await fetch(
+      `${baseUrl}/api/v1/admin/commissions/simulate`,
+      {
+        method: "POST",
+        headers: auth(financeToken),
+        body: JSON.stringify(payload),
+      },
+    );
+    expect(finance.status).toBe(200);
+    expect(await finance.json()).toMatchObject({
+      totalCommissionMinor: 300,
+      sellerPayableMinor: 9_700,
+      appliedPolicyId: "commission-policy-marketplace-pro-fr",
+    });
+
+    const moderator = await fetch(
+      `${baseUrl}/api/v1/admin/commissions/simulate`,
+      {
+        method: "POST",
+        headers: auth(moderatorToken),
+        body: JSON.stringify(payload),
+      },
+    );
+    expect(moderator.status).toBe(403);
+
+    const analytics = await fetch(
+      `${baseUrl}/api/v1/admin/commissions/analytics?marketCode=FR&currency=EUR&from=2026-08-01&to=2026-08-31`,
+      { headers: auth(financeToken) },
+    );
+    expect(analytics.status).toBe(200);
+    expect(Array.isArray(await analytics.json())).toBe(true);
   });
 
   it("protects Immo administration with the vertical permission", async () => {
@@ -725,6 +828,80 @@ describe("API v1 Endpoints Integration", () => {
     const status = await res.json();
     expect(status.state).toBeDefined();
     expect(status.isPhoneVerified).toBe(true);
+  });
+
+  it("evaluates ordinary private publication without demanding identity", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/compliance/requirements`, {
+      method: "POST",
+      headers: auth(buyerToken),
+      body: JSON.stringify({
+        requestedAction: "publish_listing",
+        jurisdiction: "FR",
+        marketCode: "FR",
+      }),
+    });
+    expect(res.status).toBe(200);
+    const decision = await res.json();
+    expect(decision.required).toContain("email");
+    expect(decision.required).toContain("professional_status");
+    expect(decision.required).not.toContain("identity");
+  });
+
+  it("does not trust a client-supplied risk classification", async () => {
+    const evaluate = (level: "NORMAL" | "CRITICAL") =>
+      fetch(`${baseUrl}/api/v1/compliance/requirements`, {
+        method: "POST",
+        headers: auth(buyerToken),
+        body: JSON.stringify({
+          requestedAction: "message_seller",
+          jurisdiction: "FR",
+          marketCode: "FR",
+          riskContext: {
+            level,
+            reasonCodes: ["CLIENT_CONTROLLED"],
+            humanReviewAvailable: false,
+          },
+        }),
+      }).then((response) => response.json());
+
+    const [normal, forgedCritical] = await Promise.all([
+      evaluate("NORMAL"),
+      evaluate("CRITICAL"),
+    ]);
+    expect(forgedCritical.required).toEqual(normal.required);
+    expect(forgedCritical.reasonCodes).toEqual(normal.reasonCodes);
+    expect(forgedCritical.reasonCodes).not.toContain("CLIENT_CONTROLLED");
+  });
+
+  it("keeps compliance policy administration behind dedicated RBAC", async () => {
+    const denied = await fetch(`${baseUrl}/api/v1/admin/compliance/rules`, {
+      headers: auth(buyerToken),
+    });
+    expect(denied.status).toBe(403);
+
+    const allowed = await fetch(`${baseUrl}/api/v1/admin/compliance/rules`, {
+      headers: auth(complianceToken),
+    });
+    expect(allowed.status).toBe(200);
+    const rules = await allowed.json();
+    expect(Array.isArray(rules)).toBe(true);
+    expect(rules.some((rule: any) => rule.action === "publish_listing")).toBe(
+      true,
+    );
+
+    const deniedRetention = await fetch(
+      `${baseUrl}/api/v1/admin/compliance/retention/run`,
+      { method: "POST", headers: auth(buyerToken) },
+    );
+    expect(deniedRetention.status).toBe(403);
+    const allowedRetention = await fetch(
+      `${baseUrl}/api/v1/admin/compliance/retention/run`,
+      { method: "POST", headers: auth(complianceToken) },
+    );
+    expect(allowedRetention.status).toBe(200);
+    expect(await allowedRetention.json()).toMatchObject({
+      providerEventsDeleted: 0,
+    });
   });
 
   it("POST /api/v1/payments/intent rejects a client-supplied amount without an authoritative quote", async () => {

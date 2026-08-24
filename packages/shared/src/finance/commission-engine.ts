@@ -12,8 +12,12 @@ import {
   type CommissionRule,
   type CommissionScope,
 } from "@shongre/contracts/monetization";
+import { normalizeBusinessVerticalCode } from "@shongre/contracts/business-verticals";
 
-const BASIS_POINTS = 10_000n;
+const BASIS_POINTS = BigInt(10_000);
+const BIGINT_ZERO = BigInt(0);
+const BIGINT_ONE = BigInt(1);
+const BIGINT_TWO = BigInt(2);
 
 type CommissionCandidate = {
   policy: CommissionPolicy;
@@ -44,12 +48,13 @@ function canonicalize(value: unknown): unknown {
 /** Stable non-cryptographic fingerprint for immutable snapshot comparison. */
 export function commissionSnapshotHash(value: unknown): string {
   const input = JSON.stringify(canonicalize(value));
-  let hash = 0xcbf29ce484222325n;
+  let hash = BigInt("0x6c62272e07bb014262b821756295c58d");
+  const prime = BigInt("0x0000000001000000000000000000013b");
   for (let index = 0; index < input.length; index += 1) {
     hash ^= BigInt(input.charCodeAt(index));
-    hash = BigInt.asUintN(64, hash * 0x100000001b3n);
+    hash = BigInt.asUintN(128, hash * prime);
   }
-  return hash.toString(16).padStart(16, "0");
+  return hash.toString(16).padStart(32, "0");
 }
 
 function roundRatio(
@@ -57,18 +62,20 @@ function roundRatio(
   denominator: bigint,
   mode: "half_up" | "half_even" | "down" | "up",
 ): number {
-  if (numerator <= 0n) return 0;
+  if (numerator <= BIGINT_ZERO) return 0;
   const quotient = numerator / denominator;
   const remainder = numerator % denominator;
   let rounded = quotient;
-  if (mode === "up" && remainder > 0n) rounded += 1n;
-  if (mode === "half_up" && remainder * 2n >= denominator) rounded += 1n;
+  if (mode === "up" && remainder > BIGINT_ZERO) rounded += BIGINT_ONE;
+  if (mode === "half_up" && remainder * BIGINT_TWO >= denominator)
+    rounded += BIGINT_ONE;
   if (
     mode === "half_even" &&
-    (remainder * 2n > denominator ||
-      (remainder * 2n === denominator && quotient % 2n === 1n))
+    (remainder * BIGINT_TWO > denominator ||
+      (remainder * BIGINT_TWO === denominator &&
+        quotient % BIGINT_TWO === BIGINT_ONE))
   ) {
-    rounded += 1n;
+    rounded += BIGINT_ONE;
   }
   const amount = Number(rounded);
   if (!Number.isSafeInteger(amount)) {
@@ -100,12 +107,21 @@ function includesOrAll<T>(values: readonly T[], value: T | undefined) {
   return values.length === 0 || (value !== undefined && values.includes(value));
 }
 
-function scopeMatches(scope: CommissionScope, input: CommissionCalculationInput) {
+function scopeMatches(
+  scope: CommissionScope,
+  input: CommissionCalculationInput,
+) {
+  const verticalIds = scope.verticalIds.map((value) =>
+    normalizeBusinessVerticalCode(value),
+  );
   return (
     includesOrAll(scope.countryCodes, input.countryCode) &&
     includesOrAll(scope.marketCodes, input.marketCode) &&
     includesOrAll(scope.currencies, input.currency) &&
-    includesOrAll(scope.verticalIds, input.verticalId) &&
+    includesOrAll(
+      verticalIds,
+      normalizeBusinessVerticalCode(input.verticalId),
+    ) &&
     includesOrAll(scope.categoryIds, input.categoryId) &&
     includesOrAll(scope.subcategoryIds, input.subcategoryId) &&
     includesOrAll(scope.transactionTypes, input.transactionType) &&
@@ -143,24 +159,38 @@ function specificity(scope: CommissionScope) {
   return Object.values(scope).filter((values) => values.length > 0).length;
 }
 
-function rolloutMatches(policy: CommissionPolicy, input: CommissionCalculationInput) {
+function rolloutMatches(
+  policy: CommissionPolicy,
+  input: CommissionCalculationInput,
+) {
   if (policy.rolloutBps >= 10_000) return true;
   if (policy.rolloutBps <= 0) return false;
   const identity =
-    input.sellerAccountId || input.organizationId || input.transactionId || "anonymous";
-  const bucket = Number.parseInt(
-    commissionSnapshotHash(`${policy.id}:${identity}`).slice(-4),
-    16,
-  ) % 10_000;
+    input.sellerAccountId ||
+    input.organizationId ||
+    input.transactionId ||
+    "anonymous";
+  const bucket =
+    Number.parseInt(
+      commissionSnapshotHash(`${policy.id}:${identity}`).slice(-4),
+      16,
+    ) % 10_000;
   return bucket < policy.rolloutBps;
 }
 
-function compareCandidates(left: CommissionCandidate, right: CommissionCandidate) {
+function compareCandidates(
+  left: CommissionCandidate,
+  right: CommissionCandidate,
+) {
   return (
     right.precedence - left.precedence ||
     right.rule.priority - left.rule.priority ||
     right.specificity - left.specificity ||
-    (right.rule.effectiveFrom || right.policy.effectiveFrom || "").localeCompare(
+    (
+      right.rule.effectiveFrom ||
+      right.policy.effectiveFrom ||
+      ""
+    ).localeCompare(
       left.rule.effectiveFrom || left.policy.effectiveFrom || "",
     ) ||
     left.policy.id.localeCompare(right.policy.id) ||
@@ -181,7 +211,8 @@ function resolveCandidates(
       const reason =
         policy.status !== "active"
           ? "POLICY_NOT_ACTIVE"
-          : !activeAt(policy, input.effectiveAt) || !activeAt(rule, input.effectiveAt)
+          : !activeAt(policy, input.effectiveAt) ||
+              !activeAt(rule, input.effectiveAt)
             ? "OUTSIDE_EFFECTIVE_PERIOD"
             : rule.effect.kind !== kind
               ? "DIFFERENT_POLICY_KIND"
@@ -226,7 +257,10 @@ function commissionBase(input: CommissionCalculationInput, base: string) {
   return input.platformCollectedMinor;
 }
 
-function thresholdApplies(model: Extract<CommissionModel, { type: "threshold" }>, base: number) {
+function thresholdApplies(
+  model: Extract<CommissionModel, { type: "threshold" }>,
+  base: number,
+) {
   if (model.appliesWhen === "above") return base > model.thresholdMinor;
   if (model.appliesWhen === "below") return base < model.thresholdMinor;
   return base >= model.thresholdMinor;
@@ -236,9 +270,11 @@ function calculateModel(
   model: CommissionModel,
   base: number,
   mode: "half_up" | "half_even" | "down" | "up",
+  historicalVolumeMinor: number,
 ) {
   let amount = 0;
-  if (model.type === "percentage") amount = percentage(base, model.rateBps, mode);
+  if (model.type === "percentage")
+    amount = percentage(base, model.rateBps, mode);
   if (model.type === "fixed" || model.type === "flat_category") {
     amount = model.fixedMinor;
   }
@@ -249,9 +285,36 @@ function calculateModel(
     amount = percentage(base, model.rateBps, mode) + model.fixedMinor;
   }
   if (model.type === "tiered") {
-    if (model.tierMode === "cliff") {
+    if (model.basis === "historical_volume") {
+      const periodStart = historicalVolumeMinor;
+      const periodEnd = historicalVolumeMinor + base;
+      if (model.tierMode === "cliff") {
+        const selected = model.tiers.find(
+          (tier) =>
+            periodEnd >= tier.fromMinor &&
+            (tier.toMinor === undefined || periodEnd < tier.toMinor),
+        );
+        amount = selected
+          ? percentage(base, selected.rateBps, mode) + selected.fixedMinor
+          : 0;
+      } else {
+        amount = model.tiers.reduce((sum, tier) => {
+          const overlapStart = Math.max(periodStart, tier.fromMinor);
+          const overlapEnd = Math.min(
+            periodEnd,
+            tier.toMinor === undefined ? periodEnd : tier.toMinor,
+          );
+          const tranche = Math.max(0, overlapEnd - overlapStart);
+          return tranche > 0
+            ? sum + percentage(tranche, tier.rateBps, mode) + tier.fixedMinor
+            : sum;
+        }, 0);
+      }
+    } else if (model.tierMode === "cliff") {
       const selected = model.tiers.find(
-        (tier) => base >= tier.fromMinor && (tier.toMinor === undefined || base < tier.toMinor),
+        (tier) =>
+          base >= tier.fromMinor &&
+          (tier.toMinor === undefined || base < tier.toMinor),
       );
       amount = selected
         ? percentage(base, selected.rateBps, mode) + selected.fixedMinor
@@ -259,14 +322,17 @@ function calculateModel(
     } else {
       amount = model.tiers.reduce((sum, tier) => {
         if (base <= tier.fromMinor) return sum;
-        const upper = tier.toMinor === undefined ? base : Math.min(base, tier.toMinor);
+        const upper =
+          tier.toMinor === undefined ? base : Math.min(base, tier.toMinor);
         const tranche = Math.max(0, upper - tier.fromMinor);
         return sum + percentage(tranche, tier.rateBps, mode) + tier.fixedMinor;
       }, 0);
     }
   }
-  if (model.minimumMinor !== undefined) amount = Math.max(amount, model.minimumMinor);
-  if (model.maximumMinor !== undefined) amount = Math.min(amount, model.maximumMinor);
+  if (model.minimumMinor !== undefined)
+    amount = Math.max(amount, model.minimumMinor);
+  if (model.maximumMinor !== undefined)
+    amount = Math.min(amount, model.maximumMinor);
   return amount;
 }
 
@@ -281,7 +347,10 @@ function applyAdjustment(
     return Math.max(0, current - adjustment.amountMinor);
   }
   if (adjustment.type === "percentage_discount") {
-    return Math.max(0, current - percentage(current, adjustment.discountBps, roundingMode));
+    return Math.max(
+      0,
+      current - percentage(current, adjustment.discountBps, roundingMode),
+    );
   }
   if (adjustment.type === "rate_override") {
     return percentage(base, adjustment.rateBps, roundingMode);
@@ -291,14 +360,20 @@ function applyAdjustment(
 
 function selectedAdjustments(candidates: CommissionCandidate[]) {
   const exclusive = candidates.find(
-    ({ rule }) => rule.effect.kind === "adjustment" && rule.effect.stackingPolicy === "exclusive",
+    ({ rule }) =>
+      rule.effect.kind === "adjustment" &&
+      rule.effect.stackingPolicy === "exclusive",
   );
   if (exclusive) return [exclusive];
   const stackable = candidates.filter(
-    ({ rule }) => rule.effect.kind === "adjustment" && rule.effect.stackingPolicy === "stackable",
+    ({ rule }) =>
+      rule.effect.kind === "adjustment" &&
+      rule.effect.stackingPolicy === "stackable",
   );
   const bestPrice = candidates.filter(
-    ({ rule }) => rule.effect.kind === "adjustment" && rule.effect.stackingPolicy === "best_price",
+    ({ rule }) =>
+      rule.effect.kind === "adjustment" &&
+      rule.effect.stackingPolicy === "best_price",
   );
   return [...stackable, ...bestPrice];
 }
@@ -323,7 +398,7 @@ function emptyCalculation(
     configurationVersionId,
     transactionId: input.transactionId,
     orderId: input.orderId,
-    state: "quoted",
+    state: input.transactionId ? "earned" : "quoted",
     eligible: false,
     reasonCode,
     currency: input.currency,
@@ -355,7 +430,11 @@ function emptyCalculation(
 export function calculateCommission(options: CalculateCommissionOptions) {
   const input = commissionCalculationInputSchema.parse(options.input);
   const calculatedAt = options.calculatedAt || new Date().toISOString();
-  const baseResolution = resolveCandidates(options.policies, input, "commission");
+  const baseResolution = resolveCandidates(
+    options.policies,
+    input,
+    "commission",
+  );
   if (!input.eligibleCommercialEvent) {
     return emptyCalculation(
       options.configurationVersionId,
@@ -391,8 +470,13 @@ export function calculateCommission(options: CalculateCommissionOptions) {
     effect.model,
     baseAmountMinor,
     effect.roundingMode,
+    input.historicalVolumeMinor,
   );
-  const adjustmentResolution = resolveCandidates(options.policies, input, "adjustment");
+  const adjustmentResolution = resolveCandidates(
+    options.policies,
+    input,
+    "adjustment",
+  );
   const adjustments = selectedAdjustments(adjustmentResolution.candidates);
   let adjustedCommissionMinor = grossCommissionMinor;
   let bestPrice = grossCommissionMinor;
@@ -406,7 +490,8 @@ export function calculateCommission(options: CalculateCommissionOptions) {
       baseAmountMinor,
       effect.roundingMode,
     );
-    if (rule.effect.stackingPolicy === "best_price") bestPrice = Math.min(bestPrice, next);
+    if (rule.effect.stackingPolicy === "best_price")
+      bestPrice = Math.min(bestPrice, next);
     else adjustedCommissionMinor = next;
   });
   adjustedCommissionMinor = Math.min(adjustedCommissionMinor, bestPrice);
@@ -427,7 +512,8 @@ export function calculateCommission(options: CalculateCommissionOptions) {
       BASIS_POINTS + BigInt(effect.tax.rateBps),
       effect.roundingMode,
     );
-    commissionTaxMinor = adjustedCommissionMinor - netCommissionExcludingTaxMinor;
+    commissionTaxMinor =
+      adjustedCommissionMinor - netCommissionExcludingTaxMinor;
   }
 
   const sellerChargeMinor = percentage(
@@ -435,20 +521,27 @@ export function calculateCommission(options: CalculateCommissionOptions) {
     effect.allocation.sellerBps,
     effect.roundingMode,
   );
-  const buyerChargeMinor = percentage(
-    totalCommissionMinor,
-    effect.allocation.buyerBps,
-    effect.roundingMode,
+  const buyerChargeMinor = Math.min(
+    totalCommissionMinor - sellerChargeMinor,
+    percentage(
+      totalCommissionMinor,
+      effect.allocation.buyerBps,
+      effect.roundingMode,
+    ),
   );
   const platformAbsorbedMinor = Math.max(
     0,
     totalCommissionMinor - sellerChargeMinor - buyerChargeMinor,
   );
-  const billedShareBps = effect.allocation.sellerBps + effect.allocation.buyerBps;
-  const platformRevenueMinor = percentage(
-    netCommissionExcludingTaxMinor,
-    billedShareBps,
-    effect.roundingMode,
+  const billedShareBps =
+    effect.allocation.sellerBps + effect.allocation.buyerBps;
+  const platformRevenueMinor = Math.min(
+    sellerChargeMinor + buyerChargeMinor,
+    percentage(
+      netCommissionExcludingTaxMinor,
+      billedShareBps,
+      effect.roundingMode,
+    ),
   );
   const explanation = [
     ...baseResolution.explanation,
@@ -495,7 +588,10 @@ export function calculateCommission(options: CalculateCommissionOptions) {
     buyerChargeMinor,
     platformAbsorbedMinor,
     platformRevenueMinor,
-    sellerPayableMinor: Math.max(0, input.itemSubtotalMinor - sellerChargeMinor),
+    sellerPayableMinor: Math.max(
+      0,
+      input.itemSubtotalMinor - sellerChargeMinor,
+    ),
     buyerTotalMinor: input.totalMinor + buyerChargeMinor,
     appliedPolicyId: selected.policy.id,
     appliedPolicyVersionId: selected.policy.versionId,
@@ -518,12 +614,19 @@ export function calculateCommissionReversal(rawRequest: unknown) {
     calculation.effectSnapshot?.kind === "commission"
       ? calculation.effectSnapshot.refundPolicy
       : "manual_review";
-  const isFull = request.refundBaseMinor >= calculation.baseAmountMinor;
+  const remainingBaseMinor = Math.max(
+    0,
+    calculation.baseAmountMinor - request.previouslyReversedBaseMinor,
+  );
+  const ratioBase = Math.min(request.refundBaseMinor, remainingBaseMinor);
+  const isFull =
+    calculation.baseAmountMinor > 0 &&
+    request.previouslyReversedBaseMinor + ratioBase >=
+      calculation.baseAmountMinor;
   const manual =
     refundPolicy === "manual_review" ||
     (refundPolicy === "full_only" && !isFull);
   const refundable = refundPolicy !== "non_refundable" && !manual;
-  const ratioBase = Math.min(request.refundBaseMinor, calculation.baseAmountMinor);
   const ratio = (amountMinor: number) =>
     calculation.baseAmountMinor === 0
       ? 0
@@ -534,39 +637,59 @@ export function calculateCommissionReversal(rawRequest: unknown) {
         );
   const reversedCommissionMinor = refundable
     ? isFull
-      ? calculation.totalCommissionMinor
+      ? Math.max(
+          0,
+          calculation.totalCommissionMinor -
+            request.previouslyReversedCommissionMinor,
+        )
       : ratio(calculation.totalCommissionMinor)
     : 0;
   const reversedTaxMinor = refundable
     ? isFull
-      ? calculation.commissionTaxMinor
+      ? Math.max(
+          0,
+          calculation.commissionTaxMinor - request.previouslyReversedTaxMinor,
+        )
       : ratio(calculation.commissionTaxMinor)
     : 0;
   const sellerCreditMinor = refundable
     ? isFull
-      ? calculation.sellerChargeMinor
+      ? Math.max(
+          0,
+          calculation.sellerChargeMinor - request.previouslyCreditedSellerMinor,
+        )
       : ratio(calculation.sellerChargeMinor)
     : 0;
   const buyerCreditMinor = refundable
     ? isFull
-      ? calculation.buyerChargeMinor
+      ? Math.max(
+          0,
+          calculation.buyerChargeMinor - request.previouslyCreditedBuyerMinor,
+        )
       : ratio(calculation.buyerChargeMinor)
     : 0;
   const platformRevenueReversalMinor = refundable
     ? isFull
-      ? calculation.platformRevenueMinor
+      ? Math.max(
+          0,
+          calculation.platformRevenueMinor -
+            request.previouslyReversedRevenueMinor,
+        )
       : ratio(calculation.platformRevenueMinor)
     : 0;
   const state = manual
     ? "manual_review"
-    : isFull
-      ? "reversed"
-      : "partially_reversed";
+    : !refundable
+      ? "retained"
+      : isFull
+        ? "reversed"
+        : "partially_reversed";
   const snapshot = {
     calculationId: calculation.id,
     request: {
       idempotencyKey: request.idempotencyKey,
       refundBaseMinor: request.refundBaseMinor,
+      previouslyReversedBaseMinor: request.previouslyReversedBaseMinor,
       occurredAt: request.occurredAt,
     },
     reversedCommissionMinor,

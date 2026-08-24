@@ -28,6 +28,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const priceFormatter = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -54,6 +55,7 @@ function VerificationRow({ label, status }: { label: string; status: string }) {
 }
 
 export const CourseTutorProfilePage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug = "" } = useParams<{ slug: string }>();
   const [tutor, setTutor] = useState<TutorPublicProfile | null>(null);
   const [offers, setOffers] = useState<CoursePublicOffer[]>([]);
@@ -72,7 +74,7 @@ export const CourseTutorProfilePage: React.FC = () => {
       .finally(() => setIsLoading(false));
   }, [slug]);
 
-  const canonicalPath = `/cours/professeur/${slug}`;
+  const canonicalPath = `/education/professeur/${slug}`;
   usePageMeta({
     title: tutor
       ? `${tutor.displayName} — Professeur particulier`
@@ -116,7 +118,7 @@ export const CourseTutorProfilePage: React.FC = () => {
           variant="notFound"
           title="Profil professeur introuvable"
           description="Ce profil a peut-être été retiré, suspendu ou n’est plus publié."
-          action={<Button to="/cours">Voir les professeurs</Button>}
+          action={<Button to="/education">Voir les professeurs</Button>}
         />
       </Container>
     );
@@ -130,8 +132,8 @@ export const CourseTutorProfilePage: React.FC = () => {
   return (
     <Container className="py-5 sm:py-7">
       <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-text-muted">
-        <Link to="/cours" className="hover:text-primary">
-          Shongre Cours
+        <Link to="/education" className="hover:text-primary">
+          {t("verticals.education.brand")}
         </Link>{" "}
         <span aria-hidden="true">/</span> {tutor.displayName}
       </nav>
@@ -406,13 +408,13 @@ export const CourseTutorProfilePage: React.FC = () => {
             </p>
             <div className="mt-4 space-y-2">
               <Button
-                to={`/cours/demande?tutor=${tutor.id}&subject=${primaryOffer?.subjectId || ""}`}
+                to={`/education/demande?tutor=${tutor.id}&subject=${primaryOffer?.subjectId || ""}`}
                 fullWidth
                 leftIcon={<MessageSquare className="h-icon-sm w-icon-sm" />}
               >
                 Contacter {tutor.displayName.split(" ")[0]}
               </Button>
-              <Button to="/cours" variant="outline" fullWidth>
+              <Button to="/education" variant="outline" fullWidth>
                 Voir d’autres professeurs
               </Button>
             </div>

@@ -51,6 +51,7 @@ export interface AppConfig {
   aiProvider: AIProviderMode;
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
+  complianceWebhookSecret?: string;
   geminiApiKey?: string;
 }
 
@@ -257,6 +258,11 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
   }
   if (candidate.paymentProvider === "stripe" && !candidate.stripeSecretKey)
     missing.push("STRIPE_SECRET_KEY");
+  if (
+    (candidate.paymentProvider === "stripe" || candidate.kycProvider !== "demo") &&
+    !candidate.complianceWebhookSecret
+  )
+    missing.push("COMPLIANCE_WEBHOOK_SECRET");
 
   if (missing.length > 0) {
     throw new Error(
@@ -376,6 +382,7 @@ const candidateConfig: AppConfig = {
   ),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  complianceWebhookSecret: process.env.COMPLIANCE_WEBHOOK_SECRET,
   geminiApiKey: process.env.GEMINI_API_KEY,
 };
 

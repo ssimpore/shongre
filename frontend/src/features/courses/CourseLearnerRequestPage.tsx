@@ -21,6 +21,7 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button, Container, Skeleton, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const DRAFT_KEY = "shongre_courses_learner_request_draft_v1";
 
@@ -70,6 +71,7 @@ function readDraft(subjectId = ""): RequestFormState {
 }
 
 export const CourseLearnerRequestPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { activeMarket } = useMarketLocation();
   const toast = useToast();
@@ -83,10 +85,10 @@ export const CourseLearnerRequestPage: React.FC = () => {
   const [loadError, setLoadError] = useState(false);
 
   usePageMeta({
-    title: "Décrire mon besoin — Shongre Cours",
+    title: t("verticals.education.requestTitle"),
     description:
       "Décrivez votre objectif, vos disponibilités et votre budget pour recevoir des propositions de professeurs pertinentes.",
-    canonicalPath: "/cours/demande",
+    canonicalPath: "/education/demande",
     noIndex: true,
   });
 
@@ -249,7 +251,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
             Référence : {submitted.id}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Button to="/cours">Voir les professeurs</Button>
+            <Button to="/education">Voir les professeurs</Button>
             <Button to="/compte/messages" variant="outline">
               Ouvrir mes messages
             </Button>
@@ -265,7 +267,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
         <div className="mb-6">
           <p className="flex items-center gap-2 text-xs font-bold text-primary">
             <BookOpen className="h-icon-sm w-icon-sm" aria-hidden="true" />
-            Shongre Cours
+            {t("verticals.education.brand")}
           </p>
           <h1 className="mt-1 text-xl font-black text-text-main sm:text-2xl">
             Décrire mon besoin
@@ -692,7 +694,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
               </Button>
             ) : (
               <Button
-                to="/cours"
+                to="/education"
                 variant="ghost"
                 leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
               >

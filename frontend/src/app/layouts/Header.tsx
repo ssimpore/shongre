@@ -58,7 +58,11 @@ import {
 
 const HEADER_SCROLL_BEHAVIOR = {
   hideTravel: 48,
-  revealTravel: 32,
+  // The category rail is one compact control tall. Keep the opposing-motion
+  // threshold larger than that footprint so scroll anchoring/layout work from
+  // the collapse cannot masquerade as an intentional upward gesture when the
+  // main thread is busy. A real reveal gesture still needs only a short swipe.
+  revealTravel: 64,
   revealAtTop: 12,
   transitionSettleMs: 300,
 } as const;

@@ -49,7 +49,7 @@ describe("canonical vertical discovery projection", () => {
     ).toMatchObject({
       sellerType: "pro",
       attributes: {
-        canonicalPath: "/cours/professeur/sophie-martin-lyon",
+        canonicalPath: "/education/professeur/sophie-martin-lyon",
         subject: "Mathématiques",
         billing_mode: "hourly",
         location_mode: "flexible",

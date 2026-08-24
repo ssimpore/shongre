@@ -23,7 +23,7 @@ test("keeps every listing-detail commerce action full-width and readable", async
 
   for (const width of [1024, 1065, 1280, 1440]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.goto("/annonce/list-113", { waitUntil: "networkidle" });
+    await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     const actionGroup = page.getByTestId("listing-desktop-actions");
@@ -53,7 +53,7 @@ test("keeps every listing-detail commerce action full-width and readable", async
   }
 
   await page.setViewportSize({ width: 1065, height: 701 });
-  await page.goto("/annonce/list-113", { waitUntil: "networkidle" });
+  await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
   await page
     .getByRole("button", { name: "Offre de prix", exact: true })
     .click();

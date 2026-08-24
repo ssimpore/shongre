@@ -14,7 +14,7 @@ export interface PermissionDefinition {
     | "Modération & Signalements"
     | "Utilisateurs & Équipe"
     | "Marchés & Configuration"
-    | "Cours & Formation"
+    | "Éducation & Formation"
     | "Auto & Véhicules"
     | "Immobilier"
     | "Emploi & Recrutement"
@@ -159,64 +159,64 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
 
-  // Shongre Cours
+  // Shongre Education (stable course.* capability IDs)
   {
     id: "course.read",
-    name: "Consulter Shongre Cours",
-    category: "Cours & Formation",
+    name: "Consulter Shongre Education",
+    category: "Éducation & Formation",
     description:
       "Rechercher les professeurs et consulter leurs offres publiques.",
   },
   {
     id: "course.request.create",
     name: "Créer une demande de cours",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description:
       "Décrire un besoin élève et recevoir des propositions pertinentes.",
   },
   {
     id: "course.profile.manage.own",
     name: "Gérer son profil professeur",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description:
       "Créer et mettre à jour son profil professeur et ses disponibilités.",
   },
   {
     id: "course.offer.manage.own",
     name: "Gérer ses cours",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description: "Créer, modifier, publier et suspendre ses offres de cours.",
   },
   {
     id: "course.lead.read.own",
     name: "Consulter ses demandes qualifiées",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description: "Lire les demandes routées vers son profil ou son organisme.",
   },
   {
     id: "course.lead.respond.own",
     name: "Répondre à ses demandes qualifiées",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description: "Accepter, refuser ou contester une demande reçue.",
   },
   {
     id: "course.organization.manage.own",
     name: "Gérer son organisme de cours",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description:
       "Administrer équipe, rôles, lieux et boîte de réception de son organisme.",
   },
   {
     id: "course.booking.create",
     name: "Réserver un cours",
-    category: "Cours & Formation",
+    category: "Éducation & Formation",
     description:
       "Créer une réservation lorsque la Phase 2 est activée sur le marché.",
   },
   {
     id: "course.admin.manage",
-    name: "Administrer Shongre Cours",
-    category: "Cours & Formation",
+    name: "Administrer Shongre Education",
+    category: "Éducation & Formation",
     description:
       "Configurer taxonomie, formules, routage, sécurité et activation par marché.",
     isSensitive: true,
@@ -565,36 +565,99 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     name: "Gérer la grille tarifaire de la plateforme",
     category: "Marchés & Configuration",
     description:
-      "Définir les tarifs des forfaits Pro, des options de boost et des commissions.",
+      "Définir les tarifs des forfaits Pro et des options de visibilité.",
     isSensitive: true,
   },
   {
     id: "monetization.pricing.update",
-    name: "Mettre à jour les taux de commission & frais de protection",
+    name: "Mettre à jour les frais de service",
     category: "Marchés & Configuration",
     description:
-      "Ajuster les pourcentages de frais de service et les paliers de sécurité.",
+      "Ajuster les frais de protection et les paliers de sécurité hors commission.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.read",
+    name: "Consulter les commissions",
+    category: "Transactions & Paiements",
+    description: "Lire les politiques et l’explication d’un calcul appliqué.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.simulate",
+    name: "Simuler une commission",
+    category: "Transactions & Paiements",
+    description:
+      "Utiliser le calculateur de production sans créer de transaction.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.manage",
+    name: "Préparer les politiques de commission",
+    category: "Marchés & Configuration",
+    description: "Créer, cloner et soumettre des brouillons versionnés.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.publish",
+    name: "Approuver et publier les commissions",
+    category: "Marchés & Configuration",
+    description:
+      "Valider une politique financière selon le contrôle maker-checker.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.override_account",
+    name: "Déroger par compte ou organisation",
+    category: "Marchés & Configuration",
+    description: "Créer un accord commercial nominatif prioritaire et audité.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.promotions.manage",
+    name: "Gérer les promotions sur commission",
+    category: "Marchés & Configuration",
+    description:
+      "Relier une remise de commission au catalogue de campagnes existant.",
+    isSensitive: true,
+  },
+  {
+    id: "commissions.analytics.read",
+    name: "Consulter l’analytique des commissions",
+    category: "Transactions & Paiements",
+    description:
+      "Comparer GMV, remises, remboursements et taux de prise effectif.",
+    isSensitive: true,
+  },
+  {
+    id: "finance.commission_revenue.read",
+    name: "Consulter le revenu de commission",
+    category: "Transactions & Paiements",
+    description: "Lire le revenu net de commission séparément du GMV.",
     isSensitive: true,
   },
   {
     id: "monetization.plans.read",
     name: "Consulter les forfaits professionnels",
     category: "Marchés & Configuration",
-    description: "Lire les familles de forfaits génériques et verticaux publiées.",
+    description:
+      "Lire les familles de forfaits génériques et verticaux publiées.",
     isSensitive: true,
   },
   {
     id: "monetization.plans.manage",
     name: "Gérer les forfaits professionnels",
     category: "Marchés & Configuration",
-    description: "Créer et modifier les brouillons de forfaits et leurs transitions.",
+    description:
+      "Créer et modifier les brouillons de forfaits et leurs transitions.",
     isSensitive: true,
   },
   {
     id: "monetization.pricing.manage",
     name: "Gérer les prix des forfaits",
     category: "Marchés & Configuration",
-    description: "Configurer les prix mensuels, annuels et leurs dates d’effet.",
+    description:
+      "Configurer les prix mensuels, annuels et leurs dates d’effet.",
     isSensitive: true,
   },
   {
@@ -615,7 +678,8 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     id: "monetization.trials.manage",
     name: "Gérer les essais professionnels",
     category: "Marchés & Configuration",
-    description: "Configurer l’éligibilité, la durée et la conversion des essais.",
+    description:
+      "Configurer l’éligibilité, la durée et la conversion des essais.",
     isSensitive: true,
   },
   {
@@ -636,14 +700,16 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     id: "monetization.complimentary_grants.request",
     name: "Demander un forfait offert",
     category: "Marchés & Configuration",
-    description: "Soumettre une période commerciale motivée à l’approbation du propriétaire.",
+    description:
+      "Soumettre une période commerciale motivée à l’approbation du propriétaire.",
     isSensitive: true,
   },
   {
     id: "monetization.complimentary_grants.create",
     name: "Accorder un forfait offert",
     category: "Marchés & Configuration",
-    description: "Accorder une période commerciale tracée après approbation indépendante.",
+    description:
+      "Accorder une période commerciale tracée après approbation indépendante.",
     isSensitive: true,
   },
 
@@ -847,6 +913,46 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     category: "Modération & Signalements",
     description:
       "Consulter et instruire les contrôles de conformité nécessitant une décision humaine.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.sensitive.read",
+    name: "Consulter les données de conformité restreintes",
+    category: "Modération & Signalements",
+    description:
+      "Consulter uniquement les données sensibles nécessaires à une mission de conformité autorisée.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.policy.read",
+    name: "Consulter le registre des règles de conformité",
+    category: "Marchés & Configuration",
+    description:
+      "Lire les règles versionnées, leur gouvernance, leurs sources et leurs dates d’effet.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.policy.manage",
+    name: "Administrer les règles de conformité",
+    category: "Marchés & Configuration",
+    description:
+      "Planifier une règle versionnée avec un motif, une source et une trace de changement.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.retention.manage",
+    name: "Administrer la conservation des données de conformité",
+    category: "Marchés & Configuration",
+    description:
+      "Configurer les durées et actions de fin de conservation sous gouvernance juridique.",
+    isSensitive: true,
+  },
+  {
+    id: "compliance.audit.read",
+    name: "Consulter l’audit de conformité",
+    category: "Modération & Signalements",
+    description:
+      "Lire les transitions, décisions et versions de politique sans exposer les justificatifs bruts.",
     isSensitive: true,
   },
   {

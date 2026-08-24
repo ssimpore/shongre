@@ -1,6 +1,6 @@
 # Shongre monetization platform — implementation report
 
-This report describes configuration version `commercial-fr-v2` and the code that consumes it. It is intentionally limited to behavior present in this repository; a catalog entry by itself is not counted as an implemented feature.
+This report describes configuration version `commercial-fr-v3` and the code that consumes it. It is intentionally limited to behavior present in this repository; a catalog entry by itself is not counted as an implemented feature.
 
 The current feature-by-feature commercial acceptance result is maintained in
 [`professional-plan-acceptance-audit.md`](./professional-plan-acceptance-audit.md).
@@ -17,19 +17,19 @@ The repository already contained a strong monetization foundation:
 - versioned configuration with draft, approval, scheduling, publication, rollback, validation and audit;
 - quotes, orders, entitlements, subscriptions, invoices, promotion validation and Stripe checkout abstraction;
 - subscription lifecycle, idempotency, recurring credit grants, notifications and finance ledgers in migrations `00024`–`00026`;
-- vertical services and workspaces for Auto, Immo, Emploi and Cours;
+- vertical services and workspaces for Auto, Immo, Emploi and Education;
 - a frontend Billing & Plans surface and an Admin Monetization console.
 
 The implementation was consolidated around those systems. No parallel pricing store, plan service, demo mode or Admin workflow was introduced.
 
 ## Problems discovered and corrected
 
-- Legacy and current professional plan families coexisted without a single active catalog. Legacy General and Cours products are now retained only as archived compatibility records; only one current family is selectable.
+- Legacy and current professional plan families coexisted without a single active catalog. Legacy General and Education products are now retained only as archived compatibility records; only one current family is selectable.
 - Vertical plan defaults were split across fixtures and repositories. The canonical catalog is now projected into vertical views and remains the commercial source of truth.
 - Publication limits did not consistently include monthly usage. Backend publication decisions now enforce active capacity and monthly publication counters.
 - Auto media checks made downgraded listings impossible to edit. Existing media can now be retained or reduced; only additions above the new entitlement are blocked.
 - Immo publication did not enforce photo/floor-plan, video and virtual-tour entitlements uniformly. The backend now enforces them and the demo wizard prevents oversized photo batches.
-- Cours organization mutations used legacy plan data. The workspace now uses the canonical projection and enforces member and location capacity in demo mode.
+- Education organization mutations used legacy plan data. The workspace now uses the canonical projection and enforces member and location capacity in demo mode.
 - The Admin plan editor only changed one price. A single versioned draft can now change all prices, VAT/effective dates, quotas, features, trial rules, eligibility, display metadata and transition targets.
 - The Admin campaign form exposed only percentage coupons although the engine supported more. It now configures percentage, fixed, introductory-price and free-period promotions plus activation, eligibility, stacking and redemption controls.
 
@@ -75,10 +75,10 @@ Prices are EUR, tax-inclusive catalog amounts. Annual prices implement the confi
 | Emploi   |  Emploi Recruit |  €19.90 |   €199 |
 | Emploi   | Emploi Business |  €49.90 |   €499 |
 | Emploi   |    Emploi Scale |  €99.90 |   €999 |
-| Cours    |      Cours Free |      €0 |      — |
-| Cours    |       Cours Pro |   €7.90 |    €79 |
-| Cours    |    Cours Studio |  €24.90 |   €249 |
-| Cours    | Cours Organisme |  €59.90 |   €599 |
+| Education    |      Education Free |      €0 |      — |
+| Education    |       Education Pro |   €7.90 |    €79 |
+| Education    |    Education Studio |  €24.90 |   €249 |
+| Education    | Education Organisme |  €59.90 |   €599 |
 
 ## Quota matrix
 
@@ -98,12 +98,12 @@ Prices are EUR, tax-inclusive catalog amounts. Annual prices implement the confi
 | Emploi Recruit  |       5 jobs |              10 |              — |      — |     2 |         — |                    1 |
 | Emploi Business |      20 jobs |              40 |              — |      — |     5 |         — |                    5 |
 | Emploi Scale    |      75 jobs |             150 |              — |      — |    15 |         — |                   15 |
-| Cours Free      |     3 offers |               — |              8 |      — |     1 |         — |                    0 |
-| Cours Pro       |    15 offers |               — |             15 |      — |     1 |         — |                    1 |
-| Cours Studio    |    50 offers |               — |             25 |      — |     5 |         1 |                    5 |
-| Cours Organisme |   200 offers |               — |             40 |      — |    20 |        10 |                   15 |
+| Education Free      |     3 offers |               — |              8 |      — |     1 |         — |                    0 |
+| Education Pro       |    15 offers |               — |             15 |      — |     1 |         — |                    1 |
+| Education Studio    |    50 offers |               — |             25 |      — |     5 |         1 |                    5 |
+| Education Organisme |   200 offers |               — |             40 |      — |    20 |        10 |                   15 |
 
-Immo also limits virtual tours to 1, 2 and 3 respectively. Monthly lead limits for Cours are 30, 150 and 500 on paid tiers.
+Immo also limits virtual tours to 1, 2 and 3 respectively. Monthly lead limits for Education are 30, 150 and 500 on paid tiers.
 
 Seat and location amounts above are configured target values. Paid expansion
 beyond the safe baseline is commercially suspended until the shared production
@@ -111,7 +111,7 @@ membership/location mutation service is transactional and fully tested.
 
 ## Entitlement and feature matrix
 
-| Capability                  | General           | Auto                      | Immo                        | Emploi                              | Cours                    | Enforcement status                                                                 |
+| Capability                  | General           | Auto                      | Immo                        | Emploi                              | Education                    | Enforcement status                                                                 |
 | --------------------------- | ----------------- | ------------------------- | --------------------------- | ----------------------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
 | Active capacity             | yes               | yes                       | yes                         | yes                                 | yes                      | backend publication/vertical services                                              |
 | Monthly publications        | Pro               | yes                       | yes                         | yes                                 | not configured           | backend usage records                                                              |
@@ -156,7 +156,7 @@ Configured family transitions are:
 - Auto: Essential -> Business -> Scale; reverse downgrades; General Free/Pro may enter the compatible Auto tier and vertical plans may return to configured General tiers.
 - Immo: Essential -> Business -> Agency+; reverse downgrades; compatible General transitions.
 - Emploi: Free -> Recruit -> Business -> Scale; reverse downgrades; compatible General transitions.
-- Cours: Free -> Pro -> Studio -> Organisme; reverse downgrades; compatible General transitions.
+- Education: Free -> Pro -> Studio -> Organisme; reverse downgrades; compatible General transitions.
 
 Upgrades are previewed with immediate proration and tax. Downgrades are scheduled for period end. Cancellation uses `cancel_at_period_end`; reactivation clears it. Entitlement resolution keeps vertical quotas isolated and data is preserved when a lower quota becomes effective.
 
@@ -183,7 +183,7 @@ Checkout and webhook flows preserve separate attribution for subscription, promo
 
 ## Verification coverage
 
-Automated coverage includes catalog schema and compatibility, configuration validation and lifecycle, quotes and promotion rules, checkout/idempotency, trials, subscription upgrades/downgrades/cancellation/reactivation, recurring credits, vertical entitlement projections, publication/media limits, downgrade-safe media editing, Cours organization quotas, finance ledgers, RLS and security boundaries. Exact command results belong in the delivery note because the repository test count changes over time.
+Automated coverage includes catalog schema and compatibility, configuration validation and lifecycle, quotes and promotion rules, checkout/idempotency, trials, subscription upgrades/downgrades/cancellation/reactivation, recurring credits, vertical entitlement projections, publication/media limits, downgrade-safe media editing, Education organization quotas, finance ledgers, RLS and security boundaries. Exact command results belong in the delivery note because the repository test count changes over time.
 
 ## Limitations and production dependencies
 
@@ -192,7 +192,7 @@ The following are not represented as fully production-complete in this report:
 - The frontend intentionally remains in deterministic demo mode and has no production HTTP adapters yet.
 - Live Stripe checkout, subscription changes, invoices and coupons require deployed secrets, product/price/coupon identifiers and webhook endpoints. Database mode fails closed when required provider references are absent.
 - Auto/Immo/Emploi import endpoints create durable, idempotent jobs and enforce plan access, but this repository does not yet contain the file-ingestion/parser worker that turns an uploaded CSV/XML payload into inventory. The UI must not market end-to-end import as available until that worker and storage flow are deployed.
-- Generic database-backed organization invitation and branch-management mutations are not yet centralized behind one quota-enforcing service. Cours demo mutations enforce seats/locations, but the same invariant must be applied transactionally to production organization membership before paid seat promises are considered complete.
+- Generic database-backed organization invitation and branch-management mutations are not yet centralized behind one quota-enforcing service. Education demo mutations enforce seats/locations, but the same invariant must be applied transactionally to production organization membership before paid seat promises are considered complete.
 - Several add-on product families requested by the strategy (generic capacity, location and API add-ons across every vertical) are not yet implemented end to end. Existing listing visibility and Emploi seat/job add-ons are real catalog products; missing add-ons should not be advertised.
 - Worker scheduling, notification delivery, email/SMS, storage scanning and external analytics/payment dashboards require their respective deployed infrastructure.
 

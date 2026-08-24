@@ -5,6 +5,7 @@ export * from "./taxonomy.repository.js";
 export * from "./order.repository.js";
 export * from "./business-rules.repository.js";
 export * from "./verification.repository.js";
+export * from "./compliance.repository.js";
 export * from "./messaging.repository.js";
 export * from "./notification.repository.js";
 export * from "./review.repository.js";

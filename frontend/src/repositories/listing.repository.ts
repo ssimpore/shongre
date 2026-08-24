@@ -8,7 +8,7 @@ import { auditService } from "../security/audit.service";
 import { taxonomyService } from "../domains/taxonomy/taxonomy.service";
 import { TaxonomyMigration } from "../domains/taxonomy/taxonomy.migration";
 import {
-  normalizeSearchText,
+  expandSearchQuery,
   searchTextIncludes,
 } from "../utilities/search-text";
 import { demoVerticalDiscoveryStore } from "../domains/discovery/demo-vertical-discovery.store";
@@ -110,17 +110,19 @@ export class MockListingRepository implements IListingRepository {
     if (filters.query && filters.query.trim()) {
       // Accent-folded on both sides: "velo" has to find "Vélo", and "cafe" has
       // to find "Machine à Café". See utilities/search-text.
-      const q = normalizeSearchText(filters.query);
-      list = list.filter(
-        (item) =>
-          searchTextIncludes(item.title, q) ||
-          searchTextIncludes(item.description, q) ||
-          searchTextIncludes(item.categoryLabel, q) ||
-          searchTextIncludes(item.subCategoryLabel, q) ||
-          searchTextIncludes(item.city, q) ||
-          searchTextIncludes(item.sellerName, q) ||
-          searchTextIncludes(item.publisherOrganizationName || "", q) ||
-          searchTextIncludes(searchableAttributeText(item), q),
+      const queries = expandSearchQuery(filters.query);
+      list = list.filter((item) =>
+        queries.some(
+          (query) =>
+            searchTextIncludes(item.title, query) ||
+            searchTextIncludes(item.description, query) ||
+            searchTextIncludes(item.categoryLabel, query) ||
+            searchTextIncludes(item.subCategoryLabel, query) ||
+            searchTextIncludes(item.city, query) ||
+            searchTextIncludes(item.sellerName, query) ||
+            searchTextIncludes(item.publisherOrganizationName || "", query) ||
+            searchTextIncludes(searchableAttributeText(item), query),
+        ),
       );
     }
 

@@ -132,8 +132,6 @@ export interface ProPlanTierConfig {
 }
 
 export interface MonetizationMarketConfig {
-  proCommissionRate: number; // e.g. 0.03 for 3%
-  individualCommissionRate: number; // e.g. 0.00
   payoutInstantFeePercent: number; // e.g. 0.01
   payoutInstantFixedFee: number; // e.g. 0.50
   boostPricing: BoostPricingConfig;

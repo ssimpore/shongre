@@ -674,6 +674,10 @@ export interface Transaction {
   totalAmount: number;
   sellerPayoutAmount?: number;
   platformCommission?: number;
+  commissionBaseAmount?: number;
+  commissionTaxAmount?: number;
+  commissionAdjustmentAmount?: number;
+  commissionExplanation?: string;
   deliveryMethod: DeliveryType;
   carrierName?: string;
   deliveryAddress?: {

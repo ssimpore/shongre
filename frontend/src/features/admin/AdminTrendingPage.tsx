@@ -38,8 +38,15 @@ export const AdminTrendingPage: React.FC = () => {
   const [preview, setPreview] = useState<TrendingSectionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const firstScopedMarket = currentUser?.marketScope?.countries?.[0];
+  // Global staff scopes use "*" for authorization, but "*" is not an
+  // operational marketplace. Persist discovery settings against the active
+  // market so the public homepage reads the same configuration the admin just
+  // edited.
   const marketCode =
-    currentUser?.marketScope?.countries?.[0] || activeMarket.code;
+    firstScopedMarket && firstScopedMarket !== "*"
+      ? firstScopedMarket
+      : activeMarket.code;
 
   const load = async () => {
     setIsLoading(true);

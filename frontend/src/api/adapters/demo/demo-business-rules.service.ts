@@ -27,6 +27,7 @@ import {
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { isSameBusinessVertical } from "@shongre/contracts/business-verticals";
 import { colors, palette } from "@shongre/design-tokens";
 import {
   getBillingUsagePresentation,
@@ -57,7 +58,12 @@ const versions: CommercialConfigurationVersion[] = [
     createdAt,
     publishedAt: createdAt,
     productCount: BASELINE_MONETIZATION_CATALOG.products.length,
-    ruleCount: BASELINE_MONETIZATION_CATALOG.rules.length,
+    ruleCount:
+      BASELINE_MONETIZATION_CATALOG.rules.length +
+      BASELINE_MONETIZATION_CATALOG.commissionPolicies.reduce(
+        (count, policy) => count + policy.rules.length,
+        0,
+      ),
     conflicts: [],
   },
 ];
@@ -814,8 +820,11 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           .every(
             (product) =>
               product.commercialProfile.verticalId &&
-              promotion.verticalIds.includes(
-                product.commercialProfile.verticalId,
+              promotion.verticalIds.some((verticalId) =>
+                isSameBusinessVertical(
+                  verticalId,
+                  product.commercialProfile.verticalId,
+                ),
               ),
           )),
     );
@@ -1299,6 +1308,19 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         versionId: id,
         status: "draft",
       })),
+      commissionPolicies: structuredClone(
+        patch.commissionPolicies || current.commissionPolicies,
+      ).map((policy) => ({
+        ...policy,
+        versionId: id,
+        versionNumber: number,
+        status: policy.status === "disabled" ? "disabled" : "draft",
+        rules: policy.rules.map((rule) => ({
+          ...rule,
+          policyId: policy.id,
+          versionId: id,
+        })),
+      })),
       promotions: structuredClone(patch.promotions || current.promotions).map(
         (promotion) => ({
           ...promotion,
@@ -1318,7 +1340,12 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       createdBy: "admin-demo",
       createdAt: now,
       productCount: catalog.products.length,
-      ruleCount: catalog.rules.length,
+      ruleCount:
+        catalog.rules.length +
+        catalog.commissionPolicies.reduce(
+          (count, policy) => count + policy.rules.length,
+          0,
+        ),
       conflicts: [],
     };
     versions.unshift(version);
@@ -1373,6 +1400,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         ...rule,
         status: rule.status === "draft" ? "active" : rule.status,
       }));
+      catalog.commissionPolicies = catalog.commissionPolicies.map((policy) => ({
+        ...policy,
+        status: policy.status === "draft" ? "active" : policy.status,
+      }));
       catalog.promotions = catalog.promotions.map((promotion) => ({
         ...promotion,
         status: promotion.status === "draft" ? "active" : promotion.status,
@@ -1383,6 +1414,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         reason,
         products: source.products,
         rules: source.rules,
+        commissionPolicies: source.commissionPolicies,
         promotions: source.promotions,
       });
     } else throw new Error("Transition invalide");

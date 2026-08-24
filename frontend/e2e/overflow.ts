@@ -103,6 +103,14 @@ export async function measureOverflow(page: Page): Promise<OverflowReport> {
  * that has held steady across consecutive frames is both faster and stable.
  */
 export async function waitForStableLayout(page: Page, timeoutMs = 10_000): Promise<void> {
+  // Lazy route chunks can arrive after DOMContentLoaded, while remote demo
+  // media can keep the page from ever becoming fully network-idle. Give route
+  // code a short, bounded quiet window, then rely on application and layout
+  // signals below instead of allowing `networkidle` to consume the test budget.
+  await page
+    .waitForLoadState('networkidle', { timeout: Math.min(timeoutMs, 3_000) })
+    .catch(() => undefined);
+
   // A stable loading shell is not a stable application. Next's client boundary
   // can remain visible while a route chunk compiles in development, especially
   // when the responsive matrix runs several browsers in parallel.

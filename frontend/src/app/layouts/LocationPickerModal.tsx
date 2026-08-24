@@ -262,7 +262,7 @@ export const LocationPickerModal: React.FC = () => {
         {/* Popular Cities in Active Market */}
         {popularCities.length > 0 && (
           <div className="space-y-1.5">
-            <div className="text-micro font-bold text-stone-400 uppercase tracking-wider">
+            <div className="text-micro font-bold text-text-muted uppercase tracking-wider">
               Villes populaires ({activeMarket.name})
             </div>
             <div className="flex flex-wrap gap-1.5">

@@ -19,9 +19,15 @@ import {
   DemoAIProvider,
   GeminiAIProvider,
 } from "./ai.provider.js";
+import {
+  PaymentComplianceProvider,
+  DemoPaymentComplianceProvider,
+  LivePaymentComplianceProvider,
+} from "./payment-compliance.provider.js";
 
 export interface ProviderContainer {
   payment: IPaymentProvider;
+  paymentCompliance: PaymentComplianceProvider;
   kyc: IKYCProvider;
   businessRegistry: IBusinessRegistryProvider;
   ai: IAIProvider;
@@ -33,6 +39,10 @@ export function createProviderContainer(): ProviderContainer {
       config.paymentProvider === "stripe"
         ? new StripePaymentProvider()
         : new DemoPaymentProvider(),
+    paymentCompliance:
+      config.paymentProvider === "stripe"
+        ? new LivePaymentComplianceProvider()
+        : new DemoPaymentComplianceProvider(),
     kyc:
       config.kycProvider === "live" || config.kycProvider === "stripe"
         ? new LiveKYCProvider()

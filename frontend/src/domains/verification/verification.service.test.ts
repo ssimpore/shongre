@@ -3,7 +3,7 @@ import { verificationService } from "./verification.service";
 import { storageService } from "../../services/storage.service";
 import { UserProfile } from "../../types";
 
-describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
+describe("VerificationService - KYC / KYB compatibility projection", () => {
   const mockUser: UserProfile = {
     id: "test-user-verification-1",
     name: "Alice Martin",
@@ -31,64 +31,18 @@ describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
     storageService.saveUsers(users);
   });
 
-  describe("Trust Score Calculation", () => {
-    it("calculates baseline score with phone, email, and 2fa", () => {
-      const result = verificationService.computeTrustScore(mockUser);
-      // Email (15) + Phone (20) + MFA (10) = 45
-      expect(result.score).toBe(45);
-      expect(result.level).toBe("bronze");
-    });
-
-    it("calculates full gold/platinum score for fully verified pro seller with KYC, KYB and bank payout", () => {
-      const fullProUser: UserProfile = {
-        ...mockUser,
-        accountType: "professional",
-        role: "pro_seller",
-        sellerType: "pro",
-        isVerified: true,
-        isIdentityVerified: true,
-        identityVerification: {
-          status: "verified",
-          documentType: "passport",
-          submittedAt: new Date().toISOString(),
-          verifiedAt: new Date().toISOString(),
-        },
-        professionalVerification: {
-          status: "verified",
-          siret: "12345678900012",
-          legalForm: "SAS",
-          companyName: "Boutique Pro SARL",
-          submittedAt: new Date().toISOString(),
-          reviewedAt: new Date().toISOString(),
-        },
-        bankPayoutVerification: {
-          status: "verified",
-          accountHolderName: "Boutique Pro SARL",
-          iban: "FR7630004000011234567890143",
-          bic: "BNPAFRPP",
-          verifiedAt: new Date().toISOString(),
-        },
-      };
-
-      const result = verificationService.computeTrustScore(fullProUser);
-      expect(result.score).toBeGreaterThanOrEqual(90);
-      expect(result.level).toBe("platinum");
-    });
-  });
-
   describe("Identity Verification (KYC)", () => {
     it("submits identity verification document and sets status to pending", () => {
       const res = verificationService.submitIdentityVerification(mockUser.id, {
         documentType: "national_id",
-        firstName: "Alice",
-        lastName: "Martin",
-        birthDate: "1990-05-12",
         issuingCountry: "FR",
       });
 
       expect(res.success).toBe(true);
       expect(res.user?.identityVerification?.status).toBe("pending");
       expect(res.user?.identityVerification?.documentType).toBe("national_id");
+      expect(res.user?.identityVerification).not.toHaveProperty("birthDate");
+      expect(res.user?.identityVerification).not.toHaveProperty("documentNumber");
 
       // Check audit log
       const logs = verificationService.getAuditLogs(mockUser.id);
@@ -100,9 +54,6 @@ describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
     it("approves identity verification and marks identity as verified", () => {
       verificationService.submitIdentityVerification(mockUser.id, {
         documentType: "passport",
-        firstName: "Alice",
-        lastName: "Martin",
-        birthDate: "1990-05-12",
         issuingCountry: "FR",
       });
 
@@ -128,9 +79,6 @@ describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
     it("rejects identity verification and stores rejection reason", () => {
       verificationService.submitIdentityVerification(mockUser.id, {
         documentType: "national_id",
-        firstName: "Alice",
-        lastName: "Martin",
-        birthDate: "1990-05-12",
         issuingCountry: "FR",
       });
 
@@ -161,10 +109,7 @@ describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
         city: "Lyon",
         postalCode: "69001",
         country: "FR",
-        legalRepresentativeName: "Alice Martin",
-        legalRepresentativeRole: "Présidente",
         vatNumber: "FR12987654321",
-        uboDeclarationAccepted: true,
       });
 
       expect(res.success).toBe(true);
@@ -181,9 +126,6 @@ describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
         city: "Lyon",
         postalCode: "69001",
         country: "FR",
-        legalRepresentativeName: "Alice Martin",
-        legalRepresentativeRole: "Présidente",
-        uboDeclarationAccepted: true,
       });
 
       const approval = verificationService.reviewBusinessVerification(
@@ -202,30 +144,4 @@ describe("VerificationService - KYC / KYB / Payout & Trust Score", () => {
     });
   });
 
-  describe("Bank Payout Setup (IBAN)", () => {
-    it("validates and registers bank payout details for escrow withdrawals", () => {
-      const res = verificationService.saveBankPayoutDetails(mockUser.id, {
-        accountHolderName: "Alice Martin",
-        iban: "FR76 3000 4000 0112 3456 7890 143",
-        bic: "BNPAFRPP",
-        bankName: "BNP Paribas",
-      });
-
-      expect(res.success).toBe(true);
-      expect(res.user?.bankPayoutVerification?.status).toBe("verified");
-      expect(res.user?.bankPayoutVerification?.iban).toBe(
-        "FR7630004000011234567890143",
-      );
-    });
-
-    it("rejects invalid IBAN format", () => {
-      const res = verificationService.saveBankPayoutDetails(mockUser.id, {
-        accountHolderName: "Alice Martin",
-        iban: "INVALID_IBAN_123",
-        bic: "BNPAFRPP",
-      });
-
-      expect(res.success).toBe(false);
-    });
-  });
 });

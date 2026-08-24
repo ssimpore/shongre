@@ -24,46 +24,51 @@ import type {
 } from "../../contracts/courses.contract";
 import { httpClient } from "./http-client";
 
+const EDUCATION_API_BASE = "/education";
+
 export class HttpCoursesService implements CoursesServiceContract {
   getCatalog(marketCode: string): Promise<CourseCatalog> {
-    return httpClient.get("/courses/catalog", {
+    return httpClient.get(`${EDUCATION_API_BASE}/catalog`, {
       params: { market: marketCode },
     });
   }
 
   getAdminCatalog(marketCode: string): Promise<CourseCatalog> {
-    return httpClient.get("/courses/admin/catalog", {
+    return httpClient.get(`${EDUCATION_API_BASE}/admin/catalog`, {
       params: { market: marketCode },
     });
   }
 
   searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
-    return httpClient.post("/courses/search", query);
+    return httpClient.post(`${EDUCATION_API_BASE}/search`, query);
   }
 
   getTutorProfile(idOrSlug: string) {
     return httpClient.get<{
       tutor: TutorPublicProfile;
       offers: CoursePublicOffer[];
-    }>(`/courses/tutors/${encodeURIComponent(idOrSlug)}`);
+    }>(`${EDUCATION_API_BASE}/tutors/${encodeURIComponent(idOrSlug)}`);
   }
 
   saveTutorProfile(profile: TutorProfileDraft): Promise<TutorProfile> {
     const id = profile.id || "new";
-    return httpClient.put(`/courses/tutors/${encodeURIComponent(id)}`, profile);
+    return httpClient.put(
+      `${EDUCATION_API_BASE}/tutors/${encodeURIComponent(id)}`,
+      profile,
+    );
   }
 
   createCourseOffer(offer: CourseOfferDraft): Promise<CourseOffer> {
-    return httpClient.post("/courses/offers", offer);
+    return httpClient.post(`${EDUCATION_API_BASE}/offers`, offer);
   }
 
   submitLearnerRequest(request: LearnerRequestDraft): Promise<LearnerRequest> {
-    return httpClient.post("/courses/learner-requests", request);
+    return httpClient.post(`${EDUCATION_API_BASE}/learner-requests`, request);
   }
 
   getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace> {
     return httpClient.get(
-      `/courses/workspace/${encodeURIComponent(tutorProfileId)}`,
+      `${EDUCATION_API_BASE}/workspace/${encodeURIComponent(tutorProfileId)}`,
     );
   }
 
@@ -71,7 +76,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     organizationId: string,
   ): Promise<CourseOrganizationWorkspace> {
     return httpClient.get(
-      `/courses/organizations/${encodeURIComponent(organizationId)}/workspace`,
+      `${EDUCATION_API_BASE}/organizations/${encodeURIComponent(organizationId)}/workspace`,
     );
   }
 
@@ -80,7 +85,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     input: CourseOrganizationInviteInput,
   ): Promise<CourseOrganizationWorkspace> {
     return httpClient.post(
-      `/courses/organizations/${encodeURIComponent(organizationId)}/members`,
+      `${EDUCATION_API_BASE}/organizations/${encodeURIComponent(organizationId)}/members`,
       input,
     );
   }
@@ -90,7 +95,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     input: CourseOrganizationLocationInput,
   ): Promise<CourseOrganizationWorkspace> {
     return httpClient.post(
-      `/courses/organizations/${encodeURIComponent(organizationId)}/locations`,
+      `${EDUCATION_API_BASE}/organizations/${encodeURIComponent(organizationId)}/locations`,
       input,
     );
   }
@@ -101,10 +106,13 @@ export class HttpCoursesService implements CoursesServiceContract {
     decision: "accept" | "decline" | "invalid",
     declineReason?: string,
   ): Promise<CourseLead> {
-    return httpClient.request(`/courses/leads/${encodeURIComponent(leadId)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ tutorProfileId, decision, declineReason }),
-    });
+    return httpClient.request(
+      `${EDUCATION_API_BASE}/leads/${encodeURIComponent(leadId)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ tutorProfileId, decision, declineReason }),
+      },
+    );
   }
 
   // Saved tutors currently reuse account-scoped frontend storage. The API
@@ -129,7 +137,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     config: CourseMarketConfig,
   ): Promise<CourseMarketConfig> {
     return httpClient.put(
-      `/courses/admin/markets/${encodeURIComponent(marketCode)}`,
+      `${EDUCATION_API_BASE}/admin/markets/${encodeURIComponent(marketCode)}`,
       config,
     );
   }
@@ -140,7 +148,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     patch: Partial<Pick<CourseSubject, "label" | "isActive" | "levelIds">>,
   ): Promise<CourseSubject> {
     return httpClient.request(
-      `/courses/admin/markets/${encodeURIComponent(marketCode)}/subjects/${encodeURIComponent(subjectId)}`,
+      `${EDUCATION_API_BASE}/admin/markets/${encodeURIComponent(marketCode)}/subjects/${encodeURIComponent(subjectId)}`,
       { method: "PATCH", body: JSON.stringify(patch) },
     );
   }
@@ -156,7 +164,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     >,
   ): Promise<CoursePlan> {
     return httpClient.request(
-      `/courses/admin/markets/${encodeURIComponent(marketCode)}/plans/${encodeURIComponent(planId)}`,
+      `${EDUCATION_API_BASE}/admin/markets/${encodeURIComponent(marketCode)}/plans/${encodeURIComponent(planId)}`,
       { method: "PATCH", body: JSON.stringify(patch) },
     );
   }

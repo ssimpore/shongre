@@ -196,7 +196,7 @@ export const ProPlansPage: React.FC = () => {
       automotive: "auto",
       real_estate: "immo",
       employment: "emploi",
-      education: "cours",
+      education: "education",
     } as const;
     if (currentUser?.professionalVertical) {
       setSelectedVertical(verticalByProfile[currentUser.professionalVertical]);
@@ -955,13 +955,13 @@ export const ProPlansPage: React.FC = () => {
                           }
                           className="rounded-card border border-border-base bg-bg-subtle p-3 text-left focus-visible:outline-2 focus-visible:outline-primary"
                         >
-                          <span className="text-micro font-black uppercase tracking-wide text-primary">
+                          <span className="text-micro font-black uppercase tracking-wide text-primary-hover">
                             {vertical?.name || "Général"}
                           </span>
                           <span className="mt-1 block text-sm font-black text-text-main">
                             {product?.name || subscription.productId}
                           </span>
-                          <span className="mt-1 block text-xs text-text-muted">
+                          <span className="mt-1 block text-xs text-text-secondary">
                             {STATUS_LABELS[subscription.status] ||
                               subscription.status}{" "}
                             · au {formatDate(subscription.currentPeriodEnd)}

@@ -26,7 +26,7 @@ test.describe('search page information architecture', () => {
     test(`exposes exactly one search field at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await usePersona(page, 'guest');
-      await page.goto('/recherche', { waitUntil: 'networkidle' });
+      await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       const fields = await page.evaluate((visSrc) => {
@@ -45,7 +45,7 @@ test.describe('search page information architecture', () => {
   test('prints the result count once on screen but still announces it', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await usePersona(page, 'guest');
-    await page.goto('/recherche', { waitUntil: 'networkidle' });
+    await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const counts = await page.evaluate((visSrc) => {
@@ -66,7 +66,7 @@ test.describe('search page information architecture', () => {
   test('keeps the header search on routes that have no search bar of their own', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await usePersona(page, 'guest');
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const headerFields = await page.evaluate((visSrc) => {
@@ -90,11 +90,11 @@ test.describe('search page information architecture', () => {
 test.describe('category landing pages', () => {
   test('filters to the category named in the path', async ({ page }) => {
     await usePersona(page, 'guest');
-    await page.goto('/recherche', { waitUntil: 'networkidle' });
+    await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
     const unfiltered = await page.locator('article').count();
 
-    await page.goto('/categorie/vehicules', { waitUntil: 'networkidle' });
+    await page.goto('/categorie/vehicules', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     await expect(page.locator('h1')).toHaveText(/véhicules/i);
@@ -109,7 +109,7 @@ test.describe('category landing pages', () => {
   // parameter read as a live fallback would reinstate what the user just removed.
   test('lets the category be cleared without the path putting it back', async ({ page }) => {
     await usePersona(page, 'guest');
-    await page.goto('/categorie/vehicules', { waitUntil: 'networkidle' });
+    await page.goto('/categorie/vehicules', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     await page.getByRole('button', { name: /retirer le filtre/i }).first().click();

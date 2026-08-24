@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Smartphone,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  X,
-} from "lucide-react";
-import { useDialogBehavior } from "../../../design-system/primitives/useDialogBehavior";
+import { Smartphone, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
 import { authService } from "../../../domains/auth/auth.service";
 import { Button } from "../../../design-system/primitives/Button";
-import { IconButton } from "../../../design-system/primitives/IconButton";
+import { Modal } from "../../../design-system/primitives/Modal";
 import { SUPPORTED_MARKETS } from "../../../configuration/market.config";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
@@ -119,164 +112,134 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
     }
   };
 
-  // Escape, focus trap, focus restore and scroll lock — this overlay
-  // bypassed the shared Modal primitive and had none of them.
-  const { containerRef, titleId } = useDialogBehavior(true, onClose);
   return (
-    <div
-      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-fast"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 relative"
-        ref={containerRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-      >
-        <IconButton
-          size="sm"
-          variant="ghost"
-          onClick={onClose}
-          ariaLabel="Fermer"
-          className="absolute top-4 right-4"
-        >
-          <X className="w-5 h-5" />
-        </IconButton>
-
-        <div className="w-12 h-12 rounded-xl bg-primary-light text-primary flex items-center justify-center mb-4">
-          <Smartphone className="w-6 h-6" />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t("auth.phoneVerificationModal.verificationDuNumeroDeTelephone")}
+      description={t(
+        "auth.phoneVerificationModal.laVerificationTelephoniqueProtegeLes",
+      )}
+      headerIcon={
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
+          <Smartphone className="h-5 w-5" />
         </div>
+      }
+    >
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
 
-        <h3 id={titleId} className="text-xl font-extrabold text-stone-900 mb-1">
-          {t("auth.phoneVerificationModal.verificationDuNumeroDeTelephone")}
-        </h3>
-        <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-          {t(
-            "auth.phoneVerificationModal.laVerificationTelephoniqueProtegeLes",
-          )}
-        </p>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+      {successMessage && step === "otp" && (
+        <div className="mb-4 p-3 rounded-xl bg-success-surface border border-success-border text-xs font-semibold text-success flex items-start gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <p>{successMessage}</p>
+            {demoCodeHint && (
+              <p className="mt-1 text-success font-bold bg-success-surface/80 px-2 py-0.5 rounded inline-block">
+                Code SMS de test : {demoCodeHint}
+              </p>
+            )}
           </div>
-        )}
+        </div>
+      )}
 
-        {successMessage && step === "otp" && (
-          <div className="mb-4 p-3 rounded-xl bg-success-surface border border-success-border text-xs font-semibold text-success flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <p>{successMessage}</p>
-              {demoCodeHint && (
-                <p className="mt-1 text-success font-bold bg-success-surface/80 px-2 py-0.5 rounded inline-block">
-                  Code SMS de test : {demoCodeHint}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {step === "input" ? (
-          <form onSubmit={handleSendCode} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                {t("auth.phoneVerificationModal.paysEtIndicatif")}
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                <select
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                  className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
-                >
-                  {Object.values(SUPPORTED_MARKETS).map((m) => (
-                    <option key={m.code} value={m.code}>
-                      {m.flag} {m.code} ({m.phonePrefix})
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={currentMarket.phonePlaceholder}
-                  required
-                  className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              className="w-full"
-              isLoading={isLoading}
-            >
-              {t("auth.phoneVerificationModal.recevoirMonCodeParSms")}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
-                {t("auth.phoneVerificationModal.saisissezLeCodeRecuPar")}
-              </label>
+      {step === "input" ? (
+        <form onSubmit={handleSendCode} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+              {t("auth.phoneVerificationModal.paysEtIndicatif")}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <select
+                value={selectedCountry}
+                onChange={(e) => setSelectedCountry(e.target.value)}
+                className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              >
+                {Object.values(SUPPORTED_MARKETS).map((m) => (
+                  <option key={m.code} value={m.code}>
+                    {m.flag} {m.code} ({m.phonePrefix})
+                  </option>
+                ))}
+              </select>
               <input
-                type="text"
-                maxLength={6}
-                value={otpCode}
-                onChange={(e) =>
-                  setOtpCode(e.target.value.replace(/[^0-9]/g, ""))
-                }
-                placeholder="123456"
-                autoFocus
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={currentMarket.phonePlaceholder}
                 required
-                className="w-full px-4 py-3 text-center tracking-code text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+                className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
             </div>
+          </div>
 
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            className="w-full"
+            isLoading={isLoading}
+          >
+            {t("auth.phoneVerificationModal.recevoirMonCodeParSms")}
+          </Button>
+        </form>
+      ) : (
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+              {t("auth.phoneVerificationModal.saisissezLeCodeRecuPar")}
+            </label>
+            <input
+              type="text"
+              maxLength={6}
+              value={otpCode}
+              onChange={(e) =>
+                setOtpCode(e.target.value.replace(/[^0-9]/g, ""))
+              }
+              placeholder="123456"
+              autoFocus
+              required
+              className="w-full px-4 py-3 text-center tracking-code text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            className="w-full"
+            isLoading={isLoading}
+          >
+            {t("auth.phoneVerificationModal.confirmerLeNumero")}
+          </Button>
+
+          <div className="flex items-center justify-between text-xs pt-2">
             <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              className="w-full"
-              isLoading={isLoading}
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setStep("input")}
+              className="text-stone-500"
             >
-              {t("auth.phoneVerificationModal.confirmerLeNumero")}
+              {t("auth.phoneVerificationModal.changerDeNumero")}
             </Button>
-
-            <div className="flex items-center justify-between text-xs pt-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep("input")}
-                className="text-stone-500"
-              >
-                {t("auth.phoneVerificationModal.changerDeNumero")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleResend}
-                disabled={countdown > 0}
-                className={countdown > 0 ? "text-stone-500" : "text-primary"}
-                leftIcon={<RefreshCw className="w-3 h-3" />}
-              >
-                {countdown > 0
-                  ? `Renvoyer (${countdown}s)`
-                  : "Renvoyer le code"}
-              </Button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleResend}
+              disabled={countdown > 0}
+              className={countdown > 0 ? "text-stone-500" : "text-primary"}
+              leftIcon={<RefreshCw className="w-3 h-3" />}
+            >
+              {countdown > 0 ? `Renvoyer (${countdown}s)` : "Renvoyer le code"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
   );
 };

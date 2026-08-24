@@ -4,7 +4,6 @@ import {
   Provider,
   ProviderConfiguration,
   ProviderEnvironment,
-  CredentialStatus,
 } from "../../../../domains/providers/provider.types";
 import { providerService } from "../../../../domains/providers/provider.service";
 import { Button } from "../../../../design-system/primitives/Button";
@@ -31,9 +30,7 @@ export const ProviderConfigurationForm: React.FC<
   const [settings, setSettings] = useState<Record<string, any>>(
     configuration.settings || {},
   );
-  const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>(
-    configuration.credentialStatus,
-  );
+  const credentialStatus = configuration.credentialStatus;
   const [isSaving, setIsSaving] = useState(false);
 
   const handleFieldChange = (key: string, value: any) => {
@@ -45,6 +42,17 @@ export const ProviderConfigurationForm: React.FC<
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (
+      enabled &&
+      environment !== "demo" &&
+      provider.operational.adapterStatus !== "IMPLEMENTED"
+    ) {
+      toast.error(
+        "Impossible d’activer ce fournisseur hors démo : aucun adaptateur de production n’est implémenté.",
+      );
+      return;
+    }
 
     // Check if disabling an active provider
     if (configuration.enabled && !enabled) {
@@ -78,6 +86,10 @@ export const ProviderConfigurationForm: React.FC<
   };
 
   const schemaFields = provider.configurationSchema?.fields || [];
+  const canEnable =
+    provider.operational.adapterStatus === "IMPLEMENTED" ||
+    (environment === "demo" &&
+      provider.operational.adapterStatus === "DEMO_ONLY");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -96,20 +108,26 @@ export const ProviderConfigurationForm: React.FC<
               {t("admin.providerConfigurationForm.etatDActivation")}
             </span>
             <p className="text-micro text-stone-500 mb-2">
-              {t(
-                "admin.providerConfigurationForm.rendLePrestataireOperationnelPour",
-              )}
+              Autorise uniquement l’adaptateur disponible dans cet
+              environnement ; ne prouve pas sa santé.
             </p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={enabled}
+                disabled={!canEnable}
                 onChange={(e) => setEnabled(e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-9 h-5 bg-stone-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
               <span className="ml-2 text-xs font-semibold text-stone-700">
-                {enabled ? "Activé" : "Désactivé"}
+                {!canEnable
+                  ? "Adaptateur absent"
+                  : enabled
+                    ? environment === "demo"
+                      ? "Simulation activée"
+                      : "Activé · non vérifié"
+                    : "Désactivé"}
               </span>
             </label>
           </div>
@@ -228,57 +246,16 @@ export const ProviderConfigurationForm: React.FC<
                             "admin.providerConfigurationForm.statutDesIdentifiants",
                           )}
                         </span>
-                        <select
-                          aria-label={t(
-                            "admin.providerConfigurationForm.statutDesIdentifiants",
-                          )}
-                          value={credentialStatus}
-                          onChange={(e) =>
-                            setCredentialStatus(e.target.value as any)
-                          }
-                          className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning h-control-touch"
-                        >
-                          <option value="configured">
-                            {t(
-                              "admin.providerConfigurationForm.cleConfigureeEtValidee",
-                            )}
-                          </option>
-                          <option value="not_configured">
-                            {t("admin.providerConfigurationForm.nonConfiguree")}
-                          </option>
-                          <option value="invalid">
-                            {t(
-                              "admin.providerConfigurationForm.cleRevoqueeOuInvalide",
-                            )}
-                          </option>
-                          <option value="expired">
-                            {t("admin.providerConfigurationForm.cleExpiree")}
-                          </option>
-                        </select>
+                        <span className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning uppercase">
+                          {credentialStatus.replaceAll("_", " ")}
+                        </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          disabled
-                          aria-label={field.label}
-                          value="••••••••••••••••••••••••••••••••"
-                          className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-stone-100/80 text-stone-500 font-mono h-control-touch"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            toast.info(
-                              "La rotation des clés réelles sera exécutée par le backend sécurisé.",
-                            )
-                          }
-                          className="text-xs shrink-0 h-control-sm"
-                        >
-                          Remplacer
-                        </Button>
-                      </div>
+                      <p className="text-xs text-stone-700 rounded border border-stone-200 bg-white px-2.5 py-2">
+                        Valeur non exposée. Le backend dérive ce statut depuis
+                        le gestionnaire de secrets ; il ne peut pas être déclaré
+                        « configuré » depuis ce formulaire.
+                      </p>
                       <p className="text-micro text-stone-500">
                         {t(
                           "admin.providerConfigurationForm.protectionRenforceeLeSecretReel",

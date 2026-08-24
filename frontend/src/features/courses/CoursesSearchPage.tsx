@@ -31,6 +31,7 @@ import {
 } from "../../design-system";
 import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { CourseTutorCard } from "./components/CourseTutorCard";
 
 interface CourseFiltersProps {
@@ -291,6 +292,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
 };
 
 export const CoursesSearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
@@ -306,10 +308,10 @@ export const CoursesSearchPage: React.FC = () => {
 
   const freeText = params.get("query") || "";
   usePageMeta({
-    title: "Trouver un professeur — Shongre Cours",
+    title: t("verticals.education.searchTitle"),
     description:
       "Recherchez un professeur par matière, niveau, lieu, disponibilité et mode de cours.",
-    canonicalPath: "/cours",
+    canonicalPath: "/education",
     noIndex: Boolean(freeText),
   });
 
@@ -428,7 +430,7 @@ export const CoursesSearchPage: React.FC = () => {
     return (
       <Container className="py-10">
         <StatePanel
-          title="Shongre Cours est indisponible"
+          title={t("verticals.education.unavailable")}
           description={error}
           action={
             <Button onClick={() => window.location.reload()}>Réessayer</Button>
@@ -448,7 +450,7 @@ export const CoursesSearchPage: React.FC = () => {
                 className="h-icon-sm w-icon-sm"
                 aria-hidden="true"
               />
-              Shongre Cours
+              {t("verticals.education.brand")}
             </p>
             <h1 className="mt-1 text-xl font-black tracking-tight text-text-main sm:text-2xl">
               Trouver un professeur
@@ -459,7 +461,7 @@ export const CoursesSearchPage: React.FC = () => {
             </p>
           </div>
           <Button
-            to="/cours/demande"
+            to="/education/demande"
             variant="outline"
             size="compact"
             leftIcon={<BookOpen className="h-icon-sm w-icon-sm" />}
@@ -503,7 +505,7 @@ export const CoursesSearchPage: React.FC = () => {
       >
         <aside
           className="hidden self-start lg:sticky lg:top-24 lg:block"
-          aria-label="Filtres Cours"
+          aria-label={t("verticals.education.filters")}
         >
           {catalog && (
             <CourseFilters
@@ -572,7 +574,9 @@ export const CoursesSearchPage: React.FC = () => {
               variant="notFound"
               title="Aucun professeur ne correspond exactement"
               description="Élargissez le lieu, le mode de cours ou le budget, ou décrivez votre besoin pour recevoir des propositions pertinentes."
-              action={<Button to="/cours/demande">Décrire mon besoin</Button>}
+              action={
+                <Button to="/education/demande">Décrire mon besoin</Button>
+              }
               secondaryAction={
                 <Button variant="outline" onClick={() => setParams({})}>
                   Effacer les filtres
@@ -602,7 +606,7 @@ export const CoursesSearchPage: React.FC = () => {
                     seulement le forfait du professeur.
                   </p>
                 </div>
-                <Button to="/cours/demande" size="compact">
+                <Button to="/education/demande" size="compact">
                   Décrire mon besoin
                 </Button>
               </section>
@@ -682,7 +686,7 @@ export const CoursesSearchPage: React.FC = () => {
             </div>
             <div className="p-4">
               <Button
-                to={`/cours/demande?compare=${compared.map((item) => item.tutor.id).join(",")}`}
+                to={`/education/demande?compare=${compared.map((item) => item.tutor.id).join(",")}`}
                 fullWidth
                 size="compact"
               >
@@ -723,7 +727,7 @@ export const CoursesSearchPage: React.FC = () => {
               </p>
             </div>
             <Button
-              to={`/cours/demande?compare=${compared.map((item) => item.tutor.id).join(",")}`}
+              to={`/education/demande?compare=${compared.map((item) => item.tutor.id).join(",")}`}
               size="sm"
             >
               Comparer

@@ -371,6 +371,10 @@ export interface Database {
           funds_released_at: string | null;
           payment_method: string;
           payment_intent_id: string | null;
+          commission_calculation_id: string | null;
+          platform_commission_minor: number | null;
+          seller_payable_minor: number | null;
+          commission_snapshot_hash: string | null;
           dispute_reason: string | null;
           dispute_details: string | null;
           created_at: string;
@@ -400,6 +404,10 @@ export interface Database {
           funds_released_at?: string | null;
           payment_method?: string;
           payment_intent_id?: string | null;
+          commission_calculation_id?: string | null;
+          platform_commission_minor?: number | null;
+          seller_payable_minor?: number | null;
+          commission_snapshot_hash?: string | null;
           dispute_reason?: string | null;
           dispute_details?: string | null;
           created_at?: string;
@@ -1769,6 +1777,84 @@ export interface Database {
         event_type: "impression" | "click" | "favorite" | "contact";
         created_at: string;
       }>;
+      commission_policy_versions: GeneratedTable<{
+        configuration_version_id: string;
+        id: string;
+        code: string;
+        version_number: number;
+        name: string;
+        description: string;
+        policy_type: "base" | "adjustment";
+        status: CommercialConfigurationStatus;
+        effective_from: string | null;
+        effective_until: string | null;
+        rollout_bps: number;
+        snapshot: Json;
+        created_at: string;
+      }>;
+      commission_rule_versions: GeneratedTable<{
+        configuration_version_id: string;
+        id: string;
+        policy_id: string;
+        name: string;
+        description: string;
+        priority: number;
+        scope: Json;
+        effect: Json;
+        effective_from: string | null;
+        effective_until: string | null;
+        created_at: string;
+      }>;
+      commission_calculations: GeneratedTable<{
+        id: string;
+        idempotency_key: string | null;
+        configuration_version_id: string;
+        transaction_id: string | null;
+        order_id: string | null;
+        account_id: string | null;
+        organization_id: string | null;
+        policy_id: string | null;
+        policy_version_id: string | null;
+        rule_id: string | null;
+        state: "quoted" | "earned" | "partially_reversed" | "reversed" | "cancelled";
+        eligible: boolean;
+        reason_code: string;
+        currency: string;
+        base_amount_minor: number;
+        gross_commission_minor: number;
+        adjustment_minor: number;
+        net_commission_excluding_tax_minor: number;
+        commission_tax_minor: number;
+        total_commission_minor: number;
+        seller_charge_minor: number;
+        buyer_charge_minor: number;
+        platform_absorbed_minor: number;
+        platform_revenue_minor: number;
+        seller_payable_minor: number;
+        buyer_total_minor: number;
+        applied_adjustment_rule_ids: Json;
+        snapshot: Json;
+        snapshot_hash: string;
+        calculated_at: string;
+        expires_at: string | null;
+        created_at: string;
+      }>;
+      commission_reversals: GeneratedTable<{
+        id: string;
+        calculation_id: string;
+        idempotency_key: string;
+        reversed_base_minor: number;
+        reversed_commission_minor: number;
+        reversed_tax_minor: number;
+        seller_credit_minor: number;
+        buyer_credit_minor: number;
+        platform_revenue_reversal_minor: number;
+        state: "partially_reversed" | "reversed" | "manual_review";
+        snapshot: Json;
+        snapshot_hash: string;
+        occurred_at: string;
+        created_at: string;
+      }>;
       reviews: {
         Row: {
           id: string;
@@ -1907,6 +1993,14 @@ export interface Database {
       activate_due_commercial_configurations: {
         Args: Record<string, never>;
         Returns: number;
+      };
+      post_commission_calculation_to_ledger: {
+        Args: { p_calculation_id: string };
+        Returns: Json;
+      };
+      post_commission_reversal_to_ledger: {
+        Args: { p_reversal_id: string };
+        Returns: Json;
       };
       import_commercial_catalog: {
         Args: { p_catalog: Json; p_snapshot_hash: string; p_reason?: string };

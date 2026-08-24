@@ -28,6 +28,35 @@ export const messagesEn: MessageCatalogue = {
   "common.reviewCount_one": "{count} review",
   "common.reviewCount_other": "{count} reviews",
 
+  // --- Business verticals --------------------------------------------------
+  "verticals.education.name": "Education",
+  "verticals.education.brand": "Shongre Education",
+  "verticals.education.workspace": "Education workspace",
+  "verticals.education.training": "Education & Training",
+  "verticals.education.adminTitle": "Shongre Education administration",
+  "verticals.education.adminSections": "Shongre Education sections",
+  "verticals.education.searchTitle": "Find a tutor — Shongre Education",
+  "verticals.education.requestTitle": "Describe your needs — Shongre Education",
+  "verticals.education.onboardingTitle": "Teach on Shongre Education",
+  "verticals.education.organizationTitle": "Organisation — Shongre Education",
+  "verticals.education.unavailable": "Shongre Education is unavailable",
+  "verticals.education.workspaceUnavailable": "Education workspace unavailable",
+  "verticals.education.filters": "Education filters",
+  "verticals.education.demoPersona":
+    "7. Education Pro (Sophie · Collège Lumière)",
+  "verticals.education.organizationWorkspace": "Education organisation",
+  "verticals.education.openWorkspace": "Open my Education workspace",
+  "verticals.education.adminCategory": "Education",
+  "verticals.education.adminDescription":
+    "Manage the Education market, taxonomy, plans and safety settings.",
+  "verticals.education.adminLoadError":
+    "Unable to load the Education configuration.",
+  "verticals.education.adminSaved":
+    "Education configuration saved and audited.",
+  "verticals.education.catalogUnavailable":
+    "The Education catalogue is temporarily unavailable.",
+  "verticals.education.returnToWorkspace": "Return to my Education workspace",
+
   // --- Primary navigation ---------------------------------------------------
   "nav.home": "Home",
   "nav.search": "Search",
@@ -51,7 +80,7 @@ export const messagesEn: MessageCatalogue = {
   "nav.category.electronique": "Electronics",
   "nav.category.loisirs": "Leisure",
   "nav.category.autres": "More",
-  "nav.category.cours": "Tutoring",
+  "nav.category.cours": "Education",
   "nav.category.bonsPlans": "Deals!",
   "nav.unreadMessages_one": "{count} unread message",
   "nav.unreadMessages_other": "{count} unread messages",
@@ -1529,8 +1558,11 @@ export const messagesEn: MessageCatalogue = {
 
   // --- migrated surfaces ---
   "shell.demoRoleSwitcher.modeDemo": "Demo mode",
-  "shell.demoRoleSwitcher.testerLes10ProfilsEt":
-    "Try the 15 profiles and journeys without a password:",
+  "shell.demoRoleSwitcher.testerLesProfilsEtParcours":
+    "Try the 17 profiles and journeys without a password:",
+  "shell.demoRoleSwitcher.commercialLabel": "15. Shongre Sales (Léa)",
+  "shell.demoRoleSwitcher.commercialDescription":
+    "Prospects, opportunities, follow-ups, and partner relationships",
   "shell.demoRoleSwitcher.changerDeRolePourTester":
     "Switch user profile to test",
   "shell.demoRoleSwitcher.sessionUpdated": "Demo session updated",

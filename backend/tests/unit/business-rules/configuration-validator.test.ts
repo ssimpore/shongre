@@ -84,4 +84,28 @@ describe("commercial configuration validation", () => {
       }),
     );
   });
+
+  it("blocks ambiguous commission rules at identical precedence", () => {
+    const catalog = structuredClone(BASELINE_MONETIZATION_CATALOG);
+    const source = catalog.commissionPolicies[0];
+    const conflicting = structuredClone(source);
+    conflicting.id = "commission-policy-conflict";
+    conflicting.code = "commission.conflict";
+    conflicting.rules[0].id = "commission-rule-conflict";
+    conflicting.rules[0].policyId = conflicting.id;
+    if (conflicting.rules[0].effect.kind === "commission") {
+      conflicting.rules[0].effect.model = {
+        type: "percentage",
+        rateBps: 900,
+      };
+    }
+    catalog.commissionPolicies.push(conflicting);
+
+    expect(validateCommercialConfiguration(catalog)).toContainEqual(
+      expect.objectContaining({
+        code: "AMBIGUOUS_COMMISSION_PRECEDENCE",
+        severity: "blocking",
+      }),
+    );
+  });
 });

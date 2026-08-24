@@ -6,7 +6,7 @@ test.describe('boosted listings hero rail', () => {
   test('marks boosted listings with the shared featured icon', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 1408, height: 795 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const rail = page.locator('#hero-boosted-track');
@@ -19,7 +19,7 @@ test.describe('boosted listings hero rail', () => {
   test('keeps the boosted indicator available on a mobile hero viewport', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const rail = page.locator('#hero-boosted-track');
@@ -31,7 +31,7 @@ test.describe('boosted listings hero rail', () => {
   test('aligns the trust rows and links checked listings to safety guidance', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 1408, height: 795 });
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const guarantees = page.getByRole('list', { name: 'Garanties Shongre' });

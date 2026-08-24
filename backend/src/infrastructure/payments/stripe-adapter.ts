@@ -25,14 +25,12 @@ export class StripeAdapter {
   async createPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{
     payoutId: string;
     status: "completed" | "processing";
   }> {
     void sellerId;
     void amount;
-    void iban;
     throw new AppError({
       code: "CONFLICT",
       message:

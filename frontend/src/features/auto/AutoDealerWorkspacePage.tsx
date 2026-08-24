@@ -4,7 +4,6 @@ import {
   ArrowRightLeft,
   CalendarDays,
   CarFront,
-  CheckCircle2,
   CircleDollarSign,
   Clock3,
   CloudUpload,
@@ -135,7 +134,19 @@ export const AutoDealerWorkspacePage: React.FC = () => {
   );
   const latestImport = workspace?.imports[0];
   const startImport = async (type: InventoryImport["type"] = "csv") => {
-    if (!workspace) return;
+    if (!workspace || !plan) return;
+    const isAvailable =
+      type === "csv"
+        ? plan.entitlements.inventoryCsvImport
+        : type === "xml"
+          ? plan.entitlements.inventoryXmlImport
+          : plan.entitlements.inventoryApiSync;
+    if (!isAvailable) {
+      toast.warning(
+        "Les nouveaux imports sont temporairement indisponibles. Les imports historiques restent consultables.",
+      );
+      return;
+    }
     setImporting(true);
     try {
       const job = await services.auto.requestInventoryImport(
@@ -528,9 +539,14 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       <div className="flex flex-wrap justify-between gap-3">
         <div>
           <h2 className="text-base font-black">Imports & synchronisation</h2>
-          <p className="mt-1 text-xs text-text-secondary">
-            CSV et XML sont validés par un travail asynchrone. L’API reste
-            désactivée par marché.
+          <p
+            id="auto-import-availability"
+            className="mt-1 text-xs text-text-secondary"
+          >
+            {plan.entitlements.inventoryCsvImport ||
+            plan.entitlements.inventoryXmlImport
+              ? "CSV et XML sont validés par un travail asynchrone. L’API reste désactivée par marché."
+              : "Les imports historiques restent consultables. Les nouveaux imports CSV et XML sont temporairement indisponibles."}
           </p>
         </div>
         <div className="flex gap-2">
@@ -538,6 +554,8 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             size="compact"
             onClick={() => startImport("csv")}
             isLoading={importing}
+            disabled={!plan.entitlements.inventoryCsvImport}
+            aria-describedby="auto-import-availability"
             leftIcon={<CloudUpload className="h-icon-sm w-icon-sm" />}
           >
             Importer un CSV
@@ -546,6 +564,8 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             size="compact"
             variant="outline"
             onClick={() => startImport("xml")}
+            disabled={!plan.entitlements.inventoryXmlImport}
+            aria-describedby="auto-import-availability"
           >
             Importer un XML
           </Button>
@@ -892,6 +912,12 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             variant="outline"
             onClick={() => startImport("csv")}
             isLoading={importing}
+            disabled={!plan.entitlements.inventoryCsvImport}
+            title={
+              plan.entitlements.inventoryCsvImport
+                ? undefined
+                : "Import CSV temporairement indisponible"
+            }
             leftIcon={<CloudUpload className="h-icon-sm w-icon-sm" />}
           >
             Importer le stock
@@ -953,9 +979,19 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center justify-between">
               <p className="text-xs font-black">Import & synchronisation</p>
-              <span className="flex items-center gap-1 text-micro font-bold text-success">
-                <CheckCircle2 className="h-icon-xs w-icon-xs" /> Connecté
-              </span>
+              <Badge
+                variant={
+                  plan.entitlements.inventoryCsvImport ||
+                  plan.entitlements.inventoryXmlImport
+                    ? "success"
+                    : "warning"
+                }
+              >
+                {plan.entitlements.inventoryCsvImport ||
+                plan.entitlements.inventoryXmlImport
+                  ? "Disponible"
+                  : "En maintenance"}
+              </Badge>
             </div>
             <p className="mt-3 text-micro text-text-muted">
               {latestImport

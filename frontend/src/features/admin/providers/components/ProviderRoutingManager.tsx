@@ -5,7 +5,6 @@ import {
   Provider,
   ProviderConfiguration,
 } from "../../../../domains/providers/provider.types";
-import { providerService } from "../../../../domains/providers/provider.service";
 import {
   getAllCapabilities,
   getCategoryMetadata,
@@ -28,19 +27,30 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
 
   const capabilitiesWithMultipleProviders = useMemo(() => {
     return getAllCapabilities().map((cap) => {
-      const candidates = providers.filter((p) =>
-        p.capabilities.includes(cap.id),
+      const candidates = providers.filter((provider) =>
+        provider.operational.implementedCapabilities.includes(cap.id),
       );
-      const resolution = providerService.resolveEffectiveProviders(
-        cap.id,
-        selectedMarket,
-      );
+      const verifiedCandidates = candidates
+        .filter((provider) => {
+          const configuration = configurations[provider.id];
+          return Boolean(
+            configuration?.enabled &&
+              configuration.environment !== "demo" &&
+              configuration.health === "healthy" &&
+              configuration.healthLastCheckedAt,
+          );
+        })
+        .sort(
+          (a, b) =>
+            (configurations[a.id]?.priority || 999) -
+            (configurations[b.id]?.priority || 999),
+        );
 
       return {
         capability: cap,
-        candidates,
-        resolution,
-        hasRedundancy: candidates.length > 1,
+        primary: verifiedCandidates[0] || null,
+        fallback: verifiedCandidates[1] || null,
+        hasRedundancy: verifiedCandidates.length > 1,
       };
     });
   }, [providers, configurations, selectedMarket]);
@@ -57,9 +67,8 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
             )}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            {t(
-              "admin.providerRoutingManager.configurezLesPrestatairesPrimairesEt",
-            )}
+            Seuls les adaptateurs compatibles, configurés et vérifiés peuvent
+            devenir primaire ou secours.
           </p>
         </div>
 
@@ -87,10 +96,8 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
       {/* Capabilities Routing List */}
       <div className="space-y-3">
         {capabilitiesWithMultipleProviders.map(
-          ({ capability, candidates, resolution, hasRedundancy }) => {
+          ({ capability, primary, fallback, hasRedundancy }) => {
             const catMeta = getCategoryMetadata(capability.category);
-            const primary = resolution.primaryProvider;
-            const fallback = resolution.fallbackProvider;
 
             return (
               <div
@@ -120,12 +127,20 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                 {/* Routing Chain (Primary -> Fallback) */}
                 <div className="flex flex-1 items-center gap-3">
                   {/* Primary Provider Box */}
-                  <div className="flex-1 p-2.5 rounded-lg border border-success-border bg-success-surface/50">
-                    <div className="text-micro font-bold uppercase tracking-wider text-success mb-1 flex items-center justify-between">
+                  <div
+                    className={`flex-1 p-2.5 rounded-lg border ${
+                      primary
+                        ? "border-success-border bg-success-surface/50"
+                        : "border-stone-200 bg-stone-50"
+                    }`}
+                  >
+                    <div className="text-micro font-bold uppercase tracking-wider text-stone-600 mb-1 flex items-center justify-between">
                       <span>1. Prestataire Primaire</span>
-                      <span className="bg-emerald-200/70 text-success px-1 rounded text-micro">
-                        P1
-                      </span>
+                      {primary && (
+                        <span className="bg-emerald-200/70 text-success px-1 rounded text-micro">
+                          P1
+                        </span>
+                      )}
                     </div>
                     {primary ? (
                       <div className="flex items-center justify-between">
@@ -142,7 +157,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                       </div>
                     ) : (
                       <span className="text-xs font-medium text-stone-500 italic">
-                        Aucun
+                        Aucun fournisseur vérifié
                       </span>
                     )}
                   </div>
@@ -193,11 +208,11 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                   {hasRedundancy ? (
                     <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-1 rounded-full">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      Redondance active
+                      Secours vérifié
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-full">
-                      Prestataire unique
+                      Aucun secours vérifié
                     </span>
                   )}
                 </div>

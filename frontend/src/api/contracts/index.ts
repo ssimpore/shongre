@@ -20,3 +20,5 @@ export * from "./real-estate.contract";
 export * from "./employment.contract";
 export * from "./business-rules.contract";
 export * from "./finance.contract";
+export * from "./commission.contract";
+export * from "./provider-control-plane.contract";

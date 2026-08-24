@@ -83,7 +83,7 @@ Backend active catalogs are cached briefly by market. Every validated load becom
 
 ## Client boundary
 
-Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. The command center and public Pro page call the service registry. Auto, Cours, and Immo retain their established API shapes through shared projections of the same commercial catalog. Mobile billing exposes the same catalog, quote, checkout, subscription, promotion, and entitlement concepts. Demo mode remains asynchronous, deterministic, and backend-independent.
+Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. The command center and public Pro page call the service registry. Auto, Education, and Immo retain their established API shapes through shared projections of the same commercial catalog. Mobile billing exposes the same catalog, quote, checkout, subscription, promotion, and entitlement concepts. Demo mode remains asynchronous, deterministic, and backend-independent.
 
 ## Typed API surface
 

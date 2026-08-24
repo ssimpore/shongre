@@ -46,7 +46,6 @@ export const DEFAULT_COURSE_MARKET_CONFIG: CourseMarketConfig = {
   learnerRequestValidityDays: 14,
   leadValidityHours: 72,
   defaultLeadCreditCost: 1,
-  commissionRateBps: 1200,
   cancellationWindowHours: 24,
   featureFlags: {
     learnerRequestsEnabled: true,

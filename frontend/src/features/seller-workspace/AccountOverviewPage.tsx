@@ -723,14 +723,15 @@ export const AccountOverviewPage: React.FC = () => {
               )}
             </p>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="compact"
             onClick={() => setShowProModal(true)}
-            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors shrink-0 shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+            className="shrink-0"
+            leftIcon={<Briefcase className="h-3.5 w-3.5" />}
           >
-            <Briefcase className="w-3.5 h-3.5" />
             {t("sellerworkspace.accountOverviewPage.passerEnComptePro")}
-          </button>
+          </Button>
         </div>
       )}
 

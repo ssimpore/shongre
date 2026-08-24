@@ -87,7 +87,7 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base font-black text-text-main sm:text-lg">
                 <Link
-                  to={`/cours/professeur/${tutor.slug}`}
+                  to={`/education/professeur/${tutor.slug}`}
                   className="hover:text-primary"
                 >
                   {tutor.displayName}
@@ -193,14 +193,14 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
           )}
           <div className="mt-4 space-y-2 sm:mt-auto">
             <Button
-              to={`/cours/professeur/${tutor.slug}`}
+              to={`/education/professeur/${tutor.slug}`}
               size="compact"
               fullWidth
             >
               Voir le profil
             </Button>
             <Button
-              to={`/cours/demande?subject=${offer.subjectId}&tutor=${tutor.id}`}
+              to={`/education/demande?subject=${offer.subjectId}&tutor=${tutor.id}`}
               variant="outline"
               size="compact"
               fullWidth

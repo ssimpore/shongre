@@ -137,7 +137,7 @@ describe("RLS & Role-Based Access Control Matrix", () => {
     expect(mobileSafetyMigration).toContain("TO service_role");
   });
 
-  it("enables RLS on every user, organization, lead, payment, and evidence table for Cours", () => {
+  it("enables RLS on every user, organization, lead, payment, and evidence table for Education", () => {
     for (const table of [
       "course_tutor_profiles",
       "course_tutor_qualifications",

@@ -116,20 +116,20 @@ export const routes = {
   contact: (params: { context?: string; listingId?: string } = {}) =>
     withQuery("/contact", params),
   courses: {
-    search: () => "/cours",
-    tutor: (slug: string) => `/cours/professeur/${pathSegment(slug)}`,
+    search: () => "/education",
+    tutor: (slug: string) => `/education/professeur/${pathSegment(slug)}`,
     request: (
       params: { tutor?: string; subject?: string; compare?: string } = {},
-    ) => withQuery("/cours/demande", params),
+    ) => withQuery("/education/demande", params),
     publish: (params: { mode?: string; step?: string } = {}) =>
-      withQuery("/deposer/cours", params),
+      withQuery("/deposer/education", params),
     availability: () =>
-      withQuery("/deposer/cours", {
+      withQuery("/deposer/education", {
         mode: "profile",
         step: "availability",
       }),
-    workspace: () => "/compte/cours",
-    organization: () => "/compte/cours/organisation",
+    workspace: () => "/compte/education",
+    organization: () => "/compte/education/organisation",
   },
   auto: {
     search: () => "/auto",
@@ -231,10 +231,11 @@ export const routes = {
       withQuery("/admin/taxonomie", params),
     monetization: () => `/admin/monetisation`,
     finance: () => `/admin/finance`,
-    courses: () => `/admin/cours`,
+    courses: () => `/admin/education`,
     auto: () => `/admin/auto`,
     immo: () => `/admin/immo`,
     employment: () => `/admin/emploi`,
+    crm: () => `/admin/crm`,
     roles: () => `/admin/roles`,
     audit: () => `/admin/audit`,
   },

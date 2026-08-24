@@ -202,7 +202,7 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
     });
   });
 
-  describe("Cours Repository Contract", () => {
+  describe("Course entity repository contract", () => {
     const demoRepo = new DemoCoursesRepository();
     const postgresRepo = new PostgresCoursesRepository();
 

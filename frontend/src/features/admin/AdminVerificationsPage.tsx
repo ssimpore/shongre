@@ -1,489 +1,285 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  ShieldCheck,
+  BookOpenCheck,
   Building2,
-  CreditCard,
   Check,
-  X,
+  Clock3,
+  FileKey2,
   History,
+  Scale,
+  ShieldCheck,
+  X,
 } from "lucide-react";
-import { storageService } from "../../services/storage.service";
-import { verificationService } from "../../domains/verification/verification.service";
-import { UserProfile } from "../../types";
+import type {
+  ComplianceAuditEvent,
+  ComplianceRule,
+  ManualReviewCase,
+} from "@shongre/contracts/compliance";
+import { services } from "../../api/client/service-registry";
 import { Button } from "../../design-system/primitives/Button";
-import { useToast } from "../../app/providers/ToastProvider";
-import { Image } from "../../design-system/primitives/Image";
 import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { Tabs, TabPanel } from "../../design-system";
-import { useTranslation } from "../../i18n/I18nProvider";
+import { useToast } from "../../app/providers/ToastProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { labelIdentifier } from "../../utilities/identifier-label";
 
 export const AdminVerificationsPage: React.FC = () => {
-  const { t } = useTranslation();
   usePageMeta({
-    title: t("meta.adminVerifications.title"),
-    description: t("meta.adminVerifications.description"),
+    title: "Conformité progressive | Administration Shongre",
+    description: "Revue manuelle, politiques et audit de conformité.",
     canonicalPath: "/admin/verifications",
     noIndex: true,
   });
-
   const toast = useToast();
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [activeTab, setActiveTab] = useState<"kyc" | "kyb" | "bank" | "audit">(
-    "kyc",
+  const [queue, setQueue] = useState<ManualReviewCase[]>([]);
+  const [policies, setPolicies] = useState<ComplianceRule[]>([]);
+  const [auditLogs, setAuditLogs] = useState<ComplianceAuditEvent[]>([]);
+  const [activeTab, setActiveTab] = useState<"queue" | "policies" | "audit">(
+    "queue",
   );
-  const [] = useState("");
-
-  // Review modals
-  const [rejectModal, setRejectModal] = useState<{
-    user: UserProfile;
-    dimension: "identity" | "business";
+  const [decision, setDecision] = useState<{
+    review: ManualReviewCase;
+    outcome: "approve" | "reject";
   } | null>(null);
 
-  const loadData = () => {
-    const list = storageService.getUsers();
-    setUsers(Object.values(list));
-  };
-
+  const loadData = useCallback(async () => {
+    try {
+      const [reviews, rules, audit] = await Promise.all([
+        services.verification.listManualReviews(),
+        services.verification.listComplianceRules(),
+        services.verification.listComplianceAudit(100),
+      ]);
+      setQueue(reviews);
+      setPolicies(rules);
+      setAuditLogs(audit);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de charger le registre de conformité.",
+      );
+    }
+  }, [toast]);
   useEffect(() => {
-    loadData();
-  }, []);
+    void loadData();
+  }, [loadData]);
 
-  const pendingKycUsers = users.filter(
-    (u) =>
-      u.identityVerification?.status === "pending" ||
-      (u.identityVerification && u.identityVerification.status !== "verified"),
-  );
-
-  const pendingKybUsers = users.filter(
-    (u) =>
-      u.professionalVerification?.status === "pending" ||
-      (u.professionalVerification &&
-        u.professionalVerification.status !== "verified"),
-  );
-
-  const pendingBankUsers = users.filter(
-    (u) =>
-      u.bankPayoutVerification?.status === "pending" ||
-      (u.bankPayoutVerification &&
-        u.bankPayoutVerification.status === "verified"),
-  );
-
-  const auditLogs = verificationService.getAuditLogs();
-
-  const handleApproveIdentity = (u: UserProfile) => {
-    const res = verificationService.reviewIdentityVerification(
-      u.id,
-      "approve",
-      {
-        reviewerName: "Admin Conformité",
-        notes: "Pièce d'identité conforme validée manuellement.",
-      },
-    );
-    if (res.success) {
-      toast.success(`Identité de ${u.name} approuvée avec succès.`);
-      loadData();
+  const applyDecision = async (reason: string) => {
+    if (!decision) return;
+    if (reason.trim().length < 10) {
+      toast.error("Le motif doit comporter au moins 10 caractères.");
+      return;
     }
-  };
-
-  const handleApproveBusiness = (u: UserProfile) => {
-    const res = verificationService.reviewBusinessVerification(
-      u.id,
-      "approve",
-      {
-        reviewerName: "Admin KYB",
-        notes: "KBIS vérifié au greffe du tribunal de commerce.",
-      },
-    );
-    if (res.success) {
-      toast.success(`Entreprise ${u.companyName || u.name} certifiée Pro RCS.`);
-      loadData();
-    }
-  };
-
-  const handleConfirmReject = (reason: string) => {
-    if (!rejectModal) return;
-    const { user, dimension } = rejectModal;
-
-    if (dimension === "identity") {
-      verificationService.reviewIdentityVerification(user.id, "reject", {
-        reason: reason || "Document non conforme ou illisible.",
-        reviewerName: "Admin Conformité",
+    try {
+      await services.verification.decideManualReview({
+        caseId: decision.review.id,
+        state: decision.outcome === "approve" ? "APPROVED" : "REJECTED",
+        reason,
       });
-      toast.info(`Vérification d'identité de ${user.name} refusée.`);
-    } else {
-      verificationService.reviewBusinessVerification(user.id, "reject", {
-        reason: reason || "Extrait KBIS non valide ou SIRET caduc.",
-        reviewerName: "Admin KYB",
-      });
-      toast.info(`Vérification entreprise de ${user.name} refusée.`);
+      toast.success("Décision enregistrée dans le journal d’audit.");
+      setDecision(null);
+      await loadData();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "La décision n’a pas pu être enregistrée.",
+      );
     }
-
-    setRejectModal(null);
-    loadData();
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-micro font-black uppercase tracking-wider text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">
-            {t("admin.adminVerificationsPage.conformiteLcbFt")}
-          </span>
-          <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-bold">
-            {t("admin.adminVerificationsPage.fileDeModerationKycKyb")}
-          </span>
+    <div className="space-y-5">
+      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success-surface text-success">
+            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider text-success">
+              Accès conformité restreint
+            </p>
+            <h1 className="mt-1 text-2xl font-black text-stone-950">
+              Vérifications, règles et revue humaine
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm text-stone-600">
+              Les agents voient les statuts nécessaires à leur mission. Les documents,
+              numéros fiscaux, coordonnées bancaires et scores de risque ne sont pas
+              exposés dans cette file générale.
+            </p>
+          </div>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-          {t("admin.adminVerificationsPage.poleDeVerificationSecurite")}
-        </h1>
-        <p className="text-xs text-stone-600 mt-1">
-          {t("admin.adminVerificationsPage.examinezLesPiecesDIdentite")}
-        </p>
-      </div>
+      </section>
 
-      {/* Navigation Tabs */}
       <Tabs
         variant="segmented"
-        label={t("admin.adminVerificationsPage.filesDAttenteDeVerification")}
-        idPrefix="admin-verifications"
+        label="Sections de conformité"
+        idPrefix="admin-progressive-compliance"
         activeTab={activeTab}
         onChange={(tab) => setActiveTab(tab as typeof activeTab)}
         tabs={[
           {
-            id: "kyc",
-            label: "Identités KYC",
-            count: pendingKycUsers.length,
-            icon: <ShieldCheck className="w-4 h-4" />,
+            id: "queue",
+            label: "Revue manuelle",
+            count: queue.length,
+            icon: <Clock3 className="h-4 w-4" aria-hidden="true" />,
           },
           {
-            id: "kyb",
-            label: "Entreprises KYB",
-            count: pendingKybUsers.length,
-            icon: <Building2 className="w-4 h-4" />,
-          },
-          {
-            id: "bank",
-            label: "Comptes IBAN",
-            count: pendingBankUsers.length,
-            icon: <CreditCard className="w-4 h-4" />,
+            id: "policies",
+            label: "Registre des règles",
+            count: policies.length,
+            icon: <Scale className="h-4 w-4" aria-hidden="true" />,
           },
           {
             id: "audit",
-            label: "Journal d'audit",
+            label: "Audit",
             count: auditLogs.length,
-            icon: <History className="w-4 h-4" />,
+            icon: <History className="h-4 w-4" aria-hidden="true" />,
           },
         ]}
       />
 
-      <TabPanel tab={activeTab} idPrefix="admin-verifications">
-        {/* Tab: KYC Identity */}
-        {activeTab === "kyc" && (
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">
-                {t("admin.adminVerificationsPage.dossiersDIdentiteEnFile")}
-              </h2>
-              <span className="text-micro text-stone-500">
-                {pendingKycUsers.length} dossier(s)
-              </span>
+      <TabPanel tab={activeTab} idPrefix="admin-progressive-compliance">
+        {activeTab === "queue" ? (
+          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xs">
+            <div className="border-b border-stone-100 p-4">
+              <h2 className="font-bold text-stone-950">Dossiers nécessitant une décision</h2>
+              <p className="mt-1 text-xs text-stone-500">
+                Toute décision exige un motif et reste traçable.
+              </p>
             </div>
-
-            {pendingKycUsers.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500 font-semibold">
-                {t("admin.adminVerificationsPage.aucunDossierKycEnAttente")}
-              </div>
+            {queue.length === 0 ? (
+              <p className="p-8 text-center text-sm text-stone-500">
+                Aucun dossier en attente.
+              </p>
             ) : (
               <div className="divide-y divide-stone-100">
-                {pendingKycUsers.map((u) => {
-                  const kyc = u.identityVerification;
-                  const isPending = kyc?.status === "pending";
-                  const isVerified = kyc?.status === "verified";
-
-                  return (
-                    <div
-                      key={u.id}
-                      className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <Image
-                          src={
-                            u.avatarUrl ||
-                            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120"
-                          }
-                          alt={u.name}
-                          sizes="44px"
-                          className="w-11 h-11 rounded-full object-cover border border-stone-200 shrink-0"
-                        />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-stone-900">
-                              {u.name}
-                            </span>
-                            <span className="text-micro text-stone-500 font-mono">
-                              ({u.email})
-                            </span>
-                            <span
-                              className={`text-micro px-2 py-0.5 rounded-full font-bold uppercase ${
-                                isVerified
-                                  ? "bg-success-surface text-success"
-                                  : isPending
-                                    ? "bg-warning-surface text-warning"
-                                    : "bg-danger-surface text-danger"
-                              }`}
-                            >
-                              {kyc?.status || "Non commencé"}
-                            </span>
-                          </div>
-                          <div className="text-xs text-stone-600">
-                            <strong>
-                              {t("admin.adminVerificationsPage.piece")}
-                            </strong>{" "}
-                            {kyc?.documentType?.toUpperCase() || "CNI"} •{" "}
-                            <strong>Pays :</strong>{" "}
-                            {kyc?.issuingCountry || "FR"} •{" "}
-                            <strong>Date naiss. :</strong>{" "}
-                            {kyc?.birthDate || "Non spécifiée"}
-                          </div>
-                          {kyc?.notes && (
-                            <div className="text-micro text-stone-500 bg-stone-50 p-2 rounded-lg border border-stone-200">
-                              {kyc.notes}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end md:self-center">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setRejectModal({ user: u, dimension: "identity" })
-                          }
-                          leftIcon={<X className="w-3.5 h-3.5" />}
-                        >
-                          Refuser
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleApproveIdentity(u)}
-                          leftIcon={<Check className="w-3.5 h-3.5" />}
-                        >
-                          {t("admin.adminVerificationsPage.validerLIdentite")}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab: KYB Business */}
-        {activeTab === "kyb" && (
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">
-                Dossiers d'immatriculation Pro & KBIS
-              </h2>
-              <span className="text-micro text-stone-500">
-                {pendingKybUsers.length} dossier(s)
-              </span>
-            </div>
-
-            {pendingKybUsers.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-500 font-semibold">
-                {t("admin.adminVerificationsPage.aucunDossierKybEnAttente")}
-              </div>
-            ) : (
-              <div className="divide-y divide-stone-100">
-                {pendingKybUsers.map((u) => {
-                  const kyb = u.professionalVerification;
-                  const isPending = kyb?.status === "pending";
-                  const isVerified = kyb?.status === "verified";
-
-                  return (
-                    <div
-                      key={u.id}
-                      className="p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-warning-surface text-warning flex items-center justify-center shrink-0">
-                          <Building2 className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-stone-900">
-                              {kyb?.companyName || u.companyName || u.name}
-                            </span>
-                            <span
-                              className={`text-micro px-2 py-0.5 rounded-full font-bold uppercase ${
-                                isVerified
-                                  ? "bg-success-surface text-success"
-                                  : isPending
-                                    ? "bg-warning-surface text-warning"
-                                    : "bg-danger-surface text-danger"
-                              }`}
-                            >
-                              {kyb?.status || "Non commencé"}
-                            </span>
-                          </div>
-                          <div className="text-xs text-stone-600">
-                            <strong>SIRET :</strong>{" "}
-                            {kyb?.siret || u.siret || "N/A"} •{" "}
-                            <strong>Forme :</strong>{" "}
-                            {kyb?.legalForm || u.legalForm || "SAS"} •{" "}
-                            <strong>TVA :</strong> {kyb?.vatNumber || "FR --"}
-                          </div>
-                          <div className="text-micro text-stone-500">
-                            Contact : {u.name} ({u.email})
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end md:self-center">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setRejectModal({ user: u, dimension: "business" })
-                          }
-                          leftIcon={<X className="w-3.5 h-3.5" />}
-                        >
-                          Refuser
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleApproveBusiness(u)}
-                          leftIcon={<Check className="w-3.5 h-3.5" />}
-                        >
-                          Certifier KBIS
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab: Bank Payouts */}
-        {activeTab === "bank" && (
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">
-                {t(
-                  "admin.adminVerificationsPage.comptesBancairesDeSequestreEnregistres",
-                )}
-              </h2>
-              <span className="text-micro text-stone-500">
-                {pendingBankUsers.length} compte(s)
-              </span>
-            </div>
-
-            <div className="divide-y divide-stone-100">
-              {pendingBankUsers.map((u) => {
-                const bank = u.bankPayoutVerification;
-                return (
-                  <div
-                    key={u.id}
-                    className="p-4 flex items-center justify-between"
+                {queue.map((review) => (
+                  <article
+                    key={review.id}
+                    className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-stone-100 text-stone-800 flex items-center justify-center">
-                        <CreditCard className="w-5 h-5" />
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
+                        {review.dimension === "identity" ? (
+                          <FileKey2 className="h-5 w-5" aria-hidden="true" />
+                        ) : (
+                          <Building2 className="h-5 w-5" aria-hidden="true" />
+                        )}
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-stone-900">
-                          {bank?.accountHolderName || u.name} •{" "}
-                          {bank?.bankName || "Banque SEPA"}
-                        </div>
-                        <div className="text-micro font-mono text-stone-500">
-                          IBAN : {bank?.iban || "FR76 ••••"} • BIC :{" "}
-                          {bank?.bic || "BNPAFRPP"}
-                        </div>
+                        <h3 className="text-sm font-bold text-stone-950">
+                          Dossier {review.userId}
+                        </h3>
+                        <p className="mt-1 text-xs text-stone-500">
+                          {labelIdentifier(review.dimension)} · {labelIdentifier(review.state)}
+                        </p>
                       </div>
                     </div>
-                    <span className="text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-full border border-success-border">
-                      {t("admin.adminVerificationsPage.verifiePourVirements")}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                    <div className="flex gap-2 self-end sm:self-auto">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        leftIcon={<X className="h-4 w-4" aria-hidden="true" />}
+                        onClick={() =>
+                          setDecision({ review, outcome: "reject" })
+                        }
+                      >
+                        Refuser
+                      </Button>
+                      <Button
+                        size="sm"
+                        leftIcon={<Check className="h-4 w-4" aria-hidden="true" />}
+                        onClick={() =>
+                          setDecision({ review, outcome: "approve" })
+                        }
+                      >
+                        Approuver
+                      </Button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
 
-        {/* Tab: Global Audit Trail */}
-        {activeTab === "audit" && (
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-stone-100 flex items-center justify-between">
-              <h2 className="text-xs font-bold text-stone-900">
-                {t("admin.adminVerificationsPage.journalDAuditInalterableDes")}
-              </h2>
-              <span className="text-micro text-stone-500">
-                {auditLogs.length} événement(s)
-              </span>
+        {activeTab === "policies" ? (
+          <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs sm:p-5">
+            <div className="mb-4 flex items-start gap-3">
+              <BookOpenCheck className="mt-0.5 h-5 w-5 text-success" aria-hidden="true" />
+              <div>
+                <h2 className="font-bold text-stone-950">Registre versionné</h2>
+                <p className="mt-1 text-xs text-stone-500">
+                  Les modifications juridiques sont planifiées, sourcées et auditées côté serveur.
+                </p>
+              </div>
             </div>
-
             <div className="divide-y divide-stone-100">
-              {auditLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-4 flex items-start justify-between gap-4"
-                >
+              {policies.map((policy) => (
+                <article key={policy.id} className="grid gap-2 py-4 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center">
                   <div>
-                    <div className="text-xs font-bold text-stone-900">
-                      {labelIdentifier(log.dimension)} :{" "}
-                      {labelIdentifier(log.previousState)} ➔{" "}
-                      {labelIdentifier(log.newState)}
-                    </div>
-                    <div className="text-micro text-stone-500">
-                      Utilisateur ID: {log.userId} • Par: {log.performedBy}
-                    </div>
-                    {log.notes && (
-                      <div className="text-micro text-stone-600 mt-0.5">
-                        {log.notes}
-                      </div>
-                    )}
-                    {log.reason && (
-                      <div className="text-micro text-danger font-semibold mt-0.5">
-                        Motif: {log.reason}
-                      </div>
-                    )}
+                    <h3 className="text-sm font-bold text-stone-900">{labelIdentifier(policy.action)}</h3>
+                    <p className="mt-0.5 text-micro font-mono text-stone-500">{policy.ruleCode}</p>
                   </div>
-                  <span className="text-micro text-stone-500 shrink-0">
-                    {new Date(log.timestamp).toLocaleString("fr-FR")}
-                  </span>
-                </div>
+                  <div>
+                    <p className="text-xs text-stone-600">{policy.description}</p>
+                    <p className="mt-1 text-micro text-stone-500">
+                      Requis : {policy.requiredChecks.length ? policy.requiredChecks.map(labelIdentifier).join(", ") : "aucun"}
+                    </p>
+                  </div>
+                  <div className="sm:text-right">
+                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-micro font-bold ${
+                      policy.status === "LEGAL_REVIEW_REQUIRED"
+                        ? "border-warning-border bg-warning-surface text-warning"
+                        : "border-success-border bg-success-surface text-success"
+                    }`}>
+                      {policy.status}
+                    </span>
+                    <p className="mt-1 text-micro text-stone-500">{policy.policyVersion}</p>
+                  </div>
+                </article>
               ))}
             </div>
-          </div>
-        )}
+          </section>
+        ) : null}
+
+        {activeTab === "audit" ? (
+          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xs">
+            <div className="border-b border-stone-100 p-4">
+              <h2 className="font-bold text-stone-950">Événements de conformité</h2>
+              <p className="mt-1 text-xs text-stone-500">
+                Les valeurs sensibles et réponses brutes des prestataires sont exclues.
+              </p>
+            </div>
+            <div className="divide-y divide-stone-100">
+              {auditLogs.map((log) => (
+                <article key={log.id} className="flex items-start justify-between gap-4 p-4">
+                  <div>
+                    <p className="text-sm font-bold text-stone-900">
+                      {labelIdentifier(log.dimension || "policy")} · {labelIdentifier(log.newState || log.eventType)}
+                    </p>
+                    <p className="mt-1 text-xs text-stone-500">
+                      Acteur : {log.actorId || log.actorType} · Référence utilisateur : {log.userId}
+                    </p>
+                  </div>
+                  <time className="shrink-0 text-micro text-stone-500" dateTime={log.occurredAt}>
+                    {new Date(log.occurredAt).toLocaleString("fr-FR")}
+                  </time>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </TabPanel>
 
-      {/* Prompt modal for rejection */}
       <PromptModal
-        isOpen={Boolean(rejectModal)}
-        onClose={() => setRejectModal(null)}
-        onSubmit={handleConfirmReject}
-        title={t("admin.adminVerificationsPage.motifDuRefusDeVerification")}
-        label={t("admin.adminVerificationsPage.indiquezLaRaisonPreciseDu")}
-        hint="L'utilisateur recevra cette notification pour corriger ses justificatifs."
-        placeholder={t("admin.adminVerificationsPage.exDocumentFlouDateDe")}
-        confirmText="Confirmer le refus"
+        isOpen={Boolean(decision)}
+        onClose={() => setDecision(null)}
+        onSubmit={applyDecision}
+        title={decision?.outcome === "approve" ? "Motif d’approbation" : "Motif du refus"}
+        label="Décision motivée"
+        hint="Minimum 10 caractères. Le motif est conservé dans l’audit et sert au recours utilisateur."
+        placeholder="Décrivez les éléments contrôlés et la justification de la décision."
+        confirmText={decision?.outcome === "approve" ? "Approuver" : "Refuser"}
         multiline
       />
     </div>

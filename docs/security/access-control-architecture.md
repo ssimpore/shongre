@@ -142,7 +142,7 @@ resource ownership or authorized organization membership is still required.
 | Pro generic     |      ✓       |      ✓       |    ✓     |          —          |    —    |     —      |        —        |   —    |        —        |      —      |
 | Pro real estate |      ✓       |      ✓       |    ✓     |        Immo         |    —    |     —      |        —        |   —    |        —        |      —      |
 | Pro automotive  |      ✓       |      ✓       |    ✓     |        Auto         |    —    |     —      |        —        |   —    |        —        |      —      |
-| Pro education   |      ✓       |      ✓       |    ✓     |      Cours org      |    —    |     —      |        —        |   —    |        —        |      —      |
+| Pro education   |      ✓       |      ✓       |    ✓     |      Education org      |    —    |     —      |        —        |   —    |        —        |      —      |
 | Pro employment  |      ✓       |      ✓       |    ✓     |      Recruiter      |    —    |     —      |        —        |   —    |        —        |      —      |
 | Support         |      —       |      —       |    —     |          —          |    ✓    |     —      |        —        |   —    |        —        |      —      |
 | Moderator       | limited read |      —       |    —     |          —          |    —    |     ✓      |        —        |   —    |        —        |      —      |

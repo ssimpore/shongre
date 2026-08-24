@@ -30,6 +30,11 @@ import {
   PostgresVerificationRepository,
 } from "./verification.repository.js";
 import {
+  IComplianceRepository,
+  DemoComplianceRepository,
+  PostgresComplianceRepository,
+} from "./compliance.repository.js";
+import {
   IMessagingRepository,
   DemoMessagingRepository,
   PostgresMessagingRepository,
@@ -98,6 +103,7 @@ export interface RepositoryContainer {
   taxonomy: ITaxonomyRepository;
   orders: IOrderRepository;
   verification: IVerificationRepository;
+  compliance: IComplianceRepository;
   messaging: IMessagingRepository;
   notifications: INotificationRepository;
   reviews: IReviewRepository;
@@ -128,6 +134,7 @@ export function createRepositoryContainer(
       taxonomy: new PostgresTaxonomyRepository(),
       orders: new PostgresOrderRepository(),
       verification: new PostgresVerificationRepository(),
+      compliance: new PostgresComplianceRepository(),
       messaging: new PostgresMessagingRepository(),
       notifications: new PostgresNotificationRepository(),
       reviews: new PostgresReviewRepository(),
@@ -151,6 +158,7 @@ export function createRepositoryContainer(
     taxonomy: new DemoTaxonomyRepository(),
     orders: new DemoOrderRepository(),
     verification: new DemoVerificationRepository(),
+    compliance: new DemoComplianceRepository(),
     messaging: new DemoMessagingRepository(),
     notifications: new DemoNotificationRepository(),
     reviews: new DemoReviewRepository(),

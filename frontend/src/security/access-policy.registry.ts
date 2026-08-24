@@ -46,7 +46,7 @@ const staff = (path: string, capability: Capability): RoutePolicy => ({
  */
 export const ROUTE_POLICIES = {
   publishListing: customer("/deposer", "listing.create"),
-  publishCourse: customer("/deposer/cours", "course.profile.manage.own"),
+  publishCourse: customer("/deposer/education", "course.profile.manage.own"),
   publishAuto: customer("/deposer/auto", "auto.vehicle.manage.own"),
   publishRealEstate: customer("/deposer/immo", "immo.property.manage.own"),
   publishEmployment: customer("/deposer/emploi", "employment.job.manage.own"),
@@ -54,7 +54,7 @@ export const ROUTE_POLICIES = {
     "/emploi/offre/:slug/postuler",
     "employment.candidate.manage.own",
   ),
-  requestCourse: customer("/cours/demande", "course.request.create"),
+  requestCourse: customer("/education/demande", "course.request.create"),
   messagesShortcut: customer("/messages", "message.read.own"),
 
   accountOverview: customer("/compte"),
@@ -76,9 +76,9 @@ export const ROUTE_POLICIES = {
   accountSupportDetail: customer("/compte/support/:id"),
   accountNewsletter: customer("/compte/newsletter"),
   accountProfile: customer("/compte/profil", "profile.update.own"),
-  accountCourse: customer("/compte/cours", "course.profile.manage.own"),
+  accountCourse: customer("/compte/education", "course.profile.manage.own"),
   accountCourseOrganization: professional(
-    "/compte/cours/organisation",
+    "/compte/education/organisation",
     "course.organization.manage.own",
   ),
   accountAuto: professional("/compte/auto", "auto.dealer.manage.own"),
@@ -115,8 +115,7 @@ export const ROUTE_POLICIES = {
   },
   adminUsers: staff("/admin/utilisateurs", "user.read"),
   adminVerifications: {
-    ...staff("/admin/verifications", "user.verify"),
-    alternativeCapabilities: ["compliance.review"],
+    ...staff("/admin/verifications", "compliance.review"),
   },
   adminMarkets: staff("/admin/marches", "market.manage"),
   adminProviders: staff("/admin/fournisseurs", "provider.read"),
@@ -135,7 +134,7 @@ export const ROUTE_POLICIES = {
   },
   adminAudit: staff("/admin/audit", "audit.read"),
   adminNewsletter: staff("/admin/newsletter", "market.manage"),
-  adminCourse: staff("/admin/cours", "course.admin.manage"),
+  adminCourse: staff("/admin/education", "course.admin.manage"),
   adminAuto: staff("/admin/auto", "auto.admin.manage"),
   adminRealEstate: staff("/admin/immo", "immo.admin.manage"),
   adminEmployment: staff("/admin/emploi", "employment.admin.manage"),

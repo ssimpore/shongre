@@ -6,7 +6,7 @@ test.describe('listing mobile action hierarchy', () => {
   test('keeps secondary actions balanced and gives a three-action primary CTA a full row', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 444, height: 795 });
-    await page.goto('/annonce/list-112', { waitUntil: 'networkidle' });
+    await page.goto('/annonce/list-112', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const actions = page.getByTestId('listing-mobile-actions');
@@ -34,7 +34,7 @@ test.describe('listing mobile action hierarchy', () => {
   test('keeps the action hierarchy contained at the minimum supported width', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 320, height: 844 });
-    await page.goto('/annonce/list-112', { waitUntil: 'networkidle' });
+    await page.goto('/annonce/list-112', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const actions = page.getByTestId('listing-mobile-actions');
@@ -55,7 +55,7 @@ test.describe('listing mobile action hierarchy', () => {
   test('keeps four-action layouts in two balanced rows', async ({ page }) => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 444, height: 844 });
-    await page.goto('/annonce/list-109', { waitUntil: 'networkidle' });
+    await page.goto('/annonce/list-109', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const actions = page.getByTestId('listing-mobile-actions');

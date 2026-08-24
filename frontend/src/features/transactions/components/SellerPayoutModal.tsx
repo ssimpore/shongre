@@ -31,10 +31,12 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   const [amountStr, setAmountStr] = useState(
     availableBalance > 0 ? availableBalance.toFixed(2) : "0.00",
   );
-  const [bankIban] = useState("FR76 3000 4019 8291 8291 0029 821");
-  const [bankName] = useState("BNP Paribas");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const payoutAccount = currentUser.bankPayoutVerification;
+  const payoutConfigured =
+    payoutAccount?.status === "verified" && Boolean(payoutAccount.providerReference);
+  const payoutLast4 = payoutAccount?.accountLast4 || "••••";
 
   const amount = parseFloat(amountStr) || 0;
   const payoutCommercials = getDemoTransactionCommercials(
@@ -59,6 +61,12 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
       setError("Le montant demandé dépasse votre solde disponible.");
       return;
     }
+    if (!payoutConfigured) {
+      setError(
+        "Configurez d’abord votre compte de versement dans le centre de vérification.",
+      );
+      return;
+    }
 
     setIsProcessing(true);
     setError(null);
@@ -68,8 +76,6 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         currentUser,
         amount,
         payoutType,
-        bankIban.slice(-4),
-        bankName,
       );
       onPayoutSuccess(payout);
       onClose();
@@ -94,7 +100,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         <div className="p-5 bg-stone-900 text-white rounded-3xl flex items-center justify-between shadow-xs">
           <div>
             <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">
-              Solde Shongre disponible
+              Solde disponible chez le prestataire de paiement
             </span>
             <span className="text-3xl font-black tracking-tight text-white block">
               {formatPrice(availableBalance)}
@@ -200,14 +206,17 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
               <Landmark className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-stone-900 text-sm">{bankName}</p>
+              <p className="font-bold text-stone-900 text-sm">
+                Compte vérifié par le prestataire de paiement
+              </p>
               <p className="text-xs text-stone-500 font-mono mt-0.5">
-                IBAN •••• {bankIban.slice(-4)}
+                Compte •••• {payoutLast4}
               </p>
             </div>
           </div>
           <span className="text-xs font-bold text-success bg-success-surface px-2.5 py-1 rounded-full flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Vérifié
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            {payoutConfigured ? "Vérifié" : "À configurer"}
           </span>
         </div>
 

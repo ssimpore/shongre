@@ -21,3 +21,5 @@ export * from "./http-real-estate.service";
 export * from "./http-employment.service";
 export * from "./http-business-rules.service";
 export * from "./http-finance.service";
+export * from "./http-commission.service";
+export * from "./http-provider-control-plane.service";

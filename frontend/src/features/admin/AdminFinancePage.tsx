@@ -7,6 +7,7 @@ import type {
   PlatformFinanceDashboard,
   ReconciliationCase,
 } from "@shongre/contracts/finance";
+import type { CommissionAnalyticsRow } from "@shongre/contracts/monetization";
 import { formatMoney } from "@shongre/shared";
 import {
   AlertTriangle,
@@ -212,7 +213,134 @@ function RevenueSources({ dashboard }: { dashboard: PlatformFinanceDashboard }) 
   );
 }
 
-function OverviewTab({ dashboard }: { dashboard: PlatformFinanceDashboard }) {
+function CommissionAnalytics({
+  rows,
+  currency,
+}: {
+  rows: CommissionAnalyticsRow[];
+  currency: string;
+}) {
+  const totals = rows.reduce(
+    (sum, row) => ({
+      transactions: sum.transactions + row.transactionCount,
+      gmvMinor: sum.gmvMinor + row.gmvMinor,
+      grossMinor: sum.grossMinor + row.grossCommissionMinor,
+      discountsMinor: sum.discountsMinor + row.commissionDiscountMinor,
+      revenueMinor: sum.revenueMinor + row.commissionRevenueMinor,
+      refundsMinor: sum.refundsMinor + row.commissionRefundMinor,
+    }),
+    {
+      transactions: 0,
+      gmvMinor: 0,
+      grossMinor: 0,
+      discountsMinor: 0,
+      revenueMinor: 0,
+      refundsMinor: 0,
+    },
+  );
+  const netMinor = totals.revenueMinor - totals.refundsMinor;
+  const takeRateBps =
+    totals.gmvMinor > 0
+      ? Math.round((netMinor * 10_000) / totals.gmvMinor)
+      : 0;
+  const amount = (amountMinor: number) =>
+    formatMoney({ amountMinor, currency });
+
+  return (
+    <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
+      <div>
+        <h2 className="text-sm font-bold text-text-main">
+          Économie des commissions
+        </h2>
+        <p className="mt-1 text-micro text-text-muted">
+          GMV éligible et revenu de commission restent séparés. Les montants
+          proviennent des snapshots comptabilisés et de leurs contrepassations.
+        </p>
+      </div>
+      <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ["GMV éligible", amount(totals.gmvMinor)],
+          ["Commission brute", amount(totals.grossMinor)],
+          ["Remises / exonérations", amount(totals.discountsMinor)],
+          ["Remboursements", amount(totals.refundsMinor)],
+          ["Revenu net commission", amount(netMinor)],
+          ["Take rate effectif", formatPercentBps(takeRateBps)],
+          [
+            "Moyenne / transaction",
+            amount(
+              totals.transactions > 0
+                ? Math.round(netMinor / totals.transactions)
+                : 0,
+            ),
+          ],
+          ["Transactions", new Intl.NumberFormat("fr-FR").format(totals.transactions)],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-control bg-bg-subtle p-3">
+            <dt className="text-micro font-semibold uppercase tracking-wide text-text-secondary">
+              {label}
+            </dt>
+            <dd className="mt-1 text-base font-black text-text-main">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      {rows.length > 0 && (
+        <ScrollableRegion
+          aria-label="Commissions par verticale, catégorie et forfait"
+          className="mt-4 rounded-control border border-border-base"
+        >
+          <table className="w-full min-w-[720px] text-left text-xs">
+            <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
+              <tr>
+                <th className="px-3 py-2">Verticale / catégorie</th>
+                <th className="px-3 py-2">Forfait</th>
+                <th className="px-3 py-2 text-right">GMV</th>
+                <th className="px-3 py-2 text-right">Revenu net</th>
+                <th className="px-3 py-2 text-right">Take rate</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle">
+              {rows.map((row) => {
+                const rowNet =
+                  row.commissionRevenueMinor - row.commissionRefundMinor;
+                const rowTakeRate =
+                  row.gmvMinor > 0
+                    ? Math.round((rowNet * 10_000) / row.gmvMinor)
+                    : 0;
+                return (
+                  <tr
+                    key={`${row.date}:${row.marketCode}:${row.verticalId || "all"}:${row.categoryId || "all"}:${row.planId || "all"}`}
+                  >
+                    <th className="px-3 py-3 font-bold text-text-main">
+                      {row.verticalId || "Toutes"} · {row.categoryId || "Toutes"}
+                    </th>
+                    <td className="px-3 py-3">{row.planId || "Tous"}</td>
+                    <td className="px-3 py-3 text-right">
+                      {amount(row.gmvMinor)}
+                    </td>
+                    <td className="px-3 py-3 text-right font-semibold">
+                      {amount(rowNet)}
+                    </td>
+                    <td className="px-3 py-3 text-right font-bold text-success">
+                      {formatPercentBps(rowTakeRate)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </ScrollableRegion>
+      )}
+    </section>
+  );
+}
+
+function OverviewTab({
+  dashboard,
+  commissionAnalytics,
+}: {
+  dashboard: PlatformFinanceDashboard;
+  commissionAnalytics: CommissionAnalyticsRow[];
+}) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -241,6 +369,10 @@ function OverviewTab({ dashboard }: { dashboard: PlatformFinanceDashboard }) {
         <TrendChart dashboard={dashboard} />
         <RevenueSources dashboard={dashboard} />
       </div>
+      <CommissionAnalytics
+        rows={commissionAnalytics}
+        currency={dashboard.scope.currency}
+      />
       <div className="grid gap-4 xl:grid-cols-3">
         <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
           <h2 className="text-sm font-bold text-text-main">Santé des abonnements</h2>
@@ -374,11 +506,15 @@ export const AdminFinancePage: React.FC = () => {
   usePageMeta({ title: "Finance de la plateforme", description: "Revenus, transactions et rapprochement financier Shongre.", canonicalPath: "/admin/finance", noIndex: true });
   const { can } = useAuthorization();
   const canManageReconciliation = can("finance.reconciliation.manage");
+  const canReadCommissionAnalytics = can("commissions.analytics.read");
   const [tab, setTab] = useState<FinanceTab>("overview");
   const [scope, setScope] = useState<FinanceScope>({ period: "30d", marketCode: "ALL", currency: "EUR" });
   const [dashboard, setDashboard] = useState<PlatformFinanceDashboard | null>(null);
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([]);
   const [cases, setCases] = useState<ReconciliationCase[]>([]);
+  const [commissionAnalytics, setCommissionAnalytics] = useState<
+    CommissionAnalyticsRow[]
+  >([]);
   const [selected, setSelected] = useState<FinanceTransaction | null>(null);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<FinanceTransactionStatus | "all">("all");
@@ -389,23 +525,43 @@ export const AdminFinancePage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [overview, page, reconciliation] = await Promise.all([
+      const today = new Date();
+      const days =
+        scope.period === "7d"
+          ? 7
+          : scope.period === "30d"
+            ? 30
+            : scope.period === "quarter"
+              ? 90
+              : 365;
+      const from = new Date(today);
+      from.setUTCDate(from.getUTCDate() - days + 1);
+      const [overview, page, reconciliation, commissions] = await Promise.all([
         services.finance.getPlatformDashboard(scope),
         services.finance.listTransactions({ ...scope, query, status: status === "all" ? undefined : status, limit: 25 }),
         canManageReconciliation
           ? services.finance.listReconciliationCases()
           : Promise.resolve([]),
+        canReadCommissionAnalytics
+          ? services.commissions.getAnalytics({
+              marketCode: scope.marketCode,
+              currency: scope.currency,
+              from: from.toISOString().slice(0, 10),
+              to: today.toISOString().slice(0, 10),
+            })
+          : Promise.resolve([]),
       ]);
       setDashboard(overview);
       setTransactions(page.items);
       setCases(reconciliation);
+      setCommissionAnalytics(commissions);
       setSelected((current) => page.items.find((item) => item.id === current?.id) ?? page.items.find((item) => item.status === "needs_review") ?? page.items[0] ?? null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Chargement des données financières impossible.");
     } finally {
       setLoading(false);
     }
-  }, [canManageReconciliation, query, scope, status]);
+  }, [canManageReconciliation, canReadCommissionAnalytics, query, scope, status]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -436,7 +592,12 @@ export const AdminFinancePage: React.FC = () => {
       </div>
       <div className="overflow-x-auto border-b border-border-base"><div className="flex min-w-max gap-6">{availableTabs.map((item) => <button key={item.id} onClick={() => setTab(item.id)} className={`border-b-2 px-1 pb-3 text-xs font-bold ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-text-main"}`}>{item.label}</button>)}</div></div>
       {(tab === "transactions" || tab === "reconciliation") && <div className="flex flex-col gap-2 rounded-card border border-border-base bg-bg-surface p-3 sm:flex-row"><label className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" /><span className="sr-only">Rechercher une transaction</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ID, utilisateur, facture…" className="h-control w-full rounded-control border border-border-base pl-9 pr-3 text-xs h-control-touch" /></label><label className="sm:w-48"><span className="sr-only">Statut</span><select value={status} onChange={(event) => setStatus(event.target.value as FinanceTransactionStatus | "all")} className="h-control w-full rounded-control border border-border-base bg-white px-3 text-xs h-control-touch"><option value="all">Tous les statuts</option>{Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><Button variant="outline" size="sm" onClick={() => void load()}><Filter className="h-4 w-4" />Filtrer</Button></div>}
-      {tab === "overview" && <OverviewTab dashboard={dashboard} />}
+      {tab === "overview" && (
+        <OverviewTab
+          dashboard={dashboard}
+          commissionAnalytics={commissionAnalytics}
+        />
+      )}
       {tab === "transactions" && <TransactionsTab transactions={transactions} selected={selected} onSelect={setSelected} reconciliation={selectedCase} />}
       {tab === "reconciliation" && canManageReconciliation && <ReconciliationTab cases={cases} transactions={transactions} onOpen={openFromReconciliation} />}
       {tab === "subscriptions" && <SubscriptionsTab dashboard={dashboard} />}

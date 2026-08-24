@@ -24,7 +24,7 @@ test.describe("shared header scroll behavior", () => {
     }) => {
       await usePersona(page, "guest");
       await page.setViewportSize({ width: 1280, height: 800 });
-      await page.goto(route, { waitUntil: "networkidle" });
+      await page.goto(route, { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       const categoryNav = page.locator(

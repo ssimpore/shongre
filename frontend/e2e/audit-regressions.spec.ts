@@ -48,7 +48,7 @@ test.describe("homepage hero rail", () => {
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     const offset = () =>
@@ -102,7 +102,7 @@ test.describe("search matching", () => {
     query: string,
   ) => {
     await page.goto(`/recherche?query=${encodeURIComponent(query)}`, {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
     return page.evaluate(() => {
@@ -141,7 +141,7 @@ test.describe("publish wizard", () => {
   }) => {
     await usePersona(page, "individual_seller");
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/deposer", { waitUntil: "networkidle" });
+    await page.goto("/deposer", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     const phase = () =>

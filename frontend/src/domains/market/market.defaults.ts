@@ -143,9 +143,6 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     },
   },
   monetization: {
-    proCommissionRate: FR_PRO_COMMERCIALS.commissionRateBps / 10_000,
-    individualCommissionRate:
-      FR_INDIVIDUAL_COMMERCIALS.commissionRateBps / 10_000,
     payoutInstantFeePercent: FR_PRO_COMMERCIALS.instantPayoutRateBps / 10_000,
     payoutInstantFixedFee: FR_PRO_COMMERCIALS.instantPayoutFixedMinor / 100,
     boostPricing: {

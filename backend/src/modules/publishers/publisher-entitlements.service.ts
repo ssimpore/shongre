@@ -6,6 +6,7 @@ import type {
   MonetizationProduct,
 } from "@shongre/contracts";
 import { isCommercialProductPurchasable } from "@shongre/contracts";
+import { normalizeBusinessVerticalCode } from "@shongre/contracts/business-verticals";
 import { resolveEffectiveEntitlementsForVertical } from "@shongre/shared";
 import type { Listing, UserProfile } from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -70,7 +71,7 @@ const ACTIVE_CAPACITY_KEYS: Record<string, string[]> = {
   auto: ["maxActiveVehicles", "maxActiveListings"],
   immo: ["maxActiveListings"],
   emploi: ["maxActiveJobs", "maxActiveListings"],
-  cours: ["maxActiveOffers", "maxActiveListings"],
+  education: ["maxActiveOffers", "maxActiveListings"],
 };
 
 function numericEntitlement(
@@ -271,9 +272,10 @@ export class PublisherEntitlementsService {
       entitlements: activeEntitlements,
       verticalId,
     });
+    const canonicalVerticalId = normalizeBusinessVerticalCode(verticalId);
     const capacity = numericEntitlement(
       effectiveEntitlements,
-      ACTIVE_CAPACITY_KEYS[verticalId] || ["maxActiveListings"],
+      ACTIVE_CAPACITY_KEYS[canonicalVerticalId] || ["maxActiveListings"],
     );
     const monthly = numericEntitlement(effectiveEntitlements, [
       "maxMonthlyPublications",

@@ -1,8 +1,8 @@
-# Shongre Cours — architecture
+# Shongre Education — architecture
 
 ## Scope
 
-Shongre Cours is a versioned `tutoring` vertical inside the existing marketplace. It reuses accounts, markets, organizations, listings, messaging, notifications, moderation, reviews, subscriptions, analytics, audit, and admin. It adds normalized course concepts rather than encoding education data in generic listing JSON.
+Shongre Education is a versioned `tutoring` vertical inside the existing marketplace. It reuses accounts, markets, organizations, listings, messaging, notifications, moderation, reviews, subscriptions, analytics, audit, and admin. It adds normalized course concepts rather than encoding education data in generic listing JSON.
 
 Phase 1 includes tutor discovery, tutor profiles, course offers, learner requests, relevance-first lead routing, tutor and organization workspaces, plans, add-ons, verification presentation, minor safeguards, and administration. Booking, payment, payout, packages, and recurring lessons are modeled but disabled for France.
 
@@ -13,7 +13,7 @@ React page
   → CoursesServiceContract
     → DemoCoursesService (current NEXT_PUBLIC_DATA_MODE=demo)
     → HttpCoursesService (future API mode)
-      → /api/v1/courses/*
+      → /api/v1/education/* (`/api/v1/courses/*` compatibility alias)
         → CoursesService
           → ICoursesRepository
             → DemoCoursesRepository or PostgresCoursesRepository
@@ -99,13 +99,16 @@ The API rejects booking when gates are off. Configuration rejects payments unles
 
 ## Public and protected routes
 
-- `/cours`: public search.
-- `/cours/professeur/:slug`: public, privacy-safe tutor profile.
-- `/cours/demande`: authenticated guided learner request.
-- `/deposer/cours`: authenticated, focused tutor/organization onboarding.
-- `/compte/cours`: own tutor workspace.
-- `/compte/cours/organisation`: active organization member workspace.
-- `/admin/cours`: market-manager/admin configuration.
+- `/education`: public search.
+- `/education/professeur/:slug`: public, privacy-safe tutor profile.
+- `/education/demande`: authenticated guided learner request.
+- `/deposer/education`: authenticated, focused tutor/organization onboarding.
+- `/compte/education`: own tutor workspace.
+- `/compte/education/organisation`: active organization member workspace.
+- `/admin/education`: market-manager/admin configuration.
+
+Legacy `/cours`, `/deposer/cours`, `/compte/cours`, and `/admin/cours` URLs are
+permanent compatibility redirects and are not parallel vertical routes.
 
 ## Evolution
 

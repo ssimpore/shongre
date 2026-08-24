@@ -14,7 +14,7 @@
 | `OrdersService`                                    | Unconfigured shipping fallback                                                 | Catalog delivery price fallback                                                                                                                           |
 | `/payments/intent` and fake Stripe adapter         | Client amount trusted; random fake production intent                           | Quote id only; Checkout Sessions; fake production calls disabled                                                                                          |
 | Auto tables/adapters                               | Separate plan/add-on catalog and paid flags                                    | Existing Auto response shape is projected from the published catalog by `applyMonetizationToAutoCatalog`; publication/workspace reads use that projection |
-| Cours tables/adapters                              | Separate plans/add-ons and commission                                          | Existing Cours response shape is projected from the published catalog; tutor quotas and add-ons consume it                                                |
+| Education tables/adapters                              | Separate plans/add-ons and commission                                          | Existing Education response shape is projected from the published catalog; tutor quotas and add-ons consume it                                                |
 | Immo vertical offers/checkouts                     | Reusable model but no full immutable line/entitlement snapshot                 | Immo catalog projection plus central quote/checkout/order for paid offers and add-ons                                                                     |
 | Mobile billing                                     | Classification only                                                            | Shared catalog, quote, checkout contracts with deterministic demo adapter                                                                                 |
 
@@ -27,11 +27,11 @@ The active France baseline is machine-readable in `packages/contracts/src/fixtur
 - hand delivery, parcel tier prices, express, bulky, and seller delivery;
 - Auto individual/dealer offers;
 - Auto paid visibility, qualified-lead, secure-sale and disabled partner-referral products;
-- Cours individual/tutor/school offers plus visibility, lead and verification add-ons;
+- Education individual/tutor/school offers plus visibility, lead and verification add-ons;
 - Immo individual/agency offers plus visibility, lead and sponsored-agency add-ons;
 - individual and vertical publication quotas;
 - buyer-protection fees for FR, BE, CH, LU, DE, and ES;
-- individual/pro seller commission plus the Cours commission;
+- individual/pro seller commission plus the Education commission;
 - digital-service tax rates by market;
 - transaction min/max and instant-payout fees;
 - a non-active example promotion proving draft isolation.
@@ -54,7 +54,7 @@ Legacy tables are not dropped by migration 00015. This preserves rollback and hi
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Generic web publication                | `getDemoPublicationPolicy` in demo; authenticated `BusinessRulesService.authorizePublication` on backend publish |
 | Auto backend and web demo              | Shared `applyMonetizationToAutoCatalog` projection                                                               |
-| Cours backend and web demo             | Shared `applyMonetizationToCourseCatalog` projection                                                             |
+| Education backend and web demo             | Shared `applyMonetizationToCourseCatalog` projection                                                             |
 | Immo backend and web demo              | Shared projection; paid backend checkout delegates to central quote/order                                        |
 | Generic promotions and Pro plans       | Compatibility service reads active central products                                                              |
 | Transactions, escrow, delivery, payout | Shared rule/product lookup in compatibility resolvers                                                            |

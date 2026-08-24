@@ -19,24 +19,4 @@ describe("Progressive Verification & KYB/KYC", () => {
     expect(company?.isActive).toBe(true);
   });
 
-  it("verifies bank payout coordinates correctly", async () => {
-    const res = await verificationService.submitBankPayoutCoordinates(
-      "user_camille",
-      "FR76 3000 6000 0112 3456 7890 189",
-      "BNPAFRPP",
-      "Camille Martin",
-    );
-    expect(res.status).toBe("configured");
-  });
-
-  it("rejects invalid IBANs", async () => {
-    await expect(
-      verificationService.submitBankPayoutCoordinates(
-        "user_camille",
-        "123",
-        "BIC",
-        "Name",
-      ),
-    ).rejects.toThrow();
-  });
 });

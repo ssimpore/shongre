@@ -23,7 +23,7 @@ test.describe("Shongre Immo", () => {
     page,
   }) => {
     await usePersona(page, "guest");
-    await page.goto("/immo", { waitUntil: "networkidle" });
+    await page.goto("/immo", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
     await expect(
       page.getByRole("heading", {
@@ -50,7 +50,7 @@ test.describe("Shongre Immo", () => {
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/immo", { waitUntil: "networkidle" });
+    await page.goto("/immo", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
@@ -74,7 +74,7 @@ test.describe("Shongre Immo", () => {
   }) => {
     await usePersona(page, "guest");
     await page.goto("/immo/bien/appartement-lumineux-lyon-montchat", {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
     });
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Appartement lumineux",
@@ -96,7 +96,7 @@ test.describe("Shongre Immo", () => {
   }) => {
     await usePersona(page, "individual_seller");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/deposer/immo", { waitUntil: "networkidle" });
+    await page.goto("/deposer/immo", { waitUntil: "domcontentloaded" });
     await expect(
       page.getByRole("heading", { level: 1, name: "Publier un bien" }),
     ).toBeVisible();
@@ -117,7 +117,7 @@ test.describe("Shongre Immo", () => {
     page,
   }) => {
     await usePersona(page, "pro_immo");
-    await page.goto("/compte/immo", { waitUntil: "networkidle" });
+    await page.goto("/compte/immo", { waitUntil: "domcontentloaded" });
     await expect(
       page.getByRole("heading", { level: 1, name: "Agence Canopée" }),
     ).toBeVisible();
@@ -127,7 +127,7 @@ test.describe("Shongre Immo", () => {
 
     const adminPage = await page.context().newPage();
     await usePersona(adminPage, "admin");
-    await adminPage.goto("/admin/immo", { waitUntil: "networkidle" });
+    await adminPage.goto("/admin/immo", { waitUntil: "domcontentloaded" });
     await expect(
       adminPage.getByRole("heading", {
         level: 1,

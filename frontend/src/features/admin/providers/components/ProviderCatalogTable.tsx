@@ -7,6 +7,7 @@ import {
   X,
   Play,
   RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Provider,
@@ -53,6 +54,13 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
   const filteredProviders = useMemo(() => {
     return providers.filter((p) => {
       const config = configurations[p.id];
+      const isRuntimeActive = Boolean(
+        config?.enabled &&
+          config.environment !== "demo" &&
+          config.health === "healthy" &&
+          config.healthLastCheckedAt &&
+          p.operational.lifecycle === "ACTIVE",
+      );
       const q = searchQuery.toLowerCase().trim();
 
       // Search matching
@@ -81,12 +89,11 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
       }
 
       // Status filter
-      if (statusFilter === "active" && (!config || !config.enabled))
-        return false;
-      if (statusFilter === "disabled" && config && config.enabled) return false;
+      if (statusFilter === "active" && !isRuntimeActive) return false;
+      if (statusFilter === "disabled" && config?.enabled) return false;
       if (
         statusFilter === "requires_action" &&
-        (!config || config.credentialStatus !== "not_configured")
+        p.operational.blockers.length === 0
       )
         return false;
 
@@ -240,7 +247,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                   Domaine
                 </th>
                 <th scope="col" className="py-3 px-3">
-                  {t("admin.providerCatalogTable.capacitesPrisesEnCharge")}
+                  Capacités visées / implémentées
                 </th>
                 <th scope="col" className="py-3 px-3">
                   {t("admin.providerCatalogTable.statutSante")}
@@ -267,6 +274,17 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                   const cfg = configurations[p.id];
                   const isEnabled = cfg?.enabled ?? false;
                   const health = cfg?.health || "unknown";
+                  const isActive = Boolean(
+                    isEnabled &&
+                      cfg?.environment !== "demo" &&
+                      health === "healthy" &&
+                      cfg?.healthLastCheckedAt &&
+                      p.operational.lifecycle === "ACTIVE",
+                  );
+                  const isImplemented =
+                    p.operational.adapterStatus === "IMPLEMENTED";
+                  const isDemoOnly =
+                    p.operational.adapterStatus === "DEMO_ONLY";
                   const catMeta = getCategoryMetadata(p.category);
                   const overridesCount = Object.keys(
                     cfg?.marketOverrides || {},
@@ -304,15 +322,29 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                       {/* Capabilities */}
                       <td className="py-3.5 px-3">
                         <div className="flex flex-wrap gap-1 max-w-xs">
-                          {p.capabilities.slice(0, 3).map((cap) => (
-                            <span
-                              key={cap}
-                              title={cap}
-                              className="max-w-[14rem] whitespace-normal break-words text-micro leading-tight bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded border border-stone-200"
-                            >
-                              {getCapabilityMetadata(cap).name}
-                            </span>
-                          ))}
+                          {p.capabilities.slice(0, 3).map((cap) => {
+                            const implemented =
+                              p.operational.implementedCapabilities.includes(
+                                cap,
+                              );
+                            const demoOnly =
+                              p.operational.demoOnlyCapabilities?.includes(cap);
+                            return (
+                              <span
+                                key={cap}
+                                title={`${cap} — ${implemented ? "implémentée" : demoOnly ? "démo uniquement" : "non implémentée"}`}
+                                className={`max-w-[14rem] whitespace-normal break-words text-micro leading-tight px-1.5 py-0.5 rounded border ${
+                                  implemented
+                                    ? "bg-success-surface text-success border-success-border"
+                                    : demoOnly
+                                      ? "bg-info-surface text-info border-info-border"
+                                      : "bg-stone-100 text-stone-700 border-stone-200"
+                                }`}
+                              >
+                                {getCapabilityMetadata(cap).name}
+                              </span>
+                            );
+                          })}
                           {p.capabilities.length > 3 && (
                             <span
                               className="text-micro text-stone-500 font-medium self-center"
@@ -330,19 +362,29 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                       {/* Status & Health */}
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-2">
-                          {isEnabled ? (
+                          {isActive ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface border border-success-border px-2 py-0.5 rounded-full">
                               <CheckCircle2 className="w-3 h-3" />
                               Actif (P{cfg?.priority || 1})
                             </span>
+                          ) : isDemoOnly ? (
+                            <span className="inline-flex items-center gap-1 text-micro font-bold text-info bg-info-surface border border-info-border px-2 py-0.5 rounded-full">
+                              <AlertTriangle className="w-3 h-3" />
+                              Démo uniquement
+                            </span>
+                          ) : isImplemented ? (
+                            <span className="inline-flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface border border-warning-border px-2 py-0.5 rounded-full">
+                              <AlertTriangle className="w-3 h-3" />
+                              Implémenté · non vérifié
+                            </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-0.5 rounded-full">
                               <X className="w-3 h-3" />
-                              {t("admin.providerCatalogTable.desactive2")}
+                              Non implémenté
                             </span>
                           )}
 
-                          {isEnabled && health === "healthy" && (
+                          {isActive && health === "healthy" && (
                             <span
                               className="w-2 h-2 rounded-full bg-success"
                               title={t(
@@ -350,13 +392,13 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                               )}
                             />
                           )}
-                          {isEnabled && health === "degraded" && (
+                          {isActive && health === "degraded" && (
                             <span
                               className="w-2 h-2 rounded-full bg-amber-500"
                               title={t("admin.providerCatalogTable.degrade")}
                             />
                           )}
-                          {isEnabled && health === "unavailable" && (
+                          {isActive && health === "unavailable" && (
                             <span
                               className="w-2 h-2 rounded-full bg-danger animate-pulse"
                               title="Indisponible"

@@ -22,7 +22,7 @@ test.describe('design-token runtime contracts', () => {
     await page.setViewportSize({ width: 1408, height: 749 });
     await usePersona(page, 'guest');
     await seedConsentDecision(page);
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
   });
 
@@ -83,7 +83,7 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('packs available desktop search cards into shared dense columns', async ({ page }) => {
-    await page.goto('/recherche?category=vehicules&maxPrice=100000', { waitUntil: 'networkidle' });
+    await page.goto('/recherche?category=vehicules&maxPrice=100000', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const contract = await page.evaluate(() => {
@@ -128,7 +128,7 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('keeps a sparse result card on one shared dense grid track', async ({ page }) => {
-    await page.goto('/recherche?category=mode-accessoires', { waitUntil: 'networkidle' });
+    await page.goto('/recherche?category=mode-accessoires', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const contract = await page.evaluate(() => {
@@ -211,7 +211,7 @@ test.describe('design-token runtime contracts', () => {
       await expectNoHorizontalOverflow(page, `listing rail at ${viewport.name}`);
     }
 
-    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'networkidle' });
+    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'domcontentloaded' });
 
     for (const viewport of VIEWPORTS) {
       await page.setViewportSize(viewport);
@@ -256,7 +256,7 @@ test.describe('design-token runtime contracts', () => {
 
   test('keeps list cards uniform and scales their image slot with the viewport', async ({ page }) => {
     const route = '/recherche?view=list';
-    await page.goto(route, { waitUntil: 'networkidle' });
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const desktop = await page.evaluate(() => {
@@ -281,7 +281,7 @@ test.describe('design-token runtime contracts', () => {
     expect(desktop.cards[0]?.imageWidth).toBeCloseTo(224, 0);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(route, { waitUntil: 'networkidle' });
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
     const mobile = await page.evaluate(() => {
       const cards = [...document.querySelectorAll<HTMLElement>('article.listing-card-list')];
@@ -301,7 +301,7 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('keeps listing metadata readable without horizontal truncation', async ({ page }) => {
-    await page.goto('/recherche', { waitUntil: 'networkidle' });
+    await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const metadata = await page.locator('article.min-w-0 .border-t').evaluateAll((rows) =>
@@ -320,7 +320,7 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('fits the active view toggle corner to its segmented container', async ({ page }) => {
-    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'networkidle' });
+    await page.goto('/recherche?category=bebe-puericulture-enfants', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const geometry = await page.evaluate(() => {
@@ -441,7 +441,7 @@ test.describe('design-token runtime contracts', () => {
     test.setTimeout(240_000);
     for (const route of ALL_ROUTES) {
       await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: 'networkidle' });
+      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       const audit = await page.evaluate(() => {
@@ -468,7 +468,7 @@ test.describe('design-token runtime contracts', () => {
   });
 
   test('keeps native registration fields on the touch size and control radius', async ({ page }) => {
-    await page.goto('/inscription/particulier', { waitUntil: 'networkidle' });
+    await page.goto('/inscription/particulier', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const fields = await page.evaluate(() =>
@@ -500,7 +500,7 @@ test.describe('design-token runtime contracts', () => {
     ];
 
     for (const path of paths) {
-      await page.goto(path, { waitUntil: 'networkidle' });
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       const action = page.locator('main button.h-control-touch').first();
@@ -520,7 +520,7 @@ test.describe('design-token runtime contracts', () => {
     await page.setViewportSize({ width: 390, height: 844 });
 
     for (const path of ['/connexion', '/inscription', '/inscription/professionnel']) {
-      await page.goto(path, { waitUntil: 'networkidle' });
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       const action = page.locator('main button.h-control-touch').first();
@@ -538,7 +538,8 @@ test.describe('design-token runtime contracts', () => {
 
   test('aligns the desktop header action row on the compact control metric', async ({ page }) => {
     await usePersona(page, 'individual_buyer');
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForStableLayout(page);
 
     const actions = await page.evaluate(() => {
       const candidates = [
@@ -648,7 +649,7 @@ test.describe('design-token runtime contracts', () => {
         return { height: Math.round(rect.height), radius: computed.borderRadius };
       });
 
-    await page.goto('/annonce/list-108', { waitUntil: 'networkidle' });
+    await page.goto('/annonce/list-108', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const desktopActions = page.getByTestId('listing-desktop-actions').getByRole('button');

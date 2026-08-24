@@ -38,7 +38,7 @@ const PROFESSIONAL_VERTICAL_OPTIONS: ReadonlyArray<{
   { value: "generic", label: "Commerce et services généralistes" },
   { value: "real_estate", label: "Immobilier" },
   { value: "automotive", label: "Automobile" },
-  { value: "education", label: "Cours et formation" },
+  { value: "education", label: "" },
   { value: "employment", label: "Emploi et recrutement" },
 ];
 
@@ -709,7 +709,9 @@ export const RegisterProPage: React.FC = () => {
                 >
                   {PROFESSIONAL_VERTICAL_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {option.value === "education"
+                        ? t("verticals.education.training")
+                        : option.label}
                     </option>
                   ))}
                 </select>

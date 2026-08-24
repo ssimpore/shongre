@@ -55,23 +55,19 @@ describe("Provider Service High-Level Operations", () => {
     expect(reset.marketOverrides.BE).toBeUndefined();
   });
 
-  it("simulates provider health transitions", async () => {
-    const degraded = await service.setProviderHealth(
-      "google_gemini",
-      "degraded",
-      "High latency detected",
-    );
-    expect(degraded.health).toBe("degraded");
-    expect(degraded.healthMessage).toBe("High latency detected");
-
-    const healthy = await service.setProviderHealth("google_gemini", "healthy");
-    expect(healthy.health).toBe("healthy");
+  it("refuses manually simulated operational health", async () => {
+    await expect(
+      service.setProviderHealth("google_gemini", "healthy"),
+    ).rejects.toThrow("ne peut pas être simulée");
   });
 
-  it("runs deterministic test scenarios accurately", async () => {
+  it("never presents demo scenarios as live diagnostics", async () => {
     const successResult = await service.testProvider("mangopay", "healthy");
-    expect(successResult.success).toBe(true);
-    expect(successResult.diagnostics.code).toBe("OK");
+    expect(successResult.success).toBe(false);
+    expect(successResult.supported).toBe(false);
+    expect(successResult.diagnostics.code).toBe(
+      "LIVE_DIAGNOSTIC_REQUIRES_BACKEND",
+    );
 
     const missingCredsResult = await service.testProvider(
       "mangopay",
@@ -79,12 +75,14 @@ describe("Provider Service High-Level Operations", () => {
     );
     expect(missingCredsResult.success).toBe(false);
     expect(missingCredsResult.diagnostics.code).toBe(
-      "PROVIDER_CREDENTIALS_MISSING",
+      "LIVE_DIAGNOSTIC_REQUIRES_BACKEND",
     );
 
     const timeoutResult = await service.testProvider("mangopay", "timeout");
     expect(timeoutResult.success).toBe(false);
-    expect(timeoutResult.diagnostics.code).toBe("PROVIDER_TIMEOUT");
+    expect(timeoutResult.diagnostics.code).toBe(
+      "LIVE_DIAGNOSTIC_REQUIRES_BACKEND",
+    );
   });
 
   it("generates cross-market coverage matrix rows", () => {
@@ -96,8 +94,8 @@ describe("Provider Service High-Level Operations", () => {
     expect(paymentRow?.markets.FR.activeProviderName).toBeTruthy();
     // Switzerland inherits France
     expect(paymentRow?.markets.CH.isInherited).toBe(true);
-    // Belgium has an explicit market override in initial config
-    expect(paymentRow?.markets.BE.isInherited).toBe(false);
+    // Demo configuration contains no fake production market overrides.
+    expect(paymentRow?.markets.BE.isInherited).toBe(true);
 
     const relayRow = matrix.find(
       (r) => r.capability === "delivery.relay_point",

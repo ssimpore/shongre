@@ -5,11 +5,8 @@ import {
   VerificationRequirement,
   KycSubmissionData,
   KybSubmissionData,
-  BankPayoutSubmissionData,
   VerificationAuditEntry,
-  MarketplaceCapabilityStatus,
   UserVerificationSummary,
-  TrustLevel,
 } from "./verification.types";
 import { storageService } from "../../services/storage.service";
 import { calculateVatNumber } from "../../configuration/market.config";
@@ -80,11 +77,7 @@ export class VerificationService {
   ): UserVerificationSummary {
     if (!user) {
       return {
-        trustLevel: "tier_0_visitor",
-        trustScore: 0,
-        trustLevelLabel: "Visiteur non identifié",
         dimensions: this.getDefaultDimensions(),
-        capabilities: this.getZeroCapabilities(),
         pendingReviewsCount: 0,
       };
     }
@@ -133,8 +126,6 @@ export class VerificationService {
           description:
             "Vérification de réception pour les notifications de commandes et messages.",
           state: emailState,
-          isRequiredForPro: true,
-          isRequiredForHighValue: true,
           completedAt: user.isEmailVerified
             ? user.createdAt || new Date().toISOString()
             : undefined,
@@ -146,10 +137,8 @@ export class VerificationService {
           label: "Numéro de téléphone portable (SMS)",
           shortLabel: "Téléphone",
           description:
-            "Authentification 2FA par SMS pour la sécurisation des remises en main propre.",
+            "Confirmation du numéro lorsqu’une action ou un contrôle de sécurité le demande.",
           state: phoneState,
-          isRequiredForPro: true,
-          isRequiredForHighValue: true,
           completedAt: user.isPhoneVerified
             ? new Date().toISOString()
             : undefined,
@@ -161,10 +150,8 @@ export class VerificationService {
           label: "Identité personnelle (KYC)",
           shortLabel: "Pièce d'identité",
           description:
-            "Contrôle officiel de la CNI, du Passeport ou du Titre de séjour (norme ACPR).",
+            "Résultat d’un contrôle d’identité réalisé dans l’espace sécurisé du prestataire.",
           state: identityState,
-          isRequiredForPro: true,
-          isRequiredForHighValue: true,
           completedAt: user.identityVerification?.verifiedAt,
           rejectionReason: user.identityVerification?.rejectionReason,
           actionLabel:
@@ -181,8 +168,6 @@ export class VerificationService {
           description:
             "Vérification légale du registre du commerce et des sociétés (RCS/INSEE).",
           state: businessState,
-          isRequiredForPro: true,
-          isRequiredForHighValue: false,
           completedAt: user.professionalVerification?.reviewedAt,
           rejectionReason: user.professionalVerification?.rejectionReason,
           actionLabel:
@@ -194,17 +179,17 @@ export class VerificationService {
         },
         bank_payout: {
           id: "bank_payout",
-          label: "Coordonnées bancaires (IBAN SEPA)",
+          label: "Compte de versement chez le prestataire de paiement",
           shortLabel: "Compte de virement",
           description:
-            "Vérification du compte bancaire récepteur pour le virement des fonds de séquestre.",
+            "Statut d’activation du compte de versement, sans conserver ses coordonnées dans le profil.",
           state: bankPayoutState,
-          isRequiredForPro: true,
-          isRequiredForHighValue: true,
           completedAt: user.bankPayoutVerification?.verifiedAt,
           rejectionReason: user.bankPayoutVerification?.rejectionReason,
           actionLabel:
-            bankPayoutState === "verified" ? "IBAN vérifié" : "Ajouter un IBAN",
+            bankPayoutState === "verified"
+              ? "Versements activés"
+              : "Configurer chez le prestataire",
         },
         mfa: {
           id: "mfa",
@@ -213,75 +198,9 @@ export class VerificationService {
           description:
             "Protection renforcée du compte contre les tentatives d'accès non autorisées.",
           state: mfaState,
-          isRequiredForPro: false,
-          isRequiredForHighValue: false,
           actionLabel: mfaState === "verified" ? "Actif" : "Activer le 2FA",
         },
       };
-
-    // Calculate score (0 - 100)
-    let score = 0;
-    if (emailState === "verified") score += 15;
-    if (phoneState === "verified") score += 20;
-    if (identityState === "verified") score += 30;
-    if (businessState === "verified") score += 15;
-    if (bankPayoutState === "verified") score += 10;
-    if (mfaState === "verified") score += 10;
-    score = Math.min(100, score);
-
-    // Calculate Trust Level
-    let trustLevel: TrustLevel = "tier_1_starter";
-    let trustLevelLabel = "Niveau 1 — Membre Débutant";
-
-    if (user.accountType === "professional" && businessState === "verified") {
-      trustLevel = "tier_4_verified_pro";
-      trustLevelLabel = "Niveau 4 — Professionnel Certifié RCS";
-    } else if (
-      identityState === "verified" &&
-      (phoneState === "verified" || bankPayoutState === "verified")
-    ) {
-      trustLevel = "tier_3_trusted_seller";
-      trustLevelLabel = "Niveau 3 — Vendeur de Confiance";
-    } else if (emailState === "verified" && phoneState === "verified") {
-      trustLevel = "tier_2_verified_member";
-      trustLevelLabel = "Niveau 2 — Membre Vérifié";
-    }
-
-    // Calculate capabilities
-    const isEmailOk = emailState === "verified";
-    const isPhoneOk = phoneState === "verified";
-    const isIdentityOk = identityState === "verified";
-    const isBusinessOk = businessState === "verified";
-    const isBankOk = bankPayoutState === "verified";
-
-    const capabilities: MarketplaceCapabilityStatus = {
-      canBrowse: true,
-      canContact: isEmailOk || isPhoneOk || isIdentityOk,
-      canBuyStandard: isEmailOk,
-      canBuyHighValue: (isEmailOk && isPhoneOk) || isIdentityOk,
-      canPublishIndividualLow: isEmailOk && isPhoneOk,
-      canPublishIndividualHigh: isEmailOk && isPhoneOk && isIdentityOk,
-      canPublishPro: user.accountType === "professional" && isBusinessOk,
-      canReceivePayouts: (isIdentityOk || isBusinessOk) && isBankOk,
-      canAccessProStorefront:
-        user.accountType === "professional" && isBusinessOk,
-    };
-
-    // Calculate next recommended step
-    let nextRecommendedStep: VerificationRequirement | undefined;
-    if (!isEmailOk) {
-      nextRecommendedStep = dimensions.email;
-    } else if (!isPhoneOk) {
-      nextRecommendedStep = dimensions.phone;
-    } else if (!isIdentityOk && user.accountType !== "professional") {
-      nextRecommendedStep = dimensions.identity;
-    } else if (user.accountType === "professional" && !isBusinessOk) {
-      nextRecommendedStep = dimensions.business;
-    } else if (!isBankOk) {
-      nextRecommendedStep = dimensions.bank_payout;
-    } else if (mfaState !== "verified") {
-      nextRecommendedStep = dimensions.mfa;
-    }
 
     const pendingReviewsCount = [
       identityState,
@@ -290,44 +209,8 @@ export class VerificationService {
     ].filter((s) => s === "pending").length;
 
     return {
-      trustLevel,
-      trustScore: score,
-      trustLevelLabel,
       dimensions,
-      capabilities,
-      nextRecommendedStep,
       pendingReviewsCount,
-    };
-  }
-
-  // -------------------------------------------------------------
-  // Trust Score Computation
-  // -------------------------------------------------------------
-  public computeTrustScore(user: UserProfile | null): {
-    score: number;
-    level: "bronze" | "silver" | "gold" | "platinum";
-    levelLabel: string;
-    breakdown: Record<string, number>;
-  } {
-    const summary = this.getUserVerificationSummary(user);
-    let level: "bronze" | "silver" | "gold" | "platinum" = "bronze";
-    if (summary.trustScore >= 90) level = "platinum";
-    else if (summary.trustScore >= 75) level = "gold";
-    else if (summary.trustScore >= 50) level = "silver";
-
-    return {
-      score: summary.trustScore,
-      level,
-      levelLabel: summary.trustLevelLabel,
-      breakdown: {
-        email: summary.dimensions.email.state === "verified" ? 10 : 0,
-        phone: summary.dimensions.phone.state === "verified" ? 15 : 0,
-        identity: summary.dimensions.identity.state === "verified" ? 30 : 0,
-        business: summary.dimensions.business.state === "verified" ? 25 : 0,
-        bank_payout:
-          summary.dimensions.bank_payout.state === "verified" ? 10 : 0,
-        mfa: summary.dimensions.mfa.state === "verified" ? 10 : 0,
-      },
     };
   }
 
@@ -357,13 +240,9 @@ export class VerificationService {
       reviewedAt: instantApprove ? now : undefined,
       reviewedBy: instantApprove ? "Automated OCR & Liveness Check" : undefined,
       documentType: data.documentType,
-      documentNumber:
-        data.documentNumber ||
-        `ID-${Math.floor(10000000 + Math.random() * 90000000)}`,
       issuingCountry: data.issuingCountry || user.country || "FR",
-      firstName: data.firstName.trim(),
-      lastName: data.lastName.trim(),
-      birthDate: data.birthDate,
+      providerReference: `identity_demo_${userId}`,
+      verificationMethod: "hosted_provider_session",
       notes: instantApprove
         ? "Validation biométrique instantanée réussie."
         : "Dossier soumis pour examen de conformité.",
@@ -382,7 +261,7 @@ export class VerificationService {
       previousState,
       newState: nextState,
       performedBy: "user",
-      notes: `Soumission pièce d'identité (${data.documentType.toUpperCase()} - ${data.issuingCountry})`,
+      notes: `Session de vérification d'identité (${data.documentType.toUpperCase()} - ${data.issuingCountry})`,
     });
 
     return {
@@ -587,65 +466,6 @@ export class VerificationService {
   }
 
   // -------------------------------------------------------------
-  // Bank Payout / IBAN Verification
-  // -------------------------------------------------------------
-  public submitBankPayoutVerification(
-    userId: string,
-    data: BankPayoutSubmissionData,
-  ): { success: boolean; message: string; user?: UserProfile } {
-    const user = storageService.getUser(userId);
-    if (!user) {
-      return { success: false, message: "Utilisateur introuvable." };
-    }
-
-    const cleanIban = data.iban.replace(/\s+/g, "").toUpperCase();
-    const cleanBic = data.bic.replace(/\s+/g, "").toUpperCase();
-
-    if (cleanIban.length < 15 || !/^[A-Z]{2}[0-9A-Z]+$/.test(cleanIban)) {
-      return { success: false, message: "Format IBAN SEPA invalide." };
-    }
-
-    const now = new Date().toISOString();
-    const previousState = (user.bankPayoutVerification?.status ||
-      "not_started") as VerificationState;
-
-    user.bankPayoutVerification = {
-      status: "verified",
-      submittedAt: now,
-      verifiedAt: now,
-      accountHolderName: data.accountHolderName.trim(),
-      iban: cleanIban,
-      bic: cleanBic,
-      bankName: data.bankName || "Banque SEPA Validée",
-    };
-
-    storageService.saveUser(user);
-
-    this.logAudit({
-      userId,
-      dimension: "bank_payout",
-      previousState,
-      newState: "verified",
-      performedBy: "system",
-      notes: `Vérification compte bancaire SEPA (${cleanIban.slice(0, 4)}...${cleanIban.slice(-4)})`,
-    });
-
-    return {
-      success: true,
-      message:
-        "Coordonnées bancaires enregistrées et validées pour vos virements de séquestre.",
-      user,
-    };
-  }
-
-  public saveBankPayoutDetails(
-    userId: string,
-    data: BankPayoutSubmissionData,
-  ): { success: boolean; message: string; user?: UserProfile } {
-    return this.submitBankPayoutVerification(userId, data);
-  }
-
-  // -------------------------------------------------------------
   // Simulated Sirene / French Business Registry API Lookup
   // -------------------------------------------------------------
   public lookupCompanyBySiret(input: string): CompanyRegistryResult | null {
@@ -805,10 +625,9 @@ export class VerificationService {
           status: "pending",
           submittedAt: now,
           documentType: "national_id",
-          firstName: user.name.split(" ")[0] || "Jean",
-          lastName: user.name.split(" ")[1] || "Dupont",
-          birthDate: "1988-06-14",
           issuingCountry: "FR",
+          providerReference: `identity_demo_${userId}`,
+          verificationMethod: "hosted_provider_session",
           notes: "Dossier soumis pour vérification manuelle.",
         };
         break;
@@ -824,19 +643,17 @@ export class VerificationService {
           verifiedAt: now,
           reviewedBy: "Contrôle Automatisé ACPR",
           documentType: "national_id",
-          firstName: user.name.split(" ")[0] || "Jean",
-          lastName: user.name.split(" ")[1] || "Dupont",
-          birthDate: "1988-06-14",
           issuingCountry: "FR",
+          providerReference: `identity_demo_${userId}`,
+          verificationMethod: "hosted_provider_session",
         };
         user.bankPayoutVerification = {
           status: "verified",
           submittedAt: now,
           verifiedAt: now,
-          accountHolderName: user.name,
-          iban: "FR76 •••• •••• 4589",
-          bic: "BNPAFRPP",
-          bankName: "BNP Paribas",
+          providerReference: `payment_demo_${userId}`,
+          accountLast4: "4589",
+          verificationMethod: "hosted_provider_onboarding",
         };
         break;
 
@@ -959,10 +776,9 @@ export class VerificationService {
           status: "verified",
           submittedAt: now,
           verifiedAt: now,
-          accountHolderName: "Atelier Nordique SAS",
-          iban: "FR76 •••• •••• 9812",
-          bic: "BNPAFRPP",
-          bankName: "BNP Paribas Entreprises",
+          providerReference: `payment_demo_${userId}`,
+          accountLast4: "9812",
+          verificationMethod: "hosted_provider_onboarding",
         };
         break;
     }
@@ -994,8 +810,6 @@ export class VerificationService {
         shortLabel: "Email",
         description: "Vérification de réception.",
         state: "not_started",
-        isRequiredForPro: true,
-        isRequiredForHighValue: true,
       },
       phone: {
         id: "phone",
@@ -1003,8 +817,6 @@ export class VerificationService {
         shortLabel: "Téléphone",
         description: "Authentification 2FA par SMS.",
         state: "not_started",
-        isRequiredForPro: true,
-        isRequiredForHighValue: true,
       },
       identity: {
         id: "identity",
@@ -1012,8 +824,6 @@ export class VerificationService {
         shortLabel: "Pièce d'identité",
         description: "Contrôle officiel de la CNI / Passeport.",
         state: "not_started",
-        isRequiredForPro: true,
-        isRequiredForHighValue: true,
       },
       business: {
         id: "business",
@@ -1021,17 +831,13 @@ export class VerificationService {
         shortLabel: "Extrait KBIS / SIREN",
         description: "Vérification légale RCS.",
         state: "not_started",
-        isRequiredForPro: true,
-        isRequiredForHighValue: false,
       },
       bank_payout: {
         id: "bank_payout",
-        label: "Coordonnées bancaires (IBAN SEPA)",
+        label: "Compte de versement chez le prestataire de paiement",
         shortLabel: "Compte de virement",
-        description: "Vérification du compte bancaire pour le virement.",
+        description: "Statut du compte de versement géré par le prestataire.",
         state: "not_started",
-        isRequiredForPro: true,
-        isRequiredForHighValue: true,
       },
       mfa: {
         id: "mfa",
@@ -1039,23 +845,7 @@ export class VerificationService {
         shortLabel: "Sécurité 2FA",
         description: "Protection renforcée du compte.",
         state: "not_started",
-        isRequiredForPro: false,
-        isRequiredForHighValue: false,
       },
-    };
-  }
-
-  private getZeroCapabilities(): MarketplaceCapabilityStatus {
-    return {
-      canBrowse: true,
-      canContact: false,
-      canBuyStandard: false,
-      canBuyHighValue: false,
-      canPublishIndividualLow: false,
-      canPublishIndividualHigh: false,
-      canPublishPro: false,
-      canReceivePayouts: false,
-      canAccessProStorefront: false,
     };
   }
 }

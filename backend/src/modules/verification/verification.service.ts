@@ -6,12 +6,12 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 import {
   IBusinessRegistryProvider,
-  IKYCProvider,
   providers,
 } from "../../integrations/providers/index.js";
 import { CompanyInfo } from "../../integrations/business-registry/siret-resolver.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { complianceService } from "../compliance/compliance.service.js";
 
 export type { VerificationState, CompanyInfo };
 
@@ -19,28 +19,12 @@ export class VerificationService {
   constructor(
     private verificationRepo: IVerificationRepository = repositories.verification,
     private businessRegistry: IBusinessRegistryProvider = providers.businessRegistry,
-    private kyc: IKYCProvider = providers.kyc,
   ) {}
 
   async getUserVerificationStatus(
     userId: string,
   ): Promise<UserVerificationStatus> {
     return this.verificationRepo.getUserStatus(userId);
-  }
-
-  async submitIdentityDocument(
-    userId: string,
-    docType: string,
-    fileUrl: string,
-  ): Promise<{ status: "pending" | "verified" }> {
-    const res = await this.kyc.submitDocument(userId, docType, fileUrl);
-    await this.verificationRepo.saveVerificationRequest({
-      userId,
-      type: "identity_document",
-      documentType: docType,
-      documentUrl: fileUrl,
-    });
-    return { status: res.status === "verified" ? "verified" : "pending" };
   }
 
   async lookupCompanyBySiret(
@@ -52,7 +36,6 @@ export class VerificationService {
   async submitBusinessRegistration(
     userId: string,
     siret: string,
-    representativeName: string,
   ): Promise<{ status: "verified" }> {
     const company = await this.lookupCompanyBySiret(siret);
     if (!company) {
@@ -63,49 +46,35 @@ export class VerificationService {
       });
     }
 
-    const request = await this.verificationRepo.saveVerificationRequest({
+    const providerReference = `rne:${company.siret}`;
+    await complianceService.applyTrustedVerification({
       userId,
-      type: "siret_registry",
-      siret,
-      companyName: company.name,
+      record: {
+        dimension: "business",
+        state: "verified",
+        provider: "official_business_registry",
+        providerReference,
+        method: "structured_registry_lookup",
+        verifiedAt: new Date().toISOString(),
+        lastCheckedAt: new Date().toISOString(),
+        visibility: "COMPLIANCE_ONLY",
+      },
+      actorType: "SYSTEM",
+      reasonCode: "BUSINESS_REGISTRY_MATCH",
+    });
+    await complianceService.openManualReview({
+      userId,
+      dimension: "business_representative",
+      reasonCode: "REPRESENTATIVE_AUTHORITY_CONFIRMATION_REQUIRED",
     });
     await this.verificationRepo.updateUserVerification(userId, {
       isBusinessVerified: true,
     });
 
-    logger.info("Business verification completed", {
-      verificationRequestId: request.id,
-    });
+    logger.info("Business registry verification completed");
     return { status: "verified" };
   }
 
-  async submitBankPayoutCoordinates(
-    userId: string,
-    iban: string,
-    bic: string,
-    holderName: string,
-  ): Promise<{ status: "configured" }> {
-    const cleanIban = iban.replace(/\s+/g, "");
-    if (cleanIban.length < 15) {
-      throw new AppError({
-        code: "VALIDATION_ERROR",
-        message: "Numéro IBAN invalide.",
-      });
-    }
-
-    const request = await this.verificationRepo.saveVerificationRequest({
-      userId,
-      type: "bank_iban",
-      iban: cleanIban,
-      bic,
-      companyName: holderName,
-    });
-
-    logger.info("Payout coordinates submitted", {
-      verificationRequestId: request.id,
-    });
-    return { status: "configured" };
-  }
 }
 
 export const verificationService = new VerificationService();

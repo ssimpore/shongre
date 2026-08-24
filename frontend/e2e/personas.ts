@@ -17,8 +17,10 @@ export const PERSONAS = {
   pro_courses: { key: 'pro_courses_sophie', role: 'pro_seller' },
   pro_employment: { key: 'pro_employment_clara', role: 'pro_seller' },
   moderator: { key: 'moderator_claire', role: 'moderator' },
+  trust_safety: { key: 'trust_nadia', role: 'operations' },
   support: { key: 'support_hugo', role: 'support' },
   finance: { key: 'finance_marc', role: 'finance' },
+  commercial: { key: 'commercial_lea', role: 'commercial' },
   admin: { key: 'admin_antoine', role: 'admin' },
 } as const;
 

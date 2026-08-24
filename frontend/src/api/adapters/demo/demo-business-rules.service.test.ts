@@ -216,7 +216,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       accountId: "organization_partner_demo",
       productVersionId: product.versionId,
       campaignId: "partner-launch-2026",
-      reason: "Partenaire stratégique de lancement Cours",
+      reason: "Partenaire stratégique de lancement Éducation",
       startsAt: "2026-08-01T00:00:00.000Z",
       endsAt: "2026-11-01T00:00:00.000Z",
       idempotencyKey: "complimentary-request-course-001",

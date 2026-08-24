@@ -148,6 +148,9 @@ export const commercialPlanProfileSchema = z.object({
     "auto_subscription",
     "immo_subscription",
     "employment_subscription",
+    "education_subscription",
+    // Read compatibility for finalized catalog/invoice snapshots published
+    // before the business vertical became Education.
     "courses_subscription",
     "addon",
     "promotion",
@@ -246,7 +249,6 @@ export const commercialRuleOutcomeSchema = z
       .max(10_000)
       .optional(),
     feeRateBps: z.number().int().min(0).max(10_000).optional(),
-    commissionRateBps: z.number().int().min(0).max(10_000).optional(),
     fixedFeeMinor: z.number().int().nonnegative().optional(),
     taxRateBps: z.number().int().min(0).max(10_000).optional(),
     entitlementKey: z.string().min(1).optional(),
@@ -489,6 +491,8 @@ export const commissionEarningEventSchema = z.enum([
   "order_completed",
   "service_completed",
   "payout_released",
+  "lead_qualified",
+  "booking_completed",
 ]);
 export type CommissionEarningEvent = z.infer<
   typeof commissionEarningEventSchema
@@ -540,9 +544,7 @@ export const commissionAllocationSchema = z
       });
     }
   });
-export type CommissionAllocation = z.infer<
-  typeof commissionAllocationSchema
->;
+export type CommissionAllocation = z.infer<typeof commissionAllocationSchema>;
 
 const commissionModelBounds = {
   minimumMinor: z.number().int().nonnegative().optional(),
@@ -577,6 +579,10 @@ export const commissionModelSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("tiered"),
     tierMode: z.enum(["progressive", "cliff"]),
+    basis: z
+      .enum(["transaction_amount", "historical_volume"])
+      .default("transaction_amount"),
+    volumePeriod: z.enum(["month", "quarter", "year", "lifetime"]).optional(),
     tiers: z.array(commissionTierSchema).min(1),
     ...commissionModelBounds,
   }),
@@ -615,9 +621,7 @@ export const commissionAdjustmentSchema = z.discriminatedUnion("type", [
     amountMinor: z.number().int().nonnegative(),
   }),
 ]);
-export type CommissionAdjustment = z.infer<
-  typeof commissionAdjustmentSchema
->;
+export type CommissionAdjustment = z.infer<typeof commissionAdjustmentSchema>;
 
 export const commissionScopeSchema = z.object({
   countryCodes: z.array(z.string().length(2)).default([]),
@@ -702,6 +706,17 @@ export const commissionRuleSchema = z
       }
       if (rule.effect.model.type === "tiered") {
         const tiers = rule.effect.model.tiers;
+        if (
+          rule.effect.model.basis === "historical_volume" &&
+          !rule.effect.model.volumePeriod
+        ) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Volume-based commission tiers require an explicit volume period.",
+            path: ["effect", "model", "volumePeriod"],
+          });
+        }
         let previousEnd = 0;
         tiers.forEach((tier, index) => {
           if (tier.fromMinor !== previousEnd) {
@@ -714,7 +729,8 @@ export const commissionRuleSchema = z
           if (tier.toMinor !== undefined && tier.toMinor <= tier.fromMinor) {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: "Commission tier upper bound must exceed its lower bound.",
+              message:
+                "Commission tier upper bound must exceed its lower bound.",
               path: ["effect", "model", "tiers", index, "toMinor"],
             });
           }
@@ -755,18 +771,21 @@ export const commissionPolicySchema = z
     ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Commission policy effectiveUntil must be after effectiveFrom.",
+        message:
+          "Commission policy effectiveUntil must be after effectiveFrom.",
       });
     }
     policy.rules.forEach((rule, index) => {
       if (rule.policyId !== policy.id || rule.versionId !== policy.versionId) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Commission rule must reference its containing policy/version.",
+          message:
+            "Commission rule must reference its containing policy/version.",
           path: ["rules", index],
         });
       }
-      const expectedKind = policy.policyType === "base" ? "commission" : "adjustment";
+      const expectedKind =
+        policy.policyType === "base" ? "commission" : "adjustment";
       if (rule.effect.kind !== expectedKind) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -865,13 +884,17 @@ export const commissionCalculationSchema = z.object({
   expiresAt: z.string().datetime().optional(),
   snapshotHash: z.string().min(16),
 });
-export type CommissionCalculation = z.infer<
-  typeof commissionCalculationSchema
->;
+export type CommissionCalculation = z.infer<typeof commissionCalculationSchema>;
 
 export const commissionRefundRequestSchema = z.object({
   calculation: commissionCalculationSchema,
   refundBaseMinor: z.number().int().nonnegative(),
+  previouslyReversedBaseMinor: z.number().int().nonnegative().default(0),
+  previouslyReversedCommissionMinor: z.number().int().nonnegative().default(0),
+  previouslyReversedTaxMinor: z.number().int().nonnegative().default(0),
+  previouslyCreditedSellerMinor: z.number().int().nonnegative().default(0),
+  previouslyCreditedBuyerMinor: z.number().int().nonnegative().default(0),
+  previouslyReversedRevenueMinor: z.number().int().nonnegative().default(0),
   idempotencyKey: z.string().min(8).max(200),
   occurredAt: z.string().datetime(),
 });
@@ -889,11 +912,48 @@ export const commissionReversalSchema = z.object({
   sellerCreditMinor: z.number().int().nonnegative(),
   buyerCreditMinor: z.number().int().nonnegative(),
   platformRevenueReversalMinor: z.number().int().nonnegative(),
-  state: z.enum(["partially_reversed", "reversed", "manual_review"]),
+  state: z.enum([
+    "partially_reversed",
+    "reversed",
+    "retained",
+    "manual_review",
+  ]),
   occurredAt: z.string().datetime(),
   snapshotHash: z.string().min(16),
 });
 export type CommissionReversal = z.infer<typeof commissionReversalSchema>;
+
+export const commissionAnalyticsRowSchema = z.object({
+  date: z.string().date(),
+  marketCode: marketCodeSchema,
+  verticalId: businessVerticalCodeSchema.optional(),
+  categoryId: z.string().optional(),
+  planId: z.string().optional(),
+  currency: z.string().length(3),
+  transactionCount: z.number().int().nonnegative(),
+  gmvMinor: z.number().int().nonnegative(),
+  grossCommissionMinor: z.number().int().nonnegative(),
+  commissionDiscountMinor: z.number().int().nonnegative(),
+  commissionRevenueMinor: z.number().int(),
+  commissionRefundMinor: z.number().int().nonnegative(),
+  effectiveTakeRateBps: z.number().int(),
+});
+export type CommissionAnalyticsRow = z.infer<
+  typeof commissionAnalyticsRowSchema
+>;
+
+export const commissionAnalyticsQuerySchema = z.object({
+  marketCode: z.union([marketCodeSchema, z.literal("ALL")]).default("ALL"),
+  currency: z.string().length(3).default("EUR"),
+  from: z.string().date(),
+  to: z.string().date(),
+  verticalId: businessVerticalCodeSchema.optional(),
+  categoryId: z.string().optional(),
+  planId: z.string().optional(),
+});
+export type CommissionAnalyticsQuery = z.infer<
+  typeof commissionAnalyticsQuerySchema
+>;
 
 export const monetizationCatalogSchema = z.object({
   configurationVersionId: z.string(),

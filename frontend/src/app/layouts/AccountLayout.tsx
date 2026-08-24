@@ -93,8 +93,8 @@ export const AccountLayout: React.FC = () => {
       visible: canAccessRoute("accountListings"),
     },
     {
-      to: "/compte/cours",
-      label: "Espace Cours",
+      to: "/compte/education",
+      label: t("verticals.education.workspace"),
       icon: <GraduationCap className="w-4 h-4 text-primary" />,
       visible: canAccessRoute("accountCourse"),
     },
@@ -191,7 +191,7 @@ export const AccountLayout: React.FC = () => {
     },
     {
       to: routes.courses.organization(),
-      label: "Organisme Cours",
+      label: t("verticals.education.organizationWorkspace"),
       icon: <GraduationCap className="w-4 h-4 text-primary" />,
       visible: canAccessRoute("accountCourseOrganization"),
     },

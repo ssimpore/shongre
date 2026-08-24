@@ -23,6 +23,7 @@ import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Badge, Button, Input, Skeleton, Switch } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type Tab = "overview" | "taxonomy" | "plans" | "settings";
 
@@ -45,6 +46,7 @@ const FLAG_LABELS: Record<keyof CourseFeatureFlags, string> = {
 };
 
 export const AdminCoursesPage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [config, setConfig] = useState<CourseMarketConfig | null>(null);
@@ -52,10 +54,9 @@ export const AdminCoursesPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   usePageMeta({
-    title: "Administration Shongre Cours",
-    description:
-      "Pilotage du marché, de la taxonomie, des formules et de la sécurité Cours.",
-    canonicalPath: "/admin/cours",
+    title: t("verticals.education.adminTitle"),
+    description: t("verticals.education.adminDescription"),
+    canonicalPath: "/admin/education",
     noIndex: true,
   });
 
@@ -66,9 +67,7 @@ export const AdminCoursesPage: React.FC = () => {
         setCatalog(next);
         setConfig(next.config);
       })
-      .catch(() =>
-        toast.error("Impossible de charger la configuration Cours."),
-      );
+      .catch(() => toast.error(t("verticals.education.adminLoadError")));
   };
 
   useEffect(load, [toast]);
@@ -82,7 +81,7 @@ export const AdminCoursesPage: React.FC = () => {
       setCatalog((current) =>
         current ? { ...current, config: updated } : current,
       );
-      toast.success("Configuration Cours enregistrée et auditée.");
+      toast.success(t("verticals.education.adminSaved"));
     } catch (reason) {
       toast.error(
         reason instanceof Error ? reason.message : "Enregistrement impossible.",
@@ -162,7 +161,7 @@ export const AdminCoursesPage: React.FC = () => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-black text-text-main sm:text-2xl">
-              Shongre Cours
+              {t("verticals.education.brand")}
             </h1>
             <Badge variant={config.isEnabled ? "success" : "neutral"}>
               France · {config.isEnabled ? "Actif" : "Inactif"}
@@ -184,7 +183,7 @@ export const AdminCoursesPage: React.FC = () => {
       </header>
 
       <nav
-        aria-label="Sections Shongre Cours"
+        aria-label={t("verticals.education.adminSections")}
         className="flex gap-1 overflow-x-auto rounded-card border border-border-base bg-bg-surface p-1 shadow-xs"
       >
         {[
@@ -530,23 +529,7 @@ export const AdminCoursesPage: React.FC = () => {
                 );
               })}
             </div>
-            <div className="mt-5 grid gap-4 border-t border-border-subtle pt-5 sm:grid-cols-3">
-              <label className="text-xs font-bold text-text-main">
-                Commission Phase 2 (points de base)
-                <Input
-                  className="mt-2"
-                  type="number"
-                  min={0}
-                  max={10000}
-                  value={config.commissionRateBps}
-                  onChange={(event) =>
-                    setConfig({
-                      ...config,
-                      commissionRateBps: Number(event.target.value),
-                    })
-                  }
-                />
-              </label>
+            <div className="mt-5 grid gap-4 border-t border-border-subtle pt-5 sm:grid-cols-2">
               <label className="text-xs font-bold text-text-main">
                 Validité demande (jours)
                 <Input

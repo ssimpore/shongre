@@ -21,7 +21,7 @@ test.describe("Shongre Emploi journeys", () => {
     await usePersona(page, "guest");
     await seedConsent(page);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/emploi?q=React", { waitUntil: "networkidle" });
+    await page.goto("/emploi?q=React", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     await expect(
@@ -51,7 +51,7 @@ test.describe("Shongre Emploi journeys", () => {
     await seedConsent(page);
     await page.goto(
       "/emploi/offre/equipier-ere-polyvalent-e-saisonnier-job-seasonal-nice/postuler",
-      { waitUntil: "networkidle" },
+      { waitUntil: "domcontentloaded" },
     );
 
     await expect(page.getByText("Aucun frais pour le candidat")).toBeVisible();
@@ -72,7 +72,7 @@ test.describe("Shongre Emploi journeys", () => {
   }) => {
     await usePersona(page, "pro_employment");
     await seedConsent(page);
-    await page.goto("/compte/emploi/recruteur", { waitUntil: "networkidle" });
+    await page.goto("/compte/emploi/recruteur", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "TechNova" })).toBeVisible();
 
     const results = await new AxeBuilder({ page })

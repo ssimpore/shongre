@@ -14,7 +14,6 @@ export interface PaymentsServiceContract {
   requestSellerPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
   getSellerBalance(
     sellerId: string,

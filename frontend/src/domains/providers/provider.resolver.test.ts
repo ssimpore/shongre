@@ -174,7 +174,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
       configurations: configsWithDegradedPrimary,
     });
 
-    expect(health.status).toBe("degraded");
+    expect(health.status).toBe("demo");
     expect(health.isFallbackActive).toBe(true);
     expect(health.activeProviderId).toBe("stripe");
   });

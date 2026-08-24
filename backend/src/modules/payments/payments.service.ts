@@ -20,9 +20,8 @@ export class PaymentsService {
   async requestSellerPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
-    return this.paymentProvider.requestPayout(sellerId, amount, iban);
+    return this.paymentProvider.requestPayout(sellerId, amount);
   }
 
   async getSellerBalance(

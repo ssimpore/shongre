@@ -81,8 +81,14 @@ export const AdminProviderDetailPage: React.FC = () => {
   }
 
   const catMeta = getCategoryMetadata(provider.category);
-  const isEnabled = configuration.enabled;
   const health = configuration.health;
+  const isActive = Boolean(
+    configuration.enabled &&
+      configuration.environment !== "demo" &&
+      health === "healthy" &&
+      configuration.healthLastCheckedAt &&
+      provider.operational.lifecycle === "ACTIVE",
+  );
 
   return (
     <div className="space-y-6">
@@ -165,30 +171,41 @@ export const AdminProviderDetailPage: React.FC = () => {
 
           {/* Status & Health Indicators */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {isEnabled ? (
+            {isActive ? (
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-full">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Actif (Priorité {configuration.priority})
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-stone-500 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full">
-                {t("admin.adminProviderDetailPage.desactive")}
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning-surface border border-warning-border px-2.5 py-1 rounded-full">
+                {provider.operational.adapterStatus === "IMPLEMENTED"
+                  ? "Implémenté · non actif"
+                  : provider.operational.adapterStatus === "DEMO_ONLY"
+                    ? "Démo uniquement"
+                    : "Non implémenté"}
               </span>
             )}
 
             <span
               className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${
-                health === "healthy"
+                configuration.environment === "demo" || health === "unknown"
+                  ? "bg-stone-100 text-stone-700 border-stone-200"
+                  : health === "healthy"
                   ? "bg-success-surface text-success border-success-border"
                   : health === "degraded"
                     ? "bg-warning-surface text-warning border-warning-border"
                     : "bg-danger-surface text-danger border-danger-border"
               }`}
             >
-              {health === "healthy" && "● Opérationnel"}
-              {health === "degraded" && "▲ Dégradé"}
-              {health === "unavailable" && "■ Indisponible"}
-              {health === "unknown" && "Santé inconnue"}
+              {configuration.environment === "demo"
+                ? "Démo — santé non vérifiée"
+                : health === "healthy"
+                  ? "● Opérationnel"
+                  : health === "degraded"
+                    ? "▲ Dégradé"
+                    : health === "unavailable"
+                      ? "■ Indisponible"
+                      : "Santé inconnue"}
             </span>
 
             <span className="text-xs font-mono font-bold bg-stone-800 text-stone-200 px-2.5 py-1 rounded-full uppercase">
@@ -200,17 +217,29 @@ export const AdminProviderDetailPage: React.FC = () => {
         {/* Capabilities badges bar */}
         <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
           <span className="text-xs font-semibold text-stone-500 mr-1">
-            {t("admin.adminProviderDetailPage.capacitesFournies")}
+            Capacités cataloguées :
           </span>
-          {provider.capabilities.map((cap) => (
-            <span
-              key={cap}
-              title={cap}
-              className="text-xs bg-stone-100 text-stone-800 px-2 py-0.5 rounded border border-stone-200 font-medium"
-            >
-              {getCapabilityMetadata(cap).name}
-            </span>
-          ))}
+          {provider.capabilities.map((cap) => {
+            const implemented =
+              provider.operational.implementedCapabilities.includes(cap);
+            const demoOnly =
+              provider.operational.demoOnlyCapabilities?.includes(cap);
+            return (
+              <span
+                key={cap}
+                title={`${cap} — ${implemented ? "implémentée" : demoOnly ? "démo uniquement" : "non implémentée"}`}
+                className={`text-xs px-2 py-0.5 rounded border font-medium ${
+                  implemented
+                    ? "bg-success-surface text-success border-success-border"
+                    : demoOnly
+                      ? "bg-info-surface text-info border-info-border"
+                      : "bg-stone-100 text-stone-700 border-stone-200"
+                }`}
+              >
+                {getCapabilityMetadata(cap).name}
+              </span>
+            );
+          })}
         </div>
       </div>
 

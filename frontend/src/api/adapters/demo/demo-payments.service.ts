@@ -28,15 +28,10 @@ export class DemoPaymentsService implements PaymentsServiceContract {
   async requestSellerPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
     await simulateNetworkDelay();
     return {
-      payoutId: deterministicDemoId("po_demo", [
-        sellerId,
-        amount,
-        iban.slice(-4),
-      ]),
+      payoutId: deterministicDemoId("po_demo", [sellerId, amount]),
       status: "completed",
     };
   }

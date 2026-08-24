@@ -31,6 +31,7 @@ import {
 } from "../../design-system";
 import { storageService } from "../../services/storage.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type OnboardingDraft = {
   accountKind: "individual" | "organization";
@@ -96,6 +97,7 @@ const slugify = (value: string) =>
     .replace(/^-|-$/g, "");
 
 export const CourseTutorOnboardingPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -115,10 +117,10 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   const [isComplete, setIsComplete] = useState(false);
 
   usePageMeta({
-    title: "Devenir professeur sur Shongre Cours",
+    title: t("verticals.education.onboardingTitle"),
     description:
       "Créez votre profil professeur et publiez votre premier cours.",
-    canonicalPath: "/deposer/cours",
+    canonicalPath: "/deposer/education",
     noIndex: true,
   });
 
@@ -127,9 +129,9 @@ export const CourseTutorOnboardingPage: React.FC = () => {
       .getCatalog("FR")
       .then(setCatalog)
       .catch(() => {
-        toast.error("Le catalogue Cours est momentanément indisponible.");
+        toast.error(t("verticals.education.catalogUnavailable"));
       });
-  }, [toast]);
+  }, [t, toast]);
 
   useEffect(() => {
     // No identity document, payment data or guardian data is stored here.
@@ -320,10 +322,10 @@ export const CourseTutorOnboardingPage: React.FC = () => {
           jamais affichées sur votre profil public.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button onClick={() => navigate("/compte/cours")}>
-            Ouvrir mon espace Cours
+          <Button onClick={() => navigate("/compte/education")}>
+            {t("verticals.education.openWorkspace")}
           </Button>
-          <Button variant="outline" to="/cours">
+          <Button variant="outline" to="/education">
             Voir les professeurs
           </Button>
         </div>
@@ -335,7 +337,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     <div className="mx-auto max-w-6xl">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Badge variant="primary">Shongre Cours</Badge>
+          <Badge variant="primary">{t("verticals.education.brand")}</Badge>
           <h1 className="mt-2 text-xl font-black text-text-main sm:text-2xl">
             Créez votre activité de cours
           </h1>

@@ -9,6 +9,10 @@ import {
 import { logger } from "../../infrastructure/logging/logger.js";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { randomInt, randomUUID, timingSafeEqual } from "node:crypto";
+import {
+  CommissionService,
+  commissionService,
+} from "../commission/commission.service.js";
 
 const DEFAULT_HOME_DELIVERY_MINOR =
   BASELINE_MONETIZATION_CATALOG.products.find(
@@ -41,6 +45,7 @@ export class OrdersService {
   constructor(
     private orderRepo: IOrderRepository = repositories.orders,
     private listingRepo: IListingRepository = repositories.listings,
+    private commissions: CommissionService = commissionService,
   ) {}
 
   async getOrderById(orderId: string): Promise<Transaction | null> {
@@ -110,10 +115,64 @@ export class OrdersService {
     };
 
     const saved = await this.orderRepo.create(transaction);
+    let finalized = saved;
+    try {
+      const commission = await this.commissions.record({
+        idempotencyKey: `commission:order:${saved.id}:payment_succeeded`,
+        transactionId: saved.id,
+        orderId: saved.id,
+        eligibleCommercialEvent: true,
+        earningEvent: "payment_succeeded",
+        effectiveAt: saved.updatedAt,
+        marketCode: listing.marketCode,
+        countryCode: listing.marketCode,
+        currency: listing.currency,
+        categoryId: listing.categoryId,
+        transactionType: "marketplace_order",
+        sellerType:
+          listing.publisherType === "professional" ||
+          listing.seller?.accountType === "professional"
+            ? listing.publisherOrganizationId
+              ? "organization"
+              : "professional"
+            : "individual",
+        sellerAccountId: listing.sellerId,
+        organizationId: listing.publisherOrganizationId,
+        planId: listing.publicationOfferId,
+        campaignIds: [],
+        paymentMethod: input.paymentMethod,
+        itemSubtotalMinor: Math.round(breakdown.itemAmount * 100),
+        discountMinor: 0,
+        shippingMinor: Math.round(breakdown.shippingFee * 100),
+        taxMinor: 0,
+        buyerFeesMinor: Math.round(breakdown.protectionFee * 100),
+        totalMinor: Math.round(breakdown.totalCharged * 100),
+        platformCollectedMinor: Math.round(breakdown.totalCharged * 100),
+        historicalVolumeMinor: 0,
+      });
+      finalized = await this.orderRepo.update(saved.id, {
+        commissionCalculationId: commission.id,
+        platformCommissionMinor: commission.totalCommissionMinor,
+        sellerPayableMinor: commission.sellerPayableMinor,
+        commissionSnapshotHash: commission.snapshotHash,
+      });
+    } catch (error) {
+      await this.orderRepo.update(saved.id, { status: "disputed" });
+      logger.error("Commission calculation failed after order creation", {
+        orderId: saved.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message:
+          "La commande a été sécurisée mais sa ventilation financière nécessite une revue.",
+        originalError: error,
+      });
+    }
     logger.info("Direct purchase created and escrow funded", {
-      orderId: saved.id,
+      orderId: finalized.id,
     });
-    return saved;
+    return finalized;
   }
 
   async createReservation(input: CreateReservationInput): Promise<Transaction> {
@@ -227,6 +286,51 @@ export class OrdersService {
     });
     logger.warn("Order dispute opened", { orderId });
     return updated;
+  }
+
+  async refundOrder(
+    orderId: string,
+    input: { refundBaseMinor?: number; idempotencyKey: string },
+  ) {
+    const order = await this.orderRepo.findById(orderId);
+    if (!order) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Commande introuvable.",
+      });
+    }
+    if (!order.commissionCalculationId) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Cette commande ne possède pas de ventilation de commission réversible.",
+      });
+    }
+    const fullBaseMinor = Math.round(order.itemAmount * 100);
+    const refundBaseMinor = input.refundBaseMinor ?? fullBaseMinor;
+    if (refundBaseMinor <= 0 || refundBaseMinor > fullBaseMinor) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le montant remboursé doit être positif et ne pas dépasser la vente.",
+      });
+    }
+    const calculation = await this.commissions.getCalculation(
+      order.commissionCalculationId,
+    );
+    const reversal =
+      calculation.totalCommissionMinor > 0
+        ? await this.commissions.reverse(order.commissionCalculationId, {
+            refundBaseMinor,
+            idempotencyKey: input.idempotencyKey,
+          })
+        : null;
+    const updated =
+      (reversal === null && refundBaseMinor === fullBaseMinor) ||
+      reversal?.state === "reversed" ||
+      (reversal?.state === "retained" && refundBaseMinor === fullBaseMinor)
+        ? await this.orderRepo.update(orderId, { status: "refunded" })
+        : order;
+    return { order: updated, commissionReversal: reversal };
   }
 }
 

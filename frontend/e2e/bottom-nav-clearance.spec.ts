@@ -41,7 +41,7 @@ test.describe('mobile tab bar clearance', () => {
     test(`${route.name} leaves nothing under the tab bar at full scroll`, async ({ page }) => {
       await page.setViewportSize(MOBILE);
       await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: 'networkidle' });
+      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
@@ -77,7 +77,7 @@ test.describe('mobile tab bar clearance', () => {
   test('the listing action bar sits clear of the raised publish button', async ({ page }) => {
     await page.setViewportSize(MOBILE);
     await usePersona(page, 'individual_buyer');
-    await page.goto(`/annonce/${DEMO_LISTING_ID}`, { waitUntil: 'networkidle' });
+    await page.goto(`/annonce/${DEMO_LISTING_ID}`, { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
 
     const ceiling = await obstructionTop(page);

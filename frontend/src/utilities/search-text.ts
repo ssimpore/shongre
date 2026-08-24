@@ -43,3 +43,21 @@ export function searchTextIncludes(
   if (!normalizedNeedle) return true;
   return normalizeSearchText(haystack).includes(normalizedNeedle);
 }
+
+/**
+ * Explicit marketplace vocabulary bridge for renamed business dimensions.
+ * Individual Course wording remains searchable and semantically unchanged.
+ */
+export function expandSearchQuery(value: string): string[] {
+  const normalized = normalizeSearchText(value);
+  const variants = new Set([normalized]);
+  if (/\beducation\b/.test(normalized)) {
+    variants.add(normalized.replace(/\beducation\b/g, "cours"));
+    variants.add(normalized.replace(/\beducation\b/g, "formation"));
+  }
+  if (/\bmaths\b/.test(normalized)) {
+    variants.add(normalized.replace(/\bmaths\b/g, "mathematiques"));
+    variants.add("mathematiques");
+  }
+  return [...variants].filter(Boolean);
+}

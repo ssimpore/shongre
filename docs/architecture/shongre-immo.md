@@ -4,7 +4,7 @@
 
 Shongre Immo is the versioned `real_estate` vertical inside the existing Shongre marketplace. It reuses accounts, profiles, markets, organizations, generic listing linkage, messaging, favorites, saved searches, notifications, moderation, verification, monetization, analytics, audit, storage, and administration. It is not a separate application.
 
-The implementation also introduces reusable vertical commercial primitives: market activation, offers, prices, entitlement key/value records, add-ons, checkouts, and provider webhook events. Auto, Cours, and future verticals can converge on these tables and contracts incrementally without changing their current runtime.
+The implementation also introduces reusable vertical commercial primitives: market activation, offers, prices, entitlement key/value records, add-ons, checkouts, and provider webhook events. Auto, Education, and future verticals can converge on these tables and contracts incrementally without changing their current runtime.
 
 ```text
 React page

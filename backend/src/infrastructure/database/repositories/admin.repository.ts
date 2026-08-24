@@ -174,9 +174,15 @@ export class PostgresAdminRepository implements IAdminRepository {
             "disputed",
           ]),
         supabase
-          .from("verification_requests")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "pending"),
+          .from("compliance_manual_reviews" as any)
+          .select("id", { count: "exact", head: true })
+          .in("state", [
+            "OPEN",
+            "ASSIGNED",
+            "WAITING_FOR_USER",
+            "UNDER_REVIEW",
+            "ESCALATED",
+          ]),
         supabase
           .from("reports")
           .select("*", { count: "exact", head: true })

@@ -30,6 +30,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { getPermissionDisplayName } from "../../security/permissions";
 
 const ROLE_LABELS = {
@@ -42,6 +43,7 @@ const ROLE_LABELS = {
 } as const;
 
 export const CourseOrganizationWorkspacePage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [workspace, setWorkspace] =
     useState<CourseOrganizationWorkspace | null>(null);
@@ -56,9 +58,9 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   usePageMeta({
-    title: "Organisme — Shongre Cours",
+    title: t("verticals.education.organizationTitle"),
     description: "Équipe, lieux, cours et demandes centralisés.",
-    canonicalPath: "/compte/cours/organisation",
+    canonicalPath: "/compte/education/organisation",
     noIndex: true,
   });
 
@@ -74,7 +76,11 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       <StatePanel
         title="Espace organisme inaccessible"
         description="Vérifiez votre appartenance et vos permissions d’équipe."
-        action={<Button to="/compte/cours">Retour à mon espace Cours</Button>}
+        action={
+          <Button to="/compte/education">
+            {t("verticals.education.returnToWorkspace")}
+          </Button>
+        }
       />
     );
   }
@@ -318,8 +324,8 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                   Boîte de réception centralisée
                 </h2>
                 <p className="mt-0.5 text-micro text-text-muted">
-                  L’affectation par matière, niveau, lieu et disponibilité
-                  reste suspendue.
+                  L’affectation par matière, niveau, lieu et disponibilité reste
+                  suspendue.
                 </p>
               </div>
               <Badge variant="primary">

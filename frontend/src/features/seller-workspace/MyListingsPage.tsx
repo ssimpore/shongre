@@ -304,18 +304,22 @@ export const MyListingsPage: React.FC = () => {
             Importer (CSV)
           </Button>
 
-          <Link
+          <Button
             to={publishCta.to}
+            variant="primary"
+            size="sm"
             aria-label={publishLabel}
             title={publishLabel}
-            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-xs sm:text-sm h-control-sm w-control-sm sm:w-auto sm:px-3 rounded-control transition-colors flex items-center justify-center gap-1.5 shadow-xs shrink-0"
+            className="w-control-sm shrink-0 px-0 sm:w-auto sm:px-3"
+            leftIcon={
+              <PlusCircle
+                className="h-icon-sm w-icon-sm shrink-0"
+                aria-hidden="true"
+              />
+            }
           >
-            <PlusCircle
-              className="w-icon-sm h-icon-sm shrink-0"
-              aria-hidden="true"
-            />
             <span className="sr-only sm:not-sr-only">{publishLabel}</span>
-          </Link>
+          </Button>
         </div>
       </div>
 
@@ -349,13 +353,14 @@ export const MyListingsPage: React.FC = () => {
                   title={emptyStateCopy.title}
                   description={emptyStateCopy.description}
                   action={
-                    <Link
+                    <Button
                       to={publishCta.to}
-                      className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors"
+                      variant="primary"
+                      size="compact"
+                      leftIcon={<PlusCircle className="h-4 w-4" />}
                     >
-                      <PlusCircle className="w-4 h-4" />
                       {t("sellerworkspace.myListingsPage.deposerUneAnnonce")}
-                    </Link>
+                    </Button>
                   }
                 />
               }

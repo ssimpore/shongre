@@ -372,7 +372,7 @@ const IDENTITIES: readonly TaxonomyIdentityTuple[] = [
     "cours-particuliers",
     "Cours particuliers & Formation",
     "Tutoring & Lessons",
-    "Cours & Formation",
+    "Éducation & Formation",
     "Tutoring",
     "services",
     "Tag",

@@ -4,7 +4,7 @@ export interface RouteUnderTest {
   path: string;
   name: string;
   persona: PersonaName;
-  /** Set when the route needs a beat longer than `networkidle` to settle. */
+  /** Set when the route needs a beat longer than `domcontentloaded` to settle. */
   settleMs?: number;
 }
 
@@ -67,7 +67,11 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
 ];
 
 export const BUYER_ROUTES: RouteUnderTest[] = [
-  { path: "/compte/finances", name: "account-finance", persona: "individual_buyer" },
+  {
+    path: "/compte/finances",
+    name: "account-finance",
+    persona: "individual_buyer",
+  },
   { path: "/compte/favoris", name: "favorites", persona: "individual_buyer" },
   { path: "/compte/messages", name: "messaging", persona: "individual_buyer" },
   { path: "/compte/achats", name: "transactions", persona: "individual_buyer" },
@@ -159,7 +163,7 @@ export const PRO_ROUTES: RouteUnderTest[] = [
     persona: "pro_auto",
   },
   {
-    path: "/compte/cours/organisation",
+    path: "/compte/education/organisation",
     name: "course-organization-workspace",
     persona: "pro_courses",
   },
@@ -173,7 +177,7 @@ export const ADMIN_ROUTES: RouteUnderTest[] = [
   {
     path: "/admin/verifications",
     name: "admin-verifications",
-    persona: "admin",
+    persona: "trust_safety",
   },
   { path: "/admin/marches", name: "admin-markets", persona: "admin" },
   { path: "/admin/taxonomie", name: "admin-taxonomy", persona: "admin" },
@@ -181,9 +185,17 @@ export const ADMIN_ROUTES: RouteUnderTest[] = [
   { path: "/admin/fournisseurs", name: "admin-providers", persona: "admin" },
   { path: "/admin/roles", name: "admin-roles", persona: "admin" },
   { path: "/admin/audit", name: "admin-audit", persona: "admin" },
-  { path: "/admin/crm", name: "crm-overview", persona: "admin" },
-  { path: "/admin/crm/contacts", name: "crm-contacts", persona: "admin" },
-  { path: "/admin/crm/pipeline", name: "crm-pipeline", persona: "admin" },
+  { path: "/admin/crm", name: "crm-overview", persona: "commercial" },
+  {
+    path: "/admin/crm/contacts",
+    name: "crm-contacts",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/pipeline",
+    name: "crm-pipeline",
+    persona: "commercial",
+  },
   { path: "/admin/emploi", name: "employment-admin", persona: "admin" },
 ];
 

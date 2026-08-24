@@ -7,7 +7,8 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: React.ReactNode;
-  description?: string;
+  description?: React.ReactNode;
+  headerIcon?: React.ReactNode;
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
@@ -18,6 +19,7 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   description,
+  headerIcon,
   children,
   maxWidth = "md",
   className = "",
@@ -36,7 +38,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-overlay backdrop-blur-xs animate-in fade-in"
+      className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-overlay backdrop-blur-xs"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -50,15 +52,20 @@ export const Modal: React.FC<ModalProps> = ({
         className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-bg-surface rounded-overlay shadow-overlay border border-border-base overflow-hidden animate-in zoom-in-95 ${className}`}
       >
         <div className="flex items-start justify-between gap-3 p-5 sm:p-6 border-b border-border-subtle shrink-0">
-          <div className="min-w-0">
-            {title && (
-              <h2 id={titleId} className="text-lg font-bold text-text-main">
-                {title}
-              </h2>
-            )}
-            {description && (
-              <p className="text-xs text-text-muted mt-0.5">{description}</p>
-            )}
+          <div className="flex min-w-0 items-start gap-3">
+            {headerIcon && <div className="shrink-0">{headerIcon}</div>}
+            <div className="min-w-0">
+              {title && (
+                <h2 id={titleId} className="text-lg font-bold text-text-main">
+                  {title}
+                </h2>
+              )}
+              {description && (
+                <div className="text-xs text-text-muted mt-0.5">
+                  {description}
+                </div>
+              )}
+            </div>
           </div>
           <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
             <X className="w-icon-lg h-icon-lg text-text-muted" />
@@ -93,7 +100,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-modal bg-overlay backdrop-blur-xs flex items-end justify-center sm:items-center p-0 sm:p-4 animate-in fade-in"
+      className="fixed inset-0 z-modal bg-overlay backdrop-blur-xs flex items-end justify-center sm:items-center p-0 sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

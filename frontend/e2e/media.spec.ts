@@ -63,7 +63,7 @@ for (const viewport of [
       test(`${route.name} declares a source ladder and respects the slot`, async ({ page }) => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         await usePersona(page, 'guest');
-        await page.goto(route.path, { waitUntil: 'networkidle' });
+        await page.goto(route.path, { waitUntil: 'domcontentloaded' });
         await waitForStableLayout(page);
 
         const images = await paintedImages(page);
@@ -97,7 +97,7 @@ for (const viewport of [
 test('listing detail marks its lead photo as the priority fetch', async ({ page }) => {
   await usePersona(page, 'guest');
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto(`/annonce/${DEMO_LISTING_ID}`, { waitUntil: 'networkidle' });
+  await page.goto(`/annonce/${DEMO_LISTING_ID}`, { waitUntil: 'domcontentloaded' });
   await waitForStableLayout(page);
 
   // The gallery's lead photo is the LCP element, so it must not be lazy.

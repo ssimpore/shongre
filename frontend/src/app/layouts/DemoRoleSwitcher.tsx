@@ -16,6 +16,7 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
+import type { MessageKey } from "../../i18n/messages.fr";
 import { useToast } from "../providers/ToastProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../../configuration/routes";
@@ -24,8 +25,10 @@ import { isDemoMode } from "../../api/client/api-client.config";
 interface DemoPersona {
   userKey: string;
   userId?: string;
-  label: string;
-  desc: string;
+  label?: string;
+  labelKey?: MessageKey;
+  desc?: string;
+  descKey?: MessageKey;
   group: "marketplace" | "verticals" | "staff";
   destination?: string;
   Icon: LucideIcon;
@@ -97,7 +100,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
   {
     userKey: "pro_courses_sophie",
     userId: "user_tutor_sophie",
-    label: "7. Pro Cours (Sophie · Collège Lumière)",
+    labelKey: "verticals.education.demoPersona",
     desc: "Organisme · offres, demandes, CRM et statistiques",
     group: "verticals",
     destination: routes.courses.organization(),
@@ -145,9 +148,19 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     iconClassName: "text-danger",
   },
   {
+    userKey: "compliance_samia",
+    userId: "user_compliance_samia",
+    label: "12. Conformité (Samia)",
+    desc: "Revues manuelles, politiques KYC/KYB et journal d’audit",
+    group: "staff",
+    destination: routes.admin.verifications(),
+    Icon: Shield,
+    iconClassName: "text-violet-600",
+  },
+  {
     userKey: "finance_marc",
     userId: "user_finance_marc",
-    label: "12. Finance Shongre (Marc)",
+    label: "13. Finance Shongre (Marc)",
     desc: "Revenus, transactions, remboursements et rapprochement",
     group: "staff",
     destination: routes.admin.finance(),
@@ -157,7 +170,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
   {
     userKey: "ops_elena",
     userId: "user_ops_elena",
-    label: "13. Opérations Shongre (Elena)",
+    label: "14. Opérations Shongre (Elena)",
     desc: "Santé des fournisseurs et opérations de marché",
     group: "staff",
     destination: routes.admin.providers(),
@@ -165,9 +178,19 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     iconClassName: "text-warning",
   },
   {
+    userKey: "commercial_lea",
+    userId: "user_commercial_lea",
+    labelKey: "shell.demoRoleSwitcher.commercialLabel",
+    descKey: "shell.demoRoleSwitcher.commercialDescription",
+    group: "staff",
+    destination: routes.admin.crm(),
+    Icon: BriefcaseBusiness,
+    iconClassName: "text-fuchsia-600",
+  },
+  {
     userKey: "admin_antoine",
     userId: "user_admin_antoine",
-    label: "14. Administrateur Système (Antoine)",
+    label: "16. Administrateur Système (Antoine)",
     desc: "Configuration, marchés, plans et fournisseurs",
     group: "staff",
     destination: routes.admin.overview(),
@@ -177,7 +200,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
   {
     userKey: "super_admin_alex",
     userId: "user_super_admin_alex",
-    label: "15. Propriétaire Gouvernance (Alexandre)",
+    label: "17. Propriétaire Gouvernance (Alexandre)",
     desc: "Permissions, rôles, identifiants sensibles et audit",
     group: "staff",
     destination: routes.admin.roles(),
@@ -229,15 +252,21 @@ const DemoRoleSwitcherContent: React.FC = () => {
    * personas fall back to their real platform label instead of appearing as a
    * signed-out visitor.
    */
+  const personaLabel = (persona: DemoPersona) =>
+    persona.labelKey ? t(persona.labelKey) : (persona.label ?? persona.userKey);
+  const personaDescription = (persona: DemoPersona) =>
+    persona.descKey ? t(persona.descKey) : (persona.desc ?? "");
   const matchedRole = DEMO_PERSONAS.find((persona) =>
     persona.userId ? persona.userId === currentUser?.id : !currentUser,
   );
-  const currentRoleObj = matchedRole ?? {
-    label: roleLabel(platformRole),
-    desc: t("shell.demoRoleSwitcher.roleHorsPersonasDemo"),
-    Icon: Shield,
-    iconClassName: "text-stone-400",
-  };
+  const currentRoleObj = matchedRole
+    ? { ...matchedRole, label: personaLabel(matchedRole) }
+    : {
+        label: roleLabel(platformRole),
+        desc: t("shell.demoRoleSwitcher.roleHorsPersonasDemo"),
+        Icon: Shield,
+        iconClassName: "text-stone-400",
+      };
 
   const handlePersonaSwitch = async (persona: DemoPersona) => {
     const isActive = persona.userId
@@ -258,7 +287,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
         persona.userKey === "guest"
           ? t("shell.demoRoleSwitcher.guestActivated")
           : t("shell.demoRoleSwitcher.personaActivated", {
-              profile: persona.label.replace(/^\d+\.\s*/, ""),
+              profile: personaLabel(persona).replace(/^\d+\.\s*/, ""),
             }),
         t("shell.demoRoleSwitcher.sessionUpdated"),
       );
@@ -311,7 +340,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
             {t("shell.demoRoleSwitcher.modeDemo")}
           </span>
           <span className="hidden sm:inline text-stone-400">
-            {t("shell.demoRoleSwitcher.testerLes10ProfilsEt")}
+            {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours")}
           </span>
         </div>
 
@@ -391,7 +420,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                          <span>{persona.label}</span>
+                          <span>{personaLabel(persona)}</span>
                           {isSwitching ? (
                             <LoaderCircle
                               className="h-icon-sm w-icon-sm shrink-0 animate-spin text-primary"
@@ -402,7 +431,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
                           ) : null}
                         </div>
                         <div className="mt-0.5 text-xs font-normal leading-tight text-stone-400">
-                          {persona.desc}
+                          {personaDescription(persona)}
                         </div>
                       </div>
                     </button>

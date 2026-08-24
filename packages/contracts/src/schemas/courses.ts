@@ -586,7 +586,6 @@ export const courseMarketConfigSchema = z.object({
   learnerRequestValidityDays: z.number().int().positive(),
   leadValidityHours: z.number().int().positive(),
   defaultLeadCreditCost: z.number().int().nonnegative(),
-  commissionRateBps: z.number().int().nonnegative(),
   cancellationWindowHours: z.number().int().nonnegative(),
   featureFlags: courseFeatureFlagsSchema,
   taxEligibilityWording: z.string(),

@@ -75,412 +75,39 @@ export interface IProviderRepository {
   ): ProviderImpactAnalysis;
   getAuditHistory(providerId?: string): ProviderAuditEvent[];
 }
-
+/**
+ * Demo configuration keeps deterministic journeys available without
+ * impersonating server credentials or live provider health.
+ */
 export const INITIAL_PROVIDER_CONFIGURATIONS: Record<
   string,
   ProviderConfiguration
-> = {
-  mangopay: {
-    providerId: "mangopay",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-10T10:00:00Z",
-    credentialKeyHint: "•••• •••• •••• 4242 (Géré côté serveur)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      clientId: "shongre_master_eu",
-      walletIdPlatform: "wlt_shongre_escrow_master_01",
-      enable3DSecureV2: true,
-      sandboxMode: false,
-    },
-    marketOverrides: {
-      BE: {
-        enabled: true,
-        priority: 1,
-        customNotes: "Marché Belge — Séquestre SEPA transfrontalier actif",
+> = Object.fromEntries(
+  CANONICAL_PROVIDER_REGISTRY.map((provider, index) => {
+    const isNotNeeded = provider.operational.lifecycle === "NOT_NEEDED";
+    return [
+      provider.id,
+      {
+        providerId: provider.id,
+        enabled: !isNotNeeded,
+        environment: "demo" as const,
+        priority: index + 1,
+        credentialStatus: "not_required" as const,
+        health: "unknown" as const,
+        healthMessage:
+          provider.operational.adapterStatus === "IMPLEMENTED"
+            ? "Adapter détecté dans le code ; aucune santé live n'est vérifiée en mode démo."
+            : provider.operational.adapterStatus === "DEMO_ONLY"
+              ? "Simulation déterministe uniquement — aucun statut de production."
+              : "Aucun adaptateur de production n'est implémenté.",
+        settings: {},
+        marketOverrides: {},
+        updatedAt: "2026-08-24T00:00:00.000Z",
+        version: 2,
       },
-    },
-    updatedAt: "2026-08-10T10:00:00Z",
-    version: 1,
-  },
-  stripe: {
-    providerId: "stripe",
-    enabled: true,
-    environment: "demo",
-    priority: 2, // Secondary for payments, primary for subscriptions
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-11T12:00:00Z",
-    credentialKeyHint: "pk_live_••••••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      publishableKey: "pk_live_51ShongreSecuredKey2026",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-11T12:00:00Z",
-    version: 1,
-  },
-  mondial_relay: {
-    providerId: "mondial_relay",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
-    credentialKeyHint: "BDTEST13 (Configuré)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      enseigneCode: "BDTEST13",
-      defaultWeightGrams: 1000,
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-12T14:00:00Z",
-    version: 1,
-  },
-  colissimo: {
-    providerId: "colissimo",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
-    credentialKeyHint: "Contrat 999999 (Actif)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      contractNumber: "999999",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-12T14:00:00Z",
-    version: 1,
-  },
-  chronopost: {
-    providerId: "chronopost",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
-    credentialKeyHint: "Compte 12345678 (Actif)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      accountNumber: "12345678",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-12T14:00:00Z",
-    version: 1,
-  },
-  cocolis: {
-    providerId: "cocolis",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-12T14:00:00Z",
-    credentialKeyHint: "App shongre_bulky_01",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      apiAppId: "shongre_bulky_01",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-12T14:00:00Z",
-    version: 1,
-  },
-  google_identity: {
-    providerId: "google_identity",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "123456-shongre.apps.googleusercontent.com",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      clientId: "1234567890-shongre.apps.googleusercontent.com",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  apple_id: {
-    providerId: "apple_id",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "com.shongre.platform.signin",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      servicesId: "com.shongre.platform.signin",
-      teamId: "A1B2C3D4E5",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  resend: {
-    providerId: "resend",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-05T09:00:00Z",
-    credentialKeyHint: "re_••••••••••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      fromEmail: "notifications@shongre.com",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-05T09:00:00Z",
-    version: 1,
-  },
-  brevo: {
-    providerId: "brevo",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-05T09:00:00Z",
-    credentialKeyHint: "xkeysib-••••••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      defaultSenderName: "L'équipe Shongre",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-05T09:00:00Z",
-    version: 1,
-  },
-  twilio: {
-    providerId: "twilio",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-08T11:00:00Z",
-    credentialKeyHint: "ACxxxxxxxx••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      accountSid: "AC9876543210shongretwilioaccount",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-08T11:00:00Z",
-    version: 1,
-  },
-  google_gemini: {
-    providerId: "google_gemini",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "AIzaSy••••••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      modelName: "gemini-2.5-flash",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  openai: {
-    providerId: "openai",
-    enabled: true,
-    environment: "demo",
-    priority: 2,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "sk-proj-••••••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      model: "gpt-4o-mini",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  tavily: {
-    providerId: "tavily",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "tvly-••••••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {},
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  meilisearch: {
-    providerId: "meilisearch",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "search_key_••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      hostUrl: "https://search.shongre.internal",
-      searchApiKey: "search_key_public_2026_shongre",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  osm_nominatim: {
-    providerId: "osm_nominatim",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "not_required",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      userAgent: "ShongrePlatform/2.0 (contact@shongre.com)",
-      preferBanInFrance: true,
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  insee_sirene: {
-    providerId: "insee_sirene",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "Pappers API (Connecté)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {},
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  veriff: {
-    providerId: "veriff",
-    enabled: true,
-    environment: "sandbox",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "veriff_pub_••••••••",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      apiKey: "veriff_pub_live_demo_01",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  cloudflare_r2: {
-    providerId: "cloudflare_r2",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "Bucket shongre-media-public",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      accountId: "cf_acc_shongre_prod_01",
-      bucketMediaName: "shongre-media-public",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  plausible: {
-    providerId: "plausible",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "not_required",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      domain: "shongre.com",
-      scriptSource: "https://plausible.io/js/script.js",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  sentry: {
-    providerId: "sentry",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "DSN Configuré",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      dsn: "https://o123456@sentry.shongre.internal/1",
-      tracesSampleRate: 0.1,
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  pennylane: {
-    providerId: "pennylane",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "Pennylane Token (Actif)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      companyId: "shongre_sas_01",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-  cloudflare_turnstile: {
-    providerId: "cloudflare_turnstile",
-    enabled: true,
-    environment: "demo",
-    priority: 1,
-    credentialStatus: "configured",
-    credentialLastUpdatedAt: "2026-08-01T08:00:00Z",
-    credentialKeyHint: "0x4AAAAAA•••••••• (Actif)",
-    health: "healthy",
-    healthLastCheckedAt: "2026-08-17T02:00:00Z",
-    settings: {
-      siteKey: "0x4AAAAAAAJkL1234567890",
-    },
-    marketOverrides: {},
-    updatedAt: "2026-08-01T08:00:00Z",
-    version: 1,
-  },
-};
+    ];
+  }),
+);
 
 export class DemoProviderRepository implements IProviderRepository {
   private auditEvents: ProviderAuditEvent[] = [];
@@ -493,10 +120,10 @@ export class DemoProviderRepository implements IProviderRepository {
     const existing = storageService.get<Record<
       string,
       ProviderConfiguration
-    > | null>("shongre_provider_configs_v1", null);
+    > | null>("shongre_provider_configs_v2", null);
     if (!existing) {
       storageService.set(
-        "shongre_provider_configs_v1",
+        "shongre_provider_configs_v2",
         INITIAL_PROVIDER_CONFIGURATIONS,
       );
     }
@@ -513,7 +140,7 @@ export class DemoProviderRepository implements IProviderRepository {
   public getConfigurations(): Record<string, ProviderConfiguration> {
     return (
       storageService.get<Record<string, ProviderConfiguration>>(
-        "shongre_provider_configs_v1",
+        "shongre_provider_configs_v2",
         INITIAL_PROVIDER_CONFIGURATIONS,
       ) || INITIAL_PROVIDER_CONFIGURATIONS
     );
@@ -569,7 +196,7 @@ export class DemoProviderRepository implements IProviderRepository {
     }
 
     configs[providerId] = newConfig;
-    storageService.set("shongre_provider_configs_v1", configs);
+    storageService.set("shongre_provider_configs_v2", configs);
 
     // Audit log
     this.recordAuditEvent({
@@ -634,7 +261,7 @@ export class DemoProviderRepository implements IProviderRepository {
     };
 
     configs[providerId] = newConfig;
-    storageService.set("shongre_provider_configs_v1", configs);
+    storageService.set("shongre_provider_configs_v2", configs);
 
     this.recordAuditEvent({
       actorId: actor?.id || "admin-1",
@@ -676,7 +303,7 @@ export class DemoProviderRepository implements IProviderRepository {
     };
 
     configs[providerId] = newConfig;
-    storageService.set("shongre_provider_configs_v1", configs);
+    storageService.set("shongre_provider_configs_v2", configs);
 
     this.recordAuditEvent({
       actorId: actor?.id || "admin-1",
@@ -701,33 +328,9 @@ export class DemoProviderRepository implements IProviderRepository {
     const provider = this.getProvider(providerId);
     if (!provider) throw new Error(`Prestataire "${providerId}" introuvable.`);
 
-    const configs = this.getConfigurations();
-    const current = configs[providerId];
-    if (!current)
-      throw new Error(`Configuration introuvable pour "${providerId}".`);
-
-    const newConfig: ProviderConfiguration = {
-      ...current,
-      health,
-      healthMessage: message,
-      healthLastCheckedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    configs[providerId] = newConfig;
-    storageService.set("shongre_provider_configs_v1", configs);
-
-    this.recordAuditEvent({
-      actorId: actor?.id || "admin-1",
-      actorName: actor?.name || "Administrateur",
-      actorRole: actor?.role || "admin",
-      providerId,
-      providerName: provider.name,
-      action: "health_simulated",
-      details: `État de santé simulé : ${health} ${message ? `(${message})` : ""}`,
-    });
-
-    return newConfig;
+    throw new Error(
+      "La santé opérationnelle ne peut pas être simulée. Utilisez le diagnostic backend pour enregistrer une preuve réelle.",
+    );
   }
 
   public async testProvider(
@@ -752,73 +355,23 @@ export class DemoProviderRepository implements IProviderRepository {
       };
     }
 
-    // Deterministic simulation
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    const config = this.getConfiguration(providerId);
-
-    if (
-      scenario === "missing_credentials" ||
-      config?.credentialStatus === "not_configured"
-    ) {
-      return {
-        providerId,
-        success: false,
-        scenario: "missing_credentials",
-        latencyMs: 120,
-        message:
-          "Échec du test : Identifiants ou clé secrète serveur non configurés.",
-        testedAt: new Date().toISOString(),
-        diagnostics: {
-          code: "PROVIDER_CREDENTIALS_MISSING",
-          credentialStatus: config?.credentialStatus || "not_configured",
-        },
-      };
-    }
-
-    if (scenario === "timeout") {
-      return {
-        providerId,
-        success: false,
-        scenario: "timeout",
-        latencyMs: 5000,
-        message:
-          "Échec du test : Délai d'attente dépassé (HTTP 504 Gateway Timeout).",
-        testedAt: new Date().toISOString(),
-        diagnostics: {
-          code: "PROVIDER_TIMEOUT",
-          endpoint: provider.metadata.website || "api.provider.internal",
-        },
-      };
-    }
-
-    if (scenario === "invalid_config") {
-      return {
-        providerId,
-        success: false,
-        scenario: "invalid_config",
-        latencyMs: 180,
-        message:
-          "Échec du test : Paramètres de configuration rejetés par l'API partenaire.",
-        testedAt: new Date().toISOString(),
-        diagnostics: {
-          code: "PROVIDER_CONFIGURATION_INVALID",
-        },
-      };
-    }
-
+    const demoConfig = this.getConfiguration(providerId);
     return {
       providerId,
-      success: true,
-      scenario: "healthy",
-      latencyMs: 85,
-      message: `Connexion au prestataire ${provider.name} établie avec succès. Tous les endpoints répondent normalement.`,
+      success: false,
+      supported: false,
+      scenario,
+      latencyMs: 0,
+      message:
+        demoConfig?.environment === "demo"
+          ? "Mode démo : aucun endpoint externe n'a été contacté. Lancez ce diagnostic via le backend dans un environnement configuré."
+          : "Le dépôt de démonstration n'est pas autorisé à tester une intégration externe.",
       testedAt: new Date().toISOString(),
+      evidence: "none",
       diagnostics: {
-        code: "OK",
-        environment: config?.environment || "demo",
-        capabilitiesVerified: provider.capabilities,
-        protocol: "HTTPS / TLS 1.3",
+        code: "LIVE_DIAGNOSTIC_REQUIRES_BACKEND",
+        adapterStatus: provider.operational.adapterStatus,
+        lifecycle: provider.operational.lifecycle,
       },
     };
   }

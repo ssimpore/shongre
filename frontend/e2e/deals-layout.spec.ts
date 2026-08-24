@@ -9,7 +9,7 @@ for (const viewport of [
   test(`wraps and paginates Bons plans cards at ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await usePersona(page, 'guest');
-    await page.goto('/bons-plans', { waitUntil: 'networkidle' });
+    await page.goto('/bons-plans', { waitUntil: 'domcontentloaded' });
     await waitForStableLayout(page);
     const dealsRegion = page.getByRole('region', { name: 'Annonces en promotion' });
     await expect(dealsRegion.locator('article')).toHaveCount(8);

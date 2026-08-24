@@ -13,4 +13,16 @@ describe("demo listing repository taxonomy filters", () => {
 
     expect(result.listings.map((listing) => listing.id)).toContain("list-102");
   });
+
+  it.each(["Education", "cours de maths"])(
+    "keeps Education discovery searchable with %s",
+    async (query) => {
+      const result = await listingRepository.getListings({ query, limit: 100 });
+      expect(
+        result.listings.some(
+          (listing) => listing.attributes.verticalType === "tutoring",
+        ),
+      ).toBe(true);
+    },
+  );
 });

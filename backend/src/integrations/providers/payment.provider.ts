@@ -21,7 +21,6 @@ export interface IPaymentProvider {
   requestPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
   getBalance(
     sellerId: string,
@@ -49,12 +48,11 @@ export class DemoPaymentProvider implements IPaymentProvider {
   async requestPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
     return {
       payoutId: deterministicProviderId(
         "po_demo",
-        `${sellerId}:${amount}:${iban.slice(-4)}`,
+        `${sellerId}:${amount}:provider-held-destination`,
       ),
       status: "processing",
     };
@@ -94,9 +92,15 @@ export class StripePaymentProvider implements IPaymentProvider {
   async requestPayout(
     sellerId: string,
     amount: number,
-    iban: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
-    return stripeAdapter.createPayout(sellerId, amount, iban);
+    void sellerId;
+    void amount;
+    throw new AppError({
+      code: "NETWORK_ERROR",
+      statusCode: 503,
+      message:
+        "Les versements Stripe Connect doivent être activés via le compte PSP vérifié.",
+    });
   }
 
   async getBalance(

@@ -18,7 +18,7 @@ test.describe("social authentication and account security", () => {
 
   test("a guest completes deterministic Google sign-in and restores the account", async ({ page }) => {
     await usePersona(page, "guest");
-    await page.goto("/connexion?returnTo=%2Fcompte", { waitUntil: "networkidle" });
+    await page.goto("/connexion?returnTo=%2Fcompte", { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: "Continuer avec Google" }).click();
 
     await expect(page).toHaveURL(/\/compte$/);
@@ -27,7 +27,7 @@ test.describe("social authentication and account security", () => {
 
   test("an external return target is collapsed to a same-origin path", async ({ page }) => {
     await usePersona(page, "guest");
-    await page.goto("/connexion?returnTo=https%3A%2F%2Fevil.example%2Fsteal", { waitUntil: "networkidle" });
+    await page.goto("/connexion?returnTo=https%3A%2F%2Fevil.example%2Fsteal", { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: "Continuer avec Apple" }).click();
 
     await expect(page).toHaveURL(/\/$/);
@@ -41,7 +41,7 @@ test.describe("social authentication and account security", () => {
 
     await usePersona(page, "individual_buyer");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/compte/securite-compte", { waitUntil: "networkidle" });
+    await page.goto("/compte/securite-compte", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { level: 1, name: "Connexion & sécurité" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Méthodes de connexion" })).toBeVisible();
     await expect(page.getByText("Google", { exact: true })).toBeVisible();

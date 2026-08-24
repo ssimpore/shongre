@@ -5,7 +5,7 @@ import { waitForStableLayout } from './overflow';
 test('desktop filters are collapsed by default and can be reopened', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await usePersona(page, 'guest');
-  await page.goto('/recherche', { waitUntil: 'networkidle' });
+  await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
   await waitForStableLayout(page);
 
   const filterPanel = page.locator('aside').filter({ hasText: /^Filtres/i });
@@ -35,7 +35,7 @@ test('condition is filterable, not just displayed', async ({ page }) => {
      while `filters.conditions` had been honoured by the data layer all along. */
   await page.setViewportSize({ width: 1280, height: 800 });
   await usePersona(page, 'guest');
-  await page.goto('/recherche', { waitUntil: 'networkidle' });
+  await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
   await waitForStableLayout(page);
 
   await page.getByRole('button', { name: 'Afficher les filtres' }).click();
@@ -56,7 +56,7 @@ test('condition is filterable, not just displayed', async ({ page }) => {
 test('save search shares the results toolbar row with filters', async ({ page }) => {
   await page.setViewportSize({ width: 888, height: 795 });
   await usePersona(page, 'guest');
-  await page.goto('/recherche?category=emploi', { waitUntil: 'networkidle' });
+  await page.goto('/recherche?category=emploi', { waitUntil: 'domcontentloaded' });
   await waitForStableLayout(page);
 
   const filterButton = page.locator('button[aria-label^="Ouvrir les filtres de recherche"]');

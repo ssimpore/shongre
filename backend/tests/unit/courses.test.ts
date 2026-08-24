@@ -12,8 +12,8 @@ const createService = () => {
   return { repository, service: new CoursesService(repository) };
 };
 
-describe("Shongre Cours domain service", () => {
-  it("projects Cours plan prices from the active commercial version", async () => {
+describe("Shongre Education course domain service", () => {
+  it("projects Education plan prices from the active commercial version", async () => {
     class CommercialRepository extends DemoBusinessRulesRepository {
       override async getActiveCatalog(marketCode: string) {
         const catalog = await super.getActiveCatalog(marketCode);

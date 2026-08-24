@@ -7,11 +7,15 @@ import {
   XCircle,
   Clock,
   ShieldCheck,
-  Globe,
   Activity,
   Layers,
   ArrowRight,
+  CircleHelp,
 } from "lucide-react";
+import {
+  getProviderOperationalDefinition,
+  SHONGRE_CAPABILITY_REQUIREMENTS,
+} from "@shongre/contracts/provider-platform";
 import {
   Provider,
   ProviderConfiguration,
@@ -34,39 +38,51 @@ export const ProviderOverviewDashboard: React.FC<
   const { t } = useTranslation();
   // Key Metrics
   const metrics = useMemo(() => {
-    let activeCount = 0;
-    let disabledCount = 0;
+    let implementedCount = 0;
+    let productionReadyCount = 0;
     let requiresActionCount = 0;
-    let degradedCount = 0;
     let totalOverrides = 0;
+    let verifiedHealthCount = 0;
+    let verifiedHealthyCount = 0;
 
     providers.forEach((p) => {
       const cfg = configurations[p.id];
-      if (cfg) {
-        if (cfg.enabled) {
-          activeCount++;
-          if (cfg.health === "degraded" || cfg.health === "unavailable") {
-            degradedCount++;
-          }
-          if (cfg.credentialStatus === "not_configured") {
-            requiresActionCount++;
-          }
-        } else {
-          disabledCount++;
-        }
-        totalOverrides += Object.keys(cfg.marketOverrides || {}).length;
-      } else {
+      if (p.operational.adapterStatus === "IMPLEMENTED") implementedCount++;
+      if (
+        p.operational.lifecycle === "PRODUCTION_READY" ||
+        p.operational.lifecycle === "ACTIVE"
+      ) {
+        productionReadyCount++;
+      }
+      if (
+        p.operational.criticality === "P0" &&
+        p.operational.lifecycle !== "NOT_NEEDED" &&
+        p.operational.adapterStatus !== "IMPLEMENTED"
+      ) {
         requiresActionCount++;
       }
+      if (
+        cfg?.environment !== "demo" &&
+        cfg?.healthLastCheckedAt &&
+        cfg.health !== "unknown"
+      ) {
+        verifiedHealthCount++;
+        if (cfg.health === "healthy") verifiedHealthyCount++;
+      }
+      totalOverrides += Object.keys(cfg?.marketOverrides || {}).length;
     });
 
     return {
       total: providers.length,
-      active: activeCount,
-      disabled: disabledCount,
+      implemented: implementedCount,
+      productionReady: productionReadyCount,
       requiresAction: requiresActionCount,
-      degraded: degradedCount,
       overrides: totalOverrides,
+      verifiedHealthCount,
+      healthScore:
+        verifiedHealthCount > 0
+          ? Math.round((verifiedHealthyCount / verifiedHealthCount) * 100)
+          : null,
     };
   }, [providers, configurations]);
 
@@ -78,43 +94,43 @@ export const ProviderOverviewDashboard: React.FC<
   }> = [
     {
       capability: "payment.card",
-      label: "Paiement en Ligne (Séquestre)",
-      description: "Achat direct & acomptes sécurisés",
+      label: "Paiement par carte",
+      description: "Checkout Stripe ; hors flux marketplace/payout",
     },
     {
       capability: "delivery.relay_point",
       label: "Livraison Point Relais",
-      description: "Mondial Relay & casiers Lockers",
+      description: "Adaptateur transporteur requis",
     },
     {
       capability: "delivery.home_delivery",
       label: "Livraison Domicile",
-      description: "La Poste Colissimo standard",
+      description: "Adaptateur transporteur requis",
     },
     {
       capability: "auth.oauth_google",
       label: "Connexion Google SSO",
-      description: "OAuth 2.0 Identity Services",
+      description: "Adaptateur présent, preuve E2E requise",
     },
     {
       capability: "email.transactional",
       label: "Emails Transactionnels",
-      description: "Notifications & confirmations d'achat",
+      description: "Point de livraison générique à configurer",
     },
     {
       capability: "ai.listing_assistance",
       label: "Assistant IA Vendeurs",
-      description: "Google Gemini 2.5 Flash",
+      description: "Simulation uniquement ; mode manuel disponible",
     },
     {
       capability: "verification.business",
       label: "Contrôle SIRET Entreprises",
-      description: "INSEE & Pappers KYB",
+      description: "Simulation uniquement ; revue manuelle requise",
     },
     {
       capability: "maps.display",
       label: "Cartographie & BAN",
-      description: "OpenStreetMap & Base Adresse Nationale",
+      description: "Tuiles présentes ; géocodage non implémenté",
     },
   ];
 
@@ -140,8 +156,8 @@ export const ProviderOverviewDashboard: React.FC<
             <span className="text-2xl font-black text-stone-900">
               {metrics.total}
             </span>
-            <span className="ml-2 text-xs font-medium text-success">
-              {metrics.active} actives
+            <span className="ml-2 text-xs font-medium text-stone-500">
+              {metrics.implemented} avec adaptateur
             </span>
           </div>
         </div>
@@ -153,9 +169,11 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
             <span
               className={`p-2 rounded-lg shrink-0 ${
-                metrics.degraded === 0
-                  ? "bg-success-surface text-success"
-                  : "bg-warning-surface text-warning"
+                metrics.healthScore === null
+                  ? "bg-stone-100 text-stone-600"
+                  : metrics.healthScore === 100
+                    ? "bg-success-surface text-success"
+                    : "bg-warning-surface text-warning"
               }`}
             >
               <Activity className="w-4 h-4" />
@@ -163,18 +181,20 @@ export const ProviderOverviewDashboard: React.FC<
           </div>
           <div className="mt-3">
             <span className="text-2xl font-black text-stone-900">
-              {metrics.degraded === 0
-                ? "100%"
-                : `${metrics.total - metrics.degraded}/${metrics.total}`}
+              {metrics.healthScore === null ? "—" : `${metrics.healthScore}%`}
             </span>
             <span
               className={`ml-2 text-xs font-medium ${
-                metrics.degraded === 0 ? "text-success" : "text-warning"
+                metrics.healthScore === null
+                  ? "text-stone-500"
+                  : metrics.healthScore === 100
+                    ? "text-success"
+                    : "text-warning"
               }`}
             >
-              {metrics.degraded === 0
-                ? "Tous opérationnels"
-                : `${metrics.degraded} dégradé(s)`}
+              {metrics.healthScore === null
+                ? "Aucune preuve live"
+                : `${metrics.verifiedHealthCount} vérifiée(s)`}
             </span>
           </div>
         </div>
@@ -182,18 +202,18 @@ export const ProviderOverviewDashboard: React.FC<
         <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
-              Surcharges Territoires
+              Prêts pour production
             </span>
             <span className="p-2 rounded-lg bg-info-surface text-info">
-              <Globe className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4" />
             </span>
           </div>
           <div className="mt-3">
             <span className="text-2xl font-black text-stone-900">
-              {metrics.overrides}
+              {metrics.productionReady}
             </span>
             <span className="ml-2 text-xs font-medium text-stone-500">
-              {t("admin.providerOverviewDashboard.heritageFranceActif")}
+              sur {metrics.total}
             </span>
           </div>
         </div>
@@ -224,7 +244,7 @@ export const ProviderOverviewDashboard: React.FC<
             >
               {metrics.requiresAction === 0
                 ? "Aucun blocage"
-                : "Identifiants en attente"}
+                : "Capacités P0 manquantes"}
             </span>
           </div>
         </div>
@@ -260,13 +280,38 @@ export const ProviderOverviewDashboard: React.FC<
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {criticalCapabilities.map((item) => {
-            const health = providerService.resolveCapabilityHealth(
-              item.capability,
-              "FR",
+            const requirement = SHONGRE_CAPABILITY_REQUIREMENTS.find(
+              ({ capability }) => capability === item.capability,
             );
-            const isOperational = health.status === "operational";
-            const isDegraded = health.status === "degraded";
-            const isUnavailable = health.status === "unavailable";
+            const owner = requirement
+              ? getProviderOperationalDefinition(
+                  requirement.primaryProviderId,
+                )
+              : undefined;
+            const cfg = owner ? configurations[owner.id] : undefined;
+            const implemented = Boolean(
+              owner?.implementedCapabilities.includes(item.capability),
+            );
+            const demoOnly = Boolean(
+              owner?.demoOnlyCapabilities?.includes(item.capability),
+            );
+            const hasVerifiedHealth = Boolean(
+              cfg?.environment !== "demo" && cfg?.healthLastCheckedAt,
+            );
+            const status = !owner || (!implemented && !demoOnly)
+              ? "unavailable"
+              : demoOnly
+                ? "demo"
+                : !hasVerifiedHealth
+                  ? "unknown"
+                  : cfg?.health === "healthy"
+                    ? "operational"
+                    : cfg?.health === "degraded"
+                      ? "degraded"
+                      : "unavailable";
+            const catalogOwner = owner
+              ? providers.find(({ id }) => id === owner.id)
+              : undefined;
 
             return (
               <div
@@ -278,22 +323,34 @@ export const ProviderOverviewDashboard: React.FC<
                     <span className="text-xs font-bold text-stone-900 truncate">
                       {item.label}
                     </span>
-                    {isOperational && (
+                    {status === "operational" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded-sm">
                         <CheckCircle2 className="w-3 h-3" />
                         Actif
                       </span>
                     )}
-                    {isDegraded && (
+                    {status === "degraded" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-1.5 py-0.5 rounded-sm">
                         <AlertTriangle className="w-3 h-3" />
                         {t("admin.providerOverviewDashboard.degrade")}
                       </span>
                     )}
-                    {isUnavailable && (
+                    {status === "unavailable" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface px-1.5 py-0.5 rounded-sm">
                         <XCircle className="w-3 h-3" />
                         Inactif
+                      </span>
+                    )}
+                    {status === "demo" && (
+                      <span className="flex items-center gap-1 text-micro font-bold text-info bg-info-surface px-1.5 py-0.5 rounded-sm">
+                        <CircleHelp className="w-3 h-3" />
+                        Démo
+                      </span>
+                    )}
+                    {status === "unknown" && (
+                      <span className="flex items-center gap-1 text-micro font-bold text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded-sm">
+                        <CircleHelp className="w-3 h-3" />
+                        Non vérifié
                       </span>
                     )}
                   </div>
@@ -304,12 +361,18 @@ export const ProviderOverviewDashboard: React.FC<
 
                 <div className="pt-2 border-t border-stone-200/60 flex items-center justify-between text-micro">
                   <span className="text-stone-500">Prestataire :</span>
-                  <Link
-                    to={`/admin/fournisseurs/${health.activeProviderId}`}
-                    className="font-semibold text-primary hover:underline truncate max-w-[140px]"
-                  >
-                    {health.activeProviderName}
-                  </Link>
+                  {catalogOwner ? (
+                    <Link
+                      to={`/admin/fournisseurs/${catalogOwner.id}`}
+                      className="font-semibold text-primary hover:underline truncate max-w-[140px]"
+                    >
+                      {owner?.displayName}
+                    </Link>
+                  ) : (
+                    <span className="font-semibold text-stone-700 truncate max-w-[140px]">
+                      {owner?.displayName || "Aucun propriétaire"}
+                    </span>
+                  )}
                 </div>
               </div>
             );

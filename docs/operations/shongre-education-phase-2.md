@@ -1,4 +1,4 @@
-# Shongre Cours — Phase 2 launch gate
+# Shongre Education — Phase 2 launch gate
 
 Booking, payment, payout, packages, and recurring lessons must remain disabled until every required item below is evidenced for the target market. Enabling a flag is an audited operator action, not a frontend deployment choice.
 

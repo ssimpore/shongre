@@ -4,8 +4,6 @@ import { verificationService } from "./verification.service";
 import {
   KycSubmissionData,
   KybSubmissionData,
-  BankPayoutSubmissionData,
-  MarketplaceCapabilityStatus,
   UserVerificationSummary,
 } from "./verification.types";
 
@@ -15,13 +13,6 @@ export function useVerification() {
   const summary: UserVerificationSummary = useMemo(() => {
     return verificationService.getUserVerificationSummary(currentUser);
   }, [currentUser]);
-
-  const canPerform = useCallback(
-    (capability: keyof MarketplaceCapabilityStatus): boolean => {
-      return Boolean(summary.capabilities[capability]);
-    },
-    [summary],
-  );
 
   const submitKyc = useCallback(
     async (data: KycSubmissionData, instantApprove = false) => {
@@ -46,21 +37,6 @@ export function useVerification() {
         currentUser.id,
         data,
         instantApprove,
-      );
-      if (res.success) {
-        refreshUser?.();
-      }
-      return res;
-    },
-    [currentUser, refreshUser],
-  );
-
-  const submitBankPayout = useCallback(
-    async (data: BankPayoutSubmissionData) => {
-      if (!currentUser) throw new Error("Utilisateur non connecté");
-      const res = verificationService.submitBankPayoutVerification(
-        currentUser.id,
-        data,
       );
       if (res.success) {
         refreshUser?.();
@@ -98,16 +74,10 @@ export function useVerification() {
   return {
     currentUser,
     summary,
-    capabilities: summary.capabilities,
     dimensions: summary.dimensions,
-    trustLevel: summary.trustLevel,
-    trustScore: summary.trustScore,
-    trustLevelLabel: summary.trustLevelLabel,
-    nextRecommendedStep: summary.nextRecommendedStep,
-    canPerform,
     submitKyc,
     submitKyb,
-    submitBankPayout,
     setPreset,
+    refreshUser,
   };
 }

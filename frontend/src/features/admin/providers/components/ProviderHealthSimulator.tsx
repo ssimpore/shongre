@@ -1,22 +1,20 @@
 import React, { useState } from "react";
+import type { ProviderDiagnosticResult } from "@shongre/contracts/provider-platform";
 import {
   Activity,
-  Play,
-  CheckCircle2,
   AlertTriangle,
-  XCircle,
+  CheckCircle2,
+  Play,
   Terminal,
+  XCircle,
 } from "lucide-react";
 import {
   Provider,
   ProviderConfiguration,
-  ProviderHealthStatus,
-  ProviderTestResult,
 } from "../../../../domains/providers/provider.types";
-import { providerService } from "../../../../domains/providers/provider.service";
+import { services } from "../../../../api/client/service-registry";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useToast } from "../../../../app/providers/ToastProvider";
-import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface ProviderHealthSimulatorProps {
   provider: Provider;
@@ -24,244 +22,179 @@ interface ProviderHealthSimulatorProps {
   onUpdated: () => void;
 }
 
+/** Operational health is evidence-based and cannot be changed by hand. */
 export const ProviderHealthSimulator: React.FC<
   ProviderHealthSimulatorProps
-> = ({ provider, configuration, onUpdated }) => {
-  const { t } = useTranslation();
+> = ({ provider, configuration }) => {
   const toast = useToast();
   const [isRunningTest, setIsRunningTest] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<
-    "healthy" | "missing_credentials" | "timeout" | "invalid_config"
-  >("healthy");
   const [lastTestResult, setLastTestResult] =
-    useState<ProviderTestResult | null>(null);
+    useState<ProviderDiagnosticResult | null>(null);
 
   const handleRunTest = async () => {
     setIsRunningTest(true);
     try {
-      const result = await providerService.testProvider(
+      const result = await services.providerControlPlane.testProvider(
         provider.id,
-        selectedScenario,
       );
       setLastTestResult(result);
-      if (result.success) {
-        toast.success(
-          `Test réussi pour ${provider.name} (${result.latencyMs} ms).`,
-        );
-      } else {
-        toast.error(`Échec du test : ${result.message}`);
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Erreur inattendue.");
+      result.success
+        ? toast.success(`Diagnostic vérifié pour ${provider.name}.`)
+        : toast.info(result.message);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Diagnostic indisponible.",
+      );
     } finally {
       setIsRunningTest(false);
     }
   };
 
-  const handleSetHealth = async (health: ProviderHealthStatus) => {
-    try {
-      await providerService.setProviderHealth(
-        provider.id,
-        health,
-        `Simulation d'état de santé par l'administrateur (${health})`,
-      );
-      toast.success(`État de santé mis à jour : ${health}.`);
-      onUpdated();
-    } catch (err: any) {
-      toast.error(err.message || "Erreur.");
-    }
-  };
+  const isDemo = configuration.environment === "demo";
+  const operational = provider.operational;
+  const implementationLabel =
+    operational.adapterStatus === "IMPLEMENTED"
+      ? "Adaptateur implémenté"
+      : operational.adapterStatus === "DEMO_ONLY"
+        ? "Adaptateur de démonstration uniquement"
+        : "Aucun adaptateur de production";
 
   return (
-    <div className="space-y-6">
-      {/* 1. Live Simulated Health State Switcher */}
-      <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+    <div className="space-y-5">
+      <section className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-success" />
-              {t("admin.providerHealthSimulator.etatDeSanteDisponibiliteEn")}
+              <Activity className="w-4 h-4 text-primary" />
+              Santé fondée sur des preuves
             </h4>
-            <p className="text-xs text-stone-500">
-              {t("admin.providerHealthSimulator.controlezLEtatDeSante")}
+            <p className="text-xs text-stone-500 mt-1 max-w-2xl">
+              La santé vient d’un probe live ou d’un signal runtime. Elle ne
+              peut pas être modifiée manuellement.
             </p>
           </div>
-
           <span
-            className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-              configuration.health === "healthy"
-                ? "bg-success-surface text-success border-success-border"
-                : configuration.health === "degraded"
-                  ? "bg-warning-surface text-warning border-warning-border"
-                  : "bg-danger-surface text-danger border-danger-border"
+            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${
+              isDemo || configuration.health === "unknown"
+                ? "bg-stone-100 text-stone-700 border-stone-200"
+                : configuration.health === "healthy"
+                  ? "bg-success-surface text-success border-success-border"
+                  : configuration.health === "degraded"
+                    ? "bg-warning-surface text-warning border-warning-border"
+                    : "bg-danger-surface text-danger border-danger-border"
             }`}
           >
-            {configuration.health === "healthy" && "● Opérationnel"}
-            {configuration.health === "degraded" && "▲ Dégradé"}
-            {configuration.health === "unavailable" && "■ Indisponible"}
-            {configuration.health === "unknown" && "Inconnu"}
+            {isDemo || configuration.health === "unknown" ? (
+              <AlertTriangle className="w-3.5 h-3.5" />
+            ) : configuration.health === "healthy" ? (
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            ) : (
+              <XCircle className="w-3.5 h-3.5" />
+            )}
+            {isDemo
+              ? "Démo — non vérifié"
+              : configuration.health === "unknown"
+                ? "Santé inconnue"
+                : configuration.health}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            type="button"
-            onClick={() => handleSetHealth("healthy")}
-            className={`p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
-              configuration.health === "healthy"
-                ? "bg-success-surface/80 border-success-border ring-2 ring-emerald-500/20"
-                : "bg-stone-50 hover:bg-stone-100 border-stone-200"
-            }`}
-          >
-            <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
-            <div>
-              <span className="font-bold text-xs text-stone-900 block">
-                {t("admin.providerHealthSimulator.operationnelHealthy")}
-              </span>
-              <span className="text-micro text-stone-500">
-                {t(
-                  "admin.providerHealthSimulator.toutesLesRequetesAboutissent",
-                )}
-              </span>
-            </div>
-          </button>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
+            <dt className="text-stone-500">Implémentation</dt>
+            <dd className="font-bold text-stone-900 mt-1">
+              {implementationLabel}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
+            <dt className="text-stone-500">Cycle de vie</dt>
+            <dd className="font-bold text-stone-900 mt-1">
+              {operational.lifecycle}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
+            <dt className="text-stone-500">Capacités implémentées</dt>
+            <dd className="font-bold text-stone-900 mt-1">
+              {operational.implementedCapabilities.length} /{" "}
+              {operational.capabilities.length}
+            </dd>
+          </div>
+          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
+            <dt className="text-stone-500">Dernière preuve</dt>
+            <dd className="font-bold text-stone-900 mt-1">
+              {configuration.healthLastCheckedAt || "Aucune"}
+            </dd>
+          </div>
+        </dl>
 
-          <button
-            type="button"
-            onClick={() => handleSetHealth("degraded")}
-            className={`p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
-              configuration.health === "degraded"
-                ? "bg-warning-surface/80 border-warning-border ring-2 ring-amber-500/20"
-                : "bg-stone-50 hover:bg-stone-100 border-stone-200"
-            }`}
-          >
-            <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
-            <div>
-              <span className="font-bold text-xs text-stone-900 block">
-                {t("admin.providerHealthSimulator.degradeDegraded")}
-              </span>
-              <span className="text-micro text-stone-500">
-                {t(
-                  "admin.providerHealthSimulator.ralentissementsOuEchecsPartiels",
-                )}
-              </span>
-            </div>
-          </button>
+        {operational.blockers.length > 0 && (
+          <div className="rounded-lg border border-warning-border bg-warning-surface p-3">
+            <p className="text-xs font-bold text-warning">Blocages connus</p>
+            <ul className="mt-2 space-y-1 text-xs text-stone-700 list-disc pl-4">
+              {operational.blockers.map((blocker) => (
+                <li key={blocker}>{blocker}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
 
-          <button
-            type="button"
-            onClick={() => handleSetHealth("unavailable")}
-            className={`p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
-              configuration.health === "unavailable"
-                ? "bg-danger-surface/80 border-danger-border ring-2 ring-rose-500/20"
-                : "bg-stone-50 hover:bg-stone-100 border-stone-200"
-            }`}
-          >
-            <XCircle className="w-5 h-5 text-danger shrink-0" />
-            <div>
-              <span className="font-bold text-xs text-stone-900 block">
-                Indisponible (Unavailable)
-              </span>
-              <span className="text-micro text-stone-500">
-                {t(
-                  "admin.providerHealthSimulator.basculeImmediateSurLeSecours",
-                )}
-              </span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Deterministic Testing Tool */}
-      <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-        <h4 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2 flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-stone-700" />
-          {t(
-            "admin.providerHealthSimulator.simulateurDeTestsDeterministesDiagnostic",
-          )}
-        </h4>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <section className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">
-              {t("admin.providerHealthSimulator.scenarioDeTestAExecuter")}
-            </label>
-            <select
-              value={selectedScenario}
-              onChange={(e) => setSelectedScenario(e.target.value as any)}
-              className="w-full py-2 px-3 text-xs rounded-control border border-stone-200 bg-stone-50 text-stone-800 font-medium h-control-touch"
-            >
-              <option value="healthy">
-                {t(
-                  "admin.providerHealthSimulator.succesNominalReponseValideHttps",
-                )}
-              </option>
-              <option value="missing_credentials">
-                {t("admin.providerHealthSimulator.identifiantsOuCleSecreteNon")}
-              </option>
-              <option value="timeout">
-                {t(
-                  "admin.providerHealthSimulator.depassementDeDelaiTimeoutHttp",
-                )}
-              </option>
-              <option value="invalid_config">
-                {t(
-                  "admin.providerHealthSimulator.parametresRejetesParLePartenaire",
-                )}
-              </option>
-            </select>
+            <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-stone-700" />
+              Test d’intégration sûr
+            </h4>
+            <p className="text-xs text-stone-500 mt-1">
+              Exécute uniquement un probe non destructif enregistré côté
+              backend. Aucun paiement, email ou webhook fictif n’est créé.
+            </p>
           </div>
-
-          <div className="flex items-end">
-            <Button
-              type="button"
-              variant="primary"
-              size="md"
-              isLoading={isRunningTest}
-              onClick={handleRunTest}
-              leftIcon={<Play className="w-3.5 h-3.5" />}
-              className="w-full text-xs font-bold"
-            >
-              {t("admin.providerHealthSimulator.executerLeTestDeDiagnostic")}
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleRunTest}
+            isLoading={isRunningTest}
+            leftIcon={<Play className="w-3.5 h-3.5" />}
+          >
+            Lancer le diagnostic
+          </Button>
         </div>
 
-        {/* Test results console */}
         {lastTestResult && (
           <div
-            className={`p-4 rounded-xl border font-mono text-xs space-y-2 ${
+            className={`rounded-lg border p-4 ${
               lastTestResult.success
-                ? "bg-emerald-950 text-emerald-200 border-emerald-800"
-                : "bg-stone-900 text-rose-300 border-stone-800"
+                ? "border-success-border bg-success-surface"
+                : "border-stone-200 bg-stone-50"
             }`}
+            role="status"
           >
-            <div className="flex items-center justify-between border-b border-white/10 pb-2">
-              <span className="font-bold flex items-center gap-2">
-                {lastTestResult.success ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                ) : (
-                  <AlertTriangle className="w-4 h-4 text-rose-400" />
-                )}
-                {lastTestResult.success
-                  ? "RÉSULTAT : SUCCÈS"
-                  : "RÉSULTAT : ÉCHEC"}
-              </span>
-              <span className="text-micro text-stone-500">
-                Latence : {lastTestResult.latencyMs} ms
-              </span>
-            </div>
-
-            <p className="text-xs">{lastTestResult.message}</p>
-
-            <div className="pt-2 border-t border-white/10 text-micro text-stone-500">
-              <pre className="overflow-x-auto text-micro">
-                {JSON.stringify(lastTestResult.diagnostics, null, 2)}
-              </pre>
+            <div className="flex items-start gap-2">
+              {lastTestResult.success ? (
+                <CheckCircle2 className="w-4 h-4 text-success mt-0.5" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-warning mt-0.5" />
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-stone-900">
+                  {lastTestResult.success
+                    ? "Preuve enregistrée"
+                    : "Aucune preuve de santé enregistrée"}
+                </p>
+                <p className="text-xs text-stone-600 mt-1">
+                  {lastTestResult.message}
+                </p>
+                <p className="text-micro text-stone-500 mt-2 font-mono">
+                  {lastTestResult.evidence} · {lastTestResult.latencyMs} ms
+                </p>
+              </div>
             </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

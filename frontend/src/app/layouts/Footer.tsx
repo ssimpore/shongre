@@ -363,8 +363,10 @@ export const Footer: React.FC = () => {
                   <FooterLink to="/professionnels">
                     {t("footer.storeDirectory")}
                   </FooterLink>
-                  <FooterLink to="/cours">{t("footer.findTutor")}</FooterLink>
-                  <FooterLink to="/deposer/cours">
+                  <FooterLink to="/education">
+                    {t("footer.findTutor")}
+                  </FooterLink>
+                  <FooterLink to="/deposer/education">
                     {t("footer.offerCourses")}
                   </FooterLink>
                   <FooterLink to="/tarifs">{t("footer.boostGrid")}</FooterLink>

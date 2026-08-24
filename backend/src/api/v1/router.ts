@@ -25,6 +25,9 @@ import {
   socialAuthService,
   facebookDataDeletionService,
   financeService,
+  commissionService,
+  complianceService,
+  providerControlPlaneService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -49,6 +52,7 @@ import {
   setSessionCookies,
 } from "../../shared/auth/http-session.js";
 import { verifyStripeSignature } from "../../integrations/stripe/webhook-signature.js";
+import { verifyComplianceWebhookSignature } from "../../integrations/providers/compliance-webhook-signature.js";
 import { config } from "../../app/config/index.js";
 import type {
   TrendingAdminConfig,
@@ -140,6 +144,18 @@ export class ApiV1Router {
       access,
       handler,
     });
+  }
+
+  /** Canonical Education API plus the non-duplicating legacy mobile alias. */
+  private addEducationRoute(
+    method: string,
+    path: string,
+    access: RouteAccess,
+    handler: RouteHandler,
+  ) {
+    for (const basePath of ["/education", "/courses"] as const) {
+      this.addRoute(method, `${basePath}${path}`, access, handler);
+    }
   }
 
   private registerRoutes() {
@@ -550,6 +566,21 @@ export class ApiV1Router {
       "/listings/publish",
       permission("listing.publish"),
       async ({ principal, body }) => {
+        const subject = await complianceService.getSubject(principal.userId);
+        await complianceService.requireForUser(principal.userId, {
+          requestedAction:
+            subject.accountType === "professional"
+              ? "publish_professional_listing"
+              : "publish_listing",
+          jurisdiction: body?.draft?.country || subject.country || "FR",
+          marketCode: body?.draft?.marketCode || "FR",
+          categoryId: body?.draft?.categoryId,
+          transactionContext: {
+            transactionType: "classified",
+            contractConclusionMode: "off_platform",
+            paymentFlow: "none",
+          },
+        });
         // The seller is the caller. Taking sellerId from the body would let anyone
         // publish listings under another account's name.
         return listingsService.publishListing(body?.draft, principal.userId);
@@ -639,20 +670,20 @@ export class ApiV1Router {
     );
 
     // --------------------------------------------------------------------------
-    // SHONGRE COURS (versioned tutoring vertical)
+    // SHONGRE EDUCATION (versioned course/tutoring vertical)
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/courses/catalog", PUBLIC, async ({ query }) =>
+    this.addEducationRoute("GET", "/catalog", PUBLIC, async ({ query }) =>
       coursesService.getCatalog(query.get("market") || "FR"),
     );
-    this.addRoute("POST", "/courses/search", PUBLIC, async ({ body }) =>
+    this.addEducationRoute("POST", "/search", PUBLIC, async ({ body }) =>
       coursesService.searchTutors(body || { marketCode: "FR" }),
     );
-    this.addRoute("GET", "/courses/tutors/:id", PUBLIC, async ({ params }) =>
+    this.addEducationRoute("GET", "/tutors/:id", PUBLIC, async ({ params }) =>
       coursesService.getTutorPublicProfile(params.id),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "PUT",
-      "/courses/tutors/:id",
+      "/tutors/:id",
       permission("course.profile.manage.own"),
       async ({ principal, params, body }) =>
         coursesService.saveOwnTutorProfile(principal.userId, {
@@ -660,23 +691,23 @@ export class ApiV1Router {
           id: params.id,
         }),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "POST",
-      "/courses/offers",
+      "/offers",
       permission("course.offer.manage.own"),
       async ({ principal, body }) =>
         coursesService.createOwnCourseOffer(principal.userId, body),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "POST",
-      "/courses/learner-requests",
+      "/learner-requests",
       permission("course.request.create"),
       async ({ principal, body }) =>
         coursesService.submitLearnerRequest(principal.userId, body),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "GET",
-      "/courses/workspace/:tutorProfileId",
+      "/workspace/:tutorProfileId",
       permission("course.lead.read.own"),
       async ({ principal, params }) =>
         coursesService.getOwnTutorWorkspace(
@@ -684,9 +715,9 @@ export class ApiV1Router {
           params.tutorProfileId,
         ),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "GET",
-      "/courses/organizations/:organizationId/workspace",
+      "/organizations/:organizationId/workspace",
       permission("course.organization.manage.own"),
       async ({ principal, params }) =>
         coursesService.getOwnOrganizationWorkspace(
@@ -694,9 +725,9 @@ export class ApiV1Router {
           params.organizationId,
         ),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "PATCH",
-      "/courses/leads/:leadId",
+      "/leads/:leadId",
       permission("course.lead.respond.own"),
       async ({ principal, params, body }) =>
         coursesService.respondToOwnLead(
@@ -729,9 +760,9 @@ export class ApiV1Router {
           params.organizationId,
         ),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "POST",
-      "/courses/bookings",
+      "/bookings",
       permission("course.booking.create"),
       async ({ principal, body }) =>
         coursesService.createBooking(
@@ -740,30 +771,30 @@ export class ApiV1Router {
           body?.booking,
         ),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "GET",
-      "/courses/admin/catalog",
+      "/admin/catalog",
       permission("course.admin.manage"),
       async ({ query }) =>
         coursesService.getAdminCatalog(query.get("market") || "FR"),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "PUT",
-      "/courses/admin/markets/:marketCode",
+      "/admin/markets/:marketCode",
       permission("course.admin.manage"),
       async ({ params, body }) =>
         coursesService.updateMarketConfig(params.marketCode, body),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "PATCH",
-      "/courses/admin/markets/:marketCode/subjects/:subjectId",
+      "/admin/markets/:marketCode/subjects/:subjectId",
       permission("course.admin.manage"),
       async ({ params, body }) =>
         coursesService.updateSubject(params.marketCode, params.subjectId, body),
     );
-    this.addRoute(
+    this.addEducationRoute(
       "PATCH",
-      "/courses/admin/markets/:marketCode/plans/:planId",
+      "/admin/markets/:marketCode/plans/:planId",
       permission("course.admin.manage"),
       async ({ params, body }) =>
         coursesService.updatePlan(params.marketCode, params.planId, body),
@@ -1435,6 +1466,12 @@ export class ApiV1Router {
         );
       },
     );
+    this.addRoute(
+      "POST",
+      "/orders/:id/refund",
+      permission("order.refund"),
+      async ({ params, body }) => ordersService.refundOrder(params.id, body),
+    );
 
     // --------------------------------------------------------------------------
     // PAYMENTS ROUTES
@@ -1457,11 +1494,25 @@ export class ApiV1Router {
       "/payments/payout",
       permission("order.manage.seller"),
       async ({ principal, body }) =>
-        paymentsService.requestSellerPayout(
-          principal.userId,
-          body?.amount,
-          body?.iban,
-        ),
+        complianceService
+          .requireForUser(principal.userId, {
+            requestedAction: "receive_payout",
+            jurisdiction: body?.jurisdiction || "FR",
+            marketCode: body?.marketCode || "FR",
+            transactionContext: {
+              transactionType: "direct_purchase",
+              contractConclusionMode: "platform",
+              paymentFlow: "psp_marketplace",
+              amountMinor: body?.amount,
+              currency: body?.currency || "EUR",
+            },
+          })
+          .then(() =>
+            paymentsService.requestSellerPayout(
+              principal.userId,
+              body?.amount,
+            ),
+          ),
     );
     this.addRoute(
       "GET",
@@ -1559,38 +1610,42 @@ export class ApiV1Router {
       "GET",
       "/finance/account/overview",
       permission("finance.account.read.own"),
-      async ({ principal }) => financeService.getAccountDashboard(principal.userId),
+      async ({ principal }) =>
+        financeService.getAccountDashboard(principal.userId),
     );
     this.addRoute(
       "GET",
       "/finance/organization/overview",
       permission("finance.organization.read.own"),
-      async ({ principal }) => financeService.getOrganizationDashboard(principal.userId),
+      async ({ principal }) =>
+        financeService.getOrganizationDashboard(principal.userId),
     );
     this.addRoute(
       "GET",
       "/finance/platform/overview",
       permission("finance.platform.read"),
-      async ({ query }) => financeService.getPlatformDashboard({
-        period: query.get("period") ?? undefined,
-        marketCode: query.get("marketCode") ?? undefined,
-        currency: query.get("currency") ?? undefined,
-      } as any),
+      async ({ query }) =>
+        financeService.getPlatformDashboard({
+          period: query.get("period") ?? undefined,
+          marketCode: query.get("marketCode") ?? undefined,
+          currency: query.get("currency") ?? undefined,
+        } as any),
     );
     this.addRoute(
       "GET",
       "/finance/platform/transactions",
       permission("finance.transactions.read"),
-      async ({ query }) => financeService.listTransactions({
-        period: query.get("period") ?? undefined,
-        marketCode: query.get("marketCode") ?? undefined,
-        currency: query.get("currency") ?? undefined,
-        query: query.get("query") ?? undefined,
-        status: (query.get("status") ?? undefined) as any,
-        needsReviewOnly: query.get("needsReviewOnly") === "true",
-        cursor: query.get("cursor") ?? undefined,
-        limit: query.get("limit") ? Number(query.get("limit")) : undefined,
-      } as any),
+      async ({ query }) =>
+        financeService.listTransactions({
+          period: query.get("period") ?? undefined,
+          marketCode: query.get("marketCode") ?? undefined,
+          currency: query.get("currency") ?? undefined,
+          query: query.get("query") ?? undefined,
+          status: (query.get("status") ?? undefined) as any,
+          needsReviewOnly: query.get("needsReviewOnly") === "true",
+          cursor: query.get("cursor") ?? undefined,
+          limit: query.get("limit") ? Number(query.get("limit")) : undefined,
+        } as any),
     );
     this.addRoute(
       "GET",
@@ -1608,14 +1663,15 @@ export class ApiV1Router {
       "GET",
       "/finance/platform/exports/transactions",
       permission("finance.exports.read"),
-      async ({ query }) => financeService.exportTransactions({
-        period: query.get("period") ?? undefined,
-        marketCode: query.get("marketCode") ?? undefined,
-        currency: query.get("currency") ?? undefined,
-        query: query.get("query") ?? undefined,
-        status: (query.get("status") ?? undefined) as any,
-        needsReviewOnly: query.get("needsReviewOnly") === "true",
-      } as any),
+      async ({ query }) =>
+        financeService.exportTransactions({
+          period: query.get("period") ?? undefined,
+          marketCode: query.get("marketCode") ?? undefined,
+          currency: query.get("currency") ?? undefined,
+          query: query.get("query") ?? undefined,
+          status: (query.get("status") ?? undefined) as any,
+          needsReviewOnly: query.get("needsReviewOnly") === "true",
+        } as any),
     );
     this.addRoute(
       "GET",
@@ -1666,6 +1722,94 @@ export class ApiV1Router {
       "/admin/business-rules/simulate",
       permission("commercial_rules.read"),
       async ({ body }) => businessRulesService.evaluate(body),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/commissions/simulate",
+      permission("commissions.simulate"),
+      async ({ body }) => commissionService.preview(body),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/commissions/calculations/:id",
+      permission("commissions.read"),
+      async ({ params }) => commissionService.getCalculation(params.id),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/commissions/calculations/:id/reversals",
+      permission("commissions.manage"),
+      async ({ params, body }) => commissionService.reverse(params.id, body),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/commissions/analytics",
+      permission("commissions.analytics.read"),
+      async ({ query }) =>
+        commissionService.listAnalytics({
+          marketCode: query.get("marketCode") || "ALL",
+          currency: query.get("currency") || "EUR",
+          from: query.get("from"),
+          to: query.get("to"),
+          verticalId: query.get("verticalId") || undefined,
+          categoryId: query.get("categoryId") || undefined,
+          planId: query.get("planId") || undefined,
+        } as any),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/commissions/drafts",
+      permission("commissions.manage"),
+      async ({ principal, body }) => {
+        const containsAccountOverride = (body?.commissionPolicies || []).some(
+          (policy: any) =>
+            (policy.rules || []).some(
+              (rule: any) =>
+                (rule.scope?.accountIds?.length || 0) > 0 ||
+                (rule.scope?.organizationIds?.length || 0) > 0,
+            ),
+        );
+        if (containsAccountOverride) {
+          requirePermission(principal, "commissions.override_account");
+        }
+        return businessRulesService.createDraft(principal.userId, body);
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/admin/commissions/versions/:id/submit",
+      permission("commissions.manage"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "submit",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/commissions/versions/:id/approve",
+      permission("commissions.publish"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "approve",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/commissions/versions/:id/publish",
+      permission("commissions.publish"),
+      async ({ principal, params, body }) =>
+        businessRulesService.transitionVersion({
+          versionId: params.id,
+          action: "publish",
+          actorId: principal.userId,
+          reason: body?.reason,
+        }),
     );
     this.addRoute(
       "GET",
@@ -1831,23 +1975,80 @@ export class ApiV1Router {
     // VERIFICATION & KYC/KYB ROUTES
     // --------------------------------------------------------------------------
     this.addRoute(
+      "POST",
+      "/compliance/requirements",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        complianceService.evaluateForUser(principal.userId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/compliance/status",
+      AUTHENTICATED,
+      async ({ principal }) => {
+        const subject = await complianceService.getSubject(principal.userId);
+        return {
+          ...subject,
+          verification: Object.fromEntries(
+            Object.entries(subject.verification).map(([dimension, record]) => [
+              dimension,
+              record
+                ? {
+                    dimension: record.dimension,
+                    state: record.state,
+                    method: record.method,
+                    verifiedAt: record.verifiedAt,
+                    expiresAt: record.expiresAt,
+                    refreshRequiredAt: record.refreshRequiredAt,
+                    reasonCode: record.reasonCode,
+                    visibility: record.visibility,
+                  }
+                : record,
+            ]),
+          ),
+        };
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/compliance/identity/session",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        complianceService.startIdentitySession({
+          userId: principal.userId,
+          dimension: body?.dimension || "identity",
+          jurisdiction: body?.jurisdiction || "FR",
+          returnUrl: complianceReturnUrl(body?.returnTo),
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/compliance/payment/onboarding",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        complianceService.startPaymentOnboarding({
+          userId: principal.userId,
+          jurisdiction: body?.jurisdiction || "FR",
+          returnUrl: complianceReturnUrl(body?.returnTo),
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/compliance/manual-review",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        complianceService.requestManualReviewForUser({
+          userId: principal.userId,
+          dimension: body?.dimension,
+        }),
+    );
+    this.addRoute(
       "GET",
       "/verification/status/:userId",
       AUTHENTICATED,
       async ({ principal, params }) =>
         verificationService.getUserVerificationStatus(
           resolveOwnerId(principal, params.userId, "user.read"),
-        ),
-    );
-    this.addRoute(
-      "POST",
-      "/verification/identity",
-      AUTHENTICATED,
-      async ({ principal, body }) =>
-        verificationService.submitIdentityDocument(
-          principal.userId,
-          body?.docType,
-          body?.fileUrl,
         ),
     );
     this.addRoute(
@@ -1865,24 +2066,8 @@ export class ApiV1Router {
         verificationService.submitBusinessRegistration(
           principal.userId,
           body?.siret,
-          body?.representativeName,
         ),
     );
-    // Bank coordinates decide where escrow funds land: binding them to the
-    // authenticated caller is what stops an attacker redirecting a payout.
-    this.addRoute(
-      "POST",
-      "/verification/bank-coordinates",
-      AUTHENTICATED,
-      async ({ principal, body }) =>
-        verificationService.submitBankPayoutCoordinates(
-          principal.userId,
-          body?.iban,
-          body?.bic,
-          body?.holderName,
-        ),
-    );
-
     // --------------------------------------------------------------------------
     // MESSAGING ROUTES
     // --------------------------------------------------------------------------
@@ -2125,6 +2310,19 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     this.addRoute(
       "GET",
+      "/admin/providers/control-plane",
+      permission("provider.read"),
+      async () => providerControlPlaneService.getSnapshot(),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/providers/:providerId/test",
+      permission("provider.test"),
+      async ({ params }) =>
+        providerControlPlaneService.testProvider(params.providerId),
+    );
+    this.addRoute(
+      "GET",
       "/admin/stats",
       permission("admin.configuration.manage"),
       async () => adminService.getPlatformStats(),
@@ -2169,6 +2367,81 @@ export class ApiV1Router {
           approve: body?.approve === true,
           notes: body?.notes,
           actor: principal,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/compliance/rules",
+      permission("compliance.policy.read"),
+      async () => complianceService.listRules(),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/compliance/rules/:ruleId",
+      permission("compliance.policy.manage"),
+      async ({ principal, params, body }) => {
+        if (body?.rule?.id !== params.ruleId)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "L'identifiant de la règle ne correspond pas à la route.",
+          });
+        return complianceService.saveRule({
+          rule: body.rule,
+          actorId: principal.userId,
+          reason: body?.reason,
+        });
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/admin/compliance/audit",
+      permission("compliance.audit.read"),
+      async ({ query }) =>
+        (
+          await complianceService.listAuditEvents(
+            Number(query.get("limit") || 100),
+          )
+        ).map(({ providerReference: _providerReference, ...event }) => event),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/compliance/retention/run",
+      permission("compliance.retention.manage"),
+      async ({ principal }) =>
+        complianceService.runApprovedRetention(principal.userId),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/compliance/users/:userId/status",
+      permission("compliance.sensitive.read"),
+      async ({ params }) => complianceService.getSubject(params.userId),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/compliance/users/:userId/requirements",
+      permission("compliance.review"),
+      async ({ params, body }) =>
+        complianceService.evaluateForUser(params.userId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/compliance/reviews",
+      permission("compliance.review"),
+      async ({ query }) =>
+        complianceService.listManualReviews(
+          (query.get("state") || undefined) as any,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/compliance/reviews/:caseId/decision",
+      permission("compliance.review"),
+      async ({ principal, params, body }) =>
+        complianceService.decideManualReview({
+          caseId: params.caseId,
+          state: body?.state,
+          reviewerId: principal.userId,
+          reason: body?.reason,
         }),
     );
     this.addRoute(
@@ -2290,6 +2563,37 @@ export class ApiV1Router {
       logger.info(`Stripe webhook accepted: ${body?.type || "unknown event"}`);
       return { received: true, auto, realEstate, monetization };
     });
+    this.addRoute(
+      "POST",
+      "/webhooks/compliance/:provider",
+      PUBLIC,
+      async ({ req, params, body }) => {
+        if (params.provider !== "identity" && params.provider !== "payment")
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Provider inconnu.",
+          });
+        const rawBody = ((req as any).rawBody as string | undefined) ?? "";
+        const signature = req.headers["x-shongre-signature"];
+        const verified = verifyComplianceWebhookSignature({
+          rawBody,
+          signatureHeader: Array.isArray(signature) ? signature[0] : signature,
+          secret: config.complianceWebhookSecret || "",
+        });
+        if (!verified.ok) {
+          logger.warn(`Compliance webhook rejected: ${verified.reason}`);
+          throw new AppError({
+            code: "FORBIDDEN",
+            message: "Signature de webhook invalide.",
+          });
+        }
+        return complianceService.handleProviderWebhook({
+          provider: params.provider,
+          payload: body,
+          rawBody,
+        });
+      },
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -2587,6 +2891,19 @@ function redirectResponse(res: ServerResponse, location: string): void {
   res.setHeader("Location", location);
   res.setHeader("Cache-Control", "no-store");
   res.end();
+}
+
+function complianceReturnUrl(returnTo: unknown): string {
+  const safePath =
+    typeof returnTo === "string" &&
+    returnTo.startsWith("/") &&
+    !returnTo.startsWith("//")
+      ? returnTo
+      : "/compte/verification";
+  return new URL(
+    safePath,
+    config.frontendUrl || "http://localhost:3000",
+  ).toString();
 }
 
 /**

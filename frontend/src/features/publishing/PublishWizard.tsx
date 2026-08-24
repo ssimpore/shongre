@@ -530,21 +530,62 @@ export const PublishWizard: React.FC = () => {
       return;
     }
 
+    if (!currentUser) {
+      toast.info(
+        "Créez un compte léger pour conserver votre brouillon et publier.",
+      );
+      navigate("/connexion?redirect=%2Fdeposer");
+      return;
+    }
+
     setIsPublishing(true);
     try {
-      const userToUse = currentUser || {
-        id: "buyer_thomas",
-        name: "Thomas Laurent",
-        email: "thomas@example.com",
-        role: "individual_seller",
-        type: "individual",
-        status: "active",
-        isVerified: true,
-      };
+      const actions = [
+        currentUser.accountType === "professional"
+          ? "publish_professional_listing"
+          : "publish_listing",
+        ...(draft.transaction.allowDirectPurchase
+          ? (["accept_online_payment"] as const)
+          : []),
+      ] as const;
+      for (const requestedAction of actions) {
+        const requirement =
+          await services.verification.getVerificationRequirements(
+            currentUser.id,
+            {
+              requestedAction,
+              jurisdiction: draft.location.countryCode || "FR",
+              marketCode: draft.marketCode,
+              categoryId: draft.taxonomyNodeId,
+              transactionContext: draft.transaction.allowDirectPurchase
+                ? {
+                    transactionType: "direct_purchase",
+                    contractConclusionMode: "platform",
+                    paymentFlow: "psp_marketplace",
+                    amountMinor: Math.round(draft.pricing.amount * 100),
+                    currency: draft.pricing.currency,
+                  }
+                : {
+                    transactionType: "classified",
+                    contractConclusionMode: "off_platform",
+                    paymentFlow: "none",
+                  },
+            },
+          );
+        if (!requirement.allowed) {
+          toast.info(
+            "Votre brouillon est conservé. Complétez uniquement la vérification nécessaire pour continuer.",
+          );
+          navigate(
+            `/compte/verification?action=${requestedAction}&returnTo=${encodeURIComponent("/deposer")}`,
+          );
+          return;
+        }
+      }
 
       const published = await publicationService.publishListing(
         draft,
-        userToUse as any,
+        currentUser,
       );
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       toast.success(

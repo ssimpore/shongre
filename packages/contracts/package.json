@@ -19,11 +19,14 @@
     "./employment-demo": "./src/fixtures/employment-demo.ts",
     "./monetization": "./src/schemas/monetization.ts",
     "./finance": "./src/schemas/finance.ts",
+    "./compliance": "./src/schemas/compliance.ts",
     "./finance-demo": "./src/fixtures/finance-demo.ts",
+    "./business-verticals": "./src/business-verticals.ts",
     "./discovery": "./src/schemas/discovery.ts",
     "./access-control": "./src/access-control.ts",
     "./monetization-catalog": "./src/fixtures/monetization-catalog.ts",
-    "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts"
+    "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts",
+    "./provider-platform": "./src/provider-platform.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

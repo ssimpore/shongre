@@ -6,6 +6,7 @@ import {
   isCommercialProductPurchasable,
 } from "../schemas/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "./monetization-catalog";
+import { normalizeEducationMonetizationCatalog } from "../business-verticals";
 
 const catalog = BASELINE_MONETIZATION_CATALOG;
 
@@ -41,7 +42,7 @@ function expectOneTimePrice(id: string, amountMinor: number) {
   });
 }
 
-describe("commercial-fr-v2 default catalog", () => {
+describe("commercial-fr-v3 default catalog", () => {
   it("treats organizations as professional accounts without opening org-only plans", () => {
     expect(isCommercialAudienceCompatible("professional", "organization")).toBe(
       true,
@@ -62,8 +63,8 @@ describe("commercial-fr-v2 default catalog", () => {
         entry.commercialProfile.professionalOnly,
     );
 
-    expect(catalog.configurationVersionId).toBe("commercial-fr-v2");
-    expect(catalog.versionNumber).toBe(2);
+    expect(catalog.configurationVersionId).toBe("commercial-fr-v3");
+    expect(catalog.versionNumber).toBe(3);
     expect(activePlans).toHaveLength(16);
     expect(
       activePlans.reduce<Record<string, number>>((totals, entry) => {
@@ -71,13 +72,71 @@ describe("commercial-fr-v2 default catalog", () => {
         totals[key] = (totals[key] || 0) + 1;
         return totals;
       }, {}),
-    ).toEqual({ general: 2, auto: 3, cours: 4, immo: 3, emploi: 4 });
+    ).toEqual({ general: 2, auto: 3, education: 4, immo: 3, emploi: 4 });
     expect(
       catalog.products.filter(
         (entry) =>
           entry.id.startsWith("course.training.") && entry.status === "active",
       ),
     ).toHaveLength(0);
+  });
+
+  it("presents Education once while retaining stable course product identities", () => {
+    expect(
+      catalog.verticals.filter((vertical) => vertical.id === "education"),
+    ).toHaveLength(1);
+    expect(catalog.verticals.some((vertical) => vertical.id === "cours")).toBe(
+      false,
+    );
+    expect(product("course.tutor.pro").name).toBe("Shongre Education Pro");
+    expect(product("course.tutor.premium").name).toBe(
+      "Shongre Education Studio",
+    );
+    expect(product("course.school.organization").name).toBe(
+      "Shongre Education Organisme",
+    );
+    expect(product("course.tutor.pro").commercialProfile).toMatchObject({
+      familyId: "vertical.education",
+      verticalId: "education",
+      financeCategory: "education_subscription",
+    });
+  });
+
+  it("projects an immutable legacy snapshot without changing its version identity", () => {
+    const legacy = structuredClone(catalog);
+    const education = legacy.verticals.find(
+      (vertical) => vertical.id === "education",
+    )!;
+    education.id = "cours";
+    education.name = "Cours";
+    const plan = legacy.products.find(
+      (candidate) => candidate.id === "course.tutor.premium",
+    )!;
+    plan.name = "Shongre Cours Studio";
+    plan.commercialProfile.verticalId = "cours";
+    plan.commercialProfile.familyId = "vertical.cours";
+    plan.commercialProfile.financeCategory = "courses_subscription";
+
+    const projected = normalizeEducationMonetizationCatalog(legacy);
+    expect(projected.configurationVersionId).toBe(
+      legacy.configurationVersionId,
+    );
+    expect(
+      projected.verticals.some((vertical) => vertical.id === "cours"),
+    ).toBe(false);
+    expect(
+      projected.products.find(
+        (candidate) => candidate.id === "course.tutor.premium",
+      ),
+    ).toMatchObject({
+      id: "course.tutor.premium",
+      name: "Shongre Education Studio",
+      commercialProfile: {
+        verticalId: "education",
+        familyId: "vertical.education",
+        financeCategory: "education_subscription",
+      },
+    });
   });
 
   it("seeds exact generic, Auto and Immo prices and capacity quotas", () => {
@@ -146,7 +205,7 @@ describe("commercial-fr-v2 default catalog", () => {
     }
   });
 
-  it("seeds exact Emploi and Cours prices and capacity quotas", () => {
+  it("seeds exact Emploi and Education prices and capacity quotas", () => {
     for (const [id, month, year, active, monthly, seats, credits] of [
       ["employment.employer.free", 0, undefined, 1, 3, 1, undefined],
       ["employment.employer.starter", 1_990, 19_900, 5, 10, 2, 1],
@@ -321,11 +380,13 @@ describe("commercial-fr-v2 default catalog", () => {
   it("does not advertise suspended capabilities in active plan descriptions", () => {
     const forbiddenCopy: Record<string, RegExp> = {
       "auto.dealer.growth": /\béquipe\b|\bimports?\b/i,
-      "auto.dealer.network": /multi-sites|synchronisation|\bexports?\b|\bapi\b/i,
+      "auto.dealer.network":
+        /multi-sites|synchronisation|\bexports?\b|\bapi\b/i,
       "immo.agency.growth": /\béquipe\b|\bimports?\b/i,
       "immo.agency.network": /multi-agences|\bflux\b|reporting|\bapi\b/i,
       "course.tutor.premium": /catalogue|\béquipe\b/i,
-      "course.school.organization": /catalogue|\béquipe\b|\bimports?\b|reporting|\bapi\b/i,
+      "course.school.organization":
+        /catalogue|\béquipe\b|\bimports?\b|reporting|\bapi\b/i,
     };
 
     for (const [productId, forbidden] of Object.entries(forbiddenCopy)) {

@@ -10,16 +10,8 @@ describe("DemoPaymentsService", () => {
     const secondIntent = await service.createPaymentIntent(299, "EUR", {
       listingId: "listing-1",
     });
-    const firstPayout = await service.requestSellerPayout(
-      "seller-1",
-      250,
-      "FR7612345678901234567890185",
-    );
-    const secondPayout = await service.requestSellerPayout(
-      "seller-1",
-      250,
-      "FR7612345678901234567890185",
-    );
+    const firstPayout = await service.requestSellerPayout("seller-1", 250);
+    const secondPayout = await service.requestSellerPayout("seller-1", 250);
 
     expect(secondIntent.clientSecret).toBe(firstIntent.clientSecret);
     expect(secondPayout.payoutId).toBe(firstPayout.payoutId);

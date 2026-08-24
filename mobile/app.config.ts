@@ -31,16 +31,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     orientation: "default",
     userInterfaceStyle: "automatic",
     icon: "./assets/icon.png",
-    splash: {
-      image: "./assets/splash.png",
-      resizeMode: "contain",
-      backgroundColor: configColors.surface,
-    },
     experiments: { typedRoutes: true },
     plugins: [
       "expo-router",
       ["expo-secure-store", { faceIDPermission: false }],
       "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/splash.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: configColors.surface,
+        },
+      ],
       [
         "expo-build-properties",
         {

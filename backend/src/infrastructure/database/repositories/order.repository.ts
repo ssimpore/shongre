@@ -106,6 +106,17 @@ export class PostgresOrderRepository implements IOrderRepository {
       shippingFee: Number(row.shipping_fee || 0),
       totalCharged: Number(row.total_charged),
       escrowSecuredAmount: Number(row.escrow_secured_amount),
+      commissionCalculationId: row.commission_calculation_id || undefined,
+      platformCommissionMinor:
+        row.platform_commission_minor === null ||
+        row.platform_commission_minor === undefined
+          ? undefined
+          : Number(row.platform_commission_minor),
+      sellerPayableMinor:
+        row.seller_payable_minor === null || row.seller_payable_minor === undefined
+          ? undefined
+          : Number(row.seller_payable_minor),
+      commissionSnapshotHash: row.commission_snapshot_hash || undefined,
       depositAmount: row.deposit_amount
         ? Number(row.deposit_amount)
         : undefined,
@@ -197,6 +208,10 @@ export class PostgresOrderRepository implements IOrderRepository {
       is_pin_verified: Boolean(order.isPinVerified),
       payment_method: order.paymentMethod,
       payment_intent_id: order.paymentIntentId || null,
+      commission_calculation_id: order.commissionCalculationId || null,
+      platform_commission_minor: order.platformCommissionMinor ?? null,
+      seller_payable_minor: order.sellerPayableMinor ?? null,
+      commission_snapshot_hash: order.commissionSnapshotHash || null,
       created_at: order.createdAt,
       updated_at: order.updatedAt,
     };
@@ -232,6 +247,14 @@ export class PostgresOrderRepository implements IOrderRepository {
       payload.dispute_reason = updates.disputeReason;
     if (updates.disputeDetails !== undefined)
       payload.dispute_details = updates.disputeDetails;
+    if (updates.commissionCalculationId !== undefined)
+      payload.commission_calculation_id = updates.commissionCalculationId;
+    if (updates.platformCommissionMinor !== undefined)
+      payload.platform_commission_minor = updates.platformCommissionMinor;
+    if (updates.sellerPayableMinor !== undefined)
+      payload.seller_payable_minor = updates.sellerPayableMinor;
+    if (updates.commissionSnapshotHash !== undefined)
+      payload.commission_snapshot_hash = updates.commissionSnapshotHash;
 
     const { data, error } = await ((supabase.from("orders" as any) as any)
       .update(payload)

@@ -30,24 +30,21 @@ export interface IdentityVerification {
   reviewedBy?: string;
   documentType?:
     "national_id" | "passport" | "residence_permit" | "driving_license";
-  documentNumber?: string;
   issuingCountry?: string;
-  firstName?: string;
-  lastName?: string;
-  birthDate?: string;
   rejectionReason?: string;
   notes?: string;
+  providerReference?: string;
+  verificationMethod?: string;
 }
 
 export interface BankPayoutVerification {
   status: VerificationState;
   verifiedAt?: string;
   submittedAt?: string;
-  accountHolderName?: string;
-  iban?: string;
-  bic?: string;
-  bankName?: string;
   rejectionReason?: string;
+  providerReference?: string;
+  accountLast4?: string;
+  verificationMethod?: string;
 }
 
 export interface EmailVerification {

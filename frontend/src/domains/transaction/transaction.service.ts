@@ -14,6 +14,7 @@ import { auditService } from "../../security/audit.service";
 import { marketService } from "../market/market.service";
 import { OrderPricingSnapshot } from "./transaction.types";
 import {
+  calculateDemoMarketplaceCommission,
   getDemoDeliveryAmountMinor,
   getDemoTransactionCommercials,
 } from "../monetization/demo-commercial-catalog";
@@ -55,6 +56,10 @@ export interface AmountBreakdown {
   sellerPayoutAmountCents: number;
   platformCommission: number;
   platformCommissionCents: number;
+  commissionBaseAmount: number;
+  commissionTaxAmount: number;
+  commissionAdjustmentAmount: number;
+  commissionExplanation: string;
 }
 
 class TransactionService {
@@ -82,11 +87,13 @@ class TransactionService {
         ? Math.round(itemSubtotalMinor * rate) + fixedMinor
         : 0;
 
-    const commissionRate = commercials.commissionRateBps / 10_000;
-    const platformCommissionMinor = Math.round(
-      itemSubtotalMinor * commissionRate,
+    const commission = calculateDemoMarketplaceCommission(
+      itemSubtotalMinor,
+      marketCode,
+      sellerType,
     );
-    const sellerPayoutAmountMinor = itemSubtotalMinor - platformCommissionMinor;
+    const platformCommissionMinor = commission.totalCommissionMinor;
+    const sellerPayoutAmountMinor = commission.sellerPayableMinor;
     const totalAmountMinor =
       itemSubtotalMinor + shippingFeeMinor + buyerProtectionFeeMinor;
 
@@ -138,9 +145,13 @@ class TransactionService {
       itemPriceCents + protectionFeeCents + shippingFeeCents;
 
     // Platform commission (only for pro sellers in marketplace mode)
-    const commissionRate = commercials.commissionRateBps / 10_000;
-    const platformCommissionCents = Math.round(itemPriceCents * commissionRate);
-    const sellerPayoutAmountCents = itemPriceCents - platformCommissionCents;
+    const commission = calculateDemoMarketplaceCommission(
+      itemPriceCents,
+      mCode,
+      sellerType,
+    );
+    const platformCommissionCents = commission.totalCommissionMinor;
+    const sellerPayoutAmountCents = commission.sellerPayableMinor;
 
     return {
       itemPrice: itemPriceCents / 100,
@@ -155,6 +166,14 @@ class TransactionService {
       sellerPayoutAmountCents,
       platformCommission: platformCommissionCents / 100,
       platformCommissionCents,
+      commissionBaseAmount: commission.baseAmountMinor / 100,
+      commissionTaxAmount: commission.commissionTaxMinor / 100,
+      commissionAdjustmentAmount: commission.adjustmentMinor / 100,
+      commissionExplanation: commission.eligible
+        ? commission.adjustmentMinor > 0
+          ? "Le barème professionnel applicable a été réduit par un avantage commercial éligible."
+          : "Le barème professionnel des commandes payées via Shongre s’applique à cette transaction."
+        : "Aucune politique de commission active ne s’applique à cette transaction.",
     };
   }
 
@@ -256,6 +275,10 @@ class TransactionService {
       totalAmount: amounts.totalAmount,
       sellerPayoutAmount: amounts.sellerPayoutAmount,
       platformCommission: amounts.platformCommission,
+      commissionBaseAmount: amounts.commissionBaseAmount,
+      commissionTaxAmount: amounts.commissionTaxAmount,
+      commissionAdjustmentAmount: amounts.commissionAdjustmentAmount,
+      commissionExplanation: amounts.commissionExplanation,
       deliveryMethod: input.deliveryMethod,
       carrierName:
         input.carrierName ||
@@ -412,6 +435,10 @@ class TransactionService {
       totalAmount: amounts.totalAmount,
       sellerPayoutAmount: amounts.sellerPayoutAmount,
       platformCommission: amounts.platformCommission,
+      commissionBaseAmount: amounts.commissionBaseAmount,
+      commissionTaxAmount: amounts.commissionTaxAmount,
+      commissionAdjustmentAmount: amounts.commissionAdjustmentAmount,
+      commissionExplanation: amounts.commissionExplanation,
       status: initialStatus,
       deliveryMethod: input.deliveryMethod,
       carrierName:
@@ -1146,9 +1173,18 @@ class TransactionService {
     seller: UserProfile,
     amount: number,
     payoutType: "standard" | "instant" = "standard",
-    ibanLast4 = "8921",
-    bankName = "BNP Paribas",
   ): Promise<SellerPayoutRequest> {
+    const payoutAccount = seller.bankPayoutVerification;
+    if (
+      payoutAccount?.status !== "verified" ||
+      !payoutAccount.providerReference
+    ) {
+      throw new Error(
+        "Configurez votre compte de versement auprès du prestataire de paiement avant de demander un virement.",
+      );
+    }
+    const ibanLast4 = payoutAccount.accountLast4 || "••••";
+    const bankName = "Compte de versement vérifié";
     const currentBalance = this.getSellerAvailableBalance(seller.id);
     if (amount <= 0 || amount > currentBalance) {
       throw new Error("Montant invalide ou solde disponible insuffisant.");
@@ -1198,7 +1234,7 @@ class TransactionService {
       id: `notif-${Date.now()}`,
       userId: seller.id,
       title: "Virement bancaire initié",
-      message: `Votre virement de ${netAmount.toFixed(2)} € vers votre compte ${bankName} (****${ibanLast4}) est en cours de transfert.`,
+      message: `Votre virement de ${netAmount.toFixed(2)} € vers le compte de versement vérifié (****${ibanLast4}) est en cours de traitement par le prestataire de paiement.`,
       type: "system",
       linkUrl: "/compte",
       isRead: false,

@@ -1,4 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import type {
+  ProviderControlPlaneSnapshot,
+  ProviderDiagnosticResult,
+} from "@shongre/contracts/provider-platform";
 import {
   Cpu,
   LayoutDashboard,
@@ -20,6 +24,11 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { getCapabilityMetadata } from "../../../domains/providers/provider-capabilities";
+import { services } from "../../../api/client/service-registry";
+import type {
+  ProviderConfiguration,
+  ProviderHealthStatus,
+} from "../../../domains/providers/provider.types";
 
 type MainTab = "overview" | "catalog" | "matrix" | "routing" | "audit";
 
@@ -42,17 +51,87 @@ export const AdminProvidersPage: React.FC = () => {
     null,
   );
   const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<any | null>(null);
+  const [testResult, setTestResult] = useState<ProviderDiagnosticResult | null>(
+    null,
+  );
+  const [controlPlane, setControlPlane] =
+    useState<ProviderControlPlaneSnapshot | null>(null);
+  const [controlPlaneError, setControlPlaneError] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    setControlPlaneError(null);
+    services.providerControlPlane
+      .getSnapshot()
+      .then((snapshot) => {
+        if (mounted) setControlPlane(snapshot);
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        setControlPlaneError(
+          error instanceof Error
+            ? error.message
+            : "Control plane indisponible.",
+        );
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [refreshTrigger]);
 
   const providers = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return providerService.getProviders();
-  }, [refreshTrigger]);
+    const definitions = new Map(
+      controlPlane?.providers.map(({ definition }) => [
+        definition.id,
+        definition,
+      ]) || [],
+    );
+    return providerService.getProviders().map((provider) => ({
+      ...provider,
+      operational: definitions.get(provider.id) || provider.operational,
+    }));
+  }, [controlPlane, refreshTrigger]);
 
   const configurations = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return providerService.getConfigurations();
-  }, [refreshTrigger]);
+    const merged = { ...providerService.getConfigurations() };
+    const healthMap: Record<string, ProviderHealthStatus> = {
+      HEALTHY: "healthy",
+      DEGRADED: "degraded",
+      PARTIAL_OUTAGE: "degraded",
+      OUTAGE: "unavailable",
+      MISCONFIGURED: "unavailable",
+      DISABLED: "unavailable",
+      UNKNOWN: "unknown",
+    };
+    for (const entry of controlPlane?.providers || []) {
+      const current = merged[entry.definition.id];
+      const runtime = entry.runtime;
+      const projected: ProviderConfiguration = {
+        providerId: entry.definition.id,
+        enabled: runtime.enabled,
+        environment: runtime.environment,
+        priority: current?.priority || 1,
+        credentialStatus: runtime.configured
+          ? "configured"
+          : entry.definition.requiredEnvironmentVariables.length === 0
+            ? "not_required"
+            : "not_configured",
+        health: healthMap[runtime.health] || "unknown",
+        healthLastCheckedAt: runtime.lastCheckedAt,
+        healthMessage: runtime.message,
+        settings: {},
+        marketOverrides: current?.marketOverrides || {},
+        updatedAt: runtime.lastCheckedAt || controlPlane!.generatedAt,
+        version: current?.version || 1,
+      };
+      merged[entry.definition.id] = projected;
+    }
+    return merged;
+  }, [controlPlane, refreshTrigger]);
 
   const handleRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -68,17 +147,15 @@ export const AdminProvidersPage: React.FC = () => {
     if (!testModalProviderId) return;
     setIsTesting(true);
     try {
-      const res = await providerService.testProvider(
-        testModalProviderId,
-        "healthy",
-      );
+      const res =
+        await services.providerControlPlane.testProvider(testModalProviderId);
       setTestResult(res);
       if (res.success) {
         toast.success(
           `Diagnostic réussi pour ${testModalProviderId} (${res.latencyMs} ms).`,
         );
       } else {
-        toast.error(`Échec : ${res.message}`);
+        toast.info(res.message);
       }
     } finally {
       setIsTesting(false);
@@ -100,7 +177,7 @@ export const AdminProvidersPage: React.FC = () => {
             </span>
             <span className="text-stone-300">•</span>
             <span className="text-xs font-medium text-stone-500">
-              Architecture v2.4
+              Control plane v3
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight flex items-center gap-2.5">
@@ -108,7 +185,8 @@ export const AdminProvidersPage: React.FC = () => {
             {t("admin.adminProvidersPage.fournisseursIntegrationsExternes")}
           </h1>
           <p className="text-xs text-stone-600 mt-1 max-w-2xl">
-            {t("admin.adminProvidersPage.gestionCentraliseeDeToutesLes")}
+            Inventaire de code, configuration runtime et preuves de santé — sans
+            confondre démo, implémentation et production.
           </p>
         </div>
 
@@ -124,6 +202,15 @@ export const AdminProvidersPage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {controlPlaneError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-danger-border bg-danger-surface px-4 py-3 text-xs text-danger"
+        >
+          Le control plane backend n’est pas joignable : {controlPlaneError}
+        </div>
+      )}
 
       {/* Main Tab Navigation Bar */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
@@ -235,7 +322,8 @@ export const AdminProvidersPage: React.FC = () => {
         >
           <div className="space-y-4 p-1">
             <p className="text-xs text-stone-600">
-              {t("admin.adminProvidersPage.executezUnTestDeConnectivite")}
+              Le backend exécute uniquement un probe non destructif enregistré.
+              En mode démo, aucun fournisseur externe n’est contacté.
             </p>
 
             <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 text-xs space-y-1">
@@ -246,9 +334,7 @@ export const AdminProvidersPage: React.FC = () => {
                 </strong>
               </div>
               <div>
-                <span className="text-stone-500">
-                  {t("admin.adminProvidersPage.capacitesTestees")}{" "}
-                </span>
+                <span className="text-stone-500">Capacités annoncées : </span>
                 <strong className="text-stone-800">
                   {activeTestProvider.capabilities
                     .map((capability) => getCapabilityMetadata(capability).name)
@@ -266,8 +352,10 @@ export const AdminProvidersPage: React.FC = () => {
                 }`}
               >
                 <div className="font-bold mb-1">
-                  {testResult.success ? "✓ TEST RÉUSSI" : "✗ ÉCHEC DU TEST"} (
-                  {testResult.latencyMs} ms)
+                  {testResult.success
+                    ? "✓ PREUVE LIVE ENREGISTRÉE"
+                    : "ℹ AUCUNE PREUVE LIVE"}{" "}
+                  ({testResult.latencyMs} ms)
                 </div>
                 <p className="text-micro">{testResult.message}</p>
               </div>

@@ -442,7 +442,7 @@ function courseStatus(tutor: TutorProfile, offer: CourseOffer): ListingStatus {
 export function projectCourseOffer(
   tutor: TutorProfile,
   offer: CourseOffer,
-  subjectLabel = "Cours & Formation",
+  subjectLabel = "Éducation & Formation",
 ): Listing {
   const listingId = offer.listingId || `listing_course_${offer.id}`;
   const activePrices = offer.pricingOptions
@@ -481,7 +481,7 @@ export function projectCourseOffer(
     categorySlug: "services",
     subCategorySlug: "cours-particuliers",
     categoryLabel: "Services",
-    subCategoryLabel: "Cours & Formation",
+    subCategoryLabel: "Éducation & Formation",
     condition: "not_applicable",
     sellerId: tutor.id,
     sellerName: tutor.displayName,
@@ -517,7 +517,7 @@ export function projectCourseOffer(
       verticalType: "tutoring",
       verticalEntityId: offer.id,
       verticalSchemaVersion: offer.schemaVersion,
-      canonicalPath: `/cours/professeur/${tutor.slug}`,
+      canonicalPath: `/education/professeur/${tutor.slug}`,
       subject: subjectLabel,
       subjectId: offer.subjectId,
       levelIds: offer.levelIds,

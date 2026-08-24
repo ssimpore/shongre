@@ -1,11 +1,11 @@
--- Canonical, deterministic catalogue seed for Shongre Cours.
+-- Canonical, deterministic course catalogue seed for Shongre Education.
 -- Phase 2 flags stay false until market-specific legal/provider validation.
 
 INSERT INTO public.course_market_configs (
   market_code, schema_version, is_enabled, locale, currency, timezone,
   minimum_meaningful_review_count, minor_age_threshold,
   learner_request_validity_days, lead_validity_hours, default_lead_credit_cost,
-  commission_rate_bps, cancellation_window_hours,
+  cancellation_window_hours,
   learner_requests_enabled, qualified_leads_enabled,
   booking_enabled, payments_enabled, payouts_enabled, packages_enabled,
   recurring_lessons_enabled, tax_eligibility_wording, safety_guidance,
@@ -13,7 +13,7 @@ INSERT INTO public.course_market_configs (
 )
 VALUES (
   'FR', 1, TRUE, 'fr-FR', 'EUR', 'Europe/Paris', 5, 18, 14, 72, 1,
-  1200, 24, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+  24, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
   'L’éligibilité éventuelle aux services à la personne dépend du statut vérifié du prestataire et des règles applicables au moment de la prestation.',
   '["Pour un mineur, un responsable légal reste l’interlocuteur du professeur.","Pour un premier cours en présentiel, privilégiez un lieu connu et informez un proche.","Conservez les échanges dans la messagerie Shongre et ne partagez pas de données sensibles."]'::jsonb,
   jsonb_build_object(
@@ -22,7 +22,7 @@ VALUES (
     'isEnabled', TRUE, 'minimumMeaningfulReviewCount', 5,
     'minorAgeThreshold', 18, 'learnerRequestValidityDays', 14,
     'leadValidityHours', 72, 'defaultLeadCreditCost', 1,
-    'commissionRateBps', 1200, 'cancellationWindowHours', 24,
+    'cancellationWindowHours', 24,
     'featureFlags', jsonb_build_object(
       'learnerRequestsEnabled', TRUE, 'qualifiedLeadsEnabled', TRUE,
       'bookingEnabled', FALSE, 'paymentsEnabled', FALSE,

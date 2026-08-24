@@ -260,17 +260,15 @@ test.describe('admin console', () => {
     await page.goto('/compte');
     await waitForStableLayout(page);
 
-    const identity = page.locator('aside [data-account-identity]');
+    await expect(page).toHaveURL(/\/admin$/);
+    const identity = page.getByRole('banner');
     await expect(identity).toContainText('Antoine Fabre');
     await expect(identity).not.toContainText('(Administrateur)');
-    await expect(identity.getByRole('img', { name: 'Administrateur' })).toBeVisible();
-
-    const hero = page.locator('[data-account-hero]');
-    await expect(hero).toContainText('Antoine Fabre');
-    await expect(hero).not.toContainText('(Administrateur)');
-    await expect(hero.getByRole('img', { name: 'Administrateur' })).toBeVisible();
-    await expect(hero.getByRole('link', { name: /voir ma boutique publique/i })).toBeVisible();
-    await expect(hero.getByRole('link', { name: /déposer une annonce/i })).toBeVisible();
+    await expect(
+      identity.getByRole('img', { name: 'Administrateur', exact: true }),
+    ).toBeVisible();
+    await expect(identity).toContainText('Administrateur Plateforme');
+    await expect(page.locator('[data-account-hero]')).toHaveCount(0);
   });
 
   test('the compact section menu navigates below lg', async ({ page }) => {
@@ -300,7 +298,10 @@ test.describe('admin console', () => {
   });
 
   test('CRM universal search exposes keyboard-operable results and an empty state', async ({ page }) => {
-    await usePersona(page, 'admin');
+    // CRM access is intentionally separated from platform administration.
+    // Exercise the workspace with the commercial persona that owns crm.*
+    // permissions instead of weakening the production-shaped RBAC boundary.
+    await usePersona(page, 'commercial');
     await page.goto('/admin/crm');
     await waitForStableLayout(page);
 

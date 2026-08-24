@@ -51,6 +51,7 @@ import { AdminPlanDraftModal } from "./AdminPlanDraftModal";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useAuthorization } from "../../security/useAuthorization";
+import { AdminCommissionPanel } from "./AdminCommissionPanel";
 
 type TabId =
   | "catalog"
@@ -60,6 +61,7 @@ type TabId =
   | "promotions"
   | "discovery"
   | "fees"
+  | "commissions"
   | "operations"
   | "complimentary"
   | "history";
@@ -72,6 +74,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "promotions", label: "Promotions" },
   { id: "discovery", label: "" },
   { id: "fees", label: "Taxes & frais" },
+  { id: "commissions", label: "Commissions" },
   { id: "operations", label: "Opérations" },
   { id: "complimentary", label: "Accès offert" },
   { id: "history", label: "Historique" },
@@ -98,9 +101,10 @@ function formatMinor(amountMinor: number, currency = "EUR") {
   }).format(amountMinor / 100);
 }
 
-function entitlementReadiness(
-  entitlement: MonetizationEntitlement,
-): { label: string; variant: "success" | "warning" | "neutral" } {
+function entitlementReadiness(entitlement: MonetizationEntitlement): {
+  label: string;
+  variant: "success" | "warning" | "neutral";
+} {
   if (isCommercialEntitlementOperational(entitlement)) {
     return entitlement.availability === "beta"
       ? { label: "Bêta", variant: "warning" }
@@ -771,6 +775,7 @@ export const AdminMonetizationPage: React.FC = () => {
           "promotions",
           "discovery",
           "fees",
+          "commissions",
           "operations",
           "complimentary",
         ].includes(tab) && (
@@ -1119,6 +1124,10 @@ export const AdminMonetizationPage: React.FC = () => {
             )}
 
             {tab === "discovery" && <AdminDiscoveryConfigurationPanel />}
+
+            {tab === "commissions" && (
+              <AdminCommissionPanel catalog={overview.catalog} />
+            )}
 
             {tab === "fees" && (
               <div className="divide-y divide-border-subtle">
@@ -1773,7 +1782,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       Immobilier
                     </option>
                     <option value={CANONICAL_TAXONOMY_IDS.courses}>
-                      Cours
+                      {t("verticals.education.adminCategory")}
                     </option>
                     <option value={CANONICAL_TAXONOMY_IDS.electronics}>
                       Générique

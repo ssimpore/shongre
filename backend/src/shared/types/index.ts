@@ -202,6 +202,10 @@ export interface Transaction {
   shippingFee: number;
   totalCharged: number;
   escrowSecuredAmount: number;
+  commissionCalculationId?: string;
+  platformCommissionMinor?: number;
+  sellerPayableMinor?: number;
+  commissionSnapshotHash?: string;
   depositAmount?: number;
   remainingBalance?: number;
   deliveryMethod: DeliveryType;

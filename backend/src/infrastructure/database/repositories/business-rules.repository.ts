@@ -14,6 +14,11 @@ import type {
 } from "@shongre/contracts/monetization";
 import { isCommercialEntitlementOperational } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import {
+  normalizeBusinessVerticalCode,
+  normalizeBusinessVerticalFamilyId,
+  normalizeEducationEntitlementKey,
+} from "@shongre/contracts/business-verticals";
 import { getBillingUsagePresentation } from "@shongre/shared";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 
@@ -128,7 +133,12 @@ const initialVersion = (): CommercialConfigurationVersion => ({
   createdAt: BASELINE_MONETIZATION_CATALOG.generatedAt,
   publishedAt: BASELINE_MONETIZATION_CATALOG.generatedAt,
   productCount: BASELINE_MONETIZATION_CATALOG.products.length,
-  ruleCount: BASELINE_MONETIZATION_CATALOG.rules.length,
+  ruleCount:
+    BASELINE_MONETIZATION_CATALOG.rules.length +
+    BASELINE_MONETIZATION_CATALOG.commissionPolicies.reduce(
+      (count, policy) => count + policy.rules.length,
+      0,
+    ),
   conflicts: [],
 });
 
@@ -623,7 +633,13 @@ function versionFromRow(row: any): CommercialConfigurationVersion {
     createdAt: String(row.created_at),
     publishedAt: row.published_at || undefined,
     productCount: snapshot?.products?.length || 0,
-    ruleCount: snapshot?.rules?.length || 0,
+    ruleCount:
+      (snapshot?.rules?.length || 0) +
+      (snapshot?.commissionPolicies || []).reduce(
+        (count: number, policy: { rules?: unknown[] }) =>
+          count + (policy.rules?.length || 0),
+        0,
+      ),
     conflicts: Array.isArray(row.conflicts) ? row.conflicts : [],
   };
 }
@@ -646,6 +662,10 @@ function subscriptionFromRow(row: any): MonetizationSubscription {
     scheduledPriceId: row.scheduled_price_id || undefined,
     scheduledChangeAt: row.scheduled_change_at || undefined,
     gracePeriodEndsAt: row.grace_period_ends_at || undefined,
+    verticalId: normalizeBusinessVerticalCode(row.vertical_id || undefined),
+    familyId: row.family_id
+      ? normalizeBusinessVerticalFamilyId(row.family_id)
+      : undefined,
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   };
@@ -848,13 +868,13 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       id: String(row.id),
       accountId: String(row.account_id),
       productId: String(row.product_id),
-      key: String(row.entitlement_key),
+      key: normalizeEducationEntitlementKey(String(row.entitlement_key)),
       value: row.entitlement_value,
       sourceOrderId: row.source_order_id || undefined,
       startsAt: String(row.starts_at),
       endsAt: row.ends_at || undefined,
       status: row.status,
-      verticalId: row.vertical_id || undefined,
+      verticalId: normalizeBusinessVerticalCode(row.vertical_id || undefined),
       mergePolicy: row.merge_policy || undefined,
     }));
   }

@@ -1,5 +1,4 @@
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
-import { randomUUID } from "node:crypto";
 import { databaseFailure } from "./repository-error.js";
 
 export interface VerificationState {
@@ -22,16 +21,6 @@ export interface UserVerificationStatus {
 
 export interface IVerificationRepository {
   getUserStatus(userId: string): Promise<UserVerificationStatus>;
-  saveVerificationRequest(request: {
-    userId: string;
-    type: string;
-    documentType?: string;
-    documentUrl?: string;
-    siret?: string;
-    companyName?: string;
-    iban?: string;
-    bic?: string;
-  }): Promise<{ id: string; status: string }>;
   updateUserVerification(
     userId: string,
     updates: {
@@ -66,16 +55,6 @@ export class DemoVerificationRepository implements IVerificationRepository {
       isIdentityVerified: state.isIdentityVerified,
       isBusinessVerified: state.isBusinessVerified,
       isBankPayoutConfigured: state.isBankPayoutConfigured,
-    };
-  }
-
-  async saveVerificationRequest(
-    request: any,
-  ): Promise<{ id: string; status: string }> {
-    void request;
-    return {
-      id: randomUUID(),
-      status: "pending",
     };
   }
 
@@ -162,36 +141,6 @@ export class PostgresVerificationRepository implements IVerificationRepository {
       };
     } catch (error) {
       databaseFailure("verification.getUserStatus", error);
-    }
-  }
-
-  async saveVerificationRequest(
-    request: any,
-  ): Promise<{ id: string; status: string }> {
-    try {
-      const supabase = getSupabaseAdminClient();
-      const payload = {
-        user_id: request.userId,
-        type: request.type,
-        status: "pending",
-        document_type: request.documentType || null,
-        document_url: request.documentUrl || null,
-        siret: request.siret || null,
-        company_name: request.companyName || null,
-        iban: request.iban || null,
-        bic: request.bic || null,
-      };
-
-      const { data, error } = await (supabase
-        .from("verification_requests")
-        .insert(payload as any)
-        .select()
-        .single() as any);
-      if (error || !data)
-        databaseFailure("verification.saveVerificationRequest", error);
-      return { id: data.id, status: data.status };
-    } catch (error) {
-      databaseFailure("verification.saveVerificationRequest", error);
     }
   }
 

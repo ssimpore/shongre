@@ -1,3 +1,5 @@
+import type { ProviderOperationalDefinition } from "@shongre/contracts/provider-platform";
+
 /**
  * SHONGRE CANONICAL PROVIDER DOMAIN TYPES
  * Authoritative types for external services, integrations, routing,
@@ -101,7 +103,13 @@ export type ProviderStatus =
   "draft" | "active" | "disabled" | "requires_configuration";
 
 export type IntegrationReadiness =
-  "implemented_demo" | "frontend_only" | "backend_pending" | "production_ready";
+  | "not_implemented"
+  | "demo_only"
+  | "implemented_unverified"
+  | "implemented_demo"
+  | "frontend_only"
+  | "backend_pending"
+  | "production_ready";
 
 export interface ConfigurationFieldOption {
   value: string;
@@ -160,6 +168,8 @@ export interface Provider {
   supportedCurrencies: string[]; // e.g. ['EUR', 'CHF']
   supportedLocales: string[]; // e.g. ['fr-FR', 'en-US', 'es-ES']
   integrationReadiness: IntegrationReadiness;
+  /** Code-audited operational truth shared with the backend. */
+  operational: ProviderOperationalDefinition;
   isCustomizablePerMarket?: boolean;
   configurationSchema: ProviderConfigurationSchema;
   metadata: ProviderMetadata;
@@ -235,7 +245,13 @@ export interface CapabilityHealthResult {
   capability: ProviderCapability;
   category: ProviderCategory;
   marketCode: string;
-  status: "operational" | "degraded" | "unavailable" | "unconfigured";
+  status:
+    | "operational"
+    | "degraded"
+    | "unavailable"
+    | "unconfigured"
+    | "demo"
+    | "unknown";
   activeProviderName: string;
   activeProviderId: string;
   isFallbackActive: boolean;
@@ -274,6 +290,8 @@ export interface ProviderTestResult {
   message: string;
   testedAt: string;
   diagnostics: Record<string, any>;
+  evidence?: "none" | "configuration" | "live_probe" | "runtime_signal";
+  supported?: boolean;
 }
 
 /**

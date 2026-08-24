@@ -6,6 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/",
     "/categories",
     "/collections",
+    "/education",
     "/professionnels",
     "/solutions-pro",
     "/aide",

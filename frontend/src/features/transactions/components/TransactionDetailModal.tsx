@@ -741,6 +741,40 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               {formatPrice(tx.amount)}
             </span>
           </div>
+          {isSeller && tx.platformCommission !== undefined && (
+            <>
+              <div className="flex justify-between text-stone-600">
+                <span>Base de calcul :</span>
+                <span className="font-black text-stone-900">
+                  {formatPrice(tx.commissionBaseAmount ?? tx.amount)}
+                </span>
+              </div>
+              {Boolean(tx.commissionAdjustmentAmount) && (
+                <div className="flex justify-between text-success">
+                  <span>Avantage sur la commission :</span>
+                  <span className="font-black">
+                    − {formatPrice(tx.commissionAdjustmentAmount || 0)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-stone-600">
+                <span>Commission Shongre (taxes incluses) :</span>
+                <span className="font-black text-stone-900">
+                  − {formatPrice(tx.platformCommission)}
+                </span>
+              </div>
+              {Boolean(tx.commissionTaxAmount) && (
+                <div className="flex justify-between text-micro text-stone-500">
+                  <span>dont taxe sur la commission :</span>
+                  <span>{formatPrice(tx.commissionTaxAmount || 0)}</span>
+                </div>
+              )}
+              <p className="text-micro font-medium text-stone-600">
+                {tx.commissionExplanation ||
+                  "Barème figé au moment de la transaction."}
+              </p>
+            </>
+          )}
           <div className="flex justify-between text-stone-600">
             <span>Protection Acheteurs Shongre :</span>
             <span className="font-black text-stone-900">
@@ -762,13 +796,20 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </span>
           </div>
           {isSeller && (
-            <div className="bg-success-surface p-3 rounded-xl mt-3 flex justify-between font-bold text-success border border-success-border">
-              <span>
-                {t(
-                  "transactions.transactionDetailModal.montantNetVerseAuVendeur",
-                )}
-              </span>
-              <span>{formatPrice(tx.sellerPayoutAmount || tx.amount)}</span>
+            <div className="bg-success-surface p-3 rounded-xl mt-3 border border-success-border">
+              <div className="flex justify-between font-bold text-success">
+                <span>
+                  {t(
+                    "transactions.transactionDetailModal.montantNetVerseAuVendeur",
+                  )}
+                </span>
+                <span>{formatPrice(tx.sellerPayoutAmount ?? tx.amount)}</span>
+              </div>
+              <p className="mt-1 text-micro font-medium text-stone-600">
+                Le montant est figé dans le devis de la transaction ; un
+                remboursement crée une annulation traçable sans recalculer le
+                taux actuel.
+              </p>
             </div>
           )}
         </div>
