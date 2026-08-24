@@ -26,7 +26,9 @@ export interface FinanceServiceContract {
   getPlatformDashboard(scope: FinanceScope): Promise<PlatformFinanceDashboard>;
   getAccountDashboard(): Promise<AccountFinanceDashboard>;
   getOrganizationDashboard(): Promise<AccountFinanceDashboard>;
-  listTransactions(query: FinanceTransactionQuery): Promise<FinanceTransactionPage>;
+  listTransactions(
+    query: FinanceTransactionQuery,
+  ): Promise<FinanceTransactionPage>;
   getTransaction(transactionId: string): Promise<FinanceTransaction>;
   listReconciliationCases(): Promise<ReconciliationCase[]>;
   exportTransactions(query: FinanceTransactionQuery): Promise<FinanceExport>;

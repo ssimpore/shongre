@@ -29,7 +29,10 @@ export interface VerificationServiceContract {
   listManualReviews(state?: ManualReviewState): Promise<ManualReviewCase[]>;
   decideManualReview(input: {
     caseId: string;
-    state: Extract<ManualReviewState, "APPROVED" | "REJECTED" | "ESCALATED" | "WAITING_FOR_USER">;
+    state: Extract<
+      ManualReviewState,
+      "APPROVED" | "REJECTED" | "ESCALATED" | "WAITING_FOR_USER"
+    >;
     reason: string;
   }): Promise<ManualReviewCase>;
   listComplianceAudit(limit?: number): Promise<ComplianceAuditEvent[]>;
@@ -52,6 +55,9 @@ export interface VerificationServiceContract {
     userId: string;
     jurisdiction: string;
     returnTo: string;
+    contactEmail: string;
+    displayName: string;
+    sellerType: "individual" | "professional";
   }): Promise<{
     accountReference: string;
     onboardingUrl: string;

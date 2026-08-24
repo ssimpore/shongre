@@ -13,9 +13,10 @@ describe("provider control plane", () => {
 
     expect(mangopay.definition.adapterStatus).toBe("DEMO_ONLY");
     expect(mangopay.readiness.active).toBe(false);
-    expect(stripe.definition.implementedCapabilities).not.toContain(
+    expect(stripe.definition.implementedCapabilities).toContain(
       "payout.transfer",
     );
+    expect(stripe.readiness.active).toBe(false);
     expect(snapshot.summary.active).toBeLessThan(snapshot.summary.discovered);
   });
 
@@ -25,7 +26,7 @@ describe("provider control plane", () => {
       ({ capability }) => capability === "payout.transfer",
     )!;
 
-    expect(payouts.primaryState).toBe("UNAVAILABLE");
+    expect(payouts.primaryState).toBe("UNCONFIGURED");
     expect(payouts.fallbackReady).toBe(false);
     expect(snapshot.summary.missingCriticalCapabilities).toBeGreaterThan(0);
     expect(snapshot.summary.verifiedHealthScore).not.toBe(100);

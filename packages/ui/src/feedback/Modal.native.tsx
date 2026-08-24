@@ -13,6 +13,7 @@ export interface ModalProps {
   title?: ReactNode;
   description?: string;
   children: ReactNode;
+  dismissible?: boolean;
 }
 export function Modal({
   isOpen,
@@ -20,13 +21,14 @@ export function Modal({
   title,
   description,
   children,
+  dismissible = true,
 }: ModalProps) {
   return (
     <RNModal
       visible={isOpen}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={dismissible ? onClose : undefined}
     >
       <SafeAreaView style={styles.scrim}>
         <View accessibilityViewIsModal style={styles.panel}>
@@ -43,14 +45,16 @@ export function Modal({
                 </Text>
               ) : null}
             </View>
-            <Button
-              variant="ghost"
-              size="sm"
-              accessibilityLabel="Fermer"
-              onPress={onClose}
-            >
-              Fermer
-            </Button>
+            {dismissible ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                accessibilityLabel="Fermer"
+                onPress={onClose}
+              >
+                Fermer
+              </Button>
+            ) : null}
           </View>
           <View style={styles.body}>{children}</View>
         </View>

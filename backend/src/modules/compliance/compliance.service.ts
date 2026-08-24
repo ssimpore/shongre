@@ -28,11 +28,7 @@ import {
   CompliancePolicyEngine,
   compliancePolicyEngine,
 } from "./compliance-policy.engine.js";
-import {
-  type RiskSignals,
-  RiskEngine,
-  riskEngine,
-} from "./risk.engine.js";
+import { type RiskSignals, RiskEngine, riskEngine } from "./risk.engine.js";
 
 function verifiedRecord(
   dimension: VerificationDimension,
@@ -53,8 +49,16 @@ function legacyProjection(user: UserProfile): VerificationRecord[] {
   return [
     verifiedRecord("email", user.isEmailVerified, "legacy_profile_projection"),
     verifiedRecord("phone", user.isPhoneVerified, "legacy_profile_projection"),
-    verifiedRecord("identity", user.isIdentityVerified, "legacy_profile_projection"),
-    verifiedRecord("business", user.isBusinessVerified, "legacy_profile_projection"),
+    verifiedRecord(
+      "identity",
+      user.isIdentityVerified,
+      "legacy_profile_projection",
+    ),
+    verifiedRecord(
+      "business",
+      user.isBusinessVerified,
+      "legacy_profile_projection",
+    ),
     verifiedRecord(
       "business_representative",
       user.isBusinessVerified,
@@ -106,14 +110,15 @@ export class ComplianceService {
     private readonly usersRepo: IUserRepository = repositories.users,
     private readonly engine: CompliancePolicyEngine = compliancePolicyEngine,
     private readonly identityProvider: IKYCProvider = providers.kyc,
-    private readonly paymentProvider: PaymentComplianceProvider =
-      providers.paymentCompliance,
+    private readonly paymentProvider: PaymentComplianceProvider = providers.paymentCompliance,
     private readonly risk: RiskEngine = riskEngine,
   ) {}
 
   private async activeRules(): Promise<ComplianceRule[]> {
     const configured = await this.complianceRepo.listRules();
-    const byId = new Map(BASELINE_COMPLIANCE_RULES.map((rule) => [rule.id, rule]));
+    const byId = new Map(
+      BASELINE_COMPLIANCE_RULES.map((rule) => [rule.id, rule]),
+    );
     for (const rule of configured) byId.set(rule.id, rule);
     return [...byId.values()];
   }
@@ -131,12 +136,15 @@ export class ComplianceService {
     if (input.reason.trim().length < 10)
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "Un motif de modification d'au moins 10 caractères est requis.",
+        message:
+          "Un motif de modification d'au moins 10 caractères est requis.",
       });
     if (
       rule.governance === "LEGAL_MANDATE" &&
       rule.status === "ACTIVE" &&
-      (!rule.reviewedBy || !rule.reviewedAt || rule.sourceReferences.length === 0)
+      (!rule.reviewedBy ||
+        !rule.reviewedAt ||
+        rule.sourceReferences.length === 0)
     )
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -281,15 +289,37 @@ export class ComplianceService {
     userId: string;
     jurisdiction: string;
     returnUrl: string;
+    accountToken?: string;
   }) {
     const subject = await this.getSubject(input.userId);
+    const user = await this.usersRepo.findById(input.userId);
+    if (!user)
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
     const seller = subject.sellerType ?? "individual";
-    const account = await this.paymentProvider.createSellerAccount({
-      userId: input.userId,
-      sellerType: seller,
-      jurisdiction: input.jurisdiction,
-      returnUrl: input.returnUrl,
-    });
+    const existingReference = (
+      await this.complianceRepo.listVerificationRecords(input.userId)
+    ).find(
+      (record) =>
+        record.provider === "payment_compliance_provider" &&
+        /^acct_[A-Za-z0-9]+$/.test(record.providerReference || ""),
+    )?.providerReference;
+    const account = existingReference
+      ? {
+          accountReference: existingReference,
+          onboardingUrl: await this.paymentProvider.createOnboardingLink(
+            existingReference,
+            input.returnUrl,
+          ),
+        }
+      : await this.paymentProvider.createSellerAccount({
+          userId: input.userId,
+          sellerType: seller,
+          jurisdiction: input.jurisdiction,
+          returnUrl: input.returnUrl,
+          contactEmail: user.email,
+          displayName: user.name,
+          accountToken: input.accountToken,
+        });
     const required = await this.paymentProvider.getRequirements(
       account.accountReference,
     );
@@ -314,10 +344,13 @@ export class ComplianceService {
     actorId?: string;
     reasonCode: string;
   }): Promise<void> {
-    const current = (await this.complianceRepo.listVerificationRecords(input.userId)).find(
-      (record) => record.dimension === input.record.dimension,
+    const current = (
+      await this.complianceRepo.listVerificationRecords(input.userId)
+    ).find((record) => record.dimension === input.record.dimension);
+    await this.complianceRepo.saveVerificationRecord(
+      input.userId,
+      input.record,
     );
-    await this.complianceRepo.saveVerificationRecord(input.userId, input.record);
     await this.complianceRepo.appendAuditEvent({
       userId: input.userId,
       eventType:
@@ -354,7 +387,8 @@ export class ComplianceService {
     if (claim === "HASH_MISMATCH")
       throw new AppError({
         code: "FORBIDDEN",
-        message: "L'identifiant du webhook ne correspond pas à son contenu initial.",
+        message:
+          "L'identifiant du webhook ne correspond pas à son contenu initial.",
       });
     if (claim === "PROCESSED" || claim === "IN_PROGRESS")
       return { duplicate: true };
@@ -402,9 +436,13 @@ export class ComplianceService {
       (review) =>
         review.userId === input.userId &&
         review.dimension === input.dimension &&
-        ["OPEN", "ASSIGNED", "WAITING_FOR_USER", "UNDER_REVIEW", "ESCALATED"].includes(
-          review.state,
-        ),
+        [
+          "OPEN",
+          "ASSIGNED",
+          "WAITING_FOR_USER",
+          "UNDER_REVIEW",
+          "ESCALATED",
+        ].includes(review.state),
     );
     if (existing) return existing;
     const review = await this.complianceRepo.createManualReview({
@@ -463,7 +501,10 @@ export class ComplianceService {
 
   async decideManualReview(input: {
     caseId: string;
-    state: Extract<ManualReviewState, "APPROVED" | "REJECTED" | "ESCALATED" | "WAITING_FOR_USER">;
+    state: Extract<
+      ManualReviewState,
+      "APPROVED" | "REJECTED" | "ESCALATED" | "WAITING_FOR_USER"
+    >;
     reviewerId: string;
     reason: string;
   }) {
@@ -489,7 +530,8 @@ export class ComplianceService {
       record: {
         dimension: review.dimension,
         state: nextState,
-        verifiedAt: nextState === "verified" ? new Date().toISOString() : undefined,
+        verifiedAt:
+          nextState === "verified" ? new Date().toISOString() : undefined,
         reasonCode: review.reasonCode,
         method: "manual_review",
         visibility: "COMPLIANCE_ONLY",

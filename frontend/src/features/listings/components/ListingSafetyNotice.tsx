@@ -23,7 +23,7 @@ export const ListingSafetyNotice: React.FC<ListingSafetyNoticeProps> = ({
 
       <p className="text-micro text-success leading-relaxed">
         {isOnlinePaymentAvailable
-          ? "Vos fonds sont protégés sur un compte séquestre sécurisé (Mangopay) et ne sont versés au vendeur qu'après réception et validation conforme de l'article."
+          ? "Le paiement est traité par Stripe. Vérifiez le statut de la commande avant toute remise et ouvrez un litige depuis la commande en cas de problème."
           : "Pour votre sécurité, effectuez la transaction et la vérification du bien en personne dans un lieu public."}
       </p>
 

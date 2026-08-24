@@ -1,4 +1,8 @@
-import { Conversation, Message } from "../../shared/types/index.js";
+import {
+  Conversation,
+  Message,
+  MessagePage,
+} from "../../shared/types/index.js";
 import {
   IMessagingRepository,
   repositories,
@@ -6,6 +10,7 @@ import {
 import { realtimeBroadcaster } from "../../infrastructure/realtime/realtime-broadcaster.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { randomUUID } from "node:crypto";
+import type { IListingRepository } from "../../infrastructure/database/repositories/listing.repository.js";
 
 export interface SendMessageInput {
   conversationId: string;
@@ -18,6 +23,7 @@ export interface SendMessageInput {
 export class MessagingService {
   constructor(
     private messagingRepo: IMessagingRepository = repositories.messaging,
+    private listingRepo: IListingRepository = repositories.listings,
   ) {}
 
   async getUserConversations(userId: string): Promise<Conversation[]> {
@@ -28,14 +34,104 @@ export class MessagingService {
     return this.messagingRepo.getConversationById(id);
   }
 
+  async createConversationForListing(input: {
+    listingId: string;
+    buyerId: string;
+    initialMessage?: string;
+  }): Promise<Conversation> {
+    if (!input.listingId) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Identifiant d’annonce manquant.",
+      });
+    }
+    const listing = await this.listingRepo.findPublicById(input.listingId);
+    if (!listing) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Annonce introuvable ou indisponible.",
+      });
+    }
+    if (listing.sellerId === input.buyerId) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Vous ne pouvez pas contacter votre propre annonce.",
+      });
+    }
+    if (
+      await this.messagingRepo.isBlockedBetween(input.buyerId, listing.sellerId)
+    ) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Cette conversation est temporairement indisponible.",
+      });
+    }
+    const conversation = await this.messagingRepo.createConversation(
+      listing.id,
+      input.buyerId,
+      listing.sellerId,
+    );
+    if (input.initialMessage?.trim()) {
+      await this.sendMessage({
+        conversationId: conversation.id,
+        senderId: input.buyerId,
+        text: input.initialMessage,
+      });
+      return (await this.messagingRepo.getConversationById(conversation.id))!;
+    }
+    return conversation;
+  }
+
+  async getMessages(
+    conversationId: string,
+    userId: string,
+    options?: { cursor?: string; limit?: number },
+  ): Promise<MessagePage> {
+    await this.assertParticipant(conversationId, userId);
+    return this.messagingRepo.getMessages(conversationId, options);
+  }
+
   async sendMessage(input: SendMessageInput): Promise<Message> {
     await this.assertInteractionAllowed(input.conversationId, input.senderId);
+    const text = typeof input.text === "string" ? input.text.trim() : "";
+    const attachments = input.attachments || [];
+    if ((!text && attachments.length === 0) || text.length > 5_000) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le message doit contenir entre 1 et 5 000 caractères.",
+      });
+    }
+    if (
+      attachments.length > 5 ||
+      attachments.some((value) => {
+        try {
+          const url = new URL(value);
+          return url.protocol !== "https:" || value.length > 2_048;
+        } catch {
+          return true;
+        }
+      })
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une pièce jointe au message est invalide.",
+      });
+    }
+    if (
+      input.offerPrice !== undefined &&
+      (!Number.isFinite(input.offerPrice) || input.offerPrice <= 0)
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le montant de l’offre est invalide.",
+      });
+    }
     const message: Message = {
       id: randomUUID(),
       conversationId: input.conversationId,
       senderId: input.senderId,
-      text: input.text,
-      attachments: input.attachments || [],
+      text,
+      attachments,
       offerPrice: input.offerPrice,
       isOffer: Boolean(input.offerPrice),
       offerStatus: input.offerPrice ? "pending" : undefined,
@@ -82,18 +178,47 @@ export class MessagingService {
 
   async schedulePickup(
     conversationId: string,
+    senderId: string,
     date: string,
     timeSlot: string,
     address: string,
   ): Promise<Message> {
-    return this.sendMessage({
+    if (
+      !date?.trim() ||
+      !timeSlot?.trim() ||
+      !address?.trim() ||
+      address.length > 500
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Les informations du rendez-vous sont invalides.",
+      });
+    }
+    await this.assertInteractionAllowed(conversationId, senderId);
+    const message: Message = {
+      id: randomUUID(),
       conversationId,
-      senderId: "system",
+      senderId,
       text: `Rendez-vous de remise en main propre proposé pour le ${date} (${timeSlot}) à ${address}`,
-    });
+      isPickupProposal: true,
+      pickupDetails: {
+        date: date.trim(),
+        timeSlot: timeSlot.trim(),
+        address: address.trim(),
+      },
+      createdAt: new Date().toISOString(),
+    };
+    const saved = await this.messagingRepo.saveMessage(message);
+    await realtimeBroadcaster.broadcastEvent(
+      `conversation:${conversationId}`,
+      "new_message",
+      saved,
+    );
+    return saved;
   }
 
   async markAsRead(conversationId: string, userId: string): Promise<void> {
+    await this.assertParticipant(conversationId, userId);
     return this.messagingRepo.markAsRead(conversationId, userId);
   }
 
@@ -117,6 +242,10 @@ export class MessagingService {
     return this.messagingRepo.unblockUser(userId, targetUserId);
   }
 
+  async getBlockedUserIds(userId: string): Promise<string[]> {
+    return this.messagingRepo.getBlockedUserIds(userId);
+  }
+
   private async assertInteractionAllowed(
     conversationId: string,
     senderId: string,
@@ -129,6 +258,15 @@ export class MessagingService {
         code: "NOT_FOUND",
         message: "Conversation introuvable.",
       });
+    if (
+      conversation.buyerId !== senderId &&
+      conversation.sellerId !== senderId
+    ) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Accès interdit à cette conversation.",
+      });
+    }
     const otherUserId =
       conversation.buyerId === senderId
         ? conversation.sellerId
@@ -139,6 +277,27 @@ export class MessagingService {
         message: "Cette conversation est temporairement indisponible.",
       });
     }
+  }
+
+  private async assertParticipant(
+    conversationId: string,
+    userId: string,
+  ): Promise<Conversation> {
+    const conversation =
+      await this.messagingRepo.getConversationById(conversationId);
+    if (!conversation) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Conversation introuvable.",
+      });
+    }
+    if (conversation.buyerId !== userId && conversation.sellerId !== userId) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Accès interdit à cette conversation.",
+      });
+    }
+    return conversation;
   }
 }
 

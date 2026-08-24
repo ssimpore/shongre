@@ -8,6 +8,7 @@ import { FavoritesProvider } from "./FavoritesProvider";
 import { ConsentProvider } from "./ConsentProvider";
 import { I18nProvider } from "../../i18n/I18nProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { DataModeProvider } from "./DataModeProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,21 +25,23 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ConsentProvider>
-            <MarketLocationProvider>
-              <I18nProvider>
-                <ToastProvider>
-                  <NotificationProvider>
-                    <FavoritesProvider>{children}</FavoritesProvider>
-                  </NotificationProvider>
-                </ToastProvider>
-              </I18nProvider>
-            </MarketLocationProvider>
-          </ConsentProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <DataModeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <ConsentProvider>
+              <MarketLocationProvider>
+                <I18nProvider>
+                  <ToastProvider>
+                    <NotificationProvider>
+                      <FavoritesProvider>{children}</FavoritesProvider>
+                    </NotificationProvider>
+                  </ToastProvider>
+                </I18nProvider>
+              </MarketLocationProvider>
+            </ConsentProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </DataModeProvider>
     </ErrorBoundary>
   );
 };

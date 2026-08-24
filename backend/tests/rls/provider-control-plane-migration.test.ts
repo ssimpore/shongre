@@ -30,7 +30,9 @@ describe("provider control-plane migration", () => {
     expect(migration).toContain("credential_reference TEXT");
     expect(migration).toContain("secret_reference TEXT NOT NULL");
     expect(migration).toContain("payload_hash TEXT NOT NULL");
-    expect(migration).not.toMatch(/provider_events[\s\S]{0,700}payload\s+JSONB/i);
+    expect(migration).not.toMatch(
+      /provider_events[\s\S]{0,700}payload\s+JSONB/i,
+    );
     expect(migration).not.toContain("secret_value");
   });
 

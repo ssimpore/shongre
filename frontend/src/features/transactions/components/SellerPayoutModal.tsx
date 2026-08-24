@@ -1,11 +1,9 @@
-import React, { useState } from "react";
-import { Landmark, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Landmark, CheckCircle2, ShieldCheck } from "lucide-react";
 import { UserProfile, SellerPayoutRequest } from "../../../types";
-import { transactionService } from "../../../domains/transaction/transaction.service";
-import { getDemoTransactionCommercials } from "../../../domains/monetization/demo-commercial-catalog";
+import { services } from "../../../api/client/service-registry";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
-import { SelectableCard } from "../../../design-system/primitives/SelectableCard";
 import { formatPrice } from "../../../utilities/formatters";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
@@ -25,32 +23,23 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   onPayoutSuccess,
 }) => {
   const { t } = useTranslation();
-  const [payoutType, setPayoutType] = useState<"standard" | "instant">(
-    "standard",
-  );
   const [amountStr, setAmountStr] = useState(
     availableBalance > 0 ? availableBalance.toFixed(2) : "0.00",
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const idempotencyKey = useRef(
+    `seller-payout:${currentUser.id}:${typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now()}`,
+  );
   const payoutAccount = currentUser.bankPayoutVerification;
   const payoutConfigured =
-    payoutAccount?.status === "verified" && Boolean(payoutAccount.providerReference);
+    payoutAccount?.status === "verified" &&
+    Boolean(payoutAccount.providerReference);
   const payoutLast4 = payoutAccount?.accountLast4 || "••••";
 
   const amount = parseFloat(amountStr) || 0;
-  const payoutCommercials = getDemoTransactionCommercials(
-    currentUser.country || "FR",
-    "pro",
-  );
-  const fee =
-    payoutType === "instant"
-      ? Math.round(
-          amount * 100 * (payoutCommercials.instantPayoutRateBps / 10_000) +
-            payoutCommercials.instantPayoutFixedMinor,
-        ) / 100
-      : 0;
-  const netTransfer = Math.max(0, amount - fee);
+  const fee = 0;
+  const netTransfer = amount;
 
   const handleWithdraw = async () => {
     if (amount <= 0) {
@@ -72,11 +61,26 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
     setError(null);
 
     try {
-      const payout = await transactionService.requestPayout(
-        currentUser,
+      const result = await services.payments.requestSellerPayout({
+        amountMinor: Math.round(amount * 100),
+        currency: "EUR",
+        idempotencyKey: idempotencyKey.current,
+      });
+      const now = new Date().toISOString();
+      const payout: SellerPayoutRequest = {
+        id: result.payoutId,
+        sellerId: currentUser.id,
+        sellerName: currentUser.name,
         amount,
-        payoutType,
-      );
+        fee: 0,
+        netAmount: amount,
+        payoutType: "standard",
+        ibanLast4: payoutLast4,
+        bankName: "Compte de versement vérifié",
+        status: result.status === "completed" ? "completed" : "processing",
+        requestedAt: now,
+        completedAt: result.status === "completed" ? now : undefined,
+      };
       onPayoutSuccess(payout);
       onClose();
     } catch (err: any) {
@@ -142,61 +146,9 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
           </div>
         </div>
 
-        {/* Payout Options */}
-        <div className="space-y-3">
-          <label className="block font-bold text-stone-700 text-sm">
-            {t("transactions.sellerPayoutModal.typeDeVirement")}
-          </label>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <SelectableCard
-              selected={payoutType === "standard"}
-              onSelect={() => setPayoutType("standard")}
-              aria-label={t(
-                "transactions.sellerPayoutModal.virementStandardGratuit24A",
-              )}
-              className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
-                payoutType === "standard"
-                  ? "border-primary bg-primary-light ring-1 ring-primary/50"
-                  : "border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-stone-900">Standard</span>
-                <span className="text-xs font-bold text-success bg-success-surface px-2 py-0.5 rounded-md">
-                  Gratuit
-                </span>
-              </div>
-              <p className="text-xs font-medium text-stone-500">
-                {t("transactions.sellerPayoutModal.delaiSepaClassique24A")}
-              </p>
-            </SelectableCard>
-
-            <SelectableCard
-              selected={payoutType === "instant"}
-              onSelect={() => setPayoutType("instant")}
-              aria-label={t(
-                "transactions.sellerPayoutModal.virementInstantane090Credite",
-              )}
-              className={`p-4 rounded-2xl border transition-all duration-normal shadow-2xs hover:shadow-sm ${
-                payoutType === "instant"
-                  ? "border-primary bg-primary-light ring-1 ring-primary/50"
-                  : "border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-stone-900 flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />{" "}
-                  Instantané
-                </span>
-                <span className="text-xs font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md">
-                  0,90 €
-                </span>
-              </div>
-              <p className="text-xs font-medium text-stone-500">
-                {t("transactions.sellerPayoutModal.crediteEnMoinsDe10")}
-              </p>
-            </SelectableCard>
-          </div>
+        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
+          Le prestataire exécute un virement standard vers le compte vérifié. Le
+          délai bancaire exact est indiqué dans son statut de versement.
         </div>
 
         {/* Destination Bank Account */}
@@ -231,10 +183,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
             </span>
           </div>
           <div className="flex justify-between text-stone-600">
-            <span>
-              Frais de virement{" "}
-              {payoutType === "instant" ? "instantané" : "standard"} :
-            </span>
+            <span>Frais de virement standard :</span>
             <span className="font-black text-stone-900">
               {formatPrice(fee)}
             </span>
@@ -252,9 +201,8 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         <div className="flex items-center gap-2 text-micro text-stone-500 pt-1">
           <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
           <span>
-            {t(
-              "transactions.sellerPayoutModal.virementsExecutesViaMangopayEtablissement",
-            )}
+            Virement exécuté par le prestataire de paiement vers le compte
+            vérifié.
           </span>
         </div>
 

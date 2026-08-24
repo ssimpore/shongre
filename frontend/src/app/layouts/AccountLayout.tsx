@@ -134,7 +134,7 @@ export const AccountLayout: React.FC = () => {
     },
     {
       to: "/compte/achats",
-      label: "Transactions & Séquestre",
+      label: "Transactions & Paiements",
       icon: <ShoppingBag className="w-4 h-4" />,
       visible: canAccessRoute("accountPurchases"),
     },

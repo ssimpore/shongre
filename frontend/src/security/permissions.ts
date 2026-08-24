@@ -389,7 +389,7 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     name: "Acheter un article via paiement sécurisé",
     category: "Transactions & Paiements",
     description:
-      "Initier un achat avec séquestre et protection acheteur Shongre.",
+      "Initier un achat avec paiement en ligne via le prestataire configuré.",
   },
   {
     id: "order.read.own",
@@ -418,7 +418,7 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     name: "Auditer l'ensemble des flux financiers",
     category: "Transactions & Paiements",
     description:
-      "Visualiser les flux de séquestre, commissions Shongre et transactions globales.",
+      "Visualiser les flux de paiement, commissions Shongre et transactions globales.",
     isSensitive: true,
   },
   {
@@ -496,7 +496,7 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     name: "Exécuter un virement ou déblocage de fonds",
     category: "Transactions & Paiements",
     description:
-      "Débloquer les fonds au vendeur ou reverser le séquestre en cas de litige.",
+      "Déclencher un versement vendeur ou un remboursement en cas de litige.",
     isSensitive: true,
   },
 
@@ -777,7 +777,7 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     name: "Accès espace Comptabilité & Finances",
     category: "Transactions & Paiements",
     description:
-      "Gestion des déblocages de séquestres, factures fournisseurs et taxes.",
+      "Gestion des versements, remboursements, factures fournisseurs et taxes.",
     isSensitive: true,
   },
   {

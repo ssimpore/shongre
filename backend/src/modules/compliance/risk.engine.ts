@@ -1,4 +1,7 @@
-import type { RiskLevel, VerificationDimension } from "@shongre/contracts/compliance";
+import type {
+  RiskLevel,
+  VerificationDimension,
+} from "@shongre/contracts/compliance";
 
 export interface RiskSignals {
   unusualLogin?: boolean;
@@ -39,7 +42,13 @@ export class RiskEngine {
     }
 
     const level: RiskLevel =
-      weight >= 7 ? "CRITICAL" : weight >= 4 ? "HIGH" : weight >= 2 ? "ELEVATED" : "NORMAL";
+      weight >= 7
+        ? "CRITICAL"
+        : weight >= 4
+          ? "HIGH"
+          : weight >= 2
+            ? "ELEVATED"
+            : "NORMAL";
     return {
       level,
       reasonCodes: reasons,

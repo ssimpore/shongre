@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { createServiceRegistry, services } from "./service-registry";
-import { isDemoMode } from "./api-client.config";
+import { afterEach, describe, it, expect } from "vitest";
+import {
+  activateServiceRegistry,
+  createServiceRegistry,
+  services,
+} from "./service-registry";
+import { isDemoMode } from "./data-mode.service";
 import {
   HttpListingsService,
   HttpSearchService,
@@ -39,6 +43,10 @@ import {
 } from "../adapters/demo";
 
 describe("Service Registry & API Adapter Boundary", () => {
+  afterEach(() => {
+    activateServiceRegistry("demo");
+  });
+
   it("instantiates the service registry in demo mode by default", () => {
     expect(isDemoMode()).toBe(true);
     const registry = createServiceRegistry("demo");
@@ -89,9 +97,21 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(apiRegistry.businessRules instanceof HttpBusinessRulesService).toBe(
       true,
     );
-    expect(apiRegistry.commissions instanceof HttpCommissionService).toBe(
-      true,
-    );
+    expect(apiRegistry.commissions instanceof HttpCommissionService).toBe(true);
+  });
+
+  it("rebinds the stable registry object when the central mode changes", () => {
+    const stableRegistry = services;
+
+    activateServiceRegistry("api");
+    expect(services).toBe(stableRegistry);
+    expect(services.auth instanceof HttpAuthService).toBe(true);
+    expect(services.listings instanceof HttpListingsService).toBe(true);
+
+    activateServiceRegistry("demo");
+    expect(services).toBe(stableRegistry);
+    expect(services.auth instanceof DemoAuthService).toBe(true);
+    expect(services.listings instanceof DemoListingsService).toBe(true);
   });
 
   it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {

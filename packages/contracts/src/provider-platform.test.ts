@@ -18,9 +18,7 @@ describe("provider platform registry", () => {
   });
 
   it("assigns every capability to a registered operational owner", () => {
-    const providerIds = new Set(
-      SHONGRE_PROVIDER_REGISTRY.map(({ id }) => id),
-    );
+    const providerIds = new Set(SHONGRE_PROVIDER_REGISTRY.map(({ id }) => id));
 
     for (const requirement of SHONGRE_CAPABILITY_REQUIREMENTS) {
       expect(providerIds.has(requirement.primaryProviderId)).toBe(true);

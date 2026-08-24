@@ -1,21 +1,18 @@
-export interface PaymentIntentResult {
-  clientSecret: string;
-  status: "succeeded" | "requires_action" | "pending" | "failed";
-  amount: number;
-  currency: string;
-}
+import type { MonetizationOrder } from "@shongre/contracts/monetization";
 
 export interface PaymentsServiceContract {
-  createPaymentIntent(
-    amount: number,
-    currency: string,
-    metadata?: Record<string, string>,
-  ): Promise<PaymentIntentResult>;
-  requestSellerPayout(
-    sellerId: string,
-    amount: number,
-  ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
-  getSellerBalance(
-    sellerId: string,
-  ): Promise<{ available: number; pending: number; currency: string }>;
+  createCheckout(
+    quoteId: string,
+    idempotencyKey: string,
+  ): Promise<MonetizationOrder>;
+  requestSellerPayout(input: {
+    amountMinor: number;
+    currency: string;
+    idempotencyKey: string;
+  }): Promise<{ payoutId: string; status: "completed" | "processing" }>;
+  getSellerBalance(sellerId: string): Promise<{
+    availableMinor: number;
+    pendingMinor: number;
+    currency: string;
+  }>;
 }

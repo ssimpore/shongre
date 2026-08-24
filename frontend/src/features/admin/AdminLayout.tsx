@@ -33,10 +33,13 @@ import { useAuthorization } from "../../security/useAuthorization";
 import { Container, Image, SkipLink } from "../../design-system";
 import { AppScrollRestoration } from "../../app/router/AppScrollRestoration";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { DataModeSettingsControl } from "../../app/layouts/DataModeSettingsControl";
+import { useDataMode } from "../../app/providers/DataModeProvider";
 
 export const AdminLayout: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, role: platformRole } = useAuth();
+  const { mode } = useDataMode();
   const { canAccessRoute } = useAuthorization();
   const location = useLocation();
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
@@ -246,6 +249,25 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div
+              className={`hidden items-center gap-1.5 rounded-control border px-2 py-1 text-micro font-bold uppercase tracking-wide sm:inline-flex ${
+                mode === "demo"
+                  ? "border-primary/40 bg-primary/15 text-orange-100"
+                  : "border-success-border bg-success-surface text-success"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  mode === "demo" ? "bg-primary" : "bg-success"
+                }`}
+                aria-hidden="true"
+              />
+              {mode === "demo"
+                ? t("shell.demoRoleSwitcher.modeDemo")
+                : t("shell.dataMode.modeLive")}
+            </div>
+            <DataModeSettingsControl />
+
             {/* User identity & badge */}
             <div className="flex items-center gap-2.5">
               <Image

@@ -187,7 +187,7 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           },
           timestamp: "2026-08-01T08:00:00Z",
           details:
-            "16 univers créés avec schéma d'attributs et capacités de séquestre.",
+            "16 univers créés avec schéma d'attributs et capacités de paiement.",
         },
       ],
     );

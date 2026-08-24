@@ -1,4 +1,9 @@
-import { UserProfile, UserRole } from "../../../shared/types/index.js";
+import {
+  PublicSellerProfile,
+  UserProfile,
+  UserRole,
+} from "../../../shared/types/index.js";
+import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 
@@ -17,6 +22,7 @@ export interface UserCredential {
 
 export interface IUserRepository {
   findById(id: string): Promise<UserProfile | null>;
+  findPublicById(id: string): Promise<PublicSellerProfile | null>;
   findByEmail(email: string): Promise<UserProfile | null>;
   save(user: UserProfile): Promise<UserProfile>;
   update(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
@@ -252,6 +258,11 @@ export class DemoUserRepository implements IUserRepository {
     return user ? { ...user } : null;
   }
 
+  async findPublicById(id: string): Promise<PublicSellerProfile | null> {
+    const user = await this.findById(id);
+    return user ? toPublicSellerProfile(user) : null;
+  }
+
   async findByEmail(email: string): Promise<UserProfile | null> {
     const lower = (email || "").toLowerCase().trim();
     for (const u of this.users.values()) {
@@ -376,6 +387,44 @@ export class PostgresUserRepository implements IUserRepository {
       return this.mapRowToUserProfile(data);
     } catch (error) {
       databaseFailure("users.findById", error);
+    }
+  }
+
+  async findPublicById(id: string): Promise<PublicSellerProfile | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await ((
+        supabase.from("public_profiles" as any) as any
+      )
+        .select(
+          "id, slug, name, avatar_url, city, country, bio, account_family, is_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at",
+        )
+        .eq("id", id)
+        .maybeSingle() as any);
+      if (error) databaseFailure("users.findPublicById", error);
+      if (!data) return null;
+      const accountType =
+        data.account_family === "professional" ? "professional" : "individual";
+      return {
+        id: data.id,
+        slug: data.slug,
+        name: data.name,
+        accountType,
+        sellerType: accountType === "professional" ? "pro" : "individual",
+        avatarUrl: data.avatar_url || undefined,
+        city: data.city || undefined,
+        country: data.country || "FR",
+        bio: data.bio || undefined,
+        isVerified: Boolean(data.is_verified),
+        isBusinessVerified: Boolean(data.is_business_verified),
+        rating: Number(data.rating || 0),
+        reviewCount: Number(data.review_count || 0),
+        responseRatePercent: Number(data.response_rate_percent || 0),
+        responseTimeText: data.response_time_text || undefined,
+        createdAt: data.created_at || undefined,
+      };
+    } catch (error) {
+      databaseFailure("users.findPublicById", error);
     }
   }
 

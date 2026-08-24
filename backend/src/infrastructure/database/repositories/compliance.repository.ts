@@ -19,9 +19,17 @@ export interface IComplianceRepository {
     reason: string;
   }): Promise<ComplianceRule>;
   listVerificationRecords(userId: string): Promise<VerificationRecord[]>;
-  saveVerificationRecord(userId: string, record: VerificationRecord): Promise<void>;
-  saveDecision(userId: string, decision: ComplianceRequirementDecision): Promise<void>;
-  appendAuditEvent(event: Omit<ComplianceAuditEvent, "id">): Promise<ComplianceAuditEvent>;
+  saveVerificationRecord(
+    userId: string,
+    record: VerificationRecord,
+  ): Promise<void>;
+  saveDecision(
+    userId: string,
+    decision: ComplianceRequirementDecision,
+  ): Promise<void>;
+  appendAuditEvent(
+    event: Omit<ComplianceAuditEvent, "id">,
+  ): Promise<ComplianceAuditEvent>;
   claimProviderEvent(input: {
     provider: string;
     eventId: string;
@@ -51,7 +59,10 @@ export interface IComplianceRepository {
 
 export class DemoComplianceRepository implements IComplianceRepository {
   private readonly rules = new Map<string, ComplianceRule>();
-  private readonly records = new Map<string, Map<VerificationDimension, VerificationRecord>>();
+  private readonly records = new Map<
+    string,
+    Map<VerificationDimension, VerificationRecord>
+  >();
   private readonly events: ComplianceAuditEvent[] = [];
   private readonly providerEvents = new Map<
     string,
@@ -76,7 +87,10 @@ export class DemoComplianceRepository implements IComplianceRepository {
     return [...(this.records.get(userId)?.values() ?? [])];
   }
 
-  async saveVerificationRecord(userId: string, record: VerificationRecord): Promise<void> {
+  async saveVerificationRecord(
+    userId: string,
+    record: VerificationRecord,
+  ): Promise<void> {
     const current = this.records.get(userId) ?? new Map();
     current.set(record.dimension, { ...record });
     this.records.set(userId, current);
@@ -134,15 +148,24 @@ export class DemoComplianceRepository implements IComplianceRepository {
     current.processed = true;
   }
 
-  async listManualReviews(state?: ManualReviewState): Promise<ManualReviewCase[]> {
-    return [...this.reviews.values()].filter((review) => !state || review.state === state);
+  async listManualReviews(
+    state?: ManualReviewState,
+  ): Promise<ManualReviewCase[]> {
+    return [...this.reviews.values()].filter(
+      (review) => !state || review.state === state,
+    );
   }
 
   async createManualReview(
     input: Omit<ManualReviewCase, "id" | "openedAt" | "updatedAt">,
   ): Promise<ManualReviewCase> {
     const now = new Date().toISOString();
-    const review = { ...input, id: randomUUID(), openedAt: now, updatedAt: now };
+    const review = {
+      ...input,
+      id: randomUUID(),
+      openedAt: now,
+      updatedAt: now,
+    };
     this.reviews.set(review.id, review);
     return review;
   }
@@ -288,7 +311,10 @@ export class PostgresComplianceRepository implements IComplianceRepository {
     }
   }
 
-  async saveVerificationRecord(userId: string, record: VerificationRecord): Promise<void> {
+  async saveVerificationRecord(
+    userId: string,
+    record: VerificationRecord,
+  ): Promise<void> {
     try {
       const { error } = await getSupabaseAdminClient()
         .from("compliance_verification_records" as any)
@@ -316,7 +342,10 @@ export class PostgresComplianceRepository implements IComplianceRepository {
     }
   }
 
-  async saveDecision(userId: string, decision: ComplianceRequirementDecision): Promise<void> {
+  async saveDecision(
+    userId: string,
+    decision: ComplianceRequirementDecision,
+  ): Promise<void> {
     try {
       const { error } = await getSupabaseAdminClient()
         .from("compliance_requirement_decisions" as any)
@@ -408,7 +437,9 @@ export class PostgresComplianceRepository implements IComplianceRepository {
     }
   }
 
-  async listManualReviews(state?: ManualReviewState): Promise<ManualReviewCase[]> {
+  async listManualReviews(
+    state?: ManualReviewState,
+  ): Promise<ManualReviewCase[]> {
     try {
       let query: any = getSupabaseAdminClient()
         .from("compliance_manual_reviews" as any)
@@ -439,7 +470,8 @@ export class PostgresComplianceRepository implements IComplianceRepository {
         } as any)
         .select("*")
         .single();
-      if (error || !data) databaseFailure("compliance.createManualReview", error);
+      if (error || !data)
+        databaseFailure("compliance.createManualReview", error);
       return mapReview(data);
     } catch (error) {
       databaseFailure("compliance.createManualReview", error);
@@ -464,7 +496,8 @@ export class PostgresComplianceRepository implements IComplianceRepository {
         .eq("id", input.caseId)
         .select("*")
         .single();
-      if (error || !data) databaseFailure("compliance.updateManualReview", error);
+      if (error || !data)
+        databaseFailure("compliance.updateManualReview", error);
       return mapReview(data);
     } catch (error) {
       databaseFailure("compliance.updateManualReview", error);

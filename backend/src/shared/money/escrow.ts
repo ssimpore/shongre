@@ -6,6 +6,11 @@ export interface MarketPricingRule {
 }
 
 export interface EscrowOrderBreakdown {
+  itemAmountMinor: number;
+  protectionFeeMinor: number;
+  shippingFeeMinor: number;
+  totalChargedMinor: number;
+  escrowSecuredAmountMinor: number;
   itemAmount: number;
   protectionFee: number;
   shippingFee: number;
@@ -64,6 +69,11 @@ export function calculateOrderTotal(params: {
   const platformMargin = protectionFee;
 
   return {
+    itemAmountMinor,
+    protectionFeeMinor,
+    shippingFeeMinor,
+    totalChargedMinor: itemAmountMinor + protectionFeeMinor + shippingFeeMinor,
+    escrowSecuredAmountMinor: itemAmountMinor + shippingFeeMinor,
     itemAmount,
     protectionFee,
     shippingFee,

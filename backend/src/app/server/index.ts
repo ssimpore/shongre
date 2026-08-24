@@ -1,4 +1,5 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
+import { randomUUID } from "crypto";
 import { config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router } from "../../api/v1/router.js";
@@ -169,7 +170,7 @@ function renderBackendHomePage(
         <div class="brand-icon">S</div>
         <div>
           <h1>Shongre Backend API</h1>
-          <p class="subtitle">Multi-Country Classifieds Marketplace & Escrow Platform</p>
+          <p class="subtitle">Multi-country classifieds and marketplace payment platform</p>
         </div>
       </div>
       <div class="badge">
@@ -222,6 +223,22 @@ function renderBackendHomePage(
 export function createHttpServer() {
   const server = createServer(
     async (req: IncomingMessage, res: ServerResponse) => {
+      const startedAt = performance.now();
+      const suppliedRequestId = String(req.headers["x-request-id"] || "");
+      const requestId = /^[A-Za-z0-9._-]{1,128}$/.test(suppliedRequestId)
+        ? suppliedRequestId
+        : randomUUID();
+      res.setHeader("X-Request-Id", requestId);
+      res.once("finish", () => {
+        logger.info("http_request_completed", {
+          traceId: requestId,
+          method: req.method || "GET",
+          path: new URL(req.url || "/", "http://request.invalid").pathname,
+          statusCode: res.statusCode,
+          durationMs: Math.round(performance.now() - startedAt),
+        });
+      });
+
       // Set CORS headers
       const requestOrigin = String(req.headers.origin || "");
       const configuredOrigins = new Set([
@@ -252,6 +269,18 @@ export function createHttpServer() {
       );
       res.setHeader("Referrer-Policy", "no-referrer");
       res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Frame-Options", "DENY");
+      res.setHeader(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=()",
+      );
+      res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+      if (config.nodeEnv === "production") {
+        res.setHeader(
+          "Strict-Transport-Security",
+          "max-age=31536000; includeSubDomains",
+        );
+      }
       res.setHeader("Cache-Control", "no-store");
 
       if (req.method === "OPTIONS") {
@@ -290,8 +319,9 @@ export function createHttpServer() {
         return;
       }
 
-      // Health check endpoint
-      if (req.url === "/health") {
+      // Liveness is deliberately shallow: it answers whether this process can
+      // serve HTTP, without ejecting every replica during a dependency outage.
+      if (req.url === "/health" || req.url === "/livez") {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
@@ -303,10 +333,34 @@ export function createHttpServer() {
         return;
       }
 
+      // Readiness is dependency-aware and returns a failing status so the
+      // orchestrator does not route traffic before the database is usable.
+      if (req.url === "/readyz") {
+        const databaseReady =
+          await import("../../infrastructure/database/db-client.js").then(
+            ({ db }) => db.healthCheck(),
+          );
+        const statusCode = databaseReady ? 200 : 503;
+        res.writeHead(statusCode, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            status: databaseReady ? "ready" : "not_ready",
+            service: "shongre-backend",
+            dependencies: { database: databaseReady ? "up" : "down" },
+          }),
+        );
+        return;
+      }
+
       // Delegate to API v1 Router
       await apiV1Router.handleRequest(req, res);
     },
   );
+
+  server.requestTimeout = config.requestTimeoutMs;
+  server.headersTimeout = Math.min(config.requestTimeoutMs, 15_000);
+  server.keepAliveTimeout = 5_000;
+  server.maxRequestsPerSocket = 1_000;
 
   return server;
 }
@@ -315,7 +369,15 @@ export async function startServer() {
   await bootstrapApp();
   const server = createHttpServer();
 
-  server.listen(config.port, config.host, () => {
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(config.port, config.host, () => {
+      server.off("error", reject);
+      resolve();
+    });
+  });
+
+  {
     console.log(
       `\n  \x1b[32m\x1b[1mSHONGRE BACKEND v1.0.0\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`,
     );
@@ -328,7 +390,35 @@ export async function startServer() {
     console.log(
       `  \x1b[32m➜\x1b[0m  \x1b[1mHealth:\x1b[0m  \x1b[36mhttp://${config.host}:${config.port}/health\x1b[0m\n`,
     );
-  });
+  }
+
+  let stopping = false;
+  const shutdown = (signal: NodeJS.Signals) => {
+    if (stopping) return;
+    stopping = true;
+    logger.info("graceful_shutdown_started", { signal });
+    const forceTimer = setTimeout(() => {
+      logger.error("graceful_shutdown_deadline_exceeded", { signal });
+      server.closeAllConnections();
+      process.exitCode = 1;
+    }, config.shutdownGraceMs);
+    forceTimer.unref();
+    server.close((error) => {
+      clearTimeout(forceTimer);
+      if (error) {
+        logger.error("graceful_shutdown_failed", {
+          signal,
+          error: error.message,
+        });
+        process.exitCode = 1;
+      } else {
+        logger.info("graceful_shutdown_completed", { signal });
+      }
+    });
+    server.closeIdleConnections();
+  };
+  process.once("SIGTERM", shutdown);
+  process.once("SIGINT", shutdown);
 
   return server;
 }

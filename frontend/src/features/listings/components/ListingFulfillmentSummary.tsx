@@ -4,6 +4,7 @@ import { Listing } from "../../../types";
 import { fulfillmentResolver } from "../../../domains/fulfillment/fulfillment.resolver";
 import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { formatPrice } from "../../../utilities/formatters";
 
 export interface ListingFulfillmentSummaryProps {
   listing: Listing;
@@ -35,6 +36,16 @@ export const ListingFulfillmentSummary: React.FC<
       (d) =>
         (d.type === "relay_point" || d.type === "home_delivery") && d.available,
     );
+  const parcelPrices = deliveryOpts
+    .filter(
+      (delivery) =>
+        (delivery.type === "relay_point" ||
+          delivery.type === "home_delivery") &&
+        delivery.available &&
+        typeof delivery.price === "number",
+    )
+    .map((delivery) => delivery.price as number);
+  const parcelPrice = parcelPrices.length ? Math.min(...parcelPrices) : null;
   const hasBulky =
     caps.allowBulkyDelivery &&
     deliveryOpts.some((d) => d.type === "custom_carrier" && d.available);
@@ -103,7 +114,11 @@ export const ListingFulfillmentSummary: React.FC<
               </div>
             </div>
             <div className="text-xs sm:text-sm font-bold text-stone-900">
-              {t("listings.listingFulfillmentSummary.aPartirDe399")}
+              {parcelPrice === null
+                ? t("listings.listingFulfillmentSummary.aPartirDe399")
+                : parcelPrice === 0
+                  ? "Gratuit"
+                  : formatPrice(parcelPrice)}
             </div>
           </div>
         )}

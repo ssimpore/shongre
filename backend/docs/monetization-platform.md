@@ -61,43 +61,43 @@ Commercial data is represented in minor currency units and bound to immutable co
 
 Prices are EUR, tax-inclusive catalog amounts. Annual prices implement the configured annual incentive.
 
-| Vertical |            Plan | Monthly | Annual |
-| -------- | --------------: | ------: | -----: |
-| General  |    Shongre Free |      €0 |      — |
-| General  |     Shongre Pro |  €19.90 |   €199 |
-| Auto     |  Auto Essential |  €29.90 |   €299 |
-| Auto     |   Auto Business |  €59.90 |   €599 |
-| Auto     |      Auto Scale | €119.90 | €1,199 |
-| Immo     |  Immo Essential |  €29.90 |   €299 |
-| Immo     |   Immo Business |  €69.90 |   €699 |
-| Immo     |    Immo Agency+ | €129.90 | €1,299 |
-| Emploi   |     Emploi Free |      €0 |      — |
-| Emploi   |  Emploi Recruit |  €19.90 |   €199 |
-| Emploi   | Emploi Business |  €49.90 |   €499 |
-| Emploi   |    Emploi Scale |  €99.90 |   €999 |
-| Education    |      Education Free |      €0 |      — |
-| Education    |       Education Pro |   €7.90 |    €79 |
-| Education    |    Education Studio |  €24.90 |   €249 |
-| Education    | Education Organisme |  €59.90 |   €599 |
+| Vertical  |                Plan | Monthly | Annual |
+| --------- | ------------------: | ------: | -----: |
+| General   |        Shongre Free |      €0 |      — |
+| General   |         Shongre Pro |  €19.90 |   €199 |
+| Auto      |      Auto Essential |  €29.90 |   €299 |
+| Auto      |       Auto Business |  €59.90 |   €599 |
+| Auto      |          Auto Scale | €119.90 | €1,199 |
+| Immo      |      Immo Essential |  €29.90 |   €299 |
+| Immo      |       Immo Business |  €69.90 |   €699 |
+| Immo      |        Immo Agency+ | €129.90 | €1,299 |
+| Emploi    |         Emploi Free |      €0 |      — |
+| Emploi    |      Emploi Recruit |  €19.90 |   €199 |
+| Emploi    |     Emploi Business |  €49.90 |   €499 |
+| Emploi    |        Emploi Scale |  €99.90 |   €999 |
+| Education |      Education Free |      €0 |      — |
+| Education |       Education Pro |   €7.90 |    €79 |
+| Education |    Education Studio |  €24.90 |   €249 |
+| Education | Education Organisme |  €59.90 |   €599 |
 
 ## Quota matrix
 
 `—` means the capability is not present in that plan.
 
-| Plan            |       Active | Publications/mo | Media per item | Videos | Seats | Locations | Promotion credits/mo |
-| --------------- | -----------: | --------------: | -------------: | -----: | ----: | --------: | -------------------: |
-| Free            |   5 listings |               — |              8 |      — |     1 |         — |                    0 |
-| Pro             |  50 listings |             100 |             15 |      — |     1 |         — |                    1 |
-| Auto Essential  |  20 vehicles |              30 |             15 |      1 |     1 |         1 |                    1 |
-| Auto Business   |  80 vehicles |             150 |             25 |      2 |     3 |         2 |                    5 |
-| Auto Scale      | 250 vehicles |             500 |             40 |      3 |    10 |         5 |                   15 |
-| Immo Essential  |  15 listings |              30 |             20 |      1 |     1 |         1 |                    1 |
-| Immo Business   |  75 listings |             150 |             35 |      2 |     5 |         2 |                    5 |
-| Immo Agency+    | 250 listings |             500 |             50 |      3 |    15 |        10 |                   15 |
-| Emploi Free     |        1 job |               3 |              — |      — |     1 |         — |                    0 |
-| Emploi Recruit  |       5 jobs |              10 |              — |      — |     2 |         — |                    1 |
-| Emploi Business |      20 jobs |              40 |              — |      — |     5 |         — |                    5 |
-| Emploi Scale    |      75 jobs |             150 |              — |      — |    15 |         — |                   15 |
+| Plan                |       Active | Publications/mo | Media per item | Videos | Seats | Locations | Promotion credits/mo |
+| ------------------- | -----------: | --------------: | -------------: | -----: | ----: | --------: | -------------------: |
+| Free                |   5 listings |               — |              8 |      — |     1 |         — |                    0 |
+| Pro                 |  50 listings |             100 |             15 |      — |     1 |         — |                    1 |
+| Auto Essential      |  20 vehicles |              30 |             15 |      1 |     1 |         1 |                    1 |
+| Auto Business       |  80 vehicles |             150 |             25 |      2 |     3 |         2 |                    5 |
+| Auto Scale          | 250 vehicles |             500 |             40 |      3 |    10 |         5 |                   15 |
+| Immo Essential      |  15 listings |              30 |             20 |      1 |     1 |         1 |                    1 |
+| Immo Business       |  75 listings |             150 |             35 |      2 |     5 |         2 |                    5 |
+| Immo Agency+        | 250 listings |             500 |             50 |      3 |    15 |        10 |                   15 |
+| Emploi Free         |        1 job |               3 |              — |      — |     1 |         — |                    0 |
+| Emploi Recruit      |       5 jobs |              10 |              — |      — |     2 |         — |                    1 |
+| Emploi Business     |      20 jobs |              40 |              — |      — |     5 |         — |                    5 |
+| Emploi Scale        |      75 jobs |             150 |              — |      — |    15 |         — |                   15 |
 | Education Free      |     3 offers |               — |              8 |      — |     1 |         — |                    0 |
 | Education Pro       |    15 offers |               — |             15 |      — |     1 |         — |                    1 |
 | Education Studio    |    50 offers |               — |             25 |      — |     5 |         1 |                    5 |
@@ -111,7 +111,7 @@ membership/location mutation service is transactional and fully tested.
 
 ## Entitlement and feature matrix
 
-| Capability                  | General           | Auto                      | Immo                        | Emploi                              | Education                    | Enforcement status                                                                 |
+| Capability                  | General           | Auto                      | Immo                        | Emploi                              | Education                | Enforcement status                                                                 |
 | --------------------------- | ----------------- | ------------------------- | --------------------------- | ----------------------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
 | Active capacity             | yes               | yes                       | yes                         | yes                                 | yes                      | backend publication/vertical services                                              |
 | Monthly publications        | Pro               | yes                       | yes                         | yes                                 | not configured           | backend usage records                                                              |

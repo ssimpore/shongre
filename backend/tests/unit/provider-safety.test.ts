@@ -77,14 +77,19 @@ describe("provider safety boundaries", () => {
     );
   });
 
-  it("keeps demo balances deterministic and fails closed for unsupported Stripe balances", async () => {
+  it("keeps demo balances deterministic and rejects untrusted Stripe account references", async () => {
     await expect(
       new DemoPaymentProvider().getBalance("seller-1"),
     ).resolves.toEqual({
-      available: 480,
-      pending: 250,
+      availableMinor: 48_000,
+      pendingMinor: 25_000,
       currency: "EUR",
     });
-    await expectUnavailable(new StripePaymentProvider().getBalance("seller-1"));
+    await expect(
+      new StripePaymentProvider().getBalance("seller-1"),
+    ).rejects.toMatchObject<AppError>({
+      code: "VALIDATION_ERROR",
+      statusCode: 400,
+    });
   });
 });

@@ -41,9 +41,6 @@ export const apiClientConfig: ApiClientConfig = {
   demoLatencyMs: 0, // 0 for instantaneous deterministic tests, adjustable for UI loaders
 };
 
-export const isDemoMode = (): boolean => apiClientConfig.dataMode === "demo";
-export const isApiMode = (): boolean => apiClientConfig.dataMode === "api";
-
 /**
  * Utility to simulate realistic async network delay in demo mode when desired.
  */

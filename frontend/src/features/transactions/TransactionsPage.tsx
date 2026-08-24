@@ -7,14 +7,11 @@ import {
   Clock,
   ShieldCheck,
   MapPin,
-  KeyRound,
-  Landmark,
   Filter,
 } from "lucide-react";
 
 import { useAuth } from "../../app/providers/AuthProvider";
-import { transactionRepository } from "../../repositories/transaction.repository";
-import { transactionService } from "../../domains/transaction/transaction.service";
+import { services } from "../../api/client/service-registry";
 import { Transaction, TransactionStatus } from "../../types";
 import { formatPrice, formatRelativeDate } from "../../utilities/formatters";
 import { routes } from "../../configuration/routes";
@@ -23,7 +20,6 @@ import { Image } from "../../design-system/primitives/Image";
 import { Button } from "../../design-system/primitives/Button";
 import { EmptyState } from "../../design-system";
 import { TransactionDetailModal } from "./components/TransactionDetailModal";
-import { SellerPayoutModal } from "./components/SellerPayoutModal";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
@@ -47,7 +43,6 @@ export const TransactionsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabMode>("purchases");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [purchasesCount, setPurchasesCount] = useState(0);
   const [salesCount, setSalesCount] = useState(0);
@@ -58,8 +53,8 @@ export const TransactionsPage: React.FC = () => {
     setLoading(true);
     try {
       const [purchases, sales] = await Promise.all([
-        transactionRepository.getPurchases(currentUser.id),
-        transactionRepository.getSales(currentUser.id),
+        services.orders.getPurchases(currentUser.id),
+        services.orders.getSales(currentUser.id),
       ]);
       setPurchasesCount(purchases.length);
       setSalesCount(sales.length);
@@ -103,7 +98,11 @@ export const TransactionsPage: React.FC = () => {
   const filteredTransactions = userTransactions.filter((tx) => {
     if (statusFilter === "all") return true;
     if (statusFilter === "pending")
-      return tx.status === "pending_seller_confirmation";
+      return (
+        tx.status === "initiated" ||
+        tx.status === "payment_pending" ||
+        tx.status === "pending_seller_confirmation"
+      );
     if (statusFilter === "in_progress") {
       return (
         tx.status === "seller_confirmed" ||
@@ -112,7 +111,9 @@ export const TransactionsPage: React.FC = () => {
         tx.status === "shipped" ||
         tx.status === "delivered" ||
         tx.status === "escrow_secured" ||
-        tx.status === "payment_escrowed"
+        tx.status === "payment_escrowed" ||
+        tx.status === "escrow_funded" ||
+        tx.status === "pin_pending"
       );
     }
     if (statusFilter === "completed") return tx.status === "completed";
@@ -120,24 +121,20 @@ export const TransactionsPage: React.FC = () => {
     return true;
   });
 
-  // Financial summary for current seller
-  const earningsSummary =
-    transactionService.getSellerEarningsSummary(currentUserId);
-
   const getStatusBadge = (
     status: TransactionStatus,
     deliveryMethod?: string,
   ) => {
     switch (status) {
+      case "initiated":
+      case "payment_pending":
       case "pending_seller_confirmation":
-        return (
-          <Badge variant="warning">
-            {t("transactions.transactionsPage.enAttenteConfirmationVendeur")}
-          </Badge>
-        );
+        return <Badge variant="warning">Paiement en attente</Badge>;
       case "seller_confirmed":
       case "ready_for_pickup":
       case "pickup_scheduled":
+      case "escrow_funded":
+      case "pin_pending":
         return (
           <Badge variant="primary">
             {deliveryMethod === "hand_delivery"
@@ -166,6 +163,8 @@ export const TransactionsPage: React.FC = () => {
         );
       case "disputed":
         return <Badge variant="urgent">Litige en cours</Badge>;
+      case "refund_pending":
+        return <Badge variant="warning">Remboursement en cours</Badge>;
       case "seller_rejected":
       case "cancelled_by_buyer":
       case "cancelled_by_seller":
@@ -188,7 +187,7 @@ export const TransactionsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Title and Wallet Summary */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -200,54 +199,18 @@ export const TransactionsPage: React.FC = () => {
             {t("transactions.transactionsPage.gerezVosReservationsVosRemises")}
           </p>
         </div>
-
-        {/* Seller Earnings Card */}
-        {earningsSummary.totalEarnings > 0 ||
-        earningsSummary.escrowHeldBalance > 0 ? (
-          <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-stone-200/60 shadow-sm">
-            <div className="p-3 bg-success-surface text-success rounded-xl">
-              <Landmark className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-0.5">
-                Solde disponible
-              </div>
-              <div className="text-lg font-black text-stone-900">
-                {formatPrice(earningsSummary.availableBalance)}
-              </div>
-            </div>
-            {earningsSummary.availableBalance > 0 && (
-              <Button
-                variant="primary"
-                size="md"
-                className="ml-2 font-bold"
-                onClick={() => setIsPayoutModalOpen(true)}
-              >
-                Virer vers ma banque
-              </Button>
-            )}
-          </div>
-        ) : null}
       </div>
 
-      {/* Escrow Banner info */}
+      {/* Payment state information */}
       <div className="p-4 bg-success-surface border border-success-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-success">
         <div className="flex items-start sm:items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-success shrink-0" />
           <span className="leading-relaxed">
-            <strong>
-              {t("transactions.transactionsPage.garantieSequestreShongre")}
-            </strong>{" "}
-            Vos fonds restent protégés par un tiers de confiance agréé ACPR. Les
-            paiements ne sont débloqués qu'après validation conforme de la
-            remise.
+            <strong>Paiement suivi par Shongre.</strong> L’état affiché provient
+            du serveur et des confirmations du prestataire de paiement. Un
+            retour de navigateur ne confirme jamais à lui seul une transaction.
           </span>
         </div>
-        {earningsSummary.escrowHeldBalance > 0 && (
-          <span className="text-sm font-bold text-success bg-bg-surface px-3 py-1.5 rounded-xl shrink-0 border border-success-border shadow-2xs">
-            {formatPrice(earningsSummary.escrowHeldBalance)} sous séquestre
-          </span>
-        )}
       </div>
 
       {/* Main Tabs (Mes Achats vs Mes Ventes) */}
@@ -304,7 +267,10 @@ export const TransactionsPage: React.FC = () => {
           En attente confirmation (
           {
             userTransactions.filter(
-              (t) => t.status === "pending_seller_confirmation",
+              (t) =>
+                t.status === "initiated" ||
+                t.status === "payment_pending" ||
+                t.status === "pending_seller_confirmation",
             ).length
           }
           )
@@ -326,7 +292,9 @@ export const TransactionsPage: React.FC = () => {
                 t.status === "ready_for_pickup" ||
                 t.status === "pickup_scheduled" ||
                 t.status === "shipped" ||
-                t.status === "delivered",
+                t.status === "delivered" ||
+                t.status === "escrow_funded" ||
+                t.status === "pin_pending",
             ).length
           }
           )
@@ -369,6 +337,17 @@ export const TransactionsPage: React.FC = () => {
           {filteredTransactions.map((tx) => {
             const isBuyer = tx.buyerId === currentUserId;
             const isSeller = tx.sellerId === currentUserId;
+            const paymentConfirmed = [
+              "escrow_funded",
+              "pin_pending",
+              "shipped",
+              "delivered",
+              "handover_confirmed",
+              "completed",
+              "disputed",
+              "refund_pending",
+              "refunded",
+            ].includes(tx.status);
 
             return (
               <article
@@ -424,17 +403,6 @@ export const TransactionsPage: React.FC = () => {
                             {tx.carrierName || "Livraison Colis"}
                           </span>
                         )}
-
-                        {/* Verification PIN preview for Buyer */}
-                        {isBuyer &&
-                          tx.verificationCode &&
-                          (tx.status === "ready_for_pickup" ||
-                            tx.status === "pickup_scheduled") && (
-                            <span className="inline-flex items-center gap-1 font-bold text-warning bg-warning-surface px-2 py-0.5 rounded font-mono">
-                              <KeyRound className="w-3 h-3" /> Code PIN :{" "}
-                              {tx.verificationCode}
-                            </span>
-                          )}
                       </div>
                     </div>
                   </div>
@@ -449,9 +417,7 @@ export const TransactionsPage: React.FC = () => {
                       )}
                     </div>
                     <span className="text-xs font-medium text-stone-500 mb-1">
-                      {isSeller
-                        ? "(Gain net vendeur)"
-                        : `(Total avec protection)`}
+                      {isSeller ? "Montant de l’article" : "Total réglé"}
                     </span>
                     <Button
                       type="button"
@@ -470,36 +436,26 @@ export const TransactionsPage: React.FC = () => {
 
                 {/* Progress Mini Step Tracker. */}
                 <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-3 text-xs font-medium text-stone-600 overflow-x-auto no-scrollbar shadow-inner">
-                  <div className="flex items-center gap-1 font-semibold text-success shrink-0">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
-                    <span className="whitespace-nowrap">
-                      {t("transactions.transactionsPage.paiementSousSequestre")}
-                    </span>
-                  </div>
-                  <span className="text-stone-300 shrink-0">→</span>
                   <div
-                    className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
-                      tx.status !== "pending_seller_confirmation"
-                        ? "text-success"
-                        : "text-warning"
+                    className={`flex items-center gap-1 font-semibold shrink-0 ${
+                      paymentConfirmed ? "text-success" : "text-warning"
                     }`}
                   >
-                    {tx.status !== "pending_seller_confirmation" ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+                    {paymentConfirmed ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 text-warning shrink-0 animate-pulse" />
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
                     )}
-                    <span>
-                      {t("transactions.transactionsPage.validationVendeur")}
+                    <span className="whitespace-nowrap">
+                      {paymentConfirmed
+                        ? "Paiement confirmé"
+                        : "Paiement en attente"}
                     </span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div
                     className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
-                      tx.status === "completed" ||
-                      tx.status === "shipped" ||
-                      tx.status === "delivered" ||
-                      tx.status === "handover_confirmed"
+                      tx.status === "shipped" || tx.status === "completed"
                         ? "text-success"
                         : "text-stone-500"
                     }`}
@@ -516,9 +472,7 @@ export const TransactionsPage: React.FC = () => {
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>
-                      {t("transactions.transactionsPage.fondsVerses")}
-                    </span>
+                    <span>Commande terminée</span>
                   </div>
                 </div>
               </article>
@@ -535,8 +489,8 @@ export const TransactionsPage: React.FC = () => {
           }
           description={
             activeTab === "purchases"
-              ? "Découvrez des milliers d'annonces vérifiées et réservez en toute sécurité avec notre garantie séquestre."
-              : "Activez l'option de réservation sur vos annonces pour recevoir des paiements sécurisés immédiats."
+              ? "Découvrez les annonces disponibles et payez sur la page sécurisée du prestataire."
+              : "Activez les options d’achat sur vos annonces pour recevoir des commandes."
           }
           action={
             <Button
@@ -563,19 +517,6 @@ export const TransactionsPage: React.FC = () => {
           transaction={selectedTx}
           currentUser={currentUser}
           onUpdate={handleTransactionUpdated}
-        />
-      )}
-
-      {/* Seller Payout Withdrawal Modal */}
-      {isPayoutModalOpen && currentUser && (
-        <SellerPayoutModal
-          isOpen={isPayoutModalOpen}
-          onClose={() => setIsPayoutModalOpen(false)}
-          currentUser={currentUser}
-          availableBalance={earningsSummary.availableBalance}
-          onPayoutSuccess={(payout) => {
-            fetchTransactions();
-          }}
         />
       )}
     </div>

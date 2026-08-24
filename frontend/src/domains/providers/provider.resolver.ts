@@ -18,6 +18,7 @@ import {
   getProviderById,
 } from "./provider.registry";
 import { getCapabilityMetadata } from "./provider-capabilities";
+import { isDemoMode } from "../../api/client/data-mode.service";
 
 export class ProviderResolver {
   /**
@@ -123,12 +124,12 @@ export class ProviderResolver {
         p.supportedMarkets.includes(normMarket);
       if (!supportsMarket) return false;
       const config = configurations[p.id];
-      const hasLiveAdapter = p.operational.implementedCapabilities.includes(
-        capability,
-      );
+      const hasLiveAdapter =
+        p.operational.implementedCapabilities.includes(capability);
       const hasDemoAdapter = Boolean(
+        isDemoMode() &&
         config?.environment === "demo" &&
-          p.operational.demoOnlyCapabilities?.includes(capability),
+        p.operational.demoOnlyCapabilities?.includes(capability),
       );
       if (!hasLiveAdapter && !hasDemoAdapter) return false;
       return this.isProviderEnabledForMarket(p.id, normMarket, configurations);
@@ -243,9 +244,9 @@ export class ProviderResolver {
     let status: CapabilityHealthResult["status"] = "unknown";
     const isDemoCapability = Boolean(
       resolution.primaryConfig?.environment === "demo" &&
-        resolution.primaryProvider.operational.demoOnlyCapabilities?.includes(
-          capability,
-        ),
+      resolution.primaryProvider.operational.demoOnlyCapabilities?.includes(
+        capability,
+      ),
     );
     if (isDemoCapability) {
       status = "demo";

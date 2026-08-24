@@ -42,7 +42,9 @@ describe("VerificationService - KYC / KYB compatibility projection", () => {
       expect(res.user?.identityVerification?.status).toBe("pending");
       expect(res.user?.identityVerification?.documentType).toBe("national_id");
       expect(res.user?.identityVerification).not.toHaveProperty("birthDate");
-      expect(res.user?.identityVerification).not.toHaveProperty("documentNumber");
+      expect(res.user?.identityVerification).not.toHaveProperty(
+        "documentNumber",
+      );
 
       // Check audit log
       const logs = verificationService.getAuditLogs(mockUser.id);
@@ -143,5 +145,4 @@ describe("VerificationService - KYC / KYB compatibility projection", () => {
       expect(approval.user?.isVerified).toBe(true);
     });
   });
-
 });

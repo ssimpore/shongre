@@ -12,24 +12,24 @@ disabled. Product-level readiness leaves 31 purchasable and suspends 34 active
 products whose paid outcome is incomplete. There are 16 current professional
 plans across five active verticals.
 
-| Vertical | Plan            | Audience     | Monthly | Annual | Commercial state                  |
-| -------- | --------------- | ------------ | ------: | -----: | --------------------------------- |
-| General  | Shongre Free    | professional |      €0 |      — | available                         |
-| General  | Shongre Pro     | professional |  €19.90 |   €199 | available                         |
-| Auto     | Auto Essential  | professional |  €29.90 |   €299 | available with suspended features |
-| Auto     | Auto Business   | professional |  €59.90 |   €599 | available with suspended features |
-| Auto     | Auto Scale      | organization | €119.90 | €1,199 | available with suspended features |
-| Immo     | Immo Essential  | professional |  €29.90 |   €299 | available with suspended features |
-| Immo     | Immo Business   | professional |  €69.90 |   €699 | available with suspended features |
-| Immo     | Immo Agency+    | organization | €129.90 | €1,299 | available with suspended features |
-| Emploi   | Emploi Free     | organization |      €0 |      — | available                         |
-| Emploi   | Emploi Recruit  | organization |  €19.90 |   €199 | available with suspended features |
-| Emploi   | Emploi Business | organization |  €49.90 |   €499 | available with suspended features |
-| Emploi   | Emploi Scale    | organization |  €99.90 |   €999 | available with suspended features |
-| Education    | Education Free      | professional |      €0 |      — | available                         |
-| Education    | Education Pro       | professional |   €7.90 |    €79 | available                         |
-| Education    | Education Studio    | organization |  €24.90 |   €249 | available with suspended features |
-| Education    | Education Organisme | organization |  €59.90 |   €599 | available with suspended features |
+| Vertical  | Plan                | Audience     | Monthly | Annual | Commercial state                  |
+| --------- | ------------------- | ------------ | ------: | -----: | --------------------------------- |
+| General   | Shongre Free        | professional |      €0 |      — | available                         |
+| General   | Shongre Pro         | professional |  €19.90 |   €199 | available                         |
+| Auto      | Auto Essential      | professional |  €29.90 |   €299 | available with suspended features |
+| Auto      | Auto Business       | professional |  €59.90 |   €599 | available with suspended features |
+| Auto      | Auto Scale          | organization | €119.90 | €1,199 | available with suspended features |
+| Immo      | Immo Essential      | professional |  €29.90 |   €299 | available with suspended features |
+| Immo      | Immo Business       | professional |  €69.90 |   €699 | available with suspended features |
+| Immo      | Immo Agency+        | organization | €129.90 | €1,299 | available with suspended features |
+| Emploi    | Emploi Free         | organization |      €0 |      — | available                         |
+| Emploi    | Emploi Recruit      | organization |  €19.90 |   €199 | available with suspended features |
+| Emploi    | Emploi Business     | organization |  €49.90 |   €499 | available with suspended features |
+| Emploi    | Emploi Scale        | organization |  €99.90 |   €999 | available with suspended features |
+| Education | Education Free      | professional |      €0 |      — | available                         |
+| Education | Education Pro       | professional |   €7.90 |    €79 | available                         |
+| Education | Education Studio    | organization |  €24.90 |   €249 | available with suspended features |
+| Education | Education Organisme | organization |  €59.90 |   €599 | available with suspended features |
 
 Archived General and Education families remain non-selectable historical records.
 The disabled Emploi Enterprise plan and disabled partner-referral products are
@@ -41,8 +41,8 @@ not offered.
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Professional identity | professional profiles, public storefront projections, verification dimensions, privacy-safe public views                           | organization storefront variants listed in the matrix                                                                       |
 | Publication           | structured vertical forms, drafts, validation, moderation submission, lifecycle, active/monthly quotas, media limits               | shared templates, duplication and bulk actions where listed                                                                 |
-| Leads and CRM         | structured Auto/Immo leads, Emploi candidate pipeline, Education lead handling, notes/events where implemented                         | Education central inbox and unsupported shared team assignment paths                                                            |
-| Analytics             | configured standard/advanced vertical aggregates and promotion attribution                                                         | Education Organisme reporting and unsupported export tools                                                                      |
+| Leads and CRM         | structured Auto/Immo leads, Emploi candidate pipeline, Education lead handling, notes/events where implemented                     | Education central inbox and unsupported shared team assignment paths                                                        |
+| Analytics             | configured standard/advanced vertical aggregates and promotion attribution                                                         | Education Organisme reporting and unsupported export tools                                                                  |
 | Team and locations    | existing membership reads and baseline owner access; historical data remains readable after downgrade                              | paid extra seats, invitations, locations, branch permissions and agency groups without one transactional production service |
 | Imports and sync      | typed preview/job records, permissions and idempotency scaffolding                                                                 | all CSV/XML/feed/API claims lacking upload, parser, worker and reconciliation completion                                    |
 | Monetization          | quotes, immutable snapshots, checkout, subscriptions, trials, coupons, invoices, credits, upgrades, downgrades, cancellation       | unfulfilled packs, capacity add-ons and vertical add-ons listed below                                                       |
@@ -88,9 +88,9 @@ the plan is operational and remains advertised.
 | Emploi Free               | none                                                                                                                   | none                                         |
 | Emploi Recruit / Business | extra recruiter seats, reusable job templates                                                                          | none                                         |
 | Emploi Scale              | extra recruiter seats, templates, CSV import                                                                           | ATS/API sync                                 |
-| Education Free / Pro          | none                                                                                                                   | none                                         |
-| Education Studio              | team mutations, locations, organization storefront, course catalog, bulk course actions                                | none                                         |
-| Education Organisme           | team mutations, locations, organization storefront, course catalog, CSV import, central inbox, bulk actions, reporting | API access                                   |
+| Education Free / Pro      | none                                                                                                                   | none                                         |
+| Education Studio          | team mutations, locations, organization storefront, course catalog, bulk course actions                                | none                                         |
+| Education Organisme       | team mutations, locations, organization storefront, course catalog, CSV import, central inbox, bulk actions, reporting | API access                                   |
 
 Suspended standalone products comprise the generic ten-bump pack; current Auto,
 Immo, Emploi and Education add-ons without an end-to-end fulfillment consumer; and
@@ -107,8 +107,8 @@ but public catalogs and checkout cannot sell them.
 | Immo Business team/location/template/bulk/import path                                                          | intentionally unavailable; no longer sold or granted                                        |
 | Emploi Business job publication, applications, pipeline, assignment, interviews, analytics and monthly credits | pass                                                                                        |
 | Emploi Business extra seats/templates                                                                          | intentionally unavailable; no longer sold or granted                                        |
-| Education Studio offers, media, leads, analytics and monthly credits                                               | pass                                                                                        |
-| Education Studio team/location/catalog/bulk path                                                                   | read-only historical data; mutations fail closed and are no longer sold                     |
+| Education Studio offers, media, leads, analytics and monthly credits                                           | pass                                                                                        |
+| Education Studio team/location/catalog/bulk path                                                               | read-only historical data; mutations fail closed and are no longer sold                     |
 | Upgrade, immediate proration, period-end downgrade, cancellation and reactivation                              | pass                                                                                        |
 | Feature denial and quota denial                                                                                | pass with stable reason codes and neutral copy                                              |
 | Admin draft, preview, dependency validation, approval, publication and rollback                                | pass                                                                                        |

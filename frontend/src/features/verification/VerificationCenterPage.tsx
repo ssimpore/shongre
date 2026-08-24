@@ -68,7 +68,9 @@ const DIMENSION_LABELS: Record<VerificationDimension, string> = {
   mfa: "Double authentification",
 };
 
-const ACTIONS = new Set<ComplianceAction>(Object.keys(ACTION_LABELS) as ComplianceAction[]);
+const ACTIONS = new Set<ComplianceAction>(
+  Object.keys(ACTION_LABELS) as ComplianceAction[],
+);
 
 function dimensionIcon(id: VerificationDimensionId) {
   const className = "h-5 w-5";
@@ -124,18 +126,17 @@ export const VerificationCenterPage: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [searchParams] = useSearchParams();
-  const {
-    currentUser,
-    dimensions,
-    refreshUser,
-  } = useVerification();
-  const [activeModal, setActiveModal] = useState<VerificationDimensionId | null>(null);
-  const [decision, setDecision] = useState<ComplianceRequirementDecision | null>(null);
+  const { currentUser, dimensions, refreshUser } = useVerification();
+  const [activeModal, setActiveModal] =
+    useState<VerificationDimensionId | null>(null);
+  const [decision, setDecision] =
+    useState<ComplianceRequirementDecision | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationError, setEvaluationError] = useState<string | null>(null);
 
   const actionParam = searchParams.get("action") as ComplianceAction | null;
-  const requestedAction = actionParam && ACTIONS.has(actionParam) ? actionParam : null;
+  const requestedAction =
+    actionParam && ACTIONS.has(actionParam) ? actionParam : null;
   const returnTo = useMemo(() => {
     const candidate = searchParams.get("returnTo") || "/compte";
     return candidate.startsWith("/") && !candidate.startsWith("//")
@@ -152,21 +153,24 @@ export const VerificationCenterPage: React.FC = () => {
     setEvaluationError(null);
     try {
       setDecision(
-        await services.verification.getVerificationRequirements(currentUser.id, {
-          requestedAction,
-          jurisdiction: currentUser.country || "FR",
-          marketCode: currentUser.country || "FR",
-          transactionContext:
-            requestedAction === "receive_payout" ||
-            requestedAction === "accept_online_payment"
-              ? {
-                  transactionType: "direct_purchase",
-                  contractConclusionMode: "platform",
-                  paymentFlow: "psp_marketplace",
-                  currency: "EUR",
-                }
-              : undefined,
-        }),
+        await services.verification.getVerificationRequirements(
+          currentUser.id,
+          {
+            requestedAction,
+            jurisdiction: currentUser.country || "FR",
+            marketCode: currentUser.country || "FR",
+            transactionContext:
+              requestedAction === "receive_payout" ||
+              requestedAction === "accept_online_payment"
+                ? {
+                    transactionType: "direct_purchase",
+                    contractConclusionMode: "platform",
+                    paymentFlow: "psp_marketplace",
+                    currency: "EUR",
+                  }
+                : undefined,
+          },
+        ),
       );
     } catch (cause) {
       setEvaluationError(
@@ -217,7 +221,11 @@ export const VerificationCenterPage: React.FC = () => {
   }, [currentUser?.accountType, decision, dimensions]);
 
   const openRequirement = async (dimension: VerificationDimension) => {
-    if (dimension === "identity" || dimension === "age" || dimension === "address")
+    if (
+      dimension === "identity" ||
+      dimension === "age" ||
+      dimension === "address"
+    )
       setActiveModal("identity");
     else if (
       dimension === "business" ||
@@ -294,13 +302,17 @@ export const VerificationCenterPage: React.FC = () => {
               <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
                 Action en cours
               </p>
-              <h2 id="requested-action-title" className="mt-1 text-xl font-black text-stone-950">
+              <h2
+                id="requested-action-title"
+                className="mt-1 text-xl font-black text-stone-950"
+              >
                 {ACTION_LABELS[requestedAction]}
               </h2>
             </div>
             {decision?.allowed ? (
               <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-success-border bg-success-surface px-3 py-1 text-xs font-bold text-success">
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Prêt à continuer
+                <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Prêt à
+                continuer
               </span>
             ) : null}
           </div>
@@ -310,15 +322,18 @@ export const VerificationCenterPage: React.FC = () => {
               Vérification des exigences applicables…
             </p>
           ) : evaluationError ? (
-            <p className="mt-4 rounded-xl bg-danger-surface p-3 text-sm text-danger" role="alert">
+            <p
+              className="mt-4 rounded-xl bg-danger-surface p-3 text-sm text-danger"
+              role="alert"
+            >
               {evaluationError}
             </p>
           ) : decision ? (
             <div className="mt-5 space-y-4">
               {decision.allowed ? (
                 <div className="rounded-xl border border-success-border bg-success-surface p-4 text-sm text-stone-700">
-                  Votre compte dispose déjà du niveau suffisant. Aucune autre donnée
-                  ne vous est demandée.
+                  Votre compte dispose déjà du niveau suffisant. Aucune autre
+                  donnée ne vous est demandée.
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -344,7 +359,10 @@ export const VerificationCenterPage: React.FC = () => {
                             : `Requise uniquement pour ${ACTION_LABELS[requestedAction].toLowerCase()}.`}
                         </span>
                       </span>
-                      <ChevronRight className="h-5 w-5 text-stone-400" aria-hidden="true" />
+                      <ChevronRight
+                        className="h-5 w-5 text-stone-400"
+                        aria-hidden="true"
+                      />
                     </button>
                   ))}
                 </div>
@@ -352,13 +370,16 @@ export const VerificationCenterPage: React.FC = () => {
 
               {decision.legalReviewRequired ? (
                 <div className="rounded-xl border border-warning-border bg-warning-surface p-4 text-sm text-stone-700">
-                  <strong>LEGAL_REVIEW_REQUIRED :</strong> l’applicabilité exacte de
-                  cette obligation doit être confirmée avant de la rendre bloquante.
+                  <strong>LEGAL_REVIEW_REQUIRED :</strong> l’applicabilité
+                  exacte de cette obligation doit être confirmée avant de la
+                  rendre bloquante.
                 </div>
               ) : null}
 
               {decision.allowed ? (
-                <Button onClick={() => navigate(returnTo)}>Reprendre mon action</Button>
+                <Button onClick={() => navigate(returnTo)}>
+                  Reprendre mon action
+                </Button>
               ) : null}
             </div>
           ) : null}
@@ -367,7 +388,10 @@ export const VerificationCenterPage: React.FC = () => {
 
       <section aria-labelledby="account-checks-title" className="space-y-3">
         <div>
-          <h2 id="account-checks-title" className="text-lg font-black text-stone-950">
+          <h2
+            id="account-checks-title"
+            className="text-lg font-black text-stone-950"
+          >
             État de votre compte
           </h2>
           <p className="mt-1 text-sm text-stone-600">
@@ -381,19 +405,28 @@ export const VerificationCenterPage: React.FC = () => {
             const presentation = statePresentation(requirement.state);
             const canOpen = requirement.state !== "verified" && id !== "email";
             return (
-              <article key={id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs">
+              <article
+                key={id}
+                className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs"
+              >
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
                     {dimensionIcon(id)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-stone-950">{requirement.shortLabel}</h3>
-                    <span className={`mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${presentation.className}`}>
+                    <h3 className="font-bold text-stone-950">
+                      {requirement.shortLabel}
+                    </h3>
+                    <span
+                      className={`mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${presentation.className}`}
+                    >
                       {presentation.icon}
                       {presentation.label}
                     </span>
                     {requirement.rejectionReason ? (
-                      <p className="mt-2 text-xs text-danger">{requirement.rejectionReason}</p>
+                      <p className="mt-2 text-xs text-danger">
+                        {requirement.rejectionReason}
+                      </p>
                     ) : null}
                   </div>
                 </div>
@@ -404,7 +437,9 @@ export const VerificationCenterPage: React.FC = () => {
                     className="mt-3 w-full"
                     onClick={() => setActiveModal(id)}
                   >
-                    {requirement.state === "rejected" ? "Réessayer" : requirement.actionLabel || "Configurer"}
+                    {requirement.state === "rejected"
+                      ? "Réessayer"
+                      : requirement.actionLabel || "Configurer"}
                   </Button>
                 ) : null}
               </article>
@@ -415,8 +450,9 @@ export const VerificationCenterPage: React.FC = () => {
 
       <p className="rounded-xl bg-stone-100 p-4 text-xs leading-relaxed text-stone-600">
         Les documents d’identité et informations bancaires sont traités dans les
-        espaces sécurisés des prestataires concernés. Les badges publics n’affichent
-        jamais vos documents, numéros fiscaux, données bancaires ou signaux de risque.
+        espaces sécurisés des prestataires concernés. Les badges publics
+        n’affichent jamais vos documents, numéros fiscaux, données bancaires ou
+        signaux de risque.
       </p>
 
       <IdentityVerificationModal

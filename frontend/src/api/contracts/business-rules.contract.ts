@@ -34,8 +34,7 @@ export interface ComplimentaryGrantRequestInput {
   idempotencyKey: string;
 }
 
-export interface ComplimentaryGrantRequestResult
-  extends ComplimentaryGrantRequestInput {
+export interface ComplimentaryGrantRequestResult extends ComplimentaryGrantRequestInput {
   id: string;
   status: "pending_approval";
   requestedBy: string;

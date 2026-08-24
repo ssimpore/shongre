@@ -90,7 +90,7 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
   },
   payments: {
     enabled: true,
-    provider: "mangopay_escrow",
+    provider: "stripe_connect",
     supportedMethods: {
       card: true,
       applePay: true,

@@ -42,7 +42,11 @@ describe("ComplianceService integration", () => {
         requestedAction: "publish_listing",
         jurisdiction: "FR",
         marketCode: "FR",
-        riskContext: { level: "NORMAL", reasonCodes: [], humanReviewAvailable: true },
+        riskContext: {
+          level: "NORMAL",
+          reasonCodes: [],
+          humanReviewAvailable: true,
+        },
       },
       { duplicateAccount: true, paymentAnomaly: true },
     );
@@ -158,8 +162,12 @@ describe("ComplianceService integration", () => {
       verification: { enhanced_review: { state: "verified" } },
     });
     const audit = await compliance.listAuditEvents();
-    expect(audit.some((event) => event.eventType === "manual_review_requested")).toBe(true);
-    expect(audit.some((event) => event.reasonCode === "MANUAL_REVIEW_APPROVED")).toBe(true);
+    expect(
+      audit.some((event) => event.eventType === "manual_review_requested"),
+    ).toBe(true);
+    expect(
+      audit.some((event) => event.reasonCode === "MANUAL_REVIEW_APPROVED"),
+    ).toBe(true);
   });
 
   it("executes approved retention while preserving legal-review classes", async () => {

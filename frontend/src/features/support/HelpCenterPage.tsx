@@ -30,10 +30,10 @@ const FAQ_ARTICLES: HelpArticle[] = [
   {
     id: "faq-1",
     category: "transactions",
-    question: "Comment fonctionne le paiement sécurisé sous séquestre ?",
+    question: "Comment fonctionne le paiement en ligne ?",
     answer:
-      "Lorsque vous achetez ou réservez un article, votre argent n'est pas directement versé au vendeur. Il est conservé sur un compte de séquestre sécurisé en France. Les fonds ne sont libérés qu'une fois que vous avez reçu et validé la conformité de l'article (ou validé le code PIN lors de la remise en main propre).",
-    linkText: "En savoir plus sur la protection Shongre",
+      "Le paiement est traité par Stripe et son avancement est reflété dans la commande. Selon le mode de livraison et le statut transmis par le prestataire, le versement au vendeur peut rester en attente pendant la remise ou l'examen d'un litige. Consultez toujours le statut de la commande avant de remettre l'article.",
+    linkText: "En savoir plus sur les paiements",
     linkHref: "/securite",
   },
   {
@@ -42,7 +42,7 @@ const FAQ_ARTICLES: HelpArticle[] = [
     question:
       "Quelle est la différence entre l'achat direct et la réservation ?",
     answer:
-      "L'Achat Direct est idéal pour la livraison : vous payez la totalité de la commande + livraison, le vendeur expédie le colis. La Réservation est conçue pour la remise en main propre : vous versez un acompte sous séquestre pour bloquer l'article, convenez d'un rendez-vous, puis réglez le solde sur place.",
+      "L'Achat Direct est adapté à la livraison : vous payez la commande et la livraison, puis le vendeur expédie le colis. La Réservation sert à organiser une remise en main propre : les conditions et le montant à payer sont affichés avant toute confirmation.",
     linkText: "Voir mes transactions",
     linkHref: "/compte/achats",
   },
@@ -60,7 +60,7 @@ const FAQ_ARTICLES: HelpArticle[] = [
     category: "delivery",
     question: "Comment expédier un colis vendu via Shongre ?",
     answer:
-      "Une fois la commande payée, téléchargez votre bordereau prépayé (Mondial Relay ou Colissimo) depuis votre espace ventes. Emballez soigneusement l'article et déposez-le en point relais sous 72 heures.",
+      "Vérifiez d’abord que la commande indique un paiement confirmé. Convenez ensuite du transporteur avec l’acheteur, expédiez le colis avec suivi et renseignez le transporteur ainsi que le numéro de suivi depuis votre espace ventes. Shongre ne fournit pas encore de bordereau prépayé.",
     linkText: "Mes ventes en cours",
     linkHref: "/compte/achats",
   },
@@ -115,7 +115,7 @@ export const HelpCenterPage: React.FC = () => {
     },
     {
       id: "transactions",
-      label: "Paiement & Séquestre",
+      label: "Paiements & Remboursements",
       icon: <CreditCard className="w-4 h-4" />,
     },
     {

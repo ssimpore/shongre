@@ -22,11 +22,8 @@ interface CircuitRecord {
   openedAt?: number;
 }
 
-const keyOf = ({
-  providerId,
-  capability,
-  marketCode,
-}: ProviderExecutionKey) => `${providerId}:${capability}:${marketCode}`;
+const keyOf = ({ providerId, capability, marketCode }: ProviderExecutionKey) =>
+  `${providerId}:${capability}:${marketCode}`;
 
 /**
  * Process-local fast circuit breaker. Durable state/history is represented by
@@ -114,4 +111,3 @@ export class ProviderExecutionGuard {
 }
 
 export const providerExecutionGuard = new ProviderExecutionGuard();
-

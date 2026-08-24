@@ -12,6 +12,8 @@ export interface ModalProps {
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
+  /** Prevents closing through Escape, the backdrop, or a close button. */
+  dismissible?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -23,8 +25,13 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = "md",
   className = "",
+  dismissible = true,
 }) => {
-  const { containerRef, titleId } = useDialogBehavior(isOpen, onClose);
+  const { containerRef, titleId } = useDialogBehavior(
+    isOpen,
+    onClose,
+    dismissible,
+  );
 
   if (!isOpen) return null;
 
@@ -40,7 +47,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div
       className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-overlay backdrop-blur-xs"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (dismissible && e.target === e.currentTarget) onClose();
       }}
     >
       <div
@@ -67,9 +74,11 @@ export const Modal: React.FC<ModalProps> = ({
               )}
             </div>
           </div>
-          <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
-            <X className="w-icon-lg h-icon-lg text-text-muted" />
-          </IconButton>
+          {dismissible && (
+            <IconButton ariaLabel="Fermer" size="sm" onClick={onClose}>
+              <X className="w-icon-lg h-icon-lg text-text-muted" />
+            </IconButton>
+          )}
         </div>
         <div className="p-5 sm:p-6 overflow-y-auto flex-1">{children}</div>
       </div>

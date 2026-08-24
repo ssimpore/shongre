@@ -74,7 +74,6 @@ export class VerificationService {
     logger.info("Business registry verification completed");
     return { status: "verified" };
   }
-
 }
 
 export const verificationService = new VerificationService();

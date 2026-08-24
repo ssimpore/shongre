@@ -35,9 +35,9 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
           const configuration = configurations[provider.id];
           return Boolean(
             configuration?.enabled &&
-              configuration.environment !== "demo" &&
-              configuration.health === "healthy" &&
-              configuration.healthLastCheckedAt,
+            configuration.environment !== "demo" &&
+            configuration.health === "healthy" &&
+            configuration.healthLastCheckedAt,
           );
         })
         .sort(

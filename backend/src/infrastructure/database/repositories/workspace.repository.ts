@@ -121,7 +121,12 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
           0,
         ),
         recentListings: recentListingResult.items,
-        recentPurchases: purchases.slice(0, 5),
+        recentPurchases: purchases
+          .slice(0, 5)
+          .map(
+            ({ listing: _listing, buyer: _buyer, seller: _seller, ...order }) =>
+              order,
+          ),
       };
     } catch (error) {
       databaseFailure("workspace.getUserWorkspaceSummary", error);

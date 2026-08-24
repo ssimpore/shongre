@@ -25,7 +25,7 @@ export const SITE_NAME = "Shongre";
 /** Must stay in step with the fallback description in `index.html`. */
 export const DEFAULT_DESCRIPTION =
   "Plateforme moderne de petites annonces pour particuliers et professionnels " +
-  "avec réservation sécurisée sous séquestre, paiement en ligne, remise en main " +
+  "avec réservation, paiement en ligne via prestataire, remise en main " +
   "propre et livraison intégrée.";
 
 export const DEFAULT_TITLE = "Shongre - Petites Annonces Particuliers & Pros";

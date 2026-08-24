@@ -27,6 +27,11 @@ export interface StripeCheckoutSessionInput {
     requiresPaymentMethod: boolean;
   };
   providerCouponId?: string;
+  metadata?: Record<string, string>;
+  destinationAccountId?: string;
+  applicationFeeAmountMinor?: number;
+  onBehalfOf?: string;
+  transferGroup?: string;
 }
 
 const stripeError = (status: number, payload: unknown) =>
@@ -120,6 +125,31 @@ export class StripeCheckoutAdapter {
     if (input.providerCouponId) {
       body.set("discounts[0][coupon]", input.providerCouponId);
     }
+    for (const [key, value] of Object.entries(input.metadata || {})) {
+      body.set(`metadata[${key}]`, value);
+      if (input.mode === "payment") {
+        body.set(`payment_intent_data[metadata][${key}]`, value);
+      }
+    }
+    if (input.destinationAccountId) {
+      body.set(
+        "payment_intent_data[transfer_data][destination]",
+        input.destinationAccountId,
+      );
+      body.set(
+        "payment_intent_data[application_fee_amount]",
+        String(input.applicationFeeAmountMinor || 0),
+      );
+      if (input.onBehalfOf) {
+        body.set("payment_intent_data[on_behalf_of]", input.onBehalfOf);
+      }
+    }
+    if (input.transferGroup && input.mode === "payment") {
+      body.set("payment_intent_data[transfer_group]", input.transferGroup);
+    }
+    if (input.onBehalfOf && !input.destinationAccountId) {
+      body.set("payment_intent_data[on_behalf_of]", input.onBehalfOf);
+    }
     input.lines.forEach((line, index) => {
       body.set(`line_items[${index}][quantity]`, String(line.quantity));
       body.set(
@@ -161,11 +191,138 @@ export class StripeCheckoutAdapter {
     paymentIntentId: string;
     amountMinor?: number;
     idempotencyKey: string;
+    reverseTransfer?: boolean;
+    refundApplicationFee?: boolean;
+    metadata?: Record<string, string>;
   }) {
     const body = new URLSearchParams({ payment_intent: input.paymentIntentId });
     if (input.amountMinor !== undefined)
       body.set("amount", String(input.amountMinor));
+    if (input.reverseTransfer) body.set("reverse_transfer", "true");
+    if (input.refundApplicationFee) body.set("refund_application_fee", "true");
+    for (const [key, value] of Object.entries(input.metadata || {})) {
+      body.set(`metadata[${key}]`, value);
+    }
     return this.request("/v1/refunds", body, input.idempotencyKey);
+  }
+
+  async expireSession(input: {
+    checkoutSessionId: string;
+    idempotencyKey: string;
+  }) {
+    if (!/^cs_[A-Za-z0-9_]+$/.test(input.checkoutSessionId)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "La session de paiement est invalide.",
+      });
+    }
+    return this.request(
+      `/v1/checkout/sessions/${encodeURIComponent(input.checkoutSessionId)}/expire`,
+      new URLSearchParams(),
+      input.idempotencyKey,
+    );
+  }
+
+  async retrieveSession(checkoutSessionId: string) {
+    if (
+      !/^cs_[A-Za-z0-9_]+$/.test(checkoutSessionId) ||
+      !config.stripeSecretKey
+    ) {
+      throw new AppError({
+        code: "PAYMENT_FAILED",
+        message: "La référence de la session de paiement est invalide.",
+      });
+    }
+    return providerExecutionGuard.execute({
+      providerId: "stripe",
+      capability: "payment.checkout_reconciliation",
+      marketCode: "*",
+      mutating: false,
+      maxAttempts: 2,
+      isRetryable: (error) =>
+        error instanceof AppError
+          ? error.code === "RATE_LIMITED" || error.statusCode >= 500
+          : true,
+      operation: async () => {
+        const response = await fetch(
+          `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(checkoutSessionId)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${config.stripeSecretKey}`,
+              "Stripe-Version": STRIPE_API_VERSION,
+            },
+            signal: AbortSignal.timeout(10_000),
+          },
+        );
+        const payload: unknown = await response.json();
+        if (!response.ok) throw stripeError(response.status, payload);
+        return payload as Record<string, unknown>;
+      },
+    });
+  }
+
+  async retrievePaymentIntent(paymentIntentId: string) {
+    if (!/^pi_[A-Za-z0-9]+$/.test(paymentIntentId) || !config.stripeSecretKey) {
+      throw new AppError({
+        code: "PAYMENT_FAILED",
+        message: "La référence du paiement est invalide.",
+      });
+    }
+    const response = await fetch(
+      `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentIntentId)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${config.stripeSecretKey}`,
+          "Stripe-Version": STRIPE_API_VERSION,
+        },
+        signal: AbortSignal.timeout(10_000),
+      },
+    );
+    const payload: unknown = await response.json();
+    if (!response.ok) throw stripeError(response.status, payload);
+    return payload as Record<string, unknown>;
+  }
+
+  async createTransfer(input: {
+    amountMinor: number;
+    currency: string;
+    destinationAccountId: string;
+    sourceTransactionId: string;
+    transferGroup: string;
+    idempotencyKey: string;
+    metadata?: Record<string, string>;
+  }) {
+    const body = new URLSearchParams({
+      amount: String(input.amountMinor),
+      currency: input.currency.toLowerCase(),
+      destination: input.destinationAccountId,
+      source_transaction: input.sourceTransactionId,
+      transfer_group: input.transferGroup,
+    });
+    for (const [key, value] of Object.entries(input.metadata || {})) {
+      body.set(`metadata[${key}]`, value);
+    }
+    return this.request("/v1/transfers", body, input.idempotencyKey);
+  }
+
+  async reverseTransfer(input: {
+    transferId: string;
+    amountMinor?: number;
+    idempotencyKey: string;
+    metadata?: Record<string, string>;
+  }) {
+    const body = new URLSearchParams();
+    if (input.amountMinor !== undefined) {
+      body.set("amount", String(input.amountMinor));
+    }
+    for (const [key, value] of Object.entries(input.metadata || {})) {
+      body.set(`metadata[${key}]`, value);
+    }
+    return this.request(
+      `/v1/transfers/${encodeURIComponent(input.transferId)}/reversals`,
+      body,
+      input.idempotencyKey,
+    );
   }
 
   async updateSubscriptionCancellation(input: {

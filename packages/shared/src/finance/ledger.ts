@@ -14,7 +14,10 @@ export interface LedgerBalance {
 export function calculateLedgerBalances(
   entries: readonly FinanceLedgerEntry[],
 ): LedgerBalance[] {
-  const balances = new Map<string, Omit<LedgerBalance, "currency" | "differenceMinor">>();
+  const balances = new Map<
+    string,
+    Omit<LedgerBalance, "currency" | "differenceMinor">
+  >();
   entries.forEach((entry) => {
     const current = balances.get(entry.amount.currency) ?? {
       debitMinor: 0,
@@ -36,7 +39,9 @@ export function assertBalancedTransaction(
 ): void {
   const balances = calculateLedgerBalances(transaction.entries);
   if (balances.length === 0) {
-    throw new Error(`Finance transaction ${transaction.reference} has no entries.`);
+    throw new Error(
+      `Finance transaction ${transaction.reference} has no entries.`,
+    );
   }
   const imbalance = balances.find((balance) => balance.differenceMinor !== 0);
   if (imbalance) {
@@ -52,13 +57,17 @@ export function assertPlatformFinanceInvariants(
   const currency = dashboard.scope.currency;
   const money = Object.values(dashboard.metrics).map((metric) => metric.amount);
   if (money.some((value) => value.currency !== currency)) {
-    throw new Error("Platform finance metrics must use the selected reporting currency.");
+    throw new Error(
+      "Platform finance metrics must use the selected reporting currency.",
+    );
   }
   const revenueSourcesMinor = dashboard.revenueSources.reduce(
     (sum, source) => sum + source.amount.amountMinor,
     0,
   );
-  if (revenueSourcesMinor !== dashboard.metrics.platformRevenue.amount.amountMinor) {
+  if (
+    revenueSourcesMinor !== dashboard.metrics.platformRevenue.amount.amountMinor
+  ) {
     throw new Error("Revenue sources must equal platform revenue.");
   }
   const expectedNetRevenue =
@@ -66,7 +75,9 @@ export function assertPlatformFinanceInvariants(
     dashboard.metrics.providerFees.amount.amountMinor -
     dashboard.metrics.refunds.amount.amountMinor;
   if (expectedNetRevenue !== dashboard.metrics.netRevenue.amount.amountMinor) {
-    throw new Error("Net revenue must equal platform revenue minus provider fees and refunds.");
+    throw new Error(
+      "Net revenue must equal platform revenue minus provider fees and refunds.",
+    );
   }
   if (
     dashboard.metrics.arr.amount.amountMinor !==

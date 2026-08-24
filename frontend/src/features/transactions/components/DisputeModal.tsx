@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { AlertTriangle, UploadCloud } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Transaction, UserProfile } from "../../../types";
 import { TRANSACTION_CONFIG } from "../../../configuration/transaction.config";
-import { transactionService } from "../../../domains/transaction/transaction.service";
+import { services } from "../../../api/client/service-registry";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { useTranslation } from "../../../i18n/I18nProvider";
@@ -19,13 +19,11 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
   isOpen,
   onClose,
   transaction,
-  currentUser,
   onSuccess,
 }) => {
   const { t } = useTranslation();
   const [reason, setReason] = useState(TRANSACTION_CONFIG.disputeReasons[0].id);
   const [description, setDescription] = useState("");
-  const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,14 +43,10 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
       const selectedReason =
         TRANSACTION_CONFIG.disputeReasons.find((r) => r.id === reason)?.label ||
         reason;
-      const updated = await transactionService.openDispute(
+      const updated = await services.orders.openDispute(
         transaction.id,
-        currentUser,
-        {
-          reason: selectedReason,
-          description: description.trim(),
-          evidenceUrls: evidenceFiles.map((file) => URL.createObjectURL(file)),
-        },
+        selectedReason,
+        description.trim(),
       );
       onSuccess(updated);
       onClose();
@@ -68,9 +62,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t("transactions.disputeModal.signalerUnProblemeOuvrirUn")}
-      description={t(
-        "transactions.disputeModal.lesFondsSousSequestreResteront",
-      )}
+      description="Le dossier sera enregistré côté serveur et transmis à l’équipe compétente."
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-sm font-medium">
         <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-warning flex items-start gap-3 shadow-2xs">
@@ -80,7 +72,8 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
               {t("transactions.disputeModal.protectionAcheteurVendeurActive")}
             </p>
             <p className="text-xs text-warning mt-1 font-medium">
-              {t("transactions.disputeModal.enOuvrantCeDossierAucun")}
+              Décrivez précisément les faits. Les actions financières sont
+              traitées séparément par les équipes autorisées.
             </p>
           </div>
         </div>
@@ -122,33 +115,6 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
             className="w-full p-4 bg-white text-stone-900 rounded-control border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none font-medium transition-colors min-h-control-touch"
           />
         </div>
-
-        <label className="p-5 border-2 border-dashed border-stone-200/60 rounded-2xl bg-stone-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-stone-100 hover:border-stone-300 transition-colors shadow-2xs focus-within:ring-2 focus-within:ring-primary/30">
-          <input
-            type="file"
-            accept="image/jpeg,image/png,application/pdf"
-            multiple
-            className="sr-only"
-            onChange={(event) => {
-              const selected = Array.from(event.target.files || []).filter(
-                (file) => file.size <= 10 * 1024 * 1024,
-              );
-              setEvidenceFiles(selected);
-              if (selected.length !== (event.target.files?.length || 0)) {
-                setError("Chaque justificatif doit peser 10 Mo maximum.");
-              }
-            }}
-          />
-          <UploadCloud className="w-8 h-8 text-stone-400 mb-2" />
-          <span className="font-bold text-stone-700">
-            {t("transactions.disputeModal.ajouterDesPhotosOuJustificatifs")}
-          </span>
-          <span className="text-xs text-stone-500 mt-1 font-medium">
-            {evidenceFiles.length
-              ? `${evidenceFiles.length} justificatif${evidenceFiles.length > 1 ? "s" : ""} sélectionné${evidenceFiles.length > 1 ? "s" : ""}`
-              : t("transactions.disputeModal.jpgPngOuPdfMax")}
-          </span>
-        </label>
 
         <div className="flex gap-3 pt-4">
           <Button

@@ -56,10 +56,10 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
       const config = configurations[p.id];
       const isRuntimeActive = Boolean(
         config?.enabled &&
-          config.environment !== "demo" &&
-          config.health === "healthy" &&
-          config.healthLastCheckedAt &&
-          p.operational.lifecycle === "ACTIVE",
+        config.environment !== "demo" &&
+        config.health === "healthy" &&
+        config.healthLastCheckedAt &&
+        p.operational.lifecycle === "ACTIVE",
       );
       const q = searchQuery.toLowerCase().trim();
 
@@ -276,10 +276,10 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                   const health = cfg?.health || "unknown";
                   const isActive = Boolean(
                     isEnabled &&
-                      cfg?.environment !== "demo" &&
-                      health === "healthy" &&
-                      cfg?.healthLastCheckedAt &&
-                      p.operational.lifecycle === "ACTIVE",
+                    cfg?.environment !== "demo" &&
+                    health === "healthy" &&
+                    cfg?.healthLastCheckedAt &&
+                    p.operational.lifecycle === "ACTIVE",
                   );
                   const isImplemented =
                     p.operational.adapterStatus === "IMPLEMENTED";

@@ -40,11 +40,7 @@ function oauthEvidence(
   return baseEvidence({
     configured,
     enabled,
-    health: enabled
-      ? configured
-        ? "UNKNOWN"
-        : "MISCONFIGURED"
-      : "DISABLED",
+    health: enabled ? (configured ? "UNKNOWN" : "MISCONFIGURED") : "DISABLED",
     healthEvidence: configured ? "CONFIGURATION" : "NONE",
     message: enabled
       ? configured
@@ -61,7 +57,9 @@ function currentRuntimeEvidence(
     case "stripe": {
       const enabled = config.paymentProvider === "stripe";
       const configured = Boolean(
-        config.stripeSecretKey && config.stripeWebhookSecret,
+        config.stripeSecretKey &&
+        config.stripeWebhookSecret &&
+        config.stripeConnectWebhookSecret,
       );
       return baseEvidence({
         configured,
@@ -84,8 +82,8 @@ function currentRuntimeEvidence(
         config.socialAuthEnabled && config.googleOAuth.enabled,
         Boolean(
           config.googleOAuth.clientId &&
-            config.googleOAuth.clientSecret &&
-            config.googleOAuth.callbackUrl,
+          config.googleOAuth.clientSecret &&
+          config.googleOAuth.callbackUrl,
         ),
       );
     case "apple_id":
@@ -93,10 +91,10 @@ function currentRuntimeEvidence(
         config.socialAuthEnabled && config.appleOAuth.enabled,
         Boolean(
           config.appleOAuth.clientId &&
-            config.appleOAuth.teamId &&
-            config.appleOAuth.keyId &&
-            config.appleOAuth.privateKey &&
-            config.appleOAuth.callbackUrl,
+          config.appleOAuth.teamId &&
+          config.appleOAuth.keyId &&
+          config.appleOAuth.privateKey &&
+          config.appleOAuth.callbackUrl,
         ),
       );
     case "facebook_identity":
@@ -104,9 +102,9 @@ function currentRuntimeEvidence(
         config.socialAuthEnabled && config.facebookOAuth.enabled,
         Boolean(
           config.facebookOAuth.clientId &&
-            config.facebookOAuth.clientSecret &&
-            config.facebookOAuth.callbackUrl &&
-            config.facebookOAuth.graphApiBaseUrl,
+          config.facebookOAuth.clientSecret &&
+          config.facebookOAuth.callbackUrl &&
+          config.facebookOAuth.graphApiBaseUrl,
         ),
       );
     case "configured_email_delivery": {
@@ -125,36 +123,57 @@ function currentRuntimeEvidence(
     }
     case "google_gemini": {
       const selected = config.aiProvider === "gemini";
+      const configured = Boolean(config.geminiApiKey && config.geminiModel);
       return baseEvidence({
-        configured: Boolean(config.geminiApiKey),
+        configured,
         enabled: selected,
-        health: selected ? "MISCONFIGURED" : "DISABLED",
-        healthEvidence: "NONE",
+        health: selected
+          ? configured
+            ? "UNKNOWN"
+            : "MISCONFIGURED"
+          : "DISABLED",
+        healthEvidence: configured ? "CONFIGURATION" : "NONE",
         message: selected
-          ? "Gemini was selected, but the live adapter deliberately fails closed because it is not implemented."
+          ? "Gemini structured moderation is configured; runtime health requires a live probe."
           : "Only the deterministic demo AI adapter is available.",
       });
     }
     case "insee_sirene": {
       const selected = config.businessRegistryProvider === "siret";
+      const configured = Boolean(
+        config.businessRegistryApiUrl && config.businessRegistryApiToken,
+      );
       return baseEvidence({
-        configured: false,
+        configured,
         enabled: selected,
-        health: selected ? "MISCONFIGURED" : "DISABLED",
+        health: selected
+          ? configured
+            ? "UNKNOWN"
+            : "MISCONFIGURED"
+          : "DISABLED",
+        healthEvidence: configured ? "CONFIGURATION" : "NONE",
         message: selected
-          ? "The live SIRET adapter is not implemented and fails closed."
+          ? "INSEE SIRENE lookup is configured; runtime health requires a live probe."
           : "Only the deterministic demo business registry is available.",
       });
     }
-    case "veriff": {
-      const selected = config.kycProvider !== "demo";
+    case "stripe_identity": {
+      const selected = config.kycProvider === "stripe";
+      const configured = Boolean(
+        config.stripeSecretKey && config.stripeWebhookSecret,
+      );
       return baseEvidence({
-        configured: false,
+        configured,
         enabled: selected,
-        health: selected ? "MISCONFIGURED" : "DISABLED",
+        health: selected
+          ? configured
+            ? "UNKNOWN"
+            : "MISCONFIGURED"
+          : "DISABLED",
+        healthEvidence: configured ? "CONFIGURATION" : "NONE",
         message: selected
-          ? "A live KYC mode is selected, but the adapter is not implemented and fails closed."
-          : "Only the deterministic demo KYC adapter is available.",
+          ? "Stripe Identity and its signed event destination are configured; runtime health requires a test-mode journey."
+          : "Stripe Identity is not the selected KYC adapter.",
       });
     }
     case "shongre_auth":
@@ -193,7 +212,8 @@ function currentRuntimeEvidence(
         healthEvidence: "RUNTIME_SIGNAL",
         lastCheckedAt: now(),
         lastSuccessfulAt: now(),
-        message: "The in-process notification service is loaded; external push delivery is a separate missing capability.",
+        message:
+          "The in-process notification service is loaded; external push delivery is a separate missing capability.",
       });
     case "osm_nominatim":
       return baseEvidence({
@@ -201,7 +221,8 @@ function currentRuntimeEvidence(
         enabled: true,
         health: "UNKNOWN",
         healthEvidence: "NONE",
-        message: "Browser map tiles are implemented, but no backend geocoding adapter or current provider probe exists.",
+        message:
+          "Browser map tiles are implemented, but no backend geocoding adapter or current provider probe exists.",
       });
     default:
       return baseEvidence({
@@ -260,7 +281,9 @@ export class ProviderControlPlaneService {
         readiness: evaluateProviderReadiness(definition, runtime),
       };
     });
-    const byId = new Map(providers.map((entry) => [entry.definition.id, entry]));
+    const byId = new Map(
+      providers.map((entry) => [entry.definition.id, entry]),
+    );
 
     const capabilities = SHONGRE_CAPABILITY_REQUIREMENTS.map((requirement) => {
       const primary = byId.get(requirement.primaryProviderId);
@@ -287,7 +310,9 @@ export class ProviderControlPlaneService {
           requirement.capability,
         )
       ) {
-        blockers.unshift("The primary provider does not implement this capability.");
+        blockers.unshift(
+          "The primary provider does not implement this capability.",
+        );
       }
 
       return {
@@ -298,23 +323,23 @@ export class ProviderControlPlaneService {
       };
     });
 
-    const critical = capabilities.filter(({ criticality }) =>
-      criticality === "P0" || criticality === "P1",
+    const critical = capabilities.filter(
+      ({ criticality }) => criticality === "P0" || criticality === "P1",
     );
     const verified = critical.filter(({ primaryState }) =>
       ["OPERATIONAL", "DEGRADED", "UNAVAILABLE"].includes(primaryState),
     );
     const verifiedScore =
       verified.length > 0 && verified.length === critical.length
-      ? Math.round(
-          (verified.reduce((total, item) => {
-            if (item.primaryState === "OPERATIONAL") return total + 1;
-            if (item.primaryState === "DEGRADED") return total + 0.5;
-            return total;
-          }, 0) /
-            verified.length) *
-            100,
-        )
+        ? Math.round(
+            (verified.reduce((total, item) => {
+              if (item.primaryState === "OPERATIONAL") return total + 1;
+              if (item.primaryState === "DEGRADED") return total + 0.5;
+              return total;
+            }, 0) /
+              verified.length) *
+              100,
+          )
         : null;
 
     return {
@@ -367,14 +392,18 @@ export class ProviderControlPlaneService {
         success: false,
         health: baseline.health,
         evidence: "NONE",
-        message: "No production adapter exists; a live integration test cannot be run.",
+        message:
+          "No production adapter exists; a live integration test cannot be run.",
         testedAt: now(),
         latencyMs: Date.now() - startedAt,
-        checks: [configurationCheck, {
-          name: "production_adapter",
-          status: "FAIL",
-          message: "Demo/catalogue presence is not an operational adapter.",
-        }],
+        checks: [
+          configurationCheck,
+          {
+            name: "production_adapter",
+            status: "FAIL",
+            message: "Demo/catalogue presence is not an operational adapter.",
+          },
+        ],
       };
     }
 
@@ -410,11 +439,14 @@ export class ProviderControlPlaneService {
         message: "Internal service probe passed in the current process.",
         testedAt,
         latencyMs: Date.now() - startedAt,
-        checks: [configurationCheck, {
-          name: "internal_service",
-          status: "PASS",
-          message: "Service is loaded and callable.",
-        }],
+        checks: [
+          configurationCheck,
+          {
+            name: "internal_service",
+            status: "PASS",
+            message: "Service is loaded and callable.",
+          },
+        ],
       };
       this.rememberDiagnostic(result);
       return result;
@@ -426,14 +458,18 @@ export class ProviderControlPlaneService {
       success: false,
       health: "UNKNOWN",
       evidence: baseline.healthEvidence,
-      message: "Configuration can be validated, but no safe live health probe is implemented for this provider.",
+      message:
+        "Configuration can be validated, but no safe live health probe is implemented for this provider.",
       testedAt: now(),
       latencyMs: Date.now() - startedAt,
-      checks: [configurationCheck, {
-        name: "live_probe",
-        status: "SKIP",
-        message: "No non-destructive provider-specific probe is registered.",
-      }],
+      checks: [
+        configurationCheck,
+        {
+          name: "live_probe",
+          status: "SKIP",
+          message: "No non-destructive provider-specific probe is registered.",
+        },
+      ],
     };
   }
 
@@ -447,7 +483,7 @@ export class ProviderControlPlaneService {
         method: "GET",
         headers: {
           Authorization: `Bearer ${config.stripeSecretKey}`,
-          "Stripe-Version": "2026-02-25.clover",
+          "Stripe-Version": "2026-07-29.dahlia",
         },
         signal: AbortSignal.timeout(5_000),
       });
@@ -456,20 +492,27 @@ export class ProviderControlPlaneService {
         providerId: "stripe",
         supported: true,
         success,
-        health: success ? "HEALTHY" : response.status >= 500 ? "OUTAGE" : "MISCONFIGURED",
+        health: success
+          ? "HEALTHY"
+          : response.status >= 500
+            ? "OUTAGE"
+            : "MISCONFIGURED",
         evidence: "LIVE_PROBE",
         message: success
           ? "Stripe authenticated balance read succeeded; no funds were moved."
           : `Stripe diagnostic returned HTTP ${response.status}.`,
         testedAt,
         latencyMs: Date.now() - startedAt,
-        checks: [configurationCheck, {
-          name: "authenticated_balance_read",
-          status: success ? "PASS" : "FAIL",
-          message: success
-            ? "Authenticated read completed."
-            : `Provider returned HTTP ${response.status}.`,
-        }],
+        checks: [
+          configurationCheck,
+          {
+            name: "authenticated_balance_read",
+            status: success ? "PASS" : "FAIL",
+            message: success
+              ? "Authenticated read completed."
+              : `Provider returned HTTP ${response.status}.`,
+          },
+        ],
       };
       this.rememberDiagnostic(result);
       return result;
@@ -480,14 +523,18 @@ export class ProviderControlPlaneService {
         success: false,
         health: "OUTAGE",
         evidence: "LIVE_PROBE",
-        message: error instanceof Error ? error.message : "Stripe probe failed.",
+        message:
+          error instanceof Error ? error.message : "Stripe probe failed.",
         testedAt,
         latencyMs: Date.now() - startedAt,
-        checks: [configurationCheck, {
-          name: "authenticated_balance_read",
-          status: "FAIL",
-          message: "The safe authenticated read failed or timed out.",
-        }],
+        checks: [
+          configurationCheck,
+          {
+            name: "authenticated_balance_read",
+            status: "FAIL",
+            message: "The safe authenticated read failed or timed out.",
+          },
+        ],
       };
       this.rememberDiagnostic(result);
       return result;

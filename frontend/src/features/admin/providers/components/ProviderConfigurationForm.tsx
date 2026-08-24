@@ -108,8 +108,8 @@ export const ProviderConfigurationForm: React.FC<
               {t("admin.providerConfigurationForm.etatDActivation")}
             </span>
             <p className="text-micro text-stone-500 mb-2">
-              Autorise uniquement l’adaptateur disponible dans cet
-              environnement ; ne prouve pas sa santé.
+              Autorise uniquement l’adaptateur disponible dans cet environnement
+              ; ne prouve pas sa santé.
             </p>
             <label className="relative inline-flex items-center cursor-pointer">
               <input

@@ -10,9 +10,14 @@ import {
 
 describe("finance contracts", () => {
   it("validates canonical platform and transaction fixtures", () => {
-    expect(platformFinanceDashboardSchema.safeParse(DEMO_PLATFORM_FINANCE_DASHBOARD).success).toBe(true);
+    expect(
+      platformFinanceDashboardSchema.safeParse(DEMO_PLATFORM_FINANCE_DASHBOARD)
+        .success,
+    ).toBe(true);
     DEMO_FINANCE_TRANSACTIONS.forEach((transaction) => {
-      expect(financeTransactionSchema.safeParse(transaction).success).toBe(true);
+      expect(financeTransactionSchema.safeParse(transaction).success).toBe(
+        true,
+      );
     });
   });
 

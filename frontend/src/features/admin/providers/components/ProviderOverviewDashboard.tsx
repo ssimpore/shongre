@@ -284,9 +284,7 @@ export const ProviderOverviewDashboard: React.FC<
               ({ capability }) => capability === item.capability,
             );
             const owner = requirement
-              ? getProviderOperationalDefinition(
-                  requirement.primaryProviderId,
-                )
+              ? getProviderOperationalDefinition(requirement.primaryProviderId)
               : undefined;
             const cfg = owner ? configurations[owner.id] : undefined;
             const implemented = Boolean(
@@ -298,17 +296,18 @@ export const ProviderOverviewDashboard: React.FC<
             const hasVerifiedHealth = Boolean(
               cfg?.environment !== "demo" && cfg?.healthLastCheckedAt,
             );
-            const status = !owner || (!implemented && !demoOnly)
-              ? "unavailable"
-              : demoOnly
-                ? "demo"
-                : !hasVerifiedHealth
-                  ? "unknown"
-                  : cfg?.health === "healthy"
-                    ? "operational"
-                    : cfg?.health === "degraded"
-                      ? "degraded"
-                      : "unavailable";
+            const status =
+              !owner || (!implemented && !demoOnly)
+                ? "unavailable"
+                : demoOnly
+                  ? "demo"
+                  : !hasVerifiedHealth
+                    ? "unknown"
+                    : cfg?.health === "healthy"
+                      ? "operational"
+                      : cfg?.health === "degraded"
+                        ? "degraded"
+                        : "unavailable";
             const catalogOwner = owner
               ? providers.find(({ id }) => id === owner.id)
               : undefined;

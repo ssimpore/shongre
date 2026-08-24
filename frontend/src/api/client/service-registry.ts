@@ -1,4 +1,5 @@
-import { apiClientConfig, DataMode } from "./api-client.config";
+import type { DataMode } from "./api-client.config";
+import { dataModeService } from "./data-mode.service";
 import {
   demoListingsService,
   demoSearchService,
@@ -108,7 +109,7 @@ export interface ServiceRegistry {
 }
 
 export function createServiceRegistry(
-  mode: DataMode = apiClientConfig.dataMode,
+  mode: DataMode = dataModeService.getActiveMode(),
 ): ServiceRegistry {
   const useDemo = mode === "demo";
 
@@ -147,3 +148,9 @@ export function createServiceRegistry(
 }
 
 export const services: ServiceRegistry = createServiceRegistry();
+
+/** Rebinds the stable registry object before the provider tree is refreshed. */
+export function activateServiceRegistry(mode: DataMode): ServiceRegistry {
+  Object.assign(services, createServiceRegistry(mode));
+  return services;
+}

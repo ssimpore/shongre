@@ -67,7 +67,9 @@ export class DemoVerificationService implements VerificationServiceContract {
     if (
       rule.governance === "LEGAL_MANDATE" &&
       rule.status === "ACTIVE" &&
-      (!rule.reviewedBy || !rule.reviewedAt || rule.sourceReferences.length === 0)
+      (!rule.reviewedBy ||
+        !rule.reviewedAt ||
+        rule.sourceReferences.length === 0)
     )
       throw new Error(
         "Une règle juridique active exige une source, un relecteur et une date de revue.",
@@ -110,7 +112,8 @@ export class DemoVerificationService implements VerificationServiceContract {
           state: "OPEN",
           reasonCode: "BUSINESS_REGISTRY_REVIEW",
           openedAt: user.professionalVerification.submittedAt || user.createdAt,
-          updatedAt: user.professionalVerification.submittedAt || user.createdAt,
+          updatedAt:
+            user.professionalVerification.submittedAt || user.createdAt,
         });
       return items;
     });
@@ -140,9 +143,17 @@ export class DemoVerificationService implements VerificationServiceContract {
         notes: input.reason,
       };
       if (dimension === "identity")
-        verificationService.reviewIdentityVerification(userId, outcome, options);
+        verificationService.reviewIdentityVerification(
+          userId,
+          outcome,
+          options,
+        );
       else if (dimension === "business")
-        verificationService.reviewBusinessVerification(userId, outcome, options);
+        verificationService.reviewBusinessVerification(
+          userId,
+          outcome,
+          options,
+        );
     }
     const now = new Date().toISOString();
     const requestedReason = this.requestedReviews.get(input.caseId)?.reasonCode;
@@ -152,7 +163,8 @@ export class DemoVerificationService implements VerificationServiceContract {
       dimension: dimension as VerificationDimension,
       state: input.state,
       reasonCode:
-        requestedReason || (dimension === "identity"
+        requestedReason ||
+        (dimension === "identity"
           ? "IDENTITY_PROVIDER_REVIEW"
           : "BUSINESS_REGISTRY_REVIEW"),
       assignedTo: "demo-compliance-agent",
@@ -231,7 +243,8 @@ export class DemoVerificationService implements VerificationServiceContract {
 
   async getComplianceStatus(userId: string): Promise<ComplianceSubject> {
     await simulateNetworkDelay();
-    const user = storageService.getUser(userId) || storageService.getCurrentUser();
+    const user =
+      storageService.getUser(userId) || storageService.getCurrentUser();
     const summary = verificationService.getUserVerificationSummary(user);
     const professional = user?.accountType === "professional";
     const bankVerified = summary.dimensions.bank_payout.state === "verified";
@@ -289,26 +302,33 @@ export class DemoVerificationService implements VerificationServiceContract {
   ): Promise<ComplianceRequirementDecision> {
     const subject = await this.getComplianceStatus(userId);
     const professional = subject.accountType === "professional";
-    const requiredByAction: Record<ComplianceAction, VerificationDimension[]> = {
-      browse: [],
-      create_account: ["email"],
-      save_favorite: ["email"],
-      message_seller: ["email"],
-      publish_listing: ["email", "professional_status"],
-      publish_professional_listing: [
-        "email",
-        "business",
-        "business_representative",
-        "professional_status",
-      ],
-      promote_listing: ["email"],
-      create_organization: ["email", "business", "business_representative"],
-      accept_online_payment: ["email", "payment"],
-      receive_payout: professional
-        ? ["email", "business", "business_representative", "bank_account", "payout"]
-        : ["email", "identity", "bank_account", "payout"],
-      complete_tax_due_diligence: [],
-    };
+    const requiredByAction: Record<ComplianceAction, VerificationDimension[]> =
+      {
+        browse: [],
+        create_account: ["email"],
+        save_favorite: ["email"],
+        message_seller: ["email"],
+        publish_listing: ["email", "professional_status"],
+        publish_professional_listing: [
+          "email",
+          "business",
+          "business_representative",
+          "professional_status",
+        ],
+        promote_listing: ["email"],
+        create_organization: ["email", "business", "business_representative"],
+        accept_online_payment: ["email", "payment"],
+        receive_payout: professional
+          ? [
+              "email",
+              "business",
+              "business_representative",
+              "bank_account",
+              "payout",
+            ]
+          : ["email", "identity", "bank_account", "payout"],
+        complete_tax_due_diligence: [],
+      };
     const required = requiredByAction[input.requestedAction];
     const missing = required.filter(
       (dimension) => subject.verification[dimension]?.state !== "verified",
@@ -375,6 +395,9 @@ export class DemoVerificationService implements VerificationServiceContract {
     userId: string;
     jurisdiction: string;
     returnTo: string;
+    contactEmail: string;
+    displayName: string;
+    sellerType: "individual" | "professional";
   }): Promise<{
     accountReference: string;
     onboardingUrl: string;
@@ -467,7 +490,6 @@ export class DemoVerificationService implements VerificationServiceContract {
     });
     return { status: "verified" };
   }
-
 }
 
 export const demoVerificationService = new DemoVerificationService();

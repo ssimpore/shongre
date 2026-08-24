@@ -7,7 +7,8 @@ export const DEMO_COMPLIANCE_RULES: ComplianceRule[] = [
     jurisdiction: "*",
     regulation: "PRODUCT_BASELINE",
     ruleCode: "BROWSE_WITHOUT_IDENTIFICATION",
-    description: "La consultation publique ne déclenche aucune vérification d’identité.",
+    description:
+      "La consultation publique ne déclenche aucune vérification d’identité.",
     action: "browse",
     conditions: {},
     requiredChecks: [],
@@ -28,7 +29,8 @@ export const DEMO_COMPLIANCE_RULES: ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "MARKETPLACE_PUBLICATION",
     ruleCode: "PRIVATE_ORDINARY_LISTING",
-    description: "Une annonce ordinaire de particulier demande seulement un compte confirmé.",
+    description:
+      "Une annonce ordinaire de particulier demande seulement un compte confirmé.",
     action: "publish_listing",
     conditions: { accountTypes: ["individual"], sellerTypes: ["individual"] },
     requiredChecks: ["email", "professional_status"],
@@ -47,10 +49,19 @@ export const DEMO_COMPLIANCE_RULES: ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "TRADER_TRACEABILITY",
     ruleCode: "PROFESSIONAL_PUBLICATION_BASELINE",
-    description: "La publication professionnelle vérifie l’entreprise et le représentant.",
+    description:
+      "La publication professionnelle vérifie l’entreprise et le représentant.",
     action: "publish_professional_listing",
-    conditions: { accountTypes: ["professional"], sellerTypes: ["professional"] },
-    requiredChecks: ["email", "business", "business_representative", "professional_status"],
+    conditions: {
+      accountTypes: ["professional"],
+      sellerTypes: ["professional"],
+    },
+    requiredChecks: [
+      "email",
+      "business",
+      "business_representative",
+      "professional_status",
+    ],
     recommendedChecks: ["phone", "vat"],
     reasonCodes: ["PROFESSIONAL_SELLER_TRACEABILITY"],
     legalBasis: ["DSA_ARTICLE_30_WHERE_APPLICABLE"],
@@ -70,7 +81,10 @@ export const DEMO_COMPLIANCE_RULES: ComplianceRule[] = [
     ruleCode: "PSP_PAYOUT_INDIVIDUAL",
     description: "Seul le versement reste bloqué pendant les contrôles du PSP.",
     action: "receive_payout",
-    conditions: { sellerTypes: ["individual"], paymentFlows: ["psp_marketplace"] },
+    conditions: {
+      sellerTypes: ["individual"],
+      paymentFlows: ["psp_marketplace"],
+    },
     requiredChecks: ["email", "identity", "bank_account", "payout"],
     recommendedChecks: ["phone"],
     reasonCodes: ["PAYOUT_PROVIDER_REQUIREMENTS"],
@@ -91,7 +105,8 @@ export const DEMO_COMPLIANCE_RULES: ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "DAC7_DPI",
     ruleCode: "FACILITATED_ACTIVITY_DUE_DILIGENCE",
-    description: "La diligence fiscale attend la qualification juridique exacte de l’activité.",
+    description:
+      "La diligence fiscale attend la qualification juridique exacte de l’activité.",
     action: "complete_tax_due_diligence",
     conditions: {
       transactionTypes: ["direct_purchase", "service_booking", "reservation"],

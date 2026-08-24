@@ -9,6 +9,7 @@ import { databaseFailure } from "./repository-error.js";
 
 export interface IListingRepository {
   findById(id: string): Promise<Listing | null>;
+  findPublicById(id: string): Promise<Listing | null>;
   search(filter: SearchFilters): Promise<{
     items: Listing[];
     total: number;
@@ -86,13 +87,22 @@ export class DemoListingRepository implements IListingRepository {
     return item ? { ...item } : null;
   }
 
+  async findPublicById(id: string): Promise<Listing | null> {
+    const item = await this.findById(id);
+    return item && ["published", "reserved", "sold"].includes(item.status)
+      ? item
+      : null;
+  }
+
   async search(filters: SearchFilters): Promise<{
     items: Listing[];
     total: number;
     page: number;
     totalPages: number;
   }> {
-    let result = Array.from(this.listings.values());
+    let result = Array.from(this.listings.values()).filter(
+      (listing) => listing.status === "published",
+    );
 
     if (filters.marketCode) {
       result = result.filter(
@@ -226,6 +236,9 @@ export class DemoListingRepository implements IListingRepository {
 }
 
 export class PostgresListingRepository implements IListingRepository {
+  private static readonly SELLER_PROJECTION =
+    "id, slug, name, account_type, account_family, primary_role, status, avatar_url, city, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at";
+
   private mapRowToListing(row: any): Listing {
     const profile = row.profiles;
     return {
@@ -250,7 +263,11 @@ export class PostgresListingRepository implements IListingRepository {
             slug: profile.slug,
             email: profile.email,
             name: profile.name,
-            accountType: profile.account_type,
+            accountType:
+              profile.account_family ||
+              (profile.account_type === "internal"
+                ? "staff"
+                : profile.account_type),
             primaryRole: profile.primary_role,
             role: profile.primary_role,
             sellerType:
@@ -296,7 +313,16 @@ export class PostgresListingRepository implements IListingRepository {
         "hand_delivery",
       ],
       shippingCost: row.shipping_cost ? Number(row.shipping_cost) : 0,
-      images: Array.isArray(row.images) ? row.images : [],
+      images: Array.isArray(row.listing_media)
+        ? [...row.listing_media]
+            .sort(
+              (left: any, right: any) =>
+                Number(left.sort_order || 0) - Number(right.sort_order || 0),
+            )
+            .map((media: any) => String(media.url))
+        : Array.isArray(row.images)
+          ? row.images
+          : [],
       isUrgent: Boolean(row.is_urgent),
       isFeatured: Boolean(row.is_featured),
       urgentExpiresAt: row.urgent_expires_at || undefined,
@@ -333,7 +359,7 @@ export class PostgresListingRepository implements IListingRepository {
       const { data, error } = await supabase
         .from("listings")
         .select(
-          "*, profiles:seller_id(*), publisher_organization:publisher_organization_id(status)",
+          `*, listing_media(url, sort_order), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
         )
         .eq("id", id)
         .single();
@@ -345,6 +371,32 @@ export class PostgresListingRepository implements IListingRepository {
       return this.mapRowToListing(data);
     } catch (error) {
       databaseFailure("listings.findById", error);
+    }
+  }
+
+  async findPublicById(id: string): Promise<Listing | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await (supabase
+        .from("listings")
+        .select(
+          `*, listing_media(url, sort_order), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+        )
+        .eq("id", id)
+        .in("status", ["published", "reserved", "sold"] as any)
+        .maybeSingle() as any);
+      if (error) databaseFailure("listings.findPublicById", error);
+      if (!data) return null;
+      const listing = this.mapRowToListing(data);
+      if (
+        listing.publisherStatus === "suspended" ||
+        listing.seller?.status !== "active"
+      ) {
+        return null;
+      }
+      return listing;
+    } catch (error) {
+      databaseFailure("listings.findPublicById", error);
     }
   }
 
@@ -363,7 +415,7 @@ export class PostgresListingRepository implements IListingRepository {
       let query = supabase
         .from("listings")
         .select(
-          "*, profiles:seller_id(*), publisher_organization:publisher_organization_id(status)",
+          `*, listing_media(url, sort_order), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
           { count: "exact" },
         )
         .eq("status", "published");

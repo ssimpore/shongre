@@ -80,9 +80,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
     verticalId: "general",
     categoryId: "",
     sellerType: "professional" as
-      | "individual"
-      | "professional"
-      | "organization",
+      "individual" | "professional" | "organization",
     planId: "",
     transactionType: "marketplace_order" as const,
     amount: "100.00",
@@ -178,7 +176,9 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
       );
       setDraftVersion(version);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Transition impossible.");
+      setError(
+        cause instanceof Error ? cause.message : "Transition impossible.",
+      );
     } finally {
       setTransitioning(false);
     }
@@ -382,7 +382,9 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
             <div className="mt-3 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <Badge variant={result.eligible ? "success" : "neutral"}>
-                  {result.eligible ? "Commission applicable" : "Aucune commission"}
+                  {result.eligible
+                    ? "Commission applicable"
+                    : "Aucune commission"}
                 </Badge>
                 <span className="font-mono text-micro text-stone-500">
                   {result.snapshotHash}
@@ -415,7 +417,8 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                     .filter((entry) => entry.matched)
                     .map((entry) => (
                       <li key={`${entry.policyId}:${entry.ruleId}`}>
-                        {entry.policyName} · {entry.ruleName} · précédence {entry.precedence}
+                        {entry.policyName} · {entry.ruleName} · précédence{" "}
+                        {entry.precedence}
                       </li>
                     ))}
                 </ul>
@@ -462,15 +465,21 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   {policy.status === "active" ? "Active" : "Désactivée"}
                 </Badge>
               </div>
-              <p className="mt-3 text-xs text-stone-600">{policy.description}</p>
+              <p className="mt-3 text-xs text-stone-600">
+                {policy.description}
+              </p>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
                 <div>
                   <dt className="text-stone-500">Calcul</dt>
-                  <dd className="font-bold text-stone-800">{modelLabel(policy)}</dd>
+                  <dd className="font-bold text-stone-800">
+                    {modelLabel(policy)}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-stone-500">Portée / héritage</dt>
-                  <dd className="font-bold text-stone-800">{scopeLabel(policy)}</dd>
+                  <dd className="font-bold text-stone-800">
+                    {scopeLabel(policy)}
+                  </dd>
                 </div>
               </dl>
               <Button

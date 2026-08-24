@@ -346,6 +346,23 @@ export interface Database {
         created_at: string;
         updated_at: string;
       }>;
+      listing_media_assets: GeneratedTable<{
+        id: string;
+        owner_user_id: string;
+        listing_id: string | null;
+        staging_path: string;
+        public_path: string | null;
+        public_url: string | null;
+        original_file_name: string;
+        declared_content_type: "image/jpeg" | "image/png" | "image/webp";
+        detected_content_type: "image/jpeg" | "image/png" | "image/webp" | null;
+        declared_size_bytes: number;
+        actual_size_bytes: number | null;
+        status: "upload_pending" | "ready" | "attached" | "rejected";
+        created_at: string;
+        completed_at: string | null;
+        attached_at: string | null;
+      }>;
       orders: {
         Row: {
           id: string;
@@ -364,13 +381,39 @@ export interface Database {
           remaining_balance: number | null;
           delivery_method: string;
           shipping_address: Json | null;
-          handover_pin: string | null;
-          pin_attempts: number;
+          item_amount_minor: number;
+          protection_fee_minor: number;
+          shipping_fee_minor: number;
+          total_charged_minor: number;
+          escrow_secured_amount_minor: number;
+          currency: string;
+          checkout_session_id: string | null;
+          checkout_idempotency_key: string | null;
+          handover_pin_hash: string | null;
+          handover_pin_issued_at: string | null;
+          handover_pin_attempts: number;
+          handover_pin_locked_until: string | null;
           is_pin_verified: boolean;
           delivery_confirmed_at: string | null;
           funds_released_at: string | null;
           payment_method: string;
           payment_intent_id: string | null;
+          destination_account_id: string | null;
+          seller_transfer_id: string | null;
+          seller_transfer_amount_minor: number | null;
+          seller_transfer_status:
+            | "pending"
+            | "processing"
+            | "completed"
+            | "partially_reversed"
+            | "reversed"
+            | null;
+          refund_provider_id: string | null;
+          refund_base_minor: number | null;
+          refund_idempotency_key: string | null;
+          carrier_name: string | null;
+          tracking_number: string | null;
+          shipped_at: string | null;
           commission_calculation_id: string | null;
           platform_commission_minor: number | null;
           seller_payable_minor: number | null;
@@ -397,13 +440,39 @@ export interface Database {
           remaining_balance?: number | null;
           delivery_method?: string;
           shipping_address?: Json | null;
-          handover_pin?: string | null;
-          pin_attempts?: number;
+          item_amount_minor: number;
+          protection_fee_minor: number;
+          shipping_fee_minor: number;
+          total_charged_minor: number;
+          escrow_secured_amount_minor: number;
+          currency: string;
+          checkout_session_id?: string | null;
+          checkout_idempotency_key?: string | null;
+          handover_pin_hash?: string | null;
+          handover_pin_issued_at?: string | null;
+          handover_pin_attempts?: number;
+          handover_pin_locked_until?: string | null;
           is_pin_verified?: boolean;
           delivery_confirmed_at?: string | null;
           funds_released_at?: string | null;
           payment_method?: string;
           payment_intent_id?: string | null;
+          destination_account_id?: string | null;
+          seller_transfer_id?: string | null;
+          seller_transfer_amount_minor?: number | null;
+          seller_transfer_status?:
+            | "pending"
+            | "processing"
+            | "completed"
+            | "partially_reversed"
+            | "reversed"
+            | null;
+          refund_provider_id?: string | null;
+          refund_base_minor?: number | null;
+          refund_idempotency_key?: string | null;
+          carrier_name?: string | null;
+          tracking_number?: string | null;
+          shipped_at?: string | null;
           commission_calculation_id?: string | null;
           platform_commission_minor?: number | null;
           seller_payable_minor?: number | null;
@@ -428,6 +497,9 @@ export interface Database {
           protection_fee_rate: number;
           protection_fixed_fee: number;
           free_listings_limit: number;
+          reservation_deposit_rate_bps: number;
+          reservation_deposit_minimum_minor: number;
+          reservation_deposit_maximum_minor: number;
           allowed_delivery_methods: string[];
           created_at: string;
           updated_at: string;
@@ -443,6 +515,9 @@ export interface Database {
           protection_fee_rate?: number;
           protection_fixed_fee?: number;
           free_listings_limit?: number;
+          reservation_deposit_rate_bps?: number;
+          reservation_deposit_minimum_minor?: number;
+          reservation_deposit_maximum_minor?: number;
           allowed_delivery_methods?: string[];
           created_at?: string;
           updated_at?: string;
@@ -1816,7 +1891,8 @@ export interface Database {
         policy_id: string | null;
         policy_version_id: string | null;
         rule_id: string | null;
-        state: "quoted" | "earned" | "partially_reversed" | "reversed" | "cancelled";
+        state:
+          "quoted" | "earned" | "partially_reversed" | "reversed" | "cancelled";
         eligible: boolean;
         reason_code: string;
         currency: string;
@@ -1855,6 +1931,17 @@ export interface Database {
         occurred_at: string;
         created_at: string;
       }>;
+      scheduled_jobs: GeneratedTable<{
+        job_name: string;
+        owner_id: string | null;
+        leased_until: string;
+        next_run_at: string;
+        last_started_at: string | null;
+        last_succeeded_at: string | null;
+        last_failed_at: string | null;
+        last_error: string | null;
+        updated_at: string;
+      }>;
       reviews: {
         Row: {
           id: string;
@@ -1886,9 +1973,35 @@ export interface Database {
         Args: { p_user_id: string; p_reason?: string | null };
         Returns: Database["public"]["Tables"]["profiles"]["Row"][];
       };
-      release_order_escrow: {
-        Args: { p_order_id: string; p_actor_id: string };
-        Returns: Json;
+      attach_owned_listing_media: {
+        Args: {
+          p_owner_user_id: string;
+          p_listing_id: string;
+          p_urls: string[];
+        };
+        Returns: undefined;
+      };
+      claim_scheduled_job: {
+        Args: {
+          p_job_name: string;
+          p_owner_id: string;
+          p_interval_seconds: number;
+          p_lease_seconds: number;
+        };
+        Returns: boolean;
+      };
+      complete_scheduled_job: {
+        Args: {
+          p_job_name: string;
+          p_owner_id: string;
+          p_interval_seconds: number;
+          p_error?: string | null;
+        };
+        Returns: undefined;
+      };
+      record_order_handover_pin_failure: {
+        Args: { p_order_id: string };
+        Returns: Database["public"]["Tables"]["orders"]["Row"][];
       };
       consume_oauth_authorization_flow: {
         Args: { p_state_hash: string };

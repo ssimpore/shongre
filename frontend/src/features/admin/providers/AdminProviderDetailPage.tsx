@@ -84,10 +84,10 @@ export const AdminProviderDetailPage: React.FC = () => {
   const health = configuration.health;
   const isActive = Boolean(
     configuration.enabled &&
-      configuration.environment !== "demo" &&
-      health === "healthy" &&
-      configuration.healthLastCheckedAt &&
-      provider.operational.lifecycle === "ACTIVE",
+    configuration.environment !== "demo" &&
+    health === "healthy" &&
+    configuration.healthLastCheckedAt &&
+    provider.operational.lifecycle === "ACTIVE",
   );
 
   return (
@@ -191,10 +191,10 @@ export const AdminProviderDetailPage: React.FC = () => {
                 configuration.environment === "demo" || health === "unknown"
                   ? "bg-stone-100 text-stone-700 border-stone-200"
                   : health === "healthy"
-                  ? "bg-success-surface text-success border-success-border"
-                  : health === "degraded"
-                    ? "bg-warning-surface text-warning border-warning-border"
-                    : "bg-danger-surface text-danger border-danger-border"
+                    ? "bg-success-surface text-success border-success-border"
+                    : health === "degraded"
+                      ? "bg-warning-surface text-warning border-warning-border"
+                      : "bg-danger-surface text-danger border-danger-border"
               }`}
             >
               {configuration.environment === "demo"

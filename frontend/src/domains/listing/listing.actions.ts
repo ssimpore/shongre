@@ -68,8 +68,8 @@ export class ListingActionsResolver {
           ? "Votre réservation en cours"
           : "Article actuellement réservé",
         message: isBuyerReserver
-          ? "Vous avez réservé cet article avec paiement sous séquestre. Consultez votre espace achats."
-          : "Un paiement sous séquestre sécurisé est en cours de validation pour cet article.",
+          ? "Vous avez réservé cet article. Consultez votre espace achats pour suivre le paiement."
+          : "Un paiement est en cours de validation par le prestataire pour cet article.",
         isBuyerReserver,
       };
     } else if (listing.status === "sold") {

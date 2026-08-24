@@ -1,4 +1,4 @@
-import { UserProfile } from "../../shared/types/index.js";
+import { PublicSellerProfile, UserProfile } from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
   IUserRepository,
@@ -26,6 +26,10 @@ export class UsersService {
 
   async getUserById(id: string): Promise<UserProfile | null> {
     return this.userRepo.findById(id);
+  }
+
+  async getPublicUserById(id: string): Promise<PublicSellerProfile | null> {
+    return this.userRepo.findPublicById(id);
   }
 
   async updateUserProfile(

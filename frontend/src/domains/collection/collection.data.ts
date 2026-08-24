@@ -723,7 +723,7 @@ export const ALL_COLLECTIONS: Collection[] = [
     subtitle:
       "Articles éligibles à l’envoi mondial relay / Colissimo avec garantie acheteur.",
     description:
-      "Commandez en 1 clic depuis toute la France. Les fonds sont sécurisés sous séquestre jusqu’à la confirmation de réception de votre colis.",
+      "Commandez en ligne depuis toute la France. Le paiement est traité par notre prestataire et son statut reste visible jusqu’à la réception de votre colis.",
     curatorNote:
       "Protection acheteur Shongre incluant remboursement intégral en cas de colis non conforme.",
     badge: { label: "📦 Livraison France", variant: "indigo" },

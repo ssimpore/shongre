@@ -1,0 +1,16 @@
+.git
+.github
+.codex
+**/.DS_Store
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/test-results
+**/playwright-report
+mobile/ios
+mobile/android
+npm-debug.log*

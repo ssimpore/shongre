@@ -14,7 +14,8 @@ SHELL := /bin/bash
 	lint lint-fix format format-check typecheck test test-unit test-integration test-e2e test-coverage check ci build \
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
-	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check
+	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
+	production-config-check production-release-check backup-restore-test secret-scan
 
 define env_run
 	@source scripts/env.sh && $(1)
@@ -39,6 +40,7 @@ help: ## Show the categorized developer CLI
 	@printf '  %-30s %s\n' 'make ui-check' 'Validate tokens, shared UI, Web, and Expo consumers'
 	@printf '  %-30s %s\n' 'make cross-platform-check' 'Verify shared propagation across Web, iOS, and Android'
 	@printf '  %-30s %s\n' 'make infra-check' 'Validate generated infrastructure configuration'
+	@printf '  %-30s %s\n' 'make production-release-check' 'Require safe production config plus current recovery/provider evidence'
 	@printf '\nStore & release\n'
 	@printf '  %-30s %s\n' 'make store-check' 'Run evidence-based Apple/Google preflight'
 	@printf '  %-30s %s\n' 'make ios-preview-build' 'Build an iOS preview with EAS; never submits'
@@ -89,7 +91,7 @@ backend backend-dev:
 	@scripts/service.sh foreground backend auto -- npm run dev --workspace=backend
 
 backend-start: backend-build
-	@scripts/service.sh foreground backend auto -- node backend/dist/index.js
+	@scripts/service.sh foreground backend auto -- npm run start --workspace=backend
 
 mobile mobile-dev mobile-start expo expo-start:
 	@source scripts/env.sh && scripts/service.sh foreground metro "$$EXPO_METRO_PORT" -- npm run start --workspace=mobile -- --port "$$EXPO_METRO_PORT"
@@ -235,12 +237,20 @@ infra-config:
 	@scripts/infra.sh config
 infra-check infra-validate:
 	@scripts/infra.sh check
+production-config-check:
+	@node scripts/production-readiness.mjs
+production-release-check:
+	@node scripts/production-readiness.mjs --require-evidence
+backup-restore-test:
+	@scripts/verify-backup-restore.sh
+secret-scan:
+	@node scripts/scan-tracked-secrets.mjs
 db-start supabase-start: infra-start
 db-stop supabase-stop: infra-stop
 db-migrate supabase-migrate:
 	@npm run db:migrate --workspace=backend
 db-seed supabase-seed:
-	@npm run db:seed --workspace=backend
+	@source scripts/env.sh && [[ "$$APP_ENV" == 'development' ]] || { echo 'Refusing demo seed outside APP_ENV=development'; exit 1; }; ALLOW_DEMO_SEED=true npm run db:seed --workspace=backend
 db-types supabase-types:
 	@npm run db:types --workspace=backend
 db-reset supabase-reset:
@@ -278,7 +288,7 @@ test-coverage:
 	@npm run test --workspace=frontend -- --coverage
 	@npm run test --workspace=backend -- --coverage
 	@npm run test --workspace=mobile -- --coverage
-check: env-init env-check tokens-check lint test frontend-build backend-build infra-check
+check: env-init env-check tokens-check lint test frontend-build backend-build infra-check secret-scan
 	@npm run check:boundary
 ci: env-init
 	@npm ci

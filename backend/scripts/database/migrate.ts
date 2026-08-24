@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { runPsql } from "./psql.js";
 
@@ -21,6 +22,10 @@ function migrationVersion(fileName: string): string {
 
 function quoteLiteral(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
+}
+
+function migrationChecksum(sql: string): string {
+  return createHash("sha256").update(sql, "utf8").digest("hex");
 }
 
 function listMigrationFiles(): string[] {
@@ -60,33 +65,60 @@ async function runMigrations() {
      CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
        version text PRIMARY KEY,
        statements text[],
-       name text
+       name text,
+       checksum text
      );
      ALTER TABLE supabase_migrations.schema_migrations
        ADD COLUMN IF NOT EXISTS statements text[],
-       ADD COLUMN IF NOT EXISTS name text;`,
+       ADD COLUMN IF NOT EXISTS name text,
+       ADD COLUMN IF NOT EXISTS checksum text;`,
   );
 
   let appliedCount = 0;
+  let adoptedChecksumCount = 0;
   for (const file of files) {
     const version = migrationVersion(file);
+    const name = file.replace(/^\d+_/, "").replace(/\.sql$/, "");
+    const sql = fs.readFileSync(path.join(migrationsDirectory, file), "utf8");
+    const checksum = migrationChecksum(sql);
+    const existingChecksum = runPsql(
+      databaseUrl,
+      `SELECT COALESCE(checksum, '')
+       FROM supabase_migrations.schema_migrations
+       WHERE version = ${quoteLiteral(version)};`,
+    );
     const alreadyApplied = runPsql(
       databaseUrl,
       `SELECT EXISTS (
-         SELECT 1 FROM supabase_migrations.schema_migrations
-         WHERE version = ${quoteLiteral(version)}
-       );`,
+        SELECT 1 FROM supabase_migrations.schema_migrations
+        WHERE version = ${quoteLiteral(version)}
+      );`,
     );
-    if (alreadyApplied === "t") continue;
+    if (alreadyApplied === "t") {
+      if (existingChecksum && existingChecksum !== checksum) {
+        throw new Error(
+          `Migration drift detected for ${file}: the applied checksum does not match the repository. Create a new forward migration instead of editing history.`,
+        );
+      }
+      if (!existingChecksum) {
+        runPsql(
+          databaseUrl,
+          `UPDATE supabase_migrations.schema_migrations
+           SET checksum = ${quoteLiteral(checksum)}, name = COALESCE(name, ${quoteLiteral(name)})
+           WHERE version = ${quoteLiteral(version)};`,
+        );
+        adoptedChecksumCount += 1;
+        console.log(`Recorded baseline checksum for ${file}.`);
+      }
+      continue;
+    }
 
-    const name = file.replace(/^\d+_/, "").replace(/\.sql$/, "");
-    const sql = fs.readFileSync(path.join(migrationsDirectory, file), "utf8");
     runPsql(
       databaseUrl,
       `BEGIN;
 ${sql}
-INSERT INTO supabase_migrations.schema_migrations (version, statements, name)
-VALUES (${quoteLiteral(version)}, ARRAY[]::text[], ${quoteLiteral(name)});
+INSERT INTO supabase_migrations.schema_migrations (version, statements, name, checksum)
+VALUES (${quoteLiteral(version)}, ARRAY[]::text[], ${quoteLiteral(name)}, ${quoteLiteral(checksum)});
 COMMIT;`,
     );
     appliedCount += 1;
@@ -94,7 +126,7 @@ COMMIT;`,
   }
 
   console.log(
-    `Migration complete: ${appliedCount} applied, ${files.length - appliedCount} already current.`,
+    `Migration complete: ${appliedCount} applied, ${files.length - appliedCount} already current, ${adoptedChecksumCount} legacy checksums baselined.`,
   );
 }
 

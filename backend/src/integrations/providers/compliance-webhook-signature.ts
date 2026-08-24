@@ -1,8 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export type ComplianceSignatureResult =
-  | { ok: true }
-  | { ok: false; reason: string };
+  { ok: true } | { ok: false; reason: string };
 
 /**
  * Provider-neutral HMAC envelope: `t=<unix seconds>,v1=<hex hmac>` where the

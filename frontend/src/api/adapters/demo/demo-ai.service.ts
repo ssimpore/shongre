@@ -98,7 +98,7 @@ export class DemoAiService implements AiServiceContract {
       `📦 Modalités de remise & d'envoi :\n` +
       `- Remise en main propre recommandée (sécurisée par code PIN Shongre).\n` +
       `- Envoi soigné et protégé possible via Mondial Relay ou Colissimo.\n` +
-      `- Paiement sécurisé via le système de séquestre Shongre. N'hésitez pas à me contacter pour toute question !`;
+      `- Paiement en ligne traité par notre prestataire. N'hésitez pas à me contacter pour toute question !`;
 
     return {
       title,

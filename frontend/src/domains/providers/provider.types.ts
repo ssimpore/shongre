@@ -31,12 +31,14 @@ export type ProviderCategory =
   | "BUSINESS_VERIFICATION";
 
 export type ProviderCapability =
-  // Payment & Escrow
+  // Payments
   | "payment.card"
   | "payment.wallet"
   | "payment.sepa"
   | "payment.escrow"
   | "payment.refund"
+  | "payment.marketplace"
+  | "payment.subscription"
   | "payout.transfer"
   | "payout.instant"
   // Delivery & Logistics
@@ -76,6 +78,7 @@ export type ProviderCapability =
   | "verification.identity"
   | "verification.business"
   | "verification.vat"
+  | "verification.payment"
   // Storage & Media
   | "storage.media"
   | "storage.document"

@@ -105,21 +105,22 @@ export const messagesEn: MessageCatalogue = {
   "footer.currentDeals": "Current deals",
   "footer.comingSoon": "{name} — coming soon",
   "footer.newsletterPitch":
-    "Get our weekly pick of listings and verified discounts.",
-  "footer.hosted": "Hosted",
+    "Get our weekly selection of listings and product updates.",
+  "footer.marketContext": "France market",
+  "footer.privacyControls": "Adjustable consent",
   "footer.appPitch": "Take Shongre with you everywhere.",
-  "footer.trust.escrowTitle": "100% secure payment",
+  "footer.trust.escrowTitle": "Payments via Stripe",
   "footer.trust.escrowBody":
-    "Your payment is protected until your order arrives as described.",
-  "footer.trust.deliveryTitle": "Delivery built in",
+    "Online payments are processed by our provider and their status is tracked in your order.",
+  "footer.trust.deliveryTitle": "Handover and shipping",
   "footer.trust.deliveryBody":
-    "Send via Mondial Relay pickup point, Colissimo, or hand over securely in person.",
-  "footer.trust.verifiedTitle": "Verified sellers & business numbers",
+    "Meet in person or use tracked shipping according to the terms shown in the order.",
+  "footer.trust.verifiedTitle": "Clear trust statuses",
   "footer.trust.verifiedBody":
-    "Identities checked and companies registered with the French trade register.",
-  "footer.trust.supportTitle": "Customer support, 7 days a week",
+    "Identity and business badges appear only after the relevant provider confirms them.",
+  "footer.trust.supportTitle": "Help centre and support",
   "footer.trust.supportBody":
-    "A dedicated team based in France to help you and moderate listings.",
+    "Use the help centre or open a request for assistance during the displayed support hours.",
 
   // --- Language selector ----------------------------------------------------
   "language.choose": "Choose language",
@@ -332,7 +333,7 @@ export const messagesEn: MessageCatalogue = {
   "auth.accountTypeSelector.depotDAnnoncesGratuitEt":
     "Free, instant listing publication",
   "auth.accountTypeSelector.paiementSecuriseAvecSequestre":
-    "Secure payment held in escrow",
+    "Secure online payment via Stripe",
   "auth.accountTypeSelector.messagerieInstantaneeDirecte":
     "Direct instant messaging",
   "auth.accountTypeSelector.badgeOfficielVendeurProVerifie":
@@ -341,7 +342,7 @@ export const messagesEn: MessageCatalogue = {
     "Customisable storefront",
   "auth.accountTypeSelector.facturationAutomatiqueAvecTva":
     "Automatic invoicing with VAT",
-  "auth.authLayout.conformiteRgpdFranceUe": "GDPR compliant, France & EU",
+  "auth.authLayout.conformiteRgpdFranceUe": "Built-in privacy controls",
   "auth.authLayout.protectionAcheteurVendeur": "Buyer & seller protection",
   "auth.mFAModal.copierLaCleSecrete": "Copy secret key",
   "auth.mFAModal.copierLesCodesDeSecours": "Copy backup codes",
@@ -410,9 +411,9 @@ export const messagesEn: MessageCatalogue = {
   "legal.legalPages.laPlateformeShongreEstUn":
     "Shongre is a service connecting buyers and sellers (private individuals and professionals) for publishing classified listings, negotiating, and completing transactions securely in mainland France.",
   "legal.legalPages.2SequestreProtectionAcheteur":
-    "2. Escrow & buyer protection",
+    "2. Online payments and disputes",
   "legal.legalPages.lorsquUneTransactionEstEffectuee":
-    "When a transaction is made through the online payment system, funds are held in a French escrow account until the buyer confirms the item was received as described.",
+    "Online payments are processed by an independent payment provider. Payouts and refunds depend on the provider status, the order terms, and applicable rules. Shongre is neither a bank nor an escrow service.",
   "legal.legalPages.3EngagementsDesProfessionnels":
     "3. Obligations of professional sellers",
   "legal.legalPages.lesVendeursProfessionnelsSEngagent":
@@ -444,9 +445,10 @@ export const messagesEn: MessageCatalogue = {
   "legal.legalPages.conseilsDeSecuriteAntiFraude": "Safety & Fraud Prevention",
   "legal.legalPages.refusezLesVirementsDirectsMandats":
     "Refuse direct bank transfers, Western Union money orders and uncertified cheques.",
-  "legal.legalPages.utilisezLeSequestreShongre": "Use Shongre escrow",
+  "legal.legalPages.utilisezLeSequestreShongre":
+    "Use the offered online payment flow",
   "legal.legalPages.votreArgentEstProtegeJusqu":
-    "Your money is protected until you confirm the parcel you received is as described.",
+    "Always check the order status and report any problem promptly from your purchases area.",
   "listings.listingDetailPage.annonceIntrouvableOuSupprimee":
     "Listing not found or removed",
   "listings.listingDetailPage.cetteAnnonceNEstPlus":
@@ -743,7 +745,7 @@ export const messagesEn: MessageCatalogue = {
   "support.contactPage.3RedigezVotreMessage": "3. Write your message",
   "support.contactPage.jpgPngOuPdfMax": "JPG, PNG or PDF (max 10 MB)",
   "support.helpCenterPage.rechercherUneQuestionExSequestre":
-    "Search a question (e.g. escrow, transfer, dispute…)",
+    "Search a question (e.g. payment, transfer, dispute…)",
   "support.helpCenterPage.rechercherUneQuestionDansL": "Search the help centre",
   "support.helpCenterPage.questionsFrequentes": "Frequently asked questions",
   "support.helpCenterPage.vousNAvezPasTrouve": "Didn't find your answer?",
@@ -766,7 +768,7 @@ export const messagesEn: MessageCatalogue = {
   "transactions.directPurchaseCheckoutModal.adresseDeLivraison":
     "Delivery address",
   "transactions.directPurchaseCheckoutModal.protectionAcheteurSequestre":
-    "Buyer protection & escrow",
+    "Payment processed by a provider",
   "transactions.directPurchaseCheckoutModal.totalARegler": "Total to pay",
   "transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise":
     "2. Secure payment method",
@@ -785,16 +787,14 @@ export const messagesEn: MessageCatalogue = {
     "Delivered — awaiting confirmation",
   "transactions.transactionsPage.finaliseePayee": "Completed & paid",
   "transactions.transactionsPage.annuleeRemboursee": "Cancelled & refunded",
-  "transactions.transactionsPage.garantieSequestreShongre":
-    "Shongre escrow guarantee:",
-  "transactions.transactionsPage.paiementSousSequestre":
-    "Payment held in escrow",
+  "transactions.transactionsPage.garantieSequestreShongre": "Payment tracking:",
+  "transactions.transactionsPage.paiementSousSequestre": "Payment confirmed",
   "transactions.transactionsPage.validationVendeur": "Seller confirmation",
   "transactions.transactionsPage.fondsVerses": "Funds paid out",
   "transactions.disputeModal.signalerUnProblemeOuvrirUn":
     "Report a problem / open a dispute",
   "transactions.disputeModal.lesFondsSousSequestreResteront":
-    "Funds held in escrow stay frozen until Shongre customer service resolves the case.",
+    "Payout may be paused while the case is reviewed, subject to the payment provider status and applicable terms.",
   "transactions.disputeModal.expliquezCeQuiSEst":
     "Explain what happened (condition of the parcel, item not as described, exchanges with the other party…)",
   "transactions.disputeModal.protectionAcheteurVendeurActive":
@@ -838,7 +838,7 @@ export const messagesEn: MessageCatalogue = {
   "transactions.reservationCheckoutModal.detailDesCoutsEtGaranties":
     "Cost and guarantee breakdown:",
   "transactions.reservationCheckoutModal.paiement100ProtegeSousSequestre":
-    "Payment 100% protected in escrow",
+    "Payment processed by our provider",
   "transactions.reservationCheckoutModal.prixDeLArticle": "Item price:",
   "transactions.reservationCheckoutModal.totalARegler": "Total to pay:",
   "transactions.reservationCheckoutModal.choisissezVotreMoyenDePaiement":
@@ -869,9 +869,9 @@ export const messagesEn: MessageCatalogue = {
   "transactions.sellerPayoutModal.montantNetVerseSurVotre":
     "Net amount paid into your account:",
   "transactions.sellerPayoutModal.virementsExecutesViaMangopayEtablissement":
-    "Transfers are executed via Mangopay, an electronic money institution authorised by the ACPR.",
+    "Transfers are executed by the configured payment provider, subject to the seller account status.",
   "transactions.transactionDetailModal.paiementGarantiParLeService":
-    "Payment guaranteed by Shongre's secure escrow service",
+    "Payment status confirmed by the provider",
   "transactions.transactionDetailModal.exSamedi22AoutA":
     "e.g. Saturday 22 August at 14:30",
   "transactions.transactionDetailModal.ex12RueDesRemparts":
@@ -928,7 +928,7 @@ export const messagesEn: MessageCatalogue = {
   "verification.businessVerificationModal.documentObligatoireDelivreParLe":
     "Mandatory document issued by the Commercial Court registry",
   "verification.businessVerificationModal.pourAccelererLaValidationDes":
-    "To speed up approval of escrow transfers",
+    "To speed up approval of sales payouts",
   "verification.businessVerificationModal.modeDemonstrationShongre":
     "Shongre demo mode",
   "verification.identityVerificationModal.formatsAcceptesJpgPngPdf":
@@ -944,7 +944,7 @@ export const messagesEn: MessageCatalogue = {
   "verification.trustBadge.numeroDeTelephoneVerifiePar":
     "Phone number verified by SMS",
   "verification.trustBadge.compteBancaireSepaValidePour":
-    "SEPA bank account approved for escrow",
+    "SEPA bank account approved for payouts",
   "verification.trustBadge.identiteVerifiee": "Identity verified",
   "verification.trustBadge.proCertifieRcs": "RCS certified pro",
   "verification.trustBadge.telephoneCertifie": "Phone verified",
@@ -1003,7 +1003,8 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminMarketsPage.surcharge": "✏️ Overridden",
   "admin.adminMarketsPage.tauxDeTvaStandard": "Standard VAT rate",
   "admin.adminMarketsPage.fraisProtectionAcheteur": "Buyer protection fee",
-  "admin.adminMarketsPage.reservationAvecSequestre": "Reservation with escrow",
+  "admin.adminMarketsPage.reservationAvecSequestre":
+    "Reservation with online payment",
   "admin.adminMarketsPage.nomDuMarche": "Market name",
   "admin.adminMarketsPage.localeParDefaut": "Default locale",
   "admin.adminMarketsPage.bientotDisponibleVitrine": "Coming soon (showcase)",
@@ -1128,7 +1129,7 @@ export const messagesEn: MessageCatalogue = {
     "Identity cases in the queue",
   "admin.adminVerificationsPage.piece": "Document:",
   "admin.adminVerificationsPage.comptesBancairesDeSequestreEnregistres":
-    "Registered escrow bank accounts",
+    "Registered payout bank accounts",
   "admin.adminVerificationsPage.journalDAuditInalterableDes":
     "Tamper-proof verification audit log",
   "admin.crmAiProspectingPage.decrivezLesProspectsQueVous":
@@ -1429,14 +1430,14 @@ export const messagesEn: MessageCatalogue = {
   "admin.taxonomyNodeEditor.review.manual": "Manual review",
   "admin.taxonomyNodeEditor.optionsDEtat": "Condition options:",
   "admin.taxonomyNodeEditor.venteAutorisee": "Selling allowed:",
-  "admin.taxonomyNodeEditor.sequestreCbActif": "Card escrow active:",
+  "admin.taxonomyNodeEditor.sequestreCbActif": "Online card payment active:",
   "admin.taxonomyNodeEditor.frontiereDArchitecture": "Architecture boundary:",
   "admin.taxonomyNodeEditor.eligibiliteIntrinseque": "intrinsic eligibility",
   "admin.taxonomyNodeEditor.gestionnaireDePrestataires": "Provider manager",
   "admin.taxonomyNodeEditor.paiementSecuriseEnLigneSequestre":
-    "Secure online payment (Shongre escrow)",
+    "Secure online payment via provider",
   "admin.taxonomyNodeEditor.reservationAvecAcompteDeSequestre":
-    "Reservation with escrow deposit",
+    "Reservation with online deposit",
   "admin.taxonomyNodeEditor.donGratuitAutorise": "Free giveaway allowed",
   "admin.taxonomyNodeEditor.trocEchangeAutorise": "Swap / exchange allowed",
   "admin.taxonomyNodeEditor.locationAutorisee": "Renting allowed",
@@ -1554,7 +1555,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.taxonomyNodeEditor.exempleTitreSeo":
     "e.g. Second-hand {category} classifieds - Shongre",
   "admin.taxonomyNodeEditor.exempleDescriptionSeo":
-    "e.g. Buy and sell your {category} items safely with Shongre escrow payment...",
+    "e.g. Buy and sell your {category} items with secure online payment...",
 
   // --- migrated surfaces ---
   "shell.demoRoleSwitcher.modeDemo": "Demo mode",
@@ -1579,6 +1580,41 @@ export const messagesEn: MessageCatalogue = {
   "shell.demoRoleSwitcher.0AnnoncePro": "📦 0 listings (pro)",
   "shell.demoRoleSwitcher.profilSuspenduSecurite":
     "🚫 Suspended profile (security)",
+  "shell.dataMode.modeLive": "Live mode",
+  "shell.dataMode.liveSummary": "Data supplied by the Shongre API",
+  "shell.dataMode.openSettings": "Configure data mode",
+  "shell.dataMode.settingsTitle": "Data mode",
+  "shell.dataMode.settingsDescription":
+    "Choose the source used by every frontend service.",
+  "shell.dataMode.demoTitle": "Demo",
+  "shell.dataMode.demoDescription":
+    "Local, deterministic adapters that do not require the backend.",
+  "shell.dataMode.liveTitle": "Live",
+  "shell.dataMode.liveDescription":
+    "HTTP adapters connected to the configured API.",
+  "shell.dataMode.active": "Active",
+  "shell.dataMode.liveConfirmationTitle": "Confirm Live mode activation",
+  "shell.dataMode.liveConfirmationDescription":
+    "The frontend session and caches will be fully reloaded. If an error occurs, the app will not fall back automatically to demo data.",
+  "shell.dataMode.liveNotConfigured":
+    "No Live API URL is configured in this build.",
+  "shell.dataMode.liveConfigurationError":
+    "The Live API is not configured in this build. Add NEXT_PUBLIC_API_URL, then reload the application.",
+  "shell.dataMode.liveUnavailableError":
+    "The Live API is configured but unavailable. The current mode remains active.",
+  "shell.dataMode.liveUnavailableBootError":
+    "The Live API did not pass its availability check. Demo mode was not enabled automatically.",
+  "shell.dataMode.liveCheckingTitle": "Connecting to Live mode",
+  "shell.dataMode.liveCheckingDescription":
+    "Checking the Shongre API availability…",
+  "shell.dataMode.liveUnavailableLabel": "Live mode unavailable",
+  "shell.dataMode.liveUnavailableTitle": "Unable to contact the Live API",
+  "shell.dataMode.noSilentFallback":
+    "No silent fallback to demonstration data was performed.",
+  "shell.dataMode.confirmLive": "Confirm and enable Live",
+  "shell.dataMode.confirmDemo": "Enable Demo mode",
+  "shell.dataMode.switchUnexpectedError":
+    "The data mode could not be changed. The current mode remains active.",
   "shell.header.tableauDeBordCompte": "Account dashboard",
   "shell.header.deconnexion": "Sign out",
   "shell.header.connectezVousPourGererVos":
@@ -1679,7 +1715,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie":
     "Taxonomy management & administration",
   "admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL":
-    "The single canonical reference driving the category tree, publication forms, search facets, escrow capabilities and multi-market behaviour.",
+    "The single canonical reference driving the category tree, publication forms, search facets, payment capabilities and multi-market behaviour.",
   "admin.adminTaxonomyPage.selectionnezUneCategorieDansL":
     "Select a category in the tree to open its editor.",
   "admin.adminUsersPage.gouvernanceDesIdentites": "Identity governance",
@@ -2032,11 +2068,11 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.trouvezLaPerleRare": "Find the rare gem,",
   "home.homePage.sansTracas": "hassle-free.",
   "home.homePage.achetezEtVendezEnToute":
-    "Buy and sell with confidence: secure payments, built-in delivery and verified sellers.",
+    "Buy and sell with tracked payments, clear handover options and explicit seller statuses.",
   "home.homePage.garantiesShongre": "Shongre guarantees",
   "home.homePage.paiementsSecurises": "Secure payments",
-  "home.homePage.livraisonIntegree": "Built-in delivery",
-  "home.homePage.vendeursVerifies": "Verified sellers",
+  "home.homePage.livraisonIntegree": "Clear handover and shipping",
+  "home.homePage.vendeursVerifies": "Explicit seller statuses",
   "home.homePage.annoncesRecentes": "Recent listings",
   "home.homePage.lesDernieresOffresPublieesPres":
     "The latest listings posted near you",
@@ -2103,17 +2139,17 @@ export const messagesEn: MessageCatalogue = {
   "listings.listingFulfillmentSummary.livraisonEnColisAvecSuivi":
     "Tracked parcel delivery",
   "listings.listingFulfillmentSummary.mondialRelayPointRelaisLocker":
-    "Mondial Relay (pickup point & locker) or Colissimo home delivery",
-  "listings.listingFulfillmentSummary.aPartirDe399": "From €3.99",
+    "Carrier agreed with the seller and tracking number recorded in the order",
+  "listings.listingFulfillmentSummary.aPartirDe399": "According to the terms",
   "listings.listingFulfillmentSummary.transportDeMeublesGrosColis":
     "Furniture & bulky item transport",
   "listings.listingFulfillmentSummary.livraisonParTransporteurSpecialiseCocolis":
-    "Delivery by specialist carrier Cocolis",
+    "Specialist carrier agreed with the seller before shipping",
   "listings.listingFulfillmentSummary.surDevisTransport":
     "Transport quoted on request",
   "listings.listingFulfillmentSummary.retraitDirectDansLeMagasin":
     "Collect directly from the Pro seller's store",
-  "listings.listingSafetyNotice.sequestreGaranti": "Escrow guaranteed",
+  "listings.listingSafetyNotice.sequestreGaranti": "Provider-managed payment",
   "listings.listingSafetyNotice.paiementChiffre3dSecure":
     "3-D Secure encrypted payment",
   "listings.listingSellerTrustSection.aProposDuVendeur": "About the seller",
@@ -2162,7 +2198,7 @@ export const messagesEn: MessageCatalogue = {
   "newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService":
     "Essential service communications",
   "newsletter.newsletterPreferencesPage.memeSiVousEtesDesabonne":
-    "Even if you unsubscribe from the newsletter, you'll keep receiving essential emails about your account security, your escrow payments and your order tracking.",
+    "Even if you unsubscribe from the newsletter, you'll keep receiving essential emails about your account security, your payments and your order tracking.",
   "newsletter.newsletterUnsubscribePage.desabonnementNewsletter":
     "Newsletter unsubscribe",
   "newsletter.newsletterUnsubscribePage.vousPouvezVousDesabonnerEn":
@@ -2274,9 +2310,9 @@ export const messagesEn: MessageCatalogue = {
     "Enable the transaction options allowed for this category.",
   "publishing.publishWizard.lesAcheteursPeuventVousPoser":
     "Buyers can ask you questions through Shongre messaging.",
-  "publishing.publishWizard.sequestreGaranti": "Escrow guaranteed",
+  "publishing.publishWizard.sequestreGaranti": "Provider-managed payment",
   "publishing.publishWizard.lAcheteurPeutPayerImmediatement":
-    "The buyer can pay immediately by card. Your funds are protected.",
+    "The buyer can pay by card. Payout depends on account activation and order status.",
   "publishing.publishWizard.permetALAcheteurDe":
     "Lets the buyer hold the item while you agree a meeting time.",
   "publishing.publishWizard.modesDeRemiseExpedition":
@@ -2303,9 +2339,9 @@ export const messagesEn: MessageCatalogue = {
   "publishing.publishWizard.categorieEligible": "✓ Category eligible",
   "publishing.publishWizard.categorieRestreinte": "✕ Category restricted",
   "publishing.publishWizard.livraison": "Delivery",
-  "publishing.publishWizard.sequestre": "Escrow",
+  "publishing.publishWizard.sequestre": "Payment",
   "publishing.publishWizard.toutesLesTransactionsMultiMarches":
-    "Every multi-market transaction is automatically covered by Shongre escrow. Prices are converted transparently and local VAT is applied in line with European and Swiss regulations.",
+    "Payment availability, currency, and applicable rules depend on each market. Exact terms are shown before publication and payment.",
   "publishing.publishWizard.optionsDeVisibiliteBoostFacultatif":
     "Visibility & boost options (optional)",
   "publishing.publishWizard.multipliezVosVuesEnPositionnant":
@@ -2431,7 +2467,7 @@ export const messagesEn: MessageCatalogue = {
   "support.contactPage.besoinDOuvrirUnLitige":
     "Need to open a dispute on a current order?",
   "support.contactPage.pourGelerLesFondsSous":
-    "To freeze the funds held in escrow and be refunded if an item never arrives or is not as described, you must open a formal dispute from the transaction itself.",
+    "To report a missing or misdescribed item, open a dispute from the transaction. Any refund depends on case review, payment status, and applicable terms.",
   "support.contactPage.accederAMesAchatsPour":
     "Go to my purchases to open the dispute",
   "support.contactPage.leSupportShongreNIntervient":
@@ -2443,11 +2479,11 @@ export const messagesEn: MessageCatalogue = {
     "Add a screenshot or document (demo simulation)",
   "support.helpCenterPage.commentPouvonsNousVousAider": "How can we help?",
   "support.helpCenterPage.retrouvezLesReponsesAuxQuestions":
-    "Find answers to common questions about escrow, delivery, publishing and your account.",
+    "Find answers to common questions about payments, delivery, publishing and your account.",
   "support.helpCenterPage.aucunArticleNeCorrespondA":
     "No article matches your search. You can contact our team below.",
   "support.helpCenterPage.notreEquipeDeSupportClient":
-    "Our France-based customer support team helps you 7 days a week with your orders, listings and questions.",
+    "Use the help centre or open a request about your orders, listings and questions. Response times depend on the displayed support hours.",
   "support.supportRequestDetailPage.retourAMesDemandes2": "Back to my requests",
   "support.supportRequestDetailPage.ouvrirUneNouvelleDemande":
     "open a new request",
@@ -2458,23 +2494,23 @@ export const messagesEn: MessageCatalogue = {
     "If you run into trouble with a transaction, a listing or your account, our team is here to help.",
   "support.supportRequestsPage.contacterLeSupport": "Contact support",
   "support.supportContextCard.annonceLiee": "Linked listing",
-  "support.supportContextCard.commandeSequestreLie": "Linked order / escrow",
+  "support.supportContextCard.commandeSequestreLie": "Linked order / payment",
   "transactions.directPurchaseCheckoutModal.selectionnezParmiLesOptionsReellement":
     "Choose from the options actually available for this item.",
   "transactions.directPurchaseCheckoutModal.fondsConservesSousSequestreBancaire":
-    "Funds held in bank escrow until the item is confirmed as described.",
+    "Payment is processed by the provider and tracked in the order status.",
   "transactions.directPurchaseCheckoutModal.paiementEnLigneTemporairementIndisponible":
     "Online payment temporarily unavailable",
   "transactions.directPurchaseCheckoutModal.leSystemeDeSequestreEn":
-    "The online escrow system is temporarily unavailable on this market. You can contact the seller to arrange an in-person handover.",
+    "Online payment is temporarily unavailable in this market. You can contact the seller to arrange an in-person handover.",
   "transactions.directPurchaseCheckoutModal.referenceCommande":
     "Order reference:",
   "transactions.directPurchaseCheckoutModal.communiquezCeCodeAuVendeur":
     "Give this code to the seller at the meeting, and only after you have checked the item.",
   "transactions.transactionsPage.transactionsReservationsSequestre":
-    "Transactions, reservations & escrow",
+    "Transactions, reservations and payments",
   "transactions.transactionsPage.gerezVosReservationsVosRemises":
-    "Manage your reservations, your handovers and the release of secured funds",
+    "Manage your reservations, handovers, and payment status",
   "transactions.transactionsPage.gererLeDossier": "Manage the case",
   "transactions.disputeModal.enOuvrantCeDossierAucun":
     "Once this case is open, no payout happens until the situation is settled between both parties or arbitrated by our team.",
@@ -2487,7 +2523,7 @@ export const messagesEn: MessageCatalogue = {
   "transactions.leaveReviewModal.commentaireDetailleFacultatif":
     "Detailed comment (optional)",
   "transactions.reservationCheckoutModal.detailsCouts": "Details & costs",
-  "transactions.reservationCheckoutModal.paiementSequestre": "Escrow payment",
+  "transactions.reservationCheckoutModal.paiementSequestre": "Online payment",
   "transactions.reservationCheckoutModal.rendezVousDirectAvecValidation":
     "Meet in person, confirmed with a 6-digit secret code.",
   "transactions.reservationCheckoutModal.retraitChezUnCommercantPartenaire":
@@ -2497,7 +2533,7 @@ export const messagesEn: MessageCatalogue = {
   "transactions.reservationCheckoutModal.continuerVersLeRecapitulatif":
     "Continue to the summary",
   "transactions.reservationCheckoutModal.lArgentNeSeraVerse":
-    "The money is only paid to the seller once the item has been handed over as described. If the seller declines, or the item is not as described, you are refunded in full.",
+    "Shongre requests the seller transfer after the confirmed handover. Refunds remain subject to the order status, provider confirmation and applicable terms.",
   "transactions.reservationCheckoutModal.passerAuPaiementSecurise":
     "Go to secure payment",
   "transactions.reservationCheckoutModal.referenceDossier": "Case reference:",
@@ -2549,7 +2585,7 @@ export const messagesEn: MessageCatalogue = {
   "verification.bankPayoutModal.coordonneesBancairesDeVirement":
     "Bank details for transfers",
   "verification.bankPayoutModal.sequestreSecuriseVirementsDeVentes":
-    "Secure escrow & sales payouts",
+    "Secure sales payouts",
   "verification.bankPayoutModal.nomDuTitulaireDuCompte":
     "Account holder's name",
   "verification.bankPayoutModal.leNomDoitCorrespondreA":
@@ -2652,7 +2688,7 @@ export const messagesEn: MessageCatalogue = {
   "meta.notificationPreferences.title": "Notification preferences",
   "meta.notificationPreferences.description":
     "Choose which alerts you receive on each channel.",
-  "meta.transactions.title": "Transactions, reservations & escrow",
+  "meta.transactions.title": "Transactions, reservations and payments",
   "meta.transactions.description":
     "Track your purchases, sales and the release of funds.",
   "meta.verificationCenter.title": "Account security & verification",

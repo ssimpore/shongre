@@ -23,6 +23,9 @@ export interface AppConfig {
   port: number;
   frontendUrl: string;
   apiPrefix: string;
+  maxRequestBodyBytes: number;
+  requestTimeoutMs: number;
+  shutdownGraceMs: number;
   corsOrigin: string;
   supabaseUrl: string;
   supabaseAnonKey: string;
@@ -51,8 +54,15 @@ export interface AppConfig {
   aiProvider: AIProviderMode;
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
+  stripeConnectWebhookSecret?: string;
   complianceWebhookSecret?: string;
+  handoverPinPepper: string;
   geminiApiKey?: string;
+  geminiModel: string;
+  businessRegistryApiUrl: string;
+  businessRegistryApiToken: string;
+  kycProviderBaseUrl: string;
+  kycProviderApiToken: string;
 }
 
 export interface OAuthProviderConfig {
@@ -164,6 +174,16 @@ function envList(name: string): string[] {
     .filter(Boolean);
 }
 
+function positiveInteger(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new Error(`[Config Error] ${name} must be a positive integer.`);
+  }
+  return value;
+}
+
 function decodePrivateKey(): string {
   if (process.env.APPLE_PRIVATE_KEY)
     return process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, "\n");
@@ -234,6 +254,14 @@ function validateProductionAuthConfiguration(candidate: AppConfig): void {
     return;
   const missing: string[] = [];
   if (!candidate.authEmailDeliveryUrl) missing.push("AUTH_EMAIL_DELIVERY_URL");
+  else {
+    try {
+      if (new URL(candidate.authEmailDeliveryUrl).protocol !== "https:")
+        missing.push("AUTH_EMAIL_DELIVERY_URL (HTTPS)");
+    } catch {
+      missing.push("AUTH_EMAIL_DELIVERY_URL (absolute HTTPS URL)");
+    }
+  }
   if (!candidate.authEmailDeliveryToken)
     missing.push("AUTH_EMAIL_DELIVERY_TOKEN");
   if (!candidate.frontendUrl) missing.push("FRONTEND_URL");
@@ -248,21 +276,61 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
   if (candidate.nodeEnv !== "production") return;
 
   const missing: string[] = [];
-  if (!candidate.frontendUrl) missing.push("FRONTEND_URL");
+  const requireHttpsUrl = (name: string, value: string) => {
+    if (!value) {
+      missing.push(name);
+      return;
+    }
+    try {
+      if (new URL(value).protocol !== "https:") missing.push(`${name} (HTTPS)`);
+    } catch {
+      missing.push(`${name} (absolute HTTPS URL)`);
+    }
+  };
+
+  requireHttpsUrl("FRONTEND_URL", process.env.FRONTEND_URL || "");
   if (!candidate.corsOrigin || candidate.corsOrigin === "*")
     missing.push("CORS_ORIGIN (explicit origins)");
-  if (candidate.dataMode === "database") {
-    if (!candidate.supabaseUrl) missing.push("SUPABASE_URL");
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY)
-      missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  else {
+    for (const origin of candidate.corsOrigin.split(","))
+      requireHttpsUrl("CORS_ORIGIN", origin.trim());
   }
-  if (candidate.paymentProvider === "stripe" && !candidate.stripeSecretKey)
-    missing.push("STRIPE_SECRET_KEY");
-  if (
-    (candidate.paymentProvider === "stripe" || candidate.kycProvider !== "demo") &&
-    !candidate.complianceWebhookSecret
-  )
+  if (!candidate.cookieSecure) missing.push("AUTH_COOKIE_SECURE=true");
+
+  if (candidate.dataMode !== "database")
+    missing.push("BACKEND_DATA_MODE=database");
+  if (!candidate.supabaseUrl) missing.push("SUPABASE_URL");
+  if (!process.env.SUPABASE_ANON_KEY) missing.push("SUPABASE_ANON_KEY");
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY)
+    missing.push("SUPABASE_SERVICE_ROLE_KEY");
+
+  if (candidate.paymentProvider !== "stripe")
+    missing.push("PAYMENT_PROVIDER=stripe");
+  if (!candidate.stripeSecretKey) missing.push("STRIPE_SECRET_KEY");
+  if (!candidate.stripeWebhookSecret) missing.push("STRIPE_WEBHOOK_SECRET");
+  if (!candidate.stripeConnectWebhookSecret)
+    missing.push("STRIPE_CONNECT_WEBHOOK_SECRET");
+
+  if (candidate.kycProvider === "demo")
+    missing.push("KYC_PROVIDER=stripe or live");
+  if (candidate.businessRegistryProvider !== "siret")
+    missing.push("BUSINESS_REGISTRY_PROVIDER=siret");
+  if (candidate.aiProvider !== "gemini") missing.push("AI_PROVIDER=gemini");
+  if (!candidate.geminiApiKey) missing.push("GEMINI_API_KEY");
+  if (!candidate.geminiModel) missing.push("GEMINI_MODEL");
+  if (!candidate.businessRegistryApiUrl)
+    missing.push("BUSINESS_REGISTRY_API_URL");
+  if (!candidate.businessRegistryApiToken)
+    missing.push("BUSINESS_REGISTRY_API_TOKEN");
+  if (!candidate.kycProviderBaseUrl) missing.push("KYC_PROVIDER_BASE_URL");
+  if (!candidate.kycProviderApiToken) missing.push("KYC_PROVIDER_API_TOKEN");
+  if (!candidate.complianceWebhookSecret)
     missing.push("COMPLIANCE_WEBHOOK_SECRET");
+  if (
+    !process.env.HANDOVER_PIN_PEPPER ||
+    candidate.handoverPinPepper.length < 32
+  )
+    missing.push("HANDOVER_PIN_PEPPER (at least 32 characters)");
 
   if (missing.length > 0) {
     throw new Error(
@@ -298,6 +366,9 @@ const candidateConfig: AppConfig = {
   port: requiredRuntimePort(),
   frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "",
   apiPrefix: process.env.API_PREFIX || "/api/v1",
+  maxRequestBodyBytes: positiveInteger("MAX_REQUEST_BODY_BYTES", 1_048_576),
+  requestTimeoutMs: positiveInteger("REQUEST_TIMEOUT_MS", 30_000),
+  shutdownGraceMs: positiveInteger("SHUTDOWN_GRACE_MS", 15_000),
   corsOrigin: process.env.CORS_ORIGIN || "*",
   supabaseUrl: process.env.SUPABASE_URL || "",
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "dummy-anon-key",
@@ -382,8 +453,17 @@ const candidateConfig: AppConfig = {
   ),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  stripeConnectWebhookSecret: process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
   complianceWebhookSecret: process.env.COMPLIANCE_WEBHOOK_SECRET,
+  handoverPinPepper:
+    process.env.HANDOVER_PIN_PEPPER ||
+    "shongre-development-handover-pin-pepper-not-for-production",
   geminiApiKey: process.env.GEMINI_API_KEY,
+  geminiModel: process.env.GEMINI_MODEL || "",
+  businessRegistryApiUrl: process.env.BUSINESS_REGISTRY_API_URL || "",
+  businessRegistryApiToken: process.env.BUSINESS_REGISTRY_API_TOKEN || "",
+  kycProviderBaseUrl: process.env.KYC_PROVIDER_BASE_URL || "",
+  kycProviderApiToken: process.env.KYC_PROVIDER_API_TOKEN || "",
 };
 
 validateSocialProviderConfiguration(candidateConfig);

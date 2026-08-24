@@ -45,7 +45,7 @@ export type NotificationType =
   | "order.confirmed"
   | "order.cancelled"
   | "order.completed"
-  // Escrow & Payments
+  // Payments
   | "payment.secured"
   | "payment.failed"
   | "payment.released"

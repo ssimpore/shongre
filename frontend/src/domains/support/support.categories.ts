@@ -126,7 +126,7 @@ export const SUPPORT_CATEGORIES: SupportCategoryDefinition[] = [
         id: "purchase_item_not_received",
         label: "Article non reçu ou non conforme (Litige)",
         helpTip:
-          "Pour bloquer les fonds sous séquestre, ouvrez un litige formel depuis la commande.",
+          "Pour suspendre le versement si le statut le permet, ouvrez immédiatement un litige depuis la commande.",
         isDisputeHandoff: true,
         defaultPriority: "high",
       },
@@ -179,7 +179,7 @@ export const SUPPORT_CATEGORIES: SupportCategoryDefinition[] = [
     id: "payment",
     label: "Paiement & Remboursement",
     description:
-      "Paiement refusé, carte bancaire, séquestre ou remboursement en attente.",
+      "Paiement refusé, carte bancaire, versement ou remboursement en attente.",
     iconName: "CreditCard",
     reasons: [
       {
@@ -196,7 +196,7 @@ export const SUPPORT_CATEGORIES: SupportCategoryDefinition[] = [
       },
       {
         id: "payment_refund_delay",
-        label: "Délai d'un remboursement sous séquestre",
+        label: "Délai d'un remboursement",
         helpTip:
           "Les remboursements bancaires prennent généralement 2 à 4 jours ouvrés.",
         defaultPriority: "normal",

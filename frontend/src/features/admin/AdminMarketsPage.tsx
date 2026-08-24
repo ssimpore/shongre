@@ -707,7 +707,7 @@ export const AdminMarketsPage: React.FC = () => {
               { id: "listings", label: "Annonces", Icon: Package },
               {
                 id: "payments",
-                label: "Paiements & Séquestre",
+                label: "Paiements & Versements",
                 Icon: CreditCard,
               },
               { id: "reservation", label: "Réservation", Icon: Handshake },
@@ -1017,14 +1017,14 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow(
                   "payments.enabled",
                   "Paiement Sécurisé Marketplace",
-                  "Active la passerelle et le séquestre sur ce marché",
+                  "Active la passerelle de paiement sur ce marché",
                   "boolean",
                   (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
                 )}
                 {renderSettingRow(
                   "payments.provider",
-                  "Passerelle / Séquestre",
-                  "Fournisseur tiers (ex: mangopay_escrow, stripe_connect)",
+                  "Passerelle de paiement",
+                  "Fournisseur tiers (ex: stripe_connect)",
                 )}
                 {renderSettingRow(
                   "payments.buyerProtectionFeePercent",
@@ -1063,7 +1063,7 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow(
                   "reservation.enabled",
                   "Réservation d'Annonce",
-                  "Permet de bloquer une annonce avec séquestre",
+                  "Permet de réserver une annonce avec paiement en ligne",
                   "boolean",
                   (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
                 )}

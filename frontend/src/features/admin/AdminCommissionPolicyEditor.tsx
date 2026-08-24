@@ -114,13 +114,11 @@ function modelDefaults(policy?: CommissionPolicy | null): {
       model.minimumMinor === undefined ? "" : String(model.minimumMinor),
     maximumMinor:
       model.maximumMinor === undefined ? "" : String(model.maximumMinor),
-    thresholdMinor:
-      model.type === "threshold" ? model.thresholdMinor : 0,
+    thresholdMinor: model.type === "threshold" ? model.thresholdMinor : 0,
     thresholdApplies:
       model.type === "threshold" ? model.appliesWhen : "at_or_above",
     tierMode: model.type === "tiered" ? model.tierMode : "progressive",
-    tierBasis:
-      model.type === "tiered" ? model.basis : "transaction_amount",
+    tierBasis: model.type === "tiered" ? model.basis : "transaction_amount",
     volumePeriod:
       model.type === "tiered" && model.volumePeriod
         ? model.volumePeriod
@@ -180,9 +178,12 @@ export function AdminCommissionPolicyEditor({
   const seedModel = useMemo(() => modelDefaults(template), [template]);
   const templateEffect = template?.rules[0]?.effect;
   const [form, setForm] = useState({
-    name: template ? `${template.name} — copie` : "Nouvelle politique de commission",
+    name: template
+      ? `${template.name} — copie`
+      : "Nouvelle politique de commission",
     code: template ? `${template.code}.copy` : "commission.custom",
-    description: template?.description || "Politique administrée et versionnée.",
+    description:
+      template?.description || "Politique administrée et versionnée.",
     scopeLevel: seedScope.level,
     scopeValues: seedScope.values,
     policyType: template?.policyType || ("base" as "base" | "adjustment"),
@@ -241,10 +242,7 @@ export function AdminCommissionPolicyEditor({
       templateEffect?.kind === "commission"
         ? templateEffect.refundPolicy
         : ("proportional" as
-            | "proportional"
-            | "full_only"
-            | "non_refundable"
-            | "manual_review"),
+            "proportional" | "full_only" | "non_refundable" | "manual_review"),
     taxMode:
       templateEffect?.kind === "commission"
         ? templateEffect.tax.mode
@@ -382,7 +380,10 @@ export function AdminCommissionPolicyEditor({
         : undefined;
       const policy: CommissionPolicy = {
         id: policyId,
-        code: form.code.trim().toLowerCase().replace(/[^a-z0-9_.-]+/g, "-"),
+        code: form.code
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_.-]+/g, "-"),
         versionId: catalog.configurationVersionId,
         versionNumber: catalog.versionNumber + 1,
         name: form.name.trim(),
@@ -551,302 +552,317 @@ export function AdminCommissionPolicyEditor({
         </div>
         {form.policyType === "base" ? (
           <>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <FormField label="Modèle" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-              value={form.modelType}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  modelType: event.target.value as typeof current.modelType,
-                }))
-              }
-            >
-              <option value="percentage">Pourcentage</option>
-              <option value="fixed">Fixe</option>
-              <option value="combined">Pourcentage + fixe</option>
-              <option value="flat_category">Forfait catégorie</option>
-              <option value="threshold">Seuil</option>
-              <option value="tiered">Paliers</option>
-            </select>
-          </FormField>
-          <FormField label="Taux (bps)">
-            <Input
-              type="number"
-              min={0}
-              max={10000}
-              disabled={
-                form.modelType === "fixed" ||
-                form.modelType === "flat_category" ||
-                form.modelType === "tiered"
-              }
-              value={form.rateBps}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  rateBps: Number(event.target.value),
-                }))
-              }
-            />
-          </FormField>
-          <FormField label="Fixe (minor)">
-            <Input
-              type="number"
-              min={0}
-              disabled={
-                form.modelType === "percentage" || form.modelType === "tiered"
-              }
-              value={form.fixedMinor}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  fixedMinor: Number(event.target.value),
-                }))
-              }
-            />
-          </FormField>
-        </div>
-        {form.modelType === "threshold" && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Seuil (minor)" required>
-              <Input
-                type="number"
-                min={0}
-                value={form.thresholdMinor}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    thresholdMinor: Number(event.target.value),
-                  }))
-                }
-              />
-            </FormField>
-            <FormField label="Condition" required>
-              <select
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-                value={form.thresholdApplies}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    thresholdApplies: event.target
-                      .value as typeof current.thresholdApplies,
-                  }))
-                }
-              >
-                <option value="at_or_above">Au moins le seuil</option>
-                <option value="above">Strictement au-dessus</option>
-                <option value="below">Sous le seuil</option>
-              </select>
-            </FormField>
-          </div>
-        )}
-        {form.modelType === "tiered" && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Mode des paliers" required>
-              <select
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-                value={form.tierMode}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    tierMode: event.target.value as typeof current.tierMode,
-                  }))
-                }
-              >
-                <option value="progressive">Progressif</option>
-                <option value="cliff">Cliff</option>
-              </select>
-            </FormField>
-            <FormField label="Base des paliers" required>
-              <select
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-                value={form.tierBasis}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    tierBasis: event.target.value as typeof current.tierBasis,
-                  }))
-                }
-              >
-                <option value="transaction_amount">Montant de la transaction</option>
-                <option value="historical_volume">Volume cumulé</option>
-              </select>
-            </FormField>
-            {form.tierBasis === "historical_volume" && (
-              <FormField label="Période de volume" required>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <FormField label="Modèle" required>
                 <select
                   className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-                  value={form.volumePeriod}
+                  value={form.modelType}
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      volumePeriod: event.target.value as typeof current.volumePeriod,
+                      modelType: event.target.value as typeof current.modelType,
                     }))
                   }
                 >
-                  <option value="month">Mois</option>
-                  <option value="quarter">Trimestre</option>
-                  <option value="year">Année</option>
-                  <option value="lifetime">Durée de vie</option>
+                  <option value="percentage">Pourcentage</option>
+                  <option value="fixed">Fixe</option>
+                  <option value="combined">Pourcentage + fixe</option>
+                  <option value="flat_category">Forfait catégorie</option>
+                  <option value="threshold">Seuil</option>
+                  <option value="tiered">Paliers</option>
                 </select>
               </FormField>
+              <FormField label="Taux (bps)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={10000}
+                  disabled={
+                    form.modelType === "fixed" ||
+                    form.modelType === "flat_category" ||
+                    form.modelType === "tiered"
+                  }
+                  value={form.rateBps}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      rateBps: Number(event.target.value),
+                    }))
+                  }
+                />
+              </FormField>
+              <FormField label="Fixe (minor)">
+                <Input
+                  type="number"
+                  min={0}
+                  disabled={
+                    form.modelType === "percentage" ||
+                    form.modelType === "tiered"
+                  }
+                  value={form.fixedMinor}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      fixedMinor: Number(event.target.value),
+                    }))
+                  }
+                />
+              </FormField>
+            </div>
+            {form.modelType === "threshold" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FormField label="Seuil (minor)" required>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.thresholdMinor}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        thresholdMinor: Number(event.target.value),
+                      }))
+                    }
+                  />
+                </FormField>
+                <FormField label="Condition" required>
+                  <select
+                    className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                    value={form.thresholdApplies}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        thresholdApplies: event.target
+                          .value as typeof current.thresholdApplies,
+                      }))
+                    }
+                  >
+                    <option value="at_or_above">Au moins le seuil</option>
+                    <option value="above">Strictement au-dessus</option>
+                    <option value="below">Sous le seuil</option>
+                  </select>
+                </FormField>
+              </div>
             )}
-            <FormField
-              label="Paliers"
-              hint="Une ligne par palier : début-fin:tauxBps:fixeMinor. Utilisez * pour le dernier plafond."
-              required
-            >
-              <Textarea
-                required
-                value={form.tiers}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    tiers: event.target.value,
-                  }))
-                }
-              />
-            </FormField>
-          </div>
-        )}
-        <div className="grid gap-3 sm:grid-cols-3">
-          <FormField label="Minimum (minor)">
-            <Input
-              type="number"
-              min={0}
-              value={form.minimumMinor}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  minimumMinor: event.target.value,
-                }))
-              }
-            />
-          </FormField>
-          <FormField label="Maximum (minor)">
-            <Input
-              type="number"
-              min={0}
-              value={form.maximumMinor}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  maximumMinor: event.target.value,
-                }))
-              }
-            />
-          </FormField>
-          <FormField label="Base" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-              value={form.base}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  base: event.target.value as typeof current.base,
-                }))
-              }
-            >
-              <option value="item_subtotal">Sous-total article</option>
-              <option value="subtotal_after_discount">Après remise</option>
-              <option value="total_excluding_tax">Total hors taxe</option>
-              <option value="total_including_tax">Total TTC</option>
-              <option value="platform_collected_amount">Encaissé plateforme</option>
-            </select>
-          </FormField>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <FormField label="Événement d’acquisition" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-              value={form.earningEvent}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  earningEvent: event.target.value as typeof current.earningEvent,
-                }))
-              }
-            >
-              <option value="payment_succeeded">Paiement réussi</option>
-              <option value="order_completed">Commande terminée</option>
-              <option value="service_completed">Service terminé</option>
-              <option value="payout_released">Virement libéré</option>
-              <option value="lead_qualified">Lead qualifié</option>
-              <option value="booking_completed">Réservation terminée</option>
-            </select>
-          </FormField>
-          <FormField label="Politique de remboursement" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-              value={form.refundPolicy}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  refundPolicy: event.target.value as typeof current.refundPolicy,
-                }))
-              }
-            >
-              <option value="proportional">Proportionnelle</option>
-              <option value="full_only">Remboursement total seulement</option>
-              <option value="non_refundable">Commission conservée</option>
-              <option value="manual_review">Revue manuelle</option>
-            </select>
-          </FormField>
-          <FormField label="Traitement fiscal" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
-              value={form.taxMode}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  taxMode: event.target.value as typeof current.taxMode,
-                }))
-              }
-            >
-              <option value="inclusive">Taxe incluse</option>
-              <option value="exclusive">Taxe ajoutée</option>
-              <option value="exempt">Exonérée</option>
-            </select>
-          </FormField>
-          <FormField label="Taux fiscal (bps)">
-            <Input
-              type="number"
-              min={0}
-              max={10000}
-              disabled={form.taxMode === "exempt"}
-              value={form.taxRateBps}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  taxRateBps: Number(event.target.value),
-                }))
-              }
-            />
-          </FormField>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            ["Part vendeur (bps)", "sellerBps"],
-            ["Part acheteur (bps)", "buyerBps"],
-            ["Absorbée plateforme (bps)", "absorbedBps"],
-          ].map(([label, key]) => (
-            <FormField key={key} label={label} required>
-              <Input
-                type="number"
-                min={0}
-                max={10000}
-                value={form[key as "sellerBps" | "buyerBps" | "absorbedBps"]}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    [key]: Number(event.target.value),
-                  }))
-                }
-              />
-            </FormField>
-          ))}
-        </div>
+            {form.modelType === "tiered" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FormField label="Mode des paliers" required>
+                  <select
+                    className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                    value={form.tierMode}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        tierMode: event.target.value as typeof current.tierMode,
+                      }))
+                    }
+                  >
+                    <option value="progressive">Progressif</option>
+                    <option value="cliff">Cliff</option>
+                  </select>
+                </FormField>
+                <FormField label="Base des paliers" required>
+                  <select
+                    className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                    value={form.tierBasis}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        tierBasis: event.target
+                          .value as typeof current.tierBasis,
+                      }))
+                    }
+                  >
+                    <option value="transaction_amount">
+                      Montant de la transaction
+                    </option>
+                    <option value="historical_volume">Volume cumulé</option>
+                  </select>
+                </FormField>
+                {form.tierBasis === "historical_volume" && (
+                  <FormField label="Période de volume" required>
+                    <select
+                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                      value={form.volumePeriod}
+                      onChange={(event) =>
+                        setForm((current) => ({
+                          ...current,
+                          volumePeriod: event.target
+                            .value as typeof current.volumePeriod,
+                        }))
+                      }
+                    >
+                      <option value="month">Mois</option>
+                      <option value="quarter">Trimestre</option>
+                      <option value="year">Année</option>
+                      <option value="lifetime">Durée de vie</option>
+                    </select>
+                  </FormField>
+                )}
+                <FormField
+                  label="Paliers"
+                  hint="Une ligne par palier : début-fin:tauxBps:fixeMinor. Utilisez * pour le dernier plafond."
+                  required
+                >
+                  <Textarea
+                    required
+                    value={form.tiers}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        tiers: event.target.value,
+                      }))
+                    }
+                  />
+                </FormField>
+              </div>
+            )}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <FormField label="Minimum (minor)">
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.minimumMinor}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      minimumMinor: event.target.value,
+                    }))
+                  }
+                />
+              </FormField>
+              <FormField label="Maximum (minor)">
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.maximumMinor}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      maximumMinor: event.target.value,
+                    }))
+                  }
+                />
+              </FormField>
+              <FormField label="Base" required>
+                <select
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  value={form.base}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      base: event.target.value as typeof current.base,
+                    }))
+                  }
+                >
+                  <option value="item_subtotal">Sous-total article</option>
+                  <option value="subtotal_after_discount">Après remise</option>
+                  <option value="total_excluding_tax">Total hors taxe</option>
+                  <option value="total_including_tax">Total TTC</option>
+                  <option value="platform_collected_amount">
+                    Encaissé plateforme
+                  </option>
+                </select>
+              </FormField>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <FormField label="Événement d’acquisition" required>
+                <select
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  value={form.earningEvent}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      earningEvent: event.target
+                        .value as typeof current.earningEvent,
+                    }))
+                  }
+                >
+                  <option value="payment_succeeded">Paiement réussi</option>
+                  <option value="order_completed">Commande terminée</option>
+                  <option value="service_completed">Service terminé</option>
+                  <option value="payout_released">Virement libéré</option>
+                  <option value="lead_qualified">Lead qualifié</option>
+                  <option value="booking_completed">
+                    Réservation terminée
+                  </option>
+                </select>
+              </FormField>
+              <FormField label="Politique de remboursement" required>
+                <select
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  value={form.refundPolicy}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      refundPolicy: event.target
+                        .value as typeof current.refundPolicy,
+                    }))
+                  }
+                >
+                  <option value="proportional">Proportionnelle</option>
+                  <option value="full_only">
+                    Remboursement total seulement
+                  </option>
+                  <option value="non_refundable">Commission conservée</option>
+                  <option value="manual_review">Revue manuelle</option>
+                </select>
+              </FormField>
+              <FormField label="Traitement fiscal" required>
+                <select
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  value={form.taxMode}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      taxMode: event.target.value as typeof current.taxMode,
+                    }))
+                  }
+                >
+                  <option value="inclusive">Taxe incluse</option>
+                  <option value="exclusive">Taxe ajoutée</option>
+                  <option value="exempt">Exonérée</option>
+                </select>
+              </FormField>
+              <FormField label="Taux fiscal (bps)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={10000}
+                  disabled={form.taxMode === "exempt"}
+                  value={form.taxRateBps}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      taxRateBps: Number(event.target.value),
+                    }))
+                  }
+                />
+              </FormField>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                ["Part vendeur (bps)", "sellerBps"],
+                ["Part acheteur (bps)", "buyerBps"],
+                ["Absorbée plateforme (bps)", "absorbedBps"],
+              ].map(([label, key]) => (
+                <FormField key={key} label={label} required>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={10000}
+                    value={
+                      form[key as "sellerBps" | "buyerBps" | "absorbedBps"]
+                    }
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        [key]: Number(event.target.value),
+                      }))
+                    }
+                  />
+                </FormField>
+              ))}
+            </div>
           </>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -861,7 +877,9 @@ export function AdminCommissionPolicyEditor({
                   }))
                 }
               >
-                <option value="percentage_discount">Remise en pourcentage</option>
+                <option value="percentage_discount">
+                  Remise en pourcentage
+                </option>
                 <option value="fixed_discount">Remise fixe</option>
                 <option value="full_waiver">Exonération totale</option>
                 <option value="rate_override">Taux négocié</option>

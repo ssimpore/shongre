@@ -35,6 +35,13 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
         userId: currentUser.id,
         jurisdiction: currentUser.country || "FR",
         returnTo,
+        contactEmail: currentUser.email,
+        displayName: currentUser.name,
+        sellerType:
+          currentUser.accountType === "professional" ||
+          currentUser.sellerType === "pro"
+            ? "professional"
+            : "individual",
       });
       refreshUser?.();
       onSuccess?.();
@@ -74,14 +81,20 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
         <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
           <p className="font-bold text-stone-900">Ce qui se passe ensuite</p>
           <ol className="mt-3 space-y-2">
-            <li>1. Le prestataire de paiement collecte les informations nécessaires.</li>
+            <li>
+              1. Le prestataire de paiement collecte les informations
+              nécessaires.
+            </li>
             <li>2. Il contrôle le titulaire et les exigences applicables.</li>
             <li>3. Shongre reçoit uniquement le statut d’activation.</li>
           </ol>
         </div>
 
         <div className="flex gap-3 text-sm text-stone-600">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+          <ShieldCheck
+            className="mt-0.5 h-5 w-5 shrink-0 text-success"
+            aria-hidden="true"
+          />
           <p>
             Publier et échanger restent disponibles pendant l’examen. Seul le
             versement demeure en attente.
@@ -89,7 +102,10 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
         </div>
 
         {error ? (
-          <p role="alert" className="rounded-xl bg-danger-surface p-3 text-sm text-danger">
+          <p
+            role="alert"
+            className="rounded-xl bg-danger-surface p-3 text-sm text-danger"
+          >
             {error}
           </p>
         ) : null}

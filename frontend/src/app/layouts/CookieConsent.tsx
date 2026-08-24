@@ -120,6 +120,7 @@ const CookiePreferencesModal: React.FC = () => {
   const {
     isPreferencesOpen,
     closePreferences,
+    needsDecision,
     categories,
     savePreferences,
     acceptAll,
@@ -140,6 +141,7 @@ const CookiePreferencesModal: React.FC = () => {
       title={t("consent.panelTitle")}
       description={t("consent.panelDescription")}
       maxWidth="lg"
+      dismissible={!needsDecision}
     >
       <div className="p-5 sm:p-6 space-y-4">
         {CONSENT_CATEGORIES.map((category) => {

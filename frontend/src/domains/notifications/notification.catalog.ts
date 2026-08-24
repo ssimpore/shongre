@@ -215,7 +215,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     isMandatory: true,
     getTitle: () => "Votre réservation est acceptée !",
     getBody: (ctx) =>
-      `Le vendeur a accepté votre réservation pour "${ctx?.listingTitle || "l'article"}". Les fonds sont sécurisés.`,
+      `Le vendeur a accepté votre réservation pour "${ctx?.listingTitle || "l'article"}". Consultez la commande pour suivre le paiement et la remise.`,
     getDestination: transactionDestination,
     getActions: () => [
       {
@@ -287,7 +287,7 @@ export const NOTIFICATION_TEMPLATES: Record<
     isMandatory: true,
     getTitle: () => "Votre commande est confirmée !",
     getBody: (ctx) =>
-      `Votre paiement pour "${ctx?.listingTitle || "votre commande"}" a été placé sous séquestre sécurisé.`,
+      `Le prestataire a confirmé votre paiement pour "${ctx?.listingTitle || "votre commande"}".`,
     getDestination: transactionDestination,
     getActions: () => [
       {
@@ -320,15 +320,15 @@ export const NOTIFICATION_TEMPLATES: Record<
     getDestination: transactionDestination,
   },
 
-  // 5. Escrow & Payments
+  // 5. Payments
   "payment.secured": {
     type: "payment.secured",
     category: "transactions",
     defaultPriority: "normal",
     isMandatory: true,
-    getTitle: () => "Paiement sous séquestre validé",
+    getTitle: () => "Paiement validé",
     getBody: (ctx) =>
-      `Les fonds (${ctx?.amount ? `${formatPrice(ctx.amount)}` : "sécurisés"}) sont protégés sur le compte de séquestre Shongre.`,
+      `Le prestataire a confirmé le paiement${ctx?.amount ? ` de ${formatPrice(ctx.amount)}` : ""}. Consultez la commande pour suivre son statut.`,
     getDestination: transactionDestination,
   },
 

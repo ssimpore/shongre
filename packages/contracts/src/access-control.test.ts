@@ -78,13 +78,21 @@ describe("canonical access-control policy", () => {
   });
 
   it("reserves complimentary commercial grants for the platform owner", () => {
-    const commercial = capabilities({ accountType: "staff", staffRole: "commercial" });
+    const commercial = capabilities({
+      accountType: "staff",
+      staffRole: "commercial",
+    });
     const admin = capabilities({ accountType: "staff", staffRole: "admin" });
     const owner = capabilities({ accountType: "staff", staffRole: "owner" });
-    const finance = capabilities({ accountType: "staff", staffRole: "finance" });
+    const finance = capabilities({
+      accountType: "staff",
+      staffRole: "finance",
+    });
 
     expect(commercial.has("monetization.plans.manage")).toBe(true);
-    expect(commercial.has("monetization.complimentary_grants.request")).toBe(true);
+    expect(commercial.has("monetization.complimentary_grants.request")).toBe(
+      true,
+    );
     expect(admin.has("monetization.trials.manage")).toBe(true);
     expect(admin.has("monetization.complimentary_grants.request")).toBe(true);
     expect(admin.has("monetization.complimentary_grants.create")).toBe(false);

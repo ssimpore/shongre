@@ -3,7 +3,12 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const migration = readFileSync(
-  fileURLToPath(new URL("../../supabase/migrations/00025_platform_finance_ledger.sql", import.meta.url)),
+  fileURLToPath(
+    new URL(
+      "../../supabase/migrations/00025_platform_finance_ledger.sql",
+      import.meta.url,
+    ),
+  ),
   "utf8",
 );
 
@@ -19,10 +24,16 @@ describe("platform finance ledger migration safeguards", () => {
       "finance_credit_notes",
     ].forEach((table) => {
       expect(migration).toContain(`CREATE TABLE IF NOT EXISTS public.${table}`);
-      expect(migration).toContain(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`);
-      expect(migration).toContain(`REVOKE ALL ON public.${table} FROM anon, authenticated`);
+      expect(migration).toContain(
+        `ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`,
+      );
+      expect(migration).toContain(
+        `REVOKE ALL ON public.${table} FROM anon, authenticated`,
+      );
     });
-    expect(migration).not.toMatch(/finance_[a-z_]+[\s\S]{0,200}\bNUMERIC\s*\(/i);
+    expect(migration).not.toMatch(
+      /finance_[a-z_]+[\s\S]{0,200}\bNUMERIC\s*\(/i,
+    );
   });
 
   it("enforces immutable balanced posting and explicit corrections", () => {
@@ -37,7 +48,9 @@ describe("platform finance ledger migration safeguards", () => {
     expect(migration).toContain("sync_monetization_order_finance");
     expect(migration).toContain("monetization_order_finance_projection");
     expect(migration).toContain("Commande historique sans ventilation fiable");
-    expect(migration).toContain("ON CONFLICT (source_table, source_id) DO NOTHING");
+    expect(migration).toContain(
+      "ON CONFLICT (source_table, source_id) DO NOTHING",
+    );
   });
 
   it("recognizes deferred subscription revenue with locking and idempotent entries", () => {

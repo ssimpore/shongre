@@ -73,6 +73,44 @@ describe("API v1 Endpoints Integration", () => {
     expect(body.service).toBe("shongre-backend");
   });
 
+  it("exposes separate liveness and dependency-aware readiness probes", async () => {
+    const [liveResponse, readyResponse] = await Promise.all([
+      fetch(`${baseUrl}/livez`),
+      fetch(`${baseUrl}/readyz`),
+    ]);
+    expect(liveResponse.status).toBe(200);
+    expect(readyResponse.status).toBe(200);
+    expect(await readyResponse.json()).toMatchObject({
+      status: "ready",
+      dependencies: { database: "up" },
+    });
+  });
+
+  it("returns a stable request id and rejects malformed JSON", async () => {
+    const requestId = "integration-request-123";
+    const response = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Request-Id": requestId,
+      },
+      body: "{not-json",
+    });
+    expect(response.status).toBe(400);
+    expect(response.headers.get("x-request-id")).toBe(requestId);
+    expect((await response.json()).error.code).toBe("BAD_REQUEST");
+  });
+
+  it("rejects request bodies above the configured limit", async () => {
+    const response = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: "x".repeat(1_048_576) }),
+    });
+    expect(response.status).toBe(413);
+    expect((await response.json()).error.code).toBe("BAD_REQUEST");
+  });
+
   // ---------------------------------------------------------------------------
   // Public surface
   // ---------------------------------------------------------------------------
@@ -121,6 +159,24 @@ describe("API v1 Endpoints Integration", () => {
     const data = await res.json();
     expect(data.id).toBe("list_1");
     expect(data.title).toContain("Vélo");
+    expect(data).not.toHaveProperty("safetyRiskScore");
+    expect(data).not.toHaveProperty("entitlementSnapshot");
+    expect(data).not.toHaveProperty("subscriptionId");
+  });
+
+  it("returns privacy-safe public profiles and hides staff profiles", async () => {
+    const sellerResponse = await fetch(`${baseUrl}/api/v1/users/user_camille`);
+    expect(sellerResponse.status).toBe(200);
+    const seller = await sellerResponse.json();
+    expect(seller.name).toContain("Camille");
+    expect(seller).not.toHaveProperty("email");
+    expect(seller).not.toHaveProperty("phone");
+    expect(seller).not.toHaveProperty("status");
+    expect(seller).not.toHaveProperty("isIdentityVerified");
+
+    const staffResponse = await fetch(`${baseUrl}/api/v1/users/user_admin`);
+    expect(staffResponse.status).toBe(200);
+    expect(await staffResponse.json()).toBeNull();
   });
 
   it("POST /api/v1/listings/search executes structured search query", async () => {
@@ -813,6 +869,62 @@ describe("API v1 Endpoints Integration", () => {
     const updated = await res.json();
     expect(updated.name).toBe("Thomas Renamed");
     expect(updated.primaryRole).not.toBe("super_admin");
+  });
+
+  it("rejects seller attempts to change listing lifecycle and promotion state", async () => {
+    const sellerToken = await login("camille.martin@example.fr");
+    const res = await fetch(`${baseUrl}/api/v1/listings/list_1`, {
+      method: "PUT",
+      headers: auth(sellerToken),
+      body: JSON.stringify({
+        status: "published",
+        isFeatured: true,
+        promotionState: "active",
+        viewCount: 50_000,
+      }),
+    });
+    expect(res.status).toBe(400);
+    const payload = await res.json();
+    expect(payload.error?.details?.rejectedFields).toEqual([
+      "isFeatured",
+      "promotionState",
+      "status",
+      "viewCount",
+    ]);
+  });
+
+  it("supports authenticated conversation creation and message history", async () => {
+    const conversationResponse = await fetch(
+      `${baseUrl}/api/v1/messaging/conversations`,
+      {
+        method: "POST",
+        headers: auth(buyerToken),
+        body: JSON.stringify({
+          listingId: "list_1",
+          sellerId: "user_admin",
+          initialMessage: "Bonjour depuis le parcours HTTP.",
+        }),
+      },
+    );
+    expect(conversationResponse.status).toBe(200);
+    const conversation = await conversationResponse.json();
+    expect(conversation.buyerId).toBe("user_thomas");
+    expect(conversation.sellerId).toBe("user_camille");
+
+    const messagesResponse = await fetch(
+      `${baseUrl}/api/v1/messaging/conversations/${conversation.id}/messages?limit=1`,
+      { headers: auth(buyerToken) },
+    );
+    expect(messagesResponse.status).toBe(200);
+    const messages = await messagesResponse.json();
+    expect(messages.items).toHaveLength(1);
+    expect(messages.items[0].text).toContain("parcours HTTP");
+
+    const deniedResponse = await fetch(
+      `${baseUrl}/api/v1/messaging/conversations/${conversation.id}/messages`,
+      { headers: auth(proToken) },
+    );
+    expect(deniedResponse.status).toBe(403);
   });
 
   // ---------------------------------------------------------------------------

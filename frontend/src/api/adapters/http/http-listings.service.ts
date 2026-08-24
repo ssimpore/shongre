@@ -1,57 +1,237 @@
 import { ListingsServiceContract } from "../../contracts/listings.contract";
 import { httpClient } from "./http-client";
-import { Listing, SearchFilters } from "../../../types";
+import { Listing, ListingStatus, SearchFilters } from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
 
+type BackendListing = {
+  id: string;
+  sellerId: string;
+  seller?: {
+    name?: string;
+    accountType?: "individual" | "professional";
+    avatarUrl?: string;
+    city?: string;
+    rating?: number;
+    reviewCount?: number;
+    isVerified?: boolean;
+    isBusinessVerified?: boolean;
+  };
+  categoryId: string;
+  title: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  currency: string;
+  status: string;
+  condition: Listing["condition"];
+  marketCode: string;
+  city: string;
+  postalCode: string;
+  department?: string;
+  region?: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  allowedDelivery: Listing["deliveryOptions"][number]["type"][];
+  shippingCost?: number;
+  images: string[];
+  attributes: Record<string, unknown>;
+  isUrgent?: boolean;
+  isFeatured?: boolean;
+  promotionState?: Listing["promotionState"];
+  promotionType?: Listing["promotionType"];
+  promotionLabel?: string;
+  promotionStartAt?: string;
+  promotionEndAt?: string;
+  publishedAt?: string;
+  bumpedAt?: string;
+  viewCount: number;
+  favoriteCount: number;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+};
+
+const frontendStatus = (status: string): ListingStatus =>
+  status === "published"
+    ? "active"
+    : ((["draft", "reserved", "sold", "archived", "expired"].includes(status)
+        ? status
+        : "pending_review") as ListingStatus);
+
+const mapListing = (listing: BackendListing): Listing => {
+  const sellerType =
+    listing.seller?.accountType === "professional" ? "pro" : "individual";
+  const categoryParts = listing.categoryId.split(".");
+  return {
+    id: listing.id,
+    title: listing.title,
+    description: listing.description,
+    price: listing.price,
+    originalPrice: listing.originalPrice,
+    currency: listing.currency,
+    isNegotiable: false,
+    isFreeDonation: listing.price === 0,
+    categorySlug: categoryParts[0] || listing.categoryId,
+    subCategorySlug: listing.categoryId,
+    categoryLabel: categoryParts[0] || "Annonce",
+    subCategoryLabel: categoryParts.at(-1) || "Annonce",
+    condition: listing.condition,
+    sellerId: listing.sellerId,
+    sellerName: listing.seller?.name || "Vendeur",
+    sellerType,
+    sellerAvatarUrl: listing.seller?.avatarUrl,
+    sellerRating: Number(listing.seller?.rating || 0),
+    sellerReviewCount: Number(listing.seller?.reviewCount || 0),
+    sellerIsVerified: Boolean(
+      listing.seller?.isVerified || listing.seller?.isBusinessVerified,
+    ),
+    sellerCity: listing.seller?.city || listing.city,
+    sellerPostalCode: listing.postalCode,
+    city: listing.city,
+    postalCode: listing.postalCode,
+    department: listing.department || "",
+    region: listing.region || "",
+    latitude: listing.latitude,
+    longitude: listing.longitude,
+    photos: listing.images.map((url, index) => ({
+      id: `${listing.id}:media:${index}`,
+      url,
+      isCover: index === 0,
+    })),
+    coverImageUrl: listing.images[0] || "",
+    deliveryOptions: listing.allowedDelivery
+      .filter((type) =>
+        ["hand_delivery", "home_delivery", "custom_carrier"].includes(type),
+      )
+      .map((type) => ({
+        type,
+        available: true,
+        price: type === "hand_delivery" ? 0 : listing.shippingCost,
+      })),
+    isOnlinePaymentAvailable: true,
+    attributes: listing.attributes,
+    status: frontendStatus(listing.status),
+    viewsCount: listing.viewCount,
+    viewCount: listing.viewCount,
+    favoritesCount: listing.favoriteCount,
+    contactCount: 0,
+    isBoosted: Boolean(listing.isUrgent || listing.isFeatured),
+    promotionState: listing.promotionState,
+    promotionType: listing.promotionType,
+    promotionLabel: listing.promotionLabel,
+    promotionStartAt: listing.promotionStartAt,
+    promotionEndAt: listing.promotionEndAt,
+    publishedAt: listing.publishedAt,
+    marketCode: listing.marketCode,
+    marketCodes: [listing.marketCode],
+    createdAt: listing.createdAt,
+    updatedAt: listing.updatedAt,
+    expiresAt: listing.expiresAt,
+  };
+};
+
+const publicationPayload = (draft: PublicationDraftState) => ({
+  title: draft.title,
+  description: draft.description,
+  price: draft.pricing.isFreeDonation ? 0 : draft.pricing.amount,
+  priceModel: draft.pricing.priceModel,
+  categoryId: draft.taxonomyNodeId,
+  marketCode: draft.marketCode,
+  city: draft.location.city,
+  postalCode: draft.location.postalCode,
+  images: [...draft.photos]
+    .sort((left, right) => Number(right.isCover) - Number(left.isCover))
+    .map((photo) => photo.url),
+  attributes: draft.attributes,
+  allowedDelivery: [
+    ...(draft.fulfillment.allowHandDelivery ? ["hand_delivery"] : []),
+    ...(draft.fulfillment.allowParcelShipping ? ["home_delivery"] : []),
+  ],
+  condition: draft.condition,
+});
+
 export class HttpListingsService implements ListingsServiceContract {
-  async getListings(
-    filter?: SearchFilters,
-  ): Promise<{ listings: Listing[]; total: number }> {
-    return httpClient.get<{ listings: Listing[]; total: number }>("/listings", {
+  async getListings(filter?: SearchFilters) {
+    const result = await httpClient.get<{
+      listings: BackendListing[];
+      total: number;
+    }>("/listings", {
       params: filter as Record<string, string | number | boolean | undefined>,
     });
+    return { ...result, listings: result.listings.map(mapListing) };
   }
 
   async getListingById(id: string): Promise<Listing | null> {
-    return httpClient.get<Listing>(`/listings/${id}`);
+    const listing = await httpClient.get<BackendListing | null>(
+      `/listings/${id}`,
+    );
+    return listing ? mapListing(listing) : null;
   }
 
-  async searchListings(params: SearchFilters): Promise<{
-    items: Listing[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }> {
-    return httpClient.post<{
-      items: Listing[];
+  async searchListings(params: SearchFilters) {
+    const result = await httpClient.post<{
+      items: BackendListing[];
       total: number;
       page: number;
       totalPages: number;
     }>("/listings/search", params);
+    return { ...result, items: result.items.map(mapListing) };
   }
 
-  async createListingDraft(userId?: string): Promise<PublicationDraftState> {
-    return httpClient.post<PublicationDraftState>("/listings/drafts", {
-      userId,
+  async createListingDraft(): Promise<PublicationDraftState> {
+    return httpClient.post<PublicationDraftState>("/listings/drafts");
+  }
+
+  async getListingDraft(): Promise<PublicationDraftState | null> {
+    return httpClient.get<PublicationDraftState | null>("/listings/drafts/me");
+  }
+
+  async saveListingDraft(draft: PublicationDraftState): Promise<void> {
+    await httpClient.put("/listings/drafts/me", draft);
+  }
+
+  async publishListing(draft: PublicationDraftState): Promise<Listing> {
+    const listing = await httpClient.post<BackendListing>("/listings/publish", {
+      draft: publicationPayload(draft),
     });
+    return mapListing(listing);
   }
 
-  async saveListingDraft(
-    draft: PublicationDraftState,
-    userId?: string,
-  ): Promise<void> {
-    return httpClient.put<void>(`/listings/drafts/${userId || "me"}`, draft);
-  }
-
-  async publishListing(
-    draft: PublicationDraftState,
-    sellerId: string,
-  ): Promise<Listing> {
-    return httpClient.post<Listing>("/listings/publish", { draft, sellerId });
+  async uploadListingPhoto(file: File) {
+    const prepared = await httpClient.post<{
+      assetId: string;
+      signedUrl: string;
+      contentType: string;
+    }>("/media/listings/uploads", {
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    });
+    const uploaded = await fetch(prepared.signedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": prepared.contentType },
+      body: file,
+    });
+    if (!uploaded.ok) {
+      throw new Error("Le téléversement de la photo a échoué.");
+    }
+    return httpClient.post<{ assetId: string; url: string }>(
+      `/media/listings/uploads/${prepared.assetId}/complete`,
+    );
   }
 
   async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {
-    return httpClient.put<Listing>(`/listings/${id}`, updates);
+    const listing = await httpClient.put<BackendListing>(`/listings/${id}`, {
+      title: updates.title,
+      description: updates.description,
+      price: updates.price,
+      condition: updates.condition,
+      city: updates.city,
+      postalCode: updates.postalCode,
+      attributes: updates.attributes,
+    });
+    return mapListing(listing);
   }
 
   async deleteListing(id: string): Promise<boolean> {
@@ -60,15 +240,15 @@ export class HttpListingsService implements ListingsServiceContract {
   }
 
   async toggleFavorite(listingId: string): Promise<boolean> {
-    const res = await httpClient.post<{ isFavorite: boolean }>(
+    const result = await httpClient.post<{ isFavorite: boolean }>(
       `/listings/${listingId}/favorite`,
     );
-    return res.isFavorite;
+    return result.isFavorite;
   }
 
   async getFavorites(): Promise<string[]> {
-    const res = await httpClient.get<{ listingIds: string[] }>("/favorites");
-    return res.listingIds;
+    const result = await httpClient.get<{ listingIds: string[] }>("/favorites");
+    return result.listingIds;
   }
 }
 

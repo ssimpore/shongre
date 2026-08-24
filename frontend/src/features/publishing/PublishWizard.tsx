@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { scrollToTop } from "../../utilities/motion";
 import { useNavigate } from "react-router-dom";
-import confetti from "canvas-confetti";
 import {
   Sparkles,
   Camera,
@@ -65,13 +64,6 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
-
-const samplePhotoUrls = [
-  "https://images.unsplash.com/photo-1507034589631-9433cc6bc453?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
-];
 
 /**
  * Publication is three phases, not ten steps.
@@ -148,12 +140,11 @@ export const PublishWizard: React.FC = () => {
   const [visibilityOffersState, setVisibilityOffersState] = useState<
     "loading" | "ready" | "error"
   >("loading");
+  const [isDraftHydrated, setIsDraftHydrated] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Draft State initialized with default or restored values
   const [draft, setDraft] = useState<PublicationDraftState>(() => {
-    const saved = publicationService.getDraft(currentUser?.id);
-    if (saved) return saved;
-
     const initialMarkets =
       currentUser?.defaultPublicationMarkets &&
       currentUser.defaultPublicationMarkets.length > 0
@@ -166,25 +157,18 @@ export const PublishWizard: React.FC = () => {
       marketPublications: {
         FR: { status: "active", isPrimary: true, currency: "EUR" },
       },
-      taxonomyNodeId: "home_garden.furniture.sofas",
+      taxonomyNodeId: "",
       listingIntent: "SELL",
       title: "",
       description: "",
       condition: "very_good",
       attributes: {},
-      photos: [
-        {
-          id: "p-initial",
-          url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80",
-          isCover: true,
-          alt: "Photo de couverture",
-        },
-      ],
+      photos: [],
       pricing: {
         priceModel: "fixed",
-        amount: 150,
+        amount: 0,
         currency: "EUR",
-        isNegotiable: true,
+        isNegotiable: false,
         isFreeDonation: false,
       },
       transaction: {
@@ -205,8 +189,8 @@ export const PublishWizard: React.FC = () => {
         sku: "",
       },
       location: {
-        city: "Paris 11e",
-        postalCode: "75011",
+        city: currentUser?.city || "",
+        postalCode: currentUser?.postalCode || "",
         countryCode: "FR",
         hideExactAddress: true,
       },
@@ -215,10 +199,41 @@ export const PublishWizard: React.FC = () => {
     };
   });
 
-  // Autosave Draft
   useEffect(() => {
-    publicationService.saveDraft(draft, currentUser?.id);
-  }, [draft, currentUser]);
+    let active = true;
+    if (!currentUser?.id) {
+      setIsDraftHydrated(true);
+      return () => {
+        active = false;
+      };
+    }
+    services.listings
+      .getListingDraft()
+      .then((saved) => {
+        if (active && saved) setDraft(saved);
+      })
+      .catch(() => {
+        if (active)
+          toast.error("Le brouillon enregistré n’a pas pu être chargé.");
+      })
+      .finally(() => {
+        if (active) setIsDraftHydrated(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.id]);
+
+  // Autosave Draft through the selected adapter.
+  useEffect(() => {
+    if (!isDraftHydrated || !currentUser?.id) return;
+    const timeout = window.setTimeout(() => {
+      services.listings.saveListingDraft(draft).catch(() => {
+        toast.error("Le brouillon n’a pas pu être sauvegardé.");
+      });
+    }, 500);
+    return () => window.clearTimeout(timeout);
+  }, [draft, currentUser?.id, isDraftHydrated]);
 
   useEffect(() => {
     let active = true;
@@ -363,20 +378,38 @@ export const PublishWizard: React.FC = () => {
   }, [categorySearchQuery]);
 
   // Media Handlers
-  const handleAddSamplePhoto = () => {
-    const nextUrl =
-      samplePhotoUrls[draft.photos.length % samplePhotoUrls.length];
-    const newPhotos = [
-      ...draft.photos,
-      {
-        id: `p-${Date.now()}`,
-        url: nextUrl,
-        isCover: draft.photos.length === 0,
-        alt: `Photo ${draft.photos.length + 1}`,
-      },
-    ];
-    updateDraft({ photos: newPhotos });
-    toast.success("Photo exemple ajoutée avec succès.");
+  const handleAddPhotos = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const available = Math.max(0, maximumPhotoCount - draft.photos.length);
+    const selected = Array.from(files).slice(0, available);
+    setIsUploadingPhoto(true);
+    try {
+      const uploaded = await Promise.all(
+        selected.map((file) => services.listings.uploadListingPhoto(file)),
+      );
+      updateDraft({
+        photos: [
+          ...draft.photos,
+          ...uploaded.map((asset, index) => ({
+            id: asset.assetId,
+            url: asset.url,
+            isCover: draft.photos.length === 0 && index === 0,
+            alt: `Photo ${draft.photos.length + index + 1}`,
+          })),
+        ],
+      });
+      toast.success(
+        `${uploaded.length} photo${uploaded.length > 1 ? "s" : ""} ajoutée${uploaded.length > 1 ? "s" : ""}.`,
+      );
+    } catch (caught) {
+      toast.error(
+        caught instanceof Error
+          ? caught.message
+          : "Le téléversement de la photo a échoué.",
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+    }
   };
 
   const handleRemovePhoto = (photoId: string) => {
@@ -583,14 +616,14 @@ export const PublishWizard: React.FC = () => {
         }
       }
 
-      const published = await publicationService.publishListing(
+      const published = await services.listings.publishListing(
         draft,
-        currentUser,
+        currentUser.id,
       );
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       toast.success(
-        "Votre annonce est en ligne et visible par tous les acheteurs !",
-        "Annonce publiée",
+        published.status === "active"
+          ? "Votre annonce est publiée."
+          : "Votre annonce a été enregistrée et doit être examinée.",
       );
       navigate(`/annonce/${published.id}`);
     } catch (err: any) {
@@ -1267,17 +1300,26 @@ export const PublishWizard: React.FC = () => {
             ))}
 
             {draft.photos.length < maximumPhotoCount && (
-              <button
-                type="button"
-                onClick={handleAddSamplePhoto}
-                className="aspect-square rounded-xl border-2 border-dashed border-border-base hover:border-primary bg-bg-base flex flex-col items-center justify-center gap-1.5 text-stone-500 hover:text-primary transition-colors cursor-pointer p-4"
-              >
+              <label className="aspect-square rounded-xl border-2 border-dashed border-border-base hover:border-primary bg-bg-base flex flex-col items-center justify-center gap-1.5 text-stone-500 hover:text-primary transition-colors cursor-pointer p-4 focus-within:ring-2 focus-within:ring-primary/30">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="sr-only"
+                  disabled={isUploadingPhoto}
+                  onChange={(event) => {
+                    void handleAddPhotos(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
                 <Camera className="w-6 h-6 text-stone-400" />
-                <span className="text-xs font-bold">+ Ajouter photo</span>
-                <span className="text-micro text-stone-500">
-                  {t("publishing.publishWizard.exempleDemo")}
+                <span className="text-xs font-bold">
+                  {isUploadingPhoto ? "Téléversement…" : "+ Ajouter photo"}
                 </span>
-              </button>
+                <span className="text-micro text-stone-500">
+                  JPEG, PNG ou WebP · 10 Mo max
+                </span>
+              </label>
             )}
           </div>
         </div>
@@ -2328,7 +2370,7 @@ export const PublishWizard: React.FC = () => {
                   department: "75",
                   region: "Île-de-France",
                   photos: draft.photos as any,
-                  coverImageUrl: draft.photos[0]?.url || samplePhotoUrls[0],
+                  coverImageUrl: draft.photos[0]?.url || "",
                   deliveryOptions: [
                     {
                       type: "hand_delivery",

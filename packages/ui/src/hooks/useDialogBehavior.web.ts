@@ -41,7 +41,11 @@ if (typeof document !== "undefined") {
  * Every overlay in the app goes through this so keyboard users get the same
  * contract whether the surface renders as a centred modal or a sheet.
  */
-export function useDialogBehavior(isOpen: boolean, onClose: () => void) {
+export function useDialogBehavior(
+  isOpen: boolean,
+  onClose: () => void,
+  dismissOnEscape = true,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -66,7 +70,7 @@ export function useDialogBehavior(isOpen: boolean, onClose: () => void) {
     const raf = requestAnimationFrame(focusFirst);
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && dismissOnEscape) {
         e.stopPropagation();
         onClose();
         return;
@@ -115,7 +119,7 @@ export function useDialogBehavior(isOpen: boolean, onClose: () => void) {
         });
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, dismissOnEscape]);
 
   return { containerRef, titleId };
 }

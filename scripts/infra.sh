@@ -8,6 +8,9 @@ action="${1:-check}"
 case "$action" in
   check|validate)
     [[ -f "$SHONGRE_ROOT/backend/Dockerfile" ]] || { shongre_fail "backend/Dockerfile missing"; exit 1; }
+    [[ -f "$SHONGRE_ROOT/frontend/Dockerfile" ]] || { shongre_fail "frontend/Dockerfile missing"; exit 1; }
+    [[ -f "$SHONGRE_ROOT/infrastructure/kubernetes/shongre-platform.yaml" ]] || { shongre_fail "production workload manifest missing"; exit 1; }
+    [[ -f "$SHONGRE_ROOT/docs/operations/backup-restore.md" ]] || { shongre_fail "backup/restore runbook missing"; exit 1; }
     [[ -f "$SHONGRE_ROOT/backend/supabase/config.toml.template" ]] || { shongre_fail "Supabase config template missing"; exit 1; }
     "$SHONGRE_ROOT/scripts/render-supabase-config.sh" --check
     shongre_pass "infrastructure configuration is valid"
@@ -36,4 +39,3 @@ case "$action" in
     ;;
   *) shongre_fail "unknown infrastructure action: $action"; exit 2 ;;
 esac
-

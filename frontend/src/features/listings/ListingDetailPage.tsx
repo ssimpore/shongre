@@ -31,7 +31,7 @@ import {
 import { routes } from "../../configuration/routes";
 import { listingRepository } from "../../repositories/listing.repository";
 import { userRepository } from "../../repositories/user.repository";
-import { messagingRepository } from "../../repositories/messaging.repository";
+import { services } from "../../api/client/service-registry";
 import { Listing, UserProfile, Transaction } from "../../types";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
 import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
@@ -418,7 +418,7 @@ export const ListingDetailPage: React.FC = () => {
     const buyerId = currentUser ? currentUser.id : "guest-user";
     const buyerName = currentUser ? currentUser.name : "Visiteur";
 
-    const conversation = await messagingRepository.createOrGetConversation({
+    const conversation = await services.messaging.createOrGetConversation({
       listingId: listing.id,
       buyerId,
       buyerName,
@@ -444,7 +444,7 @@ export const ListingDetailPage: React.FC = () => {
     const buyerId = currentUser ? currentUser.id : "user-thomas";
     const buyerName = currentUser ? currentUser.name : "Thomas Laurent";
 
-    const conv = await messagingRepository.createOrGetConversation({
+    const conv = await services.messaging.createOrGetConversation({
       listingId: listing.id,
       buyerId,
       buyerName,
@@ -453,12 +453,7 @@ export const ListingDetailPage: React.FC = () => {
       initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice)} (Prix initial : ${formatPrice(listing.price)})`,
     });
 
-    await messagingRepository.sendOffer({
-      conversationId: conv.id,
-      senderId: buyerId,
-      senderName: buyerName,
-      amount: numPrice,
-    });
+    await services.messaging.makeOffer(conv.id, buyerId, buyerName, numPrice);
 
     setIsOfferModalOpen(false);
     setOfferPrice("");
@@ -1068,7 +1063,7 @@ export const ListingDetailPage: React.FC = () => {
               prev ? { ...prev, status: "reserved" } : null,
             );
             toast.success(
-              "Réservation enregistrée et fonds placés sous séquestre !",
+              "Réservation enregistrée. Consultez la commande pour suivre le paiement.",
             );
           }}
         />

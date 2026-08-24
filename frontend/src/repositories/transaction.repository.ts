@@ -228,7 +228,7 @@ export class MockTransactionRepository implements ITransactionRepository {
       timestamp: now,
       actorId: dispute.openedBy,
       actorName: dispute.openedByName,
-      note: `Litige ouvert : "${dispute.reason}". Les fonds restent bloqués sous séquestre.`,
+      note: `Litige ouvert : "${dispute.reason}". Le versement reste suspendu pendant l'examen.`,
     });
 
     storageService.saveTransaction(tx);

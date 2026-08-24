@@ -22,7 +22,7 @@ export const TermsPage: React.FC = () => {
   usePageMeta({
     title: "Conditions Générales d'Utilisation",
     description:
-      "Les conditions d'utilisation de la place de marché Shongre : rôle de la plateforme, séquestre et protection acheteur, engagements des vendeurs professionnels.",
+      "Les conditions d'utilisation de la place de marché Shongre : rôle de la plateforme, paiements et litiges, engagements des vendeurs professionnels.",
     canonicalPath: "/conditions-utilisation",
   });
 

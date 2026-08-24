@@ -628,7 +628,7 @@ export const DEMO_USERS: Record<string, UserProfile> = {
     reviewCount: 0,
     responseRatePercent: 100,
     responseTimeText: "immédiat",
-    bio: "Responsable Séquestres, Règlements Marchands et Comptabilité Plateforme.",
+    bio: "Responsable Paiements, Règlements Marchands et Comptabilité Plateforme.",
   },
   commercial_lea: {
     id: "user_commercial_lea",
@@ -2134,7 +2134,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
         timestamp: "2026-08-15T19:35:00Z",
         actorId: "user_thomas",
         actorName: "Thomas Laurent",
-        note: "Réservation initiée et paiement de 375.10 € placé sous séquestre bancaire.",
+        note: "Réservation initiée et paiement en ligne de 375,10 € confirmé.",
       },
       {
         status: "ready_for_pickup",
@@ -2203,7 +2203,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
         timestamp: "2026-08-14T11:20:00Z",
         actorId: "user_lucas",
         actorName: "Lucas Bernard",
-        note: "Réservation avec livraison Point Relais et séquestre sécurisé (208.40 €).",
+        note: "Réservation avec livraison Point Relais et paiement confirmé (208,40 €).",
       },
       {
         status: "seller_confirmed",
@@ -2332,7 +2332,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
         timestamp: "2026-08-16T10:00:00Z",
         actorId: "user_thomas",
         actorName: "Thomas Laurent",
-        note: "Réservation initiée avec paiement sécurisé (933.20 € sous séquestre). En attente d'acceptation sous 48h.",
+        note: "Réservation initiée avec paiement en ligne (933,20 €). En attente d'acceptation sous 48h.",
       },
     ],
     createdAt: "2026-08-16T10:00:00Z",

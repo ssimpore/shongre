@@ -264,7 +264,12 @@ export interface ListingDraft extends Partial<Listing> {
 }
 
 export type DeliveryType =
-  "hand_delivery" | "relay_point" | "home_delivery" | "custom_carrier";
+  | "hand_delivery"
+  | "relay_point"
+  | "home_delivery"
+  | "custom_carrier"
+  | "cocolis"
+  | "express";
 
 export interface DeliveryOption {
   type: DeliveryType;
@@ -581,9 +586,13 @@ export interface NotificationItem {
 }
 
 export type TransactionStatus =
+  | "initiated"
   | "offer_accepted"
   | "payment_pending"
   | "payment_escrowed"
+  | "escrow_funded"
+  | "pin_pending"
+  | "refund_pending"
   | "escrow_secured"
   | "pending_seller_confirmation"
   | "seller_confirmed"

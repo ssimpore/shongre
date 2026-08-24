@@ -14,13 +14,15 @@ import {
   Check,
   GraduationCap,
   LoaderCircle,
+  Database,
 } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { useToast } from "../providers/ToastProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../../configuration/routes";
-import { isDemoMode } from "../../api/client/api-client.config";
+import { isDemoMode } from "../../api/client/data-mode.service";
+import { DataModeSettingsControl } from "./DataModeSettingsControl";
 
 interface DemoPersona {
   userKey: string;
@@ -342,6 +344,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
           <span className="hidden sm:inline text-stone-400">
             {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours")}
           </span>
+          <DataModeSettingsControl />
         </div>
 
         <div
@@ -496,7 +499,35 @@ const DemoRoleSwitcherContent: React.FC = () => {
   );
 };
 
-// This control changes only the deterministic demo adapter. It must never
-// advertise or simulate privilege switching when API mode is active.
+const LiveModeToolbar: React.FC = () => {
+  const { t } = useTranslation();
+  const { currentUser } = useAuth();
+
+  return (
+    <div className="relative z-drawer border-b border-emerald-950 bg-emerald-950 px-4 py-1.5 text-xs text-emerald-50">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
+            <Database className="h-3 w-3" aria-hidden="true" />
+            {t("shell.dataMode.modeLive")}
+          </span>
+          <span className="hidden truncate text-emerald-200 sm:inline">
+            {t("shell.dataMode.liveSummary")}
+          </span>
+          <DataModeSettingsControl />
+        </div>
+        {currentUser ? (
+          <span className="truncate font-semibold text-white">
+            {currentUser.name}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+// Persona simulation exists only in Demo mode. Live mode keeps the same shell
+// position for an unambiguous source indicator and exposes settings only to
+// accounts carrying the central administration permission.
 export const DemoRoleSwitcher: React.FC = () =>
-  isDemoMode() ? <DemoRoleSwitcherContent /> : null;
+  isDemoMode() ? <DemoRoleSwitcherContent /> : <LiveModeToolbar />;

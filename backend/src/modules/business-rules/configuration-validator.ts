@@ -60,8 +60,14 @@ export function validateCommercialConfiguration(
     ["product id", catalog.products.map((product) => product.id)],
     ["product code", catalog.products.map((product) => product.code)],
     ["rule key", catalog.rules.map((rule) => rule.key)],
-    ["commission policy id", catalog.commissionPolicies.map((policy) => policy.id)],
-    ["commission policy code", catalog.commissionPolicies.map((policy) => policy.code)],
+    [
+      "commission policy id",
+      catalog.commissionPolicies.map((policy) => policy.id),
+    ],
+    [
+      "commission policy code",
+      catalog.commissionPolicies.map((policy) => policy.code),
+    ],
     [
       "commission rule id",
       catalog.commissionPolicies.flatMap((policy) =>
@@ -143,7 +149,8 @@ export function validateCommercialConfiguration(
         commissionRuleSignature(right.rule)
       )
         continue;
-      if (canonical(left.rule.effect) === canonical(right.rule.effect)) continue;
+      if (canonical(left.rule.effect) === canonical(right.rule.effect))
+        continue;
       conflicts.push({
         code: "AMBIGUOUS_COMMISSION_PRECEDENCE",
         severity: "blocking",

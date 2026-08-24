@@ -25,6 +25,20 @@ async function runSeed() {
     return;
   }
 
+  if (
+    process.env.APP_ENV === "production" ||
+    process.env.NODE_ENV === "production"
+  ) {
+    throw new Error(
+      "Demo seed execution is forbidden in production. Apply migration-driven reference data only.",
+    );
+  }
+  if (process.env.ALLOW_DEMO_SEED !== "true") {
+    throw new Error(
+      "Refusing to mutate a database without ALLOW_DEMO_SEED=true. Use the guarded root db-seed target for local development.",
+    );
+  }
+
   runPsqlFile(databaseUrl, seedSqlPath);
   console.log("Canonical reference data applied in one transaction.");
 }

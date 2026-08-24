@@ -44,9 +44,9 @@ const INITIAL_SUPPORT_REQUESTS: SupportRequest[] = [
     marketCode: "FR",
     category: "payment",
     reason: "payment_debited_unconfirmed",
-    subject: "Paiement sous séquestre débité mais statut en attente",
+    subject: "Paiement débité mais statut en attente",
     description:
-      "Bonjour, j'ai effectué le paiement de 360 € pour le Fauteuil Scandinave. Le montant apparaît comme débité sur mon compte bancaire mais la commande indique « Séquestre en attente ». Pouvez-vous vérifier ?",
+      "Bonjour, j'ai effectué le paiement de 360 € pour le Fauteuil Scandinave. Le montant apparaît comme débité sur mon compte bancaire mais la commande indique « Paiement en attente ». Pouvez-vous vérifier ?",
     status: "waiting_for_user",
     priority: "high",
     context: {
@@ -61,7 +61,7 @@ const INITIAL_SUPPORT_REQUESTS: SupportRequest[] = [
         authorType: "user",
         authorName: "Thomas Laurent",
         content:
-          "Bonjour, j'ai effectué le paiement de 360 € pour le Fauteuil Scandinave. Le montant apparaît comme débité sur mon compte bancaire mais la commande indique « Séquestre en attente ». Pouvez-vous vérifier ?",
+          "Bonjour, j'ai effectué le paiement de 360 € pour le Fauteuil Scandinave. Le montant apparaît comme débité sur mon compte bancaire mais la commande indique « Paiement en attente ». Pouvez-vous vérifier ?",
         createdAt: "2026-08-16T14:30:00Z",
       },
       {
@@ -69,7 +69,7 @@ const INITIAL_SUPPORT_REQUESTS: SupportRequest[] = [
         authorType: "agent",
         authorName: "Hugo (Support Shongre)",
         content:
-          "Bonjour Thomas, nous avons bien identifié la pré-autorisation bancaire. La validation finale par votre banque a pris quelques minutes de plus que prévu. Les fonds sont désormais parfaitement sécurisés sous séquestre Shongre ! Pouvez-vous nous confirmer si votre statut s'affiche à jour ?",
+          "Bonjour Thomas, le prestataire a confirmé le paiement après quelques minutes. Pouvez-vous nous confirmer que le statut de la commande s'affiche maintenant à jour ?",
         createdAt: "2026-08-16T15:10:00Z",
       },
     ],

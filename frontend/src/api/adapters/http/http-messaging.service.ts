@@ -1,51 +1,190 @@
 import {
+  CreateOrGetConversationInput,
   MessagingServiceContract,
   SendMessageInput,
 } from "../../contracts/messaging.contract";
 import { httpClient } from "./http-client";
-import { Conversation, Message } from "../../../types";
+import type {
+  Conversation,
+  ListingStatus,
+  Message,
+  MessageType,
+  SellerType,
+} from "../../../types";
+
+interface BackendParticipant {
+  id?: string;
+  name?: string;
+  avatarUrl?: string;
+  accountType?: "individual" | "professional";
+  sellerType?: "individual" | "pro";
+}
+
+interface BackendConversation {
+  id: string;
+  listingId: string;
+  listing?: {
+    title?: string;
+    price?: number;
+    status?: string;
+    images?: string[];
+  };
+  buyerId: string;
+  buyer?: BackendParticipant;
+  sellerId: string;
+  seller?: BackendParticipant;
+  lastMessageText?: string;
+  lastMessageAt: string;
+  unreadCount?: number;
+  createdAt: string;
+}
+
+interface BackendMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  text: string;
+  attachments?: string[];
+  isOffer?: boolean;
+  offerPrice?: number;
+  isPickupProposal?: boolean;
+  createdAt: string;
+}
+
+interface BackendMessagePage {
+  items: BackendMessage[];
+  pageInfo: { hasNextPage: boolean; nextCursor?: string };
+}
+
+const mapListingStatus = (status: string | undefined): ListingStatus => {
+  if (status === "reserved") return "reserved";
+  if (status === "sold") return "sold";
+  if (status === "archived") return "archived";
+  if (status === "draft") return "draft";
+  return "active";
+};
+
+const mapMessageType = (message: BackendMessage): MessageType => {
+  if (message.isOffer) return "offer";
+  if (message.isPickupProposal) return "reservation";
+  if (message.attachments?.length) return "image";
+  return "text";
+};
+
+const mapMessage = (message: BackendMessage): Message => ({
+  id: message.id,
+  conversationId: message.conversationId,
+  senderId: message.senderId,
+  senderName: "Utilisateur Shongre",
+  content: message.text,
+  type: mapMessageType(message),
+  offerAmount: message.offerPrice,
+  attachmentUrl: message.attachments?.[0],
+  attachmentType: message.attachments?.length ? "image" : undefined,
+  createdAt: message.createdAt,
+  isRead: false,
+});
+
+const mapConversation = (conversation: BackendConversation): Conversation => ({
+  id: conversation.id,
+  listingId: conversation.listingId,
+  listingTitle: conversation.listing?.title || "Annonce",
+  listingPrice: Number(conversation.listing?.price || 0),
+  listingPhotoUrl: conversation.listing?.images?.[0] || "",
+  listingStatus: mapListingStatus(conversation.listing?.status),
+  buyerId: conversation.buyerId,
+  buyerName: conversation.buyer?.name || "Acheteur",
+  buyerAvatarUrl: conversation.buyer?.avatarUrl,
+  sellerId: conversation.sellerId,
+  sellerName: conversation.seller?.name || "Vendeur",
+  sellerAvatarUrl: conversation.seller?.avatarUrl,
+  sellerType: (conversation.seller?.sellerType ||
+    (conversation.seller?.accountType === "professional"
+      ? "pro"
+      : "individual")) as SellerType,
+  lastMessage: conversation.lastMessageText || "Nouvelle conversation",
+  lastMessageAt: conversation.lastMessageAt,
+  unreadCount: conversation.unreadCount || 0,
+  status: "active",
+});
 
 export class HttpMessagingService implements MessagingServiceContract {
-  async getUserConversations(userId: string): Promise<Conversation[]> {
-    return httpClient.get<Conversation[]>(`/messaging/conversations/${userId}`);
+  async getUserConversations(_userId: string): Promise<Conversation[]> {
+    const conversations = await httpClient.get<BackendConversation[]>(
+      "/messaging/conversations",
+    );
+    return conversations.map(mapConversation);
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {
-    return httpClient.get<Conversation>(
+    const conversation = await httpClient.get<BackendConversation>(
       `/messaging/conversations/detail/${id}`,
     );
+    const messages = await this.getMessages(id);
+    return { ...mapConversation(conversation), messages };
+  }
+
+  async getMessages(
+    conversationId: string,
+    cursor?: string,
+  ): Promise<Message[]> {
+    const page = await httpClient.get<BackendMessagePage>(
+      `/messaging/conversations/${conversationId}/messages`,
+      { params: { cursor, limit: 50 } },
+    );
+    return page.items.map(mapMessage);
+  }
+
+  async createOrGetConversation(
+    input: CreateOrGetConversationInput,
+  ): Promise<Conversation> {
+    const conversation = await httpClient.post<BackendConversation>(
+      "/messaging/conversations",
+      {
+        listingId: input.listingId,
+        initialMessage: input.initialMessage,
+      },
+    );
+    return mapConversation(conversation);
   }
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
-    return httpClient.post<Message>("/messaging/send", input);
+    const message = await httpClient.post<BackendMessage>(
+      `/messaging/conversations/${input.conversationId}/messages`,
+      {
+        text: input.text,
+        attachments: input.attachments,
+        offerPrice: input.offerPrice,
+      },
+    );
+    return mapMessage(message);
   }
 
   async makeOffer(
     conversationId: string,
-    senderId: string,
+    _senderId: string,
     senderName: string,
     amount: number,
   ): Promise<Message> {
-    return httpClient.post<Message>("/messaging/offer", {
+    const message = await httpClient.post<BackendMessage>("/messaging/offer", {
       conversationId,
-      senderId,
       senderName,
       amount,
     });
+    return mapMessage(message);
   }
 
   async respondToOffer(
     conversationId: string,
-    userId: string,
+    _userId: string,
     userName: string,
     accept: boolean,
   ): Promise<Message> {
-    return httpClient.post<Message>("/messaging/offer-response", {
-      conversationId,
-      userId,
-      userName,
-      accept,
-    });
+    const message = await httpClient.post<BackendMessage>(
+      "/messaging/offer-response",
+      { conversationId, userName, accept },
+    );
+    return mapMessage(message);
   }
 
   async schedulePickup(
@@ -54,20 +193,30 @@ export class HttpMessagingService implements MessagingServiceContract {
     timeSlot: string,
     address: string,
   ): Promise<Message> {
-    return httpClient.post<Message>("/messaging/schedule-pickup", {
-      conversationId,
-      date,
-      timeSlot,
-      address,
-    });
+    const message = await httpClient.post<BackendMessage>(
+      "/messaging/schedule-pickup",
+      { conversationId, date, timeSlot, address },
+    );
+    return mapMessage(message);
   }
 
-  async markAsRead(conversationId: string, userId: string): Promise<void> {
-    return httpClient.post<void>("/messaging/read", { conversationId, userId });
+  async markAsRead(conversationId: string, _userId: string): Promise<void> {
+    await httpClient.post<void>("/messaging/read", { conversationId });
   }
 
-  async blockUser(userId: string, targetUserId: string): Promise<void> {
-    return httpClient.post<void>("/messaging/block", { userId, targetUserId });
+  async blockUser(_userId: string, targetUserId: string): Promise<void> {
+    await httpClient.post<void>("/messaging/block", { targetUserId });
+  }
+
+  async unblockUser(_userId: string, targetUserId: string): Promise<void> {
+    await httpClient.post<void>("/messaging/unblock", { targetUserId });
+  }
+
+  async getBlockedUserIds(_userId: string): Promise<string[]> {
+    const response = await httpClient.get<{ userIds: string[] }>(
+      "/messaging/blocked",
+    );
+    return response.userIds;
   }
 }
 

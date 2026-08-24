@@ -476,9 +476,7 @@ export const Footer: React.FC = () => {
                     🇫🇷
                   </span>
                   <span className="text-micro text-stone-400 leading-tight">
-                    {t("footer.hosted")}
-                    <br />
-                    en France
+                    {t("footer.marketContext")}
                   </span>
                 </li>
                 <li className="flex items-center gap-2.5 pl-3">
@@ -487,9 +485,7 @@ export const Footer: React.FC = () => {
                     aria-hidden="true"
                   />
                   <span className="text-micro text-stone-400 leading-tight">
-                    100% conforme
-                    <br />
-                    RGPD
+                    {t("footer.privacyControls")}
                   </span>
                 </li>
               </ul>

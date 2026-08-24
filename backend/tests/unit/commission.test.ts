@@ -57,9 +57,15 @@ describe("CommissionService", () => {
   it("is idempotent and never charges an individual without an active policy", async () => {
     const repository = new DemoCommissionRepository();
     const service = new CommissionService(repository, commercialRules);
-    const input = { ...request("idempotent-02"), sellerType: "individual" as const };
+    const input = {
+      ...request("idempotent-02"),
+      sellerType: "individual" as const,
+    };
     const first = await service.record(input);
-    const second = await service.record({ ...input, itemSubtotalMinor: 99_999 });
+    const second = await service.record({
+      ...input,
+      itemSubtotalMinor: 99_999,
+    });
     expect(second).toEqual(first);
     expect(first).toMatchObject({
       eligible: false,
@@ -118,6 +124,49 @@ describe("CommissionService", () => {
         effectiveTakeRateBps: 125,
       }),
     );
+  });
+
+  it("locks a checkout quote without recognizing revenue until payment", async () => {
+    const service = new CommissionService(
+      new DemoCommissionRepository(),
+      commercialRules,
+    );
+    const quoted = await service.quote(request("quote-earned-05"));
+    expect(quoted.state).toBe("quoted");
+    await expect(
+      service.listAnalytics({
+        marketCode: "FR",
+        currency: "EUR",
+        from: "2026-08-01",
+        to: "2026-08-31",
+      }),
+    ).resolves.toEqual([]);
+
+    const earned = await service.earnQuote(quoted.id, {
+      transactionId: "transaction-quote-earned-05",
+      idempotencyKey: "commission-earned-quote-earned-05",
+      effectiveAt: "2026-08-25T12:00:00.000Z",
+    });
+    expect(earned).toMatchObject({
+      state: "earned",
+      totalCommissionMinor: quoted.totalCommissionMinor,
+      sellerPayableMinor: quoted.sellerPayableMinor,
+    });
+    await expect(
+      service.earnQuote(quoted.id, {
+        transactionId: "transaction-quote-earned-05",
+        idempotencyKey: "commission-earned-quote-earned-05",
+        effectiveAt: "2026-08-26T12:00:00.000Z",
+      }),
+    ).resolves.toEqual(earned);
+    const rows = await service.listAnalytics({
+      marketCode: "FR",
+      currency: "EUR",
+      from: "2026-08-01",
+      to: "2026-08-31",
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ transactionCount: 1, gmvMinor: 10_000 });
   });
 
   it("keeps retries idempotent and rejects cumulative over-refunds", async () => {

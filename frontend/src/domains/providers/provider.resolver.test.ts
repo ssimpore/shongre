@@ -1,6 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 import { providerResolver } from "./provider.resolver";
 import { ProviderConfiguration } from "./provider.types";
+import { apiClientConfig } from "../../api/client/api-client.config";
+
+afterEach(() => {
+  apiClientConfig.dataMode = "demo";
+});
 
 describe("Provider Resolver & Multi-Market Inheritance", () => {
   const mockConfigurations: Record<string, ProviderConfiguration> = {
@@ -128,6 +133,31 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
 
     expect(esResolution.isAvailable).toBe(false);
     expect(esResolution.primaryProvider).toBeNull();
+  });
+
+  it("never exposes a demo-only carrier capability in API mode", () => {
+    apiClientConfig.dataMode = "api";
+    const resolution = providerResolver.resolveEffectiveProviders({
+      capability: "delivery.relay_point",
+      marketCode: "FR",
+      configurations: {
+        mondial_relay: {
+          providerId: "mondial_relay",
+          enabled: true,
+          environment: "demo",
+          priority: 1,
+          credentialStatus: "not_required",
+          health: "unknown",
+          settings: {},
+          marketOverrides: {},
+          updatedAt: "2026-08-24T00:00:00Z",
+          version: 1,
+        },
+      },
+    });
+
+    expect(resolution.isAvailable).toBe(false);
+    expect(resolution.primaryProvider).toBeNull();
   });
 
   it("automatically propagates France configuration change to inheriting markets", () => {

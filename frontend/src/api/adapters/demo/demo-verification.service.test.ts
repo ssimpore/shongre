@@ -65,8 +65,9 @@ describe("DemoVerificationService progressive compliance", () => {
   it("loads tax policy as legal-review-required from the adapter registry", async () => {
     const rules = await new DemoVerificationService().listComplianceRules();
     expect(
-      rules.find((rule) => rule.ruleCode === "FACILITATED_ACTIVITY_DUE_DILIGENCE")
-        ?.status,
+      rules.find(
+        (rule) => rule.ruleCode === "FACILITATED_ACTIVITY_DUE_DILIGENCE",
+      )?.status,
     ).toBe("LEGAL_REVIEW_REQUIRED");
   });
 });

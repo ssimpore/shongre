@@ -8,7 +8,9 @@ import { CompliancePolicyEngine } from "../../../src/modules/compliance/complian
 import { BASELINE_COMPLIANCE_RULES } from "../../../src/modules/compliance/compliance-rule.registry.js";
 import { RiskEngine } from "../../../src/modules/compliance/risk.engine.js";
 
-const verified = (...dimensions: VerificationDimension[]): ComplianceSubject["verification"] =>
+const verified = (
+  ...dimensions: VerificationDimension[]
+): ComplianceSubject["verification"] =>
   Object.fromEntries(
     dimensions.map((dimension) => [
       dimension,
@@ -71,7 +73,11 @@ describe("CompliancePolicyEngine", () => {
         country: "FR",
         verification: verified("email"),
       },
-      { requestedAction: "save_favorite", jurisdiction: "FR", marketCode: "FR" },
+      {
+        requestedAction: "save_favorite",
+        jurisdiction: "FR",
+        marketCode: "FR",
+      },
     );
     expect(result.allowed).toBe(true);
     expect(result.required).toEqual(["email"]);

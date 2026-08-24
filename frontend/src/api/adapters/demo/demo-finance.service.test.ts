@@ -13,7 +13,10 @@ describe("DemoFinanceService", () => {
       currency: "EUR",
     });
     expect(
-      dashboard.revenueSources.reduce((sum, source) => sum + source.amount.amountMinor, 0),
+      dashboard.revenueSources.reduce(
+        (sum, source) => sum + source.amount.amountMinor,
+        0,
+      ),
     ).toBe(dashboard.metrics.platformRevenue.amount.amountMinor);
     expect(dashboard.metrics.netRevenue.amount.amountMinor).toBe(
       dashboard.metrics.platformRevenue.amount.amountMinor -
@@ -35,7 +38,11 @@ describe("DemoFinanceService", () => {
     const dashboard = await service.getAccountDashboard();
     expect(dashboard.accountId).toBe("user_pro_atelier");
     expect(dashboard.accountKind).toBe("professional");
-    expect(dashboard.transactions.every((item) => item.accountId === dashboard.accountId)).toBe(true);
+    expect(
+      dashboard.transactions.every(
+        (item) => item.accountId === dashboard.accountId,
+      ),
+    ).toBe(true);
   });
 
   it("uses a distinct organization finance operation for professional workspaces", async () => {
@@ -60,7 +67,9 @@ describe("DemoFinanceService", () => {
       marketCode: "FR",
       currency: "EUR",
     });
-    expect(dashboard.metrics.platformRevenue.amount.amountMinor).toBe(3_214_000);
+    expect(dashboard.metrics.platformRevenue.amount.amountMinor).toBe(
+      3_214_000,
+    );
     expect(dashboard.metrics.netRevenue.amount.amountMinor).toBe(
       dashboard.metrics.platformRevenue.amount.amountMinor -
         dashboard.metrics.providerFees.amount.amountMinor -

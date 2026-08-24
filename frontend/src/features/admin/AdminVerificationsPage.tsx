@@ -81,7 +81,9 @@ export const AdminVerificationsPage: React.FC = () => {
       await loadData();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "La décision n’a pas pu être enregistrée.",
+        error instanceof Error
+          ? error.message
+          : "La décision n’a pas pu être enregistrée.",
       );
     }
   };
@@ -101,9 +103,9 @@ export const AdminVerificationsPage: React.FC = () => {
               Vérifications, règles et revue humaine
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-stone-600">
-              Les agents voient les statuts nécessaires à leur mission. Les documents,
-              numéros fiscaux, coordonnées bancaires et scores de risque ne sont pas
-              exposés dans cette file générale.
+              Les agents voient les statuts nécessaires à leur mission. Les
+              documents, numéros fiscaux, coordonnées bancaires et scores de
+              risque ne sont pas exposés dans cette file générale.
             </p>
           </div>
         </div>
@@ -141,7 +143,9 @@ export const AdminVerificationsPage: React.FC = () => {
         {activeTab === "queue" ? (
           <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xs">
             <div className="border-b border-stone-100 p-4">
-              <h2 className="font-bold text-stone-950">Dossiers nécessitant une décision</h2>
+              <h2 className="font-bold text-stone-950">
+                Dossiers nécessitant une décision
+              </h2>
               <p className="mt-1 text-xs text-stone-500">
                 Toute décision exige un motif et reste traçable.
               </p>
@@ -170,7 +174,8 @@ export const AdminVerificationsPage: React.FC = () => {
                           Dossier {review.userId}
                         </h3>
                         <p className="mt-1 text-xs text-stone-500">
-                          {labelIdentifier(review.dimension)} · {labelIdentifier(review.state)}
+                          {labelIdentifier(review.dimension)} ·{" "}
+                          {labelIdentifier(review.state)}
                         </p>
                       </div>
                     </div>
@@ -187,7 +192,9 @@ export const AdminVerificationsPage: React.FC = () => {
                       </Button>
                       <Button
                         size="sm"
-                        leftIcon={<Check className="h-4 w-4" aria-hidden="true" />}
+                        leftIcon={
+                          <Check className="h-4 w-4" aria-hidden="true" />
+                        }
                         onClick={() =>
                           setDecision({ review, outcome: "approve" })
                         }
@@ -205,36 +212,56 @@ export const AdminVerificationsPage: React.FC = () => {
         {activeTab === "policies" ? (
           <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs sm:p-5">
             <div className="mb-4 flex items-start gap-3">
-              <BookOpenCheck className="mt-0.5 h-5 w-5 text-success" aria-hidden="true" />
+              <BookOpenCheck
+                className="mt-0.5 h-5 w-5 text-success"
+                aria-hidden="true"
+              />
               <div>
                 <h2 className="font-bold text-stone-950">Registre versionné</h2>
                 <p className="mt-1 text-xs text-stone-500">
-                  Les modifications juridiques sont planifiées, sourcées et auditées côté serveur.
+                  Les modifications juridiques sont planifiées, sourcées et
+                  auditées côté serveur.
                 </p>
               </div>
             </div>
             <div className="divide-y divide-stone-100">
               {policies.map((policy) => (
-                <article key={policy.id} className="grid gap-2 py-4 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center">
+                <article
+                  key={policy.id}
+                  className="grid gap-2 py-4 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center"
+                >
                   <div>
-                    <h3 className="text-sm font-bold text-stone-900">{labelIdentifier(policy.action)}</h3>
-                    <p className="mt-0.5 text-micro font-mono text-stone-500">{policy.ruleCode}</p>
+                    <h3 className="text-sm font-bold text-stone-900">
+                      {labelIdentifier(policy.action)}
+                    </h3>
+                    <p className="mt-0.5 text-micro font-mono text-stone-500">
+                      {policy.ruleCode}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs text-stone-600">{policy.description}</p>
+                    <p className="text-xs text-stone-600">
+                      {policy.description}
+                    </p>
                     <p className="mt-1 text-micro text-stone-500">
-                      Requis : {policy.requiredChecks.length ? policy.requiredChecks.map(labelIdentifier).join(", ") : "aucun"}
+                      Requis :{" "}
+                      {policy.requiredChecks.length
+                        ? policy.requiredChecks.map(labelIdentifier).join(", ")
+                        : "aucun"}
                     </p>
                   </div>
                   <div className="sm:text-right">
-                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-micro font-bold ${
-                      policy.status === "LEGAL_REVIEW_REQUIRED"
-                        ? "border-warning-border bg-warning-surface text-warning"
-                        : "border-success-border bg-success-surface text-success"
-                    }`}>
+                    <span
+                      className={`inline-flex rounded-full border px-2.5 py-1 text-micro font-bold ${
+                        policy.status === "LEGAL_REVIEW_REQUIRED"
+                          ? "border-warning-border bg-warning-surface text-warning"
+                          : "border-success-border bg-success-surface text-success"
+                      }`}
+                    >
                       {policy.status}
                     </span>
-                    <p className="mt-1 text-micro text-stone-500">{policy.policyVersion}</p>
+                    <p className="mt-1 text-micro text-stone-500">
+                      {policy.policyVersion}
+                    </p>
                   </div>
                 </article>
               ))}
@@ -245,23 +272,34 @@ export const AdminVerificationsPage: React.FC = () => {
         {activeTab === "audit" ? (
           <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xs">
             <div className="border-b border-stone-100 p-4">
-              <h2 className="font-bold text-stone-950">Événements de conformité</h2>
+              <h2 className="font-bold text-stone-950">
+                Événements de conformité
+              </h2>
               <p className="mt-1 text-xs text-stone-500">
-                Les valeurs sensibles et réponses brutes des prestataires sont exclues.
+                Les valeurs sensibles et réponses brutes des prestataires sont
+                exclues.
               </p>
             </div>
             <div className="divide-y divide-stone-100">
               {auditLogs.map((log) => (
-                <article key={log.id} className="flex items-start justify-between gap-4 p-4">
+                <article
+                  key={log.id}
+                  className="flex items-start justify-between gap-4 p-4"
+                >
                   <div>
                     <p className="text-sm font-bold text-stone-900">
-                      {labelIdentifier(log.dimension || "policy")} · {labelIdentifier(log.newState || log.eventType)}
+                      {labelIdentifier(log.dimension || "policy")} ·{" "}
+                      {labelIdentifier(log.newState || log.eventType)}
                     </p>
                     <p className="mt-1 text-xs text-stone-500">
-                      Acteur : {log.actorId || log.actorType} · Référence utilisateur : {log.userId}
+                      Acteur : {log.actorId || log.actorType} · Référence
+                      utilisateur : {log.userId}
                     </p>
                   </div>
-                  <time className="shrink-0 text-micro text-stone-500" dateTime={log.occurredAt}>
+                  <time
+                    className="shrink-0 text-micro text-stone-500"
+                    dateTime={log.occurredAt}
+                  >
                     {new Date(log.occurredAt).toLocaleString("fr-FR")}
                   </time>
                 </article>
@@ -275,7 +313,11 @@ export const AdminVerificationsPage: React.FC = () => {
         isOpen={Boolean(decision)}
         onClose={() => setDecision(null)}
         onSubmit={applyDecision}
-        title={decision?.outcome === "approve" ? "Motif d’approbation" : "Motif du refus"}
+        title={
+          decision?.outcome === "approve"
+            ? "Motif d’approbation"
+            : "Motif du refus"
+        }
         label="Décision motivée"
         hint="Minimum 10 caractères. Le motif est conservé dans l’audit et sert au recours utilisateur."
         placeholder="Décrivez les éléments contrôlés et la justification de la décision."

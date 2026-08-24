@@ -84,6 +84,31 @@ export class DemoListingsService implements ListingsServiceContract {
     return defaultDraft;
   }
 
+  async getListingDraft(): Promise<PublicationDraftState | null> {
+    await simulateNetworkDelay();
+    return publicationService.getDraft(storageService.getCurrentUser()?.id);
+  }
+
+  async uploadListingPhoto(file: File) {
+    await simulateNetworkDelay();
+    if (
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+      file.size <= 0 ||
+      file.size > 10 * 1024 * 1024
+    ) {
+      throw new Error(
+        "La photo doit être un fichier JPEG, PNG ou WebP de 10 Mo maximum.",
+      );
+    }
+    const url = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Impossible de lire la photo."));
+      reader.onload = () => resolve(String(reader.result));
+      reader.readAsDataURL(file);
+    });
+    return { assetId: `demo-media-${file.name}-${file.size}`, url };
+  }
+
   async saveListingDraft(
     draft: PublicationDraftState,
     userId?: string,

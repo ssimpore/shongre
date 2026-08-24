@@ -2,6 +2,8 @@ import {
   OrdersServiceContract,
   CreateDirectPurchaseInput,
   CreateReservationInput,
+  OrderCheckoutResult,
+  DirectPurchaseQuote,
 } from "../../contracts/orders.contract";
 import { transactionRepository } from "../../../repositories/transaction.repository";
 import { transactionService } from "../../../domains/transaction/transaction.service";
@@ -26,9 +28,39 @@ export class DemoOrdersService implements OrdersServiceContract {
     return transactionRepository.getSales(userId);
   }
 
+  async quoteDirectPurchase(input: {
+    listingId: string;
+    deliveryMethod: Transaction["deliveryMethod"];
+  }): Promise<DirectPurchaseQuote> {
+    await simulateNetworkDelay();
+    const listing = await listingRepository.getListingById(input.listingId);
+    if (!listing) throw new Error("Annonce introuvable");
+    const option = listing.deliveryOptions.find(
+      (delivery) =>
+        delivery.type === input.deliveryMethod && delivery.available,
+    );
+    if (!option) throw new Error("Ce mode de livraison n’est pas disponible.");
+    const pricing = transactionService.calculateOrderPricingSnapshot(
+      listing.price,
+      1,
+      option.price || 0,
+      listing.sellerType,
+      listing.marketCodes?.[0] || "FR",
+    );
+    return {
+      listingId: listing.id,
+      deliveryMethod: input.deliveryMethod,
+      itemAmountMinor: pricing.itemSubtotalMinor,
+      protectionFeeMinor: pricing.buyerProtectionFeeMinor,
+      shippingFeeMinor: pricing.shippingFeeMinor,
+      totalAmountMinor: pricing.totalAmountMinor,
+      currency: pricing.currency,
+    };
+  }
+
   async createDirectPurchase(
     input: CreateDirectPurchaseInput,
-  ): Promise<Transaction> {
+  ): Promise<OrderCheckoutResult> {
     await simulateNetworkDelay();
     const listing = await listingRepository.getListingById(input.listingId);
     if (!listing) throw new Error("Annonce introuvable");
@@ -46,7 +78,7 @@ export class DemoOrdersService implements OrdersServiceContract {
       listingTitle: listing.title,
       listingPrice: listing.price,
       listingPhotoUrl: listing.coverImageUrl,
-      buyerId: input.buyerId,
+      buyerId: storageService.getCurrentUser()?.id || "guest",
       buyerName: storageService.getCurrentUser()?.name || "Acheteur",
       sellerId: listing.sellerId,
       sellerName: listing.sellerName,
@@ -59,10 +91,17 @@ export class DemoOrdersService implements OrdersServiceContract {
       deliveryMethod: input.deliveryMethod,
     });
 
-    return tx;
+    return {
+      id: tx.id,
+      orderNumber: tx.code,
+      status: tx.status,
+      demoTransaction: tx,
+    };
   }
 
-  async createReservation(input: CreateReservationInput): Promise<Transaction> {
+  async createReservation(
+    input: CreateReservationInput,
+  ): Promise<OrderCheckoutResult> {
     await simulateNetworkDelay();
     const listing = await listingRepository.getListingById(input.listingId);
     if (!listing) throw new Error("Annonce introuvable");
@@ -72,12 +111,12 @@ export class DemoOrdersService implements OrdersServiceContract {
       listingTitle: listing.title,
       listingPrice: listing.price,
       listingPhotoUrl: listing.coverImageUrl,
-      buyerId: input.buyerId,
+      buyerId: storageService.getCurrentUser()?.id || "guest",
       buyerName: storageService.getCurrentUser()?.name || "Acheteur",
       sellerId: listing.sellerId,
       sellerName: listing.sellerName,
-      amount: input.depositAmount,
-      totalAmount: input.depositAmount + 0.99,
+      amount: Math.max(5, Math.min(listing.price * 0.1, 200)),
+      totalAmount: Math.max(5, Math.min(listing.price * 0.1, 200)) + 0.99,
       protectionFee: 0.99,
       shippingFee: 0,
       currency: listing.currency,
@@ -85,7 +124,24 @@ export class DemoOrdersService implements OrdersServiceContract {
       deliveryMethod: "hand_delivery",
     });
 
-    return tx;
+    return {
+      id: tx.id,
+      orderNumber: tx.code,
+      status: tx.status,
+      demoTransaction: tx,
+    };
+  }
+
+  async issueHandoverCode(orderId: string) {
+    await simulateNetworkDelay();
+    const order = await transactionRepository.getTransactionById(orderId);
+    if (!order?.verificationCode) {
+      throw new Error("Le code de remise n’est pas disponible.");
+    }
+    return {
+      code: order.verificationCode,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    };
   }
 
   async confirmHandoverPIN(
@@ -112,6 +168,27 @@ export class DemoOrdersService implements OrdersServiceContract {
   async confirmDeliveryReceived(orderId: string): Promise<Transaction> {
     await simulateNetworkDelay();
     return transactionRepository.updateTransactionStatus(orderId, "completed");
+  }
+
+  async markShipped(
+    orderId: string,
+    input: { carrierName: string; trackingNumber: string },
+  ): Promise<Transaction> {
+    await simulateNetworkDelay();
+    const updated = await transactionRepository.updateTransactionStatus(
+      orderId,
+      "shipped",
+    );
+    return {
+      ...updated,
+      carrierName: input.carrierName,
+      trackingNumber: input.trackingNumber,
+    };
+  }
+
+  async cancelUnpaidOrder(orderId: string): Promise<Transaction> {
+    await simulateNetworkDelay();
+    return transactionRepository.updateTransactionStatus(orderId, "cancelled");
   }
 
   async openDispute(

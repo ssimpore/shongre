@@ -33,8 +33,12 @@ describe("progressive compliance migration safeguards", () => {
     expect(migration).toContain("compliance.sensitive.read");
     expect(migration).toContain("compliance.policy.manage");
     expect(migration).toContain("FORCE ROW LEVEL SECURITY");
-    expect(migration).toContain("REVOKE ALL ON public.verification_requests FROM anon, authenticated");
-    expect(migration).not.toContain("GRANT SELECT ON public.compliance_tax_profiles TO authenticated");
+    expect(migration).toContain(
+      "REVOKE ALL ON public.verification_requests FROM anon, authenticated",
+    );
+    expect(migration).not.toContain(
+      "GRANT SELECT ON public.compliance_tax_profiles TO authenticated",
+    );
   });
 
   it("stores provider event hashes instead of raw payloads and makes audit immutable", () => {
@@ -42,7 +46,9 @@ describe("progressive compliance migration safeguards", () => {
     expect(migration).toContain("claim_compliance_provider_event");
     expect(migration).toContain("complete_compliance_provider_event");
     expect(migration).toContain("processing_started_at TIMESTAMPTZ");
-    expect(migration).not.toMatch(/compliance_provider_events[\s\S]{0,500}payload\s+JSONB/i);
+    expect(migration).not.toMatch(
+      /compliance_provider_events[\s\S]{0,500}payload\s+JSONB/i,
+    );
     expect(migration).toContain("compliance audit events are immutable");
     expect(migration).toContain("admin_upsert_compliance_rule");
     expect(migration).toContain("compliance_rule_changes");

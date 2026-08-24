@@ -50,7 +50,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "MARKETPLACE_PUBLICATION",
     ruleCode: "PRIVATE_ORDINARY_LISTING",
-    description: "An ordinary private classified listing requires only a confirmed account.",
+    description:
+      "An ordinary private classified listing requires only a confirmed account.",
     action: "publish_listing",
     conditions: { accountTypes: ["individual"], sellerTypes: ["individual"] },
     requiredChecks: ["email", "professional_status"],
@@ -69,7 +70,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "*",
     regulation: "MARKETPLACE_PROMOTION",
     ruleCode: "PROMOTION_CONFIRMED_ACCOUNT",
-    description: "Promotion requires only the confirmed owner of an eligible listing.",
+    description:
+      "Promotion requires only the confirmed owner of an eligible listing.",
     action: "promote_listing",
     conditions: { accountTypes: ["individual", "professional"] },
     requiredChecks: ["email"],
@@ -88,9 +90,13 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "BUSINESS_ACCOUNT",
     ruleCode: "CREATE_PROFESSIONAL_ORGANIZATION",
-    description: "Creating a professional organization verifies the business and representative authority once.",
+    description:
+      "Creating a professional organization verifies the business and representative authority once.",
     action: "create_organization",
-    conditions: { accountTypes: ["professional"], sellerTypes: ["professional"] },
+    conditions: {
+      accountTypes: ["professional"],
+      sellerTypes: ["professional"],
+    },
     requiredChecks: ["email", "business", "business_representative"],
     recommendedChecks: ["phone"],
     reasonCodes: ["ORGANIZATION_AUTHORITY_REQUIRED"],
@@ -107,7 +113,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "TRADER_TRACEABILITY",
     ruleCode: "PROFESSIONAL_PUBLICATION_BASELINE",
-    description: "Professional publication requires a verified business and representative authority.",
+    description:
+      "Professional publication requires a verified business and representative authority.",
     action: "publish_professional_listing",
     conditions: {
       accountTypes: ["professional"],
@@ -134,7 +141,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "FRAUD_PREVENTION",
     ruleCode: "ELEVATED_RISK_STEP_UP",
-    description: "Proportionate contact verification for elevated-risk interactions.",
+    description:
+      "Proportionate contact verification for elevated-risk interactions.",
     action: "message_seller",
     conditions: { riskLevels: ["ELEVATED", "HIGH", "CRITICAL"] },
     requiredChecks: ["phone"],
@@ -153,7 +161,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "FRAUD_PREVENTION",
     ruleCode: "HIGH_RISK_HUMAN_REVIEW",
-    description: "High-risk publication requires a reviewable step-up, not an opaque permanent ban.",
+    description:
+      "High-risk publication requires a reviewable step-up, not an opaque permanent ban.",
     action: "publish_listing",
     conditions: { riskLevels: ["HIGH", "CRITICAL"] },
     requiredChecks: ["phone", "enhanced_review"],
@@ -172,7 +181,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "PAYMENT_SERVICES",
     ruleCode: "PSP_SELLER_PAYMENT_ENABLEMENT",
-    description: "Online payment enablement is delegated to a regulated PSP compliance account.",
+    description:
+      "Online payment enablement is delegated to a regulated PSP compliance account.",
     action: "accept_online_payment",
     conditions: { paymentFlows: ["psp_marketplace", "redirect_to_psp"] },
     requiredChecks: ["email", "payment"],
@@ -196,7 +206,10 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
       ruleCode: `PSP_PAYOUT_${sellerType.toUpperCase()}`,
       description: "Only payout is blocked while the PSP completes its checks.",
       action: "receive_payout",
-      conditions: { sellerTypes: [sellerType], paymentFlows: ["psp_marketplace"] },
+      conditions: {
+        sellerTypes: [sellerType],
+        paymentFlows: ["psp_marketplace"],
+      },
       requiredChecks:
         sellerType === "individual"
           ? ["email", "identity", "bank_account", "payout"]
@@ -225,7 +238,8 @@ export const BASELINE_COMPLIANCE_RULES: readonly ComplianceRule[] = [
     jurisdiction: "FR",
     regulation: "DAC7_DPI",
     ruleCode: "FACILITATED_ACTIVITY_DUE_DILIGENCE",
-    description: "Tax due diligence is triggered only after the activity is determined to be in scope.",
+    description:
+      "Tax due diligence is triggered only after the activity is determined to be in scope.",
     action: "complete_tax_due_diligence",
     conditions: {
       transactionTypes: ["direct_purchase", "service_booking", "reservation"],

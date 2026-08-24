@@ -33,7 +33,10 @@ const INCOMPLETE_STATES = new Set([
 ]);
 const PENDING_STATES = new Set(["pending", "processing", "manual_review"]);
 
-function includesWhenPresent<T>(allowed: T[] | undefined, actual: T | undefined) {
+function includesWhenPresent<T>(
+  allowed: T[] | undefined,
+  actual: T | undefined,
+) {
   return !allowed?.length || (actual !== undefined && allowed.includes(actual));
 }
 

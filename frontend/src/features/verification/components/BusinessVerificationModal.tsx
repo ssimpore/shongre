@@ -44,9 +44,12 @@ export const BusinessVerificationModal: React.FC<
     setError(null);
     setCompany(null);
     try {
-      const result = await services.verification.lookupCompanyBySiret(normalized);
+      const result =
+        await services.verification.lookupCompanyBySiret(normalized);
       if (!result?.isActive) {
-        setError("Aucune entreprise active n’a été trouvée pour cet identifiant.");
+        setError(
+          "Aucune entreprise active n’a été trouvée pour cet identifiant.",
+        );
         return;
       }
       setCompany(result);
@@ -179,7 +182,11 @@ export const BusinessVerificationModal: React.FC<
           <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Plus tard
           </Button>
-          <Button onClick={confirm} disabled={!company} isLoading={isSubmitting}>
+          <Button
+            onClick={confirm}
+            disabled={!company}
+            isLoading={isSubmitting}
+          >
             Confirmer cette entreprise
           </Button>
         </div>

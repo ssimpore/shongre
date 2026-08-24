@@ -19,12 +19,16 @@ export interface IPaymentProvider {
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResult>;
   requestPayout(
-    sellerId: string,
-    amount: number,
+    accountReference: string,
+    amountMinor: number,
+    currency: string,
+    idempotencyKey: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
-  getBalance(
-    sellerId: string,
-  ): Promise<{ available: number; pending: number; currency: string }>;
+  getBalance(accountReference: string): Promise<{
+    availableMinor: number;
+    pendingMinor: number;
+    currency: string;
+  }>;
 }
 
 export class DemoPaymentProvider implements IPaymentProvider {
@@ -46,25 +50,29 @@ export class DemoPaymentProvider implements IPaymentProvider {
   }
 
   async requestPayout(
-    sellerId: string,
-    amount: number,
+    accountReference: string,
+    amountMinor: number,
+    currency: string,
+    idempotencyKey: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
     return {
       payoutId: deterministicProviderId(
         "po_demo",
-        `${sellerId}:${amount}:provider-held-destination`,
+        `${accountReference}:${amountMinor}:${currency}:${idempotencyKey}`,
       ),
       status: "processing",
     };
   }
 
-  async getBalance(
-    sellerId: string,
-  ): Promise<{ available: number; pending: number; currency: string }> {
-    void sellerId;
+  async getBalance(accountReference: string): Promise<{
+    availableMinor: number;
+    pendingMinor: number;
+    currency: string;
+  }> {
+    void accountReference;
     return {
-      available: 480,
-      pending: 250,
+      availableMinor: 48_000,
+      pendingMinor: 25_000,
       currency: "EUR",
     };
   }
@@ -90,27 +98,102 @@ export class StripePaymentProvider implements IPaymentProvider {
   }
 
   async requestPayout(
-    sellerId: string,
-    amount: number,
+    accountReference: string,
+    amountMinor: number,
+    currency: string,
+    idempotencyKey: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
-    void sellerId;
-    void amount;
-    throw new AppError({
-      code: "NETWORK_ERROR",
-      statusCode: 503,
-      message:
-        "Les versements Stripe Connect doivent être activés via le compte PSP vérifié.",
-    });
+    if (
+      !/^acct_[A-Za-z0-9]+$/.test(accountReference) ||
+      !Number.isSafeInteger(amountMinor) ||
+      amountMinor <= 0 ||
+      !/^[A-Z]{3}$/.test(currency) ||
+      !idempotencyKey ||
+      idempotencyKey.length < 8
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "La demande de versement est invalide.",
+      });
+    }
+    const payload = await stripeConnectRequest(
+      "/v1/payouts",
+      accountReference,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: new URLSearchParams({
+          amount: String(amountMinor),
+          currency: currency.toLowerCase(),
+          "metadata[source]": "shongre_seller_payout",
+        }),
+      },
+    );
+    return {
+      payoutId: String(payload.id || ""),
+      status: payload.status === "paid" ? "completed" : "processing",
+    };
   }
 
-  async getBalance(
-    sellerId: string,
-  ): Promise<{ available: number; pending: number; currency: string }> {
-    void sellerId;
+  async getBalance(accountReference: string) {
+    if (!/^acct_[A-Za-z0-9]+$/.test(accountReference)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le compte de versement est invalide.",
+      });
+    }
+    const payload = await stripeConnectRequest("/v1/balance", accountReference);
+    const available = Array.isArray(payload.available)
+      ? payload.available[0]
+      : undefined;
+    const pending = Array.isArray(payload.pending)
+      ? payload.pending[0]
+      : undefined;
+    return {
+      availableMinor: Number(available?.amount || 0),
+      pendingMinor: Number(pending?.amount || 0),
+      currency: String(
+        available?.currency || pending?.currency || "eur",
+      ).toUpperCase(),
+    };
+  }
+}
+
+async function stripeConnectRequest(
+  path: string,
+  accountReference: string,
+  init: RequestInit = {},
+) {
+  const { config } = await import("../../app/config/index.js");
+  if (!config.stripeSecretKey) {
     throw new AppError({
       code: "NETWORK_ERROR",
       statusCode: 503,
-      message: "Le solde de paiement est temporairement indisponible.",
+      message: "Le prestataire de paiement n’est pas configuré.",
     });
   }
+  const response = await fetch(`https://api.stripe.com${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${config.stripeSecretKey}`,
+      "Stripe-Account": accountReference,
+      "Stripe-Version": "2026-02-25.clover",
+      ...(init.headers || {}),
+    },
+    signal: AbortSignal.timeout(10_000),
+  });
+  const payload: any = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new AppError({
+      code: response.status === 429 ? "RATE_LIMITED" : "NETWORK_ERROR",
+      statusCode: response.status === 429 ? 429 : 503,
+      message:
+        payload?.error?.message ||
+        "Le prestataire de paiement est temporairement indisponible.",
+    });
+  }
+  return payload;
 }

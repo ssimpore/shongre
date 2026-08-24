@@ -30,6 +30,126 @@ jobs:
         run: npm run db:migrate --workspace=backend
       - name: Reject high and critical dependency vulnerabilities
         run: npm audit --audit-level=high
+      - name: Exercise the production fail-closed configuration gate
+        env:
+          APP_ENV: production
+          NODE_ENV: production
+          BACKEND_DATA_MODE: database
+          NEXT_PUBLIC_DATA_MODE: api
+          NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false"
+          NEXT_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
+          NEXT_PUBLIC_APP_URL: https://shongre.invalid
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_CIOnly123456789
+          FRONTEND_URL: https://shongre.invalid
+          CORS_ORIGIN: https://shongre.invalid
+          DATABASE_URL: postgresql://ci:ci@db.shongre.invalid:5432/shongre
+          SUPABASE_URL: https://supabase.shongre.invalid
+          SUPABASE_ANON_KEY: ci-only-anon-key-value
+          SUPABASE_SERVICE_ROLE_KEY: ci-only-service-role-key-value-123456789
+          JWT_SECRET: ci-only-jwt-signing-key-value-123456789
+          AUTH_COOKIE_SECURE: "true"
+          AUTH_EMAIL_DELIVERY_URL: https://email.shongre.invalid/send
+          AUTH_EMAIL_DELIVERY_TOKEN: ci-only-email-delivery-token-12345
+          PAYMENT_PROVIDER: stripe
+          STRIPE_SECRET_KEY: sk_live_CIOnly123456789
+          STRIPE_WEBHOOK_SECRET: whsec_CI123
+          STRIPE_CONNECT_WEBHOOK_SECRET: whsec_CI456
+          COMPLIANCE_WEBHOOK_SECRET: ci-only-compliance-webhook-secret-123456
+          HANDOVER_PIN_PEPPER: ci-only-handover-pin-pepper-value-123456
+          KYC_PROVIDER: stripe
+          KYC_PROVIDER_BASE_URL: https://otp.shongre.invalid
+          KYC_PROVIDER_API_TOKEN: ci-only-kyc-provider-token
+          BUSINESS_REGISTRY_PROVIDER: siret
+          BUSINESS_REGISTRY_API_URL: https://api.insee.fr/api-sirene/3.11
+          BUSINESS_REGISTRY_API_TOKEN: ci-only-registry-token
+          AI_PROVIDER: gemini
+          GEMINI_API_KEY: ci-only-gemini-api-key
+          GEMINI_MODEL: gemini-2.5-flash
+        run: make production-config-check
+
+  migrations:
+    name: Clean database migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.115.0
+      - run: npm ci
+      - run: make env-init
+      - name: Apply every migration to a clean local database
+        run: |
+          supabase start --workdir backend
+          supabase db reset --workdir backend --no-seed
+      - name: Baseline and verify immutable migration checksums
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: |
+          npm run db:migrate --workspace=backend
+          npm run db:migrate --workspace=backend
+          test "$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -qAtc "SELECT count(*) FROM public.profiles WHERE id IN ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004');")" = "0"
+      - name: Prove production demo seeding is refused
+        env:
+          APP_ENV: production
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          ALLOW_DEMO_SEED: "true"
+        run: |
+          if npm run db:seed --workspace=backend; then
+            echo "Production seed unexpectedly succeeded"
+            exit 1
+          fi
+      - name: Stop local database
+        if: always()
+        run: supabase stop --workdir backend --no-backup
+
+  containers:
+    name: Production containers
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend API/worker artifact
+        run: docker build -f backend/Dockerfile -t shongre-backend:ci .
+      - name: Build production-configured frontend artifact
+        run: |
+          docker build -f frontend/Dockerfile -t shongre-frontend:ci \
+            --build-arg APP_ENV=production \
+            --build-arg NEXT_PUBLIC_DATA_MODE=api \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.shongre.invalid/api/v1 \
+            --build-arg NEXT_PUBLIC_APP_URL=https://shongre.invalid \
+            --build-arg NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false \
+            --build-arg NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_CIOnly123456789 .
+      - name: Smoke test both runtime entrypoints
+        run: |
+          api_id=$(docker run -d -p 4000:4000 \
+            -e NODE_ENV=development \
+            -e BACKEND_HOST=0.0.0.0 \
+            -e BACKEND_PORT=4000 \
+            -e BACKEND_DATA_MODE=demo \
+            shongre-backend:ci)
+          web_id=$(docker run -d -p 3000:3000 shongre-frontend:ci)
+          worker_id=$(docker run -d \
+            -e NODE_ENV=development \
+            -e BACKEND_HOST=0.0.0.0 \
+            -e BACKEND_PORT=4000 \
+            -e BACKEND_DATA_MODE=demo \
+            shongre-backend:ci node dist/worker.js)
+          trap 'docker rm -f "$api_id" "$web_id" "$worker_id" >/dev/null' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4000/livez >/dev/null && \
+               curl --fail --silent http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4000/livez >/dev/null
+          curl --fail --silent http://127.0.0.1:3000/ >/dev/null
+          docker inspect --format='{{.State.Running}}' "$worker_id" | grep -qx true
 
   web-e2e:
     name: Web E2E (${{ matrix.browser }})

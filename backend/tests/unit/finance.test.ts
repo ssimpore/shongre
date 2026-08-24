@@ -39,8 +39,11 @@ describe("FinanceService", () => {
         return null;
       }
     }
-    const deniedService = new FinanceService(new DeniedOrganizationRepository());
-    await expect(deniedService.getOrganizationDashboard("employee_without_finance"))
-      .rejects.toMatchObject({ code: "FORBIDDEN", statusCode: 403 });
+    const deniedService = new FinanceService(
+      new DeniedOrganizationRepository(),
+    );
+    await expect(
+      deniedService.getOrganizationDashboard("employee_without_finance"),
+    ).rejects.toMatchObject({ code: "FORBIDDEN", statusCode: 403 });
   });
 });

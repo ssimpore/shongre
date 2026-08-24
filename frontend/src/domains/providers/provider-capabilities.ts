@@ -46,10 +46,10 @@ export const PROVIDER_AUDIT_ACTION_LABELS: Record<
 export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
   PAYMENT: {
     id: "PAYMENT",
-    name: "Paiements & Séquestre",
+    name: "Paiements",
     shortLabel: "Paiements",
     description:
-      "Encaissement par carte, portefeuilles électroniques, autorisations et séquestre sécurisé.",
+      "Encaissement par carte, portefeuilles électroniques, remboursements et suivi fournisseur.",
     iconName: "CreditCard",
     badgeClass: "bg-success-surface text-success border-success-border",
     isCore: true,
@@ -279,7 +279,7 @@ export const PROVIDER_CAPABILITIES: Record<
       "Encaissement sécurisé CB, Visa, Mastercard avec protocole 3D Secure v2.",
     usedByFeatures: [
       "Achat direct",
-      "Réservation avec séquestre",
+      "Réservation avec paiement en ligne",
       "Abonnements Pro",
       "Options de boost",
     ],
@@ -306,10 +306,10 @@ export const PROVIDER_CAPABILITIES: Record<
   "payment.escrow": {
     id: "payment.escrow",
     category: "PAYMENT",
-    name: "Séquestre & Cantonnement de Fonds",
+    name: "Paiement différé et versement vendeur",
     description:
-      "Conservation sécurisée des fonds sur compte de cantonnement jusqu'à la remise conforme.",
-    usedByFeatures: ["Protection acheteur", "Réservation sécurisée"],
+      "Charge plateforme et transfert vendeur distinct, déclenché après la confirmation de remise.",
+    usedByFeatures: ["Suivi de commande", "Réservation"],
     isRedundancyRecommended: true,
   },
   "payment.refund": {
@@ -317,9 +317,27 @@ export const PROVIDER_CAPABILITIES: Record<
     category: "PAYMENT",
     name: "Remboursements Automatisés",
     description:
-      "Déclenchement des remboursements totaux ou partiels en cas d'annulation ou litige.",
+      "Déclenchement d'un remboursement intégral en cas d'annulation ou après décision sur un litige.",
     usedByFeatures: ["Gestion des litiges", "Refus de commande par le vendeur"],
     isRedundancyRecommended: true,
+  },
+  "payment.marketplace": {
+    id: "payment.marketplace",
+    category: "PAYMENT",
+    name: "Flux de paiement marketplace",
+    description:
+      "Encaissement plateforme et versement vendeur distinct après confirmation de la remise.",
+    usedByFeatures: ["Achat direct", "Réservation", "Suivi de commande"],
+    isRedundancyRecommended: true,
+  },
+  "payment.subscription": {
+    id: "payment.subscription",
+    category: "PAYMENT",
+    name: "Paiement récurrent",
+    description:
+      "Gestion fournisseur des abonnements et de leur cycle de facturation.",
+    usedByFeatures: ["Abonnements Pro"],
+    isRedundancyRecommended: false,
   },
   "payout.transfer": {
     id: "payout.transfer",
@@ -335,7 +353,7 @@ export const PROVIDER_CAPABILITIES: Record<
     category: "PAYOUT",
     name: "Virement Instantané",
     description:
-      "Crédit immédiat des fonds sur le compte bancaire du vendeur en moins de 10 secondes.",
+      "Virement accéléré lorsqu'il est explicitement pris en charge par le prestataire et le compte vendeur.",
     usedByFeatures: ["Option virement instantané"],
     isRedundancyRecommended: false,
   },
@@ -631,6 +649,15 @@ export const PROVIDER_CAPABILITIES: Record<
     description:
       "Interrogation de la base VIES pour valider l'assujettissement TVA européen.",
     usedByFeatures: ["Facturation Pro"],
+    isRedundancyRecommended: false,
+  },
+  "verification.payment": {
+    id: "verification.payment",
+    category: "IDENTITY_VERIFICATION",
+    name: "Vérification du compte de paiement",
+    description:
+      "Contrôle du compte vendeur et de son éligibilité aux transferts et versements.",
+    usedByFeatures: ["Vente avec paiement", "Versements vendeur"],
     isRedundancyRecommended: false,
   },
 

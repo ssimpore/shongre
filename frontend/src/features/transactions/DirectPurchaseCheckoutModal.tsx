@@ -4,7 +4,7 @@
  * with 0 reservation requirement.
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   ShieldCheck,
   Truck,
@@ -14,29 +14,23 @@ import {
   Lock,
   ChevronRight,
   AlertCircle,
-  QrCode,
-  Minus,
-  Plus,
 } from "lucide-react";
-import { Listing } from "../../types";
-import { fulfillmentResolver } from "../../domains/fulfillment/fulfillment.resolver";
-import { listingRepository } from "../../repositories/listing.repository";
-import { transactionService } from "../../domains/transaction/transaction.service";
+import { DeliveryType, Listing } from "../../types";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
 import { SelectableCard } from "../../design-system/primitives/SelectableCard";
 import { Input, FormField } from "../../design-system/primitives/FormField";
-import { providerService } from "../../domains/providers/provider.service";
 import { formatPrice } from "../../utilities/formatters";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import confetti from "canvas-confetti";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   getListingCategoryLabel,
   getListingSubCategoryLabel,
 } from "../../domains/taxonomy/taxonomy.display";
+import { services } from "../../api/client/service-registry";
+import type { DirectPurchaseQuote } from "../../api/contracts/orders.contract";
 
 export interface DirectPurchaseCheckoutModalProps {
   isOpen: boolean;
@@ -55,79 +49,109 @@ export const DirectPurchaseCheckoutModal: React.FC<
   const [step, setStep] = useState<"delivery" | "payment" | "success">(
     "delivery",
   );
-  const [quantity, setQuantity] = useState(1);
-  const maxStock = listing.stock ?? 1;
-
   const [selectedQuoteId, setSelectedQuoteId] = useState<string>(
-    "quote-hand-delivery",
+    listing.deliveryOptions.find((option) => option.available)?.type ||
+      "hand_delivery",
   );
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    "card" | "apple_pay" | "google_pay"
-  >("card");
-
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: currentUser?.name || "Thomas Laurent",
-    addressLine: "14 rue de la République",
-    postalCode: "75011",
-    city: "Paris",
-    phone: "+33 6 12 34 56 78",
+    fullName: currentUser?.name || "",
+    addressLine: "",
+    postalCode: "",
+    city: "",
+    phone: "",
   });
 
-  const [cardNumber, setCardNumber] = useState("•••• •••• •••• 4242");
-  const [cardExpiry, setCardExpiry] = useState("12/28");
-  const [cardCvc, setCardCvc] = useState("888");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [authoritativeQuote, setAuthoritativeQuote] =
+    useState<DirectPurchaseQuote | null>(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<string>("");
-  const [pinCode, setPinCode] = useState<string>("");
+  const operationKey = useRef(
+    `order:${listing.id}:${typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}`}`,
+  );
 
-  // 1. Resolve Available Delivery Quotes
+  // 1. Display only the fulfilment options exposed by the listing adapter.
   const quotes = useMemo(() => {
-    return fulfillmentResolver.resolveAvailableQuotes({
-      listing,
-      marketCode: listing.marketCode || "FR",
-      destinationPostalCode: shippingAddress.postalCode,
-      quantity,
-    });
-  }, [listing, shippingAddress.postalCode, quantity]);
+    const labels: Record<DeliveryType, { title: string; description: string }> =
+      {
+        hand_delivery: {
+          title: "Remise en main propre",
+          description: "Rendez-vous convenu directement avec le vendeur",
+        },
+        relay_point: {
+          title: "Livraison en point relais",
+          description:
+            "Transporteur et point de retrait confirmés dans la commande",
+        },
+        home_delivery: {
+          title: "Livraison à domicile",
+          description: "Expédition suivie par le vendeur",
+        },
+        custom_carrier: {
+          title: "Livraison convenue avec le vendeur",
+          description: "Modalités précisées avant l’expédition",
+        },
+        cocolis: {
+          title: "Livraison d’objet volumineux",
+          description: "Transport suivi selon les modalités de la commande",
+        },
+        express: {
+          title: "Livraison express",
+          description: "Délai confirmé dans la commande",
+        },
+      };
+    return listing.deliveryOptions
+      .filter((option) => option.available)
+      .map((option) => ({
+        id: option.type,
+        deliveryType: option.type,
+        title: option.courierName || labels[option.type].title,
+        description: labels[option.type].description,
+        price: option.price || 0,
+      }));
+  }, [listing.deliveryOptions]);
 
   // Set default quote if selected is not found
   const selectedQuote = useMemo(() => {
     return quotes.find((q) => q.id === selectedQuoteId) || quotes[0];
   }, [quotes, selectedQuoteId]);
 
-  // 2. Authoritative Price Breakdown
-  const pricing = useMemo(() => {
-    return fulfillmentResolver.calculateOrderPricing({
-      listing,
-      quantity,
-      selectedQuote,
-      marketCode: listing.marketCode || "FR",
-    });
-  }, [listing, quantity, selectedQuote]);
+  const deliveryMethod: DeliveryType =
+    selectedQuote?.deliveryType === "custom_carrier"
+      ? "home_delivery"
+      : selectedQuote?.deliveryType || "hand_delivery";
 
-  // 3. Provider Payment Capabilities Availability
-  const isCardAvailable = useMemo(() => {
-    return providerService.isCapabilityAvailable(
-      "payment.card",
-      listing.marketCode || "FR",
-    );
-  }, [listing.marketCode]);
-
-  const isWalletAvailable = useMemo(() => {
-    return providerService.isCapabilityAvailable(
-      "payment.wallet",
-      listing.marketCode || "FR",
-    );
-  }, [listing.marketCode]);
-
-  const isOnlinePaymentAvailable = isCardAvailable || isWalletAvailable;
+  // 2. Price is always quoted by the same backend service that creates checkout.
+  useEffect(() => {
+    let active = true;
+    setAuthoritativeQuote(null);
+    setIsQuoteLoading(true);
+    setPaymentError(null);
+    services.orders
+      .quoteDirectPurchase({ listingId: listing.id, deliveryMethod })
+      .then((quote) => {
+        if (active) setAuthoritativeQuote(quote);
+      })
+      .catch((cause) => {
+        if (active) {
+          setPaymentError(
+            cause instanceof Error
+              ? cause.message
+              : "Le prix de la commande n’a pas pu être calculé.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setIsQuoteLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [deliveryMethod, listing.id]);
 
   const handleProceedToPayment = () => {
-    if (
-      selectedQuote?.deliveryType !== "hand_delivery" &&
-      selectedQuote?.deliveryType !== "store_pickup"
-    ) {
+    if (selectedQuote?.deliveryType !== "hand_delivery") {
       if (
         !shippingAddress.addressLine.trim() ||
         !shippingAddress.postalCode.trim()
@@ -135,6 +159,10 @@ export const DirectPurchaseCheckoutModal: React.FC<
         toast.error("Veuillez renseigner votre adresse de livraison complète.");
         return;
       }
+    }
+    if (!authoritativeQuote) {
+      toast.error("Le prix final de la commande n’est pas disponible.");
+      return;
     }
     setPaymentError(null);
     setStep("payment");
@@ -144,65 +172,35 @@ export const DirectPurchaseCheckoutModal: React.FC<
     setIsProcessing(true);
     setPaymentError(null);
     try {
-      const cardLast4 =
-        selectedPaymentMethod === "card"
-          ? cardNumber.replace(/\s+/g, "").slice(-4) || "4242"
-          : "Wallet";
-
-      const buyerUser = currentUser || {
-        id: "buyer_thomas",
-        name: "Thomas Laurent",
-        email: "thomas@example.com",
-        role: "individual_buyer" as any,
-        type: "individual" as any,
-        status: "active" as any,
-        isVerified: true,
-      };
-
-      // The transaction is the single source of truth for the handover PIN and
-      // the order reference. This screen used to mint its own pair here, so the
-      // code the buyer was told to give the seller never matched the one stored
-      // on the transaction they were about to hand over against.
-      const transaction = await transactionService.createDirectPurchase({
+      const result = await services.orders.createDirectPurchase({
         listingId: listing.id,
-        buyer: buyerUser as any,
-        deliveryMethod:
-          selectedQuote?.deliveryType === "hand_delivery"
-            ? "hand_delivery"
-            : "home_delivery",
-        carrierName: selectedQuote?.title,
-        paymentMethod: selectedPaymentMethod,
-        cardLast4,
-        deliveryAddress: {
-          fullName: shippingAddress.fullName,
+        deliveryMethod,
+        shippingAddress: {
           street: shippingAddress.addressLine,
           postalCode: shippingAddress.postalCode,
           city: shippingAddress.city,
+          country: listing.marketCode || "FR",
         },
+        idempotencyKey: operationKey.current,
       });
 
-      // Atomically decrement stock / mark sold
-      await listingRepository.decrementStock(listing.id, quantity);
+      if (result.checkout?.url) {
+        window.location.assign(result.checkout.url);
+        return;
+      }
 
-      setPinCode(transaction.verificationCode || "");
-      setCompletedOrderId(transaction.code ?? transaction.id);
+      setCompletedOrderId(result.orderNumber ?? result.id);
       setStep("success");
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
-      toast.success(
-        "Paiement sécurisé validé avec succès !",
-        "Commande confirmée",
-      );
+      toast.success("Commande enregistrée.");
 
       if (onSuccess) {
-        onSuccess(transaction.id);
+        onSuccess(result.id);
       }
-    } catch (err: any) {
+    } catch {
       setPaymentError(
-        "Échec de l'autorisation bancaire. Veuillez vérifier vos informations ou réessayer.",
+        "Le paiement n’a pas pu être initialisé. Vérifiez les informations puis réessayez.",
       );
-      toast.error(
-        "Échec du paiement. Veuillez vérifier vos coordonnées bancaires.",
-      );
+      toast.error("Impossible d’ouvrir le paiement sécurisé.");
     } finally {
       setIsProcessing(false);
     }
@@ -219,14 +217,14 @@ export const DirectPurchaseCheckoutModal: React.FC<
       onClose={step === "success" ? handleFinish : onClose}
       title={
         step === "success"
-          ? "Commande Confirmée !"
+          ? "Commande enregistrée"
           : step === "payment"
             ? "Paiement Sécurisé"
             : "Finaliser votre achat"
       }
       description={
         step === "success"
-          ? "Votre achat direct a été enregistré et vos fonds sont sécurisés jusqu'à la remise du bien."
+          ? "Votre demande a été enregistrée. Consultez vos achats pour suivre son état."
           : "Choisissez votre mode de réception et réglez en toute sécurité."
       }
       maxWidth="lg"
@@ -258,36 +256,6 @@ export const DirectPurchaseCheckoutModal: React.FC<
               </div>
             </div>
           </div>
-
-          {/* Quantity Selector (when stock > 1) */}
-          {maxStock > 1 && (
-            <div className="shrink-0 space-y-1 text-right">
-              <span className="text-micro font-bold text-stone-500 block">
-                {t("transactions.directPurchaseCheckoutModal.quantite")}
-              </span>
-              <div className="inline-flex items-center gap-1.5 bg-white border border-stone-200 rounded-xl p-1 shadow-xs">
-                <button
-                  type="button"
-                  disabled={quantity <= 1}
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
-                >
-                  <Minus className="w-3.5 h-3.5 text-stone-700" />
-                </button>
-                <span className="font-bold text-xs px-2 text-stone-900 min-w-[20px] text-center">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  disabled={quantity >= maxStock}
-                  onClick={() => setQuantity(Math.min(maxStock, quantity + 1))}
-                  className="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5 text-stone-700" />
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* STEP 1: Delivery Mode Selection */}
@@ -340,7 +308,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                           {quote.title}
                         </div>
                         <div className="text-xs text-stone-500 font-medium">
-                          {quote.description} • {quote.estimatedDeliveryDays}
+                          {quote.description}
                         </div>
                       </div>
                     </div>
@@ -354,107 +322,108 @@ export const DirectPurchaseCheckoutModal: React.FC<
             </div>
 
             {/* Destination Address if shipping */}
-            {selectedQuote?.deliveryType !== "hand_delivery" &&
-              selectedQuote?.deliveryType !== "store_pickup" && (
-                <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
-                  <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <span>
-                      {t(
-                        "transactions.directPurchaseCheckoutModal.adresseDeLivraison",
-                      )}
-                    </span>
-                  </h4>
+            {selectedQuote?.deliveryType !== "hand_delivery" && (
+              <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
+                <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span>
+                    {t(
+                      "transactions.directPurchaseCheckoutModal.adresseDeLivraison",
+                    )}
+                  </span>
+                </h4>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <FormField
-                      label={t(
-                        "transactions.directPurchaseCheckoutModal.nomPrenom",
-                      )}
-                    >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <FormField
+                    label={t(
+                      "transactions.directPurchaseCheckoutModal.nomPrenom",
+                    )}
+                  >
+                    <Input
+                      value={shippingAddress.fullName}
+                      onChange={(e) =>
+                        setShippingAddress({
+                          ...shippingAddress,
+                          fullName: e.target.value,
+                        })
+                      }
+                    />
+                  </FormField>
+                  <FormField
+                    label={t(
+                      "transactions.directPurchaseCheckoutModal.telephone",
+                    )}
+                  >
+                    <Input
+                      value={shippingAddress.phone}
+                      onChange={(e) =>
+                        setShippingAddress({
+                          ...shippingAddress,
+                          phone: e.target.value,
+                        })
+                      }
+                    />
+                  </FormField>
+                  <div className="sm:col-span-2">
+                    <FormField label="Adresse">
                       <Input
-                        value={shippingAddress.fullName}
+                        value={shippingAddress.addressLine}
                         onChange={(e) =>
                           setShippingAddress({
                             ...shippingAddress,
-                            fullName: e.target.value,
-                          })
-                        }
-                      />
-                    </FormField>
-                    <FormField
-                      label={t(
-                        "transactions.directPurchaseCheckoutModal.telephone",
-                      )}
-                    >
-                      <Input
-                        value={shippingAddress.phone}
-                        onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            phone: e.target.value,
-                          })
-                        }
-                      />
-                    </FormField>
-                    <div className="sm:col-span-2">
-                      <FormField label="Adresse">
-                        <Input
-                          value={shippingAddress.addressLine}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              addressLine: e.target.value,
-                            })
-                          }
-                        />
-                      </FormField>
-                    </div>
-                    <FormField label="Code postal">
-                      <Input
-                        value={shippingAddress.postalCode}
-                        onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            postalCode: e.target.value,
-                          })
-                        }
-                      />
-                    </FormField>
-                    <FormField label="Ville">
-                      <Input
-                        value={shippingAddress.city}
-                        onChange={(e) =>
-                          setShippingAddress({
-                            ...shippingAddress,
-                            city: e.target.value,
+                            addressLine: e.target.value,
                           })
                         }
                       />
                     </FormField>
                   </div>
+                  <FormField label="Code postal">
+                    <Input
+                      value={shippingAddress.postalCode}
+                      onChange={(e) =>
+                        setShippingAddress({
+                          ...shippingAddress,
+                          postalCode: e.target.value,
+                        })
+                      }
+                    />
+                  </FormField>
+                  <FormField label="Ville">
+                    <Input
+                      value={shippingAddress.city}
+                      onChange={(e) =>
+                        setShippingAddress({
+                          ...shippingAddress,
+                          city: e.target.value,
+                        })
+                      }
+                    />
+                  </FormField>
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Pricing Summary */}
             <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-3 text-sm font-medium">
               <div className="flex justify-between text-stone-600">
-                <span>
-                  Prix de l'article {quantity > 1 && `(x${quantity})`}
-                </span>
+                <span>Prix de l'article</span>
                 <span className="font-bold text-stone-900">
-                  {formatPrice(pricing.itemSubtotal)}
+                  {authoritativeQuote
+                    ? formatPrice(authoritativeQuote.itemAmountMinor / 100)
+                    : "—"}
                 </span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Frais de livraison ({selectedQuote?.title})</span>
                 <span className="font-bold text-stone-900">
-                  {pricing.deliveryFee === 0
+                  {authoritativeQuote?.shippingFeeMinor === 0
                     ? "Gratuit"
-                    : formatPrice(pricing.deliveryFee)}
+                    : authoritativeQuote
+                      ? formatPrice(authoritativeQuote.shippingFeeMinor / 100)
+                      : "—"}
                 </span>
               </div>
-              {pricing.buyerServiceFee > 0 && (
+              {(authoritativeQuote?.protectionFeeMinor || 0) > 0 && (
                 <div className="flex justify-between text-stone-600">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-success" />
@@ -465,7 +434,9 @@ export const DirectPurchaseCheckoutModal: React.FC<
                     </span>
                   </span>
                   <span className="font-bold text-stone-900">
-                    {formatPrice(pricing.buyerServiceFee)}
+                    {formatPrice(
+                      (authoritativeQuote?.protectionFeeMinor || 0) / 100,
+                    )}
                   </span>
                 </div>
               )}
@@ -474,7 +445,9 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   {t("transactions.directPurchaseCheckoutModal.totalARegler")}
                 </span>
                 <span className="text-primary text-lg">
-                  {formatPrice(pricing.buyerTotal)}
+                  {authoritativeQuote
+                    ? formatPrice(authoritativeQuote.totalAmountMinor / 100)
+                    : "—"}
                 </span>
               </div>
             </div>
@@ -487,9 +460,12 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 variant="primary"
                 size="md"
                 onClick={handleProceedToPayment}
+                disabled={isQuoteLoading || !authoritativeQuote}
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
-                Continuer vers le paiement ({formatPrice(pricing.buyerTotal)})
+                {isQuoteLoading
+                  ? "Calcul du total…"
+                  : `Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100) : "—"})`}
               </Button>
             </div>
           </div>
@@ -514,108 +490,21 @@ export const DirectPurchaseCheckoutModal: React.FC<
               </p>
             </div>
 
-            {/* Payment Method Selector */}
-            {!isOnlinePaymentAvailable ? (
-              <div className="p-4 rounded-xl bg-warning-surface border border-warning-border text-warning text-xs space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-warning" />
-                  {t(
-                    "transactions.directPurchaseCheckoutModal.paiementEnLigneTemporairementIndisponible",
-                  )}
-                </p>
-                <p className="text-warning">
-                  {t(
-                    "transactions.directPurchaseCheckoutModal.leSystemeDeSequestreEn",
-                  )}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-3">
-                {isCardAvailable && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod("card")}
-                    className={`p-4 rounded-2xl border text-sm font-bold transition-all duration-normal cursor-pointer flex flex-col items-center gap-2 shadow-2xs hover:shadow-sm ${
-                      selectedPaymentMethod === "card"
-                        ? "border-primary bg-primary/5 ring-1 ring-primary/50 text-primary"
-                        : "border-stone-200/60 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-300"
-                    }`}
-                  >
-                    <CreditCard className="w-6 h-6" />
-                    <span>Carte</span>
-                  </button>
-                )}
-
-                {isWalletAvailable && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPaymentMethod("apple_pay")}
-                      className={`p-4 rounded-2xl border text-sm font-bold transition-all duration-normal cursor-pointer flex flex-col items-center gap-2 shadow-2xs hover:shadow-sm ${
-                        selectedPaymentMethod === "apple_pay"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary/50 text-primary"
-                          : "border-stone-200/60 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-300"
-                      }`}
-                    >
-                      <span className="text-xl font-black">Pay</span>
-                      <span>Apple Pay</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPaymentMethod("google_pay")}
-                      className={`p-4 rounded-2xl border text-sm font-bold transition-all duration-normal cursor-pointer flex flex-col items-center gap-2 shadow-2xs hover:shadow-sm ${
-                        selectedPaymentMethod === "google_pay"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary/50 text-primary"
-                          : "border-stone-200/60 bg-white text-stone-700 hover:bg-stone-50 hover:border-stone-300"
-                      }`}
-                    >
-                      <span className="text-xl font-black text-info">GPay</span>
-                      <span>Google Pay</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {isOnlinePaymentAvailable && selectedPaymentMethod === "card" && (
-              <div className="p-5 rounded-2xl border border-stone-200/60 bg-stone-50 space-y-4 shadow-inner">
-                <FormField
-                  label={t(
-                    "transactions.directPurchaseCheckoutModal.numeroDeCarte",
-                  )}
-                >
-                  <Input
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                  />
-                </FormField>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField label="Date d'expiration">
-                    <Input
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                    />
-                  </FormField>
-                  <FormField label="Cryptogramme CVC">
-                    <Input
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value)}
-                    />
-                  </FormField>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs font-medium text-stone-500 pt-2">
-                  <Lock className="w-4 h-4 text-success" />
-                  <span>
-                    {t(
-                      "transactions.directPurchaseCheckoutModal.connexionChiffreeSsl256Bits",
-                    )}
-                  </span>
+            {/* Provider-hosted payment */}
+            <div className="p-5 rounded-2xl border border-stone-200/60 bg-stone-50 space-y-3 shadow-inner">
+              <div className="flex items-center gap-3">
+                <Lock className="w-5 h-5 text-success shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-stone-900">
+                    Paiement hébergé et sécurisé
+                  </p>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Vous serez redirigé vers notre prestataire. La commande ne
+                    sera confirmée qu’après validation du paiement par celui-ci.
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
 
             {paymentError && (
               <div className="p-3 bg-danger-surface border border-danger-border rounded-xl flex items-center gap-2 text-xs text-danger">
@@ -646,12 +535,10 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 size="md"
                 onClick={handleExecutePayment}
                 isLoading={isProcessing}
-                disabled={!isOnlinePaymentAvailable || isProcessing}
+                disabled={!authoritativeQuote || isProcessing}
                 leftIcon={<Lock className="w-4 h-4" />}
               >
-                {isOnlinePaymentAvailable
-                  ? `Payer ${formatPrice(pricing.buyerTotal)}`
-                  : "Paiement indisponible"}
+                {`Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100) : "—"})`}
               </Button>
             </div>
           </div>
@@ -666,9 +553,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
 
             <div>
               <h3 className="text-2xl font-black text-stone-900">
-                {t(
-                  "transactions.directPurchaseCheckoutModal.achatDirectConfirme",
-                )}
+                Commande enregistrée
               </h3>
               <p className="text-sm font-medium text-stone-500 mt-2">
                 {t(
@@ -680,36 +565,11 @@ export const DirectPurchaseCheckoutModal: React.FC<
               </p>
             </div>
 
-            {selectedQuote?.deliveryType === "hand_delivery" ? (
-              <div className="p-5 bg-primary/5 border border-primary/20 rounded-3xl max-w-sm mx-auto text-left space-y-3 shadow-2xs">
-                <div className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 mb-1">
-                  <QrCode className="w-4 h-4" />
-                  <span>
-                    {t(
-                      "transactions.directPurchaseCheckoutModal.codeSecretDeRemiseEn",
-                    )}
-                  </span>
-                </div>
-                <div className="text-3xl font-black font-mono text-center tracking-widest text-stone-900 py-3 bg-white rounded-2xl border border-stone-200/60 shadow-inner">
-                  {pinCode}
-                </div>
-                <p className="text-xs font-medium text-stone-600 leading-relaxed text-center">
-                  {t(
-                    "transactions.directPurchaseCheckoutModal.communiquezCeCodeAuVendeur",
-                  )}
-                </p>
-              </div>
-            ) : (
-              <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-3xl max-w-sm mx-auto text-sm text-stone-600 text-left shadow-inner font-medium">
-                <span className="font-bold text-stone-900 block mb-1">
-                  {t(
-                    "transactions.directPurchaseCheckoutModal.expeditionEnCours",
-                  )}
-                </span>
-                Le vendeur a été notifié et dispose de 72h pour déposer votre
-                colis auprès du transporteur ({selectedQuote?.title}).
-              </div>
-            )}
+            <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-3xl max-w-sm mx-auto text-sm text-stone-600 text-left shadow-inner font-medium">
+              Le statut final du paiement et, le cas échéant, le code de remise
+              sont disponibles depuis vos achats. Un code de remise n’est créé
+              qu’après confirmation du paiement.
+            </div>
 
             <div className="pt-3">
               <Button

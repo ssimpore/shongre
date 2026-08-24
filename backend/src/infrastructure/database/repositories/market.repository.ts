@@ -23,6 +23,9 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> = {
     protectionFeeRate: 0.04,
     protectionFixedFee: 0.7,
     freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
     isBaseMarket: true,
     isActive: true,
@@ -36,6 +39,9 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> = {
     protectionFeeRate: 0.045,
     protectionFixedFee: 0.8,
     freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
     isBaseMarket: false,
     isActive: true,
@@ -49,6 +55,9 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> = {
     protectionFeeRate: 0.035,
     protectionFixedFee: 1.0,
     freeListingsLimit: 5,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "home_delivery"],
     isBaseMarket: false,
     isActive: true,
@@ -62,6 +71,9 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> = {
     protectionFeeRate: 0.04,
     protectionFixedFee: 0.7,
     freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
     isBaseMarket: false,
     isActive: true,
@@ -75,6 +87,9 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> = {
     protectionFeeRate: 0.04,
     protectionFixedFee: 0.7,
     freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
     isBaseMarket: false,
     isActive: true,
@@ -88,6 +103,9 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> = {
     protectionFeeRate: 0.045,
     protectionFixedFee: 0.7,
     freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
     isBaseMarket: false,
     isActive: true,
@@ -167,6 +185,15 @@ export class DemoMarketRepository implements IMarketRepository {
         typeof targetMarket.freeListingsLimit === "number"
           ? targetMarket.freeListingsLimit
           : baseMarket.freeListingsLimit,
+      reservationDepositRateBps:
+        targetMarket.reservationDepositRateBps ??
+        baseMarket.reservationDepositRateBps,
+      reservationDepositMinimumMinor:
+        targetMarket.reservationDepositMinimumMinor ??
+        baseMarket.reservationDepositMinimumMinor,
+      reservationDepositMaximumMinor:
+        targetMarket.reservationDepositMaximumMinor ??
+        baseMarket.reservationDepositMaximumMinor,
       allowedDeliveryMethods:
         targetMarket.allowedDeliveryMethods?.length > 0
           ? [...targetMarket.allowedDeliveryMethods]
@@ -190,6 +217,15 @@ export class PostgresMarketRepository implements IMarketRepository {
       protectionFeeRate: Number(row.protection_fee_rate || 0.04),
       protectionFixedFee: Number(row.protection_fixed_fee || 0.7),
       freeListingsLimit: Number(row.free_listings_limit || 10),
+      reservationDepositRateBps: Number(
+        row.reservation_deposit_rate_bps ?? 1_000,
+      ),
+      reservationDepositMinimumMinor: Number(
+        row.reservation_deposit_minimum_minor ?? 500,
+      ),
+      reservationDepositMaximumMinor: Number(
+        row.reservation_deposit_maximum_minor ?? 20_000,
+      ),
       allowedDeliveryMethods:
         (row.allowed_delivery_methods as DeliveryType[]) || [
           "hand_delivery",
@@ -271,6 +307,14 @@ export class PostgresMarketRepository implements IMarketRepository {
         typeof target.freeListingsLimit === "number"
           ? target.freeListingsLimit
           : base.freeListingsLimit,
+      reservationDepositRateBps:
+        target.reservationDepositRateBps ?? base.reservationDepositRateBps,
+      reservationDepositMinimumMinor:
+        target.reservationDepositMinimumMinor ??
+        base.reservationDepositMinimumMinor,
+      reservationDepositMaximumMinor:
+        target.reservationDepositMaximumMinor ??
+        base.reservationDepositMaximumMinor,
       allowedDeliveryMethods:
         target.allowedDeliveryMethods?.length > 0
           ? [...target.allowedDeliveryMethods]

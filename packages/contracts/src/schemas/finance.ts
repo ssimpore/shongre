@@ -27,7 +27,9 @@ export const financeTransactionTypeSchema = z.enum([
   "revenue_recognition",
   "adjustment",
 ]);
-export type FinanceTransactionType = z.infer<typeof financeTransactionTypeSchema>;
+export type FinanceTransactionType = z.infer<
+  typeof financeTransactionTypeSchema
+>;
 
 export const financeTransactionStatusSchema = z.enum([
   "pending",
@@ -38,7 +40,9 @@ export const financeTransactionStatusSchema = z.enum([
   "failed",
   "reversed",
 ]);
-export type FinanceTransactionStatus = z.infer<typeof financeTransactionStatusSchema>;
+export type FinanceTransactionStatus = z.infer<
+  typeof financeTransactionStatusSchema
+>;
 
 export const financeAccountClassSchema = z.enum([
   "asset",
@@ -105,7 +109,12 @@ export const financeTimePointSchema = z.object({
 });
 
 export const financeExceptionSchema = z.object({
-  key: z.enum(["failed_payments", "reconciliation_gaps", "failed_payouts", "chargebacks"]),
+  key: z.enum([
+    "failed_payments",
+    "reconciliation_gaps",
+    "failed_payouts",
+    "chargebacks",
+  ]),
   label: z.string().min(1),
   count: z.number().int().nonnegative(),
   severity: z.enum(["info", "warning", "critical"]),
@@ -132,7 +141,9 @@ export const financeVerticalSummarySchema = z.object({
   convertedAccounts: z.number().int().nonnegative(),
   conversionBps: z.number().int().min(0).max(10_000),
 });
-export type FinanceVerticalSummary = z.infer<typeof financeVerticalSummarySchema>;
+export type FinanceVerticalSummary = z.infer<
+  typeof financeVerticalSummarySchema
+>;
 
 export const platformFinanceDashboardSchema = z.object({
   scope: financeScopeSchema,
@@ -164,7 +175,9 @@ export const platformFinanceDashboardSchema = z.object({
   markets: z.array(financeMarketSummarySchema),
   verticals: z.array(financeVerticalSummarySchema),
 });
-export type PlatformFinanceDashboard = z.infer<typeof platformFinanceDashboardSchema>;
+export type PlatformFinanceDashboard = z.infer<
+  typeof platformFinanceDashboardSchema
+>;
 
 export const financeTransactionPageSchema = z.object({
   items: z.array(financeTransactionSchema),
@@ -174,7 +187,9 @@ export const financeTransactionPageSchema = z.object({
     nextCursor: z.string().optional(),
   }),
 });
-export type FinanceTransactionPage = z.infer<typeof financeTransactionPageSchema>;
+export type FinanceTransactionPage = z.infer<
+  typeof financeTransactionPageSchema
+>;
 
 export const reconciliationCaseSchema = z.object({
   id: z.string().min(1),
@@ -203,4 +218,6 @@ export const accountFinanceDashboardSchema = z.object({
   }),
   transactions: z.array(financeTransactionSchema),
 });
-export type AccountFinanceDashboard = z.infer<typeof accountFinanceDashboardSchema>;
+export type AccountFinanceDashboard = z.infer<
+  typeof accountFinanceDashboardSchema
+>;

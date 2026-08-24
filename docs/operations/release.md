@@ -1,14 +1,59 @@
-# Mobile release operations
+# Production release runbook
 
-Build, submission, and release are separate approvals.
+Build, database migration, deployment, traffic enablement, and mobile-store
+submission are separate approvals. A green build alone is not authority to
+process production data or money.
 
-1. Re-check current Apple, Google, and Expo requirements and update `docs/compliance/store-requirements.md`.
-2. Configure production URLs, stable identifiers, EAS project, and signing data through secure release environment variables.
-3. Run `make check`, `make mobile-prebuild-clean`, `make mobile-check`, and `make store-check`.
-4. Resolve every `FAIL`; assign owners for every warning and manual-review result.
-5. Render and deploy association files with `make association-files`; verify both public HTTPS responses.
-6. Build preview candidates, test real devices and accessibility, then build production candidates.
-7. Inspect the signed IPA/AAB, including entitlements, privacy manifests, permissions, native libraries, endpoints, version, and signing identity.
-8. Submit only with `make submit-ios` or `make submit-android`. Submission never implies automatic public release.
+## Release candidate
 
-Do not put credentials, keystores, App Store Connect keys, service-account JSON, or reviewer passwords in the repository. Roll back by halting rollout/store release, disabling affected backend capability where safe, and shipping an incremented corrective build; uploaded build numbers/version codes are never reused.
+1. Freeze the release commit. CI must pass quality/builds, secret scanning,
+   browser E2E on Chromium/Firefox/WebKit, clean-database migrations, and both
+   container builds.
+2. Build API/worker once from `backend/Dockerfile`. Build the web image from
+   `frontend/Dockerfile` with production public values. Sign images, generate an
+   SBOM in the delivery platform, scan them, and promote immutable digests—not
+   mutable tags—between environments.
+3. Deploy the same artifacts to staging with production-shaped configuration.
+   Run real provider sandbox tests for payment, refund, transfer/payout,
+   Identity, registry verification, Gemini moderation, and transactional email.
+4. Complete the backup restore drill and record restricted evidence. Fill the
+   provider-smoke and security/legal/operations/product approval files with the
+   exact PASS/APPROVED markers required by `scripts/production-readiness.mjs`.
+5. Load production secrets from the secret manager and run
+   `make production-release-check`. Never paste values into tickets or logs.
+
+## Production sequence
+
+1. Confirm PITR and object backup replication are current. Record the last
+   Stripe reconciliation point and current migration version.
+2. Apply forward-only migrations from the release artifact. The migrator checks
+   SHA-256 history and refuses an edited applied migration. Do not run `db-seed`.
+3. Deploy API pods with zero unavailable capacity. Wait for `/readyz`; perform
+   read-only smoke checks while old workers remain active.
+4. Roll worker pods using the same backend image. Database leases prevent two
+   replicas from owning the same scheduled job.
+5. Deploy web pods, purge only the intended CDN release paths, then shift a small
+   traffic percentage. Watch availability, latency, auth email, webhooks,
+   scheduled jobs, database, and error-budget alerts before full traffic.
+6. Verify login/verification/reset, search, publication and media processing,
+   messaging, favorite account isolation, quote/checkout, refund, confirmed
+   delivery transfer, seller payout, KYC/KYB, moderation, admin authorization,
+   consent reopening, SEO metadata, and mobile-navigation clearance.
+
+## Rollback
+
+Roll API, worker, and web images back to the previous immutable release when the
+schema remains backward-compatible. Never execute a destructive down migration.
+If a new schema causes the fault, disable the affected capability and ship a
+forward correction. Restore data only for corruption or loss and follow
+`backup-restore.md`; after any recovery, reconcile Stripe before reopening money
+movement.
+
+## Mobile release appendix
+
+Run `make mobile-prebuild-clean`, `make mobile-check`, and `make store-check`;
+resolve every FAIL and assign every manual review. Deploy association files,
+test real devices and accessibility, inspect signed IPA/AAB entitlements,
+privacy manifests, endpoints, version and signing identity, then submit only
+with `make submit-ios` or `make submit-android`. Submission never implies an
+automatic public release, and uploaded build numbers are never reused.

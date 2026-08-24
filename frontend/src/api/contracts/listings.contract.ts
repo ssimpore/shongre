@@ -13,6 +13,7 @@ export interface ListingsServiceContract {
     totalPages: number;
   }>;
   createListingDraft(userId?: string): Promise<PublicationDraftState>;
+  getListingDraft(): Promise<PublicationDraftState | null>;
   saveListingDraft(
     draft: PublicationDraftState,
     userId?: string,
@@ -21,6 +22,7 @@ export interface ListingsServiceContract {
     draft: PublicationDraftState,
     sellerId: string,
   ): Promise<Listing>;
+  uploadListingPhoto(file: File): Promise<{ assetId: string; url: string }>;
   updateListing(id: string, updates: Partial<Listing>): Promise<Listing>;
   deleteListing(id: string): Promise<boolean>;
   toggleFavorite(listingId: string): Promise<boolean>;

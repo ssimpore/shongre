@@ -34,7 +34,9 @@ export class HttpVerificationService implements VerificationServiceContract {
     state?: ManualReviewState,
   ): Promise<ManualReviewCase[]> {
     const query = state ? `?state=${encodeURIComponent(state)}` : "";
-    return httpClient.get<ManualReviewCase[]>(`/admin/compliance/reviews${query}`);
+    return httpClient.get<ManualReviewCase[]>(
+      `/admin/compliance/reviews${query}`,
+    );
   }
 
   async decideManualReview(input: {
@@ -97,14 +99,19 @@ export class HttpVerificationService implements VerificationServiceContract {
     userId: string;
     jurisdiction: string;
     returnTo: string;
+    contactEmail: string;
+    displayName: string;
+    sellerType: "individual" | "professional";
   }): Promise<{
     accountReference: string;
     onboardingUrl: string;
     required: VerificationDimension[];
   }> {
+    const accountToken = await createStripeAccountToken(input);
     return httpClient.post("/compliance/payment/onboarding", {
       jurisdiction: input.jurisdiction,
       returnTo: input.returnTo,
+      accountToken,
     });
   }
   async getUserVerificationStatus(userId: string): Promise<{
@@ -140,7 +147,46 @@ export class HttpVerificationService implements VerificationServiceContract {
       { userId, siret },
     );
   }
-
 }
 
 export const httpVerificationService = new HttpVerificationService();
+
+async function createStripeAccountToken(input: {
+  jurisdiction: string;
+  contactEmail: string;
+  displayName: string;
+  sellerType: "individual" | "professional";
+}): Promise<string> {
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+  if (!/^pk_(test|live)_[A-Za-z0-9]+$/.test(publishableKey)) {
+    throw new Error("Le parcours de versement n’est pas configuré.");
+  }
+  const response = await fetch(
+    "https://api.stripe.com/v2/core/account_tokens",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${publishableKey}`,
+        "Content-Type": "application/json",
+        "Stripe-Version": "2026-07-29.dahlia",
+      },
+      body: JSON.stringify({
+        contact_email: input.contactEmail,
+        display_name: input.displayName,
+        identity: {
+          country: input.jurisdiction.toLowerCase(),
+          entity_type:
+            input.sellerType === "professional" ? "company" : "individual",
+        },
+      }),
+    },
+  );
+  const payload = await response.json().catch(() => ({}));
+  const token = String((payload as { id?: string }).id || "");
+  if (!response.ok || !/^accttok_[A-Za-z0-9]+$/.test(token)) {
+    throw new Error(
+      "Le prestataire de paiement n’a pas pu démarrer la vérification.",
+    );
+  }
+  return token;
+}

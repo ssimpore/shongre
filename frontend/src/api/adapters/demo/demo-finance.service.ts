@@ -26,9 +26,12 @@ function scaledDashboard(scope: FinanceScope): PlatformFinanceDashboard {
   const dashboard = structuredClone(DEMO_PLATFORM_FINANCE_DASHBOARD);
   dashboard.scope = scope;
   if (scope.marketCode === "ALL") return dashboard;
-  const market = dashboard.markets.find((item) => item.marketCode === scope.marketCode);
+  const market = dashboard.markets.find(
+    (item) => item.marketCode === scope.marketCode,
+  );
   if (!market) return { ...dashboard, revenueSources: [], markets: [] };
-  const ratio = market.platformRevenue.amountMinor /
+  const ratio =
+    market.platformRevenue.amountMinor /
     dashboard.metrics.platformRevenue.amount.amountMinor;
   const scale = (amountMinor: number) => Math.round(amountMinor * ratio);
   dashboard.metrics.platformRevenue.amount = market.platformRevenue;
@@ -59,19 +62,26 @@ function scaledDashboard(scope: FinanceScope): PlatformFinanceDashboard {
   dashboard.metrics.mrr.amount.amountMinor = scale(
     dashboard.metrics.mrr.amount.amountMinor,
   );
-  dashboard.metrics.arr.amount.amountMinor = dashboard.metrics.mrr.amount.amountMinor * 12;
+  dashboard.metrics.arr.amount.amountMinor =
+    dashboard.metrics.mrr.amount.amountMinor * 12;
   dashboard.revenueSources = dashboard.revenueSources.map((source) => ({
     ...source,
     amount: { ...source.amount, amountMinor: scale(source.amount.amountMinor) },
   }));
   dashboard.verticals = dashboard.verticals.map((vertical) => ({
     ...vertical,
-    revenue: { ...vertical.revenue, amountMinor: scale(vertical.revenue.amountMinor) },
+    revenue: {
+      ...vertical.revenue,
+      amountMinor: scale(vertical.revenue.amountMinor),
+    },
     mrr: { ...vertical.mrr, amountMinor: scale(vertical.mrr.amountMinor) },
   }));
   const sourceDifference =
     market.platformRevenue.amountMinor -
-    dashboard.revenueSources.reduce((sum, source) => sum + source.amount.amountMinor, 0);
+    dashboard.revenueSources.reduce(
+      (sum, source) => sum + source.amount.amountMinor,
+      0,
+    );
   if (dashboard.revenueSources[0]) {
     dashboard.revenueSources[0].amount.amountMinor += sourceDifference;
   }
@@ -90,12 +100,19 @@ function scaledDashboard(scope: FinanceScope): PlatformFinanceDashboard {
   return dashboard;
 }
 
-function matchingTransactions(query: FinanceTransactionQuery): FinanceTransaction[] {
+function matchingTransactions(
+  query: FinanceTransactionQuery,
+): FinanceTransaction[] {
   const normalized = query.query?.trim().toLocaleLowerCase("fr") ?? "";
   return DEMO_FINANCE_TRANSACTIONS.filter((transaction) => {
-    if (query.marketCode !== "ALL" && transaction.marketCode !== query.marketCode) return false;
+    if (
+      query.marketCode !== "ALL" &&
+      transaction.marketCode !== query.marketCode
+    )
+      return false;
     if (query.status && transaction.status !== query.status) return false;
-    if (query.needsReviewOnly && transaction.status !== "needs_review") return false;
+    if (query.needsReviewOnly && transaction.status !== "needs_review")
+      return false;
     if (!normalized) return true;
     return [
       transaction.reference,
@@ -118,12 +135,14 @@ export class DemoFinanceService implements FinanceServiceContract {
   async getAccountDashboard() {
     await simulateNetworkDelay(80);
     const user = storageService.getCurrentUser();
-    if (!user) throw new Error("Une session est requise pour consulter les finances.");
+    if (!user)
+      throw new Error("Une session est requise pour consulter les finances.");
     return createDemoAccountFinanceDashboard(
       user.id,
       user.companyName || user.name,
       user.accountType === "professional" ? "professional" : "individual",
-      user.accountType === "professional" || ["seller", "individual_seller"].includes(String(user.role)),
+      user.accountType === "professional" ||
+        ["seller", "individual_seller"].includes(String(user.role)),
     );
   }
 
@@ -140,7 +159,9 @@ export class DemoFinanceService implements FinanceServiceContract {
     );
   }
 
-  async listTransactions(query: FinanceTransactionQuery): Promise<FinanceTransactionPage> {
+  async listTransactions(
+    query: FinanceTransactionQuery,
+  ): Promise<FinanceTransactionPage> {
     await simulateNetworkDelay(90);
     const items = matchingTransactions(query);
     items.forEach(assertBalancedTransaction);
@@ -150,7 +171,9 @@ export class DemoFinanceService implements FinanceServiceContract {
 
   async getTransaction(transactionId: string) {
     await simulateNetworkDelay(40);
-    const transaction = DEMO_FINANCE_TRANSACTIONS.find((item) => item.id === transactionId);
+    const transaction = DEMO_FINANCE_TRANSACTIONS.find(
+      (item) => item.id === transactionId,
+    );
     if (!transaction) throw new Error("Transaction financière introuvable.");
     assertBalancedTransaction(transaction);
     return structuredClone(transaction);
@@ -161,10 +184,22 @@ export class DemoFinanceService implements FinanceServiceContract {
     return structuredClone([...DEMO_RECONCILIATION_CASES]);
   }
 
-  async exportTransactions(query: FinanceTransactionQuery): Promise<FinanceExport> {
+  async exportTransactions(
+    query: FinanceTransactionQuery,
+  ): Promise<FinanceExport> {
     const transactions = matchingTransactions(query);
     const rows = [
-      ["Référence", "Date", "Type", "Compte", "Marché", "Brut (minor)", "Net (minor)", "Devise", "Statut"],
+      [
+        "Référence",
+        "Date",
+        "Type",
+        "Compte",
+        "Marché",
+        "Brut (minor)",
+        "Net (minor)",
+        "Devise",
+        "Statut",
+      ],
       ...transactions.map((transaction) => [
         transaction.reference,
         transaction.occurredAt,
@@ -180,7 +215,11 @@ export class DemoFinanceService implements FinanceServiceContract {
     return {
       fileName: `shongre-finance-${query.period}-${query.marketCode}.csv`,
       mimeType: "text/csv",
-      content: rows.map((row) => row.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\n"),
+      content: rows
+        .map((row) =>
+          row.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(","),
+        )
+        .join("\n"),
     };
   }
 }

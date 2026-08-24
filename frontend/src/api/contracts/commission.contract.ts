@@ -19,7 +19,9 @@ export interface CommissionServiceContract {
       occurredAt?: string;
     },
   ): Promise<CommissionReversal>;
-  getAnalytics(query: CommissionAnalyticsQuery): Promise<CommissionAnalyticsRow[]>;
+  getAnalytics(
+    query: CommissionAnalyticsQuery,
+  ): Promise<CommissionAnalyticsRow[]>;
   createDraft(input: {
     policies: CommissionPolicy[];
     reason: string;

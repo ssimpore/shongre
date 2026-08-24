@@ -1,4 +1,5 @@
 import {
+  CreateOrGetConversationInput,
   MessagingServiceContract,
   SendMessageInput,
 } from "../../contracts/messaging.contract";
@@ -17,6 +18,26 @@ export class DemoMessagingService implements MessagingServiceContract {
   async getConversationById(id: string): Promise<Conversation | null> {
     await simulateNetworkDelay();
     return messagingRepository.getConversationById(id);
+  }
+
+  async getMessages(conversationId: string): Promise<Message[]> {
+    await simulateNetworkDelay();
+    return messagingRepository.getMessages(conversationId);
+  }
+
+  async createOrGetConversation(
+    input: CreateOrGetConversationInput,
+  ): Promise<Conversation> {
+    await simulateNetworkDelay();
+    return messagingRepository.createOrGetConversation({
+      listingId: input.listingId,
+      buyerId:
+        input.buyerId || storageService.getCurrentUser()?.id || "guest-user",
+      sellerId: input.sellerId || "seller-pro-1",
+      buyerName: input.buyerName,
+      sellerName: input.sellerName,
+      initialMessage: input.initialMessage,
+    });
   }
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
@@ -103,6 +124,16 @@ export class DemoMessagingService implements MessagingServiceContract {
   async blockUser(_userId: string, targetUserId: string): Promise<void> {
     await simulateNetworkDelay();
     userRepository.toggleBlock(targetUserId);
+  }
+
+  async unblockUser(_userId: string, targetUserId: string): Promise<void> {
+    await simulateNetworkDelay();
+    storageService.unblockUser(targetUserId);
+  }
+
+  async getBlockedUserIds(_userId: string): Promise<string[]> {
+    await simulateNetworkDelay();
+    return storageService.getBlockedUsers();
   }
 }
 

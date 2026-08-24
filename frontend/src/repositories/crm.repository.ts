@@ -207,7 +207,7 @@ const INITIAL_CONTACTS: CrmContact[] = [
     qualification: "high",
     ownerName: "Antoine Fabre",
     marketCode: "FR",
-    tags: ["Particulier VIP", "Acheteur Séquestre"],
+    tags: ["Particulier VIP", "Acheteur en ligne"],
     source: "shongre_signup",
     doNotContact: false,
     notesCount: 2,

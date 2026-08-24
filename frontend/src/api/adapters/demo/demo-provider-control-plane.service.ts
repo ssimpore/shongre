@@ -28,9 +28,7 @@ const demoEvidence = (
   };
 };
 
-export class DemoProviderControlPlaneService
-  implements ProviderControlPlaneServiceContract
-{
+export class DemoProviderControlPlaneService implements ProviderControlPlaneServiceContract {
   async getSnapshot(): Promise<ProviderControlPlaneSnapshot> {
     const providers = SHONGRE_PROVIDER_REGISTRY.map((definition) => {
       const runtime = demoEvidence(definition.adapterStatus, definition.kind);
@@ -40,7 +38,9 @@ export class DemoProviderControlPlaneService
         readiness: evaluateProviderReadiness(definition, runtime),
       };
     });
-    const byId = new Map(providers.map((entry) => [entry.definition.id, entry]));
+    const byId = new Map(
+      providers.map((entry) => [entry.definition.id, entry]),
+    );
     const capabilities = SHONGRE_CAPABILITY_REQUIREMENTS.map((requirement) => {
       const primary = byId.get(requirement.primaryProviderId);
       const implemented = Boolean(
@@ -114,8 +114,7 @@ export class DemoProviderControlPlaneService
       checks: [
         {
           name: "production_adapter",
-          status:
-            definition?.adapterStatus === "IMPLEMENTED" ? "PASS" : "FAIL",
+          status: definition?.adapterStatus === "IMPLEMENTED" ? "PASS" : "FAIL",
           message: definition
             ? `État du code : ${definition.adapterStatus}.`
             : "Fournisseur absent du registre.",
@@ -123,7 +122,8 @@ export class DemoProviderControlPlaneService
         {
           name: "live_probe",
           status: "SKIP",
-          message: "Les probes externes sont interdits dans l'adaptateur de démo.",
+          message:
+            "Les probes externes sont interdits dans l'adaptateur de démo.",
         },
       ],
     };

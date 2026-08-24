@@ -36,7 +36,9 @@ describe("vertical professional plans migration safeguards", () => {
   it("claims one trial per account and family atomically", () => {
     expect(migration).toContain("UNIQUE (account_id, family_id)");
     expect(migration).toContain("claim_monetization_trial");
-    expect(migration).toContain("ON CONFLICT (account_id,family_id) DO NOTHING");
+    expect(migration).toContain(
+      "ON CONFLICT (account_id,family_id) DO NOTHING",
+    );
     expect(migration).toContain("RETURNS BOOLEAN");
   });
 
@@ -69,9 +71,7 @@ describe("vertical professional plans migration safeguards", () => {
   });
 
   it("moves entitlements atomically when a subscription plan changes", () => {
-    expect(migration).toContain(
-      "sync_monetization_subscription_plan_change",
-    );
+    expect(migration).toContain("sync_monetization_subscription_plan_change");
     expect(migration).toContain("status = 'revoked'");
     expect(migration).toContain(
       "ON CONFLICT (source_order_id,product_id,entitlement_key) DO UPDATE",
@@ -84,9 +84,7 @@ describe("vertical professional plans migration safeguards", () => {
   it("grants included credits through the append-only ledger", () => {
     expect(migration).toContain("grant_subscription_recurring_credits");
     expect(migration).toContain("grant_due_subscription_recurring_credits");
-    expect(migration).toContain(
-      "record_monetization_credit_transaction",
-    );
+    expect(migration).toContain("record_monetization_credit_transaction");
     expect(migration).toContain("subscription-credit:");
   });
 });

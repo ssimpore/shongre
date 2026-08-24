@@ -11,10 +11,10 @@ import {
 import { Provider } from "./provider.types";
 
 const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
-  // 1. MangoPay Escrow & Payments
+  // 1. MangoPay marketplace candidate (no production runtime adapter)
   {
     id: "mangopay",
-    code: "MANGOPAY_ESCROW",
+    code: "MANGOPAY_CANDIDATE",
     name: "MANGOPAY (candidat marketplace)",
     category: "PAYMENT",
     capabilities: [
@@ -50,9 +50,9 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
         },
         {
           key: "walletIdPlatform",
-          label: "Identifiant Portefeuille de Séquestre Plateforme",
+          label: "Identifiant du portefeuille plateforme (candidat)",
           type: "text",
-          placeholder: "wlt_shongre_escrow_master_01",
+          placeholder: "wlt_candidate_platform",
           required: true,
         },
         {
@@ -90,6 +90,10 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
       "payment.card",
       "payment.wallet",
       "payment.refund",
+      "payment.marketplace",
+      "payment.subscription",
+      "payout.transfer",
+      "verification.payment",
       "invoicing.subscription",
     ],
     supportedMarkets: ["FR", "BE", "CH", "ES", "LU", "DE"],
@@ -743,11 +747,11 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
     },
   },
 
-  // 17. INSEE SIRENE & Pappers API (Vérification Entreprises KYB)
+  // 17. INSEE API SIRENE (Vérification Entreprises KYB)
   {
     id: "insee_sirene",
     code: "INSEE_SIRENE",
-    name: "Registre entreprise France (démo uniquement)",
+    name: "INSEE API SIRENE",
     category: "BUSINESS_VERIFICATION",
     capabilities: ["verification.business", "verification.vat"],
     supportedMarkets: ["FR"],
@@ -758,8 +762,8 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
     configurationSchema: {
       fields: [
         {
-          key: "apiKeyPappers",
-          label: "Clé API Pappers Entreprises",
+          key: "apiToken",
+          label: "Jeton API INSEE SIRENE",
           type: "password",
           placeholder: "••••••••••••••••",
           required: true,
@@ -768,19 +772,20 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
       ],
     },
     metadata: {
-      website: "https://www.pappers.fr",
-      documentationUrl: "https://www.pappers.fr/api/documentation",
-      documentationLabel: "Documentation API Pappers",
-      companyName: "Pappers SAS",
+      website: "https://www.insee.fr",
+      documentationUrl: "https://portail-api.insee.fr/",
+      documentationLabel: "Portail API INSEE",
+      companyName:
+        "Institut national de la statistique et des études économiques",
       headquartersCountry: "France",
     },
   },
 
-  // 18. Veriff (KYC Identity Verification)
+  // 18. Stripe Identity (KYC Identity Verification)
   {
-    id: "veriff",
-    code: "VERIFF_KYC",
-    name: "Veriff (candidat KYC)",
+    id: "stripe_identity",
+    code: "STRIPE_IDENTITY",
+    name: "Stripe Identity",
     category: "IDENTITY_VERIFICATION",
     capabilities: ["verification.identity"],
     supportedMarkets: ["*"],
@@ -792,14 +797,14 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
       fields: [
         {
           key: "apiKey",
-          label: "Clé API Publique Veriff",
+          label: "Clé publique Stripe",
           type: "text",
-          placeholder: "veriff_pub_••••••••",
+          placeholder: "pk_live_••••••••",
           required: true,
         },
         {
           key: "apiSecret",
-          label: "Clé API Secrète Veriff",
+          label: "Clé secrète Stripe",
           type: "password",
           placeholder: "••••••••••••••••",
           required: true,
@@ -808,11 +813,11 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
       ],
     },
     metadata: {
-      website: "https://www.veriff.com",
-      documentationUrl: "https://developers.veriff.com",
-      documentationLabel: "Documentation Veriff API",
-      companyName: "Veriff OÜ",
-      headquartersCountry: "Estonie (UE)",
+      website: "https://stripe.com/identity",
+      documentationUrl: "https://docs.stripe.com/identity",
+      documentationLabel: "Documentation Stripe Identity",
+      companyName: "Stripe Payments Europe Ltd.",
+      headquartersCountry: "Irlande (UE)",
     },
   },
 

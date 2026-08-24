@@ -36,7 +36,10 @@ export const IdentityVerificationModal: React.FC<
       });
       refreshUser?.();
       onSuccess?.();
-      toast.success("Vérification lancée", "Votre progression est enregistrée.");
+      toast.success(
+        "Vérification lancée",
+        "Votre progression est enregistrée.",
+      );
       onClose();
       if (session.redirectUrl && session.redirectUrl !== returnTo) {
         window.location.assign(session.redirectUrl);
@@ -77,22 +80,29 @@ export const IdentityVerificationModal: React.FC<
             <div>
               <dt className="font-bold text-stone-900">Traitement</dt>
               <dd className="mt-1 text-stone-600">
-                Un prestataire spécialisé contrôle le document dans un espace sécurisé.
+                Un prestataire spécialisé contrôle le document dans un espace
+                sécurisé.
               </dd>
             </div>
           </dl>
         </div>
 
         <div className="flex gap-3 text-sm text-stone-600">
-          <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+          <LockKeyhole
+            className="mt-0.5 h-5 w-5 shrink-0 text-success"
+            aria-hidden="true"
+          />
           <p>
-            Shongre conserve le résultat et une référence technique, pas les images
-            de votre pièce dans votre profil.
+            Shongre conserve le résultat et une référence technique, pas les
+            images de votre pièce dans votre profil.
           </p>
         </div>
 
         {error ? (
-          <p role="alert" className="rounded-xl bg-danger-surface p-3 text-sm text-danger">
+          <p
+            role="alert"
+            className="rounded-xl bg-danger-surface p-3 text-sm text-danger"
+          >
             {error}
           </p>
         ) : null}

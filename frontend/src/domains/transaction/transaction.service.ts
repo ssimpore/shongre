@@ -311,7 +311,7 @@ class TransactionService {
           timestamp: nowIso,
           actorId: input.buyer.id,
           actorName: input.buyer.name,
-          note: `Réservation initiée avec paiement sous séquestre sécurisé (${amounts.totalAmount.toFixed(2)} €).`,
+          note: `Réservation initiée avec paiement en ligne (${amounts.totalAmount.toFixed(2)} €).`,
         },
       ],
       createdAt: nowIso,
@@ -347,8 +347,8 @@ class TransactionService {
     notifications.unshift({
       id: `notif-${Date.now()}-buyer`,
       userId: input.buyer.id,
-      title: "Paiement sécurisé sous séquestre",
-      message: `Votre réservation pour "${listing.title}" est validée. Les fonds sont sécurisés jusqu'à la remise conforme.`,
+      title: "Paiement confirmé",
+      message: `Votre réservation pour "${listing.title}" est validée. Consultez la commande pour suivre le paiement et la remise.`,
       type: "system",
       linkUrl: "/compte/achats",
       isRead: false,
@@ -365,7 +365,7 @@ class TransactionService {
       targetId: txId,
       targetName: listing.title,
       action: "listing_moderated",
-      details: `Réservation [${referenceCode}] créée avec séquestre Mangopay de ${amounts.totalAmount.toFixed(2)} €.`,
+      details: `Réservation [${referenceCode}] créée avec paiement en ligne de ${amounts.totalAmount.toFixed(2)} €.`,
     });
 
     return transaction;
@@ -466,7 +466,7 @@ class TransactionService {
           timestamp: nowIso,
           actorId: input.buyer.id,
           actorName: input.buyer.name,
-          note: `Achat direct en ligne avec séquestre Mangopay (${amounts.totalAmount.toFixed(2)} €).`,
+          note: `Achat direct avec paiement en ligne (${amounts.totalAmount.toFixed(2)} €).`,
         },
       ],
       createdAt: nowIso,
@@ -781,7 +781,7 @@ class TransactionService {
       timestamp: now,
       actorId: buyer.id,
       actorName: buyer.name,
-      note: `Réception conforme confirmée par l'acheteur. Séquestre débloqué en faveur du vendeur (${(tx.sellerPayoutAmount || tx.amount).toFixed(2)} €).`,
+      note: `Réception conforme confirmée par l'acheteur. Versement vendeur demandé (${(tx.sellerPayoutAmount || tx.amount).toFixed(2)} €).`,
     });
 
     storageService.saveTransaction(tx);
@@ -904,7 +904,7 @@ class TransactionService {
       timestamp: now,
       actorId: actor.id,
       actorName: actor.name,
-      note: `Litige ouvert : "${disputeData.reason}". Les fonds sous séquestre restent gelés jusqu'à résolution.`,
+      note: `Litige ouvert : "${disputeData.reason}". Le versement reste suspendu jusqu'à résolution.`,
     });
 
     storageService.saveTransaction(tx);
@@ -916,7 +916,7 @@ class TransactionService {
       id: `notif-${Date.now()}`,
       userId: targetUserId,
       title: "Un litige a été ouvert",
-      message: `${actor.name} a signalé un problème concernant "${tx.listingTitle}". Les fonds sont sécurisés par notre service d'arbitrage.`,
+      message: `${actor.name} a signalé un problème concernant "${tx.listingTitle}". Le versement est suspendu pendant l'examen du dossier.`,
       type: "system",
       linkUrl: "/compte/achats",
       isRead: false,

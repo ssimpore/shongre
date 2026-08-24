@@ -12,14 +12,34 @@ if (dataMode !== "demo" && dataMode !== "api") {
 const apiUrl =
   process.env.NEXT_PUBLIC_API_URL ?? process.env.VITE_API_URL ?? "";
 let apiOrigin = "";
+let parsedApiUrl: URL | undefined;
 try {
-  apiOrigin = apiUrl ? new URL(apiUrl).origin : "";
+  parsedApiUrl = apiUrl ? new URL(apiUrl) : undefined;
+  apiOrigin = parsedApiUrl?.origin ?? "";
 } catch {
   throw new Error(
     "[Web Config] NEXT_PUBLIC_API_URL must be an absolute URL when provided.",
   );
 }
 const isProduction = process.env.NODE_ENV === "production";
+const isProductionRelease = process.env.APP_ENV === "production";
+
+if (isProductionRelease) {
+  const releaseErrors: string[] = [];
+  if (dataMode !== "api") releaseErrors.push("NEXT_PUBLIC_DATA_MODE=api");
+  if (!parsedApiUrl) releaseErrors.push("NEXT_PUBLIC_API_URL");
+  else if (parsedApiUrl.protocol !== "https:")
+    releaseErrors.push("NEXT_PUBLIC_API_URL must use HTTPS");
+  if (process.env.NEXT_PUBLIC_ENABLE_MOCK_STORAGE !== "false")
+    releaseErrors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
+  if (!/^pk_live_[A-Za-z0-9]+$/.test(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""))
+    releaseErrors.push("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_…");
+  if (releaseErrors.length > 0) {
+    throw new Error(
+      `[Web Config] Production release configuration is unsafe: ${releaseErrors.join(", ")}.`,
+    );
+  }
+}
 const allowedDevOrigins = Array.from(
   new Set([
     "dev.shongre.com",
@@ -42,7 +62,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ""}${isProduction ? "" : " http: ws: wss:"}`,
+  `connect-src 'self' https://api.stripe.com${apiOrigin ? ` ${apiOrigin}` : ""}${isProduction ? "" : " http: ws: wss:"}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -67,6 +87,8 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_DATA_MODE: dataMode,
     NEXT_PUBLIC_API_URL: apiUrl,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
   },
   async redirects() {
     return [

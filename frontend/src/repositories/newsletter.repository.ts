@@ -139,7 +139,7 @@ const INITIAL_CAMPAIGNS: NewsletterCampaign[] = [
     topic: "deals",
     status: "scheduled",
     subject: "⚡ Jusqu'à -40% sur les smartphones et vélos électriques",
-    previewText: "Offres limitées avec livraison sécurisée sous séquestre.",
+    previewText: "Offres limitées avec livraison et paiement en ligne.",
     content: {
       heroTitle: "Les baisses de prix du week-end",
       heroSubtitle:

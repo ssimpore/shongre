@@ -13,7 +13,9 @@ describe("finance ledger", () => {
   it("keeps every deterministic demo transaction balanced by currency", () => {
     DEMO_FINANCE_TRANSACTIONS.forEach((transaction) => {
       expect(() => assertBalancedTransaction(transaction)).not.toThrow();
-      expect(calculateLedgerBalances(transaction.entries)[0]?.differenceMinor).toBe(0);
+      expect(
+        calculateLedgerBalances(transaction.entries)[0]?.differenceMinor,
+      ).toBe(0);
     });
   });
 

@@ -25,9 +25,12 @@ const queryParams = (query: FinanceTransactionQuery) => ({
 
 export class HttpFinanceService implements FinanceServiceContract {
   getPlatformDashboard(scope: FinanceTransactionQuery) {
-    return httpClient.get<PlatformFinanceDashboard>("/finance/platform/overview", {
-      params: queryParams(scope),
-    });
+    return httpClient.get<PlatformFinanceDashboard>(
+      "/finance/platform/overview",
+      {
+        params: queryParams(scope),
+      },
+    );
   }
 
   getAccountDashboard() {
@@ -35,13 +38,18 @@ export class HttpFinanceService implements FinanceServiceContract {
   }
 
   getOrganizationDashboard() {
-    return httpClient.get<AccountFinanceDashboard>("/finance/organization/overview");
+    return httpClient.get<AccountFinanceDashboard>(
+      "/finance/organization/overview",
+    );
   }
 
   listTransactions(query: FinanceTransactionQuery) {
-    return httpClient.get<FinanceTransactionPage>("/finance/platform/transactions", {
-      params: queryParams(query),
-    });
+    return httpClient.get<FinanceTransactionPage>(
+      "/finance/platform/transactions",
+      {
+        params: queryParams(query),
+      },
+    );
   }
 
   getTransaction(transactionId: string) {
@@ -51,13 +59,18 @@ export class HttpFinanceService implements FinanceServiceContract {
   }
 
   listReconciliationCases() {
-    return httpClient.get<ReconciliationCase[]>("/finance/platform/reconciliation");
+    return httpClient.get<ReconciliationCase[]>(
+      "/finance/platform/reconciliation",
+    );
   }
 
   exportTransactions(query: FinanceTransactionQuery) {
-    return httpClient.get<FinanceExport>("/finance/platform/exports/transactions", {
-      params: queryParams(query),
-    });
+    return httpClient.get<FinanceExport>(
+      "/finance/platform/exports/transactions",
+      {
+        params: queryParams(query),
+      },
+    );
   }
 }
 

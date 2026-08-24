@@ -106,12 +106,25 @@ export const complianceEvaluationInputSchema = z.object({
   transactionContext: z
     .object({
       transactionType: z
-        .enum(["classified", "reservation", "direct_purchase", "service_booking"])
+        .enum([
+          "classified",
+          "reservation",
+          "direct_purchase",
+          "service_booking",
+        ])
         .optional(),
-      contractConclusionMode: z.enum(["off_platform", "platform", "unknown"]).optional(),
+      contractConclusionMode: z
+        .enum(["off_platform", "platform", "unknown"])
+        .optional(),
       paymentMethod: z.string().max(50).optional(),
       paymentFlow: z
-        .enum(["none", "redirect_to_psp", "psp_marketplace", "platform_collects", "unknown"])
+        .enum([
+          "none",
+          "redirect_to_psp",
+          "psp_marketplace",
+          "platform_collects",
+          "unknown",
+        ])
         .optional(),
       amountMinor: z.number().int().nonnegative().optional(),
       currency: z.string().length(3).optional(),
@@ -151,7 +164,9 @@ export interface ComplianceRuleConditions {
     ComplianceEvaluationInput["transactionContext"]
   >["transactionType"][];
   contractConclusionModes?: NonNullable<
-    NonNullable<ComplianceEvaluationInput["transactionContext"]>["contractConclusionMode"]
+    NonNullable<
+      ComplianceEvaluationInput["transactionContext"]
+    >["contractConclusionMode"]
   >[];
   paymentFlows?: NonNullable<
     NonNullable<ComplianceEvaluationInput["transactionContext"]>["paymentFlow"]
@@ -178,7 +193,8 @@ export interface ComplianceRule {
   sourceReferences: string[];
   policyVersion: string;
   governance: "LEGAL_MANDATE" | "BUSINESS_POLICY" | "RISK_CONTROL";
-  status: "DRAFT" | "SCHEDULED" | "ACTIVE" | "RETIRED" | "LEGAL_REVIEW_REQUIRED";
+  status:
+    "DRAFT" | "SCHEDULED" | "ACTIVE" | "RETIRED" | "LEGAL_REVIEW_REQUIRED";
   effectiveFrom: string;
   effectiveUntil?: string;
   priority: number;
@@ -201,7 +217,14 @@ export const complianceRuleSchema = z.object({
       sellerTypes: z.array(z.enum(["individual", "professional"])).optional(),
       categories: z.array(z.string().max(100)).optional(),
       transactionTypes: z
-        .array(z.enum(["classified", "reservation", "direct_purchase", "service_booking"]))
+        .array(
+          z.enum([
+            "classified",
+            "reservation",
+            "direct_purchase",
+            "service_booking",
+          ]),
+        )
         .optional(),
       contractConclusionModes: z
         .array(z.enum(["off_platform", "platform", "unknown"]))

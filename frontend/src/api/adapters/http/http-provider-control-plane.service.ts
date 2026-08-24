@@ -5,9 +5,7 @@ import type {
 import type { ProviderControlPlaneServiceContract } from "../../contracts/provider-control-plane.contract";
 import { httpClient } from "./http-client";
 
-export class HttpProviderControlPlaneService
-  implements ProviderControlPlaneServiceContract
-{
+export class HttpProviderControlPlaneService implements ProviderControlPlaneServiceContract {
   getSnapshot(): Promise<ProviderControlPlaneSnapshot> {
     return httpClient.get("/admin/providers/control-plane");
   }

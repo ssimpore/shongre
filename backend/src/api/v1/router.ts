@@ -31,6 +31,7 @@ import {
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { storageService } from "../../infrastructure/storage/storage-service.js";
 import { Permission } from "../../shared/auth/rbac.js";
 import {
   Principal,
@@ -497,7 +498,7 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // Public seller profiles are part of the marketplace surface.
     this.addRoute("GET", "/users/:id", PUBLIC, async ({ params }) =>
-      usersService.getUserById(params.id),
+      usersService.getPublicUserById(params.id),
     );
     this.addRoute(
       "PUT",
@@ -545,6 +546,13 @@ export class ApiV1Router {
       }),
     );
     this.addRoute(
+      "GET",
+      "/listings/drafts/me",
+      permission("listing.create"),
+      async ({ principal }) =>
+        listingsService.getListingDraft(principal.userId),
+    );
+    this.addRoute(
       "POST",
       "/listings/drafts",
       permission("listing.create"),
@@ -560,6 +568,20 @@ export class ApiV1Router {
         await listingsService.saveListingDraft(body, ownerId);
         return { success: true };
       },
+    );
+    this.addRoute(
+      "POST",
+      "/media/listings/uploads",
+      permission("listing.create"),
+      async ({ principal, body }) =>
+        storageService.createListingMediaUpload(principal.userId, body || {}),
+    );
+    this.addRoute(
+      "POST",
+      "/media/listings/uploads/:id/complete",
+      permission("listing.create"),
+      async ({ principal, params }) =>
+        storageService.completeListingMediaUpload(principal.userId, params.id),
     );
     this.addRoute(
       "POST",
@@ -605,7 +627,7 @@ export class ApiV1Router {
       permission("listing.update.own"),
       async ({ principal, params, body }) => {
         await this.assertListingOwnership(principal, params.id);
-        return listingsService.updateListing(params.id, body);
+        return listingsService.updateSellerListing(params.id, body);
       },
     );
     this.addRoute(
@@ -1390,7 +1412,7 @@ export class ApiV1Router {
     );
 
     // --------------------------------------------------------------------------
-    // ORDERS & ESCROW ROUTES
+    // ORDERS & PAYMENT LIFECYCLE ROUTES
     // --------------------------------------------------------------------------
     this.addRoute(
       "GET",
@@ -1417,6 +1439,17 @@ export class ApiV1Router {
     );
     this.addRoute(
       "POST",
+      "/orders/direct-purchase/quote",
+      permission("order.create"),
+      async ({ principal, body }) =>
+        ordersService.quoteDirectPurchase({
+          listingId: body?.listingId,
+          deliveryMethod: body?.deliveryMethod,
+          buyerId: principal.userId,
+        }),
+    );
+    this.addRoute(
+      "POST",
       "/orders/direct-purchase",
       permission("order.create"),
       async ({ principal, body }) =>
@@ -1434,37 +1467,54 @@ export class ApiV1Router {
     );
     this.addRoute(
       "POST",
+      "/orders/:id/handover-code",
+      AUTHENTICATED,
+      async ({ principal, params }) =>
+        ordersService.issueHandoverCode(params.id, principal.userId),
+    );
+    this.addRoute(
+      "POST",
       "/orders/:id/confirm-pin",
       AUTHENTICATED,
-      async ({ principal, params, body }) => {
-        const order = await ordersService.getOrderById(params.id);
-        this.assertOrderParticipant(principal, order);
-        return ordersService.confirmHandoverPIN(params.id, body?.pin);
-      },
+      async ({ principal, params, body }) =>
+        ordersService.confirmHandoverPIN(
+          params.id,
+          principal.userId,
+          body?.pin,
+        ),
     );
     this.addRoute(
       "POST",
       "/orders/:id/confirm-delivery",
       AUTHENTICATED,
-      async ({ principal, params }) => {
-        const order = await ordersService.getOrderById(params.id);
-        this.assertOrderParticipant(principal, order);
-        return ordersService.confirmDeliveryReceived(params.id);
-      },
+      async ({ principal, params }) =>
+        ordersService.confirmDeliveryReceived(params.id, principal.userId),
+    );
+    this.addRoute(
+      "POST",
+      "/orders/:id/ship",
+      AUTHENTICATED,
+      async ({ principal, params, body }) =>
+        ordersService.markShipped(params.id, principal.userId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/orders/:id/cancel",
+      AUTHENTICATED,
+      async ({ principal, params }) =>
+        ordersService.cancelUnpaidOrder(params.id, principal.userId),
     );
     this.addRoute(
       "POST",
       "/orders/:id/dispute",
       AUTHENTICATED,
-      async ({ principal, params, body }) => {
-        const order = await ordersService.getOrderById(params.id);
-        this.assertOrderParticipant(principal, order);
-        return ordersService.openDispute(
+      async ({ principal, params, body }) =>
+        ordersService.openDispute(
           params.id,
+          principal.userId,
           body?.reason,
           body?.details,
-        );
-      },
+        ),
     );
     this.addRoute(
       "POST",
@@ -1503,14 +1553,16 @@ export class ApiV1Router {
               transactionType: "direct_purchase",
               contractConclusionMode: "platform",
               paymentFlow: "psp_marketplace",
-              amountMinor: body?.amount,
+              amountMinor: body?.amountMinor,
               currency: body?.currency || "EUR",
             },
           })
           .then(() =>
             paymentsService.requestSellerPayout(
               principal.userId,
-              body?.amount,
+              body?.amountMinor,
+              String(body?.currency || "EUR").toUpperCase(),
+              body?.idempotencyKey,
             ),
           ),
     );
@@ -2030,6 +2082,7 @@ export class ApiV1Router {
           userId: principal.userId,
           jurisdiction: body?.jurisdiction || "FR",
           returnUrl: complianceReturnUrl(body?.returnTo),
+          accountToken: body?.accountToken,
         }),
     );
     this.addRoute(
@@ -2071,6 +2124,49 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // MESSAGING ROUTES
     // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/messaging/conversations",
+      permission("message.read.own"),
+      async ({ principal }) =>
+        messagingService.getUserConversations(principal.userId),
+    );
+    this.addRoute(
+      "POST",
+      "/messaging/conversations",
+      permission("message.send"),
+      async ({ principal, body }) =>
+        messagingService.createConversationForListing({
+          listingId: body?.listingId,
+          buyerId: principal.userId,
+          initialMessage: body?.initialMessage,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/messaging/conversations/:id/messages",
+      permission("message.read.own"),
+      async ({ principal, params, query }) =>
+        messagingService.getMessages(params.id, principal.userId, {
+          cursor: query.get("cursor") || undefined,
+          limit: query.get("limit") ? Number(query.get("limit")) : undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/messaging/conversations/:id/messages",
+      permission("message.send"),
+      async ({ principal, params, body }) =>
+        messagingService.sendMessage({
+          conversationId: params.id,
+          senderId: principal.userId,
+          text: body?.text,
+          attachments: body?.attachments,
+          offerPrice: body?.offerPrice,
+        }),
+    );
+    // Compatibility route for clients that still pass their own user id. The
+    // caller can only resolve it to their authenticated account.
     this.addRoute(
       "GET",
       "/messaging/conversations/:userId",
@@ -2139,6 +2235,7 @@ export class ApiV1Router {
         await this.assertConversationAccess(principal, body?.conversationId);
         return messagingService.schedulePickup(
           body?.conversationId,
+          principal.userId,
           body?.date,
           body?.timeSlot,
           body?.address,
@@ -2157,6 +2254,14 @@ export class ApiV1Router {
         );
         return { success: true };
       },
+    );
+    this.addRoute(
+      "GET",
+      "/messaging/blocked",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        userIds: await messagingService.getBlockedUserIds(principal.userId),
+      }),
     );
     this.addRoute(
       "POST",
@@ -2560,9 +2665,70 @@ export class ApiV1Router {
         body,
         rawBody ?? "",
       );
+      const orders = await ordersService.handleStripeWebhook(
+        body,
+        rawBody ?? "",
+      );
+      const identityCompliance = String(body?.type || "").startsWith(
+        "identity.verification_session.",
+      )
+        ? await complianceService.handleProviderWebhook({
+            provider: "identity",
+            payload: body,
+            rawBody: rawBody ?? "",
+          })
+        : null;
+      const paymentCompliance =
+        body?.type === "account.updated"
+          ? await complianceService.handleProviderWebhook({
+              provider: "payment",
+              payload: body,
+              rawBody: rawBody ?? "",
+            })
+          : null;
       logger.info(`Stripe webhook accepted: ${body?.type || "unknown event"}`);
-      return { received: true, auto, realEstate, monetization };
+      return {
+        received: true,
+        auto,
+        realEstate,
+        monetization,
+        orders,
+        identityCompliance,
+        paymentCompliance,
+      };
     });
+    this.addRoute(
+      "POST",
+      "/webhooks/stripe-connect-v2",
+      PUBLIC,
+      async ({ req, body }) => {
+        const rawBody = ((req as any).rawBody as string | undefined) ?? "";
+        const signature = req.headers["stripe-signature"];
+        const verified = verifyStripeSignature({
+          payload: rawBody,
+          signatureHeader: Array.isArray(signature) ? signature[0] : signature,
+          secret: config.stripeConnectWebhookSecret || "",
+        });
+        if (!verified.ok) {
+          logger.warn(`Stripe Connect v2 webhook rejected: ${verified.reason}`);
+          throw new AppError({
+            code: "FORBIDDEN",
+            message: "Signature de webhook invalide.",
+          });
+        }
+        if (!String(body?.type || "").startsWith("v2.core.account")) {
+          return { received: true, ignored: true };
+        }
+        const paymentCompliance = await complianceService.handleProviderWebhook(
+          {
+            provider: "payment",
+            payload: body,
+            rawBody,
+          },
+        );
+        return { received: true, paymentCompliance };
+      },
+    );
     this.addRoute(
       "POST",
       "/webhooks/compliance/:provider",
@@ -2614,7 +2780,7 @@ export class ApiV1Router {
         message: "Identifiant d’annonce manquant.",
       });
     }
-    const listing = await listingsService.getListingById(listingId);
+    const listing = await listingsService.getInternalListingById(listingId);
     if (!listing) {
       throw new AppError({
         code: "NOT_FOUND",
@@ -2736,12 +2902,11 @@ export class ApiV1Router {
         params[name] = decodeURIComponent(match[idx + 1]);
       });
 
-      let body: any = null;
-      if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        body = await this.readRequestBody(req);
-      }
-
       try {
+        let body: any = null;
+        if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+          body = await this.readRequestBody(req);
+        }
         // Identity is resolved once per request, before the guard runs, so the
         // guard and the handler always agree on who the caller is.
         const principal = await this.resolvePrincipal(req);
@@ -2858,12 +3023,46 @@ export class ApiV1Router {
   }
 
   private readRequestBody(req: IncomingMessage): Promise<any> {
-    return new Promise((resolve) => {
-      let data = "";
-      req.on("data", (chunk) => {
-        data += chunk;
+    return new Promise((resolve, reject) => {
+      const declaredLength = Number(req.headers["content-length"] || 0);
+      if (
+        Number.isFinite(declaredLength) &&
+        declaredLength > config.maxRequestBodyBytes
+      ) {
+        req.resume();
+        reject(
+          new AppError({
+            code: "BAD_REQUEST",
+            statusCode: 413,
+            message: "Corps de requête trop volumineux.",
+          }),
+        );
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      let receivedBytes = 0;
+      let settled = false;
+      req.on("data", (chunk: Buffer) => {
+        if (settled) return;
+        receivedBytes += chunk.length;
+        if (receivedBytes > config.maxRequestBodyBytes) {
+          settled = true;
+          reject(
+            new AppError({
+              code: "BAD_REQUEST",
+              statusCode: 413,
+              message: "Corps de requête trop volumineux.",
+            }),
+          );
+          return;
+        }
+        chunks.push(chunk);
       });
       req.on("end", () => {
+        if (settled) return;
+        settled = true;
+        const data = Buffer.concat(chunks).toString("utf8");
         // The exact bytes are retained for signature verification: Stripe signs
         // the raw payload, and re-serializing parsed JSON does not reproduce it.
         (req as any).rawBody = data;
@@ -2876,11 +3075,34 @@ export class ApiV1Router {
             Object.fromEntries(new URLSearchParams(data).entries()),
           );
         }
-        try {
-          resolve(JSON.parse(data));
-        } catch {
-          resolve(data);
+        if (contentType.includes("application/json")) {
+          try {
+            return resolve(JSON.parse(data));
+          } catch {
+            return reject(
+              new AppError({
+                code: "BAD_REQUEST",
+                message: "Corps JSON invalide.",
+              }),
+            );
+          }
         }
+        resolve(data);
+      });
+      req.on("aborted", () => {
+        if (settled) return;
+        settled = true;
+        reject(
+          new AppError({
+            code: "BAD_REQUEST",
+            message: "Requête interrompue.",
+          }),
+        );
+      });
+      req.on("error", (error) => {
+        if (settled) return;
+        settled = true;
+        reject(error);
       });
     });
   }

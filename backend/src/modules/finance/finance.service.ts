@@ -25,15 +25,21 @@ export class FinanceService {
   private readonly repository: FinanceRepository;
 
   constructor(repository?: FinanceRepository) {
-    this.repository = repository ?? (config.dataMode === "database"
-      ? new PostgresFinanceRepository()
-      : new DemoFinanceRepository());
+    this.repository =
+      repository ??
+      (config.dataMode === "database"
+        ? new PostgresFinanceRepository()
+        : new DemoFinanceRepository());
   }
 
   getPlatformDashboard(input: Partial<FinanceScope>) {
     const scope = financeScopeSchema.parse(input);
     const period = periodBounds(scope.period);
-    return this.repository.getPlatformDashboard(scope, period.start, period.end);
+    return this.repository.getPlatformDashboard(
+      scope,
+      period.start,
+      period.end,
+    );
   }
 
   getAccountDashboard(accountId: string) {
@@ -45,19 +51,22 @@ export class FinanceService {
     if (!dashboard) {
       throw new AppError({
         code: "FORBIDDEN",
-        message: "Vous n’avez pas la permission de consulter les finances de cette organisation.",
+        message:
+          "Vous n’avez pas la permission de consulter les finances de cette organisation.",
       });
     }
     return dashboard;
   }
 
-  listTransactions(input: Partial<FinanceScope> & {
-    query?: string;
-    status?: FinanceTransactionStatus;
-    needsReviewOnly?: boolean;
-    cursor?: string;
-    limit?: number;
-  }) {
+  listTransactions(
+    input: Partial<FinanceScope> & {
+      query?: string;
+      status?: FinanceTransactionStatus;
+      needsReviewOnly?: boolean;
+      cursor?: string;
+      limit?: number;
+    },
+  ) {
     const scope = financeScopeSchema.parse(input);
     const period = periodBounds(scope.period);
     return this.repository.listTransactions({
@@ -75,7 +84,10 @@ export class FinanceService {
   async getTransaction(transactionId: string) {
     const transaction = await this.repository.getTransaction(transactionId);
     if (!transaction) {
-      throw new AppError({ code: "NOT_FOUND", message: "Transaction financière introuvable." });
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Transaction financière introuvable.",
+      });
     }
     return transaction;
   }
@@ -84,10 +96,22 @@ export class FinanceService {
     return this.repository.listReconciliationCases();
   }
 
-  async exportTransactions(input: Parameters<FinanceService["listTransactions"]>[0]) {
+  async exportTransactions(
+    input: Parameters<FinanceService["listTransactions"]>[0],
+  ) {
     const page = await this.listTransactions({ ...input, limit: 1000 });
     const rows = [
-      ["Référence", "Date", "Type", "Compte", "Marché", "Brut (minor)", "Net (minor)", "Devise", "Statut"],
+      [
+        "Référence",
+        "Date",
+        "Type",
+        "Compte",
+        "Marché",
+        "Brut (minor)",
+        "Net (minor)",
+        "Devise",
+        "Statut",
+      ],
       ...page.items.map((transaction) => [
         transaction.reference,
         transaction.occurredAt,
@@ -103,7 +127,11 @@ export class FinanceService {
     return {
       fileName: `shongre-finance-${input.period ?? "30d"}-${input.marketCode ?? "ALL"}.csv`,
       mimeType: "text/csv" as const,
-      content: rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(",")).join("\n"),
+      content: rows
+        .map((row) =>
+          row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
+        )
+        .join("\n"),
     };
   }
 }

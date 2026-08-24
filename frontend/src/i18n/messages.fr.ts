@@ -110,21 +110,22 @@ export const messagesFr = {
   "footer.currentDeals": "Bons plans du moment",
   "footer.comingSoon": "{name} — bientôt disponible",
   "footer.newsletterPitch":
-    "Recevez notre sélection hebdomadaire d’annonces et réductions vérifiées.",
-  "footer.hosted": "Hébergé",
+    "Recevez notre sélection hebdomadaire d’annonces et de nouveautés.",
+  "footer.marketContext": "Marché France",
+  "footer.privacyControls": "Consentement modifiable",
   "footer.appPitch": "Emportez Shongre partout avec vous.",
-  "footer.trust.escrowTitle": "Paiement 100% sécurisé",
+  "footer.trust.escrowTitle": "Paiement via Stripe",
   "footer.trust.escrowBody":
-    "Vos paiements sont protégés jusqu’à la bonne réception de votre commande.",
-  "footer.trust.deliveryTitle": "Livraison intégrée",
+    "Les paiements en ligne sont traités par notre prestataire ; leur statut est suivi dans votre commande.",
+  "footer.trust.deliveryTitle": "Remise et expédition",
   "footer.trust.deliveryBody":
-    "Envoi en point relais Mondial Relay, Colissimo ou remise en main propre sécurisée.",
-  "footer.trust.verifiedTitle": "Vendeurs & SIRET vérifiés",
+    "Remise en main propre ou expédition suivie selon les modalités indiquées dans la commande.",
+  "footer.trust.verifiedTitle": "Statuts de confiance lisibles",
   "footer.trust.verifiedBody":
-    "Identités contrôlées et entreprises enregistrées au registre du commerce français.",
-  "footer.trust.supportTitle": "Support client 7j/7",
+    "Les badges d’identité et d’entreprise ne sont affichés qu’après confirmation du prestataire concerné.",
+  "footer.trust.supportTitle": "Centre d’aide et support",
   "footer.trust.supportBody":
-    "Une équipe dédiée basée en France pour vous assister et modérer les annonces.",
+    "Consultez le centre d’aide ou ouvrez une demande pour obtenir une assistance selon les horaires affichés.",
 
   // --- Language selector ----------------------------------------------------
   "language.choose": "Choisir la langue",
@@ -382,7 +383,7 @@ export const messagesFr = {
   "auth.accountTypeSelector.depotDAnnoncesGratuitEt":
     "Dépôt d'annonces gratuit et instantané",
   "auth.accountTypeSelector.paiementSecuriseAvecSequestre":
-    "Paiement sécurisé avec séquestre",
+    "Paiement en ligne sécurisé via Stripe",
   "auth.accountTypeSelector.messagerieInstantaneeDirecte":
     "Messagerie instantanée directe",
   "auth.accountTypeSelector.badgeOfficielVendeurProVerifie":
@@ -393,7 +394,8 @@ export const messagesFr = {
     "Facturation automatique avec TVA",
 
   // --- auth.authLayout ---
-  "auth.authLayout.conformiteRgpdFranceUe": "Conformité RGPD France & UE",
+  "auth.authLayout.conformiteRgpdFranceUe":
+    "Préférences de confidentialité intégrées",
   "auth.authLayout.protectionAcheteurVendeur": "Protection Acheteur & Vendeur",
 
   // --- auth.mFAModal ---
@@ -491,9 +493,9 @@ export const messagesFr = {
   "legal.legalPages.laPlateformeShongreEstUn":
     "La plateforme Shongre est un service de mise en relation entre acheteurs et vendeurs (particuliers et professionnels) pour la publication de petites annonces, la négociation et l'exécution sécurisée de transactions en France métropolitaine.",
   "legal.legalPages.2SequestreProtectionAcheteur":
-    "2. Séquestre & Protection Acheteur",
+    "2. Paiement en ligne et litiges",
   "legal.legalPages.lorsquUneTransactionEstEffectuee":
-    "Lorsqu'une transaction est effectuée via le système de paiement en ligne, les fonds sont conservés sur un compte séquestre français jusqu'à la confirmation de réception conforme par l'acheteur.",
+    "Les paiements en ligne sont traités par un prestataire de paiement indépendant. Les versements et remboursements dépendent du statut transmis par ce prestataire, des conditions de la commande et des règles applicables. Shongre n’est ni une banque ni un service de séquestre.",
   "legal.legalPages.3EngagementsDesProfessionnels":
     "3. Engagements des Professionnels",
   "legal.legalPages.lesVendeursProfessionnelsSEngagent":
@@ -528,9 +530,9 @@ export const messagesFr = {
   "legal.legalPages.refusezLesVirementsDirectsMandats":
     "Refusez les virements directs, mandats Western Union ou chèques sans garantie.",
   "legal.legalPages.utilisezLeSequestreShongre":
-    "Utilisez le séquestre Shongre",
+    "Utilisez le paiement en ligne proposé",
   "legal.legalPages.votreArgentEstProtegeJusqu":
-    "Votre argent est protégé jusqu'à ce que vous confirmiez la conformité du colis reçu.",
+    "Vérifiez toujours le statut de la commande et signalez rapidement tout problème depuis votre espace achats.",
 
   // --- listings.listingDetailPage ---
   "listings.listingDetailPage.annonceIntrouvableOuSupprimee":
@@ -922,7 +924,7 @@ export const messagesFr = {
 
   // --- support.helpCenterPage ---
   "support.helpCenterPage.rechercherUneQuestionExSequestre":
-    "Rechercher une question (ex: séquestre, virement, litige...)",
+    "Rechercher une question (ex: paiement, virement, litige...)",
   "support.helpCenterPage.rechercherUneQuestionDansL":
     "Rechercher une question dans l'aide",
   "support.helpCenterPage.questionsFrequentes": "Questions fréquentes",
@@ -954,7 +956,7 @@ export const messagesFr = {
   "transactions.directPurchaseCheckoutModal.adresseDeLivraison":
     "Adresse de livraison",
   "transactions.directPurchaseCheckoutModal.protectionAcheteurSequestre":
-    "Protection acheteur & Séquestre",
+    "Paiement traité par un prestataire",
   "transactions.directPurchaseCheckoutModal.totalARegler": "Total à régler",
   "transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise":
     "2. Moyen de paiement sécurisé",
@@ -976,9 +978,8 @@ export const messagesFr = {
   "transactions.transactionsPage.finaliseePayee": "Finalisée & Payée",
   "transactions.transactionsPage.annuleeRemboursee": "Annulée & Remboursée",
   "transactions.transactionsPage.garantieSequestreShongre":
-    "Garantie Séquestre Shongre :",
-  "transactions.transactionsPage.paiementSousSequestre":
-    "Paiement sous séquestre",
+    "Suivi du paiement :",
+  "transactions.transactionsPage.paiementSousSequestre": "Paiement confirmé",
   "transactions.transactionsPage.validationVendeur": "Validation vendeur",
   "transactions.transactionsPage.fondsVerses": "Fonds versés",
 
@@ -986,7 +987,7 @@ export const messagesFr = {
   "transactions.disputeModal.signalerUnProblemeOuvrirUn":
     "Signaler un problème / Ouvrir un litige",
   "transactions.disputeModal.lesFondsSousSequestreResteront":
-    "Les fonds sous séquestre resteront gelés jusqu'à résolution par le service client Shongre.",
+    "Le versement peut être suspendu pendant l’examen du dossier, selon le statut du prestataire de paiement et les conditions applicables.",
   "transactions.disputeModal.expliquezCeQuiSEst":
     "Expliquez ce qui s'est passé (état du colis, non-conformité, échange avec l'autre partie...)",
   "transactions.disputeModal.protectionAcheteurVendeurActive":
@@ -1034,7 +1035,7 @@ export const messagesFr = {
   "transactions.reservationCheckoutModal.detailDesCoutsEtGaranties":
     "Détail des coûts et garanties :",
   "transactions.reservationCheckoutModal.paiement100ProtegeSousSequestre":
-    "Paiement 100% protégé sous séquestre",
+    "Paiement traité par notre prestataire",
   "transactions.reservationCheckoutModal.prixDeLArticle": "Prix de l'article :",
   "transactions.reservationCheckoutModal.totalARegler": "Total à régler :",
   "transactions.reservationCheckoutModal.choisissezVotreMoyenDePaiement":
@@ -1069,11 +1070,11 @@ export const messagesFr = {
   "transactions.sellerPayoutModal.montantNetVerseSurVotre":
     "Montant net versé sur votre compte :",
   "transactions.sellerPayoutModal.virementsExecutesViaMangopayEtablissement":
-    "Virements exécutés via Mangopay, établissement de monnaie électronique agréé ACPR.",
+    "Virements exécutés par le prestataire de paiement configuré, selon le statut du compte vendeur.",
 
   // --- transactions.transactionDetailModal ---
   "transactions.transactionDetailModal.paiementGarantiParLeService":
-    "Paiement garanti par le service de séquestre sécurisé Shongre",
+    "Statut du paiement confirmé par le prestataire",
   "transactions.transactionDetailModal.exSamedi22AoutA":
     "ex: Samedi 22 août à 14h30",
   "transactions.transactionDetailModal.ex12RueDesRemparts":
@@ -1138,7 +1139,7 @@ export const messagesFr = {
   "verification.businessVerificationModal.documentObligatoireDelivreParLe":
     "Document obligatoire délivré par le Greffe du Tribunal",
   "verification.businessVerificationModal.pourAccelererLaValidationDes":
-    "Pour accélérer la validation des virements de séquestre",
+    "Pour accélérer la validation des virements de ventes",
   "verification.businessVerificationModal.modeDemonstrationShongre":
     "Mode Démonstration Shongre",
 
@@ -1158,7 +1159,7 @@ export const messagesFr = {
   "verification.trustBadge.numeroDeTelephoneVerifiePar":
     "Numéro de téléphone vérifié par SMS",
   "verification.trustBadge.compteBancaireSepaValidePour":
-    "Compte bancaire SEPA validé pour le séquestre",
+    "Compte bancaire SEPA validé pour les virements",
   "verification.trustBadge.identiteVerifiee": "Identité vérifiée",
   "verification.trustBadge.proCertifieRcs": "Pro Certifié RCS",
   "verification.trustBadge.telephoneCertifie": "Téléphone certifié",
@@ -1227,7 +1228,7 @@ export const messagesFr = {
   "admin.adminMarketsPage.tauxDeTvaStandard": "Taux de TVA Standard",
   "admin.adminMarketsPage.fraisProtectionAcheteur": "Frais Protection Acheteur",
   "admin.adminMarketsPage.reservationAvecSequestre":
-    "Réservation avec Séquestre",
+    "Réservation avec paiement en ligne",
   "admin.adminMarketsPage.nomDuMarche": "Nom du Marché",
   "admin.adminMarketsPage.localeParDefaut": "Locale par Défaut",
   "admin.adminMarketsPage.bientotDisponibleVitrine":
@@ -1377,7 +1378,7 @@ export const messagesFr = {
     "Dossiers d'identité en file d'attente",
   "admin.adminVerificationsPage.piece": "Pièce :",
   "admin.adminVerificationsPage.comptesBancairesDeSequestreEnregistres":
-    "Comptes bancaires de séquestre enregistrés",
+    "Comptes bancaires de virement enregistrés",
   "admin.adminVerificationsPage.journalDAuditInalterableDes":
     "Journal d'audit inaltérable des vérifications",
 
@@ -1745,16 +1746,16 @@ export const messagesFr = {
   "admin.taxonomyNodeEditor.review.manual": "Revue manuelle",
   "admin.taxonomyNodeEditor.optionsDEtat": "Options d'état :",
   "admin.taxonomyNodeEditor.venteAutorisee": "Vente autorisée :",
-  "admin.taxonomyNodeEditor.sequestreCbActif": "Séquestre CB actif :",
+  "admin.taxonomyNodeEditor.sequestreCbActif": "Paiement CB en ligne actif :",
   "admin.taxonomyNodeEditor.frontiereDArchitecture":
     "Frontière d'architecture :",
   "admin.taxonomyNodeEditor.eligibiliteIntrinseque": "éligibilité intrinsèque",
   "admin.taxonomyNodeEditor.gestionnaireDePrestataires":
     "Gestionnaire de Prestataires",
   "admin.taxonomyNodeEditor.paiementSecuriseEnLigneSequestre":
-    "Paiement sécurisé en ligne (Séquestre Shongre)",
+    "Paiement en ligne sécurisé via prestataire",
   "admin.taxonomyNodeEditor.reservationAvecAcompteDeSequestre":
-    "Réservation avec acompte de séquestre",
+    "Réservation avec acompte en ligne",
   "admin.taxonomyNodeEditor.donGratuitAutorise": "Don gratuit autorisé",
   "admin.taxonomyNodeEditor.trocEchangeAutorise": "Troc / Échange autorisé",
   "admin.taxonomyNodeEditor.locationAutorisee": "Location autorisée",
@@ -1892,7 +1893,7 @@ export const messagesFr = {
   "admin.taxonomyNodeEditor.exempleTitreSeo":
     "Ex: Petites annonces {category} d'occasion - Shongre",
   "admin.taxonomyNodeEditor.exempleDescriptionSeo":
-    "Ex: Achetez et vendez vos articles {category} en toute sécurité avec paiement séquestre Shongre...",
+    "Ex: Achetez et vendez vos articles {category} avec paiement en ligne sécurisé...",
 
   // --- shell.demoRoleSwitcher ---
   "shell.demoRoleSwitcher.modeDemo": "Mode Démo",
@@ -1918,6 +1919,43 @@ export const messagesFr = {
   "shell.demoRoleSwitcher.0AnnoncePro": "📦 0 annonce (Pro)",
   "shell.demoRoleSwitcher.profilSuspenduSecurite":
     "🚫 Profil Suspendu (Sécurité)",
+
+  // --- shell.dataMode ---
+  "shell.dataMode.modeLive": "Mode Live",
+  "shell.dataMode.liveSummary": "Données fournies par l’API Shongre",
+  "shell.dataMode.openSettings": "Configurer le mode des données",
+  "shell.dataMode.settingsTitle": "Mode des données",
+  "shell.dataMode.settingsDescription":
+    "Choisissez la source utilisée par tous les services du frontend.",
+  "shell.dataMode.demoTitle": "Démo",
+  "shell.dataMode.demoDescription":
+    "Adaptateurs locaux, déterministes et indépendants du backend.",
+  "shell.dataMode.liveTitle": "Live",
+  "shell.dataMode.liveDescription":
+    "Adaptateurs HTTP connectés à l’API configurée.",
+  "shell.dataMode.active": "Actif",
+  "shell.dataMode.liveConfirmationTitle": "Confirmez l’activation du mode Live",
+  "shell.dataMode.liveConfirmationDescription":
+    "La session et les caches du frontend seront entièrement rechargés. Aucun repli automatique vers les données de démonstration ne sera effectué en cas d’erreur.",
+  "shell.dataMode.liveNotConfigured":
+    "Aucune URL d’API Live n’est configurée dans cette version.",
+  "shell.dataMode.liveConfigurationError":
+    "L’API Live n’est pas configurée dans cette version. Ajoutez NEXT_PUBLIC_API_URL puis rechargez l’application.",
+  "shell.dataMode.liveUnavailableError":
+    "L’API Live est configurée mais indisponible. Le mode actuel reste actif.",
+  "shell.dataMode.liveUnavailableBootError":
+    "L’API Live ne répond pas à son contrôle de disponibilité. Le mode Démo n’a pas été activé automatiquement.",
+  "shell.dataMode.liveCheckingTitle": "Connexion au mode Live",
+  "shell.dataMode.liveCheckingDescription":
+    "Vérification de la disponibilité de l’API Shongre…",
+  "shell.dataMode.liveUnavailableLabel": "Mode Live indisponible",
+  "shell.dataMode.liveUnavailableTitle": "Impossible de contacter l’API Live",
+  "shell.dataMode.noSilentFallback":
+    "Aucun repli silencieux vers les données de démonstration n’a été effectué.",
+  "shell.dataMode.confirmLive": "Confirmer et activer Live",
+  "shell.dataMode.confirmDemo": "Activer le mode Démo",
+  "shell.dataMode.switchUnexpectedError":
+    "Impossible de changer de mode. Le mode actuel reste actif.",
 
   // --- shell.header ---
   "shell.header.tableauDeBordCompte": "Tableau de bord compte",
@@ -2056,7 +2094,7 @@ export const messagesFr = {
   "admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie":
     "Gestion & Administration de la Taxonomie",
   "admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL":
-    "Référentiel canonique unique pilotant l'arborescence, les formulaires de publication, les facettes de recherche, les capacités de séquestre et le multi-marchés.",
+    "Référentiel canonique unique pilotant l'arborescence, les formulaires de publication, les facettes de recherche, les capacités de paiement et le multi-marchés.",
   "admin.adminTaxonomyPage.selectionnezUneCategorieDansL":
     "Sélectionnez une catégorie dans l'arbre pour afficher son éditeur.",
 
@@ -2533,11 +2571,11 @@ export const messagesFr = {
   "home.homePage.trouvezLaPerleRare": "Trouvez la perle rare,",
   "home.homePage.sansTracas": "sans tracas.",
   "home.homePage.achetezEtVendezEnToute":
-    "Achetez et vendez en toute sérénité : paiements sécurisés, livraison intégrée et vendeurs vérifiés.",
+    "Achetez et vendez avec un paiement suivi, des options de remise claires et des statuts vendeur explicites.",
   "home.homePage.garantiesShongre": "Garanties Shongre",
   "home.homePage.paiementsSecurises": "Paiements sécurisés",
-  "home.homePage.livraisonIntegree": "Livraison intégrée",
-  "home.homePage.vendeursVerifies": "Vendeurs vérifiés",
+  "home.homePage.livraisonIntegree": "Remise et expédition claires",
+  "home.homePage.vendeursVerifies": "Statuts vendeur explicites",
   "home.homePage.annoncesRecentes": "Annonces récentes",
   "home.homePage.lesDernieresOffresPublieesPres":
     "Les dernières offres publiées près de chez vous",
@@ -2618,18 +2656,19 @@ export const messagesFr = {
   "listings.listingFulfillmentSummary.livraisonEnColisAvecSuivi":
     "Livraison en colis avec suivi",
   "listings.listingFulfillmentSummary.mondialRelayPointRelaisLocker":
-    "Mondial Relay (Point relais & Locker) ou Colissimo Domicile",
-  "listings.listingFulfillmentSummary.aPartirDe399": "À partir de 3,99 €",
+    "Transporteur convenu avec le vendeur et numéro de suivi renseigné dans la commande",
+  "listings.listingFulfillmentSummary.aPartirDe399": "Selon les modalités",
   "listings.listingFulfillmentSummary.transportDeMeublesGrosColis":
     "Transport de meubles & Gros colis",
   "listings.listingFulfillmentSummary.livraisonParTransporteurSpecialiseCocolis":
-    "Livraison par transporteur spécialisé Cocolis",
+    "Transporteur spécialisé convenu avec le vendeur avant expédition",
   "listings.listingFulfillmentSummary.surDevisTransport": "Sur devis transport",
   "listings.listingFulfillmentSummary.retraitDirectDansLeMagasin":
     "Retrait direct dans le magasin du vendeur Pro",
 
   // --- listings.listingSafetyNotice ---
-  "listings.listingSafetyNotice.sequestreGaranti": "Séquestre garanti",
+  "listings.listingSafetyNotice.sequestreGaranti":
+    "Paiement géré par le prestataire",
   "listings.listingSafetyNotice.paiementChiffre3dSecure":
     "Paiement chiffré 3D-Secure",
 
@@ -2700,7 +2739,7 @@ export const messagesFr = {
   "newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService":
     "Communications obligatoires de service",
   "newsletter.newsletterPreferencesPage.memeSiVousEtesDesabonne":
-    "Même si vous êtes désabonné de la newsletter, vous continuerez à recevoir les emails essentiels relatifs à la sécurité de votre compte, à vos paiements sous séquestre et au suivi de vos commandes.",
+    "Même si vous êtes désabonné de la newsletter, vous continuerez à recevoir les emails essentiels relatifs à la sécurité de votre compte, à vos paiements et au suivi de vos commandes.",
 
   // --- newsletter.newsletterUnsubscribePage ---
   "newsletter.newsletterUnsubscribePage.desabonnementNewsletter":
@@ -2847,9 +2886,9 @@ export const messagesFr = {
     "Activez les options de transaction autorisées pour cette catégorie.",
   "publishing.publishWizard.lesAcheteursPeuventVousPoser":
     "Les acheteurs peuvent vous poser des questions via la messagerie Shongre.",
-  "publishing.publishWizard.sequestreGaranti": "Séquestre Garanti",
+  "publishing.publishWizard.sequestreGaranti": "Paiement via prestataire",
   "publishing.publishWizard.lAcheteurPeutPayerImmediatement":
-    "L'acheteur peut payer immédiatement par carte bancaire. Vos fonds sont sécurisés.",
+    "L'acheteur peut payer par carte bancaire. Le versement dépend de l’activation de votre compte et du statut de la commande.",
   "publishing.publishWizard.permetALAcheteurDe":
     "Permet à l'acheteur de bloquer l'article pendant le temps de convenir d'un rendez-vous.",
   "publishing.publishWizard.modesDeRemiseExpedition":
@@ -2877,9 +2916,9 @@ export const messagesFr = {
   "publishing.publishWizard.categorieEligible": "✓ Catégorie éligible",
   "publishing.publishWizard.categorieRestreinte": "✕ Catégorie restreinte",
   "publishing.publishWizard.livraison": "Livraison",
-  "publishing.publishWizard.sequestre": "Séquestre",
+  "publishing.publishWizard.sequestre": "Paiement",
   "publishing.publishWizard.toutesLesTransactionsMultiMarches":
-    "Toutes les transactions multi-marchés sont automatiquement couvertes par le séquestre Shongre. Les prix sont convertis en toute transparence et la TVA locale est appliquée en conformité avec la réglementation européenne et suisse.",
+    "La disponibilité du paiement, la devise et les règles applicables dépendent de chaque marché. Les conditions exactes sont affichées avant la publication et le paiement.",
   "publishing.publishWizard.optionsDeVisibiliteBoostFacultatif":
     "Options de visibilité & Boost (Facultatif)",
   "publishing.publishWizard.multipliezVosVuesEnPositionnant":
@@ -3034,7 +3073,7 @@ export const messagesFr = {
   "support.contactPage.besoinDOuvrirUnLitige":
     "Besoin d'ouvrir un litige sur une commande en cours ?",
   "support.contactPage.pourGelerLesFondsSous":
-    "Pour geler les fonds sous séquestre et être remboursé en cas de non-réception ou de colis non conforme, vous devez ouvrir un dossier de litige officiel directement depuis la transaction.",
+    "Pour signaler une non-réception ou un article non conforme, ouvrez un litige depuis la transaction. Un remboursement éventuel dépendra de l’examen du dossier, du statut du paiement et des conditions applicables.",
   "support.contactPage.accederAMesAchatsPour":
     "Accéder à mes achats pour ouvrir le litige",
   "support.contactPage.leSupportShongreNIntervient":
@@ -3049,11 +3088,11 @@ export const messagesFr = {
   "support.helpCenterPage.commentPouvonsNousVousAider":
     "Comment pouvons-nous vous aider ?",
   "support.helpCenterPage.retrouvezLesReponsesAuxQuestions":
-    "Retrouvez les réponses aux questions fréquentes sur le séquestre, la livraison, la publication et votre compte.",
+    "Retrouvez les réponses aux questions fréquentes sur le paiement, la livraison, la publication et votre compte.",
   "support.helpCenterPage.aucunArticleNeCorrespondA":
     "Aucun article ne correspond à votre recherche. Vous pouvez contacter notre équipe ci-dessous.",
   "support.helpCenterPage.notreEquipeDeSupportClient":
-    "Notre équipe de support client basée en France vous assiste 7j/7 pour vos commandes, annonces et questions.",
+    "Consultez le centre d’aide ou ouvrez une demande pour vos commandes, annonces et questions. Les délais dépendent des horaires de support affichés.",
 
   // --- support.supportRequestDetailPage ---
   "support.supportRequestDetailPage.retourAMesDemandes2":
@@ -3072,17 +3111,17 @@ export const messagesFr = {
 
   // --- support.supportContextCard ---
   "support.supportContextCard.annonceLiee": "Annonce liée",
-  "support.supportContextCard.commandeSequestreLie": "Commande / Séquestre lié",
+  "support.supportContextCard.commandeSequestreLie": "Commande / Paiement lié",
 
   // --- transactions.directPurchaseCheckoutModal ---
   "transactions.directPurchaseCheckoutModal.selectionnezParmiLesOptionsReellement":
     "Sélectionnez parmi les options réellement disponibles pour cet article.",
   "transactions.directPurchaseCheckoutModal.fondsConservesSousSequestreBancaire":
-    "Fonds conservés sous séquestre bancaire jusqu'à confirmation de conformité.",
+    "Paiement traité par le prestataire et suivi dans le statut de la commande.",
   "transactions.directPurchaseCheckoutModal.paiementEnLigneTemporairementIndisponible":
     "Paiement en ligne temporairement indisponible",
   "transactions.directPurchaseCheckoutModal.leSystemeDeSequestreEn":
-    "Le système de séquestre en ligne est momentanément indisponible sur ce marché. Vous pouvez contacter le vendeur pour organiser une remise en main propre.",
+    "Le paiement en ligne est momentanément indisponible sur ce marché. Vous pouvez contacter le vendeur pour organiser une remise en main propre.",
   "transactions.directPurchaseCheckoutModal.referenceCommande":
     "Référence commande :",
   "transactions.directPurchaseCheckoutModal.communiquezCeCodeAuVendeur":
@@ -3090,9 +3129,9 @@ export const messagesFr = {
 
   // --- transactions.transactionsPage ---
   "transactions.transactionsPage.transactionsReservationsSequestre":
-    "Transactions, Réservations & Séquestre",
+    "Transactions, réservations et paiements",
   "transactions.transactionsPage.gerezVosReservationsVosRemises":
-    "Gérez vos réservations, vos remises en main propre et le déblocage des fonds sécurisés",
+    "Gérez vos réservations, vos remises en main propre et le suivi des paiements",
   "transactions.transactionsPage.gererLeDossier": "Gérer le dossier",
 
   // --- transactions.disputeModal ---
@@ -3112,7 +3151,7 @@ export const messagesFr = {
   // --- transactions.reservationCheckoutModal ---
   "transactions.reservationCheckoutModal.detailsCouts": "Détails & Coûts",
   "transactions.reservationCheckoutModal.paiementSequestre":
-    "Paiement Séquestre",
+    "Paiement en ligne",
   "transactions.reservationCheckoutModal.rendezVousDirectAvecValidation":
     "Rendez-vous direct avec validation par code secret à 6 chiffres.",
   "transactions.reservationCheckoutModal.retraitChezUnCommercantPartenaire":
@@ -3122,7 +3161,7 @@ export const messagesFr = {
   "transactions.reservationCheckoutModal.continuerVersLeRecapitulatif":
     "Continuer vers le récapitulatif",
   "transactions.reservationCheckoutModal.lArgentNeSeraVerse":
-    "L'argent ne sera versé au vendeur qu'après remise de l'article conforme. Si le vendeur décline ou si l'article est non conforme, vous êtes intégralement remboursé.",
+    "Shongre demande le transfert vendeur après confirmation de la remise. Tout remboursement reste soumis au statut de la commande, à la confirmation du prestataire et aux conditions applicables.",
   "transactions.reservationCheckoutModal.passerAuPaiementSecurise":
     "Passer au paiement sécurisé",
   "transactions.reservationCheckoutModal.referenceDossier":
@@ -3186,7 +3225,7 @@ export const messagesFr = {
   "verification.bankPayoutModal.coordonneesBancairesDeVirement":
     "Coordonnées bancaires de virement",
   "verification.bankPayoutModal.sequestreSecuriseVirementsDeVentes":
-    "Séquestre sécurisé & virements de ventes",
+    "Virements de ventes sécurisés",
   "verification.bankPayoutModal.nomDuTitulaireDuCompte":
     "Nom du titulaire du compte",
   "verification.bankPayoutModal.leNomDoitCorrespondreA":
@@ -3300,7 +3339,7 @@ export const messagesFr = {
   "meta.notificationPreferences.title": "Préférences de notifications",
   "meta.notificationPreferences.description":
     "Choisissez les alertes que vous recevez sur chaque canal.",
-  "meta.transactions.title": "Transactions, réservations & séquestre",
+  "meta.transactions.title": "Transactions, réservations et paiements",
   "meta.transactions.description":
     "Suivez vos achats, vos ventes et la libération des fonds.",
   "meta.verificationCenter.title": "Sécurité & vérification du compte",

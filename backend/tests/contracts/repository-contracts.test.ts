@@ -312,8 +312,11 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
         createdAt: new Date().toISOString(),
       });
       expect(msg.id).toBe("msg_test_1");
-      const messages = await demoRepo.getMessages("conv_1");
-      expect(messages.some((m) => m.id === "msg_test_1")).toBe(true);
+      const page = await demoRepo.getMessages("conv_1");
+      expect(page.items.some((message) => message.id === "msg_test_1")).toBe(
+        true,
+      );
+      expect(page.pageInfo.hasNextPage).toBe(false);
     });
 
     it("manages notifications through Notification Repository", async () => {

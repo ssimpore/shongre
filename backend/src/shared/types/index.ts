@@ -49,6 +49,30 @@ export interface UserProfile {
   createdAt?: string;
 }
 
+/**
+ * Deliberately small marketplace projection. Authentication, staff roles,
+ * contact details, account state and individual verification dimensions are
+ * private account data and must never be serialized by a public route.
+ */
+export interface PublicSellerProfile {
+  id: string;
+  slug: string;
+  name: string;
+  accountType: "individual" | "professional";
+  sellerType: "individual" | "pro";
+  avatarUrl?: string;
+  city?: string;
+  country: string;
+  bio?: string;
+  isVerified: boolean;
+  isBusinessVerified: boolean;
+  rating: number;
+  reviewCount: number;
+  responseRatePercent: number;
+  responseTimeText?: string;
+  createdAt?: string;
+}
+
 export type ListingStatus =
   | "draft"
   | "published"
@@ -147,6 +171,22 @@ export interface Listing {
   expiresAt: string;
 }
 
+export type PublicListing = Omit<
+  Listing,
+  | "seller"
+  | "publisherStatus"
+  | "publicationOfferId"
+  | "subscriptionId"
+  | "entitlementSnapshot"
+  | "promotionSource"
+  | "promotionSourceId"
+  | "externalStockId"
+  | "duplicateGroupId"
+  | "safetyRiskScore"
+> & {
+  seller?: PublicSellerProfile;
+};
+
 export interface SearchFilters {
   query?: string;
   categoryId?: string;
@@ -183,25 +223,33 @@ export interface Transaction {
   orderNumber: string;
   transactionType: "DIRECT_PURCHASE" | "RESERVATION";
   listingId: string;
-  listing?: Partial<Listing>;
+  listing?: Partial<PublicListing>;
   buyerId: string;
-  buyer?: Partial<UserProfile>;
+  buyer?: PublicSellerProfile;
   sellerId: string;
-  seller?: Partial<UserProfile>;
+  seller?: PublicSellerProfile;
   status:
     | "initiated"
+    | "payment_pending"
     | "escrow_funded"
     | "shipped"
     | "pin_pending"
     | "disputed"
     | "completed"
+    | "refund_pending"
     | "refunded"
     | "cancelled";
   itemAmount: number;
+  itemAmountMinor?: number;
   protectionFee: number;
+  protectionFeeMinor?: number;
   shippingFee: number;
+  shippingFeeMinor?: number;
   totalCharged: number;
+  totalChargedMinor?: number;
   escrowSecuredAmount: number;
+  escrowSecuredAmountMinor?: number;
+  currency: string;
   commissionCalculationId?: string;
   platformCommissionMinor?: number;
   sellerPayableMinor?: number;
@@ -215,10 +263,12 @@ export interface Transaction {
     postalCode?: string;
     country?: string;
   };
-  handoverPin?: string;
+  handoverCodeRequired?: boolean;
   isPinVerified?: boolean;
   paymentMethod: string;
-  paymentIntentId?: string;
+  carrierName?: string;
+  trackingNumber?: string;
+  shippedAt?: string;
   disputeReason?: string;
   disputeDetails?: string;
   createdAt: string;
@@ -251,6 +301,14 @@ export interface Message {
   isPickupProposal?: boolean;
   pickupDetails?: Record<string, any>;
   createdAt: string;
+}
+
+export interface MessagePage {
+  items: Message[];
+  pageInfo: {
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
 }
 
 export interface NotificationItem {
@@ -296,6 +354,9 @@ export interface CountryMarketDefinition {
   protectionFeeRate: number;
   protectionFixedFee: number;
   freeListingsLimit: number;
+  reservationDepositRateBps: number;
+  reservationDepositMinimumMinor: number;
+  reservationDepositMaximumMinor: number;
   allowedDeliveryMethods: DeliveryType[];
   isBaseMarket?: boolean;
   isActive?: boolean;

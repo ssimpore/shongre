@@ -18,15 +18,21 @@ describe("platform commission engine migration safeguards", () => {
   });
 
   it("stores append-only calculations and reversals in integer minor units", () => {
-    expect(migration).toContain("CREATE TABLE IF NOT EXISTS public.commission_calculations");
-    expect(migration).toContain("CREATE TABLE IF NOT EXISTS public.commission_reversals");
+    expect(migration).toContain(
+      "CREATE TABLE IF NOT EXISTS public.commission_calculations",
+    );
+    expect(migration).toContain(
+      "CREATE TABLE IF NOT EXISTS public.commission_reversals",
+    );
     expect(migration).toContain("commission financial history is immutable");
     expect(migration).toContain("idempotency_key VARCHAR(240)");
     expect(migration).toContain("enforce_commission_reversal_balance");
     expect(migration).toContain(
       "cumulative commission reversal exceeds original base",
     );
-    expect(migration).not.toMatch(/commission_(?:calculations|reversals)[\s\S]{0,600}\bNUMERIC\s*\(/i);
+    expect(migration).not.toMatch(
+      /commission_(?:calculations|reversals)[\s\S]{0,600}\bNUMERIC\s*\(/i,
+    );
   });
 
   it("projects commission and refund entries into the existing balanced ledger", () => {

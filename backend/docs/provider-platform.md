@@ -23,28 +23,28 @@ health evidence. Provider health cannot be edited manually.
 
 ## Audited implementation inventory
 
-| Domain | Actual runtime owner | Code state | Production conclusion |
-| --- | --- | --- | --- |
-| Email/password auth and sessions | Shongre auth services | Implemented | Internal service exists; email delivery is a separate dependency. |
-| Google OAuth | OAuth provider client | Implemented | Requires environment configuration and E2E evidence. |
-| Apple OAuth | OAuth provider client | Implemented | Account-change server notifications remain missing. |
-| Facebook OAuth/data deletion | OAuth client and deletion service | Implemented | Requires app review/configuration and E2E evidence. |
-| Checkout/refunds/subscriptions | Stripe Checkout adapter | Implemented subset | Safe idempotent Checkout exists. Connect, seller accounts, transfers, payouts and payment KYC do not. |
-| Marketplace funds/payouts | None | Missing P0 | Protected marketplace transactions must stay disabled; never call Checkout “escrow.” |
-| Individual KYC | Deterministic demo provider | Demo only | Selected live adapter fails closed. |
-| French business registry | Deterministic demo provider | Demo only | Selected SIRET adapter fails closed. |
-| Relay/home/express/bulky shipping | Frontend deterministic quotes | Demo only | No carrier API, label, tracking webhook or reconciliation. |
-| Transactional email | Vendor-neutral authenticated HTTP sender | Implemented boundary | Vendor identity, bounce/delivery webhook and live evidence are missing. Resend/Brevo are catalogue entries only. |
-| Phone OTP/SMS | None | Missing P1 | Twilio is a catalogue entry only. |
-| In-app notifications | Shongre notification service | Implemented | Push delivery (APNS/FCM/Web Push) is not implemented. |
-| Marketplace search | PostgreSQL/Supabase search provider | Implemented | Meilisearch is intentionally not needed now. |
-| Media/private documents | Supabase Storage adapter | Implemented | Deployment bucket/RLS health evidence remains environment-specific. |
-| Maps | Leaflet with external OSM/Carto tiles | Partial | Display exists; backend BAN geocoding/autocomplete/caching is missing. |
-| AI moderation/assistance | Deterministic demo provider | Demo only | Gemini selection fails closed; OpenAI/Tavily have no adapter. |
-| Analytics | None | Optional missing | Consent gate exists first; Plausible is not installed. |
-| Error tracking | Structured logs only | P1 gap | Sentry is a catalogue entry only. |
-| CAPTCHA | Rate limits only | P1 gap | Turnstile is a catalogue entry only. |
-| Electronic invoicing | Internal finance domain only | P2 gap | Pennylane is a catalogue entry only. |
+| Domain                            | Actual runtime owner                     | Code state           | Production conclusion                                                                                            |
+| --------------------------------- | ---------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Email/password auth and sessions  | Shongre auth services                    | Implemented          | Internal service exists; email delivery is a separate dependency.                                                |
+| Google OAuth                      | OAuth provider client                    | Implemented          | Requires environment configuration and E2E evidence.                                                             |
+| Apple OAuth                       | OAuth provider client                    | Implemented          | Account-change server notifications remain missing.                                                              |
+| Facebook OAuth/data deletion      | OAuth client and deletion service        | Implemented          | Requires app review/configuration and E2E evidence.                                                              |
+| Checkout/refunds/subscriptions    | Stripe Checkout adapter                  | Implemented subset   | Safe idempotent Checkout exists. Connect, seller accounts, transfers, payouts and payment KYC do not.            |
+| Marketplace funds/payouts         | None                                     | Missing P0           | Protected marketplace transactions must stay disabled; never call Checkout “escrow.”                             |
+| Individual KYC                    | Deterministic demo provider              | Demo only            | Selected live adapter fails closed.                                                                              |
+| French business registry          | Deterministic demo provider              | Demo only            | Selected SIRET adapter fails closed.                                                                             |
+| Relay/home/express/bulky shipping | Frontend deterministic quotes            | Demo only            | No carrier API, label, tracking webhook or reconciliation.                                                       |
+| Transactional email               | Vendor-neutral authenticated HTTP sender | Implemented boundary | Vendor identity, bounce/delivery webhook and live evidence are missing. Resend/Brevo are catalogue entries only. |
+| Phone OTP/SMS                     | None                                     | Missing P1           | Twilio is a catalogue entry only.                                                                                |
+| In-app notifications              | Shongre notification service             | Implemented          | Push delivery (APNS/FCM/Web Push) is not implemented.                                                            |
+| Marketplace search                | PostgreSQL/Supabase search provider      | Implemented          | Meilisearch is intentionally not needed now.                                                                     |
+| Media/private documents           | Supabase Storage adapter                 | Implemented          | Deployment bucket/RLS health evidence remains environment-specific.                                              |
+| Maps                              | Leaflet with external OSM/Carto tiles    | Partial              | Display exists; backend BAN geocoding/autocomplete/caching is missing.                                           |
+| AI moderation/assistance          | Deterministic demo provider              | Demo only            | Gemini selection fails closed; OpenAI/Tavily have no adapter.                                                    |
+| Analytics                         | None                                     | Optional missing     | Consent gate exists first; Plausible is not installed.                                                           |
+| Error tracking                    | Structured logs only                     | P1 gap               | Sentry is a catalogue entry only.                                                                                |
+| CAPTCHA                           | Rate limits only                         | P1 gap               | Turnstile is a catalogue entry only.                                                                             |
+| Electronic invoicing              | Internal finance domain only             | P2 gap               | Pennylane is a catalogue entry only.                                                                             |
 
 The complete vendor inventory and the capability requirement matrix are
 executable data in `@shongre/contracts/provider-platform`, with unit tests for
@@ -52,16 +52,16 @@ unique ownership and demo/production separation.
 
 ## Current P0/P1 gaps
 
-| Priority | Capability | Risk | Required next gate |
-| --- | --- | --- | --- |
-| P0 | Marketplace payment and seller payouts | Funds cannot be split or paid to sellers safely. | Select the regulated funds-flow model, complete legal/MoR analysis, implement Stripe Connect or MANGOPAY end-to-end, and certify sandbox webhooks/reconciliation. |
-| P0 | Transactional email observability | Verification/recovery delivery cannot be proven. | Select one delivery vendor behind the existing HTTP contract; implement delivery/bounce events, retry/DLQ and smoke test. |
-| P0 | Contextual KYC/payment KYC | Regulated actions cannot complete. | Select a provider based on payment architecture and territories; implement sessions, signed webhooks and manual-review fallback. |
-| P0 | French KYB | Pro onboarding relies on demo/manual review. | Implement the official business data source adapter, rate limiting and audit mapping. |
-| P0 | Carrier delivery | Quotes/labels/tracking are simulations. | Implement a carrier-neutral shipping contract, one FR primary carrier, signed events where available and reconciliation. |
-| P1 | Durable provider queue | Process-local `setImmediate` jobs are lost on restart. | Back jobs with PostgreSQL/Supabase Queue, attempts, visibility timeout and dead-letter state. |
-| P1 | Provider evidence persistence | Diagnostics currently survive only in process. | Apply migration `00032`, persist control-plane configuration/evidence through a service-role repository, and add retention. |
-| P1 | Error/availability alerts | Structured logs do not provide alert routing. | Choose an observability sink, add redaction, sampling, alert ownership and runbooks. |
+| Priority | Capability                             | Risk                                                   | Required next gate                                                                                                                                                |
+| -------- | -------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0       | Marketplace payment and seller payouts | Funds cannot be split or paid to sellers safely.       | Select the regulated funds-flow model, complete legal/MoR analysis, implement Stripe Connect or MANGOPAY end-to-end, and certify sandbox webhooks/reconciliation. |
+| P0       | Transactional email observability      | Verification/recovery delivery cannot be proven.       | Select one delivery vendor behind the existing HTTP contract; implement delivery/bounce events, retry/DLQ and smoke test.                                         |
+| P0       | Contextual KYC/payment KYC             | Regulated actions cannot complete.                     | Select a provider based on payment architecture and territories; implement sessions, signed webhooks and manual-review fallback.                                  |
+| P0       | French KYB                             | Pro onboarding relies on demo/manual review.           | Implement the official business data source adapter, rate limiting and audit mapping.                                                                             |
+| P0       | Carrier delivery                       | Quotes/labels/tracking are simulations.                | Implement a carrier-neutral shipping contract, one FR primary carrier, signed events where available and reconciliation.                                          |
+| P1       | Durable provider queue                 | Process-local `setImmediate` jobs are lost on restart. | Back jobs with PostgreSQL/Supabase Queue, attempts, visibility timeout and dead-letter state.                                                                     |
+| P1       | Provider evidence persistence          | Diagnostics currently survive only in process.         | Apply migration `00032`, persist control-plane configuration/evidence through a service-role repository, and add retention.                                       |
+| P1       | Error/availability alerts              | Structured logs do not provide alert routing.          | Choose an observability sink, add redaction, sampling, alert ownership and runbooks.                                                                              |
 
 No vendor should be purchased merely to make this table green. Existing
 internal owners (PostgreSQL search, Supabase Storage, in-app notifications and
@@ -156,4 +156,3 @@ Secrets are opaque secret-manager references only.
 Provider terms, supported countries, pricing and production approval remain
 time-sensitive procurement/compliance checks. They must be revalidated before
 selecting a missing P0 provider.
-

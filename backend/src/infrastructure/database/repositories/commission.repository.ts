@@ -22,7 +22,9 @@ export interface CommissionRepository {
     idempotencyKey: string,
   ): Promise<CommissionReversal | null>;
   getReversalTotals(calculationId: string): Promise<CommissionReversalTotals>;
-  listAnalytics(query: CommissionAnalyticsQuery): Promise<CommissionAnalyticsRow[]>;
+  listAnalytics(
+    query: CommissionAnalyticsQuery,
+  ): Promise<CommissionAnalyticsRow[]>;
 }
 
 export interface CommissionReversalTotals {
@@ -112,6 +114,12 @@ export class DemoCommissionRepository implements CommissionRepository {
   async listAnalytics(query: CommissionAnalyticsQuery) {
     const rows = new Map<string, CommissionAnalyticsRow>();
     for (const calculation of this.calculations.values()) {
+      if (
+        !["earned", "partially_reversed", "reversed"].includes(
+          calculation.state,
+        )
+      )
+        continue;
       const input = calculation.inputSnapshot;
       const date = calculation.calculatedAt.slice(0, 10);
       if (date < query.from || date > query.to) continue;
@@ -164,7 +172,8 @@ export class DemoCommissionRepository implements CommissionRepository {
           candidate.planId === calculation.inputSnapshot.planId &&
           candidate.currency === calculation.currency,
       );
-      if (row) row.commissionRefundMinor += reversal.platformRevenueReversalMinor;
+      if (row)
+        row.commissionRefundMinor += reversal.platformRevenueReversalMinor;
     }
     return [...rows.values()].map((row) =>
       commissionAnalyticsRowSchema.parse({
@@ -327,8 +336,7 @@ export class PostgresCommissionRepository implements CommissionRepository {
         buyerCreditMinor:
           total.buyerCreditMinor + Number(row.buyer_credit_minor),
         revenueMinor:
-          total.revenueMinor +
-          Number(row.platform_revenue_reversal_minor),
+          total.revenueMinor + Number(row.platform_revenue_reversal_minor),
       }),
       { ...EMPTY_REVERSAL_TOTALS },
     );
@@ -342,7 +350,8 @@ export class PostgresCommissionRepository implements CommissionRepository {
       .gte("date", query.from)
       .lte("date", query.to)
       .order("date", { ascending: true });
-    if (query.marketCode !== "ALL") request = request.eq("market_code", query.marketCode);
+    if (query.marketCode !== "ALL")
+      request = request.eq("market_code", query.marketCode);
     if (query.verticalId) request = request.eq("vertical_id", query.verticalId);
     if (query.categoryId) request = request.eq("category_id", query.categoryId);
     if (query.planId) request = request.eq("plan_id", query.planId);

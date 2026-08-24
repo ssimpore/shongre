@@ -132,7 +132,7 @@ export const NotificationPreferencesPage: React.FC = () => {
     },
     {
       key: "transactions",
-      title: "Transactions & Paiement sous séquestre",
+      title: "Transactions & Paiements",
       description:
         "Validation de paiement, réservation, confirmation de commande et libération des fonds.",
       isMandatory: true,

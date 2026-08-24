@@ -18,5 +18,4 @@ describe("Progressive Verification & KYB/KYC", () => {
     expect(company?.name).toBe("SHONGRE TECHNOLOGIES SAS");
     expect(company?.isActive).toBe(true);
   });
-
 });

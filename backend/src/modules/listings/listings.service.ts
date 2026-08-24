@@ -1,11 +1,22 @@
-import { Listing, SearchFilters } from "../../shared/types/index.js";
+import {
+  DeliveryType,
+  Listing,
+  PublicListing,
+  SearchFilters,
+} from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { toPublicListing } from "../../shared/public-projections.js";
 import {
   IListingRepository,
+  IMarketRepository,
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
 import { IAIProvider, providers } from "../../integrations/providers/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import {
+  storageService,
+  StorageService,
+} from "../../infrastructure/storage/storage-service.js";
 import { randomUUID } from "node:crypto";
 import {
   taxonomyValidationService,
@@ -50,6 +61,42 @@ export interface PublicationDraftInput {
   externalStockId?: string;
 }
 
+export interface SellerListingUpdate {
+  title?: string;
+  description?: string;
+  price?: number;
+  condition?: string;
+  brand?: string;
+  model?: string;
+  city?: string;
+  postalCode?: string;
+  allowedDelivery?: DeliveryType[];
+  shippingCost?: number;
+  attributes?: Record<string, unknown>;
+}
+
+const SELLER_UPDATE_KEYS = new Set<keyof SellerListingUpdate>([
+  "title",
+  "description",
+  "price",
+  "condition",
+  "brand",
+  "model",
+  "city",
+  "postalCode",
+  "allowedDelivery",
+  "shippingCost",
+  "attributes",
+]);
+
+const DELIVERY_TYPES = new Set<DeliveryType>([
+  "hand_delivery",
+  "relay_point",
+  "home_delivery",
+  "cocolis",
+  "express",
+]);
+
 export class ListingsService {
   constructor(
     private listingRepo: IListingRepository = repositories.listings,
@@ -57,25 +104,37 @@ export class ListingsService {
     private taxonomyValidation: TaxonomyValidationService = taxonomyValidationService,
     private publisherEntitlements: PublisherEntitlementsService = publisherEntitlementsService,
     private discovery: UnifiedDiscoveryService = unifiedDiscoveryService,
+    private markets: IMarketRepository = repositories.markets,
+    private storage: StorageService = storageService,
   ) {}
 
   async getListings(
     filter?: SearchFilters,
-  ): Promise<{ listings: Listing[]; total: number }> {
+  ): Promise<{ listings: PublicListing[]; total: number }> {
     const res = await this.discovery.search(filter || {});
-    return { listings: res.items, total: res.total };
+    return { listings: res.items.map(toPublicListing), total: res.total };
   }
 
-  async getListingById(id: string): Promise<Listing | null> {
+  async getInternalListingById(id: string): Promise<Listing | null> {
     return this.listingRepo.findById(id);
   }
 
+  async getListingById(id: string): Promise<PublicListing | null> {
+    const listing = await this.listingRepo.findPublicById(id);
+    return listing ? toPublicListing(listing) : null;
+  }
+
   async searchListings(params: SearchFilters) {
-    return this.discovery.search(params);
+    const result = await this.discovery.search(params);
+    return { ...result, items: result.items.map(toPublicListing) };
   }
 
   async createListingDraft(userId?: string): Promise<any> {
     return this.listingRepo.createDraft(userId);
+  }
+
+  async getListingDraft(userId: string): Promise<any | null> {
+    return this.listingRepo.getDraft(userId);
   }
 
   async saveListingDraft(draft: any, userId?: string): Promise<void> {
@@ -85,7 +144,7 @@ export class ListingsService {
   async publishListing(
     draft: PublicationDraftInput,
     sellerId: string,
-  ): Promise<Listing> {
+  ): Promise<PublicListing> {
     if (!draft.title || !draft.categoryId) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -137,6 +196,31 @@ export class ListingsService {
     }
 
     const marketCode = (draft.marketCode || "FR").toUpperCase();
+    const market = await this.markets.getEffective(marketCode);
+    if (!market.isActive || market.code !== marketCode) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Ce marché n’est pas disponible à la publication.",
+      });
+    }
+    const allowedDelivery = (draft.allowedDelivery || [
+      "hand_delivery",
+    ]) as DeliveryType[];
+    if (
+      allowedDelivery.length === 0 ||
+      allowedDelivery.some(
+        (method) =>
+          !DELIVERY_TYPES.has(method) ||
+          !market.allowedDeliveryMethods.includes(method),
+      )
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un mode de livraison n’est pas disponible sur ce marché.",
+      });
+    }
+    const images = draft.images || [];
+    await this.storage.assertOwnedListingMedia(sellerId, images);
     const publicationPolicy =
       await this.publisherEntitlements.authorizePublication({
         actorUserId: sellerId,
@@ -214,7 +298,7 @@ export class ListingsService {
       title: draft.title,
       description: draft.description || "",
       price: Number(effectivePrice),
-      currency: "EUR",
+      currency: market.currency,
       status: safety.riskScore >= 50 ? "flagged" : "published",
       condition: draft.condition || "bon-etat",
       brand: draft.brand,
@@ -222,10 +306,10 @@ export class ListingsService {
       marketCode,
       city: draft.city || "Paris",
       postalCode: draft.postalCode || "75000",
-      country: "FR",
-      allowedDelivery: (draft.allowedDelivery as any) || ["hand_delivery"],
+      country: market.code,
+      allowedDelivery,
       shippingCost: draft.shippingCost || 0,
-      images: draft.images || [],
+      images,
       isUrgent: false,
       isFeatured: false,
       promotionState: "inactive",
@@ -245,11 +329,21 @@ export class ListingsService {
     };
 
     const saved = await this.listingRepo.save(listing);
+    try {
+      await this.storage.attachListingMedia(sellerId, saved.id, images);
+    } catch (error) {
+      await this.listingRepo.delete(saved.id);
+      throw error;
+    }
+    const hydrated = await this.listingRepo.findById(saved.id);
     logger.info("Listing publication completed", { listingId: saved.id });
-    return saved;
+    return toPublicListing(hydrated || saved);
   }
 
-  async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {
+  async updateSellerListing(
+    id: string,
+    input: unknown,
+  ): Promise<PublicListing> {
     const existing = await this.listingRepo.findById(id);
     if (!existing) {
       throw new AppError({
@@ -257,7 +351,129 @@ export class ListingsService {
         message: `Listing ${id} not found`,
       });
     }
-    return this.listingRepo.update(id, updates);
+    const updates = this.parseSellerUpdate(input);
+    if (updates.attributes || updates.condition) {
+      const taxonomyValidation =
+        await this.taxonomyValidation.validateListingAttributes(
+          existing.categoryId,
+          {
+            ...(updates.attributes || existing.attributes || {}),
+            condition: updates.condition || existing.condition,
+          },
+        );
+      if (!taxonomyValidation.isValid) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            taxonomyValidation.issues[0]?.message ||
+            "Les caractéristiques de l’annonce sont invalides.",
+          details: { issues: taxonomyValidation.issues },
+        });
+      }
+    }
+
+    const materialChange =
+      updates.title !== undefined ||
+      updates.description !== undefined ||
+      updates.price !== undefined;
+    const authoritativeUpdates: Partial<Listing> = { ...updates };
+    if (materialChange) {
+      const safety = await this.ai.analyzeListingContent(
+        updates.title ?? existing.title,
+        updates.description ?? existing.description,
+        updates.price ?? existing.price,
+      );
+      authoritativeUpdates.safetyRiskScore = safety.riskScore;
+      authoritativeUpdates.materiallyUpdatedAt = new Date().toISOString();
+      if (["published", "flagged", "rejected"].includes(existing.status)) {
+        authoritativeUpdates.status =
+          safety.riskScore >= 50 ? "flagged" : "published";
+      }
+    }
+    const saved = await this.listingRepo.update(id, authoritativeUpdates);
+    return toPublicListing(saved);
+  }
+
+  private parseSellerUpdate(input: unknown): SellerListingUpdate {
+    if (!input || typeof input !== "object" || Array.isArray(input)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "La mise à jour de l’annonce est invalide.",
+      });
+    }
+    const record = input as Record<string, unknown>;
+    const unknownKeys = Object.keys(record).filter(
+      (key) => !SELLER_UPDATE_KEYS.has(key as keyof SellerListingUpdate),
+    );
+    if (unknownKeys.length > 0) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Certains champs de l’annonce ne peuvent pas être modifiés.",
+        details: { rejectedFields: unknownKeys.sort() },
+      });
+    }
+    if (Object.keys(record).length === 0) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Aucune modification n’a été fournie.",
+      });
+    }
+
+    const updates = { ...record } as SellerListingUpdate;
+    const validateText = (key: keyof SellerListingUpdate, max: number) => {
+      const value = updates[key];
+      if (value === undefined) return;
+      if (typeof value !== "string" || !value.trim() || value.length > max) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: `Le champ ${String(key)} est invalide.`,
+        });
+      }
+      (updates as Record<string, unknown>)[key] = value.trim();
+    };
+    validateText("title", 140);
+    validateText("description", 10_000);
+    validateText("condition", 80);
+    validateText("brand", 120);
+    validateText("model", 120);
+    validateText("city", 160);
+    validateText("postalCode", 20);
+
+    for (const key of ["price", "shippingCost"] as const) {
+      const value = updates[key];
+      if (
+        value !== undefined &&
+        (typeof value !== "number" || !Number.isFinite(value) || value < 0)
+      ) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: `Le champ ${key} doit être un montant positif ou nul.`,
+        });
+      }
+    }
+    if (
+      updates.allowedDelivery !== undefined &&
+      (!Array.isArray(updates.allowedDelivery) ||
+        updates.allowedDelivery.length === 0 ||
+        updates.allowedDelivery.some((value) => !DELIVERY_TYPES.has(value)))
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Les modes de livraison sont invalides.",
+      });
+    }
+    if (
+      updates.attributes !== undefined &&
+      (!updates.attributes ||
+        typeof updates.attributes !== "object" ||
+        Array.isArray(updates.attributes))
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Les caractéristiques de l’annonce sont invalides.",
+      });
+    }
+    return updates;
   }
 
   async deleteListing(id: string): Promise<boolean> {

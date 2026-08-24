@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { X, Sparkles, MessageSquare, Search } from "lucide-react";
 import { routes } from "../../configuration/routes";
-import { messagingRepository } from "../../repositories/messaging.repository";
+import { services } from "../../api/client/service-registry";
 import {
   ConversationPreview,
   InboxFilterTab,
@@ -81,9 +81,10 @@ export const MessagingPage: React.FC = () => {
   const loadConversations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const rawList =
-        await messagingRepository.getUserConversations(currentUserId);
-      const blocked = storageService.getBlockedUsers();
+      const [rawList, blocked] = await Promise.all([
+        services.messaging.getUserConversations(currentUserId),
+        services.messaging.getBlockedUserIds(currentUserId),
+      ]);
       setBlockedUsers(blocked);
 
       const previews: ConversationPreview[] = rawList.map((c) => {
@@ -152,14 +153,14 @@ export const MessagingPage: React.FC = () => {
       return;
     }
 
-    messagingRepository.getConversationById(activeConvId).then((conv) => {
+    services.messaging.getConversationById(activeConvId).then((conv) => {
       if (conv) {
         setActiveRawConv(conv);
         const mappedItems = (conv.messages || []).map((m) =>
           messagingService.mapMessageToTimelineItem(m),
         );
         setTimelineItems(mappedItems);
-        messagingRepository.markAsRead(activeConvId, currentUserId);
+        services.messaging.markAsRead(activeConvId, currentUserId);
       }
     });
   }, [activeConvId, currentUserId]);
@@ -247,16 +248,12 @@ export const MessagingPage: React.FC = () => {
     setTimelineItems((prev) => [...prev, optimisticMsg]);
 
     try {
-      const savedMsg = await messagingRepository.sendMessage(
-        activeConvId,
-        currentUserId,
-        currentUser?.name || "Moi",
-        text || (attachmentUrl ? "Photo partagée" : ""),
-        attachmentUrl ? "image" : "text",
-        undefined,
-        attachmentUrl,
-        attachmentUrl ? "image" : undefined,
-      );
+      const savedMsg = await services.messaging.sendMessage({
+        conversationId: activeConvId,
+        senderId: currentUserId,
+        text: text || (attachmentUrl ? "Photo partagée" : ""),
+        attachments: attachmentUrl ? [attachmentUrl] : undefined,
+      });
 
       // Upgrade status to delivered
       setTimelineItems((prev) =>
@@ -306,13 +303,13 @@ export const MessagingPage: React.FC = () => {
     );
   };
 
-  const handleBlockToggle = () => {
+  const handleBlockToggle = async () => {
     if (!activeConversationPreview) return;
     const counterpart = activeConversationPreview.counterpart;
     const isCurrentlyBlocked = blockedUsers.includes(counterpart.id);
 
     if (isCurrentlyBlocked) {
-      storageService.unblockUser(counterpart.id);
+      await services.messaging.unblockUser(currentUserId, counterpart.id);
       setBlockedUsers((prev) => prev.filter((id) => id !== counterpart.id));
       toast.success(`${counterpart.name} a été débloqué.`);
     } else {
@@ -320,9 +317,9 @@ export const MessagingPage: React.FC = () => {
     }
   };
 
-  const confirmBlock = () => {
+  const confirmBlock = async () => {
     if (!blockModalTarget) return;
-    storageService.blockUser(blockModalTarget);
+    await services.messaging.blockUser(currentUserId, blockModalTarget);
     setBlockedUsers((prev) => [...prev, blockModalTarget]);
     setBlockModalTarget(null);
     toast.info(
@@ -336,7 +333,7 @@ export const MessagingPage: React.FC = () => {
     address: string,
   ) => {
     if (!activeConvId) return;
-    await messagingRepository.schedulePickup(
+    await services.messaging.schedulePickup(
       activeConvId,
       date,
       timeSlot,
@@ -348,7 +345,7 @@ export const MessagingPage: React.FC = () => {
 
   const handleSendOffer = async (amount: number) => {
     if (!activeConvId) return;
-    await messagingRepository.makeOffer(
+    await services.messaging.makeOffer(
       activeConvId,
       currentUserId,
       currentUser?.name || "Moi",
@@ -360,7 +357,7 @@ export const MessagingPage: React.FC = () => {
 
   const handleRespondOffer = async (accept: boolean, amount?: number) => {
     if (!activeConvId) return;
-    await messagingRepository.respondToOffer(
+    await services.messaging.respondToOffer(
       activeConvId,
       currentUserId,
       currentUser?.name || "Moi",

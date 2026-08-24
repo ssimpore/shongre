@@ -1,7 +1,57 @@
-import { Conversation, Message } from "../../../shared/types/index.js";
+import {
+  Conversation,
+  Message,
+  MessagePage,
+  UserProfile,
+} from "../../../shared/types/index.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { randomUUID } from "node:crypto";
 import { databaseFailure } from "./repository-error.js";
+import { AppError } from "../../../shared/errors/app-error.js";
+
+interface MessagePageOptions {
+  cursor?: string;
+  limit?: number;
+}
+
+interface DecodedMessageCursor {
+  createdAt: string;
+  id: string;
+}
+
+const encodeMessageCursor = (message: Pick<Message, "createdAt" | "id">) =>
+  Buffer.from(
+    JSON.stringify({ createdAt: message.createdAt, id: message.id }),
+    "utf8",
+  ).toString("base64url");
+
+const decodeMessageCursor = (
+  cursor: string | undefined,
+): DecodedMessageCursor | undefined => {
+  if (!cursor) return undefined;
+  try {
+    const value = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8"),
+    ) as Partial<DecodedMessageCursor>;
+    if (
+      typeof value.id !== "string" ||
+      !value.id ||
+      typeof value.createdAt !== "string" ||
+      !Number.isFinite(Date.parse(value.createdAt))
+    ) {
+      throw new Error("invalid cursor payload");
+    }
+    return { id: value.id, createdAt: value.createdAt };
+  } catch {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Le curseur de messages est invalide.",
+    });
+  }
+};
+
+const resolveMessageLimit = (value: number | undefined) =>
+  Math.max(1, Math.min(100, Math.trunc(value || 50)));
 
 export interface IMessagingRepository {
   getUserConversations(userId: string): Promise<Conversation[]>;
@@ -12,10 +62,14 @@ export interface IMessagingRepository {
     sellerId: string,
   ): Promise<Conversation>;
   saveMessage(message: Message): Promise<Message>;
-  getMessages(conversationId: string): Promise<Message[]>;
+  getMessages(
+    conversationId: string,
+    options?: MessagePageOptions,
+  ): Promise<MessagePage>;
   markAsRead(conversationId: string, userId: string): Promise<void>;
   blockUser(userId: string, targetUserId: string): Promise<void>;
   unblockUser(userId: string, targetUserId: string): Promise<void>;
+  getBlockedUserIds(userId: string): Promise<string[]>;
   isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean>;
 }
 
@@ -113,9 +167,37 @@ export class DemoMessagingRepository implements IMessagingRepository {
     return { ...message };
   }
 
-  async getMessages(conversationId: string): Promise<Message[]> {
-    const list = this.messages.get(conversationId);
-    return list ? list.map((m) => ({ ...m })) : [];
+  async getMessages(
+    conversationId: string,
+    options: MessagePageOptions = {},
+  ): Promise<MessagePage> {
+    const cursor = decodeMessageCursor(options.cursor);
+    const limit = resolveMessageLimit(options.limit);
+    const ordered = [...(this.messages.get(conversationId) || [])].sort(
+      (left, right) =>
+        right.createdAt.localeCompare(left.createdAt) ||
+        right.id.localeCompare(left.id),
+    );
+    const eligible = cursor
+      ? ordered.filter(
+          (message) =>
+            message.createdAt < cursor.createdAt ||
+            (message.createdAt === cursor.createdAt && message.id < cursor.id),
+        )
+      : ordered;
+    const page = eligible.slice(0, limit + 1);
+    const hasNextPage = page.length > limit;
+    const items = page.slice(0, limit);
+    const oldest = items.at(-1);
+    return {
+      items: items.reverse().map((message) => ({ ...message })),
+      pageInfo: {
+        hasNextPage,
+        ...(hasNextPage && oldest
+          ? { nextCursor: encodeMessageCursor(oldest) }
+          : {}),
+      },
+    };
   }
 
   async markAsRead(conversationId: string, userId: string): Promise<void> {
@@ -133,6 +215,12 @@ export class DemoMessagingRepository implements IMessagingRepository {
     this.blockedPairs.delete(`${userId}:${targetUserId}`);
   }
 
+  async getBlockedUserIds(userId: string): Promise<string[]> {
+    return Array.from(this.blockedPairs)
+      .filter((pair) => pair.startsWith(`${userId}:`))
+      .map((pair) => pair.slice(userId.length + 1));
+  }
+
   async isBlockedBetween(
     firstUserId: string,
     secondUserId: string,
@@ -145,12 +233,43 @@ export class DemoMessagingRepository implements IMessagingRepository {
 }
 
 export class PostgresMessagingRepository implements IMessagingRepository {
+  private static readonly CONVERSATION_PROJECTION =
+    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,status,images), buyer:buyer_id(id,name,avatar_url,account_family,is_verified), seller:seller_id(id,name,avatar_url,account_family,is_verified)";
+
   private mapRowToConversation(row: any): Conversation {
+    const mapParticipant = (profile: any): Partial<UserProfile> | undefined =>
+      profile
+        ? {
+            id: profile.id,
+            name: profile.name,
+            avatarUrl: profile.avatar_url || undefined,
+            accountType:
+              profile.account_family === "professional"
+                ? "professional"
+                : "individual",
+            sellerType:
+              profile.account_family === "professional" ? "pro" : "individual",
+            isVerified: Boolean(profile.is_verified),
+          }
+        : undefined;
     return {
       id: row.id,
       listingId: row.listing_id,
       buyerId: row.buyer_id,
       sellerId: row.seller_id,
+      listing: row.listings
+        ? {
+            id: row.listings.id,
+            title: row.listings.title,
+            price: Number(row.listings.price || 0),
+            status: row.listings.status,
+            images: Array.isArray(row.listings.images)
+              ? row.listings.images
+              : [],
+          }
+        : undefined,
+      buyer: mapParticipant(row.buyer),
+      seller: mapParticipant(row.seller),
       lastMessageText: row.last_message_text || undefined,
       lastMessageAt: row.last_message_at || row.created_at,
       createdAt: row.created_at,
@@ -178,7 +297,7 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
         .from("conversations")
-        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
+        .select(PostgresMessagingRepository.CONVERSATION_PROJECTION)
         .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
         .order("last_message_at", { ascending: false });
 
@@ -195,7 +314,7 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
         .from("conversations")
-        .select("*, listings(*), buyer:buyer_id(*), seller:seller_id(*)")
+        .select(PostgresMessagingRepository.CONVERSATION_PROJECTION)
         .eq("id", id)
         .single();
       if (error) {
@@ -225,8 +344,10 @@ export class PostgresMessagingRepository implements IMessagingRepository {
 
     const { data, error } = await (supabase
       .from("conversations")
-      .upsert(payload as any)
-      .select()
+      .upsert(payload as any, {
+        onConflict: "listing_id,buyer_id,seller_id",
+      })
+      .select(PostgresMessagingRepository.CONVERSATION_PROJECTION)
       .single() as any);
     if (error || !data) {
       throw new Error(`Failed to create conversation: ${error?.message}`);
@@ -278,16 +399,42 @@ export class PostgresMessagingRepository implements IMessagingRepository {
     return this.mapRowToMessage(data);
   }
 
-  async getMessages(conversationId: string): Promise<Message[]> {
+  async getMessages(
+    conversationId: string,
+    options: MessagePageOptions = {},
+  ): Promise<MessagePage> {
     try {
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await supabase
+      const cursor = decodeMessageCursor(options.cursor);
+      const limit = resolveMessageLimit(options.limit);
+      let query = supabase
         .from("messages")
-        .select("*")
+        .select(
+          "id, conversation_id, sender_id, text, attachments, is_offer, offer_price, offer_status, is_pickup_proposal, pickup_details, created_at",
+        )
         .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
+      if (cursor) {
+        query = query.or(
+          `created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`,
+        );
+      }
+      const { data, error } = await query.limit(limit + 1);
       if (error || !data) databaseFailure("messaging.getMessages", error);
-      return data.map((r: any) => this.mapRowToMessage(r));
+      const page = data.map((row: any) => this.mapRowToMessage(row));
+      const hasNextPage = page.length > limit;
+      const items = page.slice(0, limit);
+      const oldest = items.at(-1);
+      return {
+        items: items.reverse(),
+        pageInfo: {
+          hasNextPage,
+          ...(hasNextPage && oldest
+            ? { nextCursor: encodeMessageCursor(oldest) }
+            : {}),
+        },
+      };
     } catch (error) {
       databaseFailure("messaging.getMessages", error);
     }
@@ -320,6 +467,21 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       .eq("blocker_id", userId)
       .eq("blocked_id", targetUserId);
     if (error) throw new Error(`Failed to unblock user: ${error.message}`);
+  }
+
+  async getBlockedUserIds(userId: string): Promise<string[]> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from("blocked_users")
+        .select("blocked_id")
+        .eq("blocker_id", userId)
+        .order("created_at", { ascending: false });
+      if (error || !data) databaseFailure("messaging.getBlockedUserIds", error);
+      return data.map((row: any) => String(row.blocked_id));
+    } catch (error) {
+      databaseFailure("messaging.getBlockedUserIds", error);
+    }
   }
 
   async isBlockedBetween(

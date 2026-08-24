@@ -1,38 +1,30 @@
-import {
-  PaymentsServiceContract,
-  PaymentIntentResult,
-} from "../../contracts/payments.contract";
+import type { MonetizationOrder } from "@shongre/contracts/monetization";
+import { PaymentsServiceContract } from "../../contracts/payments.contract";
 import { httpClient } from "./http-client";
 
 export class HttpPaymentsService implements PaymentsServiceContract {
-  async createPaymentIntent(
-    amount: number,
-    currency: string,
-    metadata?: Record<string, string>,
-  ): Promise<PaymentIntentResult> {
-    return httpClient.post<PaymentIntentResult>("/payments/intent", {
-      amount,
-      currency,
-      metadata,
+  async createCheckout(quoteId: string, idempotencyKey: string) {
+    return httpClient.post<MonetizationOrder>("/payments/intent", {
+      quoteId,
+      idempotencyKey,
     });
   }
 
-  async requestSellerPayout(
-    sellerId: string,
-    amount: number,
-  ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
+  async requestSellerPayout(input: {
+    amountMinor: number;
+    currency: string;
+    idempotencyKey: string;
+  }) {
     return httpClient.post<{
       payoutId: string;
       status: "completed" | "processing";
-    }>("/payments/payout", { sellerId, amount });
+    }>("/payments/payout", input);
   }
 
-  async getSellerBalance(
-    sellerId: string,
-  ): Promise<{ available: number; pending: number; currency: string }> {
+  async getSellerBalance(sellerId: string) {
     return httpClient.get<{
-      available: number;
-      pending: number;
+      availableMinor: number;
+      pendingMinor: number;
       currency: string;
     }>(`/payments/balance/${sellerId}`);
   }
